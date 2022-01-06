@@ -1,0 +1,11 @@
+__pycache__
+.project
+.pydevproject
+.settings/
+coverage.xml
+nosetests.xml
+.coverage
+xdsm.html
+build/
+dist/
+sos_trades_core.egg-info/
