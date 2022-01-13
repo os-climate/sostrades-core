@@ -293,8 +293,10 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                 func(x_vect)
             except ValueError:
                 self.logger.error("Failed to evaluate function %s", func.name)
+                raise
             except TypeError:
                 self.logger.error("Failed to evaluate function %s", func)
+                raise
 
     def get_scenario_lagr(self, full_id_l):
         """
