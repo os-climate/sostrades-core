@@ -39,3 +39,6 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `nlopt <https://github.com/stevengj/nlopt>`_
     GNU LGPL v2.1
 
+`plotly <https://github.com/plotly/plotly.py>`_
+	MIT
+	
