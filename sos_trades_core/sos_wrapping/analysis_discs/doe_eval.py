@@ -183,6 +183,7 @@ class DoeEval(SoSEval):
         """
 
         dynamic_inputs = {}
+        dynamic_outputs = {}
 
         # The setup of the discipline can begin once the algorithm we want to use to generate
         # the samples has been set
@@ -194,13 +195,18 @@ class DoeEval(SoSEval):
             # we fetch the inputs and outputs selected by the user
             selected_outputs = eval_outputs[eval_outputs['selected_input'] == True]['full_name']
             selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name']
-            selected_inputs = selected_inputs.tolist()
-            selected_outputs = selected_outputs.tolist()
+            self.selected_inputs = selected_inputs.tolist()
+            self.selected_outputs = selected_outputs.tolist()
 
             # doe can be done only for selected inputs and outputs
             if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
                 # we set the lists which will be used by the evaluation function of sosEval
                 self.set_eval_in_out_lists(selected_inputs, selected_outputs)
+
+                # setting dynamic outputs. One output of type dict per selected output
+                for out_var in self.eval_out_list:
+                    dynamic_outputs.update(
+                        {out_var: {'type': 'dict'}})
 
                 if algo_name == "custom_doe":
                     default_custom_dict = pd.DataFrame(
@@ -253,6 +259,7 @@ class DoeEval(SoSEval):
                         self._data_in['design_space']['value'] = default_design_space
 
         self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
 
     def __init__(self, sos_name, ee, cls_builder):
         '''
@@ -265,6 +272,8 @@ class DoeEval(SoSEval):
         self.samples = None
         self.customed_samples = None
         self.dict_desactivated_elem = {}
+        self.selected_outputs = []
+        self.selected_inputs = []
 
     def create_design_space(self):
         """
@@ -481,9 +490,18 @@ class DoeEval(SoSEval):
         output_data_frame.columns = [columns[1].split(
             '.')[-1] for columns in output_data_frame.columns]
 
+
+
         self.store_sos_outputs_values({'doe_outputs': output_data_frame})
         self.store_sos_outputs_values({'doe_outputs_dict': dict_output})
         self.store_sos_outputs_values({'doe_samples_dict': dict_sample})
+
+        global_dict_output = {key:{} for key in self.eval_out_list}
+        for (scenario,scenario_output) in dict_output.items():
+                for full_name_out in scenario_output.keys():
+                    global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
+        for dynamic_output in self.eval_out_list:
+            self.store_sos_outputs_values({dynamic_output: global_dict_output[dynamic_output]})
 
     def get_algo_options(self, algo_name):
         """This algo generate the right options to set for a given doe algorithm
