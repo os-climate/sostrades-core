@@ -16,11 +16,9 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from copy import deepcopy
 
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.function import MDOFunction
-from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
 from sos_trades_core.execution_engine.sos_scenario import SoSScenario
 from sos_trades_core.api import get_sos_logger
@@ -70,15 +68,17 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                  "OPENOPT": default_algo_options_openopt,
                  "P-L-BFGS-B": default_algo_options_plbfgsb,
                  }
-
+    is_constraints = True
+    INEQ_CONSTRAINTS = 'ineq_constraints'
+    EQ_CONSTRAINTS = 'eq_constraints'
     INEQ_POSITIVE = "positive_ineq"
     INEQ_NEGATIVE = "negative_ineq"
     INEQ_SIGNS = [INEQ_POSITIVE, INEQ_NEGATIVE]
 
     # DESC_I/O
     DESC_IN = {'max_iter': {'type': 'float'},
-               'ineq_constraints': {'type': 'string_list', 'default': [], 'structuring': True},
-               'eq_constraints': {'type': 'string_list', 'default': [], 'structuring': True},
+               INEQ_CONSTRAINTS: {'type': 'string_list', 'default': [], 'structuring': True},
+               EQ_CONSTRAINTS: {'type': 'string_list', 'default': [], 'structuring': True},
                }
     DESC_IN.update(SoSScenario.DESC_IN)
 
@@ -91,21 +91,20 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
         """
         SoSScenario.__init__(self, sos_name, ee, cls_builder)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.SoSOptimScenario')
-        self.INEQ_CONSTRAINTS = 'ineq_constraints'
-        self.EQ_CONSTRAINTS = 'eq_constraints'
+
         self.ALGO_MANDATORY_FIELDS = [self.ALGO, self.MAX_ITER]
         self.is_optim_scenario = True
         self.functions_before_run = []
 
-    def setup_sos_disciplines(self):
-
-        SoSScenario.setup_sos_disciplines(self)
-
+    def set_edition_inputs_if_eval_mode(self):
+        '''
+        If eval_mode max_iter is not editable and optional
+        '''
+        SoSScenario.set_edition_inputs_if_eval_mode(self)
         if 'eval_mode' in self._data_in:
             eval_mode = self.get_sosdisc_inputs('eval_mode')
             if eval_mode:
                 self._data_in[self.MAX_ITER][self.EDITABLE] = False
-
                 self._data_in[self.MAX_ITER][self.OPTIONAL] = True
 
     def set_constraints(self):
@@ -151,7 +150,9 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                 positive=False)
 
     def set_scenario(self):
-
+        '''
+        Init the MDO Scenario wirh design space formulation and objectives
+        '''
         # pre-set scenario
         design_space, formulation, obj_full_name = self.pre_set_scenario()
 
@@ -167,45 +168,31 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
             # add constraints
             self.set_constraints()
 
-    def run(self):
-        # update default inputs of the couplings
-        # TODO: to delete when MDA initialization is improved
-        for disc in self.sos_disciplines:
-            if disc.is_sos_coupling:
-                self._set_default_inputs_from_dm(disc)
+    def run_scenario(self):
+        '''
+        Call to the GEMSEO MDOScenario run and update design_space_out
+        Post run is possible if execute_at_xopt is activated
+        '''
+        MDOScenario._run(self)
+        self.update_design_space_out()
 
-        # set design space values to complex
-        dspace = deepcopy(self.opt_problem.design_space)
-        diff_method = self.get_sosdisc_inputs('differentiation_method')
-        if diff_method == self.COMPLEX_STEP:
-            curr_x = dspace._current_x
-            for var in curr_x:
-                curr_x[var] = curr_x[var].astype('complex128')
-        self.opt_problem.design_space = dspace
+        self.execute_at_xopt()
 
-        eval_mode = self.get_sosdisc_inputs('eval_mode')
-        eval_jac = self.get_sosdisc_inputs('eval_jac')
+    def execute_at_xopt(self):
+        '''
+        trigger post run if execute at optimum is activated
+        '''
+        #
         execute_at_opt = self.get_sosdisc_inputs('execute_at_xopt')
-        design_space = self.get_sosdisc_inputs('design_space')
-        if eval_mode:
-            self.opt_problem.evaluate_functions(
-                eval_jac=eval_jac, normalize=False)
-            # if eval mode design space was not modified
-            self.store_sos_outputs_values(
-                {'design_space_out': design_space})
-        else:
 
-            MDOScenario._run(self)
-            self.update_design_space_out()
-            # trigger post run if execute at optimum is activated
-            if execute_at_opt:
-                # elf.cache.clear()
-                self.logger.info("Post run at xopt")
-
-                self._post_run()
+        if execute_at_opt:
+            self.logger.info("Post run at xopt")
+            self._post_run()
 
     def _run_algorithm(self):
-
+        '''
+        Run the chosen algorithm with algo options and max_iter
+        '''
         problem = self.formulation.opt_problem
         # Clears the database when multiple runs are performed (bi level)
         if self.clear_history_before_run:
@@ -228,7 +215,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                                                **options)
         return self.optimization_result
 
-    def preprocess_functions(self, no_db_no_norm=True):
+    def preprocess_functions(self):
         """
         preprocess functions to store functions list 
         """
@@ -255,9 +242,19 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
             'normalize_design_space']
         # Test if the last evaluation is the optimum
         x_opt = design_space.get_current_x()
-
+        try:
+            # get xopt from x_opt
+            x_opt_result = problem.solution.x_opt
+            self.logger.info(f"Executing at xopt point {x_opt}")
+            self.logger.info(f"x_opt from problem solution is {x_opt_result}")
+        except:
+            self.logger.info(f"Exception {problem.solution}")
+            pass
         # Revaluate all functions at optimum
         # To re execute all disciplines and get the right data
+
+        # self.logger.info(
+        #    f"problem database {problem.database._Database__dict}")
         try:
 
             self.evaluate_functions(problem, x_opt)
@@ -265,9 +262,9 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
         except:
             self.logger.warning(
                 "Warning: executing the functions in the except after nominal execution of post run failed")
+
             for func in self.functions_before_run:
                 func(x_opt)
-            # execute coupling with local data
 
     def evaluate_functions(self,
                            problem,
@@ -313,33 +310,3 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
             if scenario_name + '.' in j:
                 full_id = j
         return full_id
-
-    def set_eval_possible_values(self):
-
-        analyzed_disc = self.sos_disciplines
-        possible_out_values = self.fill_possible_values(
-            analyzed_disc)  # possible_in_values
-
-        possible_out_values = self.find_possible_values(
-            analyzed_disc, possible_out_values)  # possible_in_values
-
-        # Take only unique values in the list
-        possible_out_values = list(set(possible_out_values))
-
-        # Fill the possible_values of obj and constraints
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
-                         self.POSSIBLE_VALUES, possible_out_values)
-#         self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
-#                          self.POSSIBLE_VALUES, possible_out_values)
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
-                         self.POSSIBLE_VALUES, possible_out_values)
-        # fill the possible values of algos
-        self._init_algo_factory()
-        avail_algos = self._algo_factory.algorithms
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
-                         self.POSSIBLE_VALUES, avail_algos)
-        # fill the possible values of formulations
-        self._form_factory = MDOFormulationsFactory()
-        avail_formulations = self._form_factory.formulations
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
-                         self.POSSIBLE_VALUES, avail_formulations)

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization
 """
 Coupled derivatives calculations
 ********************************
@@ -45,6 +46,14 @@ def default_dict_factory():
 class SoSJacobianAssembly(JacobianAssembly):
     """Assembly of Jacobians Typically, assemble disciplines's Jacobians into a system
     Jacobian."""
+
+    def __init__(self, coupling_structure, n_processes=1):
+        self.n_processes = n_processes
+        JacobianAssembly.__init__(self, coupling_structure)
+        # Add parallel execution for NewtonRaphson
+
+        self.parallel_linearize = SoSDiscParallelLinearization(
+            self.coupling_structure.disciplines, n_processes=self.n_processes, use_threading=True)
 
     def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
@@ -393,8 +402,9 @@ class SoSJacobianAssembly(JacobianAssembly):
         """
         # linearize the disciplines
         self._add_differentiated_inouts(couplings, couplings, couplings)
-        for disc in self.coupling_structure.disciplines:
-            disc.linearize(in_data)
+#         for disc in self.coupling_structure.disciplines:
+#             disc.linearize(in_data)
+        self.linearize_all_disciplines(in_data)
 
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
@@ -551,6 +561,27 @@ class SoSJacobianAssembly(JacobianAssembly):
                 + "LinearOperators! Please use Sparse matrices"
                 + " instead"
             )
+
+    def linearize_all_disciplines(
+        self,
+        input_local_data,  # type: Mapping[str,ndarray]
+    ):  # type: (...) -> None
+        """Linearize all the disciplines.
+        Args:
+            input_local_data: The input data of the disciplines.
+        """
+        parallel_linearization_is_working = False
+
+        if self.n_processes > 1 and parallel_linearization_is_working:
+
+            n_disc = len(self.coupling_structure.disciplines)
+
+            inputs_copy_list = [deepcopy(input_local_data)
+                                for _ in range(n_disc)]
+            self.parallel_linearize.execute(inputs_copy_list)
+        else:
+            for disc in self.coupling_structure.disciplines:
+                disc.linearize(input_local_data)
 
 
 def comp_jac(tup):

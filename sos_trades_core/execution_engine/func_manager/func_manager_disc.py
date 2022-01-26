@@ -155,6 +155,7 @@ class FunctionManagerDisc(SoSDiscipline):
                         variable_full_name = namespaces[0]
                         var_type = self.dm.get_data(variable_full_name)['type']
                     else:
+
                         var_type = 'dataframe'
 
                     self.inst_desc_in[f] = {
@@ -194,12 +195,13 @@ class FunctionManagerDisc(SoSDiscipline):
         #-- output update : lagrangian penalization
         self.inst_desc_out[self.OBJECTIVE_LAGR] = {'type': 'array', 'visibility': 'Shared',
                                                    'namespace': 'ns_optim'}
-        self.iter = 0
+        self.iter, self.last_len_database = 0, 0
 
     def run(self):
         '''
         computes the scalarization
         '''
+
         f_manager = self.func_manager
 
         #-- update function values
@@ -228,9 +230,26 @@ class FunctionManagerDisc(SoSDiscipline):
             self.writer2 = csv.writer(
                 self.csvfile2, lineterminator='\n', delimiter=',')
 
-        #-- store output values
         dict_out = {}
-        self.iter += 1
+        skip = False
+        try:
+            disc = self.ee.root_process.sos_disciplines[0]
+            opt_problem = disc.formulation.opt_problem
+            database = opt_problem.database
+            if len(database) == self.last_len_database and self.last_len_database > 0:
+                # if database did not change, skip output values storing
+                skip = True
+            else:
+                # if the length changed store new values and go on to store output
+                # values
+                self.iter += 1
+                self.last_len_database = len(database)
+        except:
+            self.iter += 1
+            pass
+
+        #-- store output values
+        #self.iter += 1
 
         msg1 = [str(self.iter)]
         header = ["iteration "]
@@ -286,8 +305,11 @@ class FunctionManagerDisc(SoSDiscipline):
         elif self.iter > 2:
             old_optim_output_df = self.get_sosdisc_outputs(
                 self.OPTIM_OUTPUT_DF)
-            dict_out[self.OPTIM_OUTPUT_DF] = pd.concat([
-                old_optim_output_df, full_end_df])
+            if skip:
+                dict_out[self.OPTIM_OUTPUT_DF] = old_optim_output_df
+            else:
+                dict_out[self.OPTIM_OUTPUT_DF] = pd.concat([
+                    old_optim_output_df, full_end_df])
         self.store_sos_outputs_values(dict_out)
 
     def compute_sos_jacobian(self):
@@ -365,37 +387,66 @@ class FunctionManagerDisc(SoSDiscipline):
                                 ('objective_lagrangian',), (variable_name, col_name), 100.0 * grad_value)
 
             elif self.func_manager.functions[variable_name][self.FTYPE] == self.INEQ_CONSTRAINT:
-                for col_name in value_df.columns:
-                    if col_name != 'years':
-                        # h: cst_func_smooth_positive_wo_smooth_max, g :
-                        # smooth_max, f: smooth_max
+                if isinstance(value_df, pd.DataFrame):
+                    for col_name in value_df.columns:
+                        if col_name != 'years':
+                            # h: cst_func_smooth_positive_wo_smooth_max, g :
+                            # smooth_max, f: smooth_max
 
-                        # g(h(x)) for each variable , f([g(h(x1), g(h(x2))])
-                        # weight
-                        weight = self.func_manager.functions[variable_name][self.WEIGHT]
+                            # g(h(x)) for each variable , f([g(h(x1), g(h(x2))])
+                            # weight
+                            weight = self.func_manager.functions[variable_name][self.WEIGHT]
 
-                        #value_df[col_name] = value_df[col_name] * weight
-                        # h'(x)
-                        grad_value = self.get_dfunc_smooth_dvariable(
-                            value_df[col_name] * weight)
+                            #value_df[col_name] = value_df[col_name] * weight
+                            # h'(x)
+                            grad_value = self.get_dfunc_smooth_dvariable(
+                                value_df[col_name] * weight)
 
-                        # h(x)
-                        func_smooth = f_manager.cst_func_smooth_positive_wo_smooth_max(
-                            value_df[col_name] * weight)
+                            # h(x)
+                            func_smooth = f_manager.cst_func_smooth_positive_wo_smooth_max(
+                                value_df[col_name] * weight)
 
-                        # g(h(x))
-                        value_gh_l.append(
-                            f_manager.cst_func_smooth_positive(value_df[col_name] * weight))
+                            # g(h(x))
+                            value_gh_l.append(
+                                f_manager.cst_func_smooth_positive(value_df[col_name] * weight))
 
-                        # g'(h(x))
-                        grad_val_compos[variable_name][col_name] = get_dsmooth_dvariable(
-                            func_smooth)
-                        # g'(h(x)) * h'(x)
-                        grad_val_compos_l = np.array(
-                            grad_value) * np.array(grad_val_compos[variable_name][col_name])
+                            # g'(h(x))
+                            grad_val_compos[variable_name][col_name] = get_dsmooth_dvariable(
+                                func_smooth)
+                            # g'(h(x)) * h'(x)
+                            grad_val_compos_l = np.array(
+                                grad_value) * np.array(grad_val_compos[variable_name][col_name])
 
-                        grad_value_l[variable_name][col_name] = grad_val_compos_l
+                            grad_value_l[variable_name][col_name] = grad_val_compos_l
 
+                elif isinstance(value_df, np.ndarray):
+                    weight = self.func_manager.functions[variable_name][self.WEIGHT]
+
+                    #value_df[col_name] = value_df[col_name] * weight
+                    # h'(x)
+                    grad_value = self.get_dfunc_smooth_dvariable(
+                        value_df * weight)
+
+                    # h(x)
+                    func_smooth = f_manager.cst_func_smooth_positive_wo_smooth_max(
+                        value_df * weight)
+
+                    # g(h(x))
+                    value_gh_l.append(
+                        f_manager.cst_func_smooth_positive(value_df * weight))
+
+                    # g'(h(x))
+                    grad_val_compos[variable_name] = get_dsmooth_dvariable(
+                        func_smooth)
+                    # g'(h(x)) * h'(x)
+                    grad_val_compos_l = np.array(
+                        grad_value) * np.array(grad_val_compos[variable_name])
+
+                    grad_value_l[variable_name] = grad_val_compos_l
+
+                else:
+                    raise Exception(
+                        'Gradients for constraints which are not dataframes or arrays are not yet implemented')
             elif self.func_manager.functions[variable_name][self.FTYPE] == self.EQ_CONSTRAINT:
                 for col_name in value_df.columns:
                     if col_name != 'years':
@@ -443,14 +494,25 @@ class FunctionManagerDisc(SoSDiscipline):
 
                 value_df = inputs_dict[variable_name]
                 dict_grad_ineq[variable_name] = grad_val_ineq[i]
-                for col_name in value_df.columns:
-                    if col_name != 'years':
-                        weight = self.func_manager.functions[variable_name][self.WEIGHT]
 
-                        self.set_partial_derivative_for_other_types(
-                            ('objective_lagrangian',), (variable_name, col_name),   weight * 100.0 * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
-                        self.set_partial_derivative_for_other_types(
-                            ('ineq_constraint',), (variable_name, col_name),  weight * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
+                if isinstance(value_df, np.ndarray):
+                    weight = self.func_manager.functions[variable_name][self.WEIGHT]
+
+                    self.set_partial_derivative(
+                        'objective_lagrangian', variable_name,   np.atleast_2d(weight * 100.0 * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
+                    self.set_partial_derivative(
+                        'ineq_constraint', variable_name,  np.atleast_2d(weight * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
+
+                elif isinstance(value_df,  pd.DataFrame):
+
+                    for col_name in value_df.columns:
+                        if col_name != 'years':
+                            weight = self.func_manager.functions[variable_name][self.WEIGHT]
+
+                            self.set_partial_derivative_for_other_types(
+                                ('objective_lagrangian',), (variable_name, col_name),   weight * 100.0 * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
+                            self.set_partial_derivative_for_other_types(
+                                ('ineq_constraint',), (variable_name, col_name),  weight * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
 
                 i = i + 1
             """

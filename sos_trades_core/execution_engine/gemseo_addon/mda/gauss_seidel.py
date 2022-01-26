@@ -55,6 +55,8 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 if ``0<over_relax_factor<1`` or faster if ``1<over_relax_factor<=2``.
                 If ``over_relax_factor =1.``, it is deactivated.
         """
+        # Not possible to parallelize MDAGaussSeidel execution
+        self.n_processes = 1
         MDAGaussSeidel.__init__(
             self,
             disciplines,

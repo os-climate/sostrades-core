@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from gemseo.mda.sequential_mda import MDASequential
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -21,16 +22,19 @@ from multiprocessing import cpu_count
 
 from pandas import DataFrame
 from itertools import repeat
-import importlib
+import platform
 
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.ns_manager import NS_SEP
 
+if platform.system() != 'Windows':
+    from gemseo_petsc.linear_solvers.ksp_lib import PetscKSPAlgos  # pylint: disable-msg=E0401
+    from sos_trades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+
 from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
-import platform
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.mda import MDA
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
@@ -40,31 +44,9 @@ N_CPUS = cpu_count()
 
 
 def get_available_linear_solvers():
-    #     return LinearSolversFactory().linear_solvers
-    return LinearSolversFactory().algorithms
-
-
-def convert_sostrades_linear_solver_name_to_options(sos_linsolver_name):
-    ''' Converts linear solver name used in SoSTrades to GEMSEO formalism
+    '''Get available linear solvers list
     '''
-    # TODO: refactor soscoupling to improve linear solver options management
-    opt_dict = {}
-
-    if sos_linsolver_name.endswith('petsc'):
-        # PETSc case
-        opt_dict["linear_solver"] = "PETSC_KSP"
-        linear_solver_list = sos_linsolver_name.split('_')
-        if len(linear_solver_list) == 3:
-            opt_dict["preconditioner_type"] = linear_solver_list[0]
-        else:
-            opt_dict["preconditioner_type"] = None
-        opt_dict["solver_type"] = linear_solver_list[-2]
-    else:
-        # Scipy case / gmres
-        opt_dict["linear_solver"] = sos_linsolver_name.upper()
-        opt_dict["use_ilu_precond"] = False
-
-    return opt_dict
+    return LinearSolversFactory().algorithms
 
 
 class SoSCoupling(SoSDisciplineBuilder, MDAChain):
@@ -74,46 +56,54 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
     M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"
 
-    DEFAULT_NUMERICAL_PARAM = {
-        'sub_mda_class': "MDAJacobi",
-        'max_mda_iter': 30,
-        'n_processes': 1,
-        'chain_linearize': False,
-        'tolerance': 1.e-6,
-        'use_lu_fact': False,
-        'warm_start': False,
-        'acceleration': M2D_ACCELERATION,
-        'warm_start_threshold': -1,
-        'n_subcouplings_parallel': 1,
-        'max_mda_iter_gs': 5,
-        'condition_func': 'true_func',
-        'relax_factor':  0.99,
+    # get list of available linear solvers from LinearSolversFactory
+    AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
+
+    # set default value of linear solver according to the operatinh system
+    if platform.system() == 'Windows':
+        DEFAULT_LINEAR_SOLVER = 'GMRES'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
+        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
+    else:
+        DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
+        POSSIBLE_VALUES_PRECONDITIONER = [
+            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+
+    DEFAULT_LINEAR_SOLVER_OPTIONS = {
+        'max_iter': 1000,
+        'tol': 1.0e-8}
+
+    DESC_IN = {
+        # NUMERICAL PARAMETERS
+        'sub_mda_class': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA', 'GSorNewtonMDA', 'MDASequential'], SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'max_mda_iter': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 30, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'n_processes': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'chain_linearize': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'tolerance': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.e-6, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'use_lu_fact': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'warm_start': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'acceleration': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'], SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        # parallel sub couplings execution
+        'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'max_mda_iter_gs': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 5, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'relax_factor': {SoSDiscipline.TYPE: 'float', SoSDiscipline.RANGE: [0.0, 1.0], SoSDiscipline.DEFAULT: 0.99, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        # NUMERICAL PARAMETERS OUT OF INIT
+        'epsilon0': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.0e-6, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        # Linear solver for MD0
+        'linear_solver_MDO': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS, SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDO_preconditioner': {SoSDiscipline.TYPE: 'string', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER, SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDO_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        # Linear solver for MDA
+        'linear_solver_MDA': {SoSDiscipline.TYPE: 'string',  SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS, SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDA_preconditioner': {SoSDiscipline.TYPE: 'string', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,  SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDA_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        # group all disciplines in a MDOChain
+        'group_mda_disciplines': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.USER_LEVEL: 3, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True}
     }
 
-    DEFAULT_LINEAR_SOLVER_MDA_OPTIONS = {
-        'max_iter': 1000,
-        'tol': 1.0e-8}
-    DEFAULT_LINEAR_SOLVER_MDO_OPTIONS = {
-        'max_iter': 1000,
-        'tol': 1.0e-8}
-
-    DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT = {'epsilon0': 1.0e-6,
-                                           'reset_history_each_run': False,
-                                           # Linear solver for MD0
-                                           'linear_solver_MDO': 'gasm_gmres_petsc',
-                                           'linear_solver_MDO_options': DEFAULT_LINEAR_SOLVER_MDO_OPTIONS,
-                                           # Linear solver for MDA
-                                           'linear_solver_MDA': 'gasm_gmres_petsc',
-                                           'linear_solver_MDA_options': DEFAULT_LINEAR_SOLVER_MDA_OPTIONS,
-                                           'group_mda_disciplines': False,
-                                           }
-    if platform.system() == 'Windows':
-        DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT['linear_solver_MDO'] = 'gmres'
-        DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT['linear_solver_MDA'] = 'gmres'
-
-    # https://www.mcs.anl.gov/petsc/petsc4py-current/docs/apiref/petsc4py.PETSc.KSP.Type-class.html
-    POSSIBLE_LINEAR_SOLVERS = [
-        'lgmres', 'gmres', 'ilu_gmres_petsc', 'gasm_gmres_petsc', 'gasm_lgmres_petsc', 'gasm_bicg_petsc', 'gasm_bcgs_petsc', 'gmres_petsc']
+    DESC_OUT = {}
 
     eps0 = 1.0e-6
     has_chart = False
@@ -129,11 +119,18 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
         self.with_data_io = with_data_io
         self.residuals_dict = {}
-        self.condition_func_string = None
+
+        self.linear_solver_MDA = None
+        self.linear_solver_options_MDA = None
+        self.linear_solver_tolerance_MDA = None
+
+        self.linear_solver_MDO = None
+        self.linear_solver_options_MDO = None
+        self.linear_solver_tolerance_MDO = None
 
         self._set_dm_disc_info()
 
-        #- Disable the possibility to build self-coupled disciplines (MDA with 1 subdisc)
+        # - Disable the possibility to build self-coupled disciplines (MDA with 1 subdisc)
         self.authorize_self_coupled_disciplines = False
 
     def _reload(self, sos_name, ee):
@@ -155,23 +152,62 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if old_current_discipline is not None:
             self.ee.factory.current_discipline = old_current_discipline
 
-#     def clear_cache(self):
-#         self.mdo_chain.cache.clear()
-#         SoSDisciplineBuilder.clear_cache(self)
+    #     def clear_cache(self):
+    #         self.mdo_chain.cache.clear()
+    #         SoSDisciplineBuilder.clear_cache(self)
 
-    #-- Public methods
-    def configure_wo_mda(self):
+    # -- Public methods
+    def setup_sos_disciplines(self):
+        '''
+        Set possible values of preconditioner in data manager, according to liner solver MDA/MDO value
+        (available preconditioners are different if petsc linear solvers are used)
+        And set default value of max_mda_iter_gs according to sub_mda_class
+        '''
+        # set possible values of linear solver MDA preconditioner
+        if 'linear_solver_MDA' in self._data_in:
+            linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
+            if linear_solver_MDA.endswith('_PETSC'):
+                self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                    self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
+            else:
+                self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
+                    'None', 'ilu']
+                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                    self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'None'
+
+        # set possible values of linear solver MDO preconditioner
+        if 'linear_solver_MDO' in self._data_in:
+            linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
+            if linear_solver_MDO.endswith('_PETSC'):
+                self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                    self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
+            else:
+                self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
+                    'None', 'ilu']
+                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                    self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
+
+        # set default value of max_mda_iter_gs
+        if 'max_mda_iter_gs' in self._data_in:
+            if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
+                self.update_default_value(
+                    'max_mda_iter_gs', self.IO_TYPE_IN, 200)
+            else:
+                self.update_default_value(
+                    'max_mda_iter_gs', self.IO_TYPE_IN, 5)
+
+    def configure_io(self):
         '''
         Configure the SoSCoupling by : 
         - setting the discipline in the discipline_dict 
         - configure all children disciplines
 
         '''
-        if self.check_structuring_variables_changes():
-            self.set_structuring_variables_values()
-
-        if self._data_in == {}:
-            self._set_default_numerical_data()
+        SoSDiscipline.configure(self)
 
         disc_to_configure = self.get_disciplines_to_configure()
 
@@ -194,20 +230,21 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         return disc_to_configure
 
     def configure(self):
-
-        self.configure_wo_mda()
-
-        self.configure_all_mdas()
+        # configure SoSTrades objects
+        self.configure_io()
+        # configure GEMSEO objects (execution sequence)
+        self.configure_execution()
 
     def is_configured(self):
         '''
         Return False if at least one sub discipline needs to be configured, True if not
         '''
-        return self.get_configure_status() and not self.check_structuring_variables_changes() and (self.get_disciplines_to_configure() == [])
+        return self.get_configure_status() and not self.check_structuring_variables_changes() and (
+            self.get_disciplines_to_configure() == [])
 
-    def configure_all_mdas(self):
+    def configure_execution(self):
         '''
-        - configure the GEMS MDA with all children disciplines
+        - configure the GEMSEO MDA with all children disciplines
         - set the data_in and data_out of the coupling with the GEMS grammar computed in configure_mda
         '''
         # update gems grammar with namespaced inputs and outputs
@@ -233,7 +270,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if self.with_data_io:
             # keep numerical inputs in data_in
             self._data_in = {key: value for key, value in self._data_in.items(
-            ) if key in self.DEFAULT_NUMERICAL_PARAM or key in self.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT or key in self.NUM_DESC_IN}
+            ) if
+                key in self.DESC_IN or key in self.NUM_DESC_IN}
             # add coupling inputs in data_in
             gems_grammar_in_keys = self.input_grammar.get_data_names()
             for var_f_name in gems_grammar_in_keys:
@@ -259,7 +297,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Delete numerical parameters from input grammar of GEMS
         '''
 
-        if var_name in self.DEFAULT_NUMERICAL_PARAM or var_name in self.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT:
+        if var_name in self.DESC_IN:
             return True
         else:
             return False
@@ -268,6 +306,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         ''' 
         Update coupling and editable flags in the datamanager for the GUI
         '''
+
         def update_flags_of_disc(coupling_key, disc_name, in_or_out):
 
             disc_list = self.dm.get_disciplines_with_name(disc_name)
@@ -293,9 +332,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                         data_io[var_name_out][self.OPTIONAL] = True
                     else:
                         data_io[var_name_out][self.EDITABLE] = False
+
         # END update_flags_of_disc
 
-        #-- update couplings flag into DataManager
+        # -- update couplings flag into DataManager
         coupl = self.export_couplings()
         couplings = coupl[self.VAR_NAME]
         disc_1 = coupl['disc_1']
@@ -320,75 +360,99 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             update_flags_of_disc(k, to_disc_name, 'in')
 
     def configure_mda(self):
-        ''' Configuration of SoSCoupling, call to super Class and
+        ''' Configuration of SoSCoupling, call to super class MDAChain
         '''
+        num_data = self._get_numerical_inputs()
 
-        num_data = self.get_sosdisc_inputs(
-            list(self.DEFAULT_NUMERICAL_PARAM.keys()), in_dict=True)
-
-        if num_data['sub_mda_class'] != 'MDAJacobi':
-            del num_data['acceleration']
-        if num_data['sub_mda_class'] != 'MDAGaussSeidel':
-            del num_data['warm_start_threshold']
-        if num_data['sub_mda_class'] not in ['GSNewtonMDA', 'GSorNewtonMDA']:
-            del num_data['max_mda_iter_gs']
-        if num_data['sub_mda_class'] != 'GSorNewtonMDA':
-            del num_data['condition_func']
-        else:
-            num_data['max_mda_iter_gs'] = 200
-            if self.condition_func_string is None:
-                self.condition_func_string = num_data['condition_func']
-            ctrl_func_module = importlib.import_module(
-                f"sos_trades_core.tools.control_functions.control_func")
-            num_data['condition_func'] = eval(
-                f'ctrl_func_module.{self.condition_func_string}')
-        # linear solver options for MDA
-        # TODO: refacto options
-        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'GSNewtonMDA', 'GSorNewtonMDA']:
-            linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
-            linear_solver_MDA_dict = convert_sostrades_linear_solver_name_to_options(
-                linear_solver_MDA)
-
-            linear_solver_options = self.get_sosdisc_inputs(
-                'linear_solver_MDA_options')
-            linear_solver_options = copy(linear_solver_options)
-            num_data['linear_solver'] = linear_solver_MDA_dict['linear_solver']
-            if linear_solver_MDA.endswith("petsc"):
-                linear_solver_options['solver_type'] = linear_solver_MDA_dict['solver_type']
-                linear_solver_options['preconditioner_type'] = linear_solver_MDA_dict['preconditioner_type']
-            else:
-                linear_solver_options['use_ilu_precond'] = linear_solver_MDA_dict['use_ilu_precond']
-            num_data['linear_solver_tolerance'] = linear_solver_options.pop(
-                'tol')
-            num_data['linear_solver_options'] = linear_solver_options
-        else:
-            del num_data['relax_factor']
-        #######
-
-        num_data.pop('n_subcouplings_parallel')
-        use_lu_fact = num_data.pop('use_lu_fact')
         MDAChain.__init__(self,
                           disciplines=self.sos_disciplines,
                           name=self.sos_name,
                           grammar_type=self.SOS_GRAMMAR_TYPE,
-                          use_lu_fact=use_lu_fact,
-                          ** num_data)
+                          **num_data)
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
-        self.set_numerical_mda_parameters_out_of_init()
-        self.set_numerical_parameters()
 
-    def set_numerical_mda_parameters_out_of_init(self):
+    def _get_numerical_inputs(self):
         '''
-        Set all numerical parameters that are not arguments of the init of the MDA and need to be set outside of it with MDA attributes
+        Get numerical parameters input values for MDAChain init
         '''
+        # get input for MDAChain instantiation
+        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance', 'use_lu_fact', 'warm_start',
+                                  'n_processes']
+        num_data = self.get_sosdisc_inputs(
+            needed_numerical_param, in_dict=True)
 
-        eps0 = self.get_sosdisc_inputs('epsilon0')
-        MDA.epsilon0 = eps0
+        if num_data['sub_mda_class'] == 'MDAJacobi':
+            num_data['acceleration'] = copy(
+                self.get_sosdisc_inputs('acceleration'))
+        if num_data['sub_mda_class'] == 'MDAGaussSeidel':
+            num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
+                'warm_start_threshold'))
+        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSorNewtonMDA']:
+            num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
+                'max_mda_iter_gs'))
+        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'GSNewtonMDA', 'GSorNewtonMDA']:
+            num_data['relax_factor'] = copy(
+                self.get_sosdisc_inputs('relax_factor'))
 
-        reset_history_each_run = self.get_sosdisc_inputs(
-            'reset_history_each_run')
-        MDA.reset_history_each_run = reset_history_each_run
+        # linear solver options MDA
+        num_data['linear_solver'] = copy(self.get_sosdisc_inputs(
+            'linear_solver_MDA'))
+        linear_solver_options_MDA = deepcopy(self.get_sosdisc_inputs(
+            'linear_solver_MDA_options'))
+
+        if num_data['linear_solver'].endswith('_PETSC'):
+            # PETSc case
+            linear_solver_options_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[
+                0].lower()
+            preconditioner = copy(self.get_sosdisc_inputs(
+                'linear_solver_MDA_preconditioner'))
+            linear_solver_options_MDA['preconditioner_type'] = (
+                preconditioner != 'None') * preconditioner or None
+        else:
+            # Scipy case / gmres
+            linear_solver_options_MDA['use_ilu_precond'] = (
+                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
+
+        num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
+            'tol')
+        num_data['linear_solver_options'] = linear_solver_options_MDA
+
+        self.linear_solver_MDA = num_data['linear_solver']
+        self.linear_solver_tolerance_MDA = num_data['linear_solver_tolerance']
+        self.linear_solver_options_MDA = deepcopy(
+            num_data['linear_solver_options'])
+
+        # linear solver options MDO
+        self.linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
+        linear_solver_options_MDO = deepcopy(self.get_sosdisc_inputs(
+            'linear_solver_MDO_options'))
+
+        if self.linear_solver_MDO.endswith('_PETSC'):
+            linear_solver_options_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[
+                0].lower()
+            preconditioner = self.get_sosdisc_inputs(
+                'linear_solver_MDO_preconditioner')
+            linear_solver_options_MDO['preconditioner_type'] = (
+                preconditioner != 'None') * preconditioner or None
+        else:
+            linear_solver_options_MDO['use_ilu_precond'] = (
+                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
+
+        self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
+        self.linear_solver_options_MDO = linear_solver_options_MDO
+
+        return num_data
+
+    def set_epsilon0(self, mda):
+        '''
+        Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
+        '''
+        if isinstance(mda, MDASequential):
+            for sub_mda in mda.mda_sequence:
+                self.set_epsilon0(sub_mda)
+        else:
+            mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
 
     @property
     def ordered_disc_list(self):
@@ -450,24 +514,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         Call the _run method of MDAChain in case of SoSCoupling.
         '''
-        # linear solver options for MDA
-        # TODO: refacto options
-        linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
-        linear_solver_MDA_dict = convert_sostrades_linear_solver_name_to_options(
-            linear_solver_MDA)
-        self.linear_solver = linear_solver_MDA_dict['linear_solver']
-
-        linear_solver_options = self.get_sosdisc_inputs(
-            'linear_solver_MDA_options')
-        linear_solver_options = copy(linear_solver_options)
-        if linear_solver_MDA.endswith("petsc"):
-            linear_solver_options['solver_type'] = linear_solver_MDA_dict['solver_type']
-            linear_solver_options['preconditioner_type'] = linear_solver_MDA_dict['preconditioner_type']
-        else:
-            linear_solver_options['use_ilu_precond'] = linear_solver_MDA_dict['use_ilu_precond']
-        self.linear_solver_tolerance = linear_solver_options.pop('tol')
-        self.linear_solver_options = linear_solver_options
-        #######
+        # set linear solver options for MDA
+        self.linear_solver = self.linear_solver_MDA
+        self.linear_solver_options = self.linear_solver_options_MDA
+        self.linear_solver_tolerance = self.linear_solver_tolerance_MDA
 
         self.pre_run_mda()
 
@@ -514,9 +564,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 # several disciplines coupled
                 first_disc = coupled_disciplines[0]
                 if len(coupled_disciplines) > 1 or (
-                    len(coupled_disciplines) == 1
-                    and self.coupling_structure.is_self_coupled(first_disc)
-                    and not coupled_disciplines[0].is_sos_coupling
+                        len(coupled_disciplines) == 1
+                        and self.coupling_structure.is_self_coupled(first_disc)
+                        and not coupled_disciplines[0].is_sos_coupling
                 ):
                     # several disciplines coupled
 
@@ -581,7 +631,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
         else:
             return ready_disciplines
-    #-- Protected methods
+
+    # -- Protected methods
 
     def _run(self):
         ''' Overloads SoSDiscipline run method.
@@ -663,27 +714,12 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                        indices=indices)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Over load of the GEMS function 
-
+        """Overload of the GEMSEO function 
         """
-        # linear solver options for MDA
-        # TODO: refacto options
-        linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-        linear_solver_MDO_dict = convert_sostrades_linear_solver_name_to_options(
-            linear_solver_MDO)
-        self.linear_solver = linear_solver_MDO_dict['linear_solver']
-
-        linear_solver_options = self.get_sosdisc_inputs(
-            'linear_solver_MDO_options')
-        linear_solver_options = copy(linear_solver_options)
-        if linear_solver_MDO.endswith("petsc"):
-            linear_solver_options['solver_type'] = linear_solver_MDO_dict['solver_type']
-            linear_solver_options['preconditioner_type'] = linear_solver_MDO_dict['preconditioner_type']
-        else:
-            linear_solver_options['use_ilu_precond'] = linear_solver_MDO_dict['use_ilu_precond']
-        self.linear_solver_tolerance = linear_solver_options.pop('tol')
-        self.linear_solver_options = linear_solver_options
-        #######
+        # set linear solver options for MDO
+        self.linear_solver = self.linear_solver_MDO
+        self.linear_solver_options = self.linear_solver_options_MDO
+        self.linear_solver_tolerance = self.linear_solver_tolerance_MDO
 
         MDAChain._compute_jacobian(self, inputs, outputs)
 
@@ -696,92 +732,12 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         input_data = SoSDisciplineBuilder.get_input_data_for_gems(self)
 
         # filter numerical inputs
-        for key in list(self.DEFAULT_NUMERICAL_PARAM.keys()) + list(self.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT.keys()):
+        for key in list(self.DESC_IN.keys()):
             ns_key = self.get_var_full_name(key, self._data_in)
             if ns_key in input_data:
                 del input_data[ns_key]
 
         return input_data
-
-    def _set_default_numerical_data(self):
-        ''' set default numerical parameters into data_in
-        and update DM
-        '''
-        # fill in loader_in dict with private default data
-        num_data = {}
-        for key, val in self.DEFAULT_NUMERICAL_PARAM.items():
-            num_data[key] = {}
-            num_data[key][self.DEFAULT] = val
-            num_data[key][self.NUMERICAL] = True
-            num_data[key][self.VAR_NAME] = key
-            num_data[key][self.STRUCTURING] = True
-
-        # set types
-        num_data['sub_mda_class'][self.TYPE] = 'string'
-        num_data['sub_mda_class'][self.POSSIBLE_VALUES] = ['MDAJacobi', 'MDAGaussSeidel',
-                                                           'MDANewtonRaphson', 'MDAQuasiNewton',
-                                                           'GSNewtonMDA', 'GSorNewtonMDA', 'MDASequential']
-        num_data['max_mda_iter'][self.TYPE] = 'int'
-        num_data['n_processes'][self.TYPE] = 'int'
-        num_data['chain_linearize'][self.TYPE] = 'bool'
-
-        num_data['tolerance'][self.TYPE] = 'float'
-        num_data['use_lu_fact'][self.TYPE] = 'bool'
-        num_data['warm_start'][self.TYPE] = 'bool'
-        num_data['acceleration'][self.TYPE] = 'string'
-        num_data['acceleration'][self.POSSIBLE_VALUES] = [
-            self.M2D_ACCELERATION, self.SECANT_ACCELERATION, 'none']
-        for key, val in self.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT.items():
-            num_data[key] = {}
-            num_data[key][self.DEFAULT] = val
-            num_data[key][self.NUMERICAL] = True
-            num_data[key][self.VAR_NAME] = key
-            num_data[key][self.STRUCTURING] = True
-
-        #- linear solver choice
-        # TODO: use this available solver list as possible values
-        avail_solvers = get_available_linear_solvers()
-        num_data['linear_solver_MDA'][self.TYPE] = 'string'
-        num_data['linear_solver_MDA'][self.POSSIBLE_VALUES] = self.POSSIBLE_LINEAR_SOLVERS
-        num_data['linear_solver_MDO'][self.TYPE] = 'string'
-        num_data['linear_solver_MDO'][self.POSSIBLE_VALUES] = self.POSSIBLE_LINEAR_SOLVERS
-        #- linear solver options
-        num_data['linear_solver_MDA_options'][self.TYPE] = 'dict'
-        num_data['linear_solver_MDA_options'][self.DEFAULT] = self.DEFAULT_LINEAR_SOLVER_MDA_OPTIONS
-        num_data['linear_solver_MDO_options'][self.TYPE] = 'dict'
-        num_data['linear_solver_MDO_options'][self.DEFAULT] = self.DEFAULT_LINEAR_SOLVER_MDO_OPTIONS
-
-        num_data['epsilon0'][self.TYPE] = 'float'
-        num_data['reset_history_each_run'][self.TYPE] = 'bool'
-        num_data['warm_start_threshold'][self.TYPE] = 'float'
-        num_data['max_mda_iter_gs'][self.TYPE] = 'int'
-        num_data['condition_func'][self.TYPE] = 'string'
-        num_data['condition_func'][self.POSSIBLE_VALUES] = ['true_func', 'max_ite_func',
-                                                            'lagrangian_objective_func', 'lagrangian_objective_and_max_ite_func']
-        # parallel sub couplings execution
-        num_data['n_subcouplings_parallel'][self.TYPE] = 'int'
-        # group all disciplines in a MDOChain
-        num_data['group_mda_disciplines'][self.TYPE] = 'bool'
-        num_data['group_mda_disciplines'][self.USER_LEVEL] = 3
-
-        num_data['relax_factor'][self.TYPE] = 'float'
-        num_data['relax_factor'][self.RANGE] = [0.0, 1.0]
-        for key, val in num_data.items():
-            if val[self.TYPE] == 'bool':
-                val[self.POSSIBLE_VALUES] = [True, False]
-
-        for key, val in self.NUM_DESC_IN.items():
-            if key not in self._data_in:
-                self._data_in[key] = val.copy()
-        # update in loader_in
-        self._data_in.update(num_data)
-
-        # init other fields
-        self._prepare_data_dict(self.IO_TYPE_IN)
-
-        # update DM
-        self.dm.update_with_discipline_dict(
-            disc_id=self.disc_id, disc_dict=self._data_in)
 
     def get_maturity(self):
         '''
@@ -798,16 +754,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 ref_dict_maturity[disc_maturity] += 1
         self.set_maturity(ref_dict_maturity, maturity_dict=True)
         return self._maturity
-
-    def clean_dm_from_disc(self):
-        for disc in self.sos_disciplines:
-            disc.clean_dm_from_disc()
-
-        self.dm.clean_from_disc(self.disc_id)
-
-        if 'epsilon0' in self._data_in:
-            self.ee.dm.remove_keys(
-                self.disc_id, [self.get_var_full_name('epsilon0', self._data_in)])
 
     def remove_discipline(self, disc):
         ''' remove one discipline from coupling
@@ -846,17 +792,20 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         self.dm.update_with_discipline_dict(
             disc_id=self.disc_id, disc_dict=full_out)
 
-        #update in loader_out
+        # update in loader_out
         self._data_out.update(full_out)
 
     def _create_mdo_chain(
-        self,
-        disciplines,
-        sub_mda_class="MDAJacobi",
-        sub_coupling_structures=None,
-        **sub_mda_options
+            self,
+            disciplines,
+            sub_mda_class="MDAJacobi",
+            sub_coupling_structures=None,
+            **sub_mda_options
     ):
-        """Create an MDO chain from the execution sequence of the disciplines.
+        """
+        ** Adapted from MDAChain Class in GEMSEO (overload)**
+        
+        Create an MDO chain from the execution sequence of the disciplines.
 
         Args:
             sub_mda_class: The name of the class of the sub-MDAs.
@@ -885,10 +834,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             for coupled_disciplines in parallel_tasks:
                 first_disc = coupled_disciplines[0]
                 if len(coupled_disciplines) > 1 or (
-                    len(coupled_disciplines) == 1
-                    and self.coupling_structure.is_self_coupled(first_disc)
-                    and not coupled_disciplines[0].is_sos_coupling
-                    and self.authorize_self_coupled_disciplines
+                        len(coupled_disciplines) == 1
+                        and self.coupling_structure.is_self_coupled(first_disc)
+                        and not coupled_disciplines[0].is_sos_coupling
+                        and self.authorize_self_coupled_disciplines
                 ):
                     # several disciplines coupled
 
@@ -909,6 +858,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                     sub_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
                     sub_mda_options["linear_solver"] = self.linear_solver
                     sub_mda_options["linear_solver_options"] = self.linear_solver_options
+                    if sub_mda_class not in ['MDAGaussSeidel', 'MDAQuasiNewton']:
+                        sub_mda_options["n_processes"] = self.n_processes
                     sub_mda = create_mda(
                         sub_mda_class,
                         sub_mda_disciplines,
@@ -919,7 +870,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                             sub_coupling_structures_iterator),
                         **sub_mda_options
                     )
-                    sub_mda.n_processes = self.n_processes
+                    self.set_epsilon0(sub_mda)
 
                     chained_disciplines.append(sub_mda)
                     self.sub_mda_list.append(sub_mda)
@@ -943,7 +894,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         scenarios = []
         ind = []
-        #- get scenario list, if any
+        # - get scenario list, if any
         for i, disc in enumerate(disciplines):
             # check if attribute exists (mainly to avoid gems built-in objects
             # like mdas)
@@ -952,7 +903,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                     scenarios.append(disc)
                     ind.append(i)
         if len(scenarios) > 0:
-            #- build the parallel chain
+            # - build the parallel chain
             n_subcouplings_parallel = self.get_sosdisc_inputs(
                 "n_subcouplings_parallel")
             self.logger.info(
@@ -961,9 +912,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                          name="SoSParallelChain",
                                          grammar_type=grammar_type,
                                          n_processes=n_subcouplings_parallel)
-            #- remove the scenarios from the disciplines list
+            # - remove the scenarios from the disciplines list
             disciplines[:] = [d for d in disciplines if d not in scenarios]
-            #- insert the parallel chain in place of the first scenario
+            # - insert the parallel chain in place of the first scenario
             if ind[0] > len(disciplines):
                 # all scenarios where at the end of the discipline list
                 # we put the parallel chain at the end of the list
@@ -974,3 +925,16 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 disciplines.insert(ind[0], par_chain)
 
         return disciplines
+
+    def clean(self):
+        """This method cleans a coupling
+        We first begin by cleaning all the disciplines executed by the coupling and then the coupling itself
+        When cleaning the coupling a particular check  on epsilon0 is done
+        """
+        for discipline in self.sos_disciplines:
+            discipline.clean()
+
+        SoSDiscipline.clean(self)
+        # if 'epsilon0' in self._data_in:
+        #     self.ee.dm.remove_keys(
+        # self.disc_id, [self.get_var_full_name('epsilon0', self._data_in)])

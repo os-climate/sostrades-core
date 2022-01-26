@@ -92,7 +92,11 @@ def __init__(
     cls._log_convergence = log_convergence
 
     # SoSTrades modification
-    cls.assembly = SoSJacobianAssembly(cls.coupling_structure)
+    if hasattr(cls, 'n_processes'):
+        cls.assembly = SoSJacobianAssembly(
+            cls.coupling_structure, cls.n_processes)
+    else:
+        cls.assembly = SoSJacobianAssembly(cls.coupling_structure)
     cls.cache_hist = None
     cls.warm_start_threshold = warm_start_threshold
     cls.linear_solver = linear_solver
@@ -103,10 +107,6 @@ def __init__(
     # Debug Variables
     cls.debug_mode_couplings = False
     # end of SoSTrades modification
-
-
-def set_epsilon_0(cls, eps0):
-    cls.epsilon0 = eps0
 
 
 def _current_input_couplings(cls):  # type: (...) -> ndarray
@@ -191,8 +191,12 @@ def _compute_residual(
         (current_couplings - new_couplings).real) / sqrt(current_couplings.size)
     if cls.norm0 is None:
         cls.norm0 = normed_residual
-        if cls.epsilon0 is not None:
-            cls.norm0 = cls.epsilon0
+        if hasattr(cls, 'epsilon0'):
+            if cls.epsilon0 is not None:
+                cls.norm0 = cls.epsilon0
+        else:
+            LOGGER.warning(
+                'epslion0 attribute is not set in case of MDF formulation')
     if cls.norm0 == 0:
         cls.norm0 = 1
     cls.normed_residual = normed_residual / cls.norm0
@@ -243,7 +247,6 @@ def store_state_for_warm_start(cls):
 
 # Set functions to the MDA Class
 setattr(MDA, "__init__", __init__)
-setattr(MDA, "set_epsilon_0", set_epsilon_0)
 setattr(MDA, "_current_input_couplings", _current_input_couplings)
 setattr(MDA, "_check_min_max_couplings", _check_min_max_couplings)
 setattr(MDA, "_compute_residual", _compute_residual)

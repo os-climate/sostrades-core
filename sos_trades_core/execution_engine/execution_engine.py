@@ -189,14 +189,14 @@ class ExecutionEngine:
             if data is not None:  # update variable value
                 dm_data_dict[variable_id][SoSDiscipline.VALUE] = data
 
-    def __configure_wo_mda(self):
+    def __configure_io(self):
         self.logger.info('configuring ...')
 
         self.factory.build()
-        self.root_process.configure_wo_mda()
+        self.root_process.configure_io()
 
-    def __configure_all_mdas(self):
-        self.root_process.configure_all_mdas()
+    def __configure_execution(self):
+        self.root_process.configure_execution()
 
         # create DM treenode to be able to populate it from GUI
         self.dm.treeview = None
@@ -407,7 +407,7 @@ class ExecutionEngine:
                         value['value'] = convert_data_cache[key]['value']
                         checked_keys.append(key)
 
-            self.__configure_wo_mda()
+            self.__configure_io()
 
             if self.__yield_method is not None:
                 self.__yield_method()
@@ -432,7 +432,7 @@ class ExecutionEngine:
         if self.__yield_method is not None:
             self.__yield_method()
 
-        self.__configure_all_mdas()
+        self.__configure_execution()
 
         #-- Init execute, to fully initialize models in discipline
         if len(dict_to_load):

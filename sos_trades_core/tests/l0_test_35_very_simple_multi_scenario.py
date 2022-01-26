@@ -332,7 +332,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertListEqual(
             [key for key in self.exec_eng.dm.data_id_map.keys()
              if 'scenario_2' in key and key.split('.')[-1] not in SoSDiscipline.NUM_DESC_IN and
-             key.split('.')[-1] not in SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT and key.split('.')[-1] != SoSCoupling.RESIDUALS_HISTORY],
+             key.split('.')[-1] not in SoSCoupling.DESC_IN],
             [])
 
         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
@@ -367,13 +367,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         self.assertListEqual(
             [key for key in self.exec_eng.dm.data_id_map.keys() if 'scenario_1' in key and key.split('.')[-1] not in SoSDiscipline.NUM_DESC_IN and
-             key.split('.')[-1] not in SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT and key.split('.')[-1] != SoSCoupling.RESIDUALS_HISTORY], [])
+             key.split('.')[-1] not in SoSCoupling.DESC_IN], [])
         self.assertListEqual(
             [key for key in self.exec_eng.dm.data_id_map.keys() if 'scenario_2' in key and key.split('.')[-1] not in SoSDiscipline.NUM_DESC_IN and
-             key.split('.')[-1] not in SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT and key.split('.')[-1] != SoSCoupling.RESIDUALS_HISTORY], [])
+             key.split('.')[-1] not in SoSCoupling.DESC_IN], [])
         self.assertListEqual(
             [key for key in self.exec_eng.dm.data_id_map.keys() if 'scenario_3' in key and key.split('.')[-1] not in SoSDiscipline.NUM_DESC_IN and
-             key.split('.')[-1] not in SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT and key.split('.')[-1] != SoSCoupling.RESIDUALS_HISTORY], [])
+             key.split('.')[-1] not in SoSCoupling.DESC_IN], [])
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
