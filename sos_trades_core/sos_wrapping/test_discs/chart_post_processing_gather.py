@@ -23,6 +23,7 @@ import plotly.graph_objects as go
 import numpy as np
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import InstantiatedPlotlyNativeChart
 
+
 # Post-processing module to test filters and graphs implementation for gather discipline
 # Implemented graphs are implemented to visualize outputs of gather of disc1_scenario.py
 # The graphs are tests on test_01_multi_scenario_of_scatter of

@@ -187,7 +187,7 @@ class TestGradients(unittest.TestCase):
 
         self.exec_eng.configure()
 
-        soseval = self.exec_eng.root_process.sos_disciplines[1]
+        soseval = self.exec_eng.root_process.sos_disciplines[0]
         soseval.set_eval_possible_values()
 
         id_map = self.exec_eng.dm.data_id_map[self.name + '.GA.eval_inputs']
@@ -197,7 +197,7 @@ class TestGradients(unittest.TestCase):
         possible_out_values = self.exec_eng.dm.data_dict[id_map
                                                          ]['possible_values']
 
-        possible_in_values_ref = ['b', 'a', 'constant', 'y', 'x']
+        possible_in_values_ref = ['b', 'a', 'constant', 'x']
         possible_out_values_ref = ['y', 'z', 'indicator', 'residuals_history']
 
         self.assertListEqual(sorted(possible_in_values), sorted(possible_in_values_ref),
@@ -291,8 +291,6 @@ class TestGradients(unittest.TestCase):
 
         self.exec_eng.configure()
         self.exec_eng.display_treeview_nodes()
-
-        print(self.exec_eng.dm.disciplines_id_map.keys())
 
         x = 2.0
         y = 3.0

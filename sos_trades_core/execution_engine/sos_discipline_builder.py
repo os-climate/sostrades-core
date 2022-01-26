@@ -17,8 +17,9 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from abc import abstractmethod
+
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class SoSDisciplineBuilderException(Exception):
@@ -28,8 +29,26 @@ class SoSDisciplineBuilderException(Exception):
 class SoSDisciplineBuilder(SoSDiscipline):
     '''**SoSDisciplineBuilder is a sosdiscipline which has the faculty to build sub disciplines
     '''
-    #-- Disciplinary attributes
+
+    # -- Disciplinary attributes
     @abstractmethod
     def build(self):
         ''' to be overloaded by subclasses
         Builds sub processes (i.e., in case of scatters, ...)'''
+
+    def clean(self):
+        """This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;
+        We first begin by cleaning all the disciplines children, afterward we clean the discipline itself
+        """
+        for discipline in self.built_sos_disciplines:
+            discipline.clean()
+            self.ee.factory.remove_discipline_from_father_executor(discipline)
+        SoSDiscipline.clean(self)
+
+    def clean_children(self, list_children):
+        """This method cleans the given list of children from the current discipline
+        """
+        for discipline in list_children:
+            self.built_sos_disciplines.remove(discipline)
+            discipline.clean()
+            self.ee.factory.remove_discipline_from_father_executor(discipline)
