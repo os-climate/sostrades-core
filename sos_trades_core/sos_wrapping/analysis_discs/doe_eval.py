@@ -193,7 +193,7 @@ class DoeEval(SoSEval):
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
 
             # we fetch the inputs and outputs selected by the user
-            selected_outputs = eval_outputs[eval_outputs['selected_input'] == True]['full_name']
+            selected_outputs = eval_outputs[eval_outputs['selected_output'] == True]['full_name']
             selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name']
             self.selected_inputs = selected_inputs.tolist()
             self.selected_outputs = selected_outputs.tolist()
@@ -629,7 +629,7 @@ class DoeEval(SoSEval):
 
         default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full],
                                              'full_name': possible_in_values_full})
-        default_out_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_out_values_full],
+        default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
                                               'full_name': possible_out_values_full})
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
