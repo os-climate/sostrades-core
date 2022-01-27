@@ -801,7 +801,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "fullfact"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
@@ -860,7 +860,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
 
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "custom_doe"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "custom_doe"
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'levels': -1}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
@@ -937,7 +937,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
         n_samples = 10
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
@@ -1070,7 +1070,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # configure disciplines with the algo lhs
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1085,7 +1085,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x_eval, check_dtype=False)
 
         # trigger a reconfiguration after algo name change
-        disc_dict = {'doe.DoEEval.algo': "fullfact"}
+        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact"}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x, check_dtype=False)
@@ -1136,7 +1136,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "custom_doe"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "custom_doe"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1232,7 +1232,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # configure disciplines with the algo lhs and check that generated samples are within default bounds
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
@@ -1254,7 +1254,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertTrue (all(element >= 5. and element <= 11. for element in generated_x))
 
         # trigger a reconfiguration after algo name change
-        disc_dict = {'doe.DoEEval.algo': "fullfact",
+        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact",
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z,
                      'doe.DoEEval.design_space': dspace_eval}
@@ -1333,7 +1333,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # configure disciplines with the algo lhs and check that generated samples are within default bounds
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = input_selection
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = output_selection
         disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}

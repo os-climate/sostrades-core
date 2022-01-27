@@ -49,7 +49,7 @@ class Study(StudyManager):
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{ns}.DoEEval.algo'] = "fullfact"
+        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{ns}.DoEEval.design_space'] = dspace
         disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'seed': 1}
         disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z

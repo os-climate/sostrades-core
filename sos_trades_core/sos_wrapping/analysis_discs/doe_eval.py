@@ -54,7 +54,7 @@ class DoeEval(SoSEval):
     N_SAMPLES = "n_samples"
     DESIGN_SPACE = "design_space"
 
-    ALGO = "algo"
+    ALGO = "sampling_algo"
     ALGO_OPTIONS = "algo_options"
     USER_GRAD = 'user'
 
@@ -71,7 +71,7 @@ class DoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int']
 
-    DESC_IN = {'algo': {'type': 'string', 'structuring': True, POSSIBLE_VALUES: POSSIBLE_ALGORITHMS, },
+    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True, POSSIBLE_VALUES: POSSIBLE_ALGORITHMS, },
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
                                                         'full_name': ('string', None, False)},
