@@ -55,38 +55,38 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.dspace_eval = pd.DataFrame(dspace_dict_eval)
 
         input_selection_local_dv_x = {'selected_input': [True, True, False, False, False],
-                                      'full_name': ['DoEEval.Sellar_Problem.local_dv', 'DoEEval.x', 'DoEEval.y_1',
-                                                    'DoEEval.y_2',
-                                                    'DoEEval.z']}
+                                      'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                    'y_2',
+                                                    'z']}
         self.input_selection_local_dv_x = pd.DataFrame(input_selection_local_dv_x)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'DoEEval.x', 'DoEEval.y_1',
-                                             'DoEEval.y_2',
-                                             'DoEEval.z']}
+                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['DoEEval.Sellar_Problem.local_dv', 'DoEEval.x', 'DoEEval.y_1',
-                                           'DoEEval.y_2',
-                                           'DoEEval.z']}
+                             'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                           'y_2',
+                                           'z']}
         self.input_selection_x = pd.DataFrame(input_selection_x)
 
         input_selection_local_dv = {'selected_input': [True, False, False, False, False],
-                                    'full_name': ['DoEEval.Sellar_Problem.local_dv', 'DoEEval.x', 'DoEEval.y_1',
-                                                  'DoEEval.y_2',
-                                                  'DoEEval.z']}
+                                    'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                  'y_2',
+                                                  'z']}
         self.input_selection_local_dv = pd.DataFrame(input_selection_local_dv)
 
-        output_selection_obj = {'selected_input': [False, False, True, False, False, False],
-                                'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj', 'DoEEval.residuals_history',
-                                              'DoEEval.y_1', 'DoEEval.y_2']}
+        output_selection_obj = {'selected_output': [False, False, True, False, False, False],
+                                'full_name': ['c_1', 'c_2', 'obj', 'residuals_history',
+                                              'y_1', 'y_2']}
         self.output_selection_obj = pd.DataFrame(output_selection_obj)
 
-        output_selection_obj_y1_y2 = {'selected_input': [False, False, True, False, True, True],
-                                      'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj',
-                                                    'DoEEval.residuals_history',
-                                                    'DoEEval.y_1', 'DoEEval.y_2']}
+        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, False, True, True],
+                                      'full_name': ['c_1', 'c_2', 'obj',
+                                                    'residuals_history',
+                                                    'y_1', 'y_2']}
         self.output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         self.repo = 'sos_trades_core.sos_processes.test'
@@ -801,7 +801,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "fullfact"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
@@ -812,10 +812,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.DoEEval.x'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
-        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -832,7 +832,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_output = doe_disc.get_sosdisc_outputs('doe_outputs')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
 
         dimension = sum([len(sublist) if isinstance(
             sublist, list) else 1 for sublist in list(self.dspace_eval['value'].values)])
@@ -840,9 +840,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         theoretical_fullfact_levels = int(n_samples ** (1.0 / dimension))
 
         theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
-        self.assertEqual(len(doe_disc_output), theoretical_fullfact_samples)
+        self.assertEqual(len(doe_disc_samples), theoretical_fullfact_samples)
 
-    def test_13_doe_eval_CustomDoE(self):
+    def test_12_doe_eval_CustomDoE(self):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -860,7 +860,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
 
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "custom_doe"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'levels': -1}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
@@ -882,10 +882,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.DoEEval.x'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
-        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -902,10 +902,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_output = doe_disc.get_sosdisc_outputs('doe_outputs')
-        self.assertEqual(len(doe_disc_output.index), 5)
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('doe.obj')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('doe.y_1')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('doe.y_2')
+        self.assertEqual(len(doe_disc_samples), 5)
+        self.assertEqual(len(doe_disc_obj), 5)
+        self.assertEqual(len(doe_disc_y1), 5)
+        self.assertEqual(len(doe_disc_y2), 5)
 
-    def test_14_doe_eval_execution_lhs_doe_on_x_var(self):
+    def test_13_doe_eval_execution_lhs_on_1_var(self):
 
         dspace_dict_x = {'variable': ['x'],
                          'value': [1.],
@@ -931,7 +937,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
         n_samples = 10
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
@@ -942,10 +948,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.DoEEval.x'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
-        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -962,10 +968,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_output = doe_disc.get_sosdisc_outputs('doe_outputs')
-        self.assertEqual(len(doe_disc_output.index), n_samples)
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        self.assertEqual(len(doe_disc_samples), n_samples)
 
-    def test_15_doe_eval_options_and_design_space_after_reconfiguration(self):
+    def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
 
         default_algo_options_lhs = {
             'n_samples': 'default',
@@ -1055,16 +1061,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines
         values_dict = {}
-        values_dict[f'{self.ns}.DoEEval.x'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
-        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
         exec_eng.load_study_from_input_dict(values_dict)
 
         # configure disciplines with the algo lhs
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1079,7 +1085,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x_eval, check_dtype=False)
 
         # trigger a reconfiguration after algo name change
-        disc_dict = {'doe.DoEEval.algo': "fullfact"}
+        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact"}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x, check_dtype=False)
@@ -1103,7 +1109,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.execute()
 
-    def test_16_doe_eval_CustomDoE_reconfiguration(self):
+    def test_15_doe_eval_CustomDoE_reconfiguration(self):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -1130,7 +1136,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "custom_doe"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1161,10 +1167,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.DoEEval.x'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
-        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -1172,10 +1178,10 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_output = doe_disc.get_sosdisc_outputs('doe_outputs')
-        self.assertEqual(len(doe_disc_output.index), 5)
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        self.assertEqual(len(doe_disc_samples), 5)
 
-    def test_17_doe_eval_design_space_normalisation(self):
+    def test_16_doe_eval_design_space_normalisation(self):
 
         dspace_dict_x_eval = {'variable': ['x'],
                               'value': [7.],
@@ -1217,16 +1223,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines
         values_dict = {}
-        values_dict[f'{self.ns}.DoEEval.x'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
-        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
-        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
         exec_eng.load_study_from_input_dict(values_dict)
 
         # configure disciplines with the algo lhs and check that generated samples are within default bounds
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
@@ -1234,21 +1240,21 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [0,10.] range
-        generated_x = [value['doe.DoEEval.x'] for (key, value) in
+        generated_x = [value['doe.x'] for (key, value) in
                        exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        assert (all(element >= 0 and element <= 10. for element in generated_x), True)
+        self.assertTrue (all(element >= 0 and element <= 10. for element in generated_x))
 
         # trigger a reconfiguration after options and design space changes
         disc_dict = {'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
-        generated_x = [value['doe.DoEEval.x'] for (key, value) in
+        generated_x = [value['doe.x'] for (key, value) in
                        exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        assert (all(element >= 5. and element <= 11. for element in generated_x), True)
+        self.assertTrue (all(element >= 5. and element <= 11. for element in generated_x))
 
         # trigger a reconfiguration after algo name change
-        disc_dict = {'doe.DoEEval.algo': "fullfact",
+        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact",
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z,
                      'doe.DoEEval.design_space': dspace_eval}
@@ -1257,16 +1263,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
-        generated_x = [value['doe.DoEEval.x'] for (key, value) in
+        generated_x = [value['doe.x'] for (key, value) in
                        exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        assert (all(element >= -9. and element <= 150. for element in generated_x), True)
+        self.assertTrue(all(element >= -9. and element <= 150. for element in generated_x))
 
-        generated_z = [value['doe.DoEEval.z'].tolist() for (key, value) in
+        generated_z = [value['doe.z'].tolist() for (key, value) in
                        exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        assert (all(element[0] >= -10. and element[0] <= 10. and element[1] >= 4. and element[1] <= 100. for element in
-                    generated_z), True)
+        self.assertTrue(all(element[0] >= -10. and element[0] <= 10. and element[1] >= 4. and element[1] <= 100. for element in
+                    generated_z))
 
-    def _test_18_doe_eval_test_selected_inputs(self):
+    def _test_17_doe_eval_test_selected_inputs(self):
 
         dspace_dict_x_eval = {'variable': ['x'],
                               'value': [7.],
@@ -1320,14 +1326,14 @@ class TestSoSDOEScenario(unittest.TestCase):
                                          'DoEEval.z']}
         input_selection = pd.DataFrame(input_selection)
 
-        output_selection = {'selected_input': [False, False, True, False, False, False],
+        output_selection = {'selected_output': [False, False, True, False, False, False],
                             'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj', 'DoEEval.residuals_history',
                                           'DoEEval.y_1', 'DoEEval.y_2']}
         output_selection = pd.DataFrame(output_selection)
 
         # configure disciplines with the algo lhs and check that generated samples are within default bounds
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = input_selection
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = output_selection
         disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}

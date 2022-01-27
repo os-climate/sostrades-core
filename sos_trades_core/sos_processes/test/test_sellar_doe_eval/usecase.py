@@ -35,21 +35,21 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'DoEEval.x', 'DoEEval.y_1',
-                                             'DoEEval.y_2',
-                                             'DoEEval.z']}
+                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
         input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
-        output_selection_obj_y1_y2 = {'selected_input': [False, False, True, False, True, True],
-                                      'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj',
-                                                    'DoEEval.residuals_history',
-                                                    'DoEEval.y_1', 'DoEEval.y_2']}
+        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, False, True, True],
+                                      'full_name': ['c_1', 'c_2', 'obj',
+                                                    'residuals_history',
+                                                    'y_1', 'y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{ns}.DoEEval.algo'] = "fullfact"
+        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{ns}.DoEEval.design_space'] = dspace
         disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'seed': 1}
         disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
@@ -57,10 +57,10 @@ class Study(StudyManager):
 
         # Sellar inputs
         local_dv = 10.
-        disc_dict[f'{ns}.DoEEval.x'] = 1.
-        disc_dict[f'{ns}.DoEEval.y_1'] = 1.
-        disc_dict[f'{ns}.DoEEval.y_2'] = 1.
-        disc_dict[f'{ns}.DoEEval.z'] = array([1., 1.])
+        disc_dict[f'{ns}.x'] = 1.
+        disc_dict[f'{ns}.y_1'] = 1.
+        disc_dict[f'{ns}.y_2'] = 1.
+        disc_dict[f'{ns}.z'] = array([1., 1.])
         disc_dict[f'{ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
