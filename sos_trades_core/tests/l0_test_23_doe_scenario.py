@@ -860,7 +860,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
 
-        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "custom_doe"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'levels': -1}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
@@ -1136,7 +1136,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "custom_doe"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)

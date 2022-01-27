@@ -41,7 +41,7 @@ class Study(StudyManager):
 
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "custom_doe"
+        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_obj_y1_y2
         x_values = [9.379763880395856, 8.88644794300546,

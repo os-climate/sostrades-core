@@ -47,9 +47,6 @@ class DoeEval(SoSEval):
     TYPE = "type"
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
-
-    POSSIBLE_ALGORITHMS = ["fullfact", "ff2n", "pbdesign",
-                           "bbdesign", "ccdesign", "lhs", "custom_doe"]
     POSSIBLE_VALUES = 'possible_values'
     N_SAMPLES = "n_samples"
     DESIGN_SPACE = "design_space"
@@ -71,7 +68,7 @@ class DoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int']
 
-    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True, POSSIBLE_VALUES: POSSIBLE_ALGORITHMS, },
+    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True },
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
                                                         'full_name': ('string', None, False)},
@@ -175,7 +172,7 @@ class DoeEval(SoSEval):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
         default descin are the algo name and its options
-        In case of a custom_doe, additionnal input is the customed sample ( dataframe)
+        In case of a CustomDOE', additionnal input is the customed sample ( dataframe)
         In other cases, additionnal inputs are the number of samples and the design space
         """
 
@@ -205,7 +202,7 @@ class DoeEval(SoSEval):
                     dynamic_outputs.update(
                         {out_var: {'type': 'dict'}})
 
-                if algo_name == "custom_doe":
+                if algo_name == "CustomDOE":
                     default_custom_dict = pd.DataFrame(
                         [[NaN for input in range(len(self.eval_in_base_list))]], columns=self.eval_in_base_list)
                     dataframe_descriptor = {}
@@ -374,7 +371,7 @@ class DoeEval(SoSEval):
         """Generating samples for the Doe using the Doe Factory
         """
         algo_name = self.get_sosdisc_inputs(self.ALGO)
-        if algo_name == 'custom_doe':
+        if algo_name == 'CustomDOE':
             return self.create_samples_from_custom_df()
         else:
             self.design_space = self.create_design_space()
@@ -600,6 +597,26 @@ class DoeEval(SoSEval):
                              'value', default_in_dataframe, check_value=False)
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
+
+        #filling possible values for sampling algorithm name
+        self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
+                         self.POSSIBLE_VALUES, self.custom_order_possible_algorithms(self.doe_factory.algorithms))
+
+    def custom_order_possible_algorithms(self,algo_list):
+        """ This algo sorts the possible algorithms list so that most used algorithms
+        which are fullfact,lhs and CustomDOE appears at the top of the list
+        The remaing algorithms are sorted in an alphabetical order
+        """
+        sorted_algorithms = algo_list[:]
+        sorted_algorithms.remove('CustomDOE')
+        sorted_algorithms.remove("fullfact")
+        sorted_algorithms.remove("lhs")
+        sorted_algorithms.sort()
+        sorted_algorithms.insert(0,"lhs")
+        sorted_algorithms.insert(0,'CustomDOE')
+        sorted_algorithms.insert(0,"fullfact")
+        return sorted_algorithms
+
 
     def set_eval_in_out_lists(self, in_list, out_list):
         '''
