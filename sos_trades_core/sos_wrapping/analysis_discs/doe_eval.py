@@ -85,10 +85,7 @@ class DoeEval(SoSEval):
                }
 
     DESC_OUT = {
-        'doe_outputs': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY},
-        'doe_outputs_dict': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY},
         'doe_samples_dict': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
-
     }
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
@@ -445,35 +442,25 @@ class DoeEval(SoSEval):
     def run(self):
         '''
             Overloaded SoSEval method
+            The execution of the doe
         '''
 
-        self.samples = self.generate_samples_from_doe_factory()
-
-        list_out = []
-        columns = []
         dict_sample = {}
         dict_output = {}
 
-        for input_name in enumerate(self.eval_in_list):
-            columns.append(input_name)
-        for output_name in enumerate(self.eval_out_list):
-            columns.append(output_name)
-
+        # After samples generation, we enumerate through them and carry out
+        # a evaluation using the soseval evaluation function
+        self.samples = self.generate_samples_from_doe_factory()
         for i, sample in enumerate(self.samples):
-            # generation of the dict_sample, scenario name is the value of the
-            # different parameters
 
+            # generation of the dictionnary of samples
             scenario_name = "scenario_" + str(i + 1)
             dict_one_sample = {}
             for idx, values in enumerate(sample):
-                # scenario_name += self.eval_in_list[idx] + "_" + values + "_"
                 dict_one_sample[self.eval_in_list[idx]] = values
             dict_sample[scenario_name] = dict_one_sample
 
-            current_row = []
-            for input_value in sample:
-                current_row.append(input_value)
-
+            # evaluation of samples and generation of a dictionnary of outputs
             output_eval = copy.deepcopy(
                 self.FDeval_func(sample, convert_to_array=False))
             dict_one_output = {}
@@ -481,42 +468,17 @@ class DoeEval(SoSEval):
                 dict_one_output[self.eval_out_list[idx]] = values
             dict_output[scenario_name] = dict_one_output
 
-            for output_value in output_eval:
-                current_row.append(output_value)
+        # construction of a dictionnary of dynamic outputs
+        # The key is the output name and the value a dictionnary of results with scenarii as keys
+        global_dict_output = {key: {} for key in self.eval_out_list}
+        for (scenario, scenario_output) in dict_output.items():
+            for full_name_out in scenario_output.keys():
+                global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
-            list_out.append(current_row)
-
-        output_data_frame = pd.DataFrame(list_out, columns=columns)
-        output_data_frame.columns = [columns[1].split(
-            '.')[-1] for columns in output_data_frame.columns]
-
-
-
-        self.store_sos_outputs_values({'doe_outputs': output_data_frame})
-        self.store_sos_outputs_values({'doe_outputs_dict': dict_output})
+        # saving outputs in the dm
         self.store_sos_outputs_values({'doe_samples_dict': dict_sample})
-
-        global_dict_output = {key:{} for key in self.eval_out_list}
-        for (scenario,scenario_output) in dict_output.items():
-                for full_name_out in scenario_output.keys():
-                    global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({dynamic_output: global_dict_output[dynamic_output]})
-
-    def get_algo_options(self, algo_name):
-        """This algo generate the right options to set for a given doe algorithm
-        """
-
-        if algo_name in self.algo_dict.keys():
-            dict = self.algo_dict[algo_name]
-        else:
-            dict = self.default_algo_options
-
-        dict_to_return = {}
-        for algo_option in dict.keys():
-            if dict[algo_option] is not None:
-                dict_to_return[algo_option] = dict[algo_option]
-        return dict_to_return
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
