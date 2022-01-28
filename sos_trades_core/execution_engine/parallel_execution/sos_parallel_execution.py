@@ -115,6 +115,17 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
         DiscParallelLinearization.__init__(self, worker_list, n_processes=n_processes, use_threading=use_threading,
                                            wait_time_between_fork=wait_time_between_fork)
         self.logger = get_sos_logger('SoS.EE.ParallelLinearization')
+        self.force_no_exec = False
+        self.linearize_on_input_data = False
+        self.exec_before_linearize = True
+
+    def configure_linearize_options(self, force_no_exec=False, linearize_on_input_data=False, exec_before_linearize=True):
+        '''
+        Configure options for the call to linearize in parallel for workers
+        '''
+        self.force_no_exec = force_no_exec
+        self.linearize_on_input_data = linearize_on_input_data
+        self.exec_before_linearize = exec_before_linearize
 
     def _update_local_objects(self, ordered_outputs):
         """Update the local objects from parallel results.
@@ -134,8 +145,38 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
             dm_data = output[2]
             update_dm_with_worker_results(dm_data, local_data, disc)
 
+    def _run_task_by_index(
+        self, task_index  # type: int
+    ):  # type: (...) -> Tuple[int, Any]
+        """Run a task from an index of discipline and the input local data.
+
+        The purpose is to be used by multiprocessing queues as a task.
+
+        Args:
+            task_index: The index of the task among `self.worker_list`.
+
+        Returns:
+            The task index and the output of its computation.
+        """
+        input_loc = self.input_data_list[task_index]
+        if DiscParallelLinearization._is_worker(self.worker_list):
+            worker = self.worker_list
+        elif len(self.worker_list) > 1:
+            worker = self.worker_list[task_index]
+        else:
+            worker = self.worker_list[0]
+
+        # return the worker index to order the outputs properly
+        output = self._run_task(worker, input_loc, force_no_exec=self.force_no_exec,
+                                linearize_on_input_data=self.linearize_on_input_data,
+                                exec_before_linearize=self.exec_before_linearize
+                                )
+        return task_index, output
+
     @staticmethod
-    def _run_task(worker, input_loc):
+    def _run_task(worker, input_loc, force_no_exec=False,
+                  linearize_on_input_data=False,
+                  exec_before_linearize=True):
         """Effectively performs the computation.
 
         To be overloaded by subclasses
@@ -143,7 +184,9 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
         :param worker: the worker pointes
         :param input_loc: input of the worker
         """
-        jac = worker.linearize(input_loc)
+        jac = worker.linearize(input_loc, force_no_exec=force_no_exec,
+                               linearize_on_input_data=linearize_on_input_data,
+                               exec_before_linearize=exec_before_linearize)
         local_data, dm_data, status_data = get_data_from_worker(worker)
         return jac, local_data, dm_data, status_data
 
