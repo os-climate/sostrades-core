@@ -501,8 +501,7 @@ class DoeEval(SoSEval):
             and not a default variable
             an output variable must be any data from a data_out discipline
         '''
-        poss_in_values = []
-        poss_out_values = []
+
         poss_in_values_full = []
         poss_out_values_full = []
 
@@ -510,43 +509,24 @@ class DoeEval(SoSEval):
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
-            full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
+            full_id  = disc.get_var_full_name(
+                data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
-                poss_in_values.append(data_in_key)
+                # we remove the study name from the variable full  name for a sake of simplicity
                 poss_in_values_full.append(full_id.split(self.ee.study_name + ".")[1])
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
-            full_id = self.dm.get_all_namespaces_from_var_name(data_out_key)[0]
-            poss_out_values.append(data_out_key.split(self.NS_SEP)[-1])
+            full_id = disc.get_var_full_name(
+                data_out_key, disc._data_out)
+            #we remove the study name from the variable full  name for a sake of simplicity
             poss_out_values_full.append(full_id.split(self.ee.study_name + ".")[1])
 
-        return poss_in_values, poss_out_values, poss_in_values_full, poss_out_values_full
+        return  poss_in_values_full, poss_out_values_full
 
-    def find_possible_values(
-            self, disc, possible_in_values, possible_out_values):
-        '''
-            Run through all disciplines and sublevels
-            to find possible values for eval_inputs and eval_outputs
-        '''
-        possible_in_values_full = []
-        possible_out_values_full = []
-        if len(disc.sos_disciplines) != 0:
-            for sub_disc in disc.sos_disciplines:
-                sub_in_values, sub_out_values, sub_in_values_full, sub_out_values_full = self.fill_possible_values(
-                    sub_disc)
-                possible_in_values.extend(sub_in_values)
-                possible_out_values.extend(sub_out_values)
-                possible_in_values_full.extend(sub_in_values_full)
-                possible_out_values_full.extend(sub_out_values_full)
-
-                self.find_possible_values(
-                    sub_disc, possible_in_values, possible_out_values)
-
-        return possible_in_values, possible_out_values, possible_in_values_full, possible_out_values_full
 
     def set_eval_possible_values(self):
         '''
@@ -557,18 +537,13 @@ class DoeEval(SoSEval):
         # (coupling chain of the eval process or single discipline)
         analyzed_disc = self.sos_disciplines[0]
 
-        possible_in_values, possible_out_values, \
         possible_in_values_full, possible_out_values_full = self.fill_possible_values(
             analyzed_disc)
 
-        possible_in_values, possible_out_values, new_possible_in_values_full, new_possible_out_values_full = self.find_possible_values(
-            analyzed_disc, possible_in_values, possible_out_values)
+        possible_in_values_full, possible_out_values_full = self.find_possible_values(
+            analyzed_disc, possible_in_values_full, possible_out_values_full)
 
         # Take only unique values in the list
-        possible_in_values = list(set(possible_in_values))
-        possible_out_values = list(set(possible_out_values))
-        possible_in_values_full.extend(new_possible_in_values_full)
-        possible_out_values_full.extend(new_possible_out_values_full)
         possible_in_values_full = list(set(possible_in_values_full))
         possible_out_values_full = list(set(possible_out_values_full))
 
