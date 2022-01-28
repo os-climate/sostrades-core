@@ -408,7 +408,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                 exec_before_linearize=False)
         # exec_before_linearize is set to False, if you want to come back to old NewtonRaphson
         # put the flag to True
-        self.linearize_all_disciplines(in_data, exec_before_linearize=False)
+        self.linearize_all_disciplines(in_data, exec_before_linearize=True)
 
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
