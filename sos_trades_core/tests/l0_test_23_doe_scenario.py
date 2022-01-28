@@ -45,11 +45,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                        'activated_elem': [[True], [True, True], [True], [True]]}
 
         dspace_dict_eval = {'variable': ['x', 'z'],
-                            'value': [1., [5., 2.]],
+
                             'lower_bnd': [0., [-10., 0.]],
-                            'upper_bnd': [10., [10., 10.]],
-                            'enable_variable': [True, True],
-                            'activated_elem': [[True], [True, True]]}
+                            'upper_bnd': [10., [10., 10.]]
+                            }
 
         self.dspace = pd.DataFrame(dspace_dict)
         self.dspace_eval = pd.DataFrame(dspace_dict_eval)
@@ -832,10 +831,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
 
         dimension = sum([len(sublist) if isinstance(
-            sublist, list) else 1 for sublist in list(self.dspace_eval['value'].values)])
+            sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
 
         theoretical_fullfact_levels = int(n_samples ** (1.0 / dimension))
 
@@ -902,10 +901,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
-        doe_disc_obj = doe_disc.get_sosdisc_outputs('doe.obj')
-        doe_disc_y1 = doe_disc.get_sosdisc_outputs('doe.y_1')
-        doe_disc_y2 = doe_disc.get_sosdisc_outputs('doe.y_2')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('doe.obj_dict')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('doe.y_1_dict')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('doe.y_2_dict')
         self.assertEqual(len(doe_disc_samples), 5)
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
@@ -914,11 +913,11 @@ class TestSoSDOEScenario(unittest.TestCase):
     def test_13_doe_eval_execution_lhs_on_1_var(self):
 
         dspace_dict_x = {'variable': ['x'],
-                         'value': [1.],
+
                          'lower_bnd': [0.],
                          'upper_bnd': [10.],
-                         'enable_variable': [True],
-                         'activated_elem': [[True]]}
+
+                         }
         dspace_x = pd.DataFrame(dspace_dict_x)
 
         exec_eng = ExecutionEngine(self.study_name)
@@ -968,7 +967,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), n_samples)
 
     def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
@@ -990,51 +989,38 @@ class TestSoSDOEScenario(unittest.TestCase):
         }
 
         dspace_dict_x = {'variable': ['x'],
-                         'value': [1.],
+
                          'lower_bnd': [0.],
-                         'upper_bnd': [10.],
-                         'enable_variable': [True],
-                         'activated_elem': [[True]]}
+                         'upper_bnd': [10.]
+                         }
         dspace_x = pd.DataFrame(dspace_dict_x)
 
         dspace_dict_x_eval = {'variable': ['x'],
-                              'value': [1.],
+
                               'lower_bnd': [5.],
-                              'upper_bnd': [11.],
-                              'enable_variable': [False],
-                              'activated_elem': [[True]]}
+                              'upper_bnd': [11.]
+                              }
         dspace_x_eval = pd.DataFrame(dspace_dict_x_eval)
 
-        dspace_dict_x_local_dv = {'variable': ['x', 'local_dv'],
-                                  'value': [1., 1.],
-                                  'lower_bnd': [0., 0.],
-                                  'upper_bnd': [10., 10.],
-                                  'enable_variable': [True, True],
-                                  'activated_elem': [[True], [True]]}
-        dspace_x_local_dv = pd.DataFrame(dspace_dict_x_local_dv)
+        dspace_dict_x_local_dv = {'variable': ['x', 'DoEEval.Sellar_Problem.local_dv'],
 
-        dspace_dict_x_local_dv = {'variable': ['x', 'local_dv'],
-                                  'value': [1., 1.],
                                   'lower_bnd': [0., 0.],
-                                  'upper_bnd': [10., 10.],
-                                  'enable_variable': [True, True],
-                                  'activated_elem': [[True], [True]]}
+                                  'upper_bnd': [10., 10.]
+                                  }
         dspace_x_local_dv = pd.DataFrame(dspace_dict_x_local_dv)
 
         dspace_dict_x_z = {'variable': ['x', 'z'],
-                           'value': [1., [1., 1.]],
+
                            'lower_bnd': [0., [0., 0.]],
-                           'upper_bnd': [10., [10., 10.]],
-                           'enable_variable': [True, True],
-                           'activated_elem': [[True], [True, True]]}
+                           'upper_bnd': [10., [10., 10.]]
+                           }
         dspace_x_z = pd.DataFrame(dspace_dict_x_z)
 
         dspace_dict_eval = {'variable': ['x', 'z'],
-                            'value': [1., [5., 2.]],
+
                             'lower_bnd': [0., [-10., 0.]],
-                            'upper_bnd': [10., [10., 10.]],
-                            'enable_variable': [True, True],
-                            'activated_elem': [[True], [True, True]]}
+                            'upper_bnd': [10., [10., 10.]]
+                            }
         dspace_eval = pd.DataFrame(dspace_dict_eval)
 
         exec_eng = ExecutionEngine(self.study_name)
@@ -1075,20 +1061,20 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
-        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x, check_dtype=False)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True), dspace_x.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after options and design space changes
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
                      'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
-        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x_eval, check_dtype=False)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True), dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after algo name change
         disc_dict = {'doe.DoEEval.sampling_algo': "fullfact"}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
-        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x, check_dtype=False)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True), dspace_x.reset_index(drop=True), check_dtype=False)
 
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'}}
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1099,13 +1085,13 @@ class TestSoSDOEScenario(unittest.TestCase):
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
-        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x_z, check_dtype=False)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True), dspace_x_z.reset_index(drop=True), check_dtype=False)
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 100, 'face': 'faced'})
-        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_eval, check_dtype=False)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True), dspace_eval.reset_index(drop=True), check_dtype=False)
 
         exec_eng.execute()
 
@@ -1178,25 +1164,23 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), 5)
 
     def test_16_doe_eval_design_space_normalisation(self):
 
         dspace_dict_x_eval = {'variable': ['x'],
-                              'value': [7.],
+
                               'lower_bnd': [5.],
-                              'upper_bnd': [11.],
-                              'enable_variable': [True],
-                              'activated_elem': [[True]]}
+                              'upper_bnd': [11.]
+                              }
         dspace_x_eval = pd.DataFrame(dspace_dict_x_eval)
 
         dspace_dict_eval = {'variable': ['x', 'z'],
-                            'value': [1., [5., 10]],
+
                             'lower_bnd': [-9., [-10., 4.]],
-                            'upper_bnd': [150., [10., 100.]],
-                            'enable_variable': [True, True],
-                            'activated_elem': [[True], [True, True]]}
+                            'upper_bnd': [150., [10., 100.]]
+                            }
         dspace_eval = pd.DataFrame(dspace_dict_eval)
 
         exec_eng = ExecutionEngine(self.study_name)
@@ -1240,18 +1224,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [0,10.] range
-        generated_x = [value['doe.x'] for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        self.assertTrue (all(element >= 0 and element <= 10. for element in generated_x))
+        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+        self.assertTrue(all(0 <= element <= 10. for element in generated_x))
 
         # trigger a reconfiguration after options and design space changes
         disc_dict = {'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
-        generated_x = [value['doe.x'] for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        self.assertTrue (all(element >= 5. and element <= 11. for element in generated_x))
+        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+        self.assertTrue(all(5. <= element <= 11. for element in generated_x))
 
         # trigger a reconfiguration after algo name change
         disc_dict = {'doe.DoEEval.sampling_algo': "fullfact",
@@ -1263,14 +1245,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
-        generated_x = [value['doe.x'] for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        self.assertTrue(all(element >= -9. and element <= 150. for element in generated_x))
+        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+        self.assertTrue(all(-9. <= element <= 150. for element in generated_x))
 
-        generated_z = [value['doe.z'].tolist() for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
-        self.assertTrue(all(element[0] >= -10. and element[0] <= 10. and element[1] >= 4. and element[1] <= 100. for element in
-                    generated_z))
+        generated_z = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['z'].tolist()
+        self.assertTrue(
+            all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
+                generated_z))
 
     def _test_17_doe_eval_test_selected_inputs(self):
 

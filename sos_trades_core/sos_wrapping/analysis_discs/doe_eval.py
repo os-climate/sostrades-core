@@ -68,7 +68,7 @@ class DoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int']
 
-    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True },
+    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
                                                         'full_name': ('string', None, False)},
@@ -82,7 +82,7 @@ class DoeEval(SoSEval):
                }
 
     DESC_OUT = {
-        'doe_samples_dict': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
+        'doe_samples_dataframe': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
     }
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
@@ -200,7 +200,7 @@ class DoeEval(SoSEval):
                 # setting dynamic outputs. One output of type dict per selected output
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {out_var: {'type': 'dict'}})
+                        {f'{out_var}_dict': {'type': 'dict'}})
 
                 if algo_name == "CustomDOE":
                     default_custom_dict = pd.DataFrame(
@@ -230,20 +230,15 @@ class DoeEval(SoSEval):
                     if 'algo_options' in self._data_in:
                         self._data_in['algo_options']['value'] = default_dict
 
-                    default_design_space = pd.DataFrame({'variable': self.eval_in_base_list,
-                                                         'value': [array([1.0, 1.0]) if self.ee.dm.get_data(var,
-                                                                                                            'type') == 'array' else 1.0
-                                                                   for var in self.eval_in_list],
+
+                    default_design_space = pd.DataFrame({'variable': selected_inputs,
+
                                                          'lower_bnd': [array([0.0, 0.0]) if self.ee.dm.get_data(var,
                                                                                                                 'type') == 'array' else 0.0
                                                                        for var in self.eval_in_list],
                                                          'upper_bnd': [array([10.0, 10.0]) if self.ee.dm.get_data(var,
                                                                                                                   'type') == 'array' else 10.0
-                                                                       for var in self.eval_in_list],
-                                                         'enable_variable': [True for invar in self.eval_in_base_list],
-                                                         'activated_elem': [[True, True] if self.ee.dm.get_data(var,
-                                                                                                                'type') == 'array' else [
-                                                             True] for var in self.eval_in_list]
+                                                                       for var in self.eval_in_list]
                                                          })
 
                     dynamic_inputs.update(
@@ -286,27 +281,23 @@ class DoeEval(SoSEval):
         """
 
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        # update design space dv with full names
-        dvs = list(dspace_df[self.VARIABLES])
-        full_dvs = []
+        variables = self.eval_in_list
+        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
+        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
+        values = lower_bounds
+        enable_variables = [True for invar in self.eval_in_list]
+        # This won't work for an array with a dimension greater than 2
+        activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
+                           self.eval_in_list]
+        dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
+                                            self.VALUES: values,
+                                            self.LOWER_BOUND: lower_bounds,
+                                            self.UPPER_BOUND: upper_bounds,
+                                            self.ENABLE_VARIABLE_BOOL: enable_variables,
+                                            self.LIST_ACTIVATED_ELEM: activated_elems})
 
-        for key in dvs:
+        design_space = self.read_from_dataframe(dspace_dict_updated)
 
-            full_key_l = self.get_full_names([key])
-            if len(full_key_l) > 0:
-                full_key = full_key_l[0]
-                full_dvs.append(full_key)
-            else:
-                self.logger.warning(f" missing design variable in dm : {key}")
-        if len(full_dvs) == len(dvs):
-            dspace_dict_updated = dspace_df.copy()
-            dspace_dict_updated[self.VARIABLES] = full_dvs
-
-            design_space = self.read_from_dataframe(dspace_dict_updated)
-
-        else:
-
-            design_space = DesignSpace()
         return design_space
 
     def read_from_dataframe(self, df):
@@ -465,6 +456,18 @@ class DoeEval(SoSEval):
                 dict_one_output[self.eval_out_list[idx]] = values
             dict_output[scenario_name] = dict_one_output
 
+        #construction of a dataframe of generated samples
+        #the key is the scenario and columns are inputs values for the considered scenario
+        columns = ['scenario']
+        columns.extend(self.selected_inputs)
+        samples_all_row = []
+        for (scenario,scenario_sample) in dict_sample.items():
+            samples_row = [scenario]
+            for generated_input in scenario_sample.values():
+                samples_row.append(generated_input)
+            samples_all_row.append(samples_row)
+        samples_dataframe = pd.DataFrame(samples_all_row,columns = columns)
+
         # construction of a dictionnary of dynamic outputs
         # The key is the output name and the value a dictionnary of results with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
@@ -473,9 +476,9 @@ class DoeEval(SoSEval):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.store_sos_outputs_values({'doe_samples_dict': dict_sample})
+        self.store_sos_outputs_values({'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
-            self.store_sos_outputs_values({dynamic_output: global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({f'{dynamic_output}_dict': global_dict_output[dynamic_output]})
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
@@ -510,8 +513,7 @@ class DoeEval(SoSEval):
             and not a default variable
             an output variable must be any data from a data_out discipline
         '''
-        poss_in_values = []
-        poss_out_values = []
+
         poss_in_values_full = []
         poss_out_values_full = []
 
@@ -519,43 +521,24 @@ class DoeEval(SoSEval):
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
-            full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
+            full_id  = disc.get_var_full_name(
+                data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
-                poss_in_values.append(data_in_key)
+                # we remove the study name from the variable full  name for a sake of simplicity
                 poss_in_values_full.append(full_id.split(self.ee.study_name + ".")[1])
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
-            full_id = self.dm.get_all_namespaces_from_var_name(data_out_key)[0]
-            poss_out_values.append(data_out_key.split(self.NS_SEP)[-1])
+            full_id = disc.get_var_full_name(
+                data_out_key, disc._data_out)
+            #we remove the study name from the variable full  name for a sake of simplicity
             poss_out_values_full.append(full_id.split(self.ee.study_name + ".")[1])
 
-        return poss_in_values, poss_out_values, poss_in_values_full, poss_out_values_full
+        return  poss_in_values_full, poss_out_values_full
 
-    def find_possible_values(
-            self, disc, possible_in_values, possible_out_values):
-        '''
-            Run through all disciplines and sublevels
-            to find possible values for eval_inputs and eval_outputs
-        '''
-        possible_in_values_full = []
-        possible_out_values_full = []
-        if len(disc.sos_disciplines) != 0:
-            for sub_disc in disc.sos_disciplines:
-                sub_in_values, sub_out_values, sub_in_values_full, sub_out_values_full = self.fill_possible_values(
-                    sub_disc)
-                possible_in_values.extend(sub_in_values)
-                possible_out_values.extend(sub_out_values)
-                possible_in_values_full.extend(sub_in_values_full)
-                possible_out_values_full.extend(sub_out_values_full)
-
-                self.find_possible_values(
-                    sub_disc, possible_in_values, possible_out_values)
-
-        return possible_in_values, possible_out_values, possible_in_values_full, possible_out_values_full
 
     def set_eval_possible_values(self):
         '''
@@ -566,18 +549,13 @@ class DoeEval(SoSEval):
         # (coupling chain of the eval process or single discipline)
         analyzed_disc = self.sos_disciplines[0]
 
-        possible_in_values, possible_out_values, \
         possible_in_values_full, possible_out_values_full = self.fill_possible_values(
             analyzed_disc)
 
-        possible_in_values, possible_out_values, new_possible_in_values_full, new_possible_out_values_full = self.find_possible_values(
-            analyzed_disc, possible_in_values, possible_out_values)
+        possible_in_values_full, possible_out_values_full = self.find_possible_values(
+            analyzed_disc, possible_in_values_full, possible_out_values_full)
 
         # Take only unique values in the list
-        possible_in_values = list(set(possible_in_values))
-        possible_out_values = list(set(possible_out_values))
-        possible_in_values_full.extend(new_possible_in_values_full)
-        possible_out_values_full.extend(new_possible_out_values_full)
         possible_in_values_full = list(set(possible_in_values_full))
         possible_out_values_full = list(set(possible_out_values_full))
 
@@ -598,11 +576,11 @@ class DoeEval(SoSEval):
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
 
-        #filling possible values for sampling algorithm name
+        # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
                          self.POSSIBLE_VALUES, self.custom_order_possible_algorithms(self.doe_factory.algorithms))
 
-    def custom_order_possible_algorithms(self,algo_list):
+    def custom_order_possible_algorithms(self, algo_list):
         """ This algo sorts the possible algorithms list so that most used algorithms
         which are fullfact,lhs and CustomDOE appears at the top of the list
         The remaing algorithms are sorted in an alphabetical order
@@ -612,11 +590,10 @@ class DoeEval(SoSEval):
         sorted_algorithms.remove("fullfact")
         sorted_algorithms.remove("lhs")
         sorted_algorithms.sort()
-        sorted_algorithms.insert(0,"lhs")
-        sorted_algorithms.insert(0,'CustomDOE')
-        sorted_algorithms.insert(0,"fullfact")
+        sorted_algorithms.insert(0, "lhs")
+        sorted_algorithms.insert(0, 'CustomDOE')
+        sorted_algorithms.insert(0, "fullfact")
         return sorted_algorithms
-
 
     def set_eval_in_out_lists(self, in_list, out_list):
         '''
