@@ -203,21 +203,21 @@ class DoeEval(SoSEval):
                         {f'{out_var}_dict': {'type': 'dict'}})
 
                 if algo_name == "CustomDOE":
-                    default_custom_dict = pd.DataFrame(
-                        [[NaN for input in range(len(self.eval_in_base_list))]], columns=self.eval_in_base_list)
+                    default_custom_dataframe = pd.DataFrame(
+                        [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
                     dataframe_descriptor = {}
-                    for i, key in enumerate(self.eval_in_base_list):
+                    for i, key in enumerate(self.selected_inputs):
                         cle = key
                         var = tuple([self.ee.dm.get_data(
                             self.eval_in_list[i], 'type'), None, True])
                         dataframe_descriptor[cle] = var
 
                     dynamic_inputs.update(
-                        {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dict,
+                        {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                                'dataframe_descriptor': dataframe_descriptor,
                                                'dataframe_edition_locked': False}})
                     if 'custom_samples_df' in self._data_in:
-                        self._data_in['custom_samples_df']['value'] = default_custom_dict
+                        self._data_in['custom_samples_df']['value'] = default_custom_dataframe
                         self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
                 else:
                     default_dict = self.get_algo_default_options(algo_name)
@@ -420,10 +420,10 @@ class DoeEval(SoSEval):
         return samples_custom
 
     def check_customed_samples(self):
-        """ We check that the columns of the dataframe are the same and in the same order that in eval_in_base_list
+        """ We check that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
-        if self.eval_in_base_list != self.customed_samples.columns.to_list():
+        if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
             self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
 
