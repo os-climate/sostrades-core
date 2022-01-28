@@ -831,7 +831,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
 
         dimension = sum([len(sublist) if isinstance(
             sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
@@ -901,10 +901,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
-        doe_disc_obj = doe_disc.get_sosdisc_outputs('doe.obj')
-        doe_disc_y1 = doe_disc.get_sosdisc_outputs('doe.y_1')
-        doe_disc_y2 = doe_disc.get_sosdisc_outputs('doe.y_2')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('doe.obj_dict')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('doe.y_1_dict')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('doe.y_2_dict')
         self.assertEqual(len(doe_disc_samples), 5)
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
@@ -967,7 +967,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), n_samples)
 
     def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
@@ -1164,7 +1164,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), 5)
 
     def test_16_doe_eval_design_space_normalisation(self):
@@ -1224,8 +1224,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [0,10.] range
-        generated_x = [value['doe.x'] for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
         self.assertTrue(all(0 <= element <= 10. for element in generated_x))
 
         # trigger a reconfiguration after options and design space changes
@@ -1233,8 +1232,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
-        generated_x = [value['doe.x'] for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
         self.assertTrue(all(5. <= element <= 11. for element in generated_x))
 
         # trigger a reconfiguration after algo name change
@@ -1247,12 +1245,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
-        generated_x = [value['doe.x'] for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
         self.assertTrue(all(-9. <= element <= 150. for element in generated_x))
 
-        generated_z = [value['doe.z'].tolist() for (key, value) in
-                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        generated_z = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['z'].tolist()
         self.assertTrue(
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z))

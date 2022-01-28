@@ -82,7 +82,7 @@ class DoeEval(SoSEval):
                }
 
     DESC_OUT = {
-        'doe_samples_dict': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
+        'doe_samples_dataframe': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
     }
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
@@ -200,7 +200,7 @@ class DoeEval(SoSEval):
                 # setting dynamic outputs. One output of type dict per selected output
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {out_var: {'type': 'dict'}})
+                        {f'{out_var}_dict': {'type': 'dict'}})
 
                 if algo_name == "CustomDOE":
                     default_custom_dict = pd.DataFrame(
@@ -456,6 +456,18 @@ class DoeEval(SoSEval):
                 dict_one_output[self.eval_out_list[idx]] = values
             dict_output[scenario_name] = dict_one_output
 
+        #construction of a dataframe of generated samples
+        #the key is the scenario and columns are inputs values for the considered scenario
+        columns = ['scenario']
+        columns.extend(self.selected_inputs)
+        samples_all_row = []
+        for (scenario,scenario_sample) in dict_sample.items():
+            samples_row = [scenario]
+            for generated_input in scenario_sample.values():
+                samples_row.append(generated_input)
+            samples_all_row.append(samples_row)
+        samples_dataframe = pd.DataFrame(samples_all_row,columns = columns)
+
         # construction of a dictionnary of dynamic outputs
         # The key is the output name and the value a dictionnary of results with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
@@ -464,9 +476,9 @@ class DoeEval(SoSEval):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.store_sos_outputs_values({'doe_samples_dict': dict_sample})
+        self.store_sos_outputs_values({'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
-            self.store_sos_outputs_values({dynamic_output: global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({f'{dynamic_output}_dict': global_dict_output[dynamic_output]})
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
