@@ -98,7 +98,7 @@ class SoSDiscipline(MDODiscipline):
     Use the following MDODiscipline methods:
         get_data_list_from_dict: to get input or output values
     '''
-    #-- Disciplinary attributes
+    # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
     IO_TYPE = 'io_type'
@@ -144,7 +144,7 @@ class SoSDiscipline(MDODiscipline):
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     DISCIPLINES_FULL_PATH_LIST = 'discipline_full_path_list'
 
-    #-- Variable types information section
+    # -- Variable types information section
     VAR_TYPE_ID = 'type'
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
@@ -168,7 +168,7 @@ class SoSDiscipline(MDODiscipline):
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
-#    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
+    #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
     NEW_VAR_TYPE = ['dict', 'dataframe',
                     'string_list', 'string', 'float', 'int']
     # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
@@ -177,10 +177,10 @@ class SoSDiscipline(MDODiscipline):
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
 
-    #-- status section
+    # -- status section
     STATUS_CONFIGURE = 'CONFIGURE'
 
-    #-- Maturity section
+    # -- Maturity section
     possible_maturities = [
         'Fake',
         'Research',
@@ -192,26 +192,30 @@ class SoSDiscipline(MDODiscipline):
     NUM_DESC_IN = {
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
-        'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE, POSSIBLE_VALUES: [MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE],
+        'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE,
+                       POSSIBLE_VALUES: [MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE,
+                                         MDODiscipline.MEMORY_FULL_CACHE],
                        NUMERICAL: True},
         'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True},
     }
 
-    #-- grammars
+    # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
     def __init__(self, sos_name, ee):
         '''
         Constructor
         '''
-
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-
         self._reload(sos_name, ee)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.father_builder = None
+        self.father_executor = None
+
+    def set_father_executor(self, father_executor):
+        self.father_executor = father_executor
 
     def _reload(self, sos_name, ee):
         ''' reload object, eventually with coupling_namespace
@@ -220,11 +224,11 @@ class SoSDiscipline(MDODiscipline):
         # ------------DEBUG VARIABLES----------------------------------------
         self.nan_check = False
         self.check_if_input_change_after_run = False
-        self.check_linearize_data_changes = False
+        self.check_linearize_data_changes = True
         self.check_min_max_gradients = False
         # ----------------------------------------------------
 
-        #-- Base disciplinary attributes
+        # -- Base disciplinary attributes
         self.jac_boundaries = {}
         self.disc_id = None
         self.sos_name = sos_name
@@ -239,21 +243,21 @@ class SoSDiscipline(MDODiscipline):
         self.is_parallel = False
         self.is_specific_driver = False
 
-        #-- Sub-disciplines attributes
+        # -- Sub-disciplines attributes
+        self.built_sos_disciplines = []
         self.sos_disciplines = None
         self.in_checkjac = False
-        self.no_run = False
         self.reset_sos_disciplines()
-        #-- Maturity attribute
+        # -- Maturity attribute
         self._maturity = self.get_maturity()
         self._is_configured = False
         MDODiscipline.__init__(
             self, sos_name, grammar_type=self.SOS_GRAMMAR_TYPE)
         # Update status attribute and data manager
 
-        #-- disciplinary data attributes
-        self.inst_desc_in = None    # desc_in of instance used to add dynamic inputs
-        self.inst_desc_out = None   # desc_out of instance used to add dynamic outputs
+        # -- disciplinary data attributes
+        self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
+        self.inst_desc_out = None  # desc_out of instance used to add dynamic outputs
         self._data_in = None
         self._data_out = None
         self._structuring_variables = None
@@ -390,22 +394,22 @@ class SoSDiscipline(MDODiscipline):
         '''
         new_inputs = {}
         new_outputs = {}
-#         modified_inputs = {}
-#         modified_outputs = {}
+        #         modified_inputs = {}
+        #         modified_outputs = {}
 
         for key, value in self.inst_desc_in.items():
             if not key in self._data_in.keys():
                 new_inputs[key] = value
-#             else:
-#                 if self._data_in[key][self.NAMESPACE] != value[self.NAMESPACE] and hasattr(self, 'instance_list'):
-#                     modified_inputs[key] = value
+        #             else:
+        #                 if self._data_in[key][self.NAMESPACE] != value[self.NAMESPACE] and hasattr(self, 'instance_list'):
+        #                     modified_inputs[key] = value
 
         for key, value in self.inst_desc_out.items():
             if not key in self._data_out.keys():
                 new_outputs[key] = value
-#             else:
-#                 if self._data_out[key][self.NAMESPACE] != value[self.NAMESPACE] and hasattr(self, 'instance_list'):
-#                     modified_outputs[key] = value
+        #             else:
+        #                 if self._data_out[key][self.NAMESPACE] != value[self.NAMESPACE] and hasattr(self, 'instance_list'):
+        #                     modified_outputs[key] = value
         # add new inputs from inst_desc_in to data_in
         if len(new_inputs) > 0:
             self.set_shared_namespaces_dependencies(new_inputs)
@@ -424,10 +428,10 @@ class SoSDiscipline(MDODiscipline):
                 completed_new_outputs)
             self._data_out.update(completed_new_outputs)
 
-#         if len(modified_inputs) > 0:
-#             completed_modified_inputs = self._prepare_data_dict(
-#                 self.IO_TYPE_IN, modified_inputs)
-#             self._data_in.update(completed_modified_inputs)
+    #         if len(modified_inputs) > 0:
+    #             completed_modified_inputs = self._prepare_data_dict(
+    #                 self.IO_TYPE_IN, modified_inputs)
+    #             self._data_in.update(completed_modified_inputs)
 
     def init_gems_grammar(self, data_keys, io_type):
         '''
@@ -470,6 +474,7 @@ class SoSDiscipline(MDODiscipline):
         ''' add a discipline
         '''
         self.sos_disciplines.append(disc)
+        disc.set_father_executor(self)
         # self._check_if_duplicated_disc_names()
 
     def add_discipline_list(self, disc_list):
@@ -545,7 +550,7 @@ class SoSDiscipline(MDODiscipline):
             self.get_data_io_dict(
                 io_type)[var_name][self.VALUE] = new_default_value
 
-    #-- Configure handling
+    # -- Configure handling
     def configure(self):
         '''
         Configure the SoSDiscipline
@@ -586,14 +591,14 @@ class SoSDiscipline(MDODiscipline):
         '''
         pass
 
-    #-- cache handling
+    # -- cache handling
     def clear_cache(self):
-        #-- Need to clear cache for gradients analysis
+        # -- Need to clear cache for gradients analysis
         self.cache.clear()
         for discipline in self.sos_disciplines:
             discipline.clear_cache()
 
-    #-- data handling section
+    # -- data handling section
     def reset_data(self):
         self.inst_desc_in = {}
         self.inst_desc_out = {}
@@ -614,7 +619,7 @@ class SoSDiscipline(MDODiscipline):
         ns_update_with = {}
         for k, v in update_with.items():
             ns_update_with[k] = v
-            #-- Crash if key does not exist in to_update
+            # -- Crash if key does not exist in to_update
             for key in ns_update_with.keys():
                 if to_update[key][self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     raise Exception(
@@ -644,7 +649,7 @@ class SoSDiscipline(MDODiscipline):
         dict_in_keys = self.get_data_io_dict_keys(io_type)
         ns_manager = self.ee.ns_manager
 
-        #original_data = deepcopy(dict_in)
+        # original_data = deepcopy(dict_in)
         dict_out_keys = []
         for key in dict_in_keys:
             namespaced_key = ns_manager.get_namespaced_variable(
@@ -693,7 +698,7 @@ class SoSDiscipline(MDODiscipline):
                     curr_data[self.DEFAULT] = None
             else:
                 curr_data[self.VALUE] = data_dict[key][self.DEFAULT]
-            #-- Initialize VALUE to None by default
+            # -- Initialize VALUE to None by default
             if self.VALUE not in data_keys:
                 curr_data[self.VALUE] = None
             if self.COUPLING not in data_keys:
@@ -705,7 +710,7 @@ class SoSDiscipline(MDODiscipline):
             if self.META_INPUT not in data_keys:
                 curr_data[self.META_INPUT] = False
 
-            #-- Outputs are not EDITABLE
+            # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
                 if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     curr_data[self.EDITABLE] = False
@@ -713,7 +718,7 @@ class SoSDiscipline(MDODiscipline):
                     curr_data[self.EDITABLE] = False
                 else:
                     curr_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)
-            #-- Add NS_REFERENCE
+            # -- Add NS_REFERENCE
             if curr_data[self.VISIBILITY] not in self.AVAILABLE_VISIBILITIES:
                 var_name = curr_data[self.VAR_NAME]
                 visibility = curr_data[self.VISIBILITY]
@@ -798,7 +803,7 @@ class SoSDiscipline(MDODiscipline):
 
             return values_list
 
-    #-- execute/runtime section
+    # -- execute/runtime section
     def execute(self, input_data=None):
         """
         Overwrite execute method from MDODiscipline to load input_data from datamanager if possible
@@ -827,7 +832,7 @@ class SoSDiscipline(MDODiscipline):
         # When execution is done, is the status is again to 'pending' then we have to check if execution has been used
         # If execution cache is used, then the discipline is not run and its
         # status is not changed
-        if (self.status == SoSDiscipline.STATUS_PENDING and self._cache_was_loaded is True) or self.no_run is True:
+        if (self.status == SoSDiscipline.STATUS_PENDING and self._cache_was_loaded is True):
             self._update_status_recursive(self.STATUS_DONE)
 
         self.__check_nan_in_data(result)
@@ -864,6 +869,12 @@ class SoSDiscipline(MDODiscipline):
             self.exec_for_lin = False
             self.local_data = self._convert_float_into_array(self.local_data)
             force_no_exec = True
+
+#         if not self._linearize_on_last_state:
+#             # self.local_data.update(input_data)
+#             input_data_sostrades = self._convert_array_into_new_type(
+#                 input_data)
+#             self.dm.set_values_from_dict(input_data_sostrades)
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
@@ -956,7 +967,7 @@ class SoSDiscipline(MDODiscipline):
         )
         return o_k
 
-    def _get_columns_indices(self,  inputs, outputs, input_column, output_column):
+    def _get_columns_indices(self, inputs, outputs, input_column, output_column):
         """
         returns indices of input_columns and output_columns
         """
@@ -1029,27 +1040,28 @@ class SoSDiscipline(MDODiscipline):
                 # avoid cases when gradient is not required
                 if grad.size > 0:
                     d_name = self.get_disc_full_name()
-#                     cond_number = np.linalg.cond(grad)
-#                     if cond_number > 1e10 and not np.isinf(cond_number):
-#                         self.logger.info(
-# f'The Condition number of the jacobian dr {out} / dr {inp} is
-# {cond_number}')
+                    #                     cond_number = np.linalg.cond(grad)
+                    #                     if cond_number > 1e10 and not np.isinf(cond_number):
+                    #                         self.logger.info(
+                    # f'The Condition number of the jacobian dr {out} / dr {inp} is
+                    # {cond_number}')
                     mini = np_min(grad)
                     if mini < -1e4:
                         self.logger.info(
-                            "in discipline <%s> : dr<%s> / dr<%s>: minimum gradient value is <%s>" % (d_name, out, inp, mini))
+                            "in discipline <%s> : dr<%s> / dr<%s>: minimum gradient value is <%s>" % (
+                                d_name, out, inp, mini))
 
                     maxi = np_max(grad)
                     if maxi > 1e4:
                         self.logger.info(
-                            "in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (d_name, out, inp, maxi))
+                            "in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
+                                d_name, out, inp, maxi))
 
-
-#                     grad_abs = np_abs(grad)
-#                     low_grad_ind = where(grad_abs < 1e-4)[0]
-#                     if low_grad_ind.size > 0 :
-#                         self.logger.info(
-#                             "in discipline <%s> : dr<%s> / dr<%s>: minimum abs gradient value is <%s>" % (d_name, out, inp, grad[low_grad_ind]))
+    #                     grad_abs = np_abs(grad)
+    #                     low_grad_ind = where(grad_abs < 1e-4)[0]
+    #                     if low_grad_ind.size > 0 :
+    #                         self.logger.info(
+    #                             "in discipline <%s> : dr<%s> / dr<%s>: minimum abs gradient value is <%s>" % (d_name, out, inp, grad[low_grad_ind]))
 
     def compute_sos_jacobian(self):
         """Compute the analytic jacobian of a discipline/model 
@@ -1099,12 +1111,12 @@ class SoSDiscipline(MDODiscipline):
 
         new_x_key = self.get_var_full_name(x_key, self._data_in)
 
-# Code when dataframes are filled line by line in GEMS, we keep the code for now
-#         if index_y_column and index_x_column is not None:
-#             for iy in range(value.shape[0]):
-#                 for ix in range(value.shape[1]):
-#                     self.jac[new_y_key][new_x_key][iy * column_nb_y + index_y_column,
-# ix * column_nb_x + index_x_column] = value[iy, ix]
+        # Code when dataframes are filled line by line in GEMS, we keep the code for now
+        #         if index_y_column and index_x_column is not None:
+        #             for iy in range(value.shape[0]):
+        #                 for ix in range(value.shape[1]):
+        #                     self.jac[new_y_key][new_x_key][iy * column_nb_y + index_y_column,
+        # ix * column_nb_x + index_x_column] = value[iy, ix]
 
         if new_x_key in self.jac[new_y_key]:
             if index_y_column is not None and index_x_column is not None:
@@ -1182,52 +1194,51 @@ class SoSDiscipline(MDODiscipline):
         # Add an exception handler in order to have the capabilities to log
         # the exception before GEMS (when GEMS manage an error it does not propagate it and does
         # not record the stackstrace)
-        if not self.no_run:
-            try:
-                # data conversion GEMS > SosStrades
-                self._update_type_metadata()
-                local_data_updt = self._convert_array_into_new_type(
-                    self.local_data)
+        try:
+            # data conversion GEMS > SosStrades
+            self._update_type_metadata()
+            local_data_updt = self._convert_array_into_new_type(
+                self.local_data)
 
-                # update DM
-                self.dm.set_values_from_dict(local_data_updt)
+            # update DM
+            self.dm.set_values_from_dict(local_data_updt)
 
-                # execute model
-                self._update_status_dm(self.STATUS_RUNNING)
+            # execute model
+            self._update_status_dm(self.STATUS_RUNNING)
 
-                if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                    disc_inputs_before_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
-                                                    for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
+            if self.check_if_input_change_after_run and not self.is_sos_coupling:
+                disc_inputs_before_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
+                                                for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
 
-                self.run()
-                self.fill_output_value_connector()
-                if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                    disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
-                                                   for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-                    self.__check_discipline_data_integrity(disc_inputs_before_execution,
-                                                           disc_inputs_after_execution,
-                                                           'Discipline inputs integrity through run')
+            self.run()
+            self.fill_output_value_connector()
+            if self.check_if_input_change_after_run and not self.is_sos_coupling:
+                disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
+                                               for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
+                self.__check_discipline_data_integrity(disc_inputs_before_execution,
+                                                       disc_inputs_after_execution,
+                                                       'Discipline inputs integrity through run')
 
-            except Exception as exc:
-                self._update_status_dm(self.STATUS_FAILED)
-                self.logger.exception(exc)
-                raise exc
+        except Exception as exc:
+            self._update_status_dm(self.STATUS_FAILED)
+            self.logger.exception(exc)
+            raise exc
 
-            if update_local_data:
-                out_dict = self._convert_coupling_outputs_into_gems_format()
-                #-- Local data is the output dictionary for a GEMS discipline
-                self.local_data.update(out_dict)  # update output data for gems
+        if update_local_data:
+            out_dict = self._convert_coupling_outputs_into_gems_format()
+            #-- Local data is the output dictionary for a GEMS discipline
+            self.local_data.update(out_dict)  # update output data for gems
 
-            # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
-            # can failed but FAILED (without an forward exception) status is not
-            # correctly propagate upward
-            if len(self.sos_disciplines) > 0:
-                failed_list = list(filter(
-                    lambda d: d.status == self.STATUS_FAILED, self.sos_disciplines))
+        # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
+        # can failed but FAILED (without an forward exception) status is not
+        # correctly propagate upward
+        if len(self.sos_disciplines) > 0:
+            failed_list = list(filter(
+                lambda d: d.status == self.STATUS_FAILED, self.sos_disciplines))
 
-                if len(failed_list) > 0:
-                    raise SoSDisciplineException(
-                        f'An exception occurs during execution in \'{self.name}\' discipline.')
+            if len(failed_list) > 0:
+                raise SoSDisciplineException(
+                    f'An exception occurs during execution in \'{self.name}\' discipline.')
 
         self._update_status_dm(self.STATUS_DONE)
 
@@ -1338,6 +1349,7 @@ class SoSDiscipline(MDODiscipline):
         """
         Update all disciplines with datamanager information
         """
+
         for var_name in self._data_in.keys():
             var_f_name = self.get_var_full_name(var_name, self._data_in)
 
@@ -1349,11 +1361,11 @@ class SoSDiscipline(MDODiscipline):
                 # update from dm for all sos_disciplines to load all data
                 self._data_in[var_name][self.VALUE] = self.dm.get_value(
                     var_f_name)
-        #-- update sub-disciplines
+        # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
 
-    #-- Ids and namespace handling
+    # -- Ids and namespace handling
     def get_disc_full_name(self):
         '''
         Returns the discipline name with full namespace
@@ -1448,7 +1460,7 @@ class SoSDiscipline(MDODiscipline):
         return self._convert_new_type_into_array(
             out_dict)
 
-    #-- status handling section
+    # -- status handling section
     def _update_status_dm(self, status):
 
         # Avoid unnecessary call to status property (which can trigger event in
@@ -1511,7 +1523,7 @@ class SoSDiscipline(MDODiscipline):
         if status != self.STATUS_CONFIGURE:
             super()._check_status(status)
 
-    #-- Maturity handling section
+    # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
         if maturity is None or maturity in self.possible_maturities or maturity_dict:
             self._maturity = maturity
@@ -1595,8 +1607,10 @@ class SoSDiscipline(MDODiscipline):
                             val_data_ielem['known_values'] = {}
                             # when string is found we look for its known values
                             if prev_metadata_key is not None:
-                                if i_elem < len(prev_metadata_key['known_values']) and 'known_values' in prev_metadata_key['known_values'][i_elem]:
-                                    val_data_ielem['known_values'] = prev_metadata_key['known_values'][i_elem]['known_values']
+                                if i_elem < len(prev_metadata_key['known_values']) and 'known_values' in \
+                                        prev_metadata_key['known_values'][i_elem]:
+                                    val_data_ielem['known_values'] = prev_metadata_key['known_values'][i_elem][
+                                        'known_values']
                             # convert the string into int and replace the
                             # string by this int in the list
                             int_val, val_data_ielem = self.convert_string_to_int(
@@ -1641,7 +1655,7 @@ class SoSDiscipline(MDODiscipline):
         useful to build the dataframe afterwards
         '''
         # gather df data including index column
-#         data = var_df.to_numpy()
+        #         data = var_df.to_numpy()
 
         val_data = {column: list(var_df[column].values)
                     for column in excluded_columns if column in var_df}
@@ -1652,10 +1666,10 @@ class SoSDiscipline(MDODiscipline):
         val_data['indices'] = list(new_var_df.index.values)
         data = new_var_df.to_numpy()
 
-        #indices = var_df.index.to_numpy()
+        # indices = var_df.index.to_numpy()
         columns = new_var_df.columns.to_list()
         # To delete indices in convert delete the line below
-        #data = hstack((atleast_2d(indices).T, values))
+        # data = hstack((atleast_2d(indices).T, values))
 
         val_data['key'] = keys
         val_data['type'] = DataFrame
@@ -1744,7 +1758,8 @@ class SoSDiscipline(MDODiscipline):
                             for i_elem, elem in enumerate(var):
                                 metadata_dict_elem = {}
                                 metadata_dict_elem['known_values'] = {}
-                                if prev_metadata is not None and i_elem < len(prev_metadata) and 'known_values' in prev_metadata[i_elem]:
+                                if prev_metadata is not None and i_elem < len(prev_metadata) and 'known_values' in \
+                                        prev_metadata[i_elem]:
                                     metadata_dict_elem['known_values'] = prev_metadata[i_elem]['known_values']
 
                                 value_elem, metadata_dict_elem = self.convert_string_to_int(
@@ -1767,7 +1782,7 @@ class SoSDiscipline(MDODiscipline):
         return isinstance(val, tuple(self.VAR_TYPE_MAP.values())
                           ) or isinstance(val, np_complex128)
 
-    #-- coupling variables handling
+    # -- coupling variables handling
     def _convert_array_into_dict(self, arr_to_convert, new_data, val_datalist):
         # convert list into dict using keys from dm.data_dict
         if len(val_datalist) == 0:
@@ -1918,8 +1933,9 @@ class SoSDiscipline(MDODiscipline):
                     local_data_updt[key] = []
                     for i, val in enumerate(to_convert):
                         metadata = metadata_list[i]
-                        local_data_updt[key].append(next((strg for strg, int_to_convert in metadata['known_values'].items(
-                        ) if int_to_convert == val), None))
+                        local_data_updt[key].append(
+                            next((strg for strg, int_to_convert in metadata['known_values'].items(
+                            ) if int_to_convert == val), None))
                 elif _type in ['float', 'int']:
                     if isinstance(to_convert, ndarray):
                         # Check if metadata has been created
@@ -1939,7 +1955,9 @@ class SoSDiscipline(MDODiscipline):
         ''' returns the value of a nested dictionary of depth len(keys)
         output : d[keys[0]][..][keys[n]]
         '''
+
         def func_dic(dict_in, key): return dict_in[key]
+
         nested_val = reduce(func_dic, keys, dict_in)
 
         return nested_val
@@ -2023,11 +2041,11 @@ class SoSDiscipline(MDODiscipline):
                 self._structuring_variables[struct_var] = deepcopy(
                     self.get_sosdisc_inputs(struct_var))
 
-#----------------------------------------------------
-#----------------------------------------------------
-#  METHODS TO DEBUG DISCIPLINE
-#----------------------------------------------------
-#----------------------------------------------------
+    # ----------------------------------------------------
+    # ----------------------------------------------------
+    #  METHODS TO DEBUG DISCIPLINE
+    # ----------------------------------------------------
+    # ----------------------------------------------------
 
     def __check_nan_in_data(self, data):
         """ Using entry data, check if nan value exist in data's
@@ -2137,3 +2155,15 @@ class SoSDiscipline(MDODiscipline):
                 )
 
         return dict_infos_values
+
+    def clean(self):
+        """This method cleans a sos_discipline;
+        In the case of a "simple" discipline, it removes the discipline from
+        its father builder and from the factory sos_discipline. This is achieved
+        by the method remove_sos_discipline of the factory
+        """
+        self.father_builder.remove_discipline(self)
+        self.clean_dm_from_disc()
+        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+            self, self.disc_id)
+        self.ee.factory.remove_sos_discipline(self)

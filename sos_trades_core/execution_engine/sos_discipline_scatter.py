@@ -17,8 +17,9 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import numpy as np
-from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
+
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 
 
 class SoSDisciplineScatterException(Exception):
@@ -82,10 +83,12 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
 
         if self.sc_map.INPUT_NS in self.sc_map.get_map():
             scatter_desc_in = {input_name: {
-                SoSDiscipline.TYPE: input_type, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
+                SoSDiscipline.TYPE: input_type, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
+                SoSDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
         else:
             scatter_desc_in = {input_name: {
-                SoSDiscipline.TYPE: input_type, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY, SoSDiscipline.STRUCTURING: True}}
+                SoSDiscipline.TYPE: input_type, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
+                SoSDiscipline.STRUCTURING: True}}
 
         self.inst_desc_in.update(scatter_desc_in)
 
@@ -98,6 +101,10 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         - Remove disciplines that are not in the scatter list
         - Scatter the instantiator cls and adapt namespaces depending if it is a list or a singleton
         '''
+
+        # old_current_discipline = self.ee.factory.current_discipline
+        # self.ee.factory.current_discipline = self
+
         self.ee.ns_manager.update_shared_ns_with_others_ns(self)
         input_name = self.sc_map.get_input_name()  # ac_name_list
         local_namespace = self.ee.ns_manager.get_local_namespace_value(
@@ -128,6 +135,9 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
                             name, local_namespace, new_sub_names, old_ns_to_update)
 
                 self.ee.ns_manager.shared_ns_dict.update(old_ns_to_update)
+
+        # if old_current_discipline is not None:
+        #     self.ee.factory.current_discipline = old_current_discipline
 
     def build_sub_coupling(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
@@ -220,21 +230,17 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         Clean disciplines that was scattered and are not in the scatter_list anymore
         Return the new scatter names not yet present in the list of scattered disciplines
         '''
-        disc_to_remove = []
         # sort sub_names to filter new names and disciplines to remove
         new_sub_names = [
             name for name in sub_names if not name in self.__scattered_disciplines]
         disc_name_to_remove = [
             name for name in self.__scattered_disciplines if not name in sub_names]
         for disc_name in disc_name_to_remove:
-            for disc in self.__scattered_disciplines[disc_name]:
-                self.add_disc_to_remove_recursive(
-                    disc, disc_to_remove)
+            self.clean_children(self.__scattered_disciplines[disc_name])
+            if self.coupling_per_scatter:
+                del self.sub_coupling_builder_dict[disc_name]
 
-        # clean disciplines in current_discipline and
-        # scattered_disciplines
-        self.__factory.clean_discipline_list(disc_to_remove)
-        self.remove_scattered_disciplines(disc_name_to_remove)
+            del self.__scattered_disciplines[disc_name]
 
         return new_sub_names
 
@@ -273,6 +279,8 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
             self.__scattered_disciplines[name].append(disc)
         else:
             self.__scattered_disciplines.update({name: [disc]})
+        if disc not in self.built_sos_disciplines:
+            self.built_sos_disciplines.append(disc)
 
     def get_maturity(self):
         '''

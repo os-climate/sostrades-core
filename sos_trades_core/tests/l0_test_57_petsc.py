@@ -19,11 +19,12 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import sys
 import platform
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+from sos_trades_core.execution_engine.sos_coupling import get_available_linear_solvers
 
 if platform.system() != 'Windows':
     import petsc4py  # pylint: disable-msg=E0401
-    from gemseo_petsc.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec # pylint: disable-msg=E0401
-    petsc4py.init(sys.argv)  # pylint: disable-msg=E0401
+    from gemseo_petsc.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
+    from sos_trades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
     from petsc4py import PETSc  # pylint: disable-msg=E0401
 
 from scipy.sparse import load_npz
@@ -291,7 +292,8 @@ class TestPetsc(unittest.TestCase):
             values_dict = {}
             values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
             values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-            values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA'] = "gasm_gmres_petsc"
+            values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA'] = "GMRES_PETSC"
+            values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA_preconditioner'] = "gasm"
             values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
             values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
             values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
@@ -321,9 +323,69 @@ class TestPetsc(unittest.TestCase):
             self.assertAlmostEqual(y_1_ref, y_1.real, delta=1e-5)
             self.assertAlmostEqual(y_2_ref, y_2.real, delta=1e-5)
 
+    def test_04_Sellar_available_linear_solver_petsc_and_preconditioner(self):
+
+        if platform.system() != 'Windows':
+
+            available_linear_solver = ksp_lib_petsc.AVAILABLE_LINEAR_SOLVER
+            available_preconditioner = ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+
+            for linear_solver_MDA in available_linear_solver:
+                for preconditioner in available_preconditioner:
+
+                    print(
+                        f'--> Run with linear solver MDA: {linear_solver_MDA} and preconditioner: {preconditioner}')
+
+                    exec_eng = ExecutionEngine(self.study_name)
+                    factory = exec_eng.factory
+
+                    builder = factory.get_builder_from_process(repo=self.repo,
+                                                               mod_id='test_sellar_coupling')
+
+                    exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+                    exec_eng.configure()
+
+                    # Sellar inputs
+                    local_dv = 10.
+                    values_dict = {}
+                    values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
+                    values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
+                    values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA'] = linear_solver_MDA
+                    values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA_preconditioner'] = preconditioner
+                    values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+                    values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+                    values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+                    values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([
+                                                                         1., 1.])
+                    values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+                    exec_eng.load_study_from_input_dict(values_dict)
+
+                    mda = exec_eng.root_process.sos_disciplines[0]
+
+                    sub_mda_class = mda.sub_mda_list[0]
+
+                    self.assertEqual(sub_mda_class.linear_solver_options['preconditioner_type'], preconditioner
+                                     )
+                    self.assertEqual(
+                        sub_mda_class.linear_solver_options['solver_type'], linear_solver_MDA.split('_PETSC')[0].lower())
+
+                    exec_eng.execute()
+
+                    obj, y_1, y_2 = exec_eng.root_process.sos_disciplines[0].get_sosdisc_outputs([
+                                                                                                 "obj", "y_1", "y_2"])
+
+                    obj_ref = np.array([14.32662157])
+                    y_1_ref = np.array([2.29689011])
+                    y_2_ref = np.array([3.51554944])
+
+                    self.assertAlmostEqual(obj_ref, obj.real, delta=1e-5)
+                    self.assertAlmostEqual(y_1_ref, y_1.real, delta=1e-5)
+                    self.assertAlmostEqual(y_2_ref, y_2.real, delta=1e-5)
+
 
 if '__main__' == __name__:
 
     cls = TestPetsc()
     cls.setUp()
-    cls.test_03_Sellar_with_petsc()
+    cls.test_04_Sellar_available_linear_solver_petsc_and_preconditioner()

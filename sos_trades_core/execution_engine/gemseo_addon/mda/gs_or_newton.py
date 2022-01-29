@@ -15,7 +15,7 @@ limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 from copy import deepcopy
-
+import logging
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
@@ -25,6 +25,9 @@ from sos_trades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMD
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.mda.sequential_mda import MDASequential
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class GSorNewtonMDA(MDASequential):
@@ -38,7 +41,7 @@ class GSorNewtonMDA(MDASequential):
                  linear_solver="lgmres", max_mda_iter_gs=3,
                  linear_solver_tolerance=1e-12,  # type: str
                  linear_solver_options=None, warm_start=False,
-                 use_lu_fact=False, condition_func=None, **newton_mda_options):
+                 use_lu_fact=False, **newton_mda_options):
         """
         Constructor
 
@@ -86,10 +89,10 @@ class GSorNewtonMDA(MDASequential):
                                  linear_solver_options=linear_solver_options,
                                  max_mda_iter_gs=5,
                                  use_lu_fact=use_lu_fact, tolerance=tolerance,
-                                 **newton_mda_options)
+                                 relax_factor=relax_factor,
+                                 ** newton_mda_options)
 
         sequence = [mda_gs, mda_newton]
-        self.condition_func = condition_func
         super(GSorNewtonMDA,
               self).__init__(disciplines, sequence, name=name,
                              grammar_type=grammar_type,
@@ -115,10 +118,14 @@ class GSorNewtonMDA(MDASequential):
             dm_values = deepcopy(self.disciplines[0].dm.get_data_dict_values())
             self.local_data = mda_i.execute(self.local_data)
         except:
-            print('The GSNewtonMDA has not converged try with MDAGaussSeidel')
+            LOGGER.warning(
+                'The GSNewtonMDA has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
-            self.disciplines[0].ee.load_study_from_input_dict(dm_values)
+            dm = self.disciplines[0].ee.dm
+            # set values directrly in dm to avoid reconfigure of disciplines
+            dm.set_values_from_dict(dm_values)
+            # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
             self.local_data = mda_i.execute(self.local_data)
 
         self.residual_history += mda_i.residual_history

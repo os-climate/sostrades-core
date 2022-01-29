@@ -21,6 +21,8 @@ import pandas as pd
 import numpy as np
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+from sos_trades_core.execution_engine.sos_morph_matrix_eval import SoSMorphMatrixEval
+from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.sos_processes.test.test_morphological_matrix.usecase_morphological_matrix import Study
 from sos_trades_core.sos_processes.test.test_morphological_matrix_with_setup.usecase_morphological_matrix import Study as Study_with_setup
 
@@ -57,7 +59,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
             'MyCase.MORPH_MATRIX.eval_inputs')['name'].values.tolist(), ['a', 'b', 'name', 'x'])
 
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.MORPH_MATRIX.eval_outputs')['name'].values.tolist(), ['indicator', 'residuals_history', 'y', 'y_dict'])
+            'MyCase.MORPH_MATRIX.eval_outputs')['name'].values.tolist(), ['indicator', 'y', 'y_dict'])
 
         morph_matrix_eval_disc = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.MORPH_MATRIX')[0]
@@ -318,10 +320,10 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
                                     'input_variable_name': ['', 'b_list', '', 'x_list']})
 
-        eval_outputs = pd.DataFrame({'selected_output': [False, False, True, False],
-                                     'name': ['indicator', 'residuals_history', 'y', 'y_dict'],
-                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
-                                     'output_variable_name': ['', '', 'y_out', '']})
+        eval_outputs = pd.DataFrame({'selected_output': [False, True, False],
+                                     'name': ['indicator', 'y', 'y_dict'],
+                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
+                                     'output_variable_name': ['', 'y_out', '']})
 
         # check input values
         self.assertTrue(eval_inputs.equals(self.exec_eng.dm.get_value(
@@ -384,10 +386,10 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
                                     'input_variable_name': ['', 'b_list', '', 'x_list']})
 
-        eval_outputs = pd.DataFrame({'selected_output': [False, False, True, False],
-                                     'name': ['indicator', 'residuals_history', 'y', 'y_dict'],
-                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
-                                     'output_variable_name': ['', '', 'y_out', '']})
+        eval_outputs = pd.DataFrame({'selected_output': [False, True, False],
+                                     'name': ['indicator', 'y', 'y_dict'],
+                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
+                                     'output_variable_name': ['', 'y_out', '']})
 
         # check input values
         self.assertTrue(eval_inputs.equals(self.exec_eng.dm.get_value(
@@ -429,9 +431,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
         self.assertListEqual(self.exec_eng.dm.get_value(
             'MyCase.MORPH_MATRIX.eval_inputs')['namespace'].values.tolist(), [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.MORPH_MATRIX.eval_outputs')['name'].values.tolist(), ['AC1.dyn_output', 'AC2.dyn_output', 'indicator', 'residuals_history', 'y'])
+            'MyCase.MORPH_MATRIX.eval_outputs')['name'].values.tolist(), ['AC1.dyn_output', 'AC2.dyn_output', 'indicator', 'y'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.MORPH_MATRIX.eval_outputs')['namespace'].values.tolist(), [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}', f'{self.morph_matrix}'])
+            'MyCase.MORPH_MATRIX.eval_outputs')['namespace'].values.tolist(), [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}'])
 
         # import usecase associated to test_morphological_matrix process
         usecase = Study_with_setup(execution_engine=self.exec_eng)
@@ -445,10 +447,10 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
                                       'AC1_dyn_input_list': [1.0, 1.0, 3.0, 3.0, ],
                                       'b_list': [0.0, 2.0, 0.0, 2.0], })
 
-        eval_outputs = pd.DataFrame({'selected_output': [True, False, False, False, True],
-                                     'name': ['AC1.dyn_output', 'AC2.dyn_output', 'indicator', 'residuals_history', 'y'],
-                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}', f'{self.morph_matrix}'],
-                                     'output_variable_name': ['dyn_outputs_out', '', '', '', 'y_out']})
+        eval_outputs = pd.DataFrame({'selected_output': [True, False, False, True],
+                                     'name': ['AC1.dyn_output', 'AC2.dyn_output', 'indicator', 'y'],
+                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}'],
+                                     'output_variable_name': ['dyn_outputs_out', '', '', 'y_out']})
         eval_inputs = pd.DataFrame({'selected_input': [False, True, False, True, False],
                                     'name': ['a', 'AC1.dyn_input_1', 'AC2.dyn_input_1', 'b', 'x'],
                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1',
@@ -494,10 +496,10 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
                                       'AC1_dyn_input_list': [1.0, 1.0, 3.0, 3.0, ],
                                       'b_list': [0.0, 2.0, 0.0, 2.0], })
 
-        eval_outputs = pd.DataFrame({'selected_output': [True, False, False, False, True],
-                                     'name': ['AC1.dyn_output', 'AC2.dyn_output', 'indicator', 'residuals_history', 'y'],
-                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}', f'{self.morph_matrix}'],
-                                     'output_variable_name': ['dyn_outputs_out', '', '', '', 'y_out']})
+        eval_outputs = pd.DataFrame({'selected_output': [True, False, False, True],
+                                     'name': ['AC1.dyn_output', 'AC2.dyn_output', 'indicator', 'y'],
+                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}'],
+                                     'output_variable_name': ['dyn_outputs_out', '', '', 'y_out']})
         eval_inputs = pd.DataFrame({'selected_input': [False, True, False, True, False],
                                     'name': ['a', 'AC1.dyn_input_1', 'AC2.dyn_input_1', 'b', 'x'],
                                     'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1',
@@ -783,8 +785,185 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_discipline(
                 disc_id).status, 'DONE')
 
+    def test_08_morphological_matrix_eval_of_archi_builder(self):
+
+        ac_map = {'input_name': 'AC_list',
+                  'input_type': 'string_list',
+                  'input_ns': 'ns_business',
+                  'output_name': 'AC_name',
+                  'scatter_ns': 'ns_ac'}
+        self.exec_eng.smaps_manager.add_build_map('AC_list', ac_map)
+
+        vb_type_list = ['SumValueBlockDiscipline',
+                        'ValueBlockDiscipline',
+                        'ValueBlockDiscipline',
+                        'ValueBlockDiscipline',
+                        'ValueBlockDiscipline',
+                        'ValueBlockDiscipline']
+        vb_builder_name = 'Business'
+
+        architecture_df = pd.DataFrame(
+            {'Parent': ['Business', 'Business', 'Airbus', 'Airbus', 'Boeing', 'Services'],
+             'Current': ['Airbus', 'Boeing', 'AC_Sales', 'Services', 'AC_Sales', 'FHS'],
+             'Type': vb_type_list,
+             'Action': [('standard'), ('standard'), ('scatter', 'AC_list', 'FakeValueBlockDiscipline'), ('standard'), ('scatter', 'AC_list', 'FakeValueBlockDiscipline'), ('scatter', 'AC_list', 'FakeValueBlockDiscipline')],
+             'Activation': [True, True, False, False, False, False]})
+
+        archi_builder = self.exec_eng.factory.create_architecture_builder(
+            vb_builder_name, architecture_df)
+
+        self.exec_eng.ns_manager.add_ns_def({'ns_ac': self.exec_eng.study_name,
+                                             'ns_business': f'{self.exec_eng.study_name}.ARCHI.Business'})
+
+        sa_builder = self.exec_eng.factory.create_evaluator_builder(
+            'ARCHI', 'morphological_matrix', archi_builder)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+
+        # check eval coupling discipline built in the same node as archi
+        # builder discipline
+        self.assertTrue(isinstance(self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.ARCHI')[0], SoSMorphMatrixEval))
+        self.assertTrue(isinstance(
+            self.exec_eng.dm.get_disciplines_with_name('MyCase.ARCHI')[1], SoSCoupling))
+        morph_matrix_eval_discipline = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.ARCHI')[0]
+        self.assertFalse(
+            morph_matrix_eval_discipline.cls_builder[0]._is_executable)
+        archi_discipline = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.ARCHI.Business')[0]
+        self.assertFalse(archi_discipline.father_builder._is_executable)
+        self.assertTrue(
+            morph_matrix_eval_discipline.cls_builder[0] is archi_discipline.father_builder)
+
+        activ_df = pd.DataFrame({'Business': ['Airbus', 'Airbus', 'Boeing'],
+                                 'AC_list': ['A320', 'A321', 737],
+                                 'AC_Sales': [True, True, True],
+                                 'Services': [True, True, False],
+                                 'FHS': [True, False, False]})
+
+        dict_values = {
+            f'{self.study_name}.ARCHI.Business.activation_df': activ_df}
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        eval_outputs = [['output', 'ARCHI.Business.Airbus.Services.FHS.A320'],
+                        ['output', 'ARCHI.Business.Airbus.AC_Sales.A320'],
+                        ['output', 'ARCHI.Business.Airbus.AC_Sales.A321'],
+                        ['output', 'ARCHI.Business.Boeing.AC_Sales.737'],
+                        ['output_gather', 'ARCHI.Business.Airbus.Services.FHS'],
+                        ['output_gather', 'ARCHI.Business.Airbus.Services'],
+                        ['output_gather', 'ARCHI.Business.Airbus.AC_Sales'],
+                        ['output_gather', 'ARCHI.Business.Airbus'],
+                        ['output_gather', 'ARCHI.Business.Boeing.AC_Sales'],
+                        ['output_gather', 'ARCHI.Business.Boeing'],
+                        ['residuals_history', 'ARCHI']]
+
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.ARCHI.eval_inputs').values.tolist(), [])
+        self.assertListEqual(sorted(self.exec_eng.dm.get_value('MyCase.ARCHI.eval_outputs')[
+                             ['name', 'namespace']].values.tolist()), sorted(eval_outputs))
+
+    def test_09_morphological_matrix_eval_of_scatter_discipline(self):
+
+        scatter_name = 'Scatter'
+        # set scatter build map
+        mydict = {'input_name': 'AC_list',
+                  'input_type': 'string_list',
+                  'input_ns': 'ns_barriere',
+                  'output_name': 'ac_name',
+                  'scatter_ns': 'ns_ac',
+                  'gather_ns': 'ns_barriere'
+                  }
+        self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
+
+        # set namespace definition
+        self.exec_eng.ns_manager.add_ns(
+            'ns_barriere', f'{self.exec_eng.study_name}.{scatter_name}')
+
+        # get coupling process builder
+        sub_proc = 'test_disc1_disc2_coupling'
+        cls_list = self.exec_eng.factory.get_builder_from_process(repo='sos_trades_core.sos_processes.test',
+                                                                  mod_id=sub_proc)
+
+        # create scatter builder with map and coupling process
+        scatter_builder = self.exec_eng.factory.create_multi_scatter_builder_from_list(
+            'AC_list', cls_list, autogather=True)
+
+        sa_builder = self.exec_eng.factory.create_evaluator_builder(
+            scatter_name, 'morphological_matrix', scatter_builder)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
+        dict_values = {
+            f'{self.exec_eng.study_name}.Scatter.AC_list': ['AC1', 'AC2']}
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        eval_input_df = self.exec_eng.dm.get_value(
+            'MyCase.Scatter.eval_inputs')
+        eval_input_df.loc[(eval_input_df['name']
+                           == 'x') & (eval_input_df['namespace'] == 'Scatter.AC1'), 'selected_input'] = True
+        eval_input_df.loc[(eval_input_df['name']
+                           == 'x') & (eval_input_df['namespace'] == 'Scatter.AC1'), 'input_variable_name'] = 'AC1_x_list_values'
+
+        eval_output_df = self.exec_eng.dm.get_value(
+            'MyCase.Scatter.eval_outputs')
+        eval_output_df.loc[(eval_output_df['name']
+                            == 'z') & (eval_output_df['namespace'] == 'Scatter.AC1'), 'selected_output'] = True
+        eval_output_df.loc[(eval_output_df['name']
+                            == 'z') & (eval_output_df['namespace'] == 'Scatter.AC1'), 'output_variable_name'] = 'AC1_z_results'
+
+        x1 = 1
+        x2 = 2
+        x3 = 3
+        dict_values['MyCase.Scatter.eval_inputs'] = eval_input_df
+        dict_values['MyCase.Scatter.eval_outputs'] = eval_output_df
+        dict_values['MyCase.Scatter.AC1_x_list_values'] = [x1, x2, x3]
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        activ_df = self.exec_eng.dm.get_value(
+            'MyCase.Scatter.activation_morphological_matrix')
+        activ_df['selected_scenario'] = True
+
+        dict_values['MyCase.Scatter.activation_morphological_matrix'] = activ_df
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.assertTrue(self.exec_eng.dm.get_value('MyCase.Scatter.selected_scenarios').equals(pd.DataFrame(
+            {'scenario_name': ['scenario_1', 'scenario_2', 'scenario_3'], 'AC1_x_list_values': [x1, x2, x3]})))
+
+        # other inputs needed for execution
+        constant = 2
+        a = 4
+        b = 3
+        power = 2
+        dict_values['MyCase.Scatter.Disc2.AC1.constant'] = constant
+        dict_values['MyCase.Scatter.Disc2.AC1.power'] = power
+        dict_values['MyCase.Scatter.Disc2.AC2.constant'] = constant
+        dict_values['MyCase.Scatter.Disc2.AC2.power'] = power
+        dict_values['MyCase.Scatter.Disc1.AC1.a'] = a
+        dict_values['MyCase.Scatter.Disc1.AC1.b'] = b
+        dict_values['MyCase.Scatter.AC2.x'] = 1
+        dict_values['MyCase.Scatter.Disc1.AC2.a'] = a
+        dict_values['MyCase.Scatter.Disc1.AC2.b'] = b
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.execute()
+
+        z_result_dict = {'scenario_1': constant + (a * x1 + b)**power,
+                         'scenario_2': constant + (a * x2 + b)**power,
+                         'scenario_3': constant + (a * x3 + b)**power}
+
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.Scatter.AC1_z_results'), z_result_dict)
+
 
 if '__main__' == __name__:
     cls = TestMorphologicalMatrixEval()
     cls.setUp()
-    cls.test_01_morphological_matrix_eval()
+    cls.test_09_morphological_matrix_eval_of_scatter_discipline()

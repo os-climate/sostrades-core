@@ -26,6 +26,9 @@ sostrades-core depends on software with compatible licenses that are listed belo
 	
 `cma <https://github.com/CMA-ES/pycma/>`_
 	BSD 3-Clause
+	
+`ortools <https://developers.google.com/optimization>`_
+	Apache v2.0
 
 `PyYAML <https://pyyaml.org/>`_
 	MIT license
@@ -39,6 +42,3 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `nlopt <https://github.com/stevengj/nlopt>`_
     GNU LGPL v2.1
 
-`plotly <https://github.com/plotly/plotly.py>`_
-	MIT
-	

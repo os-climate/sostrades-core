@@ -22,7 +22,7 @@ import unittest
 from numpy import array, set_printoptions
 import pandas as pd
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from sos_trades_core.sos_processes.test.test_sellar_opt.usecase import Study as study_sellar_opt
 from sos_trades_core.sos_processes.test.test_Griewank_opt.usecase import Study as study_griewank
 from sos_trades_core.sos_processes.test.test_sellar_opt_idf.usecase import Study as study_sellar_idf
@@ -993,8 +993,109 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.execute()
 
+    def test_16_test_post_run(self):
+        print("\n Test 16 : Sellar optim check post run exception")
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        repo_discopt = 'sos_trades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        #-- set up design space
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [1., [5., 2., 3.]],
+                       'lower_bnd': [0., [-10., 0., 0.]],
+                       'upper_bnd': [10., [10., 10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True, False]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        #-- set up disciplines in Scenario
+        disc_dict = {}
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 10
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "L-BFGS-B"
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = []
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
+                                                                    "ineq_tolerance": 1e-6,
+                                                                    "normalize_design_space": True}
+        disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = False
+        exec_eng.dm.set_values_from_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+                                                                         1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.dm.set_values_from_dict(values_dict)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ optim',
+                       f'\t|_ {self.sc_name}',
+                       f'\t\t|_ {self.c_name}',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1',
+                       '\t\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # execute without post run
+        res = exec_eng.execute()
+
+        # get sosoptimscenario discipline
+        disc = exec_eng.root_process.sos_disciplines[0]
+        disc.formulation.opt_problem.nonproc_constraints = []
+        disc.formulation.opt_problem.nonproc_objective = None
+
+        # execute postrun to trigger exception
+        disc._post_run()
+        dm = exec_eng.dm
+        x_first_execution = dm.get_value(
+            f'{self.ns}.{self.sc_name}.{self.c_name}.x')
+        z_first_execution = dm.get_value(
+            f'{self.ns}.{self.sc_name}.{self.c_name}.z')
+
+        # use nominal execution
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+                                                                         1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.dm.set_values_from_dict(values_dict)
+        disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = True
+        exec_eng.dm.set_values_from_dict(disc_dict)
+        exec_eng.configure()
+        res = exec_eng.execute()
+        dm = exec_eng.dm
+        x_nominal_execution = dm.get_value(
+            f'{self.ns}.{self.sc_name}.{self.c_name}.x')
+        z_nominal_execution = dm.get_value(
+            f'{self.ns}.{self.sc_name}.{self.c_name}.z')
+        assert x_first_execution == x_nominal_execution
+        assert_array_equal(z_first_execution, z_nominal_execution)
+
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
     cls.setUp()
-    cls.test_8_update_dspace()
+    cls.test_16_test_post_run()

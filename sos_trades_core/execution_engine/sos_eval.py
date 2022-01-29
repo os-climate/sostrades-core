@@ -20,10 +20,14 @@ import numpy as np
 from pandas.core.frame import DataFrame
 
 from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
-from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.ns_manager import NS_SEP
+from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
+
+
+class SoSEvalException(Exception):
+    pass
 
 
 class SoSEval(SoSDisciplineBuilder):
@@ -50,9 +54,24 @@ class SoSEval(SoSDisciplineBuilder):
         self.eval_out_list_size = []
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Eval')
         self.cls_builder = cls_builder
-        self.eval_coupling = None
-        # Create the eval_coupling associated to the eval
-        self.__reset_coupling()
+        # Create the eval process builder associated to SoSEval
+        self.eval_process_builder = self._set_eval_process_builder()
+
+    def _set_eval_process_builder(self):
+        '''
+        Create the eval process builder, in a coupling if necessary
+        '''
+        if len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
+            # if eval process is a list of builders or a non executable builder,
+            # then we build a coupling containing the eval porcess
+            disc_builder = self.ee.factory.create_builder_coupling(
+                self.sos_name)
+            disc_builder.set_builder_info('cls_builder', self.cls_builder)
+        else:
+            # else return the single builder
+            disc_builder = self.cls_builder[0]
+
+        return disc_builder
 
     def set_eval_in_out_lists(self, in_list, out_list):
         '''
@@ -65,39 +84,13 @@ class SoSEval(SoSDisciplineBuilder):
         for v_id in in_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
             for full_id in full_id_list:
-                if self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in':
-                    self.eval_in_list.append(full_id)
+                self.eval_in_list.append(full_id)
 
         self.eval_out_list = []
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
             for full_id in full_id_list:
-                if self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'out':
-                    self.eval_out_list.append(full_id)
-
-    def __reset_coupling(self):
-        '''
-        Create the builder sub_coupling and build it with the process builder_list in argument 
-        '''
-        self.eval_coupling_builder = self.ee.factory.create_builder_coupling(
-            self.sos_name)
-        if not isinstance(self.cls_builder, list):
-            self.cls_builder = [self.cls_builder]
-        self.eval_coupling_builder.set_builder_info(
-            'cls_builder', self.cls_builder)
-
-        self.eval_coupling = self.eval_coupling_builder.build()
-        # eval_coupling must not be run by execution_engine
-        # (only during eval_run method)
-        self.eval_coupling.no_run = True
-
-        self.ee.factory.add_discipline(self.eval_coupling)
-
-    def get_eval_coupling(self):
-        '''
-        Return the eval_coupling of the SoSEval
-        '''
-        return self.eval_coupling
+                self.eval_out_list.append(full_id)
 
     def fill_possible_values(self, disc):
         '''
@@ -106,13 +99,16 @@ class SoSEval(SoSDisciplineBuilder):
             and not a default variable
             an output variable must be any data from a data_out discipline
         '''
+
         poss_in_values = []
         poss_out_values = []
         for data_in_key in disc._data_in.keys():
             is_float = disc._data_in[data_in_key][self.TYPE] == 'float'
-            in_coupling_numerical = data_in_key in list(SoSCoupling.DEFAULT_NUMERICAL_PARAM.keys()) + \
-                list(SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT.keys())
-            if is_float and not in_coupling_numerical:
+            in_coupling_numerical = data_in_key in list(
+                SoSCoupling.DESC_IN.keys())
+            full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
+            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
+            if is_float and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 poss_in_values.append(data_in_key)
@@ -123,43 +119,82 @@ class SoSEval(SoSDisciplineBuilder):
 
         return poss_in_values, poss_out_values
 
-    def add_discipline(self, disc):
-        '''
-        Add a discipline directly to the eval_coupling
-        '''
-        self.eval_coupling.add_discipline(disc)
-
     def build(self):
         '''
-        The build of the SoSEval calls directly the build of the rootcoupling
+        Method copied from SoSCoupling: build and store disciplines in sos_disciplines
         '''
-        self.eval_coupling.build()
+        # set current_discipline to self to build and store eval process in the
+        # children of SoSEval
+        old_current_discipline = self.ee.factory.current_discipline
+        self.ee.factory.current_discipline = self
+
+        # if we want to build an eval coupling containing eval process,
+        # we have to remove SoSEval name in current_ns to build eval coupling
+        # at the same node as SoSEval
+        if self.cls_builder[0] != self.eval_process_builder:
+            current_ns = self.ee.ns_manager.current_disc_ns
+            self.ee.ns_manager.set_current_disc_ns(
+                current_ns.split(f'.{self.sos_name}')[0])
+            # build coupling containing eval process
+            eval_process_disc = self.eval_process_builder.build()
+            # store coupling in the children of SoSEval
+            if eval_process_disc not in self.sos_disciplines:
+                self.ee.factory.add_discipline(eval_process_disc)
+            # reset current_ns after build
+            self.ee.ns_manager.set_current_disc_ns(current_ns)
+        else:
+            # build and store eval process in the children of SoSEval
+            eval_process_disc = self.eval_process_builder.build()
+            if eval_process_disc not in self.sos_disciplines:
+                self.ee.factory.add_discipline(eval_process_disc)
+
+        # If the old_current_discipline is None that means that it is the first build of a coupling then self is the high
+        # level coupling and we do not have to restore the current_discipline
+        if old_current_discipline is not None:
+            self.ee.factory.current_discipline = old_current_discipline
+
+    def get_disciplines_to_configure(self):
+        '''
+        Method copied from SoSCoupling: get sub disciplines list to configure
+        '''
+        disc_to_configure = []
+        for disc in self.sos_disciplines:
+            if not disc.is_configured():
+                disc_to_configure.append(disc)
+        return disc_to_configure
 
     def configure(self):
         '''
-        Configure the SoSEval and the eval_coupling of the SoSEval + set eval possible values for the GUI 
+        Configure the SoSEval and its children sos_disciplines + set eval possible values for the GUI 
         '''
-        if self._data_in == {} or self.eval_coupling.is_configured():
+        # configure eval process stored in children
+        for disc in self.get_disciplines_to_configure():
+            disc.configure()
+
+        if self._data_in == {} or self.get_disciplines_to_configure() == []:
             # Call standard configure methods to set the process discipline
             # tree
             SoSDiscipline.configure(self)
 
             # Extract variables for eval analysis
-            if self.eval_coupling.sos_disciplines is not None and len(self.eval_coupling.sos_disciplines) > 0:
+            if len(self.sos_disciplines) > 0:
                 self.set_eval_possible_values()
 
     def is_configured(self):
         '''
-        Return False if discipline is not configured or structuring variables have changed or eval coupling is not configured
+        Return False if discipline is not configured or structuring variables have changed or children are not all configured
         '''
-        return SoSDiscipline.is_configured(self) and self.eval_coupling.is_configured()
+        return SoSDiscipline.is_configured(self) and (self.get_disciplines_to_configure() == [])
 
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
-        analyzed_disc = self.eval_coupling
+        # the eval process to analyse is stored as the only child of SoSEval
+        # (coupling chain of the eval process or single discipline)
+        analyzed_disc = self.sos_disciplines[0]
+
         possible_in_values, possible_out_values = self.fill_possible_values(
             analyzed_disc)
 
@@ -183,12 +218,13 @@ class SoSEval(SoSDisciplineBuilder):
             to find possible values for eval_inputs and eval_outputs
         '''
         if len(disc.sos_disciplines) != 0:
-            for disc in disc.sos_disciplines:
-                sub_in_values, sub_out_values = self.fill_possible_values(disc)
+            for sub_disc in disc.sos_disciplines:
+                sub_in_values, sub_out_values = self.fill_possible_values(
+                    sub_disc)
                 possible_in_values.extend(sub_in_values)
                 possible_out_values.extend(sub_out_values)
                 self.find_possible_values(
-                    disc, possible_in_values, possible_out_values)
+                    sub_disc, possible_in_values, possible_out_values)
 
         return possible_in_values, possible_out_values
 
@@ -208,15 +244,23 @@ class SoSEval(SoSDisciplineBuilder):
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays. 
         '''
         # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
-        eval_process = self.get_eval_coupling()
-        eval_process.clear_cache()
+        self.clear_cache()
+
         values_dict = {}
         for i, x_id in enumerate(self.eval_in_list):
             values_dict[x_id] = x[i]
-        # configure eval_process with values_dict inputs
-        eval_process.ee.load_study_from_input_dict(
+
+        # configure eval process with values_dict inputs
+        self.ee.load_study_from_input_dict(
             values_dict, update_status_configure=False)
-        eval_process.execute()
+
+        # execute eval process stored in children
+        if len(self.sos_disciplines) > 1:
+            # the only child must be a coupling or a single discipline
+            raise SoSEvalException(
+                f'SoSEval discipline has more than one child discipline')
+        else:
+            self.sos_disciplines[0].execute()
 
         if convert_to_array:
             out_values = self.convert_output_results_toarray()
@@ -265,7 +309,7 @@ class SoSEval(SoSDisciplineBuilder):
             for i, key in enumerate(self.eval_out_list):
 
                 output_eval_key = outputs_eval[old_size:old_size +
-                                               self.eval_out_list_size[i]]
+                                                        self.eval_out_list_size[i]]
                 old_size = self.eval_out_list_size[i]
 
                 if self.eval_out_type[i] in [dict, DataFrame]:
@@ -284,16 +328,5 @@ class SoSEval(SoSDisciplineBuilder):
     def run(self):
         '''
         Overloaded SoSDiscpline method
-        '''
-        # set eval_coupling no_run flag to False to run eval_copling into
-        # eval_run method
-        self.eval_coupling.no_run = False
-        self.eval_run()
-        # reset eval_coupling no_run flag to True
-        self.eval_coupling.no_run = True
-
-    def eval_run(self):
-        '''
-            SoSEval run method, to be overladed by inherited classes
         '''
         pass

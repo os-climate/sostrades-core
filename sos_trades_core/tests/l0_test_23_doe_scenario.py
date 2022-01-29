@@ -13,6 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from gemseo.algos.doe.doe_factory import DOEFactory
+from pandas._testing import assert_frame_equal
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
@@ -39,8 +43,52 @@ class TestSoSDOEScenario(unittest.TestCase):
                        'upper_bnd': [10., [10., 10.], 100., 100.],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
-#                   'type' : ['float',['float','float'],'float','float']
+
+        dspace_dict_eval = {'variable': ['x', 'z'],
+                            'value': [1., [5., 2.]],
+                            'lower_bnd': [0., [-10., 0.]],
+                            'upper_bnd': [10., [10., 10.]],
+                            'enable_variable': [True, True],
+                            'activated_elem': [[True], [True, True]]}
+
         self.dspace = pd.DataFrame(dspace_dict)
+        self.dspace_eval = pd.DataFrame(dspace_dict_eval)
+
+        input_selection_local_dv_x = {'selected_input': [True, True, False, False, False],
+                                      'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                    'y_2',
+                                                    'z']}
+        self.input_selection_local_dv_x = pd.DataFrame(input_selection_local_dv_x)
+
+        input_selection_x_z = {'selected_input': [False, True, False, False, True],
+                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
+        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        input_selection_x = {'selected_input': [False, True, False, False, False],
+                             'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                           'y_2',
+                                           'z']}
+        self.input_selection_x = pd.DataFrame(input_selection_x)
+
+        input_selection_local_dv = {'selected_input': [True, False, False, False, False],
+                                    'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                  'y_2',
+                                                  'z']}
+        self.input_selection_local_dv = pd.DataFrame(input_selection_local_dv)
+
+        output_selection_obj = {'selected_output': [False, False, True, False, False, False],
+                                'full_name': ['c_1', 'c_2', 'obj', 'residuals_history',
+                                              'y_1', 'y_2']}
+        self.output_selection_obj = pd.DataFrame(output_selection_obj)
+
+        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, False, True, True],
+                                      'full_name': ['c_1', 'c_2', 'obj',
+                                                    'residuals_history',
+                                                    'y_1', 'y_2']}
+        self.output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
+
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_doe'
 
@@ -60,7 +108,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         for key in exec_eng.dm.data_id_map:
             print("key", key)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
@@ -69,7 +117,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                   }
@@ -97,170 +145,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
         # XDSMize test
-#         exec_eng.root_process.xdsmize()
-        # to visualize in an internet browser :
-        # - download XDSMjs at https://github.com/OneraHub/XDSMjs and unzip
-        # - replace existing xdsm.json inside by yours
-        # - in the same folder, type in terminal 'python -m http.server 8080'
-        # - open in browser http://localhost:8080/xdsm.html
 
-    def test_2_doe_scenario_execution_mdf(self):
-        print("\n Test 2 : Sellar doe solution check with MDF formulation")
-        exec_eng = ExecutionEngine(self.study_name)
-        factory = exec_eng.factory
+    #         exec_eng.root_process.xdsmize()
+    # to visualize in an internet browser :
+    # - download XDSMjs at https://github.com/OneraHub/XDSMjs and unzip
+    # - replace existing xdsm.json inside by yours
+    # - in the same folder, type in terminal 'python -m http.server 8080'
+    # - open in browser http://localhost:8080/xdsm.html
 
-        builder = factory.get_builder_from_process(repo=self.repo,
-                                                   mod_id=self.proc_name)
+    def test_2_doe_scenario_execution_lhs(self):
+        print("\n Test 3 : Sellar doe solution with LHS algorithm")
 
-        exec_eng.factory.set_builders_to_coupling_builder(builder)
-
-        exec_eng.configure()
-
-        print('\n in test doe scenario')
-        for key in exec_eng.dm.data_id_map:
-            print("key", key)
-
-        #-- set up disciplines in Scenario
-        disc_dict = {}
-        # DoE inputs
-        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
-        # 'lhs', 'fullfact', ...
-        disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
-        disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'MDF'
-        disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
-
-        disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
-                                                                  }
-        exec_eng.load_study_from_input_dict(disc_dict)
-
-        # Sellar inputs
-        local_dv = 10.
-        values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
-        values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.load_study_from_input_dict(values_dict)
-
-        exec_eng.configure()
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
-                       '|_ doe',
-                       f'\t|_ {self.sc_name}',
-                       '\t\t|_ Sellar_Problem',
-                       '\t\t|_ Sellar_2',
-                       '\t\t|_ Sellar_1']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
-
-        exec_eng.execute()
-
-        # retrieve discipline to check the result...
-        doe_disc = exec_eng.dm.get_disciplines_with_name(
-            "doe." + self.sc_name)[0]
-
-        # check optimal x and f
-        sellar_obj_opt = 3.18339395 + local_dv
-        # self.assertAlmostEqual(
-        #    sellar_obj_opt, doe_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
-        #exp_x = array([8.45997174e-15, 1.97763888, 0.0])
-        # assert_array_almost_equal(
-        #    exp_x, opt_disc.doeization_result.x_opt, decimal=4, err_msg="Wrong optimal x solution")
-        # Cannot check exact values as lhs is random (except by fixing the
-        # random)
-
-        doe_disc_output = doe_disc.get_sosdisc_outputs()
-        XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd)
-        X_pd = XY_pd['design_parameters']
-        X_pd.to_csv(join(dirname(__file__), 'data', 'X_pd.csv'), index=False)
-        my_optim_result = doe_disc_output['optim_result']
-        print(my_optim_result['x_opt'])
-        print(my_optim_result['f_opt'])
-
-    def test_3_doe_scenario_execution_idf(self):
-        print("\n Test 3 : Sellar doe solution check with IDF formulation")
-        exec_eng = ExecutionEngine(self.study_name)
-        factory = exec_eng.factory
-
-        builder = factory.get_builder_from_process(repo=self.repo,
-                                                   mod_id=self.proc_name)
-
-        exec_eng.factory.set_builders_to_coupling_builder(builder)
-
-        exec_eng.configure()
-
-        print('\n in test doe scenario')
-        for key in exec_eng.dm.data_id_map:
-            print("key", key)
-
-        #-- set up disciplines in Scenario
-        disc_dict = {}
-        # DoE inputs
-        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
-        # 'lhs', 'fullfact', ...
-        disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
-        disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'IDF'
-        disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
-
-        disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
-                                                                  }
-        exec_eng.load_study_from_input_dict(disc_dict)
-        # Sellar inputs
-        local_dv = 10.
-        values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
-        values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.load_study_from_input_dict(values_dict)
-
-        exec_eng.configure()
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
-                       '|_ doe',
-                       f'\t|_ {self.sc_name}',
-                       '\t\t|_ Sellar_Problem',
-                       '\t\t|_ Sellar_2',
-                       '\t\t|_ Sellar_1']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
-
-        exec_eng.execute()
-
-        # retrieve discipline to check the result...
-        doe_disc = exec_eng.dm.get_disciplines_with_name(
-            "doe." + self.sc_name)[0]
-
-        # check doeal x and f
-        #sellar_obj_opt = 3.1800 + local_dv
-        # self.assertAlmostEqual(
-        #    sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
-        #exp_x = array([1.6653e-16, 2.1339, 0., 3.16, 3.911598])
-        # assert_array_almost_equal(
-        # exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrong
-        # doeal x solution")
-
-        # Cannot check exact values as lhs is random (except by fixing the
-        # random)
-
-        doe_disc_output = doe_disc.get_sosdisc_outputs()
-        XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd)
-        X_pd = XY_pd['design_parameters']
-        Y_pd = XY_pd['functions']
-        my_optim_result = doe_disc_output['optim_result']
-        print(my_optim_result['x_opt'])
-        print(my_optim_result['f_opt'])
-
-    def test_4_doe_scenario_execution_disciplinaryopt(self):
-        print("\n Test 4 : Sellar doe solution check with DisciplinaryOpt formulation/lhs algo")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -277,26 +172,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         for key in exec_eng.dm.data_id_map:
             print("key", key)
 
-        #-- set up design space
-        dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
-                       'enable_variable': [True, True],
-                       'activated_elem': [[True], [True, True]]}
-#                   'type' : ['float',['float','float'],'float','float']
-        dspace = pd.DataFrame(dspace_dict)
-
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
+        n_samples = 100
+        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                   }
@@ -310,7 +196,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -333,115 +219,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name(
             "doe." + self.sc_name)[0]
 
-        # check doeal x and f
-        #sellar_obj_opt = 3.18339 + local_dv
-        # self.assertAlmostEqual(
-        #    sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
-        #exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
-        # assert_array_almost_equal(
-        # exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrong
-        # doeal x solution")
-
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
         print(XY_pd)
         X_pd = XY_pd['design_parameters']
-        Y_pd = XY_pd['functions']
-        my_optim_result = doe_disc_output['optim_result']
-        print(my_optim_result['x_opt'])
-        print(my_optim_result['f_opt'])
+        self.assertEqual(len(X_pd), n_samples)
 
-
-#     def test_4_1_doe_scenario_execution_disciplinaryopt(self):
-#         print("\n Test 4_1 : Sellar doe solution check with DisciplinaryOpt formulation")
-#         exec_eng = ExecutionEngine(self.study_name)
-#         factory = exec_eng.factory
-#
-#         repo_discopt = 'sos_trades_core.sos_processes.test'
-#         proc_name_discopt = 'test_sellar_opt_discopt'
-#         builder = factory.get_builder_from_process(repo=repo_discopt,
-#                                                    mod_id=proc_name_discopt)
-#
-#         exec_eng.factory.set_builders_to_coupling_builder(builder)
-#
-#         exec_eng.configure()
-#
-#         print('\n in test doe scenario')
-#         for key in exec_eng.dm.data_id_map:
-#             print("key", key)
-#
-#         #-- set up design space
-#         dspace_dict = {'variable': ['x', 'z'],
-#                        'value': ['1.', '[5.,2.]'],
-#                        'lower_bnd': ['0.', '[-10.,0.]'],
-#                        'upper_bnd': ['10.', '[10.,10.]']}
-# #                   'type' : ['float',['float','float'],'float','float']
-#         dspace = pd.DataFrame(dspace_dict)
-#
-#         #-- set up disciplines in Scenario
-#         disc_dict = {}
-#         # DoE inputs
-#         disc_dict[f'{self.ns}.SellarDoeScenario.max_iter'] = 200
-#         # SLSQP, NLOPT_SLSQP
-#         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "NLOPT_SLSQP"
-#         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = dspace
-#         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
-#         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-#         disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [
-#             'c_1', 'c_2']
-#         disc_dict[f'{self.ns}.SellarDoeScenario.differentiation_method'] = MDOScenario.COMPLEX_STEP
-#         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {"ftol_rel": 1e-6,
-#                                                                     "ineq_tolerance": 1e-6,
-#                                                                     "normalize_design_space": True}
-#         exec_eng.load_study_from_input_dict(disc_dict)
-#
-#         # Sellar inputs
-#         local_dv = 10.
-#         values_dict = {}
-#         # array([1.])
-#         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-#         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-#                                                                            1.])
-#         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-#                                                                            1.])
-#         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-#                                                                          1., 1.])
-#         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-#         exec_eng.load_study_from_input_dict(values_dict)
-#
-#         exec_eng.configure()
-#
-#         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
-#                        '|_ doe',
-#                        f'\t|_ {self.sc_name}',
-#                        f'\t\t|_ {self.c_name}',
-#                        '\t\t\t|_ Sellar_2',
-#                        '\t\t\t|_ Sellar_1',
-#                        '\t\t\t|_ Sellar_Problem']
-#         exp_tv_str = '\n'.join(exp_tv_list)
-#         exec_eng.display_treeview_nodes(True)
-#         assert exp_tv_str == exec_eng.display_treeview_nodes()
-#
-#         exec_eng.execute()
-#
-#         # retrieve discipline to check the result...
-#         opt_disc = exec_eng.dm.get_disciplines_with_name(
-#             "doe." + self.sc_name)[0]
-#
-#         # check doeal x and f
-#         sellar_obj_opt = 3.18339 + local_dv
-#         self.assertAlmostEqual(
-#             sellar_obj_opt, opt_disc.doeization_result.f_opt, places=4, msg="Wrong objective value")
-#         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
-#         assert_array_almost_equal(
-# exp_x, opt_disc.doeization_result.x_opt, decimal=4, err_msg="Wrong
-# doeal x solution")
-
-    def test_5_doe_scenario_execution_fd_parallel(self):
+    def test_3_doe_scenario_execution_fd_parallel(self):
         if os.name == 'nt':
-            print("\n Test 5 : skipped, multi-proc not handled on windows")
+            print("\n Test 03 : skipped, multi-proc not handled on windows")
         else:
-            print("\n Test 5 : Sellar doe with FD in parallel execution")
+            print("\n Test 03 : Sellar doe with FD in parallel execution")
             exec_eng = ExecutionEngine(self.study_name)
             factory = exec_eng.factory
 
@@ -453,31 +241,17 @@ class TestSoSDOEScenario(unittest.TestCase):
             exec_eng.factory.set_builders_to_coupling_builder(builder)
 
             exec_eng.configure()
-
-            print('\n in test doe scenario')
-            for key in exec_eng.dm.data_id_map:
-                print("key", key)
-
-            dspace_dict = {'variable': ['x', 'z'],
-                           'value': [1., [5., 2.]],
-                           'lower_bnd': [0., [-10., 0.]],
-                           'upper_bnd': [10., [10., 10.]],
-                           'enable_variable': [True, True],
-                           'activated_elem': [[True], [True, True]]}
-
-    #                   'type' : ['float',['float','float'],'float','float']
-            dspace = pd.DataFrame(dspace_dict)
-
-            #-- set up disciplines in Scenario
+            n_samples = 100
+            # -- set up disciplines in Scenario
             disc_dict = {}
             # DoE inputs
-            disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
+            disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
             # 'lhs', 'fullfact', ...
             disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
             disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
             disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
             disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-            #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+            # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
             disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                       }
@@ -498,7 +272,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                             1., 1.])
+                1., 1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
             exec_eng.load_study_from_input_dict(values_dict)
 
@@ -522,26 +296,14 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_disc = exec_eng.dm.get_disciplines_with_name(
                 "doe." + self.sc_name)[0]
 
-            # check doeal x and f
-            sellar_obj_opt = 3.18339 + local_dv
-            # self.assertAlmostEqual(
-            #    sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
-            #exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
-            # assert_array_almost_equal(
-            # exp_x, opt_disc.optimization_result.x_opt, decimal=4,
-            # err_msg="Wrong doeal x solution")
-
             doe_disc_output = doe_disc.get_sosdisc_outputs()
             XY_pd = doe_disc_output['doe_ds_io']
             print(XY_pd)
             X_pd = XY_pd['design_parameters']
-            Y_pd = XY_pd['functions']
-            my_optim_result = doe_disc_output['optim_result']
-            print(my_optim_result['x_opt'])
-            print(my_optim_result['f_opt'])
+            self.assertEqual(len(X_pd), n_samples)
 
-    def test_6_test_options(self):
-        print("\n Test 6: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
+    def _test_4_test_options_full_fact(self):
+        print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -553,31 +315,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.factory.set_builders_to_coupling_builder(builder)
 
         exec_eng.configure()
-
-        print('\n in test doe scenario')
-        for key in exec_eng.dm.data_id_map:
-            print("key", key)
-
-        #-- set up design space
-        dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
-                       'enable_variable': [True, True],
-                       'activated_elem': [[True], [True, True]]}
-#                   'type' : ['float',['float','float'],'float','float']
-        dspace = pd.DataFrame(dspace_dict)
-
-        #-- set up disciplines in Scenario
+        n_samples = 100
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
+        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "fullfact"
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                   }
@@ -591,7 +339,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -614,26 +362,27 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name(
             "doe." + self.sc_name)[0]
 
-        # check doeal x and f
-        #sellar_obj_opt = 3.18339 + local_dv
-        # self.assertAlmostEqual(
-        #    sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
-        #exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
-        # assert_array_almost_equal(
-        # exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrong
-        # doeal x solution")
-
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd)
+        print(XY_pd.columns)
         X_pd = XY_pd['design_parameters']
         Y_pd = XY_pd['functions']
+
+        dimension = sum([len(sublist) if isinstance(
+            sublist, list) else 1 for sublist in list(self.dspace['value'].values)])
+        full_factorial_samples = len(X_pd)
+
+        theoretical_fullfact_levels = int(n_samples ** (1.0 / dimension))
+
+        theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
+        self.assertEqual(full_factorial_samples, theoretical_fullfact_samples)
+
         my_optim_result = doe_disc_output['optim_result']
         print(my_optim_result['x_opt'])
         print(my_optim_result['f_opt'])
 
-    def test_7_doe_scenario_eval_mode(self):
-        print("\n Test 7 : Sellar doe with eval_mode")
+    def test_5_doe_scenario_eval_mode(self):
+        print("\n Test 05 : Sellar doe with eval_mode")
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -647,17 +396,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
-        dspace_dict = {'variable': ['x', 'z'],
-                       'value': [2., [2., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
-                       'enable_variable': [True, True],
-                       'activated_elem': [[True], [True, True]]}
-#                   'type' : ['float',['float','float'],'float','float']
-        self.dspace = pd.DataFrame(dspace_dict)
-
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
@@ -666,7 +405,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                   }
@@ -683,7 +422,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         2., 2.])
+            2., 2.])
 
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -710,7 +449,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         factory.set_builders_to_coupling_builder(builder)
         exec_eng2.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
@@ -719,7 +458,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                   }
@@ -743,17 +482,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng2.load_study_from_input_dict(values_dict)
         exec_eng2.execute()
 
-        for var in ['x', 'y_1', 'y_2', 'z', 'obj', 'c_1', 'c_2']:
-
-            eval_value = exec_eng.dm.get_value(
-                f'{self.ns}.{self.sc_name}.{self.c_name}.{var}')
-            coupling_value = exec_eng2.dm.get_value(
-                f'{self.ns}.{self.c_name}.{var}')
-
-            #self.assertListEqual(list(coupling_value), list(eval_value))
-
-    def test_8_doe_scenario_eval_mode_with_eval_jac(self):
-        print("\n Test 8 : Sellar doe with eval_mode and eval_jac")
+    def test_6_doe_scenario_eval_mode_with_eval_jac(self):
+        print("\n Test 06 : Sellar doe with eval_mode and eval_jac")
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -767,17 +497,17 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
                        'value': [2., [2., 2.]],
                        'lower_bnd': [0., [-10., 0.]],
                        'upper_bnd': [10., [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
-#                   'type' : ['float',['float','float'],'float','float']
+        #                   'type' : ['float',['float','float'],'float','float']
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
@@ -786,7 +516,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {'levels': 'None'
                                                                   }
@@ -803,10 +533,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         2., 2.])
+            2., 2.])
 
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        #values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.linearization_mode'] = 'adjoint'
+        # values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.linearization_mode'] = 'adjoint'
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
@@ -814,12 +544,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Get the jacobian of each functions (constraints + objective)
         computed_jac = exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].jac
 
-        # self.assertListEqual(sorted(list(computed_jac.keys())), sorted([
-        # f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj',
-        # 'c_1', 'c_2']]))
+        self.assertListEqual(list(computed_jac.keys()), [
+            f'{self.ns}.{self.sc_name}.{self.c_name}.obj'])
 
-    def test_9_doe_CustomDoE(self):
-        print("\n Test 9 : Sellar doe with Custom algorithm")
+    def test_7_doe_CustomDoE(self):
+        print("\n Test 07 : Sellar doe with Custom algorithm")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -829,7 +558,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        'upper_bnd': [10., [10., 10.], 100., 100.],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
-#                   'type' : ['float',['float','float'],'float','float']
+        #                   'type' : ['float',['float','float'],'float','float']
         self.dspace = pd.DataFrame(dspace_dict)
 
         self.repo = 'sos_trades_core.sos_processes.test'
@@ -842,19 +571,21 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        doe_file = join(dirname(__file__), 'data', 'X_pd.csv')
+        # -- set up disciplines in Scenario
         disc_dict = {}
+        n_samples = 100
         # DoE inputs
-        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
+        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
-        #disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
         disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {
-            #'samples': X_pd,
-            'skiprows': 2,
-            'doe_file': join(dirname(__file__), 'data', 'X_pd.csv')
+            # 'samples': X_pd,
+            'skiprows': 1,
+            'doe_file': doe_file
         }
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -886,27 +617,19 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name(
             "doe." + self.sc_name)[0]
 
-        # check optimal x and f
-        sellar_obj_opt = 3.18339395 + local_dv
-        # self.assertAlmostEqual(
-        #    sellar_obj_opt, doe_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
-        #exp_x = array([8.45997174e-15, 1.97763888, 0.0])
-        # assert_array_almost_equal(
-        #    exp_x, opt_disc.doeization_result.x_opt, decimal=4, err_msg="Wrong optimal x solution")
-        # Cannot check exact values as lhs is random (except by fixing the
-        # random)
-
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
         print(XY_pd)
         X_pd = XY_pd['design_parameters']
-        Y_pd = XY_pd['functions']
-        my_optim_result = doe_disc_output['optim_result']
-        print(my_optim_result['x_opt'])
-        print(my_optim_result['f_opt'])
+        doe_file_df = pd.read_csv(doe_file)
 
-    def test_10_test_doe_scenario_df(self):
-        print("\n Test 10: DiscAllTypes doe solution")
+        self.assertEqual(len(X_pd), n_samples)
+
+        self.assertTrue((X_pd['doe.SellarDoeScenario.x'].values.flatten().round(10) ==
+                         doe_file_df['doe.SellarDoeScenario.x'].values.round(10)).all())
+
+    def test_8_test_doe_scenario_df(self):
+        print("\n Test 08: DiscAllTypes doe solution")
         self.study_name = 'doe'
         self.ns = f'{self.study_name}'
         self.sc_name = "DiscAllTypesDoeScenario"
@@ -939,18 +662,19 @@ class TestSoSDOEScenario(unittest.TestCase):
         for key in exec_eng.dm.data_id_map:
             print("key", key)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
+        n_samples = 100
         # Doe inputs
-        disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.n_samples'] = 100
+        disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.n_samples'] = n_samples
         # 'lhs', 'CustomDOE', 'fullfact', ...
         disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.algo'] = 'lhs'
         disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.design_space'] = dspace
 
         disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.objective_name'] = 'o'
-        #disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
-        #disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.algo_options'] = {'levels': 'None'}
+        # disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{self.ns}.DiscAllTypesDoeScenario.algo_options'] = {'levels': 'None'}
         #
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -965,7 +689,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         weather_data = 'cloudy, it is Toulouse ...'
         dict_of_dict_in_data = {'key_A': {'subKey1': 0.1234, 'subKey2': 111.111, 'subKey3': 2036},
                                 'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036}}
-        a_df = pd.DataFrame(array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                    [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['key1', 'key2', 'key3', 'key4'])
         dict_of_df_in_data = {'key_C': a_df,
@@ -984,15 +708,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        # exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
-        #               '|_ doe',
-        #               f'\t|_ {self.sc_name}',
-        #               '\t\t|_ Sellar_Problem',
-        #               '\t\t|_ Sellar_2',
-        #               '\t\t|_ Sellar_1']
-        #exp_tv_str = '\n'.join(exp_tv_list)
-        #assert exp_tv_str == exec_eng.display_treeview_nodes()
-
         exec_eng.execute()
 
         # retrieve discipline to check the result...
@@ -1003,22 +718,631 @@ class TestSoSDOEScenario(unittest.TestCase):
         XY_pd = doe_disc_output['doe_ds_io']
         print(XY_pd)
         X_pd = XY_pd['design_parameters']
-        Y_pd = XY_pd['functions']
-        my_optim_result = doe_disc_output['optim_result']
-        print(my_optim_result['x_opt'])
-        print(my_optim_result['f_opt'])
+
+        self.assertEqual(len(X_pd), n_samples)
+
+    def test_9_usepydoe_lib(self):
+
+        pydoe_lib = DOEFactory()
+        for algo_name in pydoe_lib.algorithms:
+            if algo_name not in ['ccdesign', 'CustomDOE', 'DiagonalDOE', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL',
+                                 'OT_OPT_LHS']:
+                print(algo_name)
+                algo = pydoe_lib.create(algo_name)
+                samples = algo._generate_samples(
+                    n_samples=100, dimension=5)
+                print(samples)
+
+    def test_10_execute_all_algos(self):
+        print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        repo_discopt = 'sos_trades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_doe_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+        n_samples = 10
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
+
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
+        # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
+        doe_file = join(dirname(__file__), 'data', 'X_pd.csv')
+        disc_dict[f'{self.ns}.SellarDoeScenario.algo_options'] = {
+            'levels': 'None'}
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+        available_algorithms = exec_eng.root_process.sos_disciplines[0].get_available_driver_names(
+        )
+        print(available_algorithms)
+        for algo in available_algorithms:
+            # need more options for these algorithms
+            if algo not in ['CustomDOE', 'DiagonalDOE', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
+                print(algo)
+                disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = algo
+                exec_eng.load_study_from_input_dict(disc_dict)
+                exec_eng.execute()
+
+    def test_11_doe_eval_execution_fullfact(self):
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 100
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "fullfact"
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option'}
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+
+        dimension = sum([len(sublist) if isinstance(
+            sublist, list) else 1 for sublist in list(self.dspace_eval['value'].values)])
+
+        theoretical_fullfact_levels = int(n_samples ** (1.0 / dimension))
+
+        theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
+        self.assertEqual(len(doe_disc_samples), theoretical_fullfact_samples)
+
+    def test_12_doe_eval_CustomDoE(self):
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'levels': -1}
+
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+
+        x_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574, 6.954954792150857]
+        z_values = [array([1.515949043849158, 5.6317362409322165]),
+                    array([-1.1962705421254114, 6.523436208612142]),
+                    array([-1.9947578026244557, 4.822570933860785]), array([1.7490668861813, 3.617234050834533]),
+                    array([-9.316161097119341, 9.918161285133076])]
+
+        samples_dict = {'x': x_values, 'z': z_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{self.ns}.DoEEval.custom_samples_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('doe.obj')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('doe.y_1')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('doe.y_2')
+        self.assertEqual(len(doe_disc_samples), 5)
+        self.assertEqual(len(doe_disc_obj), 5)
+        self.assertEqual(len(doe_disc_y1), 5)
+        self.assertEqual(len(doe_disc_y2), 5)
+
+    def test_13_doe_eval_execution_lhs_on_1_var(self):
+
+        dspace_dict_x = {'variable': ['x'],
+                         'value': [1.],
+                         'lower_bnd': [0.],
+                         'upper_bnd': [10.],
+                         'enable_variable': [True],
+                         'activated_elem': [[True]]}
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        self.assertEqual(len(doe_disc_samples), n_samples)
+
+    def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
+
+        default_algo_options_lhs = {
+            'n_samples': 'default',
+            'alpha': 'orthogonal',
+            'eval_jac': False,
+            'face': 'faced',
+            'iterations': 5,
+            'max_time': 0,
+            'n_processes': 1,
+            'seed': 1,
+            'wait_time_between_samples': 0.0,
+            'center_bb': 'default',
+            'center_cc': 'default',
+            'criterion': 'default',
+            'levels': 'default'
+        }
+
+        dspace_dict_x = {'variable': ['x'],
+                         'value': [1.],
+                         'lower_bnd': [0.],
+                         'upper_bnd': [10.],
+                         'enable_variable': [True],
+                         'activated_elem': [[True]]}
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        dspace_dict_x_eval = {'variable': ['x'],
+                              'value': [1.],
+                              'lower_bnd': [5.],
+                              'upper_bnd': [11.],
+                              'enable_variable': [False],
+                              'activated_elem': [[True]]}
+        dspace_x_eval = pd.DataFrame(dspace_dict_x_eval)
+
+        dspace_dict_x_local_dv = {'variable': ['x', 'local_dv'],
+                                  'value': [1., 1.],
+                                  'lower_bnd': [0., 0.],
+                                  'upper_bnd': [10., 10.],
+                                  'enable_variable': [True, True],
+                                  'activated_elem': [[True], [True]]}
+        dspace_x_local_dv = pd.DataFrame(dspace_dict_x_local_dv)
+
+        dspace_dict_x_local_dv = {'variable': ['x', 'local_dv'],
+                                  'value': [1., 1.],
+                                  'lower_bnd': [0., 0.],
+                                  'upper_bnd': [10., 10.],
+                                  'enable_variable': [True, True],
+                                  'activated_elem': [[True], [True]]}
+        dspace_x_local_dv = pd.DataFrame(dspace_dict_x_local_dv)
+
+        dspace_dict_x_z = {'variable': ['x', 'z'],
+                           'value': [1., [1., 1.]],
+                           'lower_bnd': [0., [0., 0.]],
+                           'upper_bnd': [10., [10., 10.]],
+                           'enable_variable': [True, True],
+                           'activated_elem': [[True], [True, True]]}
+        dspace_x_z = pd.DataFrame(dspace_dict_x_z)
+
+        dspace_dict_eval = {'variable': ['x', 'z'],
+                            'value': [1., [5., 2.]],
+                            'lower_bnd': [0., [-10., 0.]],
+                            'upper_bnd': [10., [10., 10.]],
+                            'enable_variable': [True, True],
+                            'activated_elem': [[True], [True, True]]}
+        dspace_eval = pd.DataFrame(dspace_dict_eval)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines
+        values_dict = {}
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        # configure disciplines with the algo lhs
+        disc_dict = {}
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x, check_dtype=False)
+
+        # trigger a reconfiguration after options and design space changes
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
+                     'doe.DoEEval.design_space': dspace_x_eval}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x_eval, check_dtype=False)
+
+        # trigger a reconfiguration after algo name change
+        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact"}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x, check_dtype=False)
+
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'}}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
+
+        # trigger a reconfiguration after eval_inputs and eval_outputs changes
+        disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
+                     'doe.DoEEval.eval_inputs': self.input_selection_x_z}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_x_z, check_dtype=False)
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
+                     'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
+                     'doe.DoEEval.design_space': dspace_eval}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 100, 'face': 'faced'})
+        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space'), dspace_eval, check_dtype=False)
+
+        exec_eng.execute()
+
+    def test_15_doe_eval_CustomDoE_reconfiguration(self):
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.custom_samples_df').columns.tolist(), ['x'])
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.custom_samples_df').columns.tolist(), ['local_dv', 'x'])
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.custom_samples_df').columns.tolist(), ['local_dv'])
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        x_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574, 6.954954792150857]
+        z_values = [array([1.515949043849158, 5.6317362409322165]),
+                    array([-1.1962705421254114, 6.523436208612142]),
+                    array([-1.9947578026244557, 4.822570933860785]), array([1.7490668861813, 3.617234050834533]),
+                    array([-9.316161097119341, 9.918161285133076])]
+
+        samples_dict = {'x': x_values, 'z': z_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{self.ns}.DoEEval.custom_samples_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dict')
+        self.assertEqual(len(doe_disc_samples), 5)
+
+    def test_16_doe_eval_design_space_normalisation(self):
+
+        dspace_dict_x_eval = {'variable': ['x'],
+                              'value': [7.],
+                              'lower_bnd': [5.],
+                              'upper_bnd': [11.],
+                              'enable_variable': [True],
+                              'activated_elem': [[True]]}
+        dspace_x_eval = pd.DataFrame(dspace_dict_x_eval)
+
+        dspace_dict_eval = {'variable': ['x', 'z'],
+                            'value': [1., [5., 10]],
+                            'lower_bnd': [-9., [-10., 4.]],
+                            'upper_bnd': [150., [10., 100.]],
+                            'enable_variable': [True, True],
+                            'activated_elem': [[True], [True, True]]}
+        dspace_eval = pd.DataFrame(dspace_dict_eval)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines
+        values_dict = {}
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        # configure disciplines with the algo lhs and check that generated samples are within default bounds
+        disc_dict = {}
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        # check that all generated samples are within [0,10.] range
+        generated_x = [value['doe.x'] for (key, value) in
+                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        self.assertTrue (all(element >= 0 and element <= 10. for element in generated_x))
+
+        # trigger a reconfiguration after options and design space changes
+        disc_dict = {'doe.DoEEval.design_space': dspace_x_eval}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        # check that all generated samples are within [5.,11.] range
+        generated_x = [value['doe.x'] for (key, value) in
+                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        self.assertTrue (all(element >= 5. and element <= 11. for element in generated_x))
+
+        # trigger a reconfiguration after algo name change
+        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact",
+                     'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
+                     'doe.DoEEval.eval_inputs': self.input_selection_x_z,
+                     'doe.DoEEval.design_space': dspace_eval}
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        generated_x = [value['doe.x'] for (key, value) in
+                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        self.assertTrue(all(element >= -9. and element <= 150. for element in generated_x))
+
+        generated_z = [value['doe.z'].tolist() for (key, value) in
+                       exec_eng.dm.get_value('doe.DoEEval.doe_samples_dict').items()]
+        self.assertTrue(all(element[0] >= -10. and element[0] <= 10. and element[1] >= 4. and element[1] <= 100. for element in
+                    generated_z))
+
+    def _test_17_doe_eval_test_selected_inputs(self):
+
+        dspace_dict_x_eval = {'variable': ['x'],
+                              'value': [7.],
+                              'lower_bnd': [5.],
+                              'upper_bnd': [11.],
+                              'enable_variable': [True],
+                              'activated_elem': [[True]]}
+        dspace_x_eval = pd.DataFrame(dspace_dict_x_eval)
+
+        dspace_dict_eval = {'variable': ['x', 'z'],
+                            'value': [1., [5., 10]],
+                            'lower_bnd': [-9., [-10., 4.]],
+                            'upper_bnd': [150., [10., 100.]],
+                            'enable_variable': [True, True],
+                            'activated_elem': [[True], [True, True]]}
+        dspace_eval = pd.DataFrame(dspace_dict_eval)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines
+        values_dict = {}
+        values_dict[f'{self.ns}.DoEEval.x'] = 1.
+        values_dict[f'{self.ns}.DoEEval.y_1'] = 1.
+        values_dict[f'{self.ns}.DoEEval.y_2'] = 1.
+        values_dict[f'{self.ns}.DoEEval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        input_selection = {'selected_input': [True, True, False, False, False],
+                           'full_name': ['DoEEval.Sellar_Problem.local_dv', 'DoEEval.x', 'DoEEval.y_1', 'DoEEval.y_2',
+                                         'DoEEval.z']}
+        input_selection = pd.DataFrame(input_selection)
+
+        output_selection = {'selected_output': [False, False, True, False, False, False],
+                            'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj', 'DoEEval.residuals_history',
+                                          'DoEEval.y_1', 'DoEEval.y_2']}
+        output_selection = pd.DataFrame(output_selection)
+
+        # configure disciplines with the algo lhs and check that generated samples are within default bounds
+        disc_dict = {}
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = input_selection
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = output_selection
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        print("terminé")
 
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_1_doe_scenario_check_treeview()
-    cls.test_2_doe_scenario_execution_mdf()
-    cls.test_3_doe_scenario_execution_idf()
-    cls.test_4_doe_scenario_execution_disciplinaryopt()
-    cls.test_5_doe_scenario_execution_fd_parallel()
-    cls.test_6_test_options()
-    cls.test_7_doe_scenario_eval_mode()
-    cls.test_8_doe_scenario_eval_mode_with_eval_jac()
-    cls.test_9_doe_CustomDoE()
-    cls.test_10_test_doe_scenario_df()
+    cls.test_9_usepydoe_lib()

@@ -308,7 +308,7 @@ class SoSMorphMatrixEval(SoSEval):
         morphological_matrix = self.scenario_generator.generate_scenarios(
             eval_input_dict)
 
-        # set x0 to configure eval_coupling
+        # set x0 to configure process to evaluate
         if len(morphological_matrix) > 0:
             self.set_initial_inputs(morphological_matrix)
 
@@ -350,9 +350,8 @@ class SoSMorphMatrixEval(SoSEval):
         name_out = []
         for data_in_key in disc._data_in.keys():
             is_input_types = disc._data_in[data_in_key][self.TYPE] in self.eval_input_types
-            in_coupling_numerical = data_in_key in list(SoSCoupling.DEFAULT_NUMERICAL_PARAM.keys()) + \
-                list(SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT.keys()
-                     ) + list(SoSDiscipline.NUM_DESC_IN.keys())
+            in_coupling_numerical = data_in_key in list(SoSCoupling.DESC_IN.keys()
+                                                        ) + list(SoSDiscipline.NUM_DESC_IN.keys())
             if is_input_types and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -385,11 +384,11 @@ class SoSMorphMatrixEval(SoSEval):
             set the possible values for eval_inputs and eval_outputs in the DM
             Overloaded SoSEval method to store dataframes instead of lists
         '''
-        analyzed_disc = self.eval_coupling
+        # the sub-process is stored in self.sos_disciplines[0]
         name_in, name_out = self.fill_possible_values(
-            analyzed_disc)
+            self.sos_disciplines[0])
         name_in, name_out = self.find_possible_values(
-            analyzed_disc, name_in, name_out)
+            self.sos_disciplines[0], name_in, name_out)
 
         # A variable can be an input of several models get a unique list of
         # inputs
@@ -488,7 +487,7 @@ class SoSMorphMatrixEval(SoSEval):
 
         return output_dict
 
-    def eval_run(self):
+    def run(self):
         '''
             Overloaded SoSEval method
         '''
@@ -499,9 +498,12 @@ class SoSMorphMatrixEval(SoSEval):
         ) if key in self.eval_input_dict.keys()]
         self.eval_out_list = list(self.namespaced_eval_outputs.values())
         # launch eval_process run for each activated scenario inputs
-        output_dict = self.launch_morphological_matrix_eval(activation_df)
+        output_dict = self.launch_morphological_matrix_eval(
+            deepcopy(activation_df))
         # store output values
         self.store_sos_outputs_values(output_dict)
+        # update status of eval process even if no run has been executed
+        self._update_status_recursive(self.STATUS_DONE)
 
         # Restore the metadata of each values in the DM
 #         self._convert_new_type_into_array(

@@ -16,16 +16,17 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
-from importlib import import_module
 import inspect
 import os
+from importlib import import_module
+
+from pandas.core.common import flatten
 
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_builder import SoSBuilder
+from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 from sos_trades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
-from pandas.core.common import flatten
-from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 
 
 class SosFactoryException(Exception):
@@ -149,11 +150,11 @@ class SosFactory:
         '''
         Add a discipline to the list of factory disciplines AND to the sos_discipline of the current sos_coupling
         '''
-# Useful to debug but not right , in theory you can add a discipline everywhere you want
-#         if self.__current_discipline.get_disc_full_name() not in discipline.get_disc_full_name():
-#             raise Exception(
-# f'The discipline {discipline.get_disc_full_name()} is not added at the
-# right place : {self.__current_discipline.get_disc_full_name()}')
+        # Useful to debug but not right , in theory you can add a discipline everywhere you want
+        #         if self.__current_discipline.get_disc_full_name() not in discipline.get_disc_full_name():
+        #             raise Exception(
+        # f'The discipline {discipline.get_disc_full_name()} is not added at the
+        # right place : {self.__current_discipline.get_disc_full_name()}')
         self.__current_discipline.add_discipline(discipline)
         self.__sos_disciplines.append(discipline)
 
@@ -245,6 +246,7 @@ class SosFactory:
         self.__execution_engine.ns_manager.reset_current_disc_ns()
         self.coupling_disc = self.coupling_builder.build()
         self.set_root_process()
+
     # get builders
 
     def get_builder_from_process(self, repo, mod_id, **args):
@@ -294,14 +296,21 @@ class SosFactory:
             module_struct_list = f'{self.GENERIC_MODS_PATH}.form_analysis.FORMAnalysis'
         elif eval_type == 'morphological_matrix':
             module_struct_list = f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
+        elif eval_type == 'doe_eval':
+            module_struct_list = f'{self.GENERIC_MODS_PATH}.doe_eval.DoeEval'
+
         else:
             raise Exception(
                 'The evaluation type should be sensitivity,gradient or FORM')
 
         cls = self.get_disc_class_from_module(module_struct_list)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        builder.set_builder_info(
-            'cls_builder', cls_builder)
+        if isinstance(cls_builder, list):
+            builder.set_builder_info(
+                'cls_builder', list(flatten(cls_builder)))
+        else:
+            builder.set_builder_info('cls_builder', [cls_builder])
+
         return builder
 
     def create_scatter_builder(self, sos_name, map_name, cls_builder):
@@ -310,7 +319,10 @@ class SosFactory:
         '''
         mod_path = f'{self.EE_PATH}.sos_discipline_scatter.SoSDisciplineScatter'
         cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        # is_executable flag is False because the scatter discipline has no
+        # run method
+        builder = SoSBuilder(
+            sos_name, self.__execution_engine, cls, is_executable=False)
         builder.set_builder_info(
             'map_name', map_name)
         builder.set_builder_info(
@@ -318,7 +330,8 @@ class SosFactory:
 
         return builder
 
-    def create_value_block_builder(self, builder_name, own_map_name, connected_map_name, associated_builder_list, autogather=False, builder_child_path=None):
+    def create_value_block_builder(self, builder_name, own_map_name, connected_map_name, associated_builder_list,
+                                   autogather=False, builder_child_path=None):
         '''
         create a builder  defined by a type SoSMultiScatterBuilder
         '''
@@ -342,13 +355,17 @@ class SosFactory:
         '''
         mod_path = f'{self.EE_PATH}.archi_builder.ArchiBuilder'
         cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(builder_name, self.__execution_engine, cls)
+        # is_executable flag is False because the archi discipline has no
+        # run method
+        builder = SoSBuilder(
+            builder_name, self.__execution_engine, cls, is_executable=False)
         builder.set_builder_info(
             'architecture_df', architecture_df)
 
         return builder
 
-    def create_multi_scenario_builder(self, sos_name, map_name, cls_builder, autogather=False, gather_node=None, business_post_proc=False):
+    def create_multi_scenario_builder(self, sos_name, map_name, cls_builder, autogather=False, gather_node=None,
+                                      business_post_proc=False):
         '''
         create a builder  defined by a multi-scenarios type SoSMultiScenario
         '''
@@ -390,7 +407,8 @@ class SosFactory:
 
         return list_builder
 
-    def create_simple_multi_scenario_builder(self, sos_name, map_name, cls_builder, autogather=False, gather_node=None, business_post_proc=False):
+    def create_simple_multi_scenario_builder(self, sos_name, map_name, cls_builder, autogather=False, gather_node=None,
+                                             business_post_proc=False):
         '''
         create a builder  defined by a simple multi-scenarios type SoSSimpleMultiScenario
         '''
@@ -432,7 +450,8 @@ class SosFactory:
 
         return list_builder
 
-    def create_very_simple_multi_scenario_builder(self, sos_name, map_name, cls_builder, autogather=False, gather_node=None, business_post_proc=False):
+    def create_very_simple_multi_scenario_builder(self, sos_name, map_name, cls_builder, autogather=False,
+                                                  gather_node=None, business_post_proc=False):
         '''
         create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
         '''
@@ -556,12 +575,12 @@ class SosFactory:
         '''
         module_struct_list = module_path.split('.')
         import_name = '.'.join(module_struct_list[:-1])
-        #print('import_name = ',import_name)
+        # print('import_name = ',import_name)
         try:
             m = import_module(import_name)
 
         except Exception as e:
-            raise(e)
+            raise (e)
         return getattr(m, module_struct_list[-1])
 
     def get_module_class_path(self, class_name, folder_list):
@@ -632,14 +651,6 @@ class SosFactory:
                 if isinstance(disc, SoSCoupling):
                     self.clean_discipline_list(
                         disc.sos_disciplines, current_discipline=disc)
-                # case of the archibuilder
-                elif hasattr(disc, 'archi_disciplines'):
-                    disciplines_to_clean = []
-                    for list_disciplines in disc.archi_disciplines.values():
-                        for discipline in list_disciplines:
-                            disciplines_to_clean.append(discipline)
-                    self.clean_discipline_list(
-                        disciplines_to_clean, current_discipline=disc)
 
             disc.father_builder.remove_discipline(disc)
             self.__sos_disciplines.remove(disc)
@@ -671,3 +682,20 @@ class SosFactory:
             return cls_builder
         else:
             return [cls_builder]
+
+    def remove_sos_discipline(self, discipline):
+        '''
+        Delete discipline from the factory sos_disciplines and from the discipline father builder
+        '''
+
+        self.__sos_disciplines.remove(discipline)
+
+    def remove_discipline_from_father_executor(self, discipline):
+        '''
+        Delete a discipline from its coupling children
+        '''
+        try:
+            discipline.father_executor.sos_disciplines.remove(discipline)
+
+        except:
+            print("discipline already deleted from coupling children ")

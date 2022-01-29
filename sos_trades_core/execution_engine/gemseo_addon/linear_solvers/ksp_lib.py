@@ -21,9 +21,9 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-import petsc4py # pylint: disable-msg=E0401
+import petsc4py  # pylint: disable-msg=E0401
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
-from gemseo_petsc.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec # pylint: disable-msg=E0401
+from gemseo_petsc.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
 from numpy import arange
 from numpy import array
 from numpy import ndarray
@@ -60,7 +60,9 @@ KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
                         -11: 'KSP_DIVERGED_PC_FAILED',
                         0: 'KSP_CONVERGED_ITERATING'}
 
-#TODO: inherit from PetscKSPAlgo of GEMSEO
+# TODO: inherit from PetscKSPAlgo of GEMSEO
+
+
 class PetscKSPAlgos(LinearSolverLib):
     """Interface to PETSC KSP.
 
@@ -69,20 +71,33 @@ class PetscKSPAlgos(LinearSolverLib):
 
     https://petsc.org/release/docs/manualpages/KSP/KSP.html#KSP
     """
+    # https://www.mcs.anl.gov/petsc/petsc4py-current/docs/apiref/petsc4py.PETSc.KSP.Type-class.html
+    AVAILABLE_LINEAR_SOLVER = ['GMRES_PETSC',
+                               'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
+    AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
 
-    OPTIONS_MAP = {}
-
-    def __init__(self):  # type: (...) -> None # noqa: D107
+    def __init__(self):
         super().__init__()
-        self.lib_dict = {
-            "PETSC_KSP": {
-                self.LHS_MUST_BE_POSITIVE_DEFINITE: False,
-                self.LHS_MUST_BE_SYMMETRIC: False,
-                self.LHS_CAN_BE_LINEAR_OPERATOR: True,
-                self.INTERNAL_NAME: "PETSC",
-            }
-        }
+
+        self.lib_dict = {name: self.get_default_properties(
+            name) for name in self.AVAILABLE_LINEAR_SOLVER}
+
         self.default_tol = 1e-200
+
+    @classmethod
+    def get_default_properties(cls, algo_name):
+        """Return the properties of the algorithm.
+        It states if it requires symmetric,
+        or positive definite matrices for instance.
+        Args:
+            algo_name: The algorithm name.
+        Returns:
+            The properties of the solver.
+        """
+        return {cls.LHS_MUST_BE_POSITIVE_DEFINITE: False,
+                cls.LHS_MUST_BE_SYMMETRIC: False,
+                cls.LHS_CAN_BE_LINEAR_OPERATOR: True,
+                cls.INTERNAL_NAME: algo_name}
 
     def _get_options(
         self,
@@ -179,7 +194,8 @@ class PetscKSPAlgos(LinearSolverLib):
             The solution of the problem.
         """
         # set default options
-        # TODO: move to main linear solver classes so that all solvers benefit from these default inputs definition
+        # TODO: move to main linear solver classes so that all solvers benefit
+        # from these default inputs definition
         options['max_iter'] = int(options['max_iter'])
 #         if 'tol' not in options:
 #             options['tol'] = 1e-8
@@ -192,25 +208,25 @@ class PetscKSPAlgos(LinearSolverLib):
         else:
             options['maxiter'] = min(
                 options['maxiter'], 50 * A.shape[0])
-        
+
         # first run
         options["old_sol"] = None
         sol, info, ksp = self._run_petsc_strategy(**options)
-        
+
         if info < 0:
-            
+
             options['solver_type'] = 'bcgs'
             options['preconditioner_type'] = 'gasm'
             options['old_sol'] = sol
-            
+
             # second run
             sol, info, ksp = self._run_petsc_strategy(**options)
-            
+
             if info >= 0:
-                
+
                 LOGGER.warning(
                     f'The second try with GASM preconditioner and bi CG stabilized linear solver has converged at {ksp.getResidualNorm()}')
-                
+
             else:
                 # compare the two tries and take the best one
                 #                     if first_residual_error < ksp.getResidualNorm():
@@ -226,13 +242,12 @@ class PetscKSPAlgos(LinearSolverLib):
                     options['solver_type'] = 'bcgs'
                     options['preconditioner_type'] = 'gasm'
                     options['old_sol'] = sol
-                    
+
                     # third run
                     sol, info, ksp = self._run_petsc_strategy(**options)
-        
+
         return self.problem.solution
 
-        
     def _run_petsc_strategy(self, **options):
         # Initialize the KSP solver.
         # Create the options database
@@ -241,7 +256,7 @@ class PetscKSPAlgos(LinearSolverLib):
             petsc4py.init(options_cmd)
         else:
             petsc4py.init()
-            
+
         # Create the solver
         ksp = PETSc.KSP().create()
         # Set all solver options
@@ -250,10 +265,10 @@ class PetscKSPAlgos(LinearSolverLib):
             options["tol"], options["atol"], options["dtol"], options["max_iter"]
         )
         ksp.setConvergenceHistory()
-    
+
         b = self.problem.rhs
         A = self.problem.lhs
-    
+
         # CHeck Nan in matrix
     #     LOGGER.info('check if A contains a NaN')
         if isnan(A.min()):
@@ -268,16 +283,16 @@ class PetscKSPAlgos(LinearSolverLib):
             pc = ksp.getPC()
             pc.setType(prec_type)
             pc.setUp()
-    
+
 #         # Allow for solver choice to be set from command line with -ksp_type <solver>.
 #         # Recommended option: -ksp_type preonly -pc_type lu
 #         if options["set_from_options"]:
 #             ksp.setFromOptions()
-# 
+#
 #         ksp_pre_processor = options.get("ksp_pre_processor")
 #         if ksp_pre_processor is not None:
 #             ksp_pre_processor(ksp, options)
-#     
+#
 #         self.problem.residuals_history = []
 #         if options["monitor_residuals"]:
 #             LOGGER.warning(
@@ -285,7 +300,7 @@ class PetscKSPAlgos(LinearSolverLib):
 #                 " should be used only for testing or convergence studies."
 #             )
 #             ksp.setMonitor(self.__monitor)
-    
+
         # transform the b array in petsc vector
         b_mat = _convert_ndarray_to_mat_or_vec(b)
         # Use b as first solution (same size)
@@ -299,25 +314,25 @@ class PetscKSPAlgos(LinearSolverLib):
             ksp.view()
         # Solve the ksp petsc solver
         ksp.solve(b_mat, solution)
-        sol = solution.getArray().copy() # added a copy() like in GEMSEO
+        sol = solution.getArray().copy()  # added a copy() like in GEMSEO
         convergence_info = ksp.reason
-        
+
         # update of problem attributes
         self.problem.solution = sol
         self.problem.convergence_info = ksp.reason
-    
+
     #         method_list = [func for func in dir(ksp) if callable(getattr(ksp, func))]
     #         print(method_list)
-    
+
     #     print('it_number', ksp.getIterationNumber())
     #     print('residual_norm', ksp.getResidualNorm())
     #     print('convergence_info', convergence_info)
-    
+
         # reason to positive for convergence, 0 for no convergence, and negative
         # for failure to converge
         if convergence_info > 0:
             info = 0
-    
+
             if convergence_info == 2 or convergence_info == 1:
                 LOGGER.warning(
                     f'The PETSc linear solver has converged with relative tolerance {options["tol"]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
@@ -337,7 +352,7 @@ class PetscKSPAlgos(LinearSolverLib):
                 f'The PETSc linear solver has not converged with error {KSP_CONVERGED_REASON[convergence_info]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
             LOGGER.warning(
                 f' The convergence_history of length {len(ksp.getConvergenceHistory())} is {ksp.getConvergenceHistory()}')
-        
+
         return sol, info, ksp
 
 

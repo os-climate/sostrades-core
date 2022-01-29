@@ -23,14 +23,12 @@ import pandas as pd
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.scenario import Scenario
-
+from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
 from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sos_trades_core.execution_engine.data_manager import POSSIBLE_VALUES
-from gemseo.utils.data_conversion import DataConversion
-from numpy.linalg import norm
 
 
 class SoSScenario(SoSDisciplineBuilder, Scenario):
@@ -52,9 +50,15 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     TYPE = "type"
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
-
+    # To be defined in the heritage
+    is_constraints = None
+    INEQ_CONSTRAINTS = 'ineq_constraints'
+    EQ_CONSTRAINTS = 'eq_constraints'
     # DESC_I/O
     PARALLEL_OPTIONS = 'parallel_options'
+
+    algo_dict = {}
+
     DESC_IN = {'algo': {'type': 'string', 'structuring': True},
                'design_space': {'type': 'dataframe', 'structuring': True},
                'formulation': {'type': 'string', 'structuring': True},
@@ -142,9 +146,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         """
         Configuration of SoSScenario, call to super Class and
         """
-        self.configure_wo_mda()
+        self.configure_io()
 
-        self.configure_all_mdas()
+        self.configure_execution()
 
         # Extract variables for eval analysis
         if self.sos_disciplines is not None and len(self.sos_disciplines) > 0:
@@ -183,7 +187,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
                     self._data_in[self.ALGO_OPTIONS][self.VALUE] = values_dict
 
-        # if eval mode then algo and algo options will turn to not editable
+        self.set_edition_inputs_if_eval_mode()
+
+    def set_edition_inputs_if_eval_mode(self):
+        '''
+        if eval mode then algo and algo options will turn to not editable
+        '''
+
         if 'eval_mode' in self._data_in:
             eval_mode = self.get_sosdisc_inputs('eval_mode')
             if eval_mode:
@@ -228,6 +238,26 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         """
         pass
 
+    def set_design_space_for_complex_step(self):
+        '''
+        Set design space values to complex if the differentiation method is complex_step
+        '''
+        diff_method = self.get_sosdisc_inputs('differentiation_method')
+        if diff_method == self.COMPLEX_STEP:
+            dspace = deepcopy(self.opt_problem.design_space)
+            curr_x = dspace._current_x
+            for var in curr_x:
+                curr_x[var] = curr_x[var].astype('complex128')
+            self.opt_problem.design_space = dspace
+
+    def update_default_coupling_inputs(self):
+        '''
+        Update default inputs of the couplings
+        '''
+        for disc in self.sos_disciplines:
+            if disc.is_sos_coupling:
+                self._set_default_inputs_from_dm(disc)
+
     def get_algo_options(self, algo_name):
         """
         Create default dict for algo options
@@ -253,19 +283,47 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     default_dict[algo_option] = default_val
         else:
             for algo_option in algo_options_keys:
-                algo_default_val = self.default_algo_options[algo_option]
-                if algo_default_val is not None:
-                    default_dict[algo_option] = algo_default_val
+                if algo_option in self.default_algo_options:
+                    algo_default_val = self.default_algo_options[algo_option]
+                    if algo_default_val is not None:
+                        default_dict[algo_option] = algo_default_val
 
         return default_dict
 
     def run(self):
-        """
-        Overloads SoSDiscipline run method.
-        In SoSCoupling, self.local_data is updated through MDAChain
-        and self._data_out is updated through self.local_data.
-        """
+        '''
+        Run method
+        '''
+        # TODO: to delete when MDA initialization is improved
+        self.update_default_coupling_inputs()
+
+        self.set_design_space_for_complex_step()
+
+        eval_mode = self.get_sosdisc_inputs('eval_mode')
+        if eval_mode:
+            self.run_eval_mode()
+
+        else:
+            self.run_scenario()
+
+    def run_scenario(self):
+        '''
+        Run the scenario and store last design_space
+        '''
         pass
+
+    def run_eval_mode(self):
+        '''
+        Run evaluate functions with the initial x 
+        '''
+        eval_jac = self.get_sosdisc_inputs('eval_jac')
+        design_space = self.get_sosdisc_inputs('design_space')
+
+        self.opt_problem.evaluate_functions(
+            eval_jac=eval_jac, normalize=False)
+        # if eval mode design space was not modified
+        self.store_sos_outputs_values(
+            {'design_space_out': design_space})
 
     def _run_algorithm(self):
         """
@@ -273,20 +331,10 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         """
         pass
 
-    def set_eval_possible_values(self):
-        """
-        Once all disciplines have been run through,
-        set the possible values for eval_inputs and eval_outputs in the DM
-        """
-        pass
-
     def _set_flush_submdas_to_true(self):
         # update MDA flag to flush residuals between each mda run
         for disc in self.sos_disciplines:
             if disc.is_sos_coupling:
-                # Add the value in the dm
-                self.dm.set_data(disc.get_var_full_name(
-                    'reset_history_each_run', disc._data_in), self.VALUE, True)
                 if len(disc.sub_mda_list) > 0:
                     for sub_mda in disc.sub_mda_list:
                         sub_mda.reset_history_each_run = True
@@ -316,7 +364,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             if disc.is_sos_coupling:
                 self._set_default_inputs_from_dm(disc)
 
-    def configure_wo_mda(self):
+    def configure_io(self):
         """
         Configure discipline  and all sub-disciplines
         """
@@ -343,7 +391,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 disc_to_configure.append(disc)
         return disc_to_configure
 
-    def configure_all_mdas(self):
+    def configure_execution(self):
         """
         - configure GEMS grammar
         - set scenario
@@ -653,6 +701,38 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         self._maturity = ref_dict_maturity
         return self._maturity
+
+    def set_eval_possible_values(self):
+
+        analyzed_disc = self.sos_disciplines
+        possible_out_values = self.fill_possible_values(
+            analyzed_disc)  # possible_in_values
+
+        possible_out_values = self.find_possible_values(
+            analyzed_disc, possible_out_values)  # possible_in_values
+
+        # Take only unique values in the list
+        possible_out_values = list(set(possible_out_values))
+
+        # Fill the possible_values of obj and constraints
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
+                         self.POSSIBLE_VALUES, possible_out_values)
+
+        if self.is_constraints:
+            self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
+                             self.POSSIBLE_VALUES, possible_out_values)
+            self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
+                             self.POSSIBLE_VALUES, possible_out_values)
+        # fill the possible values of algos
+        self._init_algo_factory()
+        avail_algos = self._algo_factory.algorithms
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
+                         self.POSSIBLE_VALUES, avail_algos)
+        # fill the possible values of formulations
+        self._form_factory = MDOFormulationsFactory()
+        avail_formulations = self._form_factory.formulations
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
+                         self.POSSIBLE_VALUES, avail_formulations)
 
     # -- Set possible design variables and objevtives
     # adapted from soseval

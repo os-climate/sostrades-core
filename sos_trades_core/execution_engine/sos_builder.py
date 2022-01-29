@@ -24,7 +24,7 @@ class SoSBuilder(object):
     Class that stores a class and associated attributes to be built afterwards
     '''
 
-    def __init__(self, disc_name, ee, cls):
+    def __init__(self, disc_name, ee, cls, is_executable=True):
         '''
         Constructor
         :param cls: class that will be instantiated by the builder
@@ -37,6 +37,9 @@ class SoSBuilder(object):
         self.cls = cls
         # A builder can build several disciplines (ex: scatter)
         self.discipline_dict = {}
+        # flag to determine if the associated discipline has a run method
+        # (True by default)
+        self._is_executable = is_executable
 
     @property
     def sos_name(self):

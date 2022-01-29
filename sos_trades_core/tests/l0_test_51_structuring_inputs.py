@@ -18,8 +18,8 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 from time import sleep, time
-from shutil import rmtree
 from pathlib import Path
+import platform
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
@@ -28,7 +28,9 @@ from sos_trades_core.sos_processes.test.test_configure_process.usecase_import_st
 from sos_trades_core.sos_processes.test.test_sellar_opt_discopt.usecase import Study as study_sellar_opt
 
 from tempfile import gettempdir
-from copy import copy
+from copy import copy, deepcopy
+from os.path import join, dirname
+from os import remove
 import os
 
 
@@ -41,7 +43,7 @@ class TestStructuringInputs(unittest.TestCase):
         '''
         Initialize third data needed for testing
         '''
-        self.dirs_to_del = []
+        self.file_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
         self.repo = 'sos_trades_core.sos_processes.test'
@@ -52,11 +54,10 @@ class TestStructuringInputs(unittest.TestCase):
 
     def tearDown(self):
 
-        for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
-            if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+        for file in self.file_to_del:
+            if Path(file).is_file():
+                remove(file)
+                sleep(0.5)
 
     def test_01_configure_discipline_with_setup_sos_discipline(self):
 
@@ -274,10 +275,10 @@ class TestStructuringInputs(unittest.TestCase):
 
         # check with defaults
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), SoSCoupling.DEFAULT_NUMERICAL_PARAM['tolerance'])
+            'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), SoSCoupling.DESC_IN['tolerance']['default'])
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'), SoSCoupling.DEFAULT_NUMERICAL_PARAM_OUT_OF_INIT['linear_solver_MDA_options'])
+            'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'), SoSCoupling.DESC_IN['linear_solver_MDA_options']['default'])
 
         # check with custom values
         max_iter = 10
@@ -309,17 +310,18 @@ class TestStructuringInputs(unittest.TestCase):
         # tolerance is filled in a class variable "linear_solver_tolerance"
         linear_solver_options_gemseo = copy(
             coupling_disc.sub_mda_list[0].linear_solver_options)
-        if os.name == 'nt':
+
+        if platform.system() == 'Windows':
             linear_solver_options_ref = {
-                'use_ilu_precond': False, 'max_iter': max_iter}
+                'max_iter': 10, 'use_ilu_precond': False}
         else:
             linear_solver_options_ref = {
-                'max_iter': max_iter, 'preconditioner_type': 'gasm', 'solver_type': 'gmres'}
+                'max_iter': 10, 'preconditioner_type': 'gasm', 'solver_type': 'gmres'}
 
         self.assertDictEqual(linear_solver_options_ref,
                              linear_solver_options_gemseo)
 
-        linear_solver_options_dm = copy(self.exec_eng.dm.get_value(
+        linear_solver_options_dm = deepcopy(self.exec_eng.dm.get_value(
             'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'))
         tol_dm = linear_solver_options_dm.pop('tol')
         linear_solver_tolerance_gemseo = coupling_disc.sub_mda_list[0].linear_solver_tolerance
@@ -331,7 +333,7 @@ class TestStructuringInputs(unittest.TestCase):
         mda_tolerance = 1e-09
         dict_values = {'MyCase.SellarOptimScenario.SellarCoupling.tolerance': mda_tolerance,
                        'MyCase.SellarOptimScenario.SellarCoupling.sub_mda_class': "MDAGaussSeidel",
-                       'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options': {}
+                       'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options': SoSCoupling.DEFAULT_LINEAR_SOLVER_OPTIONS
                        }
         self.exec_eng.load_study_from_input_dict(dict_values)
         coupling_disc = self.exec_eng.dm.get_disciplines_with_name(
@@ -346,12 +348,175 @@ class TestStructuringInputs(unittest.TestCase):
 
         linear_solver_options_gemseo = copy(
             coupling_disc.sub_mda_list[0].linear_solver_options)
-        linear_solver_options_ref = {}
+
+        if platform.system() == 'Windows':
+            linear_solver_options_ref = {
+                'max_iter': 1000, 'use_ilu_precond': False}
+        else:
+            linear_solver_options_ref = {
+                'max_iter': 1000, 'preconditioner_type': 'gasm', 'solver_type': 'gmres'}
+
         self.assertDictEqual(linear_solver_options_ref,
                              linear_solver_options_gemseo)
 
         linear_solver_options_dm = copy(self.exec_eng.dm.get_value(
             'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'))
         linear_solver_tolerance_gemseo = coupling_disc.sub_mda_list[0].linear_solver_tolerance
-        assert linear_solver_tolerance_gemseo == 1e-12  # GEMSEO default value
-        assert linear_solver_options_dm == {}  # provided by SoSTrades
+        assert linear_solver_tolerance_gemseo == 1.0e-8  # GEMSEO default value
+        # provided by SoSTrades
+        assert linear_solver_options_dm == SoSCoupling.DEFAULT_LINEAR_SOLVER_OPTIONS
+
+    def test_05_SoSCoupling_numerical_inputs(self):
+
+        repo_discopt = 'sos_trades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = self.exec_eng.factory.get_builder_from_process(repo=repo_discopt,
+                                                                 mod_id=proc_name_discopt)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        self.exec_eng.load_study_from_input_dict({})
+
+        coupling_inputs = {'sub_mda_class': {'type': 'string', 'default': 'MDAJacobi', 'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA', 'GSorNewtonMDA', 'MDASequential']},
+                           'max_mda_iter': {'type': 'int', 'default': 30, 'possible_values': None},
+                           'n_processes': {'type': 'int', 'default': 1, 'possible_values': None},
+                           'chain_linearize': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
+                           'tolerance': {'type': 'float', 'default': 1e-06, 'possible_values': None},
+                           'use_lu_fact': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
+                           'warm_start': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
+                           'acceleration': {'type': 'string', 'default': 'm2d', 'possible_values': ['m2d', 'secant', 'none']},
+                           'warm_start_threshold': {'type': 'float', 'default': -1, 'possible_values': None},
+                           'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
+                           'max_mda_iter_gs': {'type': 'int', 'default': 5, 'possible_values': None},
+                           'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
+                           'epsilon0': {'type': 'float', 'default': 1e-06, 'possible_values': None},
+                           'linear_solver_MDO': {'type': 'string'},
+                           'linear_solver_MDO_preconditioner': {'type': 'string'},
+                           'linear_solver_MDO_options': {'type': 'dict', 'default': {'max_iter': 1000, 'tol': 1e-08}, 'possible_values': None},
+                           'linear_solver_MDA': {'type': 'string'},
+                           'linear_solver_MDA_preconditioner': {'type': 'string'},
+                           'linear_solver_MDA_options': {'type': 'dict', 'default': {'max_iter': 1000, 'tol': 1e-08}, 'possible_values': None},
+                           'group_mda_disciplines': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
+                           'linearization_mode': {'type': 'string', 'default': 'auto', 'possible_values': ['auto', 'direct', 'adjoint', 'reverse', 'finite_differences', 'complex_step']},
+                           'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['SimpleCache', 'HDF5Cache', 'MemoryFullCache']},
+                           'cache_file_path': {'type': 'string', 'default': None, 'possible_values': None}
+                           }
+
+        if platform.system() == 'Windows':
+            coupling_inputs['linear_solver_MDO']['default'] = 'GMRES'
+            coupling_inputs['linear_solver_MDA']['default'] = 'GMRES'
+            coupling_inputs['linear_solver_MDO']['possible_values'] = [
+                'LGMRES', 'GMRES', 'BICG', 'QMR', 'BICGSTAB', 'DEFAULT']
+            coupling_inputs['linear_solver_MDA']['possible_values'] = [
+                'LGMRES', 'GMRES', 'BICG', 'QMR', 'BICGSTAB', 'DEFAULT']
+            coupling_inputs['linear_solver_MDO_preconditioner']['default'] = 'None'
+            coupling_inputs['linear_solver_MDA_preconditioner']['default'] = 'None'
+            coupling_inputs['linear_solver_MDO_preconditioner']['possible_values'] = [
+                'None', 'ilu']
+            coupling_inputs['linear_solver_MDA_preconditioner']['possible_values'] = [
+                'None', 'ilu']
+        else:
+            coupling_inputs['linear_solver_MDO']['default'] = 'GMRES_PETSC'
+            coupling_inputs['linear_solver_MDA']['default'] = 'GMRES_PETSC'
+            coupling_inputs['linear_solver_MDO']['possible_values'] = ['GMRES_PETSC', 'LGMRES_PETSC',
+                                                                       'BICG_PETSC', 'BCGS_PETSC', 'LGMRES', 'GMRES', 'BICG', 'QMR', 'BICGSTAB', 'DEFAULT']
+            coupling_inputs['linear_solver_MDA']['possible_values'] = ['GMRES_PETSC', 'LGMRES_PETSC',
+                                                                       'BICG_PETSC', 'BCGS_PETSC', 'LGMRES', 'GMRES', 'BICG', 'QMR', 'BICGSTAB', 'DEFAULT']
+            coupling_inputs['linear_solver_MDO_preconditioner']['default'] = 'gasm'
+            coupling_inputs['linear_solver_MDA_preconditioner']['default'] = 'gasm'
+            coupling_inputs['linear_solver_MDO_preconditioner']['possible_values'] = [
+                'None', 'jacobi', 'ilu', 'gasm']
+            coupling_inputs['linear_solver_MDA_preconditioner']['possible_values'] = [
+                'None', 'jacobi', 'ilu', 'gasm']
+
+        # check numerical inputs of root_process coupling
+        self.assertListEqual(list(coupling_inputs.keys()), list(
+            self.exec_eng.root_process._data_in.keys()))
+
+        for input_name, input_dict in coupling_inputs.items():
+            for key, value in input_dict.items():
+                self.assertEqual(
+                    self.exec_eng.root_process._data_in[input_name][key], value)
+
+        self.assertEqual(self.exec_eng.dm.get_data(
+            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'default'), 5)
+        self.assertEqual(self.exec_eng.dm.get_data(
+            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'value'), 5)
+
+        uc_cls = study_sellar_opt()
+        uc_cls.study_name = 'MyCase'
+        dict_values = uc_cls.setup_usecase()
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'GSorNewtonMDA'
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter'] = 20
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.tolerance'] = 1e-3
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.relax_factor'] = 0.85
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.epsilon0'] = 1e-4
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.use_lu_fact'] = True
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDO'] = 'BICG'
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDO_preconditioner'] = 'None'
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDO_options'] = {
+            'max_iter': 500, 'tol': 1e-07}
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA'] = 'LGMRES'
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_preconditioner'] = 'ilu'
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'] = {
+            'max_iter': 600, 'tol': 1e-10}
+
+        dict_values[0]['MyCase.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+
+        self.exec_eng.load_study_from_input_dict(dict_values[0])
+
+        self.assertEqual(self.exec_eng.dm.get_data(
+            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'default'), 200)
+        self.assertEqual(self.exec_eng.dm.get_data(
+            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'value'), 200)
+
+        # check numerical inputs of root_process coupling
+        self.assertListEqual(list(coupling_inputs.keys()), list(
+            self.exec_eng.root_process._data_in.keys()))
+
+        for input_name, input_dict in coupling_inputs.items():
+            for key, value in input_dict.items():
+                self.assertEqual(
+                    self.exec_eng.root_process._data_in[input_name][key], value)
+
+        coupling_sellar = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.SellarOptimScenario.SellarCoupling')[0]
+
+        self.assertEqual(coupling_sellar.linear_solver, 'LGMRES')
+        self.assertEqual(coupling_sellar.tolerance, 1e-3)
+        self.assertEqual(coupling_sellar.sub_mda_list[0].tolerance, 1e-03)
+        self.assertEqual(coupling_sellar.linear_solver_tolerance, 1e-10)
+        self.assertEqual(coupling_sellar.linear_solver_options, {
+                         'max_iter': 600, 'use_ilu_precond': True})
+        self.assertEqual(coupling_sellar.max_mda_iter, 20)
+        self.assertEqual(coupling_sellar.use_lu_fact, True)
+
+        self.assertEqual(
+            coupling_sellar.sub_mda_list[0].mda_sequence[0].epsilon0, 1e-04)
+        self.assertEqual(
+            coupling_sellar.sub_mda_list[0].mda_sequence[1].mda_sequence[0].epsilon0, 1e-04)
+        self.assertEqual(
+            coupling_sellar.sub_mda_list[0].mda_sequence[1].mda_sequence[1].epsilon0, 1e-04)
+
+        self.assertEqual(
+            coupling_sellar.sub_mda_list[0].mda_sequence[1].mda_sequence[1].relax_factor, 0.85)
+
+        self.exec_eng.execute()
+
+        # run check_jac to test MDO numerical parameters
+        dump_jac_path = join(dirname(__file__), 'jac_sellar_test_51.pkl')
+        self.file_to_del.append(dump_jac_path)
+        coupling_sellar.check_jacobian(
+            threshold=1.0e-7, dump_jac_path=dump_jac_path)
+
+        self.assertEqual(coupling_sellar.linear_solver, 'LGMRES')
+        self.assertEqual(coupling_sellar.linear_solver_tolerance, 1e-10)
+        self.assertEqual(coupling_sellar.linear_solver_options, {
+                         'max_iter': 600, 'use_ilu_precond': True})
+
+
+if '__main__' == __name__:
+
+    cls = TestStructuringInputs()
+    cls.setUp()
+    cls.test_05_SoSCoupling_numerical_inputs()
