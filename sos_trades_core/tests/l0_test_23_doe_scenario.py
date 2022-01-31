@@ -77,15 +77,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                                                   'z']}
         self.input_selection_local_dv = pd.DataFrame(input_selection_local_dv)
 
-        output_selection_obj = {'selected_output': [False, False, True, False, False, False],
-                                'full_name': ['c_1', 'c_2', 'obj', 'residuals_history',
-                                              'y_1', 'y_2']}
+        output_selection_obj = {'selected_output': [False, False, True, False, False],
+                                'full_name': ['c_1', 'c_2', 'obj','y_1', 'y_2']}
         self.output_selection_obj = pd.DataFrame(output_selection_obj)
 
-        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, False, True, True],
-                                      'full_name': ['c_1', 'c_2', 'obj',
-                                                    'residuals_history',
-                                                    'y_1', 'y_2']}
+        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
+                                      'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2']}
         self.output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         self.repo = 'sos_trades_core.sos_processes.test'
@@ -1307,9 +1304,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                                          'DoEEval.z']}
         input_selection = pd.DataFrame(input_selection)
 
-        output_selection = {'selected_output': [False, False, True, False, False, False],
-                            'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj', 'DoEEval.residuals_history',
-                                          'DoEEval.y_1', 'DoEEval.y_2']}
+        output_selection = {'selected_output': [False, False, True, False, False],
+                            'full_name': ['DoEEval.c_1', 'DoEEval.c_2', 'DoEEval.obj', 'DoEEval.y_1', 'DoEEval.y_2']}
         output_selection = pd.DataFrame(output_selection)
 
         # configure disciplines with the algo lhs and check that generated samples are within default bounds
