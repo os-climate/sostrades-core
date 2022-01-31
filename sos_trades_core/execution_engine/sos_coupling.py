@@ -784,6 +784,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         # set residual type and value
         rdict = {}
         rdict[self.RESIDUALS_HISTORY] = {}
+        rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
         rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
         rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
 
