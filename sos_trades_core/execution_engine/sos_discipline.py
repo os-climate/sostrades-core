@@ -864,6 +864,7 @@ class SoSDiscipline(MDODiscipline):
         else:
             pass
 
+        # need execution before the linearize
         if not force_no_exec and exec_before_linearize:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
@@ -873,10 +874,14 @@ class SoSDiscipline(MDODiscipline):
             force_no_exec = True
             need_execution_after_lin = False
 
+        # need execution but after linearize, in the NR GEMSEO case an
+        # execution is done bfore the while loop which udates the local_data of
+        # each discipline
         elif not force_no_exec and not exec_before_linearize:
             force_no_exec = True
             need_execution_after_lin = True
 
+        # no need of any execution
         else:
             need_execution_after_lin = False
             # maybe no exec before the first linearize, GEMSEO needs a
