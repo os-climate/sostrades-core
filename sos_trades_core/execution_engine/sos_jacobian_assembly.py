@@ -402,9 +402,13 @@ class SoSJacobianAssembly(JacobianAssembly):
         """
         # linearize the disciplines
         self._add_differentiated_inouts(couplings, couplings, couplings)
-#         for disc in self.coupling_structure.disciplines:
-#             disc.linearize(in_data)
-        self.linearize_all_disciplines(in_data)
+
+        if self.n_processes > 1:
+            self.parallel_linearize.configure_linearize_options(
+                exec_before_linearize=False)
+        # exec_before_linearize is set to False, if you want to come back to old NewtonRaphson
+        # put the flag to True
+        self.linearize_all_disciplines(in_data, exec_before_linearize=True)
 
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
@@ -435,6 +439,59 @@ class SoSJacobianAssembly(JacobianAssembly):
             size = self.sizes[coupling]
             newton_step_dict[coupling] = newton_step[component: component + size]
             component += size
+        return newton_step_dict
+
+    # Newton step computation
+    def compute_newton_step_pure(
+        self,
+        res,
+        couplings,
+        relax_factor,
+        linear_solver="LGMRES",
+        matrix_type=JacobianAssembly.LINEAR_OPERATOR,
+        **linear_solver_options
+    ):
+        """Compute Newton step dictionary and let the solver decide how to apply the newton step.
+        :param res: residuals for the newton step
+        :param couplings: the coupling variables
+        :param relax_factor: the relaxation factor
+        :param linear_solver: the name of the linear solver
+            (Default value = 'lgmres')
+        :param matrix_type: representation of the matrix dR/dy (sparse or
+            linear operator) (Default value = LINEAR_OPERATOR)
+        :param kwargs: optional parameters for the linear solver
+        :returns: The Newton step -[dR/dy]^-1 . R as a dict of steps
+            per coupling variable
+        """
+
+        self.compute_sizes(couplings, couplings, couplings)
+        n_couplings = self.compute_dimension(couplings)
+
+        # Petsc needs sparse matrix to configure
+        if linear_solver.endswith('petsc'):
+            matrix_type = self.SPARSE
+
+        # compute the partial derivatives of the residuals
+        dres_dy = self.dres_dvar(
+            couplings, couplings, n_couplings, n_couplings, matrix_type=matrix_type
+        )
+
+        # solve the linear system
+        factory = LinearSolversFactory()
+        linear_problem = LinearProblem(dres_dy,  res)
+        factory.execute(linear_problem, linear_solver, **linear_solver_options)
+        newton_step = linear_problem.solution
+        self.n_newton_linear_resolutions += 1
+
+        # split the array of steps
+        newton_step_dict = {}
+        component = 0
+        for coupling in couplings:
+            size = self.sizes[coupling]
+            newton_step_dict[coupling] = -relax_factor * \
+                newton_step[component: component + size]
+            component += size
+
         return newton_step_dict
 
     def _adjoint_mode(
@@ -565,6 +622,9 @@ class SoSJacobianAssembly(JacobianAssembly):
     def linearize_all_disciplines(
         self,
         input_local_data,  # type: Mapping[str,ndarray]
+        force_no_exec=False,
+        linearize_on_input_data=False,
+        exec_before_linearize=True
     ):  # type: (...) -> None
         """Linearize all the disciplines.
         Args:
@@ -581,7 +641,9 @@ class SoSJacobianAssembly(JacobianAssembly):
             self.parallel_linearize.execute(inputs_copy_list)
         else:
             for disc in self.coupling_structure.disciplines:
-                disc.linearize(input_local_data)
+                disc.linearize(input_local_data, force_no_exec=force_no_exec,
+                               linearize_on_input_data=linearize_on_input_data,
+                               exec_before_linearize=exec_before_linearize)
 
 
 def comp_jac(tup):

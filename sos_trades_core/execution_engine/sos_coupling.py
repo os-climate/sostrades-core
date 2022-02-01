@@ -76,7 +76,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
     DESC_IN = {
         # NUMERICAL PARAMETERS
-        'sub_mda_class': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA', 'GSorNewtonMDA', 'MDASequential'], SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'sub_mda_class': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',  'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential'], SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'max_mda_iter': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 30, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'n_processes': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'chain_linearize': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
@@ -388,10 +388,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if num_data['sub_mda_class'] == 'MDAGaussSeidel':
             num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
                 'warm_start_threshold'))
-        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSorNewtonMDA']:
+        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA']:
             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
                 'max_mda_iter_gs'))
-        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'GSNewtonMDA', 'GSorNewtonMDA']:
+        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA', 'GSorNewtonMDA']:
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
 
@@ -784,6 +784,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         # set residual type and value
         rdict = {}
         rdict[self.RESIDUALS_HISTORY] = {}
+        rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
         rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
         rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
 
@@ -804,7 +805,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
     ):
         """
         ** Adapted from MDAChain Class in GEMSEO (overload)**
-        
+
         Create an MDO chain from the execution sequence of the disciplines.
 
         Args:
