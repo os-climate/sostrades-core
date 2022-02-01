@@ -21,7 +21,7 @@ import numpy as np
 
 class Study(StudyManager):
 
-    def __init__(self, run_usecase=True, execution_engine=None):
+    def __init__(self, run_usecase=False, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
@@ -33,11 +33,6 @@ class Study(StudyManager):
                                'upper_bnd': [25., 6],
                                'nb_points': [6, 3],
                                })
-        # dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.b', 'GridSearch.Disc1.a'],
-        #                        'lower_bnd': [0, 4],
-        #                        'upper_bnd': [2, 6],
-        #                        'nb_points': [2, 3],
-        #                        })
 
         eval_inputs = pd.DataFrame({'selected_input': [True, False, False, True],
                                     'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.name', f'{self.grid_search}.Disc1.x']})
@@ -49,7 +44,7 @@ class Study(StudyManager):
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
-            f'{self.study_name}.{self.grid_search}.design_space': dspace,
+            # f'{self.study_name}.{self.grid_search}.design_space': dspace,
 
             # DISC1 INPUTS
             f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
@@ -65,3 +60,4 @@ if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run()
+    print("DONE")
