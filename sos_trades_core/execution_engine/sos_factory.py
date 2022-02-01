@@ -298,6 +298,8 @@ class SosFactory:
             module_struct_list = f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
         elif eval_type == 'doe_eval':
             module_struct_list = f'{self.GENERIC_MODS_PATH}.doe_eval.DoeEval'
+        elif eval_type == 'grid_search':
+            module_struct_list = f'{self.GENERIC_MODS_PATH}.grid_search_eval.GridSearchEval'
 
         else:
             raise Exception(
