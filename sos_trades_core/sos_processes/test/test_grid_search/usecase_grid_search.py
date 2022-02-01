@@ -39,7 +39,7 @@ class Study(StudyManager):
         #                        'nb_points': [2, 3],
         #                        })
 
-        eval_inputs = pd.DataFrame({'selected_input': [False, True, False, True],
+        eval_inputs = pd.DataFrame({'selected_input': [True, False, False, True],
                                     'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.name', f'{self.grid_search}.Disc1.x']})
 
         eval_outputs = pd.DataFrame({'selected_output': [False, False, True, False],
