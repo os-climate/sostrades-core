@@ -27,11 +27,11 @@ class Study(StudyManager):
     def setup_usecase(self):
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
+
                        'lower_bnd': [0., [-10., 0.]],
                        'upper_bnd': [10., [10., 10.]],
-                       'enable_variable': [True, True],
-                       'activated_elem': [[True], [True, True]]}
+
+                       }
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
