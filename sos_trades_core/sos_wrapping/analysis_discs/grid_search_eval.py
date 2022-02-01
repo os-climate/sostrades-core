@@ -47,14 +47,13 @@ class GridSearchEval(DoeEval):
     NB_POINTS = 'nb_points'
     DESC_IN = {
         EVAL_INPUTS: {'type': 'dataframe',
-                      'dataframe_descriptor': {'selected_input': ('bool',  None, True),
-                                               'variable':  ('string',  None, False),
-                                               },
+                      'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                               'full_name': ('string', None, False)},
                       'dataframe_edition_locked': False,
                       'structuring': True},
         EVAL_OUTPUTS: {'type': 'dataframe',
-                       'dataframe_descriptor': {'selected_output': ('bool',  None, True),
-                                                'variable':  ('string',  None, False), },
+                       'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                'full_name': ('string', None, False)},
                        'dataframe_edition_locked': False,
                        'structuring': True}
     }
