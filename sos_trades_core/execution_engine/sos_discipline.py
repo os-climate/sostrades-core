@@ -883,7 +883,9 @@ class SoSDiscipline(MDODiscipline):
             # local_data with inputs and outputs for the jacobian computation
             # if the local_data is empty
             if self.local_data == {}:
-                self.local_data = deepcopy(input_data)
+                own_data = {
+                    k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
+                self.local_data = own_data
         # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
         # It is here to update the dm with input_data (as we do in GEMS for
         # local_data
