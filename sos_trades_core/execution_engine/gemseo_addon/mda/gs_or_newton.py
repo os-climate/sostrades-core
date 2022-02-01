@@ -38,7 +38,7 @@ class GSorNewtonMDA(MDASequential):
     def __init__(self, disciplines, name=None,
                  grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
                  tolerance=1e-6, max_mda_iter=10, relax_factor=0.99,
-                 linear_solver="lgmres", max_mda_iter_gs=3,
+                 linear_solver="lgmres", tolerance_gs=10.0,
                  linear_solver_tolerance=1e-12,  # type: str
                  linear_solver_options=None, warm_start=False,
                  use_lu_fact=False, **newton_mda_options):
@@ -79,7 +79,7 @@ class GSorNewtonMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
@@ -87,7 +87,7 @@ class GSorNewtonMDA(MDASequential):
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,
-                                 max_mda_iter_gs=5,
+                                 tolerance_gs=tolerance_gs,
                                  use_lu_fact=use_lu_fact, tolerance=tolerance,
                                  relax_factor=relax_factor,
                                  ** newton_mda_options)

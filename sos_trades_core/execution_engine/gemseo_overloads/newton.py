@@ -116,6 +116,7 @@ def _newton_step(cls):  # type: (...) -> None
         exec_data[c_var] += c_step.real  # SoSTrades fix (.real)
     cls.reset_disciplines_statuses()
     cls.execute_all_disciplines(exec_data)
+    #cls.local_data = exec_data
 
 
 # Set functions to the MDA Class

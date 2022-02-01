@@ -162,7 +162,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.residuals_history': init_dict('dataframe'),
                     ns_2 + '.n_subcouplings_parallel': init_dict('int'),
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
-                    ns_2 + '.max_mda_iter_gs': init_dict('int'),
+                    ns_2 + '.tolerance_gs': init_dict('float'),
                     ns_2 + '.relax_factor': init_dict('float'), }
 
         val_dict = {'default': None, 'type': 'string', 'unit': None,
