@@ -224,7 +224,7 @@ class SoSDiscipline(MDODiscipline):
         # ------------DEBUG VARIABLES----------------------------------------
         self.nan_check = False
         self.check_if_input_change_after_run = False
-        self.check_linearize_data_changes = False
+        self.check_linearize_data_changes = True
         self.check_min_max_gradients = False
         # ----------------------------------------------------
 
@@ -864,6 +864,7 @@ class SoSDiscipline(MDODiscipline):
         else:
             pass
 
+        # need execution before the linearize
         if not force_no_exec and exec_before_linearize:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
@@ -873,12 +874,23 @@ class SoSDiscipline(MDODiscipline):
             force_no_exec = True
             need_execution_after_lin = False
 
+        # need execution but after linearize, in the NR GEMSEO case an
+        # execution is done bfore the while loop which udates the local_data of
+        # each discipline
         elif not force_no_exec and not exec_before_linearize:
             force_no_exec = True
             need_execution_after_lin = True
 
+        # no need of any execution
         else:
             need_execution_after_lin = False
+            # maybe no exec before the first linearize, GEMSEO needs a
+            # local_data with inputs and outputs for the jacobian computation
+            # if the local_data is empty
+            if self.local_data == {}:
+                own_data = {
+                    k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
+                self.local_data = own_data
         # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
         # It is here to update the dm with input_data (as we do in GEMS for
         # local_data
@@ -2142,7 +2154,7 @@ class SoSDiscipline(MDODiscipline):
                         for key, value in deepcopy(self.get_sosdisc_outputs()).items()}
         disc_data = {}
         disc_data.update(disc_inputs)
-        # disc_data.update(disc_outputs)
+        disc_data.update(disc_outputs)
 
         return disc_data
 

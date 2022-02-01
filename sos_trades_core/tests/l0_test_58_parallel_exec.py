@@ -207,6 +207,242 @@ class TestParallelExecution(unittest.TestCase):
             if disc1.jac is not None:
                 self.assertDictEqual(disc1.jac, disc2.jac)
 
+    def test_03_parallel_execution_PureNR_2procs(self):
+        """
+        1 proc
+        """
+        n_proc = 1
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id='test_sellar_coupling')
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
+        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        mda = exec_eng.root_process.sos_disciplines[0]
+
+        self.assertEqual(mda.n_processes, n_proc)
+        exec_eng.execute()
+
+        dm_dict_1 = deepcopy(exec_eng.get_anonimated_data_dict())
+        """
+        2 procs
+        """
+        n_proc = 2
+        exec_eng2 = ExecutionEngine(self.study_name)
+        factory = exec_eng2.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id='test_sellar_coupling')
+
+        exec_eng2.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng2.configure()
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
+        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
+        exec_eng2.load_study_from_input_dict(values_dict)
+
+        mda2 = exec_eng2.root_process.sos_disciplines[0]
+
+        self.assertEqual(mda2.n_processes, n_proc)
+        exec_eng2.execute()
+        dm_dict_2 = deepcopy(exec_eng2.get_anonimated_data_dict())
+        dict_error = {}
+        # to delete modelorigin and discipline dependencies which are not the
+        # same
+        delete_keys_from_dict(dm_dict_1)
+        delete_keys_from_dict(dm_dict_2)
+        compare_dict(dm_dict_1,
+                     dm_dict_2, '', dict_error)
+        # The only different value is n_processes
+        self.assertDictEqual(dict_error, {
+                             '.<study_ph>.SellarCoupling.n_processes.value': "1 and 2 don't match"})
+
+        for disc1, disc2 in zip(exec_eng.root_process.sos_disciplines[0].sos_disciplines, exec_eng2.root_process.sos_disciplines[0].sos_disciplines):
+            if disc1.jac is not None:
+                self.assertDictEqual(disc1.jac, disc2.jac)
+
+    def test_04_parallel_execution_pureNR_64procs(self):
+        """
+        1 proc
+        """
+        n_proc = 1
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id='test_sellar_coupling')
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
+        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        mda = exec_eng.root_process.sos_disciplines[0]
+
+        self.assertEqual(mda.n_processes, n_proc)
+        exec_eng.execute()
+        dm_dict_1 = deepcopy(exec_eng.get_anonimated_data_dict())
+        """
+        64 procs
+        """
+        n_proc = 64
+        exec_eng2 = ExecutionEngine(self.study_name)
+        factory = exec_eng2.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id='test_sellar_coupling')
+
+        exec_eng2.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng2.configure()
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
+        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
+        exec_eng2.load_study_from_input_dict(values_dict)
+
+        mda2 = exec_eng2.root_process.sos_disciplines[0]
+
+        self.assertEqual(mda2.n_processes, n_proc)
+        exec_eng2.execute()
+        dm_dict_2 = deepcopy(exec_eng2.get_anonimated_data_dict())
+        dict_error = {}
+        # to delete modelorigin and discipline dependencies which are not the
+        # same
+        delete_keys_from_dict(dm_dict_1)
+        delete_keys_from_dict(dm_dict_2)
+        compare_dict(dm_dict_1,
+                     dm_dict_2, '', dict_error)
+        # The only different value is n_processes
+        self.assertDictEqual(dict_error, {
+                             '.<study_ph>.SellarCoupling.n_processes.value': "1 and 64 don't match"})
+
+        for disc1, disc2 in zip(exec_eng.root_process.sos_disciplines[0].sos_disciplines, exec_eng2.root_process.sos_disciplines[0].sos_disciplines):
+            if disc1.jac is not None:
+                self.assertDictEqual(disc1.jac, disc2.jac)
+
+    def test_05_parallel_execution_GSPureNR_2procs(self):
+        """
+        1 proc
+        """
+        n_proc = 1
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id='test_sellar_coupling')
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "GSPureNewtonMDA"
+        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        mda = exec_eng.root_process.sos_disciplines[0]
+
+        self.assertEqual(mda.n_processes, n_proc)
+        exec_eng.execute()
+
+        dm_dict_1 = deepcopy(exec_eng.get_anonimated_data_dict())
+        """
+        2 procs
+        """
+        n_proc = 2
+        exec_eng2 = ExecutionEngine(self.study_name)
+        factory = exec_eng2.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id='test_sellar_coupling')
+
+        exec_eng2.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng2.configure()
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "GSPureNewtonMDA"
+        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
+        exec_eng2.load_study_from_input_dict(values_dict)
+
+        mda2 = exec_eng2.root_process.sos_disciplines[0]
+
+        self.assertEqual(mda2.n_processes, n_proc)
+        exec_eng2.execute()
+        dm_dict_2 = deepcopy(exec_eng2.get_anonimated_data_dict())
+        dict_error = {}
+        # to delete modelorigin and discipline dependencies which are not the
+        # same
+        delete_keys_from_dict(dm_dict_1)
+        delete_keys_from_dict(dm_dict_2)
+        compare_dict(dm_dict_1,
+                     dm_dict_2, '', dict_error)
+        # The only different value is n_processes
+        self.assertDictEqual(dict_error, {
+                             '.<study_ph>.SellarCoupling.n_processes.value': "1 and 2 don't match"})
+
+        for disc1, disc2 in zip(exec_eng.root_process.sos_disciplines[0].sos_disciplines, exec_eng2.root_process.sos_disciplines[0].sos_disciplines):
+            if disc1.jac is not None:
+                self.assertDictEqual(disc1.jac, disc2.jac)
+
 
 if '__main__' == __name__:
 
