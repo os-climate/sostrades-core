@@ -29,7 +29,7 @@ def __init__(
     max_mda_iter=10,  # type: int
     relax_factor=0.99,  # type: float
     linear_solver="DEFAULT",  # type: str
-    max_mda_iter_gs=3,  # type: int
+    tolerance_gs=10.0,  # type: float
     linear_solver_tolerance=1e-12,  # type: float
     warm_start=False,  # type: bool
     use_lu_fact=False,  # type: bool
@@ -51,12 +51,13 @@ def __init__(
     """
     mda_gs = SoSMDAGaussSeidel(
         disciplines,
-        max_mda_iter=max_mda_iter_gs,
+        max_mda_iter=max_mda_iter,
         name=None,
         grammar_type=grammar_type,
         log_convergence=log_convergence,
+        tolerance=tolerance_gs
     )
-    mda_gs.tolerance = tolerance
+    #mda_gs.tolerance = tolerance
     mda_newton = MDANewtonRaphson(
         disciplines,
         max_mda_iter,

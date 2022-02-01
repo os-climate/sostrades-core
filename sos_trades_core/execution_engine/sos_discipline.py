@@ -224,7 +224,7 @@ class SoSDiscipline(MDODiscipline):
         # ------------DEBUG VARIABLES----------------------------------------
         self.nan_check = False
         self.check_if_input_change_after_run = False
-        self.check_linearize_data_changes = False
+        self.check_linearize_data_changes = True
         self.check_min_max_gradients = False
         # ----------------------------------------------------
 
@@ -879,6 +879,11 @@ class SoSDiscipline(MDODiscipline):
 
         else:
             need_execution_after_lin = False
+            # maybe no exec before the first linearize, GEMSEO needs a
+            # local_data with inputs and outputs for the jacobian computation
+            # if the local_data is empty
+            if self.local_data == {}:
+                self.local_data = deepcopy(input_data)
         # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
         # It is here to update the dm with input_data (as we do in GEMS for
         # local_data
@@ -2142,7 +2147,7 @@ class SoSDiscipline(MDODiscipline):
                         for key, value in deepcopy(self.get_sosdisc_outputs()).items()}
         disc_data = {}
         disc_data.update(disc_inputs)
-        # disc_data.update(disc_outputs)
+        disc_data.update(disc_outputs)
 
         return disc_data
 

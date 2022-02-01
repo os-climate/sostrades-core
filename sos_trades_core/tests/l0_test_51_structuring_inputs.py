@@ -377,7 +377,8 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict({})
 
-        coupling_inputs = {'sub_mda_class': {'type': 'string', 'default': 'MDAJacobi', 'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA', 'GSorNewtonMDA', 'MDASequential']},
+        coupling_inputs = {'sub_mda_class': {'type': 'string', 'default': 'MDAJacobi', 'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'PureNewtonRaphson',
+                                                                                                           'MDAQuasiNewton', 'GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential']},
                            'max_mda_iter': {'type': 'int', 'default': 30, 'possible_values': None},
                            'n_processes': {'type': 'int', 'default': 1, 'possible_values': None},
                            'chain_linearize': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
@@ -387,7 +388,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'acceleration': {'type': 'string', 'default': 'm2d', 'possible_values': ['m2d', 'secant', 'none']},
                            'warm_start_threshold': {'type': 'float', 'default': -1, 'possible_values': None},
                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
-                           'max_mda_iter_gs': {'type': 'int', 'default': 5, 'possible_values': None},
+                           'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
                            'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
                            'epsilon0': {'type': 'float', 'default': 1e-06, 'possible_values': None},
                            'linear_solver_MDO': {'type': 'string'},
@@ -439,9 +440,9 @@ class TestStructuringInputs(unittest.TestCase):
                     self.exec_eng.root_process._data_in[input_name][key], value)
 
         self.assertEqual(self.exec_eng.dm.get_data(
-            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'default'), 5)
+            'MyCase.SellarOptimScenario.SellarCoupling.tolerance_gs', 'default'), 10.0)
         self.assertEqual(self.exec_eng.dm.get_data(
-            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'value'), 5)
+            'MyCase.SellarOptimScenario.SellarCoupling.tolerance_gs', 'value'), 10.0)
 
         uc_cls = study_sellar_opt()
         uc_cls.study_name = 'MyCase'
@@ -466,9 +467,9 @@ class TestStructuringInputs(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values[0])
 
         self.assertEqual(self.exec_eng.dm.get_data(
-            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'default'), 200)
+            'MyCase.SellarOptimScenario.SellarCoupling.tolerance_gs', 'default'), 10.0)
         self.assertEqual(self.exec_eng.dm.get_data(
-            'MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter_gs', 'value'), 200)
+            'MyCase.SellarOptimScenario.SellarCoupling.tolerance_gs', 'value'), 10.0)
 
         # check numerical inputs of root_process coupling
         self.assertListEqual(list(coupling_inputs.keys()), list(

@@ -45,7 +45,7 @@ class GSPureNewtonMDA(MDASequential):
         max_mda_iter=10,  # type: int
         relax_factor=0.99,  # type: float
         linear_solver="DEFAULT",  # type: str
-        max_mda_iter_gs=3,  # type: int
+        tolerance_gs=10.0,
         linear_solver_tolerance=1e-12,  # type: float
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
@@ -65,24 +65,25 @@ class GSPureNewtonMDA(MDASequential):
                 expressed in terms of normed residuals.
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
-                                   name=None, grammar_type=grammar_type, tolerance=tolerance)
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
+                                   name=None, grammar_type=grammar_type, tolerance=tolerance_gs)
 
-        mda_gs.tolerance = tolerance
         mda_newton = PureNewtonRaphson(
             disciplines,
             max_mda_iter,
             relax_factor,
-            name=None,
-            grammar_type=grammar_type,
-            linear_solver=linear_solver,
             tolerance=tolerance,
+            name=None,
+            grammar_type=grammar_type,  # SoSTrades fix
+            linear_solver=linear_solver,
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
             linear_solver_options=linear_solver_options,
-            **newton_mda_options
+            linear_solver_tolerance=linear_solver_tolerance,
+            ** newton_mda_options
         )
+
         sequence = [mda_gs, mda_newton]
         super(GSPureNewtonMDA, self).__init__(
             disciplines,

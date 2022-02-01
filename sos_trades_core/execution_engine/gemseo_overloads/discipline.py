@@ -16,6 +16,7 @@ limitations under the License.
 from timeit import default_timer as timer
 from gemseo.core.discipline import MDODiscipline
 
+
 def execute(
     cls,
     input_data=None,  # type:Optional[Dict[str, Any]]
@@ -55,10 +56,10 @@ def execute(
     # Check if the cache already the contains outputs associated to these
     # inputs
     in_names = cls.get_input_data_names()
-    
+
     # SoSTrades modif: cache capability removal
 #     out_cached, out_jac = cls.cache.get_outputs(input_data, in_names)
-# 
+#
 #     if out_cached is not None:
 #         self.__update_local_data_from_cache(input_data, out_cached, out_jac)
 #         return cls.local_data
@@ -68,7 +69,8 @@ def execute(
     cls._cache_was_loaded = False
 
     # Save the state of the inputs
-    __get_input_data_for_cache = getattr(cls, "_MDODiscipline__get_input_data_for_cache")
+    __get_input_data_for_cache = getattr(
+        cls, "_MDODiscipline__get_input_data_for_cache")
     cached_inputs = __get_input_data_for_cache(input_data, in_names)
     cls._check_status_before_run()
 

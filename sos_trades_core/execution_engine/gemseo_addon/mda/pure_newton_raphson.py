@@ -83,7 +83,7 @@ class PureNewtonRaphson(MDARoot):
         )
 
         self.assembly.parallel_linearize.configure_linearize_options(force_no_exec=True,
-                                                                     linearize_on_input_data=True)
+                                                                     linearize_on_input_data=False)
 
     @staticmethod
     def __check_relax_factor(
@@ -120,7 +120,7 @@ class PureNewtonRaphson(MDARoot):
         # store initial residual
         current_iter = 1
         self.reset_disciplines_statuses()
-
+        # self.execute_all_disciplines(self.local_data)
         while not self._termination(current_iter):
 
             # store  coupling_variables(x)
@@ -137,6 +137,7 @@ class PureNewtonRaphson(MDARoot):
 
             # Compute all discipline gradients df(x)/dx with x
             self.assembly.linearize_all_disciplines(old_x,
+                                                    strong_couplings=self.strong_couplings,
                                                     force_no_exec=True,
                                                     linearize_on_input_data=True)
 

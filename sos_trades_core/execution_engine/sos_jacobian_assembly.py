@@ -408,7 +408,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                 exec_before_linearize=False)
         # exec_before_linearize is set to False, if you want to come back to old NewtonRaphson
         # put the flag to True
-        self.linearize_all_disciplines(in_data, exec_before_linearize=True)
+        self.linearize_all_disciplines(in_data, exec_before_linearize=False)
 
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
@@ -622,6 +622,7 @@ class SoSJacobianAssembly(JacobianAssembly):
     def linearize_all_disciplines(
         self,
         input_local_data,  # type: Mapping[str,ndarray]
+        strong_couplings=None,
         force_no_exec=False,
         linearize_on_input_data=False,
         exec_before_linearize=True
@@ -630,7 +631,16 @@ class SoSJacobianAssembly(JacobianAssembly):
         Args:
             input_local_data: The input data of the disciplines.
         """
-        parallel_linearization_is_working = False
+        parallel_linearization_is_working = True
+
+        if linearize_on_input_data and strong_couplings is not None:
+            local_strong_couplings_data = {
+                k: v for k, v in input_local_data.items() if k in strong_couplings}
+            disc0 = self.coupling_structure.disciplines[0]
+            input_data_sostrades = disc0._convert_array_into_new_type(
+                local_strong_couplings_data)
+            disc0.dm.set_values_from_dict(input_data_sostrades)
+            linearize_on_input_data = False
 
         if self.n_processes > 1 and parallel_linearization_is_working:
 
