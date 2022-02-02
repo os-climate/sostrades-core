@@ -21,7 +21,7 @@ import numpy as np
 
 class Study(StudyManager):
 
-    def __init__(self, run_usecase=False, execution_engine=None):
+    def __init__(self, run_usecase=True, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):

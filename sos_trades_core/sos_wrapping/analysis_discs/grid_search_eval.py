@@ -93,7 +93,7 @@ class GridSearchEval(DoeEval):
                     dynamic_outputs.update(
                         {f'{out_var}_dict': {'type': 'dict'}})
 
-                default_design_space = pd.DataFrame({self.VARIABLES: self.eval_in_list,
+                default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
                                                      self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
                                                                                                                  'type') == 'array' else 0.0

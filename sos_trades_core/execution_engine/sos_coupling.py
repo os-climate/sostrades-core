@@ -46,7 +46,11 @@ N_CPUS = cpu_count()
 def get_available_linear_solvers():
     '''Get available linear solvers list
     '''
-    return LinearSolversFactory().algorithms
+    lsf = LinearSolversFactory()
+    algos = lsf.algorithms
+    del lsf
+
+    return algos
 
 
 class SoSCoupling(SoSDisciplineBuilder, MDAChain):
