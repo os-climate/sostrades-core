@@ -34,11 +34,11 @@ class Study(StudyManager):
                                'nb_points': [6, 3],
                                })
 
-        eval_inputs = pd.DataFrame({'selected_input': [True, False, False, True],
-                                    'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.name', f'{self.grid_search}.Disc1.x']})
+        eval_inputs = pd.DataFrame({'selected_input': [True, False, True],
+                                    'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.x']})
 
-        eval_outputs = pd.DataFrame({'selected_output': [False, False, True, False],
-                                     'full_name': [f'{self.grid_search}.Disc1.indicator', f'{self.grid_search}.residuals_history', f'{self.grid_search}.Disc1.y', f'{self.grid_search}.Disc1.y_dict']})
+        eval_outputs = pd.DataFrame({'selected_output': [False, True, False],
+                                     'full_name': [f'{self.grid_search}.Disc1.indicator', f'{self.grid_search}.Disc1.y', f'{self.grid_search}.Disc1.y_dict']})
 
         dict_values = {
             # GRID SEARCH INPUTS
