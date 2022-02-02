@@ -200,11 +200,16 @@ class DoeEval(SoSEval):
                 # function of sosEval
                 self.set_eval_in_out_lists(selected_inputs, selected_outputs)
 
+
+
+
+
                 # setting dynamic outputs. One output of type dict per selected
                 # output
+
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var}_dict': {'type': 'dict'}})
+                        {f'{out_var.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': {'type': 'dict'}})
 
                 if algo_name == "CustomDOE":
                     default_custom_dataframe = pd.DataFrame(
@@ -484,8 +489,7 @@ class DoeEval(SoSEval):
         self.store_sos_outputs_values(
             {'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
-            self.store_sos_outputs_values(
-                {f'{dynamic_output}_dict': global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({f'{dynamic_output.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': global_dict_output[dynamic_output]})
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm

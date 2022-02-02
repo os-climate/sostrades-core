@@ -61,10 +61,7 @@ class GridSearchEval(DoeEval):
 
     def setup_sos_disciplines(self):
         """
-        Overload setup_sos_disciplines to create a dynamic desc_in
-        default descin are the algo name and its options
-        In case of a custom_doe, additionnal input is the customed sample ( dataframe)
-        In other cases, additionnal inputs are the number of samples and the design space
+        Overload setup_sos_disciplines to create the design space only
         """
 
         dynamic_inputs = {}
@@ -92,7 +89,7 @@ class GridSearchEval(DoeEval):
                 # output
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var}_dict': {'type': 'dict'}})
+                        {f'{out_var.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': {'type': 'dict'}})
 
                 default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
@@ -126,7 +123,8 @@ class GridSearchEval(DoeEval):
         self.eval_out_list = []
 
     def generate_samples_from_doe_factory(self):
-        """Generating samples for the Doe using the Doe Factory
+        """
+        Generating samples for the GridSearch with algo fullfact using the Doe Factory
         """
         algo_name = 'fullfact'
         ds = self.get_sosdisc_inputs(self.DESIGN_SPACE)
@@ -163,32 +161,6 @@ class GridSearchEval(DoeEval):
         self.samples = samples
 
         return self.prepare_samples()
-
-    def set_design_space(self):
-        """
-        reads design space (set_design_space)
-        """
-
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        variables = self.eval_in_list
-        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
-        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
-        values = lower_bounds
-        enable_variables = [True for invar in self.eval_in_list]
-
-        activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
-                           self.eval_in_list]
-
-        dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
-                                            self.VALUES: values,
-                                            self.LOWER_BOUND: lower_bounds,
-                                            self.UPPER_BOUND: upper_bounds,
-                                            self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: activated_elems})
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
-
-        return design_space
 
     def set_eval_possible_values(self):
         '''
