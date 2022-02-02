@@ -42,6 +42,7 @@ class GridSearchEval(DoeEval):
     Generic Grid Search evaluation class
     '''
 
+    INPUT_TYPE = ['float']
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
@@ -189,35 +190,6 @@ class GridSearchEval(DoeEval):
 
         return design_space
 
-    def _fill_possible_values(self, disc):
-        '''
-            Fill possible values for eval inputs and outputs: tuples with (name, namespace)
-            an input variable must be a float, int or string coming from a data_in of a discipline in all the process
-            an output variable must be any data from a data_out discipline
-        '''
-        name_in = []
-        name_out = []
-        for data_in_key in disc._data_in.keys():
-            is_input_types = disc._data_in[data_in_key][self.TYPE] in self.eval_input_types
-            in_coupling_numerical = data_in_key in list(SoSCoupling.DESC_IN.keys()
-                                                        ) + list(SoSDiscipline.NUM_DESC_IN.keys())
-            if is_input_types and not in_coupling_numerical:
-                namespaced_data = disc.get_var_full_name(
-                    data_in_key, disc._data_in)
-                # remove usecase name
-                namespaced_data = namespaced_data.split('.', 1)[1]
-                name_in.append(namespaced_data)
-        for data_out_key in disc._data_out.keys():
-            # Caution ! This won't work for variables with points in name
-            # as for ac_model
-            namespaced_data = disc.get_var_full_name(
-                data_out_key, disc._data_out)
-            # remove usecase name
-            namespaced_data = namespaced_data.split('.', 1)[1]
-            name_out.append(namespaced_data)
-
-        return name_in, name_out
-
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
@@ -249,6 +221,13 @@ class GridSearchEval(DoeEval):
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         if eval_input_new_dm is None:
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+                             'value', default_in_dataframe, check_value=False)
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+                             'value', default_out_dataframe, check_value=False)
+        # check if the eval_inputs need to be updtated after a subprocess
+        # configure
+        elif eval_input_new_dm['full_name'].equals(default_in_dataframe['full_name']) == False:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',

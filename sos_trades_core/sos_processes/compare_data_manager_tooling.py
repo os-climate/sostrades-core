@@ -31,6 +31,7 @@ def compare_dict(d1, d2, tree, error, df_equals=False):
     '''
     for key in d1.keys():
         try:
+
             if bool(d1.get(key) is None) != bool(d2.get(key) is None):
                 error.update(
                     {tree: f'{d1.get(key)} and {d2.get(key)} have different types'})
@@ -48,7 +49,7 @@ def compare_dict(d1, d2, tree, error, df_equals=False):
                             key), rtol=1e-3)
                     except Exception as e:
                         error.update(
-                            {tree: f'{e} don\'t match'})
+                            {'.'.join([tree, str(key)]): f'{e} don\'t match'})
             elif isinstance(d1.get(key), list):
                 parse_list_to_compare(d1.get(key), d2.get(
                     key), '.'.join([tree, str(key)]), error)
@@ -58,6 +59,7 @@ def compare_dict(d1, d2, tree, error, df_equals=False):
             else:
                 compare_elements(d1.get(key), d2.get(
                     key), '.'.join([tree, str(key)]), error)
+
         except Exception as e:
             error.update(
                 {tree: f'\nProblem parsing a dictionnary:\n Dict structure differ on {key}:\n Trying to compare {type(d1.get(key))} with {type(d2.get(key))}'})
