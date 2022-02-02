@@ -17,6 +17,7 @@ limitations under the License.
 from copy import deepcopy
 import logging
 import numpy as np
+from copy import copy
 from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
 
 """
@@ -77,6 +78,11 @@ class PureNewtonRaphson(MDARoot):
         )
         self.relax_factor = self.__check_relax_factor(relax_factor)
         self.linear_solver = linear_solver
+
+        # break the object link before update the dict object
+        self.linear_solver_options = copy(self.linear_solver_options)
+        self.linear_solver_options.update(
+            {'tol': self.linear_solver_tolerance})
 
         self.parallel_execution = SoSDiscParallelExecution(
             disciplines, n_processes=self.n_processes, use_threading=True
