@@ -200,16 +200,13 @@ class DoeEval(SoSEval):
                 # function of sosEval
                 self.set_eval_in_out_lists(selected_inputs, selected_outputs)
 
-
-
-
-
                 # setting dynamic outputs. One output of type dict per selected
                 # output
 
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': {'type': 'dict'}})
+                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                'namespace': 'ns_doe'}})
 
                 if algo_name == "CustomDOE":
                     default_custom_dataframe = pd.DataFrame(
@@ -262,6 +259,7 @@ class DoeEval(SoSEval):
         '''
         Constructor
         '''
+        ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(DoeEval, self).__init__(sos_name, ee, cls_builder)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
@@ -489,7 +487,9 @@ class DoeEval(SoSEval):
         self.store_sos_outputs_values(
             {'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
-            self.store_sos_outputs_values({f'{dynamic_output.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({
+                f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
+                    global_dict_output[dynamic_output]})
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
@@ -535,7 +535,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
+                         ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
