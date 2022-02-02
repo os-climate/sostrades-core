@@ -106,7 +106,6 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}')[0]
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
-
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
         y_dict = grid_search_disc_output['MyCase.GridSearch.Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
@@ -117,8 +116,8 @@ class TestGridSearchEval(unittest.TestCase):
         print(f'Study generated the output: y_dict \n {y_dict}')
 
         dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x', 'GridSearch.Disc1.a'],
-                               'lower_bnd': [20., 4.],
-                               'upper_bnd': [25., 6.],
+                               'lower_bnd': [20, 4.],
+                               'upper_bnd': [25, 6.],
                                'nb_points': [6, 3],
                                })
 
