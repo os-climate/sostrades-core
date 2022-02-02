@@ -24,7 +24,7 @@ from contextlib import suppress
 from sos_trades_core.execution_engine.namespace import Namespace
 
 
-def compare_dict(d1, d2, tree, error, df_equals=False, print_error=False):
+def compare_dict(d1, d2, tree, error, df_equals=False):
     '''
     Compare all elements in two dicts.
     The dicts should have the same structure
@@ -59,8 +59,7 @@ def compare_dict(d1, d2, tree, error, df_equals=False, print_error=False):
             else:
                 compare_elements(d1.get(key), d2.get(
                     key), '.'.join([tree, str(key)]), error)
-            if print_error:
-                print(key, error)
+
         except Exception as e:
             error.update(
                 {tree: f'\nProblem parsing a dictionnary:\n Dict structure differ on {key}:\n Trying to compare {type(d1.get(key))} with {type(d2.get(key))}'})
