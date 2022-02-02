@@ -224,7 +224,7 @@ class SoSDiscipline(MDODiscipline):
         # ------------DEBUG VARIABLES----------------------------------------
         self.nan_check = False
         self.check_if_input_change_after_run = False
-        self.check_linearize_data_changes = True
+        self.check_linearize_data_changes = False
         self.check_min_max_gradients = False
         # ----------------------------------------------------
 
