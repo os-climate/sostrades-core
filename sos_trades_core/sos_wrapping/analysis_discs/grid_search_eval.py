@@ -162,32 +162,6 @@ class GridSearchEval(DoeEval):
 
         return self.prepare_samples()
 
-    def set_design_space(self):
-        """
-        reads design space (set_design_space)
-        """
-
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        variables = self.eval_in_list
-        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
-        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
-        values = lower_bounds
-        enable_variables = [True for invar in self.eval_in_list]
-
-        activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
-                           self.eval_in_list]
-
-        dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
-                                            self.VALUES: values,
-                                            self.LOWER_BOUND: lower_bounds,
-                                            self.UPPER_BOUND: upper_bounds,
-                                            self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: activated_elems})
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
-
-        return design_space
-
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
