@@ -187,18 +187,26 @@ class DoeEval(SoSEval):
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
 
             # we fetch the inputs and outputs selected by the user
-            selected_outputs = eval_outputs[eval_outputs['selected_output'] == True]['full_name']
-            selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name']
+            selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                            == True]['full_name']
+            selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                          == True]['full_name']
             self.selected_inputs = selected_inputs.tolist()
             self.selected_outputs = selected_outputs.tolist()
 
             # doe can be done only for selected inputs and outputs
             if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
-                # we set the lists which will be used by the evaluation function of sosEval
+                # we set the lists which will be used by the evaluation
+                # function of sosEval
                 self.set_eval_in_out_lists(selected_inputs, selected_outputs)
 
 
-                # setting dynamic outputs. One output of type dict per selected output
+
+
+
+                # setting dynamic outputs. One output of type dict per selected
+                # output
+
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
                         {f'{out_var.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': {'type': 'dict'}})
@@ -457,7 +465,8 @@ class DoeEval(SoSEval):
             dict_output[scenario_name] = dict_one_output
 
         # construction of a dataframe of generated samples
-        # the key is the scenario and columns are inputs values for the considered scenario
+        # the key is the scenario and columns are inputs values for the
+        # considered scenario
         columns = ['scenario']
         columns.extend(self.selected_inputs)
         samples_all_row = []
@@ -469,14 +478,16 @@ class DoeEval(SoSEval):
         samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
 
         # construction of a dictionnary of dynamic outputs
-        # The key is the output name and the value a dictionnary of results with scenarii as keys
+        # The key is the output name and the value a dictionnary of results
+        # with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
         for (scenario, scenario_output) in dict_output.items():
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.store_sos_outputs_values({'doe_samples_dataframe': samples_dataframe})
+        self.store_sos_outputs_values(
+            {'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({f'{dynamic_output.split(self.ee.study_name + ".")[1].replace(".","_")}_dict': global_dict_output[dynamic_output]})
 
@@ -523,12 +534,15 @@ class DoeEval(SoSEval):
                 SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
-            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
+            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                                           ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
-                # we remove the study name from the variable full  name for a sake of simplicity
-                poss_in_values_full.append(full_id.split(self.ee.study_name + ".")[1])
+                # we remove the study name from the variable full  name for a
+                # sake of simplicity
+                poss_in_values_full.append(
+                    full_id.split(self.ee.study_name + ".")[1])
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
@@ -537,8 +551,10 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_out_key, disc._data_out)
             if not in_coupling_numerical:
-                # we remove the study name from the variable full  name for a sake of simplicity
-                poss_out_values_full.append(full_id.split(self.ee.study_name + ".")[1])
+                # we remove the study name from the variable full  name for a
+                # sake of simplicity
+                poss_out_values_full.append(
+                    full_id.split(self.ee.study_name + ".")[1])
 
         return poss_in_values_full, poss_out_values_full
 
@@ -577,6 +593,13 @@ class DoeEval(SoSEval):
                              'value', default_in_dataframe, check_value=False)
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
+        # check if the eval_inputs need to be updtated after a subprocess
+        # configure
+        elif eval_input_new_dm['full_name'].equals(default_in_dataframe['full_name']) == False:
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+                             'value', default_in_dataframe, check_value=False)
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+                             'value', default_out_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
@@ -602,7 +625,11 @@ class DoeEval(SoSEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        self.eval_in_base_list = [element.split(".")[-1] for element in in_list]
-        self.eval_out_base_list = [element.split(".")[-1] for element in out_list]
-        self.eval_in_list = [f'{self.ee.study_name}.{element}' for element in in_list]
-        self.eval_out_list = [f'{self.ee.study_name}.{element}' for element in out_list]
+        self.eval_in_base_list = [
+            element.split(".")[-1] for element in in_list]
+        self.eval_out_base_list = [
+            element.split(".")[-1] for element in out_list]
+        self.eval_in_list = [
+            f'{self.ee.study_name}.{element}' for element in in_list]
+        self.eval_out_list = [
+            f'{self.ee.study_name}.{element}' for element in out_list]
