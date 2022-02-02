@@ -211,6 +211,7 @@ class PetscKSPAlgos(LinearSolverLib):
 
         # first run
         options["old_sol"] = None
+
         sol, info, ksp = self._run_petsc_strategy(**options)
 
         if info < 0:
@@ -343,7 +344,7 @@ class PetscKSPAlgos(LinearSolverLib):
                 pass
             else:
                 LOGGER.warning(
-                    f'The PETSc linear solver has converged with {KSP_CONVERGED_REASON[convergence_info]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
+                    f'The PETSc linear solver has converged with {KSP_CONVERGED_REASON[convergence_info]}, the tolerance is {options["atol"]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
         elif convergence_info == 0:
             info = 1
         else:
