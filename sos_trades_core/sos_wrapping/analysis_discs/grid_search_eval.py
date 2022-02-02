@@ -42,6 +42,7 @@ class GridSearchEval(DoeEval):
     Generic Grid Search evaluation class
     '''
 
+    INPUT_TYPE = ['float']
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
@@ -188,35 +189,6 @@ class GridSearchEval(DoeEval):
         design_space = self.read_from_dataframe(dspace_dict_updated)
 
         return design_space
-
-    def _fill_possible_values(self, disc):
-        '''
-            Fill possible values for eval inputs and outputs: tuples with (name, namespace)
-            an input variable must be a float, int or string coming from a data_in of a discipline in all the process
-            an output variable must be any data from a data_out discipline
-        '''
-        name_in = []
-        name_out = []
-        for data_in_key in disc._data_in.keys():
-            is_input_types = disc._data_in[data_in_key][self.TYPE] in self.eval_input_types
-            in_coupling_numerical = data_in_key in list(SoSCoupling.DESC_IN.keys()
-                                                        ) + list(SoSDiscipline.NUM_DESC_IN.keys())
-            if is_input_types and not in_coupling_numerical:
-                namespaced_data = disc.get_var_full_name(
-                    data_in_key, disc._data_in)
-                # remove usecase name
-                namespaced_data = namespaced_data.split('.', 1)[1]
-                name_in.append(namespaced_data)
-        for data_out_key in disc._data_out.keys():
-            # Caution ! This won't work for variables with points in name
-            # as for ac_model
-            namespaced_data = disc.get_var_full_name(
-                data_out_key, disc._data_out)
-            # remove usecase name
-            namespaced_data = namespaced_data.split('.', 1)[1]
-            name_out.append(namespaced_data)
-
-        return name_in, name_out
 
     def set_eval_possible_values(self):
         '''
