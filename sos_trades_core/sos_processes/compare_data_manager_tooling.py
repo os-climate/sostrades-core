@@ -24,13 +24,15 @@ from contextlib import suppress
 from sos_trades_core.execution_engine.namespace import Namespace
 
 
-def compare_dict(d1, d2, tree, error, df_equals=False):
+def compare_dict(d1, d2, tree, error, df_equals=False, print_error=False):
     '''
     Compare all elements in two dicts.
     The dicts should have the same structure
     '''
     for key in d1.keys():
         try:
+            if print_error:
+                print(key, error)
             if bool(d1.get(key) is None) != bool(d2.get(key) is None):
                 error.update(
                     {tree: f'{d1.get(key)} and {d2.get(key)} have different types'})
