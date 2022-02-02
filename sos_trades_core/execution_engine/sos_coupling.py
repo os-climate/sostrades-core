@@ -46,7 +46,11 @@ N_CPUS = cpu_count()
 def get_available_linear_solvers():
     '''Get available linear solvers list
     '''
-    return LinearSolversFactory().algorithms
+    lsf = LinearSolversFactory()
+    algos = lsf.algorithms
+    del lsf
+
+    return algos
 
 
 class SoSCoupling(SoSDisciplineBuilder, MDAChain):
@@ -87,7 +91,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'max_mda_iter_gs': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 5, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        #'max_mda_iter_gs': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 5, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'tolerance_gs': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 10.0, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'relax_factor': {SoSDiscipline.TYPE: 'float', SoSDiscipline.RANGE: [0.0, 1.0], SoSDiscipline.DEFAULT: 0.99, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         # NUMERICAL PARAMETERS OUT OF INIT
         'epsilon0': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.0e-6, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
@@ -191,14 +196,14 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
 
-        # set default value of max_mda_iter_gs
-        if 'max_mda_iter_gs' in self._data_in:
-            if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
-                self.update_default_value(
-                    'max_mda_iter_gs', self.IO_TYPE_IN, 200)
-            else:
-                self.update_default_value(
-                    'max_mda_iter_gs', self.IO_TYPE_IN, 5)
+#         # set default value of max_mda_iter_gs
+#         if 'max_mda_iter_gs' in self._data_in:
+#             if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
+#                 self.update_default_value(
+#                     'max_mda_iter_gs', self.IO_TYPE_IN, 200)
+#             else:
+#                 self.update_default_value(
+#                     'max_mda_iter_gs', self.IO_TYPE_IN, 5)
 
     def configure_io(self):
         '''
@@ -389,8 +394,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
                 'warm_start_threshold'))
         if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA']:
-            num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
-                'max_mda_iter_gs'))
+            #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
+            #                 'max_mda_iter_gs'))
+            num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
+                'tolerance_gs'))
         if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA', 'GSorNewtonMDA']:
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
@@ -784,6 +791,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         # set residual type and value
         rdict = {}
         rdict[self.RESIDUALS_HISTORY] = {}
+        rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
         rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
         rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
 
