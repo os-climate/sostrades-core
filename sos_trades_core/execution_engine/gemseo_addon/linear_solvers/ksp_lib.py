@@ -211,6 +211,7 @@ class PetscKSPAlgos(LinearSolverLib):
 
         # first run
         options["old_sol"] = None
+        LOGGER.info(f'PETSC options : {options}')
         sol, info, ksp = self._run_petsc_strategy(**options)
 
         if info < 0:
