@@ -17,24 +17,12 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from pandas.core.frame import DataFrame
-import numpy as np
 import pandas as pd
-import copy
-from copy import deepcopy
-import collections
+from gemseo.algos.doe.doe_factory import DOEFactory
+from numpy import array
 
 from sos_trades_core.api import get_sos_logger
-from numpy import array, ndarray, delete, NaN
-
-from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.execution_engine.sos_eval import SoSEval
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.tools.scenario.scenario_generator import ScenarioGenerator
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
-from gemseo.algos.doe.doe_factory import DOEFactory
-
-from gemseo.algos.design_space import DesignSpace
 
 
 class GridSearchEval(DoeEval):
@@ -92,7 +80,8 @@ class GridSearchEval(DoeEval):
                 # output
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var}_dict': {'type': 'dict'}})
+                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                'namespace': 'ns_doe'}})
 
                 default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
@@ -118,6 +107,7 @@ class GridSearchEval(DoeEval):
         '''
         Constructor
         '''
+        ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(GridSearchEval, self).__init__(sos_name, ee, cls_builder)
         self.doe_factory = DOEFactory()
         self.logger = get_sos_logger(f'{self.ee.logger.name}.GridSearch')
