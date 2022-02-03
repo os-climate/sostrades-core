@@ -451,11 +451,12 @@ class DoeEval(SoSEval):
         # n_processes = options.get('n_processes', 1)
         # wait_time_between_samples = options.get('wait_time_between_samples', 0)
 
-        n_processes = 4
+        n_processes = 1
         # We handle the case of a parallel execution here
         # It happens when the number of specified processes n_processes is greater than 1
         if n_processes > 1:
             self.logger.info("Running DOE EVAL in parallel on n_processes = %s", str(n_processes))
+            print("parallel execution")
 
             # Create the parallel execution object. The function we want to parallelize is the sample evaluation
             # function
