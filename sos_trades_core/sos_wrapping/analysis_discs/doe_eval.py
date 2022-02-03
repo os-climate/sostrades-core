@@ -17,6 +17,7 @@ import copy
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.core.parallel_execution import ParallelExecution
 from numpy import array, ndarray, delete, NaN
 
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
@@ -445,22 +446,103 @@ class DoeEval(SoSEval):
         # After samples generation, we enumerate through them and carry out
         # a evaluation using the soseval evaluation function
         self.samples = self.generate_samples_from_doe_factory()
-        for i, sample in enumerate(self.samples):
 
-            # generation of the dictionnary of samples
-            scenario_name = "scenario_" + str(i + 1)
-            dict_one_sample = {}
-            for idx, values in enumerate(sample):
-                dict_one_sample[self.eval_in_list[idx]] = values
-            dict_sample[scenario_name] = dict_one_sample
+        # options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
+        # n_processes = options.get('n_processes', 1)
+        # wait_time_between_samples = options.get('wait_time_between_samples', 0)
 
-            # evaluation of samples and generation of a dictionnary of outputs
-            output_eval = copy.deepcopy(
-                self.FDeval_func(sample, convert_to_array=False))
-            dict_one_output = {}
-            for idx, values in enumerate(output_eval):
-                dict_one_output[self.eval_out_list[idx]] = values
-            dict_output[scenario_name] = dict_one_output
+        n_processes = 4
+        # We handle the case of a parallel execution here
+        # It happens when the number of specified processes n_processes is greater than 1
+        if n_processes > 1:
+            self.logger.info("Running DOE EVAL in parallel on n_processes = %s", str(n_processes))
+
+            # Create the parallel execution object. The function we want to parallelize is the sample evaluation
+            # function
+
+            def sample_evaluator(sample_one):
+
+                """ this is the worker used to evaluate a sample in case of a parallel execution
+                    """
+                return self.FDeval_func(sample_one, convert_to_array=False)
+
+            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes)
+            parallel.wait_time_between_fork = 0
+
+            # Define a callback function to store the samples on the fly
+            # during the parallel execution
+
+            def store_callback(
+                    index,  # type: int
+                    outputs,  # type: DOELibraryOutputType
+            ):  # type: (...) -> None
+                """Store the outputs in dedicated dictionnaries:
+                - samples used for the scenario are sctored in dict_sample
+                - outputs for the scenario are stored in dict_output
+                Args:
+                    index: The sample index.
+                    outputs: The outputs of the parallel execution.
+                """
+
+                processed_sample = self.samples[index]
+                scenario_name = "scenario_" + str(index)
+                dict_one_sample = {}
+                for idx, values in enumerate(processed_sample):
+                    dict_one_sample[self.eval_in_list[idx]] = values
+                dict_sample[scenario_name] = dict_one_sample
+
+                dict_one_output = {}
+                for idx, values in enumerate(outputs):
+                    dict_one_output[self.eval_out_list[idx]] = values
+                dict_output[scenario_name] = dict_one_output
+
+            # The list of inputs of the tasks is the list of samples
+            # composed_samples = []
+            # for x in self.samples:
+            #     eval_in_list = self.eval_in_list[:]
+            #     eval_out_list = self.eval_out_list[:]
+            #     disc = copy.deepcopy(self.sos_disciplines[0])
+            #     composed_samples.append(tuple([x, eval_in_list, disc, eval_out_list]))
+            # samples_test = []
+            # for x in self.samples:
+            #     samples_test.append(tuple([self,x]))
+            parallel.execute(self.samples, exec_callback=store_callback)
+
+        else:
+            # Case of a sequential execution
+            for i, sample in enumerate(self.samples):
+
+                # generation of the dictionnary of samples
+                scenario_name = "scenario_" + str(i + 1)
+                dict_one_sample = {}
+                for idx, values in enumerate(sample):
+                    dict_one_sample[self.eval_in_list[idx]] = values
+                dict_sample[scenario_name] = dict_one_sample
+
+                # evaluation of samples and generation of a dictionnary of outputs
+                output_eval = copy.deepcopy(
+                    self.FDeval_func(sample, convert_to_array=False))
+                dict_one_output = {}
+                for idx, values in enumerate(output_eval):
+                    dict_one_output[self.eval_out_list[idx]] = values
+                dict_output[scenario_name] = dict_one_output
+
+        # for i, sample in enumerate(self.samples):
+        #
+        #     # generation of the dictionnary of samples
+        #     scenario_name = "scenario_" + str(i + 1)
+        #     dict_one_sample = {}
+        #     for idx, values in enumerate(sample):
+        #         dict_one_sample[self.eval_in_list[idx]] = values
+        #     dict_sample[scenario_name] = dict_one_sample
+        #
+        #     # evaluation of samples and generation of a dictionnary of outputs
+        #     output_eval = copy.deepcopy(
+        #         self.FDeval_func(sample, convert_to_array=False))
+        #     dict_one_output = {}
+        #     for idx, values in enumerate(output_eval):
+        #         dict_one_output[self.eval_out_list[idx]] = values
+        #     dict_output[scenario_name] = dict_one_output
 
         # construction of a dataframe of generated samples
         # the key is the scenario and columns are inputs values for the
