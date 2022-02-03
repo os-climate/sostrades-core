@@ -298,7 +298,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             X_pd = XY_pd['design_parameters']
             self.assertEqual(len(X_pd), n_samples)
 
-    def _test_4_test_options_full_fact(self):
+    def test_4_test_options_full_fact(self):
         print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -1258,7 +1258,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 generated_z))
 
     def test_17_doe_eval_CustomDoE_reconfiguration_after_execution(self):
-
+        print("initialising test 17")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -1329,9 +1329,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
+        print(doe_disc_y2)
+        print("test 17 run successfully")
 
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_9_usepydoe_lib()
+    cls.test_17_doe_eval_CustomDoE_reconfiguration_after_execution()
