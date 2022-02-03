@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
-
+import platform
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.parallel_execution import ParallelExecution
@@ -451,7 +451,11 @@ class DoeEval(SoSEval):
         # n_processes = options.get('n_processes', 1)
         # wait_time_between_samples = options.get('wait_time_between_samples', 0)
 
-        n_processes = 4
+        if platform.system() == 'Windows':
+            n_processes = 1
+            print("sequential running")
+        else:
+            n_processes = 4
         # We handle the case of a parallel execution here
         # It happens when the number of specified processes n_processes is greater than 1
         if n_processes > 1:
