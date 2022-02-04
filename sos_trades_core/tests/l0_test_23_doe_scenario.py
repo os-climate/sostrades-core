@@ -1369,7 +1369,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             # -- set up disciplines in Scenario
             disc_dict = {}
             # DoE inputs
-            n_samples = 1000
+            n_samples = 1000000
             disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
             disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
             disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
@@ -1424,10 +1424,10 @@ class TestSoSDOEScenario(unittest.TestCase):
             # -- set up disciplines in Scenario
             disc_dict = {}
             # DoE inputs
-            n_samples = 1000
+            n_samples = 1000000
             disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
             disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
+            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 50,
                                                             'wait_time_between_samples': 0.0}
             disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
             disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
