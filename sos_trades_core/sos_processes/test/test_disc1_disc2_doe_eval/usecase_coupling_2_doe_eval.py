@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import pandas as pd
+
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sos_trades_core.study_manager.study_manager import StudyManager
 
@@ -24,15 +26,45 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         setup_data_list = []
+
+        ns = f'{self.study_name}'
+        dspace_dict = {'variable': ['x', 'DoEEval.Disc1.a'],
+
+                       'lower_bnd': [0., 50.],
+                       'upper_bnd': [100., 200.],
+
+                       }
+        dspace = pd.DataFrame(dspace_dict)
+
+        input_selection_x_a = {'selected_input': [True, True],
+                               'full_name': ['x', 'DoEEval.Disc1.a']}
+        input_selection_x_a = pd.DataFrame(input_selection_x_a)
+
+        output_selection_z_z = {'selected_output': [True, True],
+                                'full_name': ['z', 'DoEEval.Disc1.z']}
+        output_selection_z_z = pd.DataFrame(output_selection_z_z)
+
         # private values AC model
         private_values = {
             self.study_name + '.x': 10.,
-            self.study_name + '.Disc1.a': 5.,
-            self.study_name + '.Disc1.b': 25431.,
+            self.study_name + 'DoEEval.Disc1.a': 5.,
+            self.study_name + 'DoEEval.Disc1.b': 25431.,
             self.study_name + '.y': 4.,
-            self.study_name + '.Disc2.constant': 3.1416,
-            self.study_name + '.Disc2.power': 2}
+            self.study_name + 'DoEEval.Disc2.constant': 3.1416,
+            self.study_name + 'DoEEval.Disc2.power': 2}
+
+        # DoE inputs
+        disc_dict = {}
+        n_samples = 100
+        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
+        disc_dict[f'{ns}.DoEEval.design_space'] = dspace
+        disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
+                                                   'wait_time_between_samples': 0.0}
+        disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_a
+        disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_z_z
+
         setup_data_list.append(private_values)
+        setup_data_list.append(disc_dict)
         return setup_data_list
 
 

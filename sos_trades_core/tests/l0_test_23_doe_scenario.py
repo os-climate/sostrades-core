@@ -1341,7 +1341,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
 
-    def test_18_doe_eval_parallel_execution_time(self):
+    def _test_18_doe_eval_parallel_execution_time(self):
         execution_time = 0
         for i in range(5):
             start = time()
@@ -1396,7 +1396,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             execution_time += stop - start
         print("sequential execution in " + str(execution_time / 5) + " seconds")
 
-    def test_19_doe_eval_parallel_execution_time_8_cores(self):
+    def _test_19_doe_eval_parallel_execution_time_8_cores(self):
         execution_time = 0
         for i in range(5):
             start = time()
