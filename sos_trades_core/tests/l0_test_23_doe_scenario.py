@@ -1343,7 +1343,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
     def test_18_doe_eval_parallel_execution_time(self):
         execution_time = 0
-        for i in range(10):
+        for i in range(5):
             start = time()
 
             dspace_dict_x = {'variable': ['x'],
@@ -1369,7 +1369,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             # -- set up disciplines in Scenario
             disc_dict = {}
             # DoE inputs
-            n_samples = 1000000
+            n_samples = 1000
             disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
             disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
             disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
@@ -1394,11 +1394,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
             print(str(stop - start))
             execution_time += stop - start
-        print("sequential execution in " + str(execution_time / 10) + " seconds")
+        print("sequential execution in " + str(execution_time / 5) + " seconds")
 
     def test_19_doe_eval_parallel_execution_time_8_cores(self):
         execution_time = 0
-        for i in range(10):
+        for i in range(5):
             start = time()
 
             dspace_dict_x = {'variable': ['x'],
@@ -1424,10 +1424,10 @@ class TestSoSDOEScenario(unittest.TestCase):
             # -- set up disciplines in Scenario
             disc_dict = {}
             # DoE inputs
-            n_samples = 1000000
+            n_samples = 1000
             disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
             disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 50,
+            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 10,
                                                             'wait_time_between_samples': 0.0}
             disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
             disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
@@ -1449,7 +1449,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
             print(str(stop - start))
             execution_time += stop - start
-        print("parallel execution in " + str(execution_time / 10) + " seconds")
+        print("parallel execution in " + str(execution_time / 5) + " seconds")
 
 
 if '__main__' == __name__:
