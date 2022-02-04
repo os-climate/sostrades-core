@@ -298,7 +298,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             X_pd = XY_pd['design_parameters']
             self.assertEqual(len(X_pd), n_samples)
 
-    def _test_4_test_options_full_fact(self):
+    def test_4_test_options_full_fact(self):
         print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -906,6 +906,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
+        print(doe_disc_obj)
 
     def test_13_doe_eval_execution_lhs_on_1_var(self):
 
@@ -966,6 +967,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), n_samples)
+        print(doe_disc_samples)
 
     def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
 
@@ -1170,6 +1172,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), 5)
+        print(doe_disc_samples)
 
     def test_16_doe_eval_design_space_normalisation(self):
 
@@ -1258,7 +1261,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 generated_z))
 
     def test_17_doe_eval_CustomDoE_reconfiguration_after_execution(self):
-
+        print("initialising test 17")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -1329,9 +1332,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
+        print(doe_disc_y2)
+        print("test 17 run successfully")
 
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_9_usepydoe_lib()
+    cls.test_11_doe_eval_execution_fullfact()
+    cls.test_12_doe_eval_CustomDoE()
+    cls.test_13_doe_eval_execution_lhs_on_1_var()
+    cls.test_14_doe_eval_options_and_design_space_after_reconfiguration()
+    cls.test_15_doe_eval_CustomDoE_reconfiguration()
+    cls.test_16_doe_eval_design_space_normalisation()
+    cls.test_17_doe_eval_CustomDoE_reconfiguration_after_execution()
