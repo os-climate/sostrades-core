@@ -555,7 +555,7 @@ class DoeEval(SoSEval):
         columns = ['scenario']
         columns.extend(self.selected_inputs)
         samples_all_row = []
-        for (scenario, scenario_sample) in dict_sample.items():
+        for (scenario, scenario_sample) in sorted(dict_sample.items()):
             samples_row = [scenario]
             for generated_input in scenario_sample.values():
                 samples_row.append(generated_input)
@@ -566,7 +566,7 @@ class DoeEval(SoSEval):
         # The key is the output name and the value a dictionnary of results
         # with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
-        for (scenario, scenario_output) in dict_output.items():
+        for (scenario, scenario_output) in sorted(dict_output.items()):
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
