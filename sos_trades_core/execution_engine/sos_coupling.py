@@ -540,7 +540,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
 
-        self.store_sos_outputs_values(dict_out)
+        self.store_sos_outputs_values(dict_out, update_dm=True)
 
     def pre_run_mda(self):
         '''
@@ -605,6 +605,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                     self.local_data)
                                 self.local_data.update(temp_local_data)
 
+                        self.dm.set_values_from_dict(
+                            self._convert_array_into_new_type(self.local_data))
+
                         sub_mda_disciplines = [
                             disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
                 else:
@@ -624,7 +627,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         ready_disciplines = []
         disc_vs_keys_none = {}
         for disc in disciplines:
-            inputs_values = disc.get_sosdisc_inputs()
+            inputs_values = disc.local_data
             keys_none = [key for key, value in inputs_values.items()
                          if value is None and key not in self.NUM_DESC_IN]
             if keys_none == []:
@@ -648,6 +651,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         SoSDisciplineBuilder._run(self, update_local_data=False)
 
+        local_data_sos = self._convert_array_into_new_type(self.local_data)
+        self.dm.set_values_from_dict(local_data_sos)
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
         # self.logger.info(f'{self.get_disc_full_name()} MDA history')

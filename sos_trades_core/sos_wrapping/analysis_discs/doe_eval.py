@@ -482,10 +482,10 @@ class DoeEval(SoSEval):
 
         # saving outputs in the dm
         self.store_sos_outputs_values(
-            {'doe_samples_dataframe': samples_dataframe})
+            {'doe_samples_dataframe': samples_dataframe}, update_dm=True)
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values(
-                {f'{dynamic_output}_dict': global_dict_output[dynamic_output]})
+                {f'{dynamic_output}_dict': global_dict_output[dynamic_output]}, update_dm=True)
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm

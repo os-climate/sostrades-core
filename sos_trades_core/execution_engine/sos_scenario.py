@@ -323,7 +323,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             eval_jac=eval_jac, normalize=False)
         # if eval mode design space was not modified
         self.store_sos_outputs_values(
-            {'design_space_out': design_space})
+            {'design_space_out': design_space}, update_dm=True)
 
     def _run_algorithm(self):
         """
@@ -646,7 +646,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 design_space.loc[design_space[self.VARIABLES] == var, self.VALUE] = pd.Series(
                     [value_x_opt] * len(design_space))
 
-        self.store_sos_outputs_values({'design_space_out': design_space})
+        self.store_sos_outputs_values(
+            {'design_space_out': design_space}, update_dm=True)
 
     def _init_base_grammar(self, name):
         """ *** GEMS overload ***

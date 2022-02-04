@@ -612,7 +612,7 @@ class SoSDiscipline(MDODiscipline):
     def get_data_out(self):
         return self._data_out
 
-    def _update_with_values(self, to_update, update_with):
+    def _update_with_values(self, to_update, update_with, update_dm=False):
         ''' update <to_update> 'value' field with <update_with>
         '''
         to_update_dm = {}
@@ -628,7 +628,14 @@ class SoSDiscipline(MDODiscipline):
                     to_update_dm[self.get_var_full_name(
                         key, to_update)] = ns_update_with[key]
 
-        self.dm.set_values_from_dict(to_update_dm)
+        # update DM after run
+
+        if update_dm:
+            self.dm.set_values_from_dict(to_update_dm)
+
+        # update local_data after run
+        to_update_gemseo = self._convert_new_type_into_array(to_update_dm)
+        self.local_data.update(to_update_gemseo)
 
     def get_ns_reference(self, visibility, namespace=None):
         '''Get namespace reference by consulting the namespace_manager 
@@ -1255,10 +1262,10 @@ class SoSDiscipline(MDODiscipline):
             self.logger.exception(exc)
             raise exc
 
-        if update_local_data:
-            out_dict = self._convert_coupling_outputs_into_gems_format()
-            #-- Local data is the output dictionary for a GEMS discipline
-            self.local_data.update(out_dict)  # update output data for gems
+#         if update_local_data:
+#             out_dict = self._convert_coupling_outputs_into_gems_format()
+#             #-- Local data is the output dictionary for a GEMS discipline
+#             self.local_data.update(out_dict)  # update output data for gems
 
         # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
         # can failed but FAILED (without an forward exception) status is not
@@ -1312,11 +1319,11 @@ class SoSDiscipline(MDODiscipline):
             new_names.append(new_name)
         return new_names
 
-    def store_sos_outputs_values(self, dict_values):
+    def store_sos_outputs_values(self, dict_values, update_dm=False):
         ''' store outputs from 'dict_values' into self._data_out
         '''
         # fill data using data connector if needed
-        self._update_with_values(self._data_out, dict_values)
+        self._update_with_values(self._data_out, dict_values, update_dm)
 
     def fill_output_value_connector(self):
         """

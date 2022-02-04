@@ -60,7 +60,7 @@ class FORMAnalysis(SoSGradients):
             gradient_outputs, variation_list)
         dict_values = {'FORM_outputs': form_outputs}
         # put new field value in data_out
-        self.store_sos_outputs_values(dict_values)
+        self.store_sos_outputs_values(dict_values, update_dm=True)
 
     def get_chart_filter_list(self):
 

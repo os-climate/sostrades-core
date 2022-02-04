@@ -183,3 +183,9 @@ class TestMDAPrerun(unittest.TestCase):
         self.assertAlmostEqual(x_dm[0], x_target[0], delta=tolerance)
         self.assertAlmostEqual(x_in[0], x_target[0], delta=tolerance)
         self.assertAlmostEqual(x_out[0], x_target[0], delta=tolerance)
+
+
+if '__main__' == __name__:
+    cls = TestMDAPrerun()
+    cls.setUp()
+    cls.test_02_mda_init_h()

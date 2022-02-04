@@ -948,3 +948,9 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.root_process.sos_disciplines[0].check_jacobian(
             threshold=1.0e-7, linearization_mode='adjoint',
             derr_approx='finite_differences', step=1e-15)
+
+
+if '__main__' == __name__:
+    cls = TestAnalyticGradients()
+    cls.setUp()
+    cls.test_10_check_analytic_gradients_sellar_new_types_with_mdanewtonraphson()

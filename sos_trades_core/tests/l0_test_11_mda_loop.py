@@ -1033,4 +1033,4 @@ class TestMDALoop(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_15_mda_numerical_options_PureNR()
+    cls.test_01_mda_loop()
