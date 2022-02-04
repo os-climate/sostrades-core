@@ -188,4 +188,4 @@ class TestMDAPrerun(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMDAPrerun()
     cls.setUp()
-    cls.test_02_mda_init_h()
+    cls.test_01_mda_no_init_values()

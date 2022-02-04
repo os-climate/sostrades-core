@@ -185,4 +185,4 @@ class SoSScatterData(SoSDiscipline):
                                                                                                                                    )
                         dict_values[f'{scatter_name}.{output_name}'] = scatter_output_value
 
-        self.store_sos_outputs_values(dict_values)
+        self.store_sos_outputs_values(dict_values, update_dm=True)

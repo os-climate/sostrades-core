@@ -632,10 +632,15 @@ class SoSDiscipline(MDODiscipline):
 
         if update_dm:
             self.dm.set_values_from_dict(to_update_dm)
-
-        # update local_data after run
-        to_update_gemseo = self._convert_new_type_into_array(to_update_dm)
-        self.local_data.update(to_update_gemseo)
+        else:
+            # update local_data after run
+            to_update_gemseo = self._convert_new_type_into_array(to_update_dm)
+            self.local_data.update(to_update_gemseo)
+            # need to update outputs that will disappear after filtering the
+            # local_data
+            not_coupled_outputs = {data: value for data, value in self.local_data.items() if data not in self.get_input_output_data_names()
+                                   and self.dm.get_data(data, self.IO_TYPE) == self.IO_TYPE_OUT}
+            self.dm.set_values_from_dict(not_coupled_outputs)
 
     def get_ns_reference(self, visibility, namespace=None):
         '''Get namespace reference by consulting the namespace_manager 
@@ -1300,6 +1305,15 @@ class SoSDiscipline(MDODiscipline):
                     self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
+    def update_dm_with_local_data(self, local_data):
+        '''
+        Update the DM with local data from GEMSEO 
+        Fiorst convert data into SoSTRades format then set values in the DM 
+        '''
+        local_data_sos = self._convert_array_into_new_type(local_data)
+
+        self.dm.set_values_from_dict(local_data_sos)
+
     def run(self):
         ''' To be overloaded by sublcasses
         '''
@@ -1389,10 +1403,13 @@ class SoSDiscipline(MDODiscipline):
         """
 
         for var_name in self._data_in.keys():
-            var_f_name = self.get_var_full_name(var_name, self._data_in)
 
-            default_val = self.dm.data_dict[self.dm.get_data_id(
-                var_f_name)][self.DEFAULT]
+            try:
+                var_f_name = self.get_var_full_name(var_name, self._data_in)
+                default_val = self.dm.data_dict[self.dm.get_data_id(
+                    var_f_name)][self.DEFAULT]
+            except:
+                var_f_name = self.get_var_full_name(var_name, self._data_in)
             if self.dm.get_value(var_f_name) is None and default_val is not None:
                 self._data_in[var_name][self.VALUE] = default_val
             else:

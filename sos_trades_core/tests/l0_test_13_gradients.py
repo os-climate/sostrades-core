@@ -697,3 +697,9 @@ class TestGradients(unittest.TestCase):
         graph_list = disc.get_post_processing_list(filters)
 #         for graph in graph_list:
 #             graph.to_plotly().show()
+
+
+if '__main__' == __name__:
+    cls = TestGradients()
+    cls.setUp()
+    cls.test_11_grad_analysis_with_all_types()

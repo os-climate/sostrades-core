@@ -99,13 +99,13 @@ class SoSSensitivity(SoSEval):
             output_eval = copy.deepcopy(
                 self.FDeval_func(x_sample, convert_to_array=False))
 
-            for j, output_sens in enumerate(self.eval_out_list):
+            for output_sens in self.eval_out_list:
                 if variation_samples[i] == 0.0:
                     output_name = f'novariation_{output_sens}'
                 else:
                     output_name = f'{variation_samples[i]}percent_{output_sens} vs {input_in_samples[i]}'
 
-                output_dict[output_name] = output_eval[j]
+                output_dict[output_name] = output_eval[output_sens]
 
         return output_dict
 

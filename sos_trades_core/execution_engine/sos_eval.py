@@ -56,6 +56,7 @@ class SoSEval(SoSDisciplineBuilder):
         self.cls_builder = cls_builder
         # Create the eval process builder associated to SoSEval
         self.eval_process_builder = self._set_eval_process_builder()
+        self.eval_process_disc = None
 
     def _set_eval_process_builder(self):
         '''
@@ -107,7 +108,8 @@ class SoSEval(SoSDisciplineBuilder):
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
-            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
+            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                                           ]['io_type'] == 'in'
             if is_float and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -136,17 +138,17 @@ class SoSEval(SoSDisciplineBuilder):
             self.ee.ns_manager.set_current_disc_ns(
                 current_ns.split(f'.{self.sos_name}')[0])
             # build coupling containing eval process
-            eval_process_disc = self.eval_process_builder.build()
+            self.eval_process_disc = self.eval_process_builder.build()
             # store coupling in the children of SoSEval
-            if eval_process_disc not in self.sos_disciplines:
-                self.ee.factory.add_discipline(eval_process_disc)
+            if self.eval_process_disc not in self.sos_disciplines:
+                self.ee.factory.add_discipline(self.eval_process_disc)
             # reset current_ns after build
             self.ee.ns_manager.set_current_disc_ns(current_ns)
         else:
             # build and store eval process in the children of SoSEval
-            eval_process_disc = self.eval_process_builder.build()
-            if eval_process_disc not in self.sos_disciplines:
-                self.ee.factory.add_discipline(eval_process_disc)
+            self.eval_process_disc = self.eval_process_builder.build()
+            if self.eval_process_disc not in self.sos_disciplines:
+                self.ee.factory.add_discipline(self.eval_process_disc)
 
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the high
         # level coupling and we do not have to restore the current_discipline
@@ -170,6 +172,12 @@ class SoSEval(SoSDisciplineBuilder):
         # configure eval process stored in children
         for disc in self.get_disciplines_to_configure():
             disc.configure()
+            # Now that we use local_data as output of an execute a single
+            # discipline needs to have grammar configured (or the filter after
+            # execute will delete output results from local_data
+            # If it is a coupling the grammar is already configured
+            if not disc.is_sos_coupling:
+                disc.update_gems_grammar_with_data_io()
 
         if self._data_in == {} or self.get_disciplines_to_configure() == []:
             # Call standard configure methods to set the process discipline
@@ -260,16 +268,22 @@ class SoSEval(SoSDisciplineBuilder):
             raise SoSEvalException(
                 f'SoSEval discipline has more than one child discipline')
         else:
-            self.sos_disciplines[0].execute()
+            local_data = self.sos_disciplines[0].execute()
+
+        out_local_data = {key: value for key,
+                          value in local_data.items() if key in self.eval_out_list}
+
+        self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
-            out_values = self.convert_output_results_toarray()
+            out_values = np.concatenate(list(out_local_data.values())).ravel()
         else:
-            out_values = []
+            out_values = {}
             for y_id in self.eval_out_list:
-                y_val = self.dm.get_value(y_id)
-                out_values.append(y_val)
-
+                out_values[y_id] = self.dm.get_value(y_id)
+                # get back out_local_data is not enough because some variables could be filtered by the filter function
+                # filtered data are stored in the DM before so we can get back all values from the DM
+            #out_values = self._convert_array_into_new_type(out_local_data)
         return out_values
 
     def convert_output_results_toarray(self):
@@ -307,12 +321,12 @@ class SoSEval(SoSDisciplineBuilder):
             outeval_dict = {}
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
-
+                eval_out_size = len(self.eval_process_disc.local_data[key])
                 output_eval_key = outputs_eval[old_size:old_size +
-                                                        self.eval_out_list_size[i]]
-                old_size = self.eval_out_list_size[i]
-
-                if self.eval_out_type[i] in [dict, DataFrame]:
+                                               eval_out_size]
+                old_size = eval_out_size
+                type_sos = self.dm.get_data(key, 'type')
+                if type_sos in ['dict', 'dataframe']:
                     outeval_dict[key] = np.array([
                         sublist[j] for sublist in output_eval_key])
                 else:

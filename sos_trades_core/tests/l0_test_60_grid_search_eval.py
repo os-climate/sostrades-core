@@ -138,9 +138,3 @@ class TestGridSearchEval(unittest.TestCase):
         print(f'Study executed from the design_space: \n {ds}')
         print(f'Study executed with the samples: \n {doe_disc_samples}')
         print(f'Study generated the output: y_dict \n {y_dict}')
-
-
-if '__main__' == __name__:
-    cls = TestGridSearchEval()
-    cls.setUp()
-    cls.test_09_morphological_matrix_eval_of_scatter_discipline()

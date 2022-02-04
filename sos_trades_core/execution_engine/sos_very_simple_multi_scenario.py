@@ -130,4 +130,4 @@ class SoSVerySimpleMultiScenario(SoSDisciplineScatter):
                             new_values_dict[key] = {long_key.rsplit('.', 1)[0]: self.ee.dm.get_value(
                                 self.get_var_full_name(long_key, self._data_in))}
 
-            self.store_sos_outputs_values(new_values_dict)
+            self.store_sos_outputs_values(new_values_dict, update_dm=True)
