@@ -15,6 +15,7 @@ limitations under the License.
 '''
 import copy
 import platform
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.parallel_execution import ParallelExecution
@@ -141,15 +142,8 @@ class DoeEval(SoSEval):
     X_pd = pd.DataFrame(data=d)
 
     default_algo_options_CustomDOE = {
-        'eval_jac': False,
-        'max_time': 0,
         'n_processes': 1,
-        'wait_time_between_samples': 0.0,
-        'samples': X_pd,
-        'doe_file': None,
-        'comments': '#',
-        'delimiter': ',',
-        'skiprows': 0
+        'wait_time_between_samples': 0.0
     }
 
     default_algo_options_CustomDOE_file = {
@@ -166,7 +160,7 @@ class DoeEval(SoSEval):
 
     algo_dict = {"lhs": default_algo_options_lhs,
                  "fullfact": default_algo_options_fullfact,
-                 "CustomDOE": default_algo_options_CustomDOE_file,
+                 "CustomDOE": default_algo_options_CustomDOE,
                  }
 
     def setup_sos_disciplines(self):
@@ -226,16 +220,10 @@ class DoeEval(SoSEval):
                     if 'custom_samples_df' in self._data_in:
                         self._data_in['custom_samples_df']['value'] = default_custom_dataframe
                         self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
-                else:
-                    default_dict = self.get_algo_default_options(algo_name)
-                    dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
-                                                            'dataframe_edition_locked': False,
 
-                                                            'dataframe_descriptor': {
-                                                                self.VARIABLES: ('string', None, False),
-                                                                self.VALUES: ('string', None, True)}}})
-                    if 'algo_options' in self._data_in:
-                        self._data_in['algo_options']['value'] = default_dict
+
+
+                else:
 
                     default_design_space = pd.DataFrame({'variable': selected_inputs,
 
@@ -252,6 +240,16 @@ class DoeEval(SoSEval):
                                           }})
                     if 'design_space' in self._data_in:
                         self._data_in['design_space']['value'] = default_design_space
+
+                default_dict = self.get_algo_default_options(algo_name)
+                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
+                                                        'dataframe_edition_locked': False,
+
+                                                        'dataframe_descriptor': {
+                                                            self.VARIABLES: ('string', None, False),
+                                                            self.VALUES: ('string', None, True)}}})
+                if 'algo_options' in self._data_in:
+                    self._data_in['algo_options']['value'] = default_dict
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
@@ -443,24 +441,24 @@ class DoeEval(SoSEval):
         dict_sample = {}
         dict_output = {}
 
-        # After samples generation, we enumerate through them and carry out
-        # a evaluation using the soseval evaluation function
+        # We first begin by sample enumeration
         self.samples = self.generate_samples_from_doe_factory()
 
-        # options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-        # n_processes = options.get('n_processes', 1)
-        # wait_time_between_samples = options.get('wait_time_between_samples', 0)
+        # After we retrieve the number of processes on which to execute the scenarios
+        # Notice that multiprocessing is only possible on a linux environment
+        options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
+        n_processes = options['n_processes']
+        wait_time_between_samples = options['wait_time_between_samples']
 
-        if platform.system() == 'Windows':
+        if platform.system() == 'Windows' and n_processes != 1:
+            self.logger.warning("multiprocessing is not possible on Windows,"
+                                "we proceed with sequential execution")
             n_processes = 1
-            print("sequential running")
-        else:
-            n_processes = 4
+
         # We handle the case of a parallel execution here
         # It happens when the number of specified processes n_processes is greater than 1
         if n_processes > 1:
             self.logger.info("Running DOE EVAL in parallel on n_processes = %s", str(n_processes))
-            print("parallel execution")
 
             # Create the parallel execution object. The function we want to parallelize is the sample evaluation
             # function
@@ -471,12 +469,11 @@ class DoeEval(SoSEval):
                     """
                 return self.FDeval_func(sample_one, convert_to_array=False)
 
-            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes)
-            parallel.wait_time_between_fork = 0
+            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
+                                         wait_time_between_fork=wait_time_between_samples)
 
             # Define a callback function to store the samples on the fly
             # during the parallel execution
-
             def store_callback(
                     index,  # type: int
                     outputs,  # type: DOELibraryOutputType
@@ -501,16 +498,6 @@ class DoeEval(SoSEval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
 
-            # The list of inputs of the tasks is the list of samples
-            # composed_samples = []
-            # for x in self.samples:
-            #     eval_in_list = self.eval_in_list[:]
-            #     eval_out_list = self.eval_out_list[:]
-            #     disc = copy.deepcopy(self.sos_disciplines[0])
-            #     composed_samples.append(tuple([x, eval_in_list, disc, eval_out_list]))
-            # samples_test = []
-            # for x in self.samples:
-            #     samples_test.append(tuple([self,x]))
             parallel.execute(self.samples, exec_callback=store_callback)
 
         else:
@@ -532,26 +519,13 @@ class DoeEval(SoSEval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
 
-        # for i, sample in enumerate(self.samples):
-        #
-        #     # generation of the dictionnary of samples
-        #     scenario_name = "scenario_" + str(i + 1)
-        #     dict_one_sample = {}
-        #     for idx, values in enumerate(sample):
-        #         dict_one_sample[self.eval_in_list[idx]] = values
-        #     dict_sample[scenario_name] = dict_one_sample
-        #
-        #     # evaluation of samples and generation of a dictionnary of outputs
-        #     output_eval = copy.deepcopy(
-        #         self.FDeval_func(sample, convert_to_array=False))
-        #     dict_one_output = {}
-        #     for idx, values in enumerate(output_eval):
-        #         dict_one_output[self.eval_out_list[idx]] = values
-        #     dict_output[scenario_name] = dict_one_output
-
         # construction of a dataframe of generated samples
         # the key is the scenario and columns are inputs values for the
         # considered scenario
+        # Iterations through dictionnaries are done using the sorted function to ensure that
+        # the scenarios are stored in the same order than in samples generation since it is not
+        # guaranteed when on parallel execution
+
         columns = ['scenario']
         columns.extend(self.selected_inputs)
         samples_all_row = []

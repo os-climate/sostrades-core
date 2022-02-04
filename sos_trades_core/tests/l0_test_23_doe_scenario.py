@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from time import time
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from pandas._testing import assert_frame_equal
@@ -727,7 +728,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 algo = pydoe_lib.create(algo_name)
                 samples = algo._generate_samples(
                     n_samples=100, dimension=5)
-                print(samples)
+                # print(samples)
 
     def test_10_execute_all_algos(self):
         print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
@@ -799,7 +800,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 100
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option'}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option',
+                                                        'n_processes': 1, 'wait_time_between_samples': 0.0}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -857,7 +859,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
 
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'levels': -1}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_processes': 1, 'wait_time_between_samples': 0.0}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
@@ -936,7 +938,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
+                                                        'wait_time_between_samples': 0.0}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1089,11 +1092,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_z.reset_index(drop=True), check_dtype=False)
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced', 'n_processes': 1,
+                                                  'wait_time_between_samples': 0.0},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 100, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'),
+                             {'n_samples': 100, 'face': 'faced', 'n_processes': 1, 'wait_time_between_samples': 0.0})
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_eval.reset_index(drop=True), check_dtype=False)
 
@@ -1129,6 +1134,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_processes': 1, 'wait_time_between_samples': 0.0}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.custom_samples_df').columns.tolist(), ['x'])
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
@@ -1227,7 +1233,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
-        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced', 'n_processes': 1,
+                                                 'wait_time_between_samples': 0.0}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [0,10.] range
@@ -1249,7 +1256,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                      'doe.DoEEval.design_space': dspace_eval}
 
         exec_eng.load_study_from_input_dict(disc_dict)
-        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced', 'n_processes': 1,
+                                                 'wait_time_between_samples': 0.0}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
@@ -1261,7 +1269,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 generated_z))
 
     def test_17_doe_eval_CustomDoE_reconfiguration_after_execution(self):
-        print("initialising test 17")
+
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -1279,13 +1287,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
 
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'levels': -1}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_processes': 1, 'wait_time_between_samples': 0.0}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
         x_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574, 6.954954792150857]
-        local_dv_values =  x_values
+        local_dv_values = x_values
 
         samples_dict = {'x': x_values, 'DoEEval.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -1332,17 +1340,120 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
-        print(doe_disc_y2)
-        print("test 17 run successfully")
+
+    def _test_18_doe_eval_parallel_execution_time(self):
+        execution_time = 0
+        for i in range(5):
+            start = time()
+
+            dspace_dict_x = {'variable': ['x'],
+
+                             'lower_bnd': [0.],
+                             'upper_bnd': [1000.],
+
+                             }
+            dspace_x = pd.DataFrame(dspace_dict_x)
+
+            exec_eng = ExecutionEngine(self.study_name)
+            factory = exec_eng.factory
+
+            proc_name = "test_sellar_doe_eval"
+            doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                                mod_id=proc_name)
+
+            exec_eng.factory.set_builders_to_coupling_builder(
+                doe_eval_builder)
+
+            exec_eng.configure()
+
+            # -- set up disciplines in Scenario
+            disc_dict = {}
+            # DoE inputs
+            n_samples = 1000
+            disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+            disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
+                                                            'wait_time_between_samples': 0.0}
+            disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+            disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+            exec_eng.load_study_from_input_dict(disc_dict)
+
+            # Sellar inputs
+            local_dv = 10.
+            values_dict = {}
+            # array([1.])
+            values_dict[f'{self.ns}.x'] = 1.
+            values_dict[f'{self.ns}.y_1'] = 1.
+            values_dict[f'{self.ns}.y_2'] = 1.
+            values_dict[f'{self.ns}.z'] = array([1., 1.])
+            values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+            exec_eng.load_study_from_input_dict(values_dict)
+
+            exec_eng.execute()
+            stop = time()
+
+            print(str(stop - start))
+            execution_time += stop - start
+        print("sequential execution in " + str(execution_time / 5) + " seconds")
+
+    def _test_19_doe_eval_parallel_execution_time_8_cores(self):
+        execution_time = 0
+        for i in range(5):
+            start = time()
+
+            dspace_dict_x = {'variable': ['x'],
+
+                             'lower_bnd': [0.],
+                             'upper_bnd': [1000.],
+
+                             }
+            dspace_x = pd.DataFrame(dspace_dict_x)
+
+            exec_eng = ExecutionEngine(self.study_name)
+            factory = exec_eng.factory
+
+            proc_name = "test_sellar_doe_eval"
+            doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                                mod_id=proc_name)
+
+            exec_eng.factory.set_builders_to_coupling_builder(
+                doe_eval_builder)
+
+            exec_eng.configure()
+
+            # -- set up disciplines in Scenario
+            disc_dict = {}
+            # DoE inputs
+            n_samples = 1000
+            disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+            disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 10,
+                                                            'wait_time_between_samples': 0.0}
+            disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+            disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+            exec_eng.load_study_from_input_dict(disc_dict)
+
+            # Sellar inputs
+            local_dv = 10.
+            values_dict = {}
+            # array([1.])
+            values_dict[f'{self.ns}.x'] = 1.
+            values_dict[f'{self.ns}.y_1'] = 1.
+            values_dict[f'{self.ns}.y_2'] = 1.
+            values_dict[f'{self.ns}.z'] = array([1., 1.])
+            values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+            exec_eng.load_study_from_input_dict(values_dict)
+
+            exec_eng.execute()
+            stop = time()
+
+            print(str(stop - start))
+            execution_time += stop - start
+        print("parallel execution in " + str(execution_time / 5) + " seconds")
 
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_11_doe_eval_execution_fullfact()
-    cls.test_12_doe_eval_CustomDoE()
-    cls.test_13_doe_eval_execution_lhs_on_1_var()
-    cls.test_14_doe_eval_options_and_design_space_after_reconfiguration()
-    cls.test_15_doe_eval_CustomDoE_reconfiguration()
-    cls.test_16_doe_eval_design_space_normalisation()
-    cls.test_17_doe_eval_CustomDoE_reconfiguration_after_execution()
+    cls.test_18_doe_eval_parallel_execution_time()
+    cls.test_19_doe_eval_parallel_execution_time_8_cores()
