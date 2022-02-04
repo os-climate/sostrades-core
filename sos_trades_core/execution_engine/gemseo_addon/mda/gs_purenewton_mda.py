@@ -98,3 +98,23 @@ class GSPureNewtonMDA(MDASequential):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
+
+    def _run(self):
+        '''
+        Override _run of sequential MDA to update PureNR MDA local data and normed residual
+        with the values from GS MDA, to avoid an early termination flag before residual 
+        recalculation
+        '''
+        self._couplings_warm_start()
+        # execute MDAs in sequence
+        if self.reset_history_each_run:
+            self.residual_history = []
+        for mda_i in self.mda_sequence:
+            mda_i.reset_statuses_for_run()
+            if mda_i.name == 'PureNewtonRaphson':
+                mda_i.local_data = self.mda_sequence[0].local_data
+                mda_i.normed_residual = self.mda_sequence[0].normed_residual
+            self.local_data = mda_i.execute(self.local_data)
+            self.residual_history += mda_i.residual_history
+            if mda_i.normed_residual < self.tolerance:
+                break
