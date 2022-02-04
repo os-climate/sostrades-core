@@ -17,24 +17,12 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from pandas.core.frame import DataFrame
-import numpy as np
 import pandas as pd
-import copy
-from copy import deepcopy
-import collections
+from gemseo.algos.doe.doe_factory import DOEFactory
+from numpy import array
 
 from sos_trades_core.api import get_sos_logger
-from numpy import array, ndarray, delete, NaN
-
-from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.execution_engine.sos_eval import SoSEval
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.tools.scenario.scenario_generator import ScenarioGenerator
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
-from gemseo.algos.doe.doe_factory import DOEFactory
-
-from gemseo.algos.design_space import DesignSpace
 
 
 class GridSearchEval(DoeEval):
@@ -42,6 +30,7 @@ class GridSearchEval(DoeEval):
     Generic Grid Search evaluation class
     '''
 
+    INPUT_TYPE = ['float']
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
@@ -60,10 +49,7 @@ class GridSearchEval(DoeEval):
 
     def setup_sos_disciplines(self):
         """
-        Overload setup_sos_disciplines to create a dynamic desc_in
-        default descin are the algo name and its options
-        In case of a custom_doe, additionnal input is the customed sample ( dataframe)
-        In other cases, additionnal inputs are the number of samples and the design space
+        Overload setup_sos_disciplines to create the design space only
         """
 
         dynamic_inputs = {}
@@ -91,7 +77,8 @@ class GridSearchEval(DoeEval):
                 # output
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var}_dict': {'type': 'dict'}})
+                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                'namespace': 'ns_doe'}})
 
                 default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
@@ -117,6 +104,7 @@ class GridSearchEval(DoeEval):
         '''
         Constructor
         '''
+        ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(GridSearchEval, self).__init__(sos_name, ee, cls_builder)
         self.doe_factory = DOEFactory()
         self.logger = get_sos_logger(f'{self.ee.logger.name}.GridSearch')
@@ -125,7 +113,8 @@ class GridSearchEval(DoeEval):
         self.eval_out_list = []
 
     def generate_samples_from_doe_factory(self):
-        """Generating samples for the Doe using the Doe Factory
+        """
+        Generating samples for the GridSearch with algo fullfact using the Doe Factory
         """
         algo_name = 'fullfact'
         ds = self.get_sosdisc_inputs(self.DESIGN_SPACE)
@@ -162,61 +151,6 @@ class GridSearchEval(DoeEval):
         self.samples = samples
 
         return self.prepare_samples()
-
-    def set_design_space(self):
-        """
-        reads design space (set_design_space)
-        """
-
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        variables = self.eval_in_list
-        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
-        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
-        values = lower_bounds
-        enable_variables = [True for invar in self.eval_in_list]
-
-        activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
-                           self.eval_in_list]
-
-        dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
-                                            self.VALUES: values,
-                                            self.LOWER_BOUND: lower_bounds,
-                                            self.UPPER_BOUND: upper_bounds,
-                                            self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: activated_elems})
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
-
-        return design_space
-
-    def _fill_possible_values(self, disc):
-        '''
-            Fill possible values for eval inputs and outputs: tuples with (name, namespace)
-            an input variable must be a float, int or string coming from a data_in of a discipline in all the process
-            an output variable must be any data from a data_out discipline
-        '''
-        name_in = []
-        name_out = []
-        for data_in_key in disc._data_in.keys():
-            is_input_types = disc._data_in[data_in_key][self.TYPE] in self.eval_input_types
-            in_coupling_numerical = data_in_key in list(SoSCoupling.DESC_IN.keys()
-                                                        ) + list(SoSDiscipline.NUM_DESC_IN.keys())
-            if is_input_types and not in_coupling_numerical:
-                namespaced_data = disc.get_var_full_name(
-                    data_in_key, disc._data_in)
-                # remove usecase name
-                namespaced_data = namespaced_data.split('.', 1)[1]
-                name_in.append(namespaced_data)
-        for data_out_key in disc._data_out.keys():
-            # Caution ! This won't work for variables with points in name
-            # as for ac_model
-            namespaced_data = disc.get_var_full_name(
-                data_out_key, disc._data_out)
-            # remove usecase name
-            namespaced_data = namespaced_data.split('.', 1)[1]
-            name_out.append(namespaced_data)
-
-        return name_in, name_out
 
     def set_eval_possible_values(self):
         '''

@@ -21,29 +21,38 @@ import numpy as np
 
 class Study(StudyManager):
 
-    def __init__(self, run_usecase=True, execution_engine=None):
+    def __init__(self, run_usecase=False, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
 
         self.grid_search = 'GridSearch'
 
-        dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x', 'GridSearch.Disc1.a'],
-                               'lower_bnd': [20., 4],
-                               'upper_bnd': [25., 6],
-                               'nb_points': [6, 3],
+        # dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x', 'GridSearch.Disc1.a'],
+        #                        'lower_bnd': [20., 4],
+        #                        'upper_bnd': [25., 6],
+        #                        'nb_points': [6, 3],
+        #                        })
+        #
+        # eval_inputs = pd.DataFrame({'selected_input': [True, False, True],
+        #                             'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.x']})
+
+        dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x'],
+                               'lower_bnd': [20.],
+                               'upper_bnd': [25.],
+                               'nb_points': [3],
                                })
 
-        eval_inputs = pd.DataFrame({'selected_input': [True, False, True],
-                                    'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.x']})
+        eval_inputs = pd.DataFrame({'selected_input': [True],
+                                    'full_name': [f'{self.grid_search}.Disc1.x']})
 
         eval_outputs = pd.DataFrame({'selected_output': [False, True, False],
                                      'full_name': [f'{self.grid_search}.Disc1.indicator', f'{self.grid_search}.Disc1.y', f'{self.grid_search}.Disc1.y_dict']})
 
         dict_values = {
             # GRID SEARCH INPUTS
-            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+            # f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            # f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
             # f'{self.study_name}.{self.grid_search}.design_space': dspace,
 
             # DISC1 INPUTS
@@ -57,7 +66,7 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
-    uc_cls = Study()
+    uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.run()
     print("DONE")
