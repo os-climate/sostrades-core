@@ -187,37 +187,43 @@ class DoeEval(SoSEval):
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
 
             # we fetch the inputs and outputs selected by the user
-            selected_outputs = eval_outputs[eval_outputs['selected_output'] == True]['full_name']
-            selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name']
+            selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                            == True]['full_name']
+            selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                          == True]['full_name']
             self.selected_inputs = selected_inputs.tolist()
             self.selected_outputs = selected_outputs.tolist()
 
             # doe can be done only for selected inputs and outputs
             if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
-                # we set the lists which will be used by the evaluation function of sosEval
+                # we set the lists which will be used by the evaluation
+                # function of sosEval
                 self.set_eval_in_out_lists(selected_inputs, selected_outputs)
 
-                # setting dynamic outputs. One output of type dict per selected output
+                # setting dynamic outputs. One output of type dict per selected
+                # output
+
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var}_dict': {'type': 'dict'}})
+                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                'namespace': 'ns_doe'}})
 
                 if algo_name == "CustomDOE":
-                    default_custom_dict = pd.DataFrame(
-                        [[NaN for input in range(len(self.eval_in_base_list))]], columns=self.eval_in_base_list)
+                    default_custom_dataframe = pd.DataFrame(
+                        [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
                     dataframe_descriptor = {}
-                    for i, key in enumerate(self.eval_in_base_list):
+                    for i, key in enumerate(self.selected_inputs):
                         cle = key
                         var = tuple([self.ee.dm.get_data(
                             self.eval_in_list[i], 'type'), None, True])
                         dataframe_descriptor[cle] = var
 
                     dynamic_inputs.update(
-                        {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dict,
+                        {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                                'dataframe_descriptor': dataframe_descriptor,
                                                'dataframe_edition_locked': False}})
                     if 'custom_samples_df' in self._data_in:
-                        self._data_in['custom_samples_df']['value'] = default_custom_dict
+                        self._data_in['custom_samples_df']['value'] = default_custom_dataframe
                         self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
                 else:
                     default_dict = self.get_algo_default_options(algo_name)
@@ -229,7 +235,6 @@ class DoeEval(SoSEval):
                                                                 self.VALUES: ('string', None, True)}}})
                     if 'algo_options' in self._data_in:
                         self._data_in['algo_options']['value'] = default_dict
-
 
                     default_design_space = pd.DataFrame({'variable': selected_inputs,
 
@@ -254,6 +259,7 @@ class DoeEval(SoSEval):
         '''
         Constructor
         '''
+        ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(DoeEval, self).__init__(sos_name, ee, cls_builder)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
@@ -420,10 +426,10 @@ class DoeEval(SoSEval):
         return samples_custom
 
     def check_customed_samples(self):
-        """ We check that the columns of the dataframe are the same and in the same order that in eval_in_base_list
+        """ We check that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
-        if self.eval_in_base_list != self.customed_samples.columns.to_list():
+        if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
             self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
 
@@ -456,29 +462,34 @@ class DoeEval(SoSEval):
                 dict_one_output[self.eval_out_list[idx]] = values
             dict_output[scenario_name] = dict_one_output
 
-        #construction of a dataframe of generated samples
-        #the key is the scenario and columns are inputs values for the considered scenario
+        # construction of a dataframe of generated samples
+        # the key is the scenario and columns are inputs values for the
+        # considered scenario
         columns = ['scenario']
         columns.extend(self.selected_inputs)
         samples_all_row = []
-        for (scenario,scenario_sample) in dict_sample.items():
+        for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]
             for generated_input in scenario_sample.values():
                 samples_row.append(generated_input)
             samples_all_row.append(samples_row)
-        samples_dataframe = pd.DataFrame(samples_all_row,columns = columns)
+        samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
 
         # construction of a dictionnary of dynamic outputs
-        # The key is the output name and the value a dictionnary of results with scenarii as keys
+        # The key is the output name and the value a dictionnary of results
+        # with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
         for (scenario, scenario_output) in dict_output.items():
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.store_sos_outputs_values({'doe_samples_dataframe': samples_dataframe})
+        self.store_sos_outputs_values(
+            {'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
-            self.store_sos_outputs_values({f'{dynamic_output}_dict': global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({
+                f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
+                    global_dict_output[dynamic_output]})
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
@@ -521,24 +532,31 @@ class DoeEval(SoSEval):
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
-            full_id  = disc.get_var_full_name(
+            full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
-            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
+            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                         ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
-                # we remove the study name from the variable full  name for a sake of simplicity
-                poss_in_values_full.append(full_id.split(self.ee.study_name + ".")[1])
+                # we remove the study name from the variable full  name for a
+                # sake of simplicity
+                poss_in_values_full.append(
+                    full_id.split(self.ee.study_name + ".")[1])
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
+            in_coupling_numerical = data_out_key in list(
+                SoSCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
             full_id = disc.get_var_full_name(
                 data_out_key, disc._data_out)
-            #we remove the study name from the variable full  name for a sake of simplicity
-            poss_out_values_full.append(full_id.split(self.ee.study_name + ".")[1])
+            if not in_coupling_numerical:
+                # we remove the study name from the variable full  name for a
+                # sake of simplicity
+                poss_out_values_full.append(
+                    full_id.split(self.ee.study_name + ".")[1])
 
-        return  poss_in_values_full, poss_out_values_full
-
+        return poss_in_values_full, poss_out_values_full
 
     def set_eval_possible_values(self):
         '''
@@ -575,6 +593,13 @@ class DoeEval(SoSEval):
                              'value', default_in_dataframe, check_value=False)
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
+        # check if the eval_inputs need to be updtated after a subprocess
+        # configure
+        elif eval_input_new_dm['full_name'].equals(default_in_dataframe['full_name']) == False:
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+                             'value', default_in_dataframe, check_value=False)
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+                             'value', default_out_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
@@ -600,7 +625,11 @@ class DoeEval(SoSEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        self.eval_in_base_list = [element.split(".")[-1] for element in in_list]
-        self.eval_out_base_list = [element.split(".")[-1] for element in out_list]
-        self.eval_in_list = [f'{self.ee.study_name}.{element}' for element in in_list]
-        self.eval_out_list = [f'{self.ee.study_name}.{element}' for element in out_list]
+        self.eval_in_base_list = [
+            element.split(".")[-1] for element in in_list]
+        self.eval_out_base_list = [
+            element.split(".")[-1] for element in out_list]
+        self.eval_in_list = [
+            f'{self.ee.study_name}.{element}' for element in in_list]
+        self.eval_out_list = [
+            f'{self.ee.study_name}.{element}' for element in out_list]

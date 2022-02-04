@@ -224,7 +224,7 @@ class SoSDiscipline(MDODiscipline):
         # ------------DEBUG VARIABLES----------------------------------------
         self.nan_check = False
         self.check_if_input_change_after_run = False
-        self.check_linearize_data_changes = True
+        self.check_linearize_data_changes = False
         self.check_min_max_gradients = False
         # ----------------------------------------------------
 
@@ -839,11 +839,13 @@ class SoSDiscipline(MDODiscipline):
 
         return result
 
-    def linearize(self, input_data=None, force_all=False, force_no_exec=False):
+    def linearize(self, input_data=None, force_all=False, force_no_exec=False, linearize_on_input_data=False,
+                  exec_before_linearize=True):
         """overloads GEMS linearize function
         """
         # set GEM's default_inputs for gradient computation purposes
         # to be deleted during GEMS update
+
         if input_data is not None:
             self.default_inputs = input_data
         else:
@@ -862,19 +864,43 @@ class SoSDiscipline(MDODiscipline):
         else:
             pass
 
-        if not force_no_exec:
+        # need execution before the linearize
+        if not force_no_exec and exec_before_linearize:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
             self.execute(input_data)
             self.exec_for_lin = False
             self.local_data = self._convert_float_into_array(self.local_data)
             force_no_exec = True
+            need_execution_after_lin = False
 
-#         if not self._linearize_on_last_state:
-#             # self.local_data.update(input_data)
-#             input_data_sostrades = self._convert_array_into_new_type(
-#                 input_data)
-#             self.dm.set_values_from_dict(input_data_sostrades)
+        # need execution but after linearize, in the NR GEMSEO case an
+        # execution is done bfore the while loop which udates the local_data of
+        # each discipline
+        elif not force_no_exec and not exec_before_linearize:
+            force_no_exec = True
+            need_execution_after_lin = True
+
+        # no need of any execution
+        else:
+            need_execution_after_lin = False
+            # maybe no exec before the first linearize, GEMSEO needs a
+            # local_data with inputs and outputs for the jacobian computation
+            # if the local_data is empty
+            if self.local_data == {}:
+                own_data = {
+                    k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
+                self.local_data = own_data
+        # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
+        # It is here to update the dm with input_data (as we do in GEMS for
+        # local_data
+        if not self._linearize_on_last_state and linearize_on_input_data:
+            # self.local_data.update(input_data)
+            only_input_data = {
+                k: v for k, v in input_data.items() if self.is_input_existing(k)}
+            input_data_sostrades = self._convert_array_into_new_type(
+                only_input_data)
+            self.dm.set_values_from_dict(input_data_sostrades)
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
@@ -889,6 +915,11 @@ class SoSDiscipline(MDODiscipline):
             self.__check_discipline_data_integrity(disc_data_before_linearize,
                                                    disc_data_after_linearize,
                                                    'Discipline data integrity through linearize')
+
+        if need_execution_after_lin:
+            self.reset_statuses_for_run()
+            self.execute(input_data)
+            self.local_data = self._convert_float_into_array(self.local_data)
 
         return result
 
