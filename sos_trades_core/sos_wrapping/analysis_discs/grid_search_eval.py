@@ -80,23 +80,44 @@ class GridSearchEval(DoeEval):
                         {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
                                                                                 'namespace': 'ns_doe'}})
 
-                default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
+                # setting dynamic design space with default value if not
+                # specified
+                if (self.design_space is None):
+                    default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
-                                                     self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
-                                                                                                                 'type') == 'array' else 0.0
-                                                                        for var in self.eval_in_list],
-                                                     self.UPPER_BOUND: [array([10.0, 10.0]) if self.ee.dm.get_data(var,
-                                                                                                                   'type') == 'array' else 10.0
-                                                                        for var in self.eval_in_list],
-                                                     self.NB_POINTS: 2
-                                                     })
+                                                         self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
+                                                                                                                     'type') == 'array' else 0.0
+                                                                            for var in self.eval_in_list],
+                                                         self.UPPER_BOUND: [array([10.0, 10.0]) if self.ee.dm.get_data(var,
+                                                                                                                       'type') == 'array' else 10.0
+                                                                            for var in self.eval_in_list],
+                                                         self.NB_POINTS: 2
+                                                         })
 
-                dynamic_inputs.update(
-                    {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                      }})
-                if 'design_space' in self._data_in:
-                    self._data_in['design_space']['value'] = default_design_space
+                    dynamic_inputs.update(
+                        {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+                                          }})
 
+                if ('design_space' in self._data_in):
+                    design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+                    if (design_space['variable'].to_list() != self.selected_inputs):
+                        default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
+
+                                                             self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
+                                                                                                                         'type') == 'array' else 0.0
+                                                                                for var in self.eval_in_list],
+                                                             self.UPPER_BOUND: [array([10.0, 10.0]) if self.ee.dm.get_data(var,
+                                                                                                                           'type') == 'array' else 10.0
+                                                                                for var in self.eval_in_list],
+                                                             self.NB_POINTS: 2
+                                                             })
+
+                        dynamic_inputs.update(
+                            {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+                                              }})
+                        self._data_in['design_space']['value'] = default_design_space
+
+                # algo_options to match with doe and specify processes nb
                 default_dict = {'n_processes': 1,
                                 'wait_time_between_samples': 0.0}
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
@@ -137,8 +158,6 @@ class GridSearchEval(DoeEval):
             if options[algo_option] != 'default':
                 filled_options[algo_option] = options[algo_option]
 
-        # if 'levels' in options:
-        #     options['levels'] = options['levels'].astype(int).tolist()
         if self.N_SAMPLES not in options:
             self.logger.warning("N_samples is not defined; pay attention you use fullfact algo "
                                 "and that levels are well defined")
