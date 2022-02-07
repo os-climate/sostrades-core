@@ -524,12 +524,13 @@ class DoeEval(SoSEval):
         # considered scenario
         # Iterations through dictionnaries are done using the sorted function to ensure that
         # the scenarios are stored in the same order than in samples generation since it is not
-        # guaranteed when on parallel execution
+        # guaranteed when on parallel execution. The sort is done according to the scenario index
 
         columns = ['scenario']
         columns.extend(self.selected_inputs)
         samples_all_row = []
-        for (scenario, scenario_sample) in sorted(dict_sample.items()):
+        for (scenario, scenario_sample) in sorted(dict_sample.items(),
+                                                  key=lambda scenario_name: int(scenario_name[0].split("scenario_")[1])):
             samples_row = [scenario]
             for generated_input in scenario_sample.values():
                 samples_row.append(generated_input)
@@ -540,7 +541,8 @@ class DoeEval(SoSEval):
         # The key is the output name and the value a dictionnary of results
         # with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
-        for (scenario, scenario_output) in sorted(dict_output.items()):
+        for (scenario, scenario_output) in sorted(dict_output.items(),
+                                                  key=lambda scenario_name: int(scenario_name[0].split("scenario_")[1])):
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
@@ -649,18 +651,36 @@ class DoeEval(SoSEval):
                                               'full_name': possible_out_values_full})
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
+        eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
         if eval_input_new_dm is None:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
-                             'value', default_out_dataframe, check_value=False)
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
-        elif eval_input_new_dm['full_name'].equals(default_in_dataframe['full_name']) == False:
+        elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            default_dataframe = copy.deepcopy(default_in_dataframe)
+            already_set_names = eval_input_new_dm['full_name'].tolist()
+            already_set_values = eval_input_new_dm['selected_input'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
+                    index]
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
-                             'value', default_in_dataframe, check_value=False)
+                             'value', default_dataframe, check_value=False)
+
+        if eval_output_new_dm is None:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
+            # check if the eval_inputs need to be updtated after a subprocess
+            # configure
+        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            default_dataframe = copy.deepcopy(default_out_dataframe)
+            already_set_names = eval_output_new_dm['full_name'].tolist()
+            already_set_values = eval_output_new_dm['selected_output'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
+                    index]
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+                             'value', default_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
