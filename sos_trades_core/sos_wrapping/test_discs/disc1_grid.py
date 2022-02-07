@@ -22,6 +22,11 @@ class Disc1(SoSDiscipline):
     _maturity = 'Fake'
     DESC_IN = {
         'x': {'type': 'float'},
+        'd': {'type': 'float'},
+        'f': {'type': 'float'},
+        'g': {'type': 'float'},
+        'h': {'type': 'float'},
+        'j': {'type': 'float'},
         'a': {'type': 'int'},
         'b': {'type': 'int', 'possible_values': [0, 2, 5]},
         'name': {'type': 'string', 'possible_values': ['A1', 'A2', 'A3']},
