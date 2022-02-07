@@ -97,6 +97,16 @@ class GridSearchEval(DoeEval):
                 if 'design_space' in self._data_in:
                     self._data_in['design_space']['value'] = default_design_space
 
+                default_dict = {'n_processes': 1,
+                                'wait_time_between_samples': 0.0}
+                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
+                                                        'dataframe_edition_locked': False,
+                                                        'dataframe_descriptor': {
+                                                            self.VARIABLES: ('string', None, False),
+                                                            self.VALUES: ('string', None, True)},
+                                                        'user_level': 99,
+                                                        'editable': False}})
+
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 

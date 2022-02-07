@@ -43,7 +43,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.proc_name = 'test_grid_search'
 
-    def _test_01_grid_search_eval(self):
+    def test_01_grid_search_eval(self):
 
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
@@ -107,7 +107,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
-        y_dict = grid_search_disc_output['GridSearch_Disc1_y_dict']
+        y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
 
@@ -131,7 +131,7 @@ class TestGridSearchEval(unittest.TestCase):
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
 
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
-        y_dict = grid_search_disc_output['GridSearch_Disc1_y_dict']
+        y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
 
