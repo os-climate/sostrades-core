@@ -18,7 +18,7 @@ limitations under the License.
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
-
+from copy import copy
 from cmath import exp, sqrt
 from numpy import array, atleast_2d, complex128, ones, zeros
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
@@ -134,14 +134,17 @@ class Sellar1(SoSDiscipline):
                'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'float',
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+                'y_1_bis': {'type': 'float',
+                            'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ Discipline 1 execution
         """
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
-        y1_out = {'y_1': y_1}
+        y1_out = {'y_1': y_1,
+                  'y_1_bis': copy(y_1)}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -175,10 +178,18 @@ class Sellar1(SoSDiscipline):
 
         self.set_partial_derivative('y_1', 'x', atleast_2d(array([1.0])))
 
+        self.set_partial_derivative('y_1_bis', 'x', atleast_2d(array([1.0])))
+
         self.set_partial_derivative('y_1', 'z', atleast_2d(array(
             [2.0 * z[0], 1.0])))
 
+        self.set_partial_derivative('y_1_bis', 'z', atleast_2d(array(
+            [2.0 * z[0], 1.0])))
+
         self.set_partial_derivative('y_1', 'y_2', atleast_2d(array([-0.2])))
+
+        self.set_partial_derivative(
+            'y_1_bis', 'y_2', atleast_2d(array([-0.2])))
 
 
 class Sellar2(SoSDiscipline):
@@ -189,14 +200,16 @@ class Sellar2(SoSDiscipline):
                'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'float',
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+                'y_2_bis': {'type': 'float',
+                            'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ solves Discipline1
         """
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         y_2 = self.compute_y_2(y_1, z)
-        y1_out = {'y_2': y_2}
+        y1_out = {'y_2': y_2, 'y_2_bis': copy(y_2)}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -229,7 +242,13 @@ class Sellar2(SoSDiscipline):
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
             array([1.0 / (2.0 * sqrt(y_1))])))
 
+        self.set_partial_derivative('y_2_bis', 'y_1', atleast_2d(
+            array([1.0 / (2.0 * sqrt(y_1))])))
+
         self.set_partial_derivative('y_2', 'z', atleast_2d(
+            array([1.0, 1.0])))
+
+        self.set_partial_derivative('y_2_bis', 'z', atleast_2d(
             array([1.0, 1.0])))
 
 
