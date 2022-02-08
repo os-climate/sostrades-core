@@ -178,10 +178,18 @@ class Sellar1(SoSDiscipline):
 
         self.set_partial_derivative('y_1', 'x', atleast_2d(array([1.0])))
 
+        self.set_partial_derivative('y_1_bis', 'x', atleast_2d(array([1.0])))
+
         self.set_partial_derivative('y_1', 'z', atleast_2d(array(
             [2.0 * z[0], 1.0])))
 
+        self.set_partial_derivative('y_1_bis', 'z', atleast_2d(array(
+            [2.0 * z[0], 1.0])))
+
         self.set_partial_derivative('y_1', 'y_2', atleast_2d(array([-0.2])))
+
+        self.set_partial_derivative(
+            'y_1_bis', 'y_2', atleast_2d(array([-0.2])))
 
 
 class Sellar2(SoSDiscipline):
@@ -234,7 +242,13 @@ class Sellar2(SoSDiscipline):
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
             array([1.0 / (2.0 * sqrt(y_1))])))
 
+        self.set_partial_derivative('y_2_bis', 'y_1', atleast_2d(
+            array([1.0 / (2.0 * sqrt(y_1))])))
+
         self.set_partial_derivative('y_2', 'z', atleast_2d(
+            array([1.0, 1.0])))
+
+        self.set_partial_derivative('y_2_bis', 'z', atleast_2d(
             array([1.0, 1.0])))
 
 
