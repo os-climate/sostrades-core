@@ -82,25 +82,24 @@ class GridSearchEval(DoeEval):
 
                 # setting dynamic design space with default value if not
                 # specified
-                if (self.design_space is None):
-                    default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
+                default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
-                                                         self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
-                                                                                                                     'type') == 'array' else 0.0
-                                                                            for var in self.eval_in_list],
-                                                         self.UPPER_BOUND: [array([10.0, 10.0]) if self.ee.dm.get_data(var,
-                                                                                                                       'type') == 'array' else 10.0
-                                                                            for var in self.eval_in_list],
-                                                         self.NB_POINTS: 2
-                                                         })
+                                                     self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
+                                                                                                                 'type') == 'array' else 0.0
+                                                                        for var in self.eval_in_list],
+                                                     self.UPPER_BOUND: [array([10.0, 10.0]) if self.ee.dm.get_data(var,
+                                                                                                                   'type') == 'array' else 10.0
+                                                                        for var in self.eval_in_list],
+                                                     self.NB_POINTS: 2
+                                                     })
 
-                    dynamic_inputs.update(
-                        {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                          }})
+                dynamic_inputs.update(
+                    {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+                                      }})
 
                 if ('design_space' in self._data_in):
                     design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-                    if (design_space['variable'].to_list() != self.selected_inputs):
+                    if (set(design_space['variable'].to_list()) != set(self.selected_inputs)):
                         default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
 
                                                              self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
@@ -111,10 +110,6 @@ class GridSearchEval(DoeEval):
                                                                                 for var in self.eval_in_list],
                                                              self.NB_POINTS: 2
                                                              })
-
-                        dynamic_inputs.update(
-                            {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                              }})
                         self._data_in['design_space']['value'] = default_design_space
 
                 # algo_options to match with doe and specify processes nb
