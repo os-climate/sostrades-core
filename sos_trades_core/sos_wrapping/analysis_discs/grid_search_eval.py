@@ -27,6 +27,15 @@ import itertools
 import copy
 import numpy as np
 
+import itertools
+from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
+    InstanciatedSeries
+from sos_trades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
+import plotly.graph_objects as go
+from sos_trades_core.tools.post_processing.post_processing_tools import align_two_y_axes, format_currency_legend
+from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import \
+    InstantiatedPlotlyNativeChart
 
 class GridSearchEval(DoeEval):
     '''
@@ -249,3 +258,294 @@ class GridSearchEval(DoeEval):
                              'value', default_in_dataframe, check_value=False)
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
+            
+    def prepare_chart_dict(self, outputs_discipline_dict):
+        
+        # outputs_discipline_dict=self.outputs_discipline_dict
+        # 1) get input list
+        
+        doe_samples_df=outputs_discipline_dict['doe_samples_dataframe']
+        inputs=[col for col in doe_samples_df.columns if col not in ['scenario']]
+        # 2) generate combination of inputs
+        inputs_combin=list(itertools.combinations(inputs,2))
+        
+        # 3) get outputs list ..> from output.columns !name!
+        full_chart_list=[]
+        # for key in outputs_discipline_dict.keys():
+        #     if key != 'doe_samples_dataframe':
+        #         cf_dict=outputs_discipline_dict[key]
+        #         outs_cols_vble=cf_dict.select_dtypes(include='float').columns.to_list()
+        #         full_chart_list+=list(itertools.product(inputs_combin,outs_cols_vble))
+        cf_dict=outputs_discipline_dict[list(outputs_discipline_dict.keys())[1]]       
+
+        if isinstance(cf_dict, pd.DataFrame):
+            outs_cols_vble=cf_dict.select_dtypes(include='float').columns.to_list()
+            full_chart_list+=list(itertools.product(inputs_combin,outs_cols_vble))
+            
+            # outs_cols_vble=cf_dict[list(cf_dict.keys())[0]].select_dtypes(include='float').columns.to_list()
+            
+        # 4) create product combination between inputs and outputs to generate full chart list
+    
+        # 5) add slider to each graph
+        
+        chart_dict={}
+        for chart in full_chart_list:
+            z_vble=chart[1]
+            x_vble=chart[0][0]
+            y_vble=chart[0][1]
+
+            slide_vble=[ ]
+            for col in inputs:
+                if col not in chart[0]:
+                    slide_vble.append(col)
+                    
+                    
+            chart_name=f'{z_vble} based on {x_vble} vs {y_vble}'
+            chart_dict[chart_name]={
+                'x':x_vble,
+                'x_unit':self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(x_vble)[0])['unit'],
+                'y':y_vble,
+                'y_unit':self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0])['unit'],
+                'z':z_vble,
+                # 'z_unit':self._data_out[self.ee.dm.get_all_namespaces_from_var_name(z_vble)],
+                'slider':slide_vble
+                }
+        # self._data_out['VARIABLE_NAME']['unit']
+
+        # 'graph1':{
+        #     'x':{'RC'},
+        #     'y':'NRC',
+        #      z:'NPV',
+        #     sliders:['COC']}
+    
+        return chart_dict       
+        
+    def get_chart_filter_list(self):
+        
+        chart_filters = []
+        
+        # outputs_dict=self.get_sosdisc_outputs()
+        chart_dict=self.prepare_chart_dict(self.output_dict)
+        
+        # cf_dict=self.get_sosdisc_outputs(
+                # 'cashflow_info_total_scenario_df_dict')
+        # chart_list=cf_dict[list(cf_dict.keys())[0]].select_dtypes(include='float').columns.to_list()
+        
+        chart_list = list(chart_dict.keys())  
+        chart_filters.append(ChartFilter(
+            'Charts', chart_list, chart_list, 'Charts'))
+        
+        return chart_filters            
+
+    def get_post_processing_list(self, filters=None):
+        
+        instanciated_charts=[]
+        
+        chart_dict=self.prepare_chart_dict(self.output_dict)
+        
+        # Overload default value with chart filter
+        if filters is not None:
+            for chart_filter in filters:
+                if chart_filter.filter_key == 'Charts':
+                    graphs_list = chart_filter.selected_values
+
+        
+        # chart_dict=self.prepare_chart_dict(self.outputs_discipline_dict)
+        print('done')
+        
+        # df_dict=self.output_dict['cashflow_info_total_scenario_df_dict']
+        doe_samples_df=self.output_dict['doe_samples_dataframe']
+        cf_dict=self.output_dict[list(self.output_dict.keys())[1]] 
+        if 'scenario' not in cf_dict.columns:
+            cf_dict.rename(columns={'variable':'scenario'}, inplace=True)
+        # output_df = None
+
+        # for scenario, df in df_dict.items():
+        #     filtered_df = df.copy(deep=True)
+        #     filtered_df['scenario'] = f'{scenario}'
+
+        #     if output_df is None:
+        #         output_df = filtered_df.copy(deep=True)
+        #     else:
+        #         output_df = pd.concat(
+        #             [output_df, filtered_df], axis=0)
+                
+        cont_plot_df = doe_samples_df.merge(
+            cf_dict, how="left", on='scenario' )
+        
+        for name, chart_info in chart_dict.items():
+            fig = go.Figure()
+            
+            if name in graphs_list:
+                
+
+                if len(chart_info['slider'])==0:
+                                        
+                    x_data=cont_plot_df[chart_info['x']].to_list()
+                    y_data=cont_plot_df[chart_info['y']].to_list()
+                    z_data=cont_plot_df[chart_info['z']].to_list()
+
+                    # # Initialization Slider
+                    # # if name == chart_dict[name]:
+                    # #     visible = True
+                    # # else:
+                    # #     visible = False
+                            
+
+                    fig.add_trace(
+                        go.Contour(
+                            x=x_data,
+                            y=y_data,
+                            z=z_data,
+                            colorscale='YlGnBu',
+                            contours=dict(
+                                coloring ='heatmap',
+                                showlabels = True, # show labels on contours
+                                labelfont = dict( # label font properties
+                                    size = 10,
+                                    # color = 'white',
+                                    )
+                                ),
+                            colorbar=dict(
+                                title=chart_info['z'], # title here
+                                nticks=10,
+                                # ticks='outside',
+                                ticklen=5, tickwidth=1,
+                                # showticklabels=True,
+                                tickangle=0, tickfont_size=10),
+                            visible=True,
+                            )
+                        )
+                    
+                    fig.update_layout(
+                        
+                        autosize=True,
+                        xaxis=dict(
+                            title=chart_info['x'],
+                            titlefont_size=12,
+                            tickfont_size=10,
+                            automargin=True
+                        ),
+                        yaxis=dict(
+                            title=chart_info['y'],
+                            titlefont_size=12,
+                            tickfont_size=10,
+                            # ticksuffix='$',
+                            # tickformat=',.0%',
+                            automargin=True,
+                        ),
+                        # margin=dict(l=0.25, b=100)
+                    )
+                    
+                    if len(fig.data) > 0:
+                        chart_name = f'<b> {name} </b>'
+                        new_chart = InstantiatedPlotlyNativeChart(
+                            fig=fig, chart_name=chart_name, default_legend=False)
+                        instanciated_charts.append(new_chart)
+                        new_chart.to_plotly().show()
+                
+
+                if len(chart_info['slider'])==1:
+                    col_slider=chart_info['slider'][0]
+                    slider_values=cont_plot_df[col_slider].unique()
+                    fig = go.Figure()
+                    for slide_value in slider_values:
+                        x_data=cont_plot_df.loc[cont_plot_df[col_slider]==slide_value][chart_info['x']].to_list()
+                        y_data=cont_plot_df.loc[cont_plot_df[col_slider]==slide_value][chart_info['y']].to_list()
+                        z_data=cont_plot_df.loc[cont_plot_df[col_slider]==slide_value][chart_info['z']].to_list()
+
+                        # Initialization Slider
+                        if slide_value == slider_values[-1]:
+                            visible = True
+                        else:
+                            visible = False
+
+                        fig.add_trace(
+                            go.Contour(
+                                x=x_data,
+                                y=y_data,
+                                z=z_data,
+                                colorscale='YlGnBu',
+                                contours=dict(
+                                    coloring ='heatmap',
+                                    showlabels = True, # show labels on contours
+                                    labelfont = dict( # label font properties
+                                        size = 10,
+                                        # color = 'white',
+                                        )
+                                    ),
+                                colorbar=dict(
+                                    title=f'{chart_info["z"]}', # title here
+                                    nticks=10,
+                                    ticks='outside',
+                                    ticklen=5, tickwidth=1,
+                                    # showticklabels=True,
+                                    tickangle=0, tickfont_size=10),
+                                visible=visible,
+                                )
+                            )
+                        
+                    # Create and add slider
+                    steps = []
+                    
+                    for i in range(int(len(fig.data))):
+
+                        step = dict(
+                            method="update",
+                            args=[{"visible": [False] * len(fig.data)},
+                                {"title": f'<b>{name} for : {col_slider} = {slider_values[i]} % </b>'}],
+                            label=f'{slider_values[i]}'  # layout attribute
+                        )
+                            # Toggle i'th trace to 'visible'
+                        step["args"][0]["visible"][i] = True
+                        steps.append(step)
+
+                    sliders = [dict(
+                        active=len(steps) - 1,
+                        currentvalue={'visible': True,
+                                    "prefix": f' {col_slider}:  '},
+                        steps=steps,
+                        pad=dict(t=50),
+                        )]
+
+                    fig.update_layout(
+                        sliders=sliders,
+                        autosize=True,
+                            
+                        xaxis=dict(
+                            title=f'{chart_info["x"]} ({chart_info["x_unit"]}',
+                            titlefont_size=12,
+                            tickfont_size=10,
+                            automargin=True
+                        ),
+                        yaxis=dict(
+                            title=f'{chart_info["y"]} ({chart_info["y_unit"]}',
+                            titlefont_size=12,
+                            tickfont_size=10,
+                            # ticksuffix='$',
+                            # tickformat=',.0%',
+                            automargin=True,
+                        ),
+                        # margin=dict(l=0.25, b=100)
+                    )
+                    # Create native plotly chart
+                    last_value=slider_values[-1]
+                    if len(fig.data) > 0:
+                        chart_name = f'<b>{name} for : {chart_info["slider"][0]} = {last_value} % </b>'
+                        new_chart = InstantiatedPlotlyNativeChart(
+                            fig=fig, chart_name=chart_name, default_legend=False)
+                        instanciated_charts.append(new_chart)
+
+                    # new_chart.to_plotly().show()
+
+
+            # export_data = yearly_systems_upgrade_market_size.groupby(
+            #     ['years', 'airline_region'], as_index=False).sum()
+            # # export_data['scenario_id'] = scenario_list
+            # new_chart.set_csv_data_from_dataframe(
+            #     export_data)
+            # instanciated_charts.append(new_chart)
+
+            # # new_chart.to_plotly().show()
+
+        return instanciated_charts
