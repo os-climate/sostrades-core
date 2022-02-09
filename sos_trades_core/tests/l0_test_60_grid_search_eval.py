@@ -43,7 +43,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.proc_name = 'test_grid_search'
 
-    def test_01_grid_search_eval(self):
+    def _test_01_grid_search_eval(self):
 
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
@@ -186,8 +186,29 @@ class TestGridSearchEval(unittest.TestCase):
         print(f'Study executed with the samples: \n {doe_disc_samples}')
         print(f'Study generated the output: y_dict \n {y_dict}')
 
+    def test_02_grid_search_shortest_name(self):
+
+        sa_builder = self.exec_eng.factory.get_builder_from_process(
+            self.repo, self.proc_name)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
+
+        print('Study first configure!')
+
+        grid_search_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+
+        list = ['GridSearch.Disc1.d', 'GridSearch.Disc1.f', 'GridSearch.Disc1.g',
+                'GridSearch.Disc1.h', 'GridSearch.Disc1.j', 'GridSearch.Disc1.x',
+                'GridSearch.Disc2.d', 'GridSearch.Nana.Disc1.d', 'GridSearch.Nana.Disc2.d']
+
+        shortest_list = grid_search_disc.generate_shortest_name(list)
+
 
 if '__main__' == __name__:
     cls = TestGridSearchEval()
     cls.setUp()
-    cls.test_09_morphological_matrix_eval_of_scatter_discipline()

@@ -23,6 +23,9 @@ from numpy import array
 
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
+import itertools
+import copy
+import numpy as np
 
 
 class GridSearchEval(DoeEval):
@@ -65,10 +68,15 @@ class GridSearchEval(DoeEval):
                                             == True]['full_name']
             selected_inputs = eval_inputs[eval_inputs['selected_input']
                                           == True]['full_name']
-            self.selected_inputs = selected_inputs.tolist()
+
+            # l = self.generate_shortest_name(selected_inputs)
+            # select inputs till  maximum selected input number
+            self.selected_inputs = selected_inputs.tolist()[
+                : self.max_inputs_nb]
             self.selected_outputs = selected_outputs.tolist()
 
-            self.set_eval_in_out_lists(selected_inputs, selected_outputs)
+            self.set_eval_in_out_lists(
+                self.selected_inputs, self.selected_outputs)
 
             # grid8seqrch can be done only for selected inputs and outputs
             if (len(self.eval_in_list) > 0) and (len(self.eval_out_list) > 0):
@@ -82,7 +90,7 @@ class GridSearchEval(DoeEval):
 
                 # setting dynamic design space with default value if not
                 # specified
-                default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
+                default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
 
                                                      self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
                                                                                                                  'type') == 'array' else 0.0
@@ -100,7 +108,7 @@ class GridSearchEval(DoeEval):
                 if ('design_space' in self._data_in):
                     design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
                     if (set(design_space['variable'].to_list()) != set(self.selected_inputs)):
-                        default_design_space = pd.DataFrame({self.VARIABLES: selected_inputs,
+                        default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
 
                                                              self.LOWER_BOUND: [array([0.0, 0.0]) if self.ee.dm.get_data(var,
                                                                                                                          'type') == 'array' else 0.0
@@ -137,6 +145,29 @@ class GridSearchEval(DoeEval):
         self.eval_input_types = ['float', 'int', 'string']
         self.eval_in_list = []
         self.eval_out_list = []
+        self.max_inputs_nb = 3
+
+    def generate_shortest_name(self, var_list):
+        print(var_list)
+        list_shortest_name = [[] for i in range(len(var_list))]
+        for a, b in itertools.combinations(var_list, 2):
+            a_split = a.split('.')
+            b_split = b.split('.')
+            var = ''
+            while (a_split[-1] == b_split[-1]):
+                var = '.' + a_split[-1] + var
+                del a_split[-1]
+                del b_split[-1]
+            a_shortest = a_split[-1] + var
+            b_shortest = b_split[-1] + var
+
+            list_shortest_name[var_list.index(a)].append(a_shortest)
+            list_shortest_name[var_list.index(b)].append(b_shortest)
+
+        list_shortest_name = [max(item, key=len)
+                              for item in list_shortest_name]
+
+        return list_shortest_name
 
     def generate_samples_from_doe_factory(self):
         """
