@@ -53,7 +53,6 @@ class TestStructuringInputs(unittest.TestCase):
         self.root_dir = gettempdir()
 
     def tearDown(self):
-
         for file in self.file_to_del:
             if Path(file).is_file():
                 remove(file)
@@ -398,6 +397,8 @@ class TestStructuringInputs(unittest.TestCase):
                            'linear_solver_MDA_preconditioner': {'type': 'string'},
                            'linear_solver_MDA_options': {'type': 'dict', 'default': {'max_iter': 1000, 'tol': 1e-08}, 'possible_values': None},
                            'group_mda_disciplines': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
+                           'authorize_self_coupled_disciplines': {'type': 'bool', 'possible_values': [True, False],
+                                                                  'default': False},
                            'linearization_mode': {'type': 'string', 'default': 'auto', 'possible_values': ['auto', 'direct', 'adjoint', 'reverse', 'finite_differences', 'complex_step']},
                            'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['SimpleCache', 'HDF5Cache', 'MemoryFullCache']},
                            'cache_file_path': {'type': 'string', 'default': None, 'possible_values': None}
