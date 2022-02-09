@@ -101,9 +101,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        print('\n in test doe scenario')
-        for key in exec_eng.dm.data_id_map:
-            print("key", key)
+        # print('\n in test doe scenario')
+        # for key in exec_eng.dm.data_id_map:
+        #     print("key", key)
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -165,9 +165,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        print('\n in test doe scenario')
-        for key in exec_eng.dm.data_id_map:
-            print("key", key)
+        # print('\n in test doe scenario')
+        # for key in exec_eng.dm.data_id_map:
+        #     print("key", key)
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -218,7 +218,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd)
+        # print(XY_pd)
         X_pd = XY_pd['design_parameters']
         self.assertEqual(len(X_pd), n_samples)
 
@@ -295,7 +295,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
             doe_disc_output = doe_disc.get_sosdisc_outputs()
             XY_pd = doe_disc_output['doe_ds_io']
-            print(XY_pd)
+            # print(XY_pd)
             X_pd = XY_pd['design_parameters']
             self.assertEqual(len(X_pd), n_samples)
 
@@ -361,7 +361,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd.columns)
+        # print(XY_pd.columns)
         X_pd = XY_pd['design_parameters']
         Y_pd = XY_pd['functions']
 
@@ -375,8 +375,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(full_factorial_samples, theoretical_fullfact_samples)
 
         my_optim_result = doe_disc_output['optim_result']
-        print(my_optim_result['x_opt'])
-        print(my_optim_result['f_opt'])
+        # print(my_optim_result['x_opt'])
+        # print(my_optim_result['f_opt'])
 
     def test_5_doe_scenario_eval_mode(self):
         print("\n Test 05 : Sellar doe with eval_mode")
@@ -616,7 +616,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd)
+        # print(XY_pd)
         X_pd = XY_pd['design_parameters']
         doe_file_df = pd.read_csv(doe_file)
 
@@ -655,9 +655,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        print('\n in test doe scenario')
-        for key in exec_eng.dm.data_id_map:
-            print("key", key)
+        # print('\n in test doe scenario')
+        # for key in exec_eng.dm.data_id_map:
+        #     print("key", key)
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -713,7 +713,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_output = doe_disc.get_sosdisc_outputs()
         XY_pd = doe_disc_output['doe_ds_io']
-        print(XY_pd)
+        # print(XY_pd)
         X_pd = XY_pd['design_parameters']
 
         self.assertEqual(len(X_pd), n_samples)
@@ -908,7 +908,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
-        print(doe_disc_obj)
+
 
     def test_13_doe_eval_execution_lhs_on_1_var(self):
 
@@ -970,7 +970,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), n_samples)
-        print(doe_disc_samples)
+
 
     def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
 
@@ -1079,7 +1079,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
-                           dspace_x.reset_index(drop=True), check_dtype=False)
+                           dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'}}
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1089,7 +1089,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_z.reset_index(drop=True), check_dtype=False)
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced', 'n_processes': 1,
@@ -1178,7 +1178,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), 5)
-        print(doe_disc_samples)
+
 
     def test_16_doe_eval_design_space_normalisation(self):
 
@@ -1452,8 +1452,78 @@ class TestSoSDOEScenario(unittest.TestCase):
         print("parallel execution in " + str(execution_time / 5) + " seconds")
 
 
+    def test_20_doe_eval_with_2_outputs_with_the_same_name(self):
+
+        dspace_dict = {'variable': ['x', 'DoEEval.Disc1.a'],
+
+                       'lower_bnd': [0., 50.],
+                       'upper_bnd': [100., 200.],
+
+                       }
+        dspace = pd.DataFrame(dspace_dict)
+
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_disc1_disc2_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Disc1',
+                       '\t\t|_ Disc2']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines
+        private_values = {
+            self.study_name + '.x': 10.,
+            self.study_name + '.DoEEval.Disc1.a': 5.,
+            self.study_name + '.DoEEval.Disc1.b': 25431.,
+            self.study_name + '.y': 4.,
+            self.study_name + '.DoEEval.Disc2.constant': 3.1416,
+            self.study_name + '.DoEEval.Disc2.power': 2}
+        exec_eng.load_study_from_input_dict(private_values)
+
+        # configure disciplines with the algo lhs and check that generated samples are within default bounds
+
+        input_selection_x_a = {'selected_input': [True, True],
+                               'full_name': ['x', 'DoEEval.Disc1.a']}
+        input_selection_x_a = pd.DataFrame(input_selection_x_a)
+
+        output_selection_z_z = {'selected_output': [True, True],
+                                'full_name': ['z', 'DoEEval.Disc1.z']}
+        output_selection_z_z = pd.DataFrame(output_selection_z_z)
+
+        disc_dict = {}
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = input_selection_x_a
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = output_selection_z_z
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced', 'n_processes': 1,
+                                                  'wait_time_between_samples': 0.0}, 'doe.DoEEval.design_space': dspace}
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        self.assertEqual(len(exec_eng.dm.get_value('doe.DoEEval.Disc1.z_dict')) ,100)
+        self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')) , 100)
+
+
+
+
+
+
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_18_doe_eval_parallel_execution_time()
-    cls.test_19_doe_eval_parallel_execution_time_8_cores()
+
