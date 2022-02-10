@@ -763,16 +763,15 @@ class SoSDiscipline(MDODiscipline):
             keys = list(self.get_data_in().keys())
             in_dict = True
         inputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_IN)
-
-        if not in_dict:
-            # return inputs in an ordered tuple (default)
+        if in_dict:
+            # return inputs in an dictionary
             return inputs
         else:
-            # return inputs in an dictionary
-            formated_inputs = {}
-            for key, val in zip(keys, inputs):
-                formated_inputs[key] = val
-            return formated_inputs
+            # return inputs in an ordered tuple (default)
+            if len(inputs) > 1:
+                return list(inputs.values())
+            else:
+                return list(inputs.values())[0]
 
     def get_sosdisc_outputs(self, keys=None, in_dict=False):
         """Accessor for the outputs values as a list
@@ -786,34 +785,37 @@ class SoSDiscipline(MDODiscipline):
             keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
             in_dict = True
         outputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_OUT)
-        if not in_dict:
-            # return outputs in an ordered tuple (default)
+        if in_dict:
+            # return outputs in an dictionary
             return outputs
         else:
-            # return outputs in an dictionary
-            formated_outputs = {}
-            for key, val in zip(keys, outputs):
-                formated_outputs[key] = val
-            return formated_outputs
+            # return outputs in an ordered tuple (default)
+            if len(outputs) > 1:
+                return list(outputs.values())
+            else:
+                return list(outputs.values())[0]
 
     def _get_sosdisc_io(self, keys, io_type):
         """ generic method to retrieve sos inputs and outputs
         """
         # convert local key names to namespaced ones
-        variables = self._convert_list_of_keys_to_namespace_name(keys, io_type)
-        if isinstance(variables, string_types):
-            return self.dm.get_value(variables)
-        elif isinstance(variables, list):
-            values_list = [self.dm.get_value(
-                key) for key in variables if key in self.dm.data_id_map]
+        if isinstance(keys, str):
+            keys = [keys]
+        namespaced_keys_dict = {key: namespaced_key for key, namespaced_key in zip(
+            keys, self._convert_list_of_keys_to_namespace_name(keys, io_type))}
 
-            if len(values_list) != len(variables):
-                missing_keys = [
-                    key for key in variables if key not in self.dm.data_id_map]
+        values_dict = {}
+        for key, namespaced_key in namespaced_keys_dict.items():
+            if namespaced_key not in self.dm.data_id_map:
                 raise Exception(
-                    f'The keys {missing_keys} for the discipline {self.get_disc_full_name()} are missing in the data manager')
+                    f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
+            elif namespaced_key in self.local_data:
+                values_dict[key] = list(self._convert_array_into_new_type(
+                    {namespaced_key: self.local_data[namespaced_key]}).values())[0]
+            else:
+                values_dict[key] = self.dm.get_value(namespaced_key)
 
-            return values_list
+        return values_dict
 
     # -- execute/runtime section
     def execute(self, input_data=None):
@@ -1240,11 +1242,11 @@ class SoSDiscipline(MDODiscipline):
         try:
             # data conversion GEMS > SosStrades
             self._update_type_metadata()
-            local_data_updt = self._convert_array_into_new_type(
-                self.local_data)
-
-            # update DM
-            self.dm.set_values_from_dict(local_data_updt)
+#             local_data_updt = self._convert_array_into_new_type(
+#                 self.local_data)
+#
+#             # update DM
+#             self.dm.set_values_from_dict(local_data_updt)
 
             # execute model
             self._update_status_dm(self.STATUS_RUNNING)
@@ -1438,8 +1440,8 @@ class SoSDiscipline(MDODiscipline):
             variables = [self._convert_to_namespace_name(
                 key, io_type) for key in keys]
         else:
-            variables = self._convert_to_namespace_name(
-                keys, io_type)
+            variables = [self._convert_to_namespace_name(
+                keys, io_type)]
         return variables
 
     def __filter_couplings_for_gems(self, io_type):

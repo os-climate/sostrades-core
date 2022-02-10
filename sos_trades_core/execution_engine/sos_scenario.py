@@ -604,9 +604,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 #         ## updates input_grammar of MDOScenario with namespaced inputs
 #         # get input namespaced names
 #         ns_algo, = self._convert_list_of_keys_to_namespace_name(
-#             [self.ALGO], self.IO_TYPE_IN)
+#             self.ALGO, self.IO_TYPE_IN)
 #         ns_maxiter, = self._convert_list_of_keys_to_namespace_name(
-#             [self.MAX_ITER], self.IO_TYPE_IN)
+#             self.MAX_ITER, self.IO_TYPE_IN)
 #         # build a grammar and initialize it from mandatory fields
 #         gram = JSONGrammar("opt_gram")
 #         gram.initialize_from_data_names([ns_algo, ns_maxiter])
@@ -620,7 +620,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 #         max_iter_grammar = {"type" : "integer", "minimum":1}
 #         self.input_grammar.set_item_value(ns_maxiter, max_iter_grammar)
         algo, = self._convert_list_of_keys_to_namespace_name(
-            [self.ALGO], self.IO_TYPE_IN)
+            self.ALGO, self.IO_TYPE_IN)
         available_algos = self.get_available_driver_names()
         # change type from string to int in GEMs grammar since SoSTrades
         # converts strings to int
@@ -667,7 +667,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 #     def _convert_new_type_into_array(self, var_dict):
 #         input_data = SoSDiscipline._convert_new_type_into_array(self,var_dict=var_dict)
 #         # replace integer value by corresponding string for algo name
-#         ns_algo, = self._convert_list_of_keys_to_namespace_name([self.ALGO], self.IO_TYPE_IN)
+#         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
 #         if ns_algo in input_data:
 #             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
 #         return input_data
@@ -679,7 +679,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 #         :param raise_exception: Default value = True)
 #         """
 #         # replace integer value by corresponding string for algo name
-#         ns_algo, = self._convert_list_of_keys_to_namespace_name([self.ALGO], self.IO_TYPE_IN)
+#         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
 #         if ns_algo in input_data:
 #             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
 #         try:

@@ -382,8 +382,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Get numerical parameters input values for MDAChain init
         '''
         # get input for MDAChain instantiation
-        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance', 'use_lu_fact', 'warm_start',
-                                  'n_processes']
+        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes',
+                                  'chain_linearize', 'tolerance', 'use_lu_fact', 'warm_start']
         num_data = self.get_sosdisc_inputs(
             needed_numerical_param, in_dict=True)
 
@@ -653,6 +653,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
         local_data_sos = self._convert_array_into_new_type(self.local_data)
         self.dm.set_values_from_dict(local_data_sos)
+
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
         # self.logger.info(f'{self.get_disc_full_name()} MDA history')
