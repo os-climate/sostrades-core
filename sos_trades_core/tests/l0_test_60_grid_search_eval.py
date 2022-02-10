@@ -43,7 +43,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.proc_name = 'test_grid_search'
 
-    def _test_01_grid_search_eval(self):
+    def test_01_grid_search_eval(self):
 
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
@@ -91,6 +91,11 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
             f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
             f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
         }
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -107,7 +112,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
-        y_dict = grid_search_disc_output['GridSearch_Disc1_y_dict']
+        y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
 
@@ -131,7 +136,49 @@ class TestGridSearchEval(unittest.TestCase):
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
 
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
-        y_dict = grid_search_disc_output['GridSearch_Disc1_y_dict']
+        y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Study executed from the design_space: \n {ds}')
+        print(f'Study executed with the samples: \n {doe_disc_samples}')
+        print(f'Study generated the output: y_dict \n {y_dict}')
+
+        # TEST FOR 6 INPUTS
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.f', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.g', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.h', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.j', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.d', ['selected_input']] = True
+
+        dict_values = {
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        self.exec_eng.execute()
+
+        grid_search_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+
+        grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
+        doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
+        y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
 

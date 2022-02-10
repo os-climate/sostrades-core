@@ -21,7 +21,7 @@ from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilde
 class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
 
-        mod1_path = 'sos_trades_core.sos_wrapping.test_discs.disc1_all_types.Disc1'
+        mod1_path = 'sos_trades_core.sos_wrapping.test_discs.disc1_grid.Disc1'
         grid_search = 'GridSearch'
 
         disc1_builder = self.ee.factory.get_builder_from_module(
