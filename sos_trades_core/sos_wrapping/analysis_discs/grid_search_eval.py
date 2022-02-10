@@ -27,6 +27,7 @@ import itertools
 import copy
 import numpy as np
 
+
 import itertools
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
@@ -98,7 +99,6 @@ class GridSearchEval(DoeEval):
 
             # grid8seqrch can be done only for selected inputs and outputs
             if (len(self.eval_in_list) > 0):
-
                 # setting dynamic outputs. One output of type dict per selected
                 # output
                 if (len(self.eval_out_list) > 0):
@@ -264,15 +264,33 @@ class GridSearchEval(DoeEval):
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
 
+        # if eval input not set
         if eval_input_new_dm is None:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
-        # check if the eval_inputs need to be updtated after a subprocess
-        # configure
+
+        # if eval input set for only certain var
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
             default_dataframe = copy.deepcopy(default_in_dataframe)
-            already_set_names = eval_input_new_dm['full_name'].tolist()
-            already_set_values = eval_input_new_dm['selected_input'].tolist()
+            already_set_names = eval_input_new_dm['full_name'].tolist()[
+                :self.max_inputs_nb]
+            already_set_values = eval_input_new_dm['selected_input'].tolist()[
+                :self.max_inputs_nb]
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
+                    index]
+            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+                             'value', default_dataframe, check_value=False)
+        # if eval input set for True value number_var>max_number_var
+        elif sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
+            self.logger.warning(
+                "You have selected more than 3 inputs. Only the 3 first inputs will be considered.")
+            default_dataframe = copy.deepcopy(default_in_dataframe)
+            eval_input_new_dm_true = eval_input_new_dm.loc[eval_input_new_dm['selected_input'] == True]
+            already_set_names = eval_input_new_dm_true['full_name'].tolist()[
+                :self.max_inputs_nb]
+            already_set_values = eval_input_new_dm_true['full_name'].tolist()[
+                :self.max_inputs_nb]
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
                     index]
@@ -421,12 +439,14 @@ class GridSearchEval(DoeEval):
                         autosize=True,
                         xaxis=dict(
                             title=chart_info['x'],
+                            ticksuffix=chart_info["x_unit"],
                             titlefont_size=12,
                             tickfont_size=10,
                             automargin=True
                         ),
                         yaxis=dict(
                             title=chart_info['y'],
+                            ticksuffix=chart_info["y_unit"],
                             titlefont_size=12,
                             tickfont_size=10,
                             # ticksuffix='$',
@@ -476,7 +496,7 @@ class GridSearchEval(DoeEval):
                                     )
                                 ),
                                 colorbar=dict(
-                                    title=f'{chart_info["z"]}',  # title here
+                                    title=f'{chart_info["z"]} ({chart_info["z_unit"]})',
                                     nticks=10,
                                     ticks='outside',
                                     ticklen=5, tickwidth=1,
@@ -514,16 +534,17 @@ class GridSearchEval(DoeEval):
                         autosize=True,
 
                         xaxis=dict(
-                            title=f'{chart_info["x"]} ({chart_info["x_unit"]}',
+                            title=f'{chart_info["x"]}',
+                            ticksuffix=chart_info["x_unit"],
                             titlefont_size=12,
                             tickfont_size=10,
                             automargin=True
                         ),
                         yaxis=dict(
-                            title=f'{chart_info["y"]} ({chart_info["y_unit"]}',
+                            title=f'{chart_info["y"]}',
                             titlefont_size=12,
                             tickfont_size=10,
-                            # ticksuffix='$',
+                            ticksuffix=chart_info["y_unit"],
                             # tickformat=',.0%',
                             automargin=True,
                         ),
