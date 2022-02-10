@@ -651,6 +651,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         SoSDisciplineBuilder._run(self, update_local_data=False)
 
+        # convert local_data into new types and store values in data manager
         local_data_sos = self._convert_array_into_new_type(self.local_data)
         self.dm.set_values_from_dict(local_data_sos)
 
