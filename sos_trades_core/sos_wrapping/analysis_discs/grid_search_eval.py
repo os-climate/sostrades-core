@@ -154,7 +154,7 @@ class GridSearchEval(DoeEval):
         self.eval_in_list = []
         self.eval_out_list = []
         self.max_inputs_nb = 3
-        self.conversion_short_full = {}
+        self.conversion_full_short = {}
 
     def generate_shortest_name(self, var_list):
         list_shortest_name = [[] for i in range(len(var_list))]
@@ -177,8 +177,8 @@ class GridSearchEval(DoeEval):
             list_shortest_name = [max(item, key=len)
                                   for item in list_shortest_name]
 
-        self.conversion_short_full.update({
-            key: value for key, value in zip(list_shortest_name, var_list)})
+        self.conversion_full_short.update({
+            key: value for key, value in zip(var_list, list_shortest_name)})
         return list_shortest_name
 
     def generate_samples_from_doe_factory(self):
@@ -235,21 +235,29 @@ class GridSearchEval(DoeEval):
             analyzed_disc, possible_in_values_full, possible_out_values_full)
 
         # Take only unique values in the list
-        # possible_in_values_full_short = self.generate_shortest_name(
-        #     list(set(possible_in_values_full)))
-        # possible_out_values_full_short = self.generate_shortest_name(
-        #     list(set(possible_out_values_full)))
-
         possible_in_values_full = list(set(possible_in_values_full))
         possible_out_values_full = list(set(possible_out_values_full))
 
         # Fill the possible_values of eval_inputs
-
         possible_in_values_full.sort()
         possible_out_values_full.sort()
 
-        # possible_in_values_full_short.sort()
-        # possible_out_values_full_short.sort()
+        # shortest name
+        self.generate_shortest_name(
+            list(set(possible_in_values_full)))
+        self.generate_shortest_name(
+            list(set(possible_out_values_full)))
+
+        possible_in_values_short = [
+            self.conversion_full_short[val] for val in possible_in_values_full]
+        possible_out_values_short = [
+            self.conversion_full_short[val] for val in possible_out_values_full]
+
+        # possible_in_values_short = list(set(possible_in_values_short))
+        # possible_out_values_short = list(set(possible_out_values_short))
+
+        # possible_in_values_short.sort()
+        # possible_out_values_short.sort()
 
         # default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full_short],
         #                                      'full_name': possible_in_values_full_short})
@@ -257,9 +265,11 @@ class GridSearchEval(DoeEval):
         #                                       'full_name': possible_out_values_full_short})
 
         default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full],
-                                             'full_name': possible_in_values_full})
+                                             'full_name': possible_in_values_full,
+                                             'shortest_name': possible_in_values_short})
         default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
-                                              'full_name': possible_out_values_full})
+                                              'full_name': possible_out_values_full,
+                                              'shortest_name': possible_out_values_short})
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
@@ -272,10 +282,17 @@ class GridSearchEval(DoeEval):
         # if eval input set for only certain var
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
             default_dataframe = copy.deepcopy(default_in_dataframe)
-            already_set_names = eval_input_new_dm['full_name'].tolist()[
-                :self.max_inputs_nb]
-            already_set_values = eval_input_new_dm['selected_input'].tolist()[
-                :self.max_inputs_nb]
+            if sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
+                self.logger.warning(
+                    "You have selected more than 3 inputs. Only the 3 first inputs will be considered.")
+                already_set_names = eval_input_new_dm['full_name'].tolist()[
+                    :self.max_inputs_nb]
+                already_set_values = eval_input_new_dm['selected_input'].tolist()[
+                    :self.max_inputs_nb]
+            else:
+                already_set_names = eval_input_new_dm['full_name'].tolist()
+                already_set_values = eval_input_new_dm['selected_input'].tolist(
+                )
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
                     index]
@@ -289,7 +306,7 @@ class GridSearchEval(DoeEval):
             eval_input_new_dm_true = eval_input_new_dm.loc[eval_input_new_dm['selected_input'] == True]
             already_set_names = eval_input_new_dm_true['full_name'].tolist()[
                 :self.max_inputs_nb]
-            already_set_values = eval_input_new_dm_true['full_name'].tolist()[
+            already_set_values = eval_input_new_dm_true['selected_input'].tolist()[
                 :self.max_inputs_nb]
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
