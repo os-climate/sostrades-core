@@ -809,7 +809,7 @@ class SoSDiscipline(MDODiscipline):
             if namespaced_key not in self.dm.data_id_map:
                 raise Exception(
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-            elif namespaced_key in self.local_data:
+            elif self.status == self.STATUS_RUNNING and namespaced_key in self.local_data:
                 values_dict[key] = list(self._convert_array_into_new_type(
                     {namespaced_key: self.local_data[namespaced_key]}).values())[0]
             else:
