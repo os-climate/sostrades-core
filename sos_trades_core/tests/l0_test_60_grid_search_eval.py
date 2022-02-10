@@ -43,7 +43,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.proc_name = 'test_grid_search'
 
-    def _test_01_grid_search_eval(self):
+    def test_01_grid_search_eval(self):
 
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
