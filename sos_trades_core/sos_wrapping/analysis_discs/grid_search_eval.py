@@ -51,12 +51,14 @@ class GridSearchEval(DoeEval):
     DESC_IN = {
         EVAL_INPUTS: {'type': 'dataframe',
                       'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                               'full_name': ('string', None, False)},
+                                               'full_name': ('string', None, False),
+                                               'shortest_name': ('string', None, False)},
                       'dataframe_edition_locked': False,
                       'structuring': True},
         EVAL_OUTPUTS: {'type': 'dataframe',
                        'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                'full_name': ('string', None, False)},
+                                                'full_name': ('string', None, False),
+                                                'shortest_name': ('string', None, False)},
                        'dataframe_edition_locked': False,
                        'structuring': True}
     }
@@ -111,7 +113,7 @@ class GridSearchEval(DoeEval):
                 # specified
                 default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                      self.LOWER_BOUND: 0.0,
-                                                     self.UPPER_BOUND: 100,
+                                                     self.UPPER_BOUND: 100.0,
                                                      self.NB_POINTS: 2
                                                      })
                 dynamic_inputs.update(
@@ -123,7 +125,7 @@ class GridSearchEval(DoeEval):
                     if (set(design_space['variable'].to_list()) != set(selected_inputs)):
                         default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                              self.LOWER_BOUND: 0.0,
-                                                             self.UPPER_BOUND: 100,
+                                                             self.UPPER_BOUND: 100.0,
                                                              self.NB_POINTS: 2
                                                              })
                         self._data_in['design_space']['value'] = default_design_space
