@@ -1396,7 +1396,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             execution_time += stop - start
         print("sequential execution in " + str(execution_time / 5) + " seconds")
 
-    def test_19_doe_eval_parallel_execution_time_8_cores(self):
+    def _test_19_doe_eval_parallel_execution_time_8_cores(self):
         execution_time = 0
         execution_time_20 = 0
         for i in range(5):
@@ -1539,5 +1539,5 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_19_doe_eval_parallel_execution_time_8_cores()
+
 
