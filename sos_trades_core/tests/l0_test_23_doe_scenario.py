@@ -1396,8 +1396,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             execution_time += stop - start
         print("sequential execution in " + str(execution_time / 5) + " seconds")
 
-    def _test_19_doe_eval_parallel_execution_time_8_cores(self):
+    def test_19_doe_eval_parallel_execution_time_8_cores(self):
         execution_time = 0
+        execution_time_20 = 0
         for i in range(5):
             start = time()
 
@@ -1446,10 +1447,22 @@ class TestSoSDOEScenario(unittest.TestCase):
 
             exec_eng.execute()
             stop = time()
-
-            print(str(stop - start))
+            #print(str(stop - start))
             execution_time += stop - start
-        print("parallel execution in " + str(execution_time / 5) + " seconds")
+
+            exec_eng.load_study_from_input_dict({f'{self.ns}.DoEEval.algo_options':{'n_samples': n_samples, 'n_processes': 20,
+                                                            'wait_time_between_samples': 0.0}})
+            start = time()
+            exec_eng.execute()
+            stop = time()
+            # print(str(stop - start))
+            execution_time_20 += stop - start
+
+
+
+
+        print("parallel execution with 10 cores in " + str(execution_time / 5) + " seconds")
+        print("parallel execution with 20 cores in " + str(execution_time_20 / 5) + " seconds")
 
 
     def test_20_doe_eval_with_2_outputs_with_the_same_name(self):
@@ -1526,4 +1539,5 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
+    cls.test_19_doe_eval_parallel_execution_time_8_cores()
 
