@@ -542,6 +542,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
         self.store_sos_outputs_values(dict_out, update_dm=True)
 
+        # convert local_data into new types and store values in data manager
+        local_data_sos = self._convert_array_into_new_type(self.local_data)
+        self.dm.set_values_from_dict(local_data_sos)
+
     def pre_run_mda(self):
         '''
         Pre run needed if one of the strong coupling variables is None in a MDA 
@@ -650,10 +654,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             and self._data_out is updated through self.local_data.
         '''
         SoSDisciplineBuilder._run(self, update_local_data=False)
-
-        # convert local_data into new types and store values in data manager
-        local_data_sos = self._convert_array_into_new_type(self.local_data)
-        self.dm.set_values_from_dict(local_data_sos)
 
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
