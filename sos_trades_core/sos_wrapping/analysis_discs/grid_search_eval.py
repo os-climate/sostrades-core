@@ -361,20 +361,21 @@ class GridSearchEval(DoeEval):
         # only one output is considered today in the code
         # we take only the first output after the doe_sample_dataframe
         outputs_names_list = list(outputs_discipline_dict.keys())
-        output_name = outputs_names_list[1]
-        output_df_dict = outputs_discipline_dict[output_name]
+        if len(outputs_names_list) > 0:
+            output_name = outputs_names_list[1]
+            output_df_dict = outputs_discipline_dict[output_name]
 
-        # the considered output can only be a dict of dataframe, all other types will be ignored
-        if isinstance(output_df_dict, dict):
-            if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
-                # we extract the columns of the dataframe of type float which will represents the possible outputs
-                # we assume that all dataframes contains the same columns and only look at the first element
-                output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
-                    include='float').columns.to_list()
+            # the considered output can only be a dict of dataframe, all other types will be ignored
+            if isinstance(output_df_dict, dict):
+                if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
+                    # we extract the columns of the dataframe of type float which will represents the possible outputs
+                    # we assume that all dataframes contains the same columns and only look at the first element
+                    output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
+                        include='float').columns.to_list()
 
-                # we constitute the full_chart_list by making a product between the possible inputs combination and outputs list
-                full_chart_list += list(itertools.product(inputs_combin,
-                                                          output_variables))
+                    # we constitute the full_chart_list by making a product between the possible inputs combination and outputs list
+                    full_chart_list += list(itertools.product(inputs_combin,
+                                                              output_variables))
 
         chart_dict = {}
         # based on the full chart list, we will create a dict will all necessary information for each chart
