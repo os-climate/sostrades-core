@@ -36,12 +36,12 @@ class Study(StudyManager):
                        }
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x_a = {'selected_input': [True, True,False,False,False],
-                               'full_name': ['x', 'DoEEval.Disc1.a','DoEEval.Disc1.b','DoEEval.Disc2.constant','DoEEval.Disc2.power']}
+        input_selection_x_a = {'selected_input': [True, True],
+                               'full_name': ['x', 'DoEEval.Disc1.a']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
 
-        output_selection_z_z = {'selected_output': [True, True,False,False],
-                                'full_name': ['z', 'DoEEval.Disc1.z','DoEEval.Disc1.indicator','y']}
+        output_selection_z_z = {'selected_output': [True, True,False],
+                                'full_name': ['z', 'DoEEval.Disc1.z','DoEEval.Disc1.indicator']}
         output_selection_z_z = pd.DataFrame(output_selection_z_z)
 
         # private values AC model

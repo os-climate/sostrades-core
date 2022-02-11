@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from gemseo.mda.sequential_mda import MDASequential
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -30,13 +31,11 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.ns_manager import NS_SEP
 
 if platform.system() != 'Windows':
-    from gemseo_petsc.linear_solvers.ksp_lib import PetscKSPAlgos  # pylint: disable-msg=E0401
     from sos_trades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.mda.mda import MDA
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda
 
@@ -80,32 +79,69 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
     DESC_IN = {
         # NUMERICAL PARAMETERS
-        'sub_mda_class': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',  'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential'], SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'max_mda_iter': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 30, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'n_processes': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'chain_linearize': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'tolerance': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.e-6, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'use_lu_fact': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'warm_start': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'acceleration': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'], SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'sub_mda_class': {SoSDiscipline.TYPE: 'string',
+                          SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
+                                                          'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
+                                                          'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential'],
+                          SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True,
+                          SoSDiscipline.STRUCTURING: True},
+        'max_mda_iter': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 30, SoSDiscipline.NUMERICAL: True,
+                         SoSDiscipline.STRUCTURING: True},
+        'n_processes': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
+                        SoSDiscipline.STRUCTURING: True},
+        'chain_linearize': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
+                            SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True,
+                            SoSDiscipline.STRUCTURING: True},
+        'tolerance': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.e-6, SoSDiscipline.NUMERICAL: True,
+                      SoSDiscipline.STRUCTURING: True},
+        'use_lu_fact': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
+                        SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'warm_start': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
+                       SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'acceleration': {SoSDiscipline.TYPE: 'string',
+                         SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
+                         SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
+                         SoSDiscipline.STRUCTURING: True},
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
+                                 SoSDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
-        'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        #'max_mda_iter_gs': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 5, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'tolerance_gs': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 10.0, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'relax_factor': {SoSDiscipline.TYPE: 'float', SoSDiscipline.RANGE: [0.0, 1.0], SoSDiscipline.DEFAULT: 0.99, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
+                                    SoSDiscipline.STRUCTURING: True},
+        # 'max_mda_iter_gs': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 5, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'tolerance_gs': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 10.0, SoSDiscipline.NUMERICAL: True,
+                         SoSDiscipline.STRUCTURING: True},
+        'relax_factor': {SoSDiscipline.TYPE: 'float', SoSDiscipline.RANGE: [0.0, 1.0], SoSDiscipline.DEFAULT: 0.99,
+                         SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         # NUMERICAL PARAMETERS OUT OF INIT
-        'epsilon0': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.0e-6, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'epsilon0': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.0e-6, SoSDiscipline.NUMERICAL: True,
+                     SoSDiscipline.STRUCTURING: True},
         # Linear solver for MD0
-        'linear_solver_MDO': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS, SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'linear_solver_MDO_preconditioner': {SoSDiscipline.TYPE: 'string', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER, SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'linear_solver_MDO_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDO': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+                              SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True,
+                              SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDO_preconditioner': {SoSDiscipline.TYPE: 'string',
+                                             SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
+                                             SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
+                                             SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDO_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
+                                      SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         # Linear solver for MDA
-        'linear_solver_MDA': {SoSDiscipline.TYPE: 'string',  SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS, SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'linear_solver_MDA_preconditioner': {SoSDiscipline.TYPE: 'string', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,  SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
-        'linear_solver_MDA_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDA': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+                              SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True,
+                              SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDA_preconditioner': {SoSDiscipline.TYPE: 'string',
+                                             SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
+                                             SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
+                                             SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'linear_solver_MDA_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
+                                      SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         # group all disciplines in a MDOChain
-        'group_mda_disciplines': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False], SoSDiscipline.DEFAULT: False, SoSDiscipline.USER_LEVEL: 3, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True}
+        'group_mda_disciplines': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
+                                  SoSDiscipline.DEFAULT: False, SoSDiscipline.USER_LEVEL: 3,
+                                  SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+        'authorize_self_coupled_disciplines': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
+                                               SoSDiscipline.DEFAULT: False, SoSDiscipline.USER_LEVEL: 3,
+                                               SoSDiscipline.STRUCTURING: True}
     }
 
     DESC_OUT = {}
@@ -135,9 +171,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
         self._set_dm_disc_info()
 
-        # - Disable the possibility to build self-coupled disciplines (MDA with 1 subdisc)
-        self.authorize_self_coupled_disciplines = False
-
     def _reload(self, sos_name, ee):
         ''' reload object
         '''
@@ -152,8 +185,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             disc = builder.build()
             if disc not in self.sos_disciplines:
                 self.ee.factory.add_discipline(disc)
-        # If the old_current_discipline is None that means that it is the first build of a coupling then self is the high
-        # level coupling and we do not have to restore the current_discipline
+        # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
+        # high level coupling and we do not have to restore the
+        # current_discipline
         if old_current_discipline is not None:
             self.ee.factory.current_discipline = old_current_discipline
 
@@ -174,12 +208,14 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             if linear_solver_MDA.endswith('_PETSC'):
                 self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
+                        self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
             else:
                 self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
                     'None', 'ilu']
-                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
+                        self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'None'
 
         # set possible values of linear solver MDO preconditioner
@@ -188,22 +224,24 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             if linear_solver_MDO.endswith('_PETSC'):
                 self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
+                        self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
             else:
                 self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
                     'None', 'ilu']
-                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
+                        self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
 
-#         # set default value of max_mda_iter_gs
-#         if 'max_mda_iter_gs' in self._data_in:
-#             if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
-#                 self.update_default_value(
-#                     'max_mda_iter_gs', self.IO_TYPE_IN, 200)
-#             else:
-#                 self.update_default_value(
-#                     'max_mda_iter_gs', self.IO_TYPE_IN, 5)
+    #         # set default value of max_mda_iter_gs
+    #         if 'max_mda_iter_gs' in self._data_in:
+    #             if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
+    #                 self.update_default_value(
+    #                     'max_mda_iter_gs', self.IO_TYPE_IN, 200)
+    #             else:
+    #                 self.update_default_value(
+    #                     'max_mda_iter_gs', self.IO_TYPE_IN, 5)
 
     def configure_io(self):
         '''
@@ -382,8 +420,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Get numerical parameters input values for MDAChain init
         '''
         # get input for MDAChain instantiation
-        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes',
-                                  'chain_linearize', 'tolerance', 'use_lu_fact', 'warm_start']
+        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
+                                  'use_lu_fact', 'warm_start',
+                                  'n_processes']
         num_data = self.get_sosdisc_inputs(
             needed_numerical_param, in_dict=True)
 
@@ -398,7 +437,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             #                 'max_mda_iter_gs'))
             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
                 'tolerance_gs'))
-        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA', 'GSorNewtonMDA']:
+        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
+                                         'GSorNewtonMDA']:
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
 
@@ -608,9 +648,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                 temp_local_data = discipline.execute(
                                     self.local_data)
                                 self.local_data.update(temp_local_data)
-
-                        self.dm.set_values_from_dict(
-                            self._convert_array_into_new_type(self.local_data))
 
                         sub_mda_disciplines = [
                             disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
@@ -852,7 +889,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
                         and not coupled_disciplines[0].is_sos_coupling
-                        and self.authorize_self_coupled_disciplines
+                        and self.get_sosdisc_inputs('authorize_self_coupled_disciplines')
                 ):
                     # several disciplines coupled
 
