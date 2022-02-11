@@ -72,6 +72,7 @@ class GridSearchEval(DoeEval):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
+        selected_inputs_has_changed = False
 
         if (self.EVAL_INPUTS in self._data_in) & (self.EVAL_OUTPUTS in self._data_in):
 
@@ -84,6 +85,10 @@ class GridSearchEval(DoeEval):
             selected_inputs = eval_inputs[eval_inputs['selected_input']
                                           == True]['full_name']
 
+            if set(selected_inputs.tolist()) != set(self.selected_inputs):
+                selected_inputs_has_changed = True
+                self.selected_inputs = selected_inputs.tolist()
+            self.selected_outputs = selected_outputs.tolist()
             # select inputs till  maximum selected input number
             # selected_inputs_full = [self.conversion_short_full[val]
             #                         for val in list(selected_inputs) if val in self.conversion_short_full.keys()]
@@ -94,9 +99,8 @@ class GridSearchEval(DoeEval):
             # self.selected_inputs = selected_inputs_full[
             #     : self.max_inputs_nb]
             # self.selected_outputs = selected_outputs_full
-            self.selected_inputs = selected_inputs[
+            self.selected_inputs = self.selected_inputs[
                 : self.max_inputs_nb]
-            self.selected_outputs = selected_outputs
 
             self.set_eval_in_out_lists(
                 self.selected_inputs, self.selected_outputs)
@@ -122,15 +126,8 @@ class GridSearchEval(DoeEval):
                     {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
                                       }})
 
-                if ('design_space' in self._data_in):
-                    design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-                    if (set(design_space['variable'].to_list()) != set(selected_inputs)):
-                        default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
-                                                             self.LOWER_BOUND: 0.0,
-                                                             self.UPPER_BOUND: 100.0,
-                                                             self.NB_POINTS: 2
-                                                             })
-                        self._data_in['design_space']['value'] = default_design_space
+                if 'design_space' in self._data_in and selected_inputs_has_changed:
+                    self._data_in['design_space']['value'] = default_design_space
 
                 # algo_options to match with doe and specify processes nb
                 default_dict = {'n_processes': 1,
@@ -152,11 +149,8 @@ class GridSearchEval(DoeEval):
         '''
         ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(GridSearchEval, self).__init__(sos_name, ee, cls_builder)
-        self.doe_factory = DOEFactory()
         self.logger = get_sos_logger(f'{self.ee.logger.name}.GridSearch')
         self.eval_input_types = ['float', 'int', 'string']
-        self.eval_in_list = []
-        self.eval_out_list = []
         self.max_inputs_nb = 3
         self.conversion_full_short = {}
 
@@ -353,7 +347,8 @@ class GridSearchEval(DoeEval):
         inputs_list = [
             col for col in doe_samples_df.columns if col not in ['scenario']]
 
-        # generate all combinations of 2 inputs whcich will correspond to the number of charts
+        # generate all combinations of 2 inputs whcich will correspond to the
+        # number of charts
         inputs_combin = list(itertools.combinations(inputs_list, 2))
 
         full_chart_list = []
@@ -365,20 +360,24 @@ class GridSearchEval(DoeEval):
             output_name = outputs_names_list[1]
             output_df_dict = outputs_discipline_dict[output_name]
 
-            # the considered output can only be a dict of dataframe, all other types will be ignored
+            # the considered output can only be a dict of dataframe, all other
+            # types will be ignored
             if isinstance(output_df_dict, dict):
                 if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
                     # we extract the columns of the dataframe of type float which will represents the possible outputs
-                    # we assume that all dataframes contains the same columns and only look at the first element
+                    # we assume that all dataframes contains the same columns
+                    # and only look at the first element
                     output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
                         include='float').columns.to_list()
 
-                    # we constitute the full_chart_list by making a product between the possible inputs combination and outputs list
+                    # we constitute the full_chart_list by making a product
+                    # between the possible inputs combination and outputs list
                     full_chart_list += list(itertools.product(inputs_combin,
                                                               output_variables))
 
         chart_dict = {}
-        # based on the full chart list, we will create a dict will all necessary information for each chart
+        # based on the full chart list, we will create a dict will all
+        # necessary information for each chart
         for chart in full_chart_list:
             # we store x,y and z fullname variable
             z_vble = chart[1]
@@ -447,7 +446,8 @@ class GridSearchEval(DoeEval):
                     graphs_list = chart_filter.selected_values
 
         if len(chart_dict.keys()) > 0:
-            # we create a unique dataframe containing all data that will be used for drawing the graphs
+            # we create a unique dataframe containing all data that will be
+            # used for drawing the graphs
             output_df = None
             output_df_dict = outputs_dict[list(outputs_dict.keys())[1]]
             for scenario, df in output_df_dict.items():
