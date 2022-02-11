@@ -111,7 +111,7 @@ class GridSearchEval(DoeEval):
                 # specified
                 default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                      self.LOWER_BOUND: 0.0,
-                                                     self.UPPER_BOUND: 100,
+                                                     self.UPPER_BOUND: 100.0,
                                                      self.NB_POINTS: 2
                                                      })
                 dynamic_inputs.update(
@@ -123,7 +123,7 @@ class GridSearchEval(DoeEval):
                     if (set(design_space['variable'].to_list()) != set(selected_inputs)):
                         default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                              self.LOWER_BOUND: 0.0,
-                                                             self.UPPER_BOUND: 100,
+                                                             self.UPPER_BOUND: 100.0,
                                                              self.NB_POINTS: 2
                                                              })
                         self._data_in['design_space']['value'] = default_design_space
