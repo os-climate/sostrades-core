@@ -16,3 +16,4 @@ scipy==1.7.1
 gemseo==3.2.1
 gemseo-petsc==1.0.0.post0
 sympy==1.4
+trino-python-client
