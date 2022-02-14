@@ -953,4 +953,4 @@ class TestAnalyticGradients(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestAnalyticGradients()
     cls.setUp()
-    cls.test_10_check_analytic_gradients_sellar_new_types_with_mdanewtonraphson()
+    cls.test_4_optim_scenario_execution_idf_with_user_mode()

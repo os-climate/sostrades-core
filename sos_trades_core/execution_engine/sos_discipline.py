@@ -905,16 +905,16 @@ class SoSDiscipline(MDODiscipline):
                 own_data = {
                     k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
                 self.local_data = own_data
-        # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
-        # It is here to update the dm with input_data (as we do in GEMS for
-        # local_data
-        if not self._linearize_on_last_state and linearize_on_input_data:
-            # self.local_data.update(input_data)
-            only_input_data = {
-                k: v for k, v in input_data.items() if self.is_input_existing(k)}
-            input_data_sostrades = self._convert_array_into_new_type(
-                only_input_data)
-            self.dm.set_values_from_dict(input_data_sostrades)
+#         # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
+#         # It is here to update the dm with input_data (as we do in GEMS for
+#         # local_data
+#         if not self._linearize_on_last_state and linearize_on_input_data:
+#             # self.local_data.update(input_data)
+#             only_input_data = {
+#                 k: v for k, v in input_data.items() if self.is_input_existing(k)}
+#             input_data_sostrades = self._convert_array_into_new_type(
+#                 only_input_data)
+#             self.dm.set_values_from_dict(input_data_sostrades)
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
