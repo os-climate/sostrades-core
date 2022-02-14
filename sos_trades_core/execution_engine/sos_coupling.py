@@ -668,7 +668,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         ready_disciplines = []
         disc_vs_keys_none = {}
         for disc in disciplines:
-            inputs_values = disc.get_sosdisc_inputs()
+            # get inputs values of disc from self.local_data
+            inputs_values = disc._filter_inputs(self.local_data)
             keys_none = [key for key, value in inputs_values.items()
                          if value is None and key not in self.NUM_DESC_IN]
             if keys_none == []:
