@@ -61,7 +61,9 @@ def execute(
 #     out_cached, out_jac = cls.cache.get_outputs(input_data, in_names)
 #
 #     if out_cached is not None:
-#         self.__update_local_data_from_cache(input_data, out_cached, out_jac)
+#         __update_local_data_from_cache = getattr(
+#             cls, "_MDODiscipline__update_local_data_from_cache")
+#         __update_local_data_from_cache(input_data, out_cached, out_jac)
 #         return cls.local_data
     # end of SoSTrades modif
 
