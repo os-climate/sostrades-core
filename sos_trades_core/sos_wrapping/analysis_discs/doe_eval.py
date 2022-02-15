@@ -234,10 +234,10 @@ class DoeEval(SoSEval):
 
                     default_design_space = pd.DataFrame({'variable': selected_inputs,
 
-                                                         'lower_bnd': [array([0.0, 0.0]) if self.ee.dm.get_data(var,
+                                                         'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
                                                                                                                 'type') == 'array' else 0.0
                                                                        for var in self.eval_in_list],
-                                                         'upper_bnd': [array([10.0, 10.0]) if self.ee.dm.get_data(var,
+                                                         'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
                                                                                                                   'type') == 'array' else 10.0
                                                                        for var in self.eval_in_list]
                                                          })
