@@ -12,13 +12,21 @@ import re
 
 import itertools
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
-    InstanciatedSeries
-from sos_trades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
+from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    TwoAxesInstanciatedChart,
+    InstanciatedSeries,
+)
+from sos_trades_core.tools.post_processing.tables.instanciated_table import (
+    InstanciatedTable,
+)
 import plotly.graph_objects as go
-from sos_trades_core.tools.post_processing.post_processing_tools import align_two_y_axes, format_currency_legend
-from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import \
-    InstantiatedPlotlyNativeChart
+from sos_trades_core.tools.post_processing.post_processing_tools import (
+    align_two_y_axes,
+    format_currency_legend,
+)
+from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
+    InstantiatedPlotlyNativeChart,
+)
 
 
 '''
@@ -42,27 +50,35 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 
 class GridSearchEval(DoeEval):
-    '''
+    """
     Generic Grid Search evaluation class
-    '''
+    """
 
     INPUT_TYPE = ['float']
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
     DESC_IN = {
-        EVAL_INPUTS: {'type': 'dataframe',
-                      'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                               'full_name': ('string', None, False),
-                                               'shortest_name': ('string', None, False)},
-                      'dataframe_edition_locked': False,
-                      'structuring': True},
-        EVAL_OUTPUTS: {'type': 'dataframe',
-                       'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                'full_name': ('string', None, False),
-                                                'shortest_name': ('string', None, False)},
-                       'dataframe_edition_locked': False,
-                       'structuring': True}
+        EVAL_INPUTS: {
+            'type': 'dataframe',
+            'dataframe_descriptor': {
+                'selected_input': ('bool', None, True),
+                'full_name': ('string', None, False),
+                'shortest_name': ('string', None, False),
+            },
+            'dataframe_edition_locked': False,
+            'structuring': True,
+        },
+        EVAL_OUTPUTS: {
+            'type': 'dataframe',
+            'dataframe_descriptor': {
+                'selected_output': ('bool', None, True),
+                'full_name': ('string', None, False),
+                'shortest_name': ('string', None, False),
+            },
+            'dataframe_edition_locked': False,
+            'structuring': True,
+        },
     }
 
     def setup_sos_disciplines(self):
@@ -80,12 +96,15 @@ class GridSearchEval(DoeEval):
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
             # we fetch the inputs and outputs selected by the user
-            selected_outputs = eval_outputs[eval_outputs['selected_output']
-                                            == True]['full_name']
-            selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                          == True]['full_name']
-            selected_inputs_short = eval_inputs[eval_inputs['selected_input']
-                                                == True]['shortest_name']
+            selected_outputs = eval_outputs[eval_outputs['selected_output'] == True][
+                'full_name'
+            ]
+            selected_inputs = eval_inputs[eval_inputs['selected_input'] == True][
+                'full_name'
+            ]
+            selected_inputs_short = eval_inputs[eval_inputs['selected_input'] == True][
+                'shortest_name'
+            ]
 
             if set(selected_inputs.tolist()) != set(self.selected_inputs):
                 selected_inputs_has_changed = True
@@ -101,67 +120,83 @@ class GridSearchEval(DoeEval):
             # self.selected_inputs = selected_inputs_full[
             #     : self.max_inputs_nb]
             # self.selected_outputs = selected_outputs_full
-            self.selected_inputs = self.selected_inputs[
-                : self.max_inputs_nb]
-            selected_inputs_short = selected_inputs_short[
-                : self.max_inputs_nb]
-            self.set_eval_in_out_lists(
-                self.selected_inputs, self.selected_outputs)
+            self.selected_inputs = self.selected_inputs[: self.max_inputs_nb]
+            selected_inputs_short = selected_inputs_short[: self.max_inputs_nb]
+            self.set_eval_in_out_lists(self.selected_inputs, self.selected_outputs)
 
             # grid8seqrch can be done only for selected inputs and outputs
-            if (len(self.eval_in_list) > 0):
+            if len(self.eval_in_list) > 0:
                 # setting dynamic outputs. One output of type dict per selected
                 # output
-                if (len(self.eval_out_list) > 0):
+                if len(self.eval_out_list) > 0:
                     for out_var in self.eval_out_list:
                         dynamic_outputs.update(
-                            {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
-                                                                                    'namespace': 'ns_doe'}})
+                            {
+                                f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {
+                                    'type': 'dict',
+                                    'visibility': 'Shared',
+                                    'namespace': 'ns_doe',
+                                }
+                            }
+                        )
 
                 # setting dynamic design space with default value if not
                 # specified
-                default_design_space = pd.DataFrame({
-                                                    'shortest_name': selected_inputs_short.tolist(),
-                                                    # self.VARIABLES:
-                                                    # self.selected_inputs,
-
-                                                    self.LOWER_BOUND: 0.0,
-                                                    self.UPPER_BOUND: 100.0,
-                                                    self.NB_POINTS: 2,
-                                                    'full_name': self.selected_inputs
-                                                    })
+                default_design_space = pd.DataFrame(
+                    {
+                        'shortest_name': selected_inputs_short.tolist(),
+                        # self.VARIABLES:
+                        # self.selected_inputs,
+                        self.LOWER_BOUND: 0.0,
+                        self.UPPER_BOUND: 100.0,
+                        self.NB_POINTS: 2,
+                        'full_name': self.selected_inputs,
+                    }
+                )
                 dynamic_inputs.update(
-                    {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space,
-                                      'dataframe_descriptor': {
-                                          'shortest_name': ('string', None, False),
-                                          self.LOWER_BOUND: ('float', None, True),
-                                          self.UPPER_BOUND: ('float', None, True),
-                                          self.NB_POINTS: ('int', None, True),
-                                          'full_name': ('string', None, False),
-                                      },
-                                      }})
+                    {
+                        'design_space': {
+                            'type': 'dataframe',
+                            self.DEFAULT: default_design_space,
+                            'dataframe_descriptor': {
+                                'shortest_name': ('string', None, False),
+                                self.LOWER_BOUND: ('float', None, True),
+                                self.UPPER_BOUND: ('float', None, True),
+                                self.NB_POINTS: ('int', None, True),
+                                'full_name': ('string', None, False),
+                            },
+                        }
+                    }
+                )
 
                 if 'design_space' in self._data_in and selected_inputs_has_changed:
                     self._data_in['design_space']['value'] = default_design_space
 
                 # algo_options to match with doe and specify processes nb
-                default_dict = {'n_processes': 1,
-                                'wait_time_between_samples': 0.0}
-                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
-                                                        'dataframe_edition_locked': False,
-                                                        'dataframe_descriptor': {
-                                                            self.VARIABLES: ('string', None, False),
-                                                            self.VALUES: ('string', None, True)},
-                                                        'user_level': 99,
-                                                        'editable': False}})
+                default_dict = {'n_processes': 1, 'wait_time_between_samples': 0.0}
+                dynamic_inputs.update(
+                    {
+                        'algo_options': {
+                            'type': 'dict',
+                            self.DEFAULT: default_dict,
+                            'dataframe_edition_locked': False,
+                            'dataframe_descriptor': {
+                                self.VARIABLES: ('string', None, False),
+                                self.VALUES: ('string', None, True),
+                            },
+                            'user_level': 99,
+                            'editable': False,
+                        }
+                    }
+                )
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
     def __init__(self, sos_name, ee, cls_builder):
-        '''
+        """
         Constructor
-        '''
+        """
         ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(GridSearchEval, self).__init__(sos_name, ee, cls_builder)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.GridSearch')
@@ -177,7 +212,7 @@ class GridSearchEval(DoeEval):
                 a_split = a.split('.')
                 b_split = b.split('.')
                 var = ''
-                while (a_split[-1] == b_split[-1]):
+                while a_split[-1] == b_split[-1]:
                     var = '.' + a_split[-1] + var
                     del a_split[-1]
                     del b_split[-1]
@@ -187,11 +222,11 @@ class GridSearchEval(DoeEval):
                 list_shortest_name[var_list.index(a)].append(a_shortest)
                 list_shortest_name[var_list.index(b)].append(b_shortest)
 
-            list_shortest_name = [max(item, key=len)
-                                  for item in list_shortest_name]
+            list_shortest_name = [max(item, key=len) for item in list_shortest_name]
 
-        self.conversion_full_short.update({
-            key: value for key, value in zip(var_list, list_shortest_name)})
+        self.conversion_full_short.update(
+            {key: value for key, value in zip(var_list, list_shortest_name)}
+        )
         return list_shortest_name
 
     def generate_samples_from_doe_factory(self):
@@ -210,8 +245,10 @@ class GridSearchEval(DoeEval):
                 filled_options[algo_option] = options[algo_option]
 
         if self.N_SAMPLES not in options:
-            self.logger.warning("N_samples is not defined; pay attention you use fullfact algo "
-                                "and that levels are well defined")
+            self.logger.warning(
+                "N_samples is not defined; pay attention you use fullfact algo "
+                "and that levels are well defined"
+            )
 
         self.logger.info(filled_options)
         filled_options[self.DIMENSION] = self.design_space.dimension
@@ -233,19 +270,21 @@ class GridSearchEval(DoeEval):
         return self.prepare_samples()
 
     def set_eval_possible_values(self):
-        '''
-            Once all disciplines have been run through,
-            set the possible values for eval_inputs and eval_outputs in the DM
-        '''
+        """
+        Once all disciplines have been run through,
+        set the possible values for eval_inputs and eval_outputs in the DM
+        """
         # the eval process to analyse is stored as the only child of SoSEval
         # (coupling chain of the eval process or single discipline)
         analyzed_disc = self.sos_disciplines[0]
 
         possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-            analyzed_disc)
+            analyzed_disc
+        )
 
         possible_in_values_full, possible_out_values_full = self.find_possible_values(
-            analyzed_disc, possible_in_values_full, possible_out_values_full)
+            analyzed_disc, possible_in_values_full, possible_out_values_full
+        )
 
         # Take only unique values in the list
         possible_in_values_full = list(set(possible_in_values_full))
@@ -256,15 +295,15 @@ class GridSearchEval(DoeEval):
         possible_out_values_full.sort()
 
         # shortest name
-        self.generate_shortest_name(
-            list(set(possible_in_values_full)))
-        self.generate_shortest_name(
-            list(set(possible_out_values_full)))
+        self.generate_shortest_name(list(set(possible_in_values_full)))
+        self.generate_shortest_name(list(set(possible_out_values_full)))
 
         possible_in_values_short = [
-            self.conversion_full_short[val] for val in possible_in_values_full]
+            self.conversion_full_short[val] for val in possible_in_values_full
+        ]
         possible_out_values_short = [
-            self.conversion_full_short[val] for val in possible_out_values_full]
+            self.conversion_full_short[val] for val in possible_out_values_full
+        ]
 
         # possible_in_values_short = list(set(possible_in_values_short))
         # possible_out_values_short = list(set(possible_out_values_short))
@@ -277,71 +316,112 @@ class GridSearchEval(DoeEval):
         # default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full_short],
         #                                       'full_name': possible_out_values_full_short})
 
-        default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full],
-                                             'shortest_name': possible_in_values_short,
-                                             'full_name': possible_in_values_full})
-        default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
-                                              'shortest_name': possible_out_values_short,
-                                              'full_name': possible_out_values_full})
+        default_in_dataframe = pd.DataFrame(
+            {
+                'selected_input': [False for invar in possible_in_values_full],
+                'shortest_name': possible_in_values_short,
+                'full_name': possible_in_values_full,
+            }
+        )
+        default_out_dataframe = pd.DataFrame(
+            {
+                'selected_output': [False for invar in possible_out_values_full],
+                'shortest_name': possible_out_values_short,
+                'full_name': possible_out_values_full,
+            }
+        )
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
 
         # if eval input not set
         if eval_input_new_dm is None:
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
-                             'value', default_in_dataframe, check_value=False)
+            self.dm.set_data(
+                f'{self.get_disc_full_name()}.eval_inputs',
+                'value',
+                default_in_dataframe,
+                check_value=False,
+            )
 
         # if eval input set for only certain var
-        elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+        elif set(eval_input_new_dm['full_name'].tolist()) != (
+            set(default_in_dataframe['full_name'].tolist())
+        ):
             default_dataframe = copy.deepcopy(default_in_dataframe)
             if sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
                 self.logger.warning(
-                    "You have selected more than 3 inputs. Only the 3 first inputs will be considered.")
+                    "You have selected more than 3 inputs. Only the 3 first inputs will be considered."
+                )
                 already_set_names = eval_input_new_dm['full_name'].tolist()[
-                    :self.max_inputs_nb]
+                    : self.max_inputs_nb
+                ]
                 already_set_values = eval_input_new_dm['selected_input'].tolist()[
-                    :self.max_inputs_nb]
+                    : self.max_inputs_nb
+                ]
             else:
                 already_set_names = eval_input_new_dm['full_name'].tolist()
-                already_set_values = eval_input_new_dm['selected_input'].tolist(
-                )
+                already_set_values = eval_input_new_dm['selected_input'].tolist()
             for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                    index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
-                             'value', default_dataframe, check_value=False)
+                default_dataframe.loc[
+                    default_dataframe['full_name'] == name, 'selected_input'
+                ] = already_set_values[index]
+            self.dm.set_data(
+                f'{self.get_disc_full_name()}.eval_inputs',
+                'value',
+                default_dataframe,
+                check_value=False,
+            )
         # if eval input set for True value number_var>max_number_var
         elif sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
             self.logger.warning(
-                "You have selected more than 3 inputs. Only the 3 first inputs will be considered.")
+                "You have selected more than 3 inputs. Only the 3 first inputs will be considered."
+            )
             default_dataframe = copy.deepcopy(default_in_dataframe)
-            eval_input_new_dm_true = eval_input_new_dm.loc[eval_input_new_dm['selected_input'] == True]
+            eval_input_new_dm_true = eval_input_new_dm.loc[
+                eval_input_new_dm['selected_input'] == True
+            ]
             already_set_names = eval_input_new_dm_true['full_name'].tolist()[
-                :self.max_inputs_nb]
+                : self.max_inputs_nb
+            ]
             already_set_values = eval_input_new_dm_true['selected_input'].tolist()[
-                :self.max_inputs_nb]
+                : self.max_inputs_nb
+            ]
             for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                    index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
-                             'value', default_dataframe, check_value=False)
+                default_dataframe.loc[
+                    default_dataframe['full_name'] == name, 'selected_input'
+                ] = already_set_values[index]
+            self.dm.set_data(
+                f'{self.get_disc_full_name()}.eval_inputs',
+                'value',
+                default_dataframe,
+                check_value=False,
+            )
 
         if eval_output_new_dm is None:
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
-                             'value', default_out_dataframe, check_value=False)
+            self.dm.set_data(
+                f'{self.get_disc_full_name()}.eval_outputs',
+                'value',
+                default_out_dataframe,
+                check_value=False,
+            )
 
         # if eval output set for only certain var
-        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+        elif set(eval_output_new_dm['full_name'].tolist()) != (
+            set(default_out_dataframe['full_name'].tolist())
+        ):
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
-            already_set_values = eval_output_new_dm['selected_output'].tolist(
-            )
+            already_set_values = eval_output_new_dm['selected_output'].tolist()
             for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
-                    index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
-                             'value', default_dataframe, check_value=False)
+                default_dataframe.loc[
+                    default_dataframe['full_name'] == name, 'selected_output'
+                ] = already_set_values[index]
+            self.dm.set_data(
+                f'{self.get_disc_full_name()}.eval_outputs',
+                'value',
+                default_dataframe,
+                check_value=False,
+            )
 
     def prepare_chart_dict(self, outputs_discipline_dict, inputs_discipline_dict={}):
 
@@ -349,18 +429,20 @@ class GridSearchEval(DoeEval):
         inputs_name_mapping = {}
         if 'eval_inputs' in inputs_discipline_dict:
             eval_inputs = inputs_discipline_dict['eval_inputs']
-            eval_inputs_filtered = eval_inputs.loc[eval_inputs['selected_input'] == True, [
-                'full_name', 'shortest_name']]
+            eval_inputs_filtered = eval_inputs.loc[
+                eval_inputs['selected_input'] == True, ['full_name', 'shortest_name']
+            ]
             eval_inputs_filtered_dict = eval_inputs_filtered.set_index(
-                'full_name').to_dict('index')
-            inputs_name_mapping = {k: v['shortest_name']
-                                   for k, v in eval_inputs_filtered_dict.items()}
+                'full_name'
+            ).to_dict('index')
+            inputs_name_mapping = {
+                k: v['shortest_name'] for k, v in eval_inputs_filtered_dict.items()
+            }
 
         doe_samples_df = outputs_discipline_dict['doe_samples_dataframe']
 
         # retrive full input list
-        inputs_list = [
-            col for col in doe_samples_df.columns if col not in ['scenario']]
+        inputs_list = [col for col in doe_samples_df.columns if col not in ['scenario']]
 
         # generate all combinations of 2 inputs whcich will correspond to the
         # number of charts
@@ -382,13 +464,27 @@ class GridSearchEval(DoeEval):
                     # we extract the columns of the dataframe of type float which will represents the possible outputs
                     # we assume that all dataframes contains the same columns
                     # and only look at the first element
-                    output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
-                        include='float').columns.to_list()
+                    output_variables_list_list = [
+                        set(
+                            df.convert_dtypes()
+                            .select_dtypes(include='float')
+                            .columns.tolist()
+                        )
+                        for df in output_df_dict.values()
+                    ]
+                    output_variables = list(
+                        set(
+                            output_variables_list_list[0].intersection(
+                                *output_variables_list_list
+                            )
+                        )
+                    )
 
                     # we constitute the full_chart_list by making a product
                     # between the possible inputs combination and outputs list
-                    full_chart_list += list(itertools.product(inputs_combin,
-                                                              output_variables))
+                    full_chart_list += list(
+                        itertools.product(inputs_combin, output_variables)
+                    )
 
         chart_dict = {}
         # based on the full chart list, we will create a dict will all
@@ -410,7 +506,9 @@ class GridSearchEval(DoeEval):
                     slider = {
                         'full_name': col,
                         'short_name': inputs_name_mapping.get(col, col),
-                        'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(col)[0])['unit'],
+                        'unit': self.ee.dm.get_data(
+                            self.ee.dm.get_all_namespaces_from_var_name(col)[0]
+                        )['unit'],
                     }
                     slider_list.append(slider)
 
@@ -423,13 +521,19 @@ class GridSearchEval(DoeEval):
             chart_dict[chart_name] = {
                 'x': x_vble,
                 'x_short': x_short,
-                'x_unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(x_vble)[0])['unit'],
+                'x_unit': self.ee.dm.get_data(
+                    self.ee.dm.get_all_namespaces_from_var_name(x_vble)[0]
+                )['unit'],
                 'y': y_vble,
                 'y_short': y_short,
-                'y_unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0])['unit'],
+                'y_unit': self.ee.dm.get_data(
+                    self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0]
+                )['unit'],
                 'z': z_vble,
-                'z_unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(output_origin_name)[0])['unit'],
-                'slider': slider_list
+                'z_unit': self.ee.dm.get_data(
+                    self.ee.dm.get_all_namespaces_from_var_name(output_origin_name)[0]
+                )['unit'],
+                'slider': slider_list,
             }
 
         return chart_dict
@@ -443,8 +547,7 @@ class GridSearchEval(DoeEval):
         chart_dict = self.prepare_chart_dict(outputs_dict, inputs_dict)
 
         chart_list = list(chart_dict.keys())
-        chart_filters.append(ChartFilter(
-            'Charts', chart_list, chart_list, 'Charts'))
+        chart_filters.append(ChartFilter('Charts', chart_list, chart_list, 'Charts'))
 
         return chart_filters
 
@@ -473,12 +576,10 @@ class GridSearchEval(DoeEval):
                 if output_df is None:
                     output_df = filtered_df.copy(deep=True)
                 else:
-                    output_df = pd.concat(
-                        [output_df, filtered_df], axis=0)
+                    output_df = pd.concat([output_df, filtered_df], axis=0)
 
             doe_samples_df = outputs_dict['doe_samples_dataframe']
-            cont_plot_df = doe_samples_df.merge(
-                output_df, how="left", on='scenario')
+            cont_plot_df = doe_samples_df.merge(output_df, how="left", on='scenario')
 
             # we go through the list of charts and draw all of them
             for name, chart_info in chart_dict.items():
@@ -502,7 +603,7 @@ class GridSearchEval(DoeEval):
                                     labelfont=dict(  # label font properties
                                         size=10,
                                         # color = 'white',
-                                    )
+                                    ),
                                 ),
                                 colorbar=dict(
                                     title=f'{chart_info["z"]}',
@@ -513,7 +614,8 @@ class GridSearchEval(DoeEval):
                                     ticksuffix=f'{chart_info["z_unit"]}',
                                     # showticklabels=True,
                                     tickangle=0,
-                                    tickfont_size=10),
+                                    tickfont_size=10,
+                                ),
                                 visible=True,
                             )
                         )
@@ -525,7 +627,7 @@ class GridSearchEval(DoeEval):
                                 ticksuffix=chart_info["x_unit"],
                                 titlefont_size=12,
                                 tickfont_size=10,
-                                automargin=True
+                                automargin=True,
                             ),
                             yaxis=dict(
                                 title=chart_info['y_short'],
@@ -541,7 +643,8 @@ class GridSearchEval(DoeEval):
                         if len(fig.data) > 0:
                             chart_name = f'<b>{name}</b>'
                             new_chart = InstantiatedPlotlyNativeChart(
-                                fig=fig, chart_name=chart_name, default_legend=False)
+                                fig=fig, chart_name=chart_name, default_legend=False
+                            )
                             instanciated_charts.append(new_chart)
 
                     if len(chart_info['slider']) == 1:
@@ -551,12 +654,15 @@ class GridSearchEval(DoeEval):
                         slider_values = cont_plot_df[col_slider].unique()
                         fig = go.Figure()
                         for slide_value in slider_values:
-                            x_data = cont_plot_df.loc[cont_plot_df[col_slider]
-                                                      == slide_value][chart_info['x']].to_list()
-                            y_data = cont_plot_df.loc[cont_plot_df[col_slider]
-                                                      == slide_value][chart_info['y']].to_list()
-                            z_data = cont_plot_df.loc[cont_plot_df[col_slider]
-                                                      == slide_value][chart_info['z']].to_list()
+                            x_data = cont_plot_df.loc[
+                                cont_plot_df[col_slider] == slide_value
+                            ][chart_info['x']].to_list()
+                            y_data = cont_plot_df.loc[
+                                cont_plot_df[col_slider] == slide_value
+                            ][chart_info['y']].to_list()
+                            z_data = cont_plot_df.loc[
+                                cont_plot_df[col_slider] == slide_value
+                            ][chart_info['z']].to_list()
 
                             # Initialization Slider
                             if slide_value == slider_values[-1]:
@@ -576,7 +682,7 @@ class GridSearchEval(DoeEval):
                                         labelfont=dict(  # label font properties
                                             size=10,
                                             # color = 'white',
-                                        )
+                                        ),
                                     ),
                                     colorbar=dict(
                                         title=f'{chart_info["z"]}',
@@ -587,7 +693,8 @@ class GridSearchEval(DoeEval):
                                         ticksuffix=f'{chart_info["z_unit"]}',
                                         # showticklabels=True,
                                         tickangle=0,
-                                        tickfont_size=10),
+                                        tickfont_size=10,
+                                    ),
                                     visible=visible,
                                 )
                             )
@@ -599,33 +706,38 @@ class GridSearchEval(DoeEval):
 
                             step = dict(
                                 method="update",
-                                args=[{"visible": [False] * len(fig.data)},
-                                      {"title": f'<b>{name}</b>'}],
+                                args=[
+                                    {"visible": [False] * len(fig.data)},
+                                    {"title": f'<b>{name}</b>'},
+                                ],
                                 # layout attribute
-                                label=f'{slider_values[i]}{slider_unit}'
+                                label=f'{slider_values[i]}{slider_unit}',
                             )
                             # Toggle i'th trace to 'visible'
                             step["args"][0]["visible"][i] = True
                             steps.append(step)
 
-                        sliders = [dict(
-                            active=len(steps) - 1,
-                            currentvalue={'visible': True,
-                                          "prefix": f'{slider_short_name}: '},
-                            steps=steps,
-                            pad=dict(t=50),
-                        )]
+                        sliders = [
+                            dict(
+                                active=len(steps) - 1,
+                                currentvalue={
+                                    'visible': True,
+                                    "prefix": f'{slider_short_name}: ',
+                                },
+                                steps=steps,
+                                pad=dict(t=50),
+                            )
+                        ]
 
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
-
                             xaxis=dict(
                                 title=f'{chart_info["x_short"]}',
                                 ticksuffix=chart_info["x_unit"],
                                 titlefont_size=12,
                                 tickfont_size=10,
-                                automargin=True
+                                automargin=True,
                             ),
                             yaxis=dict(
                                 title=f'{chart_info["y_short"]}',
@@ -642,7 +754,8 @@ class GridSearchEval(DoeEval):
                         if len(fig.data) > 0:
                             chart_name = f'<b>{name}</b>'
                             new_chart = InstantiatedPlotlyNativeChart(
-                                fig=fig, chart_name=chart_name, default_legend=False)
+                                fig=fig, chart_name=chart_name, default_legend=False
+                            )
                             instanciated_charts.append(new_chart)
 
         return instanciated_charts
