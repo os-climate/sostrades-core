@@ -750,11 +750,13 @@ class SoSDiscipline(MDODiscipline):
 
         return data_dict
 
-    def get_sosdisc_inputs(self, keys=None, in_dict=False):
-        """Accessor for the inputs values as a list
+    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name=False):
+        """Accessor for the inputs values as a list or dict
 
-        :param data_names: the data names list
-        :returns: the data list
+        :param keys: the input short names list
+        :param in_dict: if output format is dict
+        :param full_name: if keys in output are full names
+        :returns: the inputs values list or dict
         """
 
         if keys is None:
@@ -762,7 +764,8 @@ class SoSDiscipline(MDODiscipline):
             # output format as dict
             keys = list(self.get_data_in().keys())
             in_dict = True
-        inputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_IN)
+        inputs = self._get_sosdisc_io(
+            keys, io_type=self.IO_TYPE_IN, full_name=full_name)
         if in_dict:
             # return inputs in an dictionary
             return inputs
@@ -773,18 +776,21 @@ class SoSDiscipline(MDODiscipline):
             else:
                 return list(inputs.values())[0]
 
-    def get_sosdisc_outputs(self, keys=None, in_dict=False):
-        """Accessor for the outputs values as a list
+    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name=False):
+        """Accessor for the outputs values as a list or dict
 
-        :param data_names: the data names list
-        :returns: the data list
+        :param keys: the output short names list
+        :param in_dict: if output format is dict
+        :param full_name: if keys in output are full names
+        :returns: the outputs values list or dict
         """
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
             keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
             in_dict = True
-        outputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_OUT)
+        outputs = self._get_sosdisc_io(
+            keys, io_type=self.IO_TYPE_OUT, full_name=full_name)
         if in_dict:
             # return outputs in an dictionary
             return outputs
@@ -795,8 +801,13 @@ class SoSDiscipline(MDODiscipline):
             else:
                 return list(outputs.values())[0]
 
-    def _get_sosdisc_io(self, keys, io_type):
-        """ generic method to retrieve sos inputs and outputs
+    def _get_sosdisc_io(self, keys, io_type, full_name=False):
+        """ Generic method to retrieve sos inputs and outputs
+
+        :param keys: the data names list
+        :param io_type: 'in' or 'out'
+        :param full_name: if keys in returned dict are full names
+        :returns: dict of keys values
         """
         # convert local key names to namespaced ones
         if isinstance(keys, str):
@@ -806,14 +817,16 @@ class SoSDiscipline(MDODiscipline):
 
         values_dict = {}
         for key, namespaced_key in namespaced_keys_dict.items():
+            # new_key can be key or namespaced_key according to full_name value
+            new_key = full_name * namespaced_key + (1 - full_name) * key
             if namespaced_key not in self.dm.data_id_map:
                 raise Exception(
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             elif self.status == self.STATUS_RUNNING and namespaced_key in self.local_data:
-                values_dict[key] = list(self._convert_array_into_new_type(
+                values_dict[new_key] = list(self._convert_array_into_new_type(
                     {namespaced_key: self.local_data[namespaced_key]}).values())[0]
             else:
-                values_dict[key] = self.dm.get_value(namespaced_key)
+                values_dict[new_key] = self.dm.get_value(namespaced_key)
 
         return values_dict
 
