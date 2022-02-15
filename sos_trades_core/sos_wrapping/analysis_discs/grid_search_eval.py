@@ -103,7 +103,8 @@ class GridSearchEval(DoeEval):
             # self.selected_outputs = selected_outputs_full
             self.selected_inputs = self.selected_inputs[
                 : self.max_inputs_nb]
-
+            selected_inputs_short = selected_inputs_short[
+                : self.max_inputs_nb]
             self.set_eval_in_out_lists(
                 self.selected_inputs, self.selected_outputs)
 
