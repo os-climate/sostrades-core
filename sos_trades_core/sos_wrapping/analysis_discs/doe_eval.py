@@ -527,8 +527,8 @@ class DoeEval(SoSEval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
 
-                self.logger.info(
-                    f'DOE computation: {int(((self.samples.index(sample)+1)/len(self.samples))*100)}% done.')
+                # self.logger.info(
+                #     f'DOE computation: {int(((self.samples.index(sample)+1)/len(self.samples))*100)}% done.')
 
         # construction of a dataframe of generated samples
         # the key is the scenario and columns are inputs values for the
