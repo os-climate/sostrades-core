@@ -225,20 +225,18 @@ class DoeEval(SoSEval):
                                                'dataframe_descriptor': dataframe_descriptor,
                                                'dataframe_edition_locked': False}})
                     if 'custom_samples_df' in self._data_in and selected_inputs_has_changed:
-                            self._data_in['custom_samples_df']['value'] = default_custom_dataframe
-                            self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
-
-
+                        self._data_in['custom_samples_df']['value'] = default_custom_dataframe
+                        self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
                 else:
 
                     default_design_space = pd.DataFrame({'variable': selected_inputs,
 
                                                          'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
-                                                                                                                'type') == 'array' else 0.0
+                                                                                                         'type') == 'array' else 0.0
                                                                        for var in self.eval_in_list],
                                                          'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
-                                                                                                                  'type') == 'array' else 10.0
+                                                                                                           'type') == 'array' else 10.0
                                                                        for var in self.eval_in_list]
                                                          })
 
@@ -246,7 +244,7 @@ class DoeEval(SoSEval):
                         {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
                                           }})
                     if 'design_space' in self._data_in and selected_inputs_has_changed:
-                            self._data_in['design_space']['value'] = default_design_space
+                        self._data_in['design_space']['value'] = default_design_space
 
                 default_dict = self.get_algo_default_options(algo_name)
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
@@ -464,15 +462,16 @@ class DoeEval(SoSEval):
             n_processes = 1
 
         # We handle the case of a parallel execution here
-        # It happens when the number of specified processes n_processes is greater than 1
+        # It happens when the number of specified processes n_processes is
+        # greater than 1
         if n_processes > 1:
-            self.logger.info("Running DOE EVAL in parallel on n_processes = %s", str(n_processes))
+            self.logger.info(
+                "Running DOE EVAL in parallel on n_processes = %s", str(n_processes))
 
             # Create the parallel execution object. The function we want to parallelize is the sample evaluation
             # function
 
             def sample_evaluator(sample_one):
-
                 """ this is the worker used to evaluate a sample in case of a parallel execution
                     """
                 return self.FDeval_func(sample_one, convert_to_array=False)
@@ -519,7 +518,8 @@ class DoeEval(SoSEval):
                     dict_one_sample[self.eval_in_list[idx]] = values
                 dict_sample[scenario_name] = dict_one_sample
 
-                # evaluation of samples and generation of a dictionnary of outputs
+                # evaluation of samples and generation of a dictionnary of
+                # outputs
                 output_eval = copy.deepcopy(
                     self.FDeval_func(sample, convert_to_array=False))
                 dict_one_output = {}
@@ -527,12 +527,16 @@ class DoeEval(SoSEval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
 
+                # self.logger.info(
+                #     f'DOE computation: {int(((self.samples.index(sample)+1)/len(self.samples))*100)}% done.')
+
         # construction of a dataframe of generated samples
         # the key is the scenario and columns are inputs values for the
         # considered scenario
         # Iterations through dictionnaries are done using the sorted function to ensure that
         # the scenarios are stored in the same order than in samples generation since it is not
-        # guaranteed when on parallel execution. The sort is done according to the scenario index
+        # guaranteed when on parallel execution. The sort is done according to
+        # the scenario index
 
         columns = ['scenario']
         columns.extend(self.selected_inputs)
@@ -608,7 +612,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
