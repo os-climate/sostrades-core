@@ -84,6 +84,8 @@ class GridSearchEval(DoeEval):
                                             == True]['full_name']
             selected_inputs = eval_inputs[eval_inputs['selected_input']
                                           == True]['full_name']
+            selected_inputs_short = eval_inputs[eval_inputs['selected_input']
+                                                == True]['shortest_name']
 
             if set(selected_inputs.tolist()) != set(self.selected_inputs):
                 selected_inputs_has_changed = True
@@ -117,13 +119,25 @@ class GridSearchEval(DoeEval):
 
                 # setting dynamic design space with default value if not
                 # specified
-                default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
-                                                     self.LOWER_BOUND: 0.0,
-                                                     self.UPPER_BOUND: 100.0,
-                                                     self.NB_POINTS: 2
-                                                     })
+                default_design_space = pd.DataFrame({
+                                                    'shortest_name': selected_inputs_short.tolist(),
+                                                    # self.VARIABLES:
+                                                    # self.selected_inputs,
+
+                                                    self.LOWER_BOUND: 0.0,
+                                                    self.UPPER_BOUND: 100.0,
+                                                    self.NB_POINTS: 2,
+                                                    'full_name': self.selected_inputs
+                                                    })
                 dynamic_inputs.update(
-                    {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+                    {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space,
+                                      'dataframe_descriptor': {
+                                          'shortest_name': ('string', None, False),
+                                          self.LOWER_BOUND: ('float', None, True),
+                                          self.UPPER_BOUND: ('float', None, True),
+                                          self.NB_POINTS: ('int', None, True),
+                                          'full_name': ('string', None, False),
+                                      },
                                       }})
 
                 if 'design_space' in self._data_in and selected_inputs_has_changed:
@@ -263,11 +277,11 @@ class GridSearchEval(DoeEval):
         #                                       'full_name': possible_out_values_full_short})
 
         default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full],
-                                             'full_name': possible_in_values_full,
-                                             'shortest_name': possible_in_values_short})
+                                             'shortest_name': possible_in_values_short,
+                                             'full_name': possible_in_values_full})
         default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
-                                              'full_name': possible_out_values_full,
-                                              'shortest_name': possible_out_values_short})
+                                              'shortest_name': possible_out_values_short,
+                                              'full_name': possible_out_values_full})
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
@@ -316,7 +330,7 @@ class GridSearchEval(DoeEval):
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
 
-        # if eval input set for only certain var
+        # if eval output set for only certain var
         elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
@@ -399,7 +413,8 @@ class GridSearchEval(DoeEval):
                     }
                     slider_list.append(slider)
 
-            chart_name = f'{z_vble} based on {x_short} vs {y_short}'
+            # chart_name = f'{z_vble} based on {x_short} vs {y_short}'
+            chart_name = f'{z_vble} contour plot'
 
             # retrieve z variable name by removing _dict from the output name
             output_origin_name = re.sub(r'_dict$', '', output_name)
