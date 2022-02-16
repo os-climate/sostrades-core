@@ -225,18 +225,18 @@ class DoeEval(SoSEval):
                                                'dataframe_descriptor': dataframe_descriptor,
                                                'dataframe_edition_locked': False}})
                     if 'custom_samples_df' in self._data_in and selected_inputs_has_changed:
-                            self._data_in['custom_samples_df']['value'] = default_custom_dataframe
-                            self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                        self._data_in['custom_samples_df']['value'] = default_custom_dataframe
+                        self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
                 else:
 
                     default_design_space = pd.DataFrame({'variable': selected_inputs,
 
                                                          'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
-                                                                                                                'type') == 'array' else 0.0
+                                                                                                         'type') == 'array' else 0.0
                                                                        for var in self.eval_in_list],
                                                          'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
-                                                                                                                  'type') == 'array' else 10.0
+                                                                                                           'type') == 'array' else 10.0
                                                                        for var in self.eval_in_list]
                                                          })
 
@@ -244,7 +244,7 @@ class DoeEval(SoSEval):
                         {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
                                           }})
                     if 'design_space' in self._data_in and selected_inputs_has_changed:
-                            self._data_in['design_space']['value'] = default_design_space
+                        self._data_in['design_space']['value'] = default_design_space
 
                 default_dict = self.get_algo_default_options(algo_name)
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
