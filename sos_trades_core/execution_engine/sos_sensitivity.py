@@ -28,6 +28,20 @@ class SoSSensitivity(SoSEval):
     COmpute the Df for a given Dx with specified F and x
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Sensitivity Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     def __init__(self, sos_name, ee, cls_builder):
         super(SoSSensitivity, self).__init__(
             sos_name, ee, cls_builder)

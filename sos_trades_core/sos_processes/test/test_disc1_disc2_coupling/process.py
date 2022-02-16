@@ -23,6 +23,14 @@ from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart im
 from sos_trades_core.execution_engine.data_manager import DataManager
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Test Disc1 Disc2 Coupling Process',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
         disc_dir = 'sos_trades_core.sos_wrapping.test_discs.'
         mods_dict = {'Disc2': disc_dir + 'disc2.Disc2',

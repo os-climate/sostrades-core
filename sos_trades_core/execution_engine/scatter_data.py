@@ -29,6 +29,20 @@ class SoSScatterData(SoSDiscipline):
     Specification: ScatterData discipline collects inputs and distributes them in outputs
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Scatter Data',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-project-diagram fa-fw',
+        'version': '',
+    }
     def __init__(self, sos_name, ee, map_name, parent=None):
         '''
         CLass to scatter data

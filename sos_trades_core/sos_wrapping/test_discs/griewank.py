@@ -27,6 +27,20 @@ from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 class Griewank(SoSDiscipline):
     """ Griewank Optimization Problem functions
     """
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.griewank',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Fake'
     DESC_IN = {'chromosome': {'type': 'array',
                               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimGriewank'}}

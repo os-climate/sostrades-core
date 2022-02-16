@@ -18,6 +18,14 @@ limitations under the License.
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Test Disc1 Process',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
         mods_dict = {
             'Disc1': 'sos_trades_core.sos_wrapping.test_discs.disc1.Disc1'}

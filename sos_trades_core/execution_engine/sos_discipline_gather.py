@@ -29,6 +29,20 @@ class SoSDisciplineGather(SoSDiscipline):
     '''
     Class that gather output data from a scatter discipline
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Gather',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-outdent fa-fw',
+        'version': '',
+    }
     EE_PATH = 'sos_trades_core.execution_engine'
 
     def __init__(self, sos_name, ee, map_name, cls_builder):

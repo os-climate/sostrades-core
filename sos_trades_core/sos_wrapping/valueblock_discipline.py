@@ -23,6 +23,20 @@ class ValueBlockDiscipline(SoSDiscipline):
     """
     Generic Value Block Discipline getting children outputs as inputs and gathering them as outputs
     """
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.valueblock_discipline',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Research'
 
     NEEDED_DATA_KEYS = ['type', 'unit', 'user_level', 'range', 'possible_values',
