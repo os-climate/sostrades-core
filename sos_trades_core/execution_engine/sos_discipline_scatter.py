@@ -31,6 +31,20 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
     Class that build disciplines using a builder and a map containing data to scatter
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Scatter',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-indent fa-fw',
+        'version': '',
+    }
     def __init__(self, sos_name, ee, map_name, cls_builder):
         '''
         Constructor

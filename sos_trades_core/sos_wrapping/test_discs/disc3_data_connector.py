@@ -19,6 +19,20 @@ from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilte
 
 
 class Disc3(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc3_data_connector',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-money-bill-alt fa-fw',
+        'version': '',
+    }
     _maturity = 'Fake'
 
     data_connection_dict = {'connector_type': '',

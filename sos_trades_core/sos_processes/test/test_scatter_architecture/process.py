@@ -21,6 +21,14 @@ from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilde
 
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Test Scatter Architecture',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
 
         # add namespaces definition

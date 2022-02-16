@@ -32,6 +32,20 @@ class GradientAnalysis(SoSGradients):
     Generic Gradient Analysis class
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.analysis_discs.gradient_analysis',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     DESC_IN = {
         'grad_method': {'type': 'string', 'unit': None, 'possible_values': ['Complex Step', '1st order FD', '2nd order FD']}
     }

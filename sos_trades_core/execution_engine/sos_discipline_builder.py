@@ -31,6 +31,20 @@ class SoSDisciplineBuilder(SoSDiscipline):
     '''
 
     # -- Disciplinary attributes
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Discipline Builder Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     @abstractmethod
     def build(self):
         ''' to be overloaded by subclasses

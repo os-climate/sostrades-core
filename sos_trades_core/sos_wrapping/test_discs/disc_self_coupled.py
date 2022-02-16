@@ -17,6 +17,20 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class SelfCoupledDiscipline(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc_self_coupled',
+        'type': '',
+        'source': '',
+        'validated': '',
+        'validated_by': '',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Fake'
 
     DESC_IN = {

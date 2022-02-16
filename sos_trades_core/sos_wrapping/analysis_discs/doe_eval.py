@@ -37,6 +37,20 @@ class DoeEval(SoSEval):
     '''
     Generic DOE evaluation class
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.analysis_discs.doe_eval',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     default_algo_options = {}
 
     DEFAULT = 'default'

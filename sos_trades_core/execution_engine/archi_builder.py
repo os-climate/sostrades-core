@@ -36,6 +36,20 @@ class ArchiBuilder(SoSDisciplineBuilder):
     """
     Class that build several disciplines following a specific architecture 
     """
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Architecture Builder Model',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-money-bill-alt fa-fw',
+        'version': '',
+    }
     PARENT = 'Parent'
     CURRENT = 'Current'
     TYPE = 'Type'
