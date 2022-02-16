@@ -25,6 +25,20 @@ class SoSGatherData(SoSDiscipline):
     Specification: GatherData discipline collects inputs and gathers them in outputs
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Gather Data',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-outdent fa-fw',
+        'version': '',
+    }
     def __init__(self, sos_name, ee, map_name, parent=None):
         '''
         CLass to gather data

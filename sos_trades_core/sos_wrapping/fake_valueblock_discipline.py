@@ -20,6 +20,20 @@ class FakeValueBlockDiscipline(ValueBlockDiscipline):
     """
     Fake value block discipline to test architecture builder functionalities
     """
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.fake_valueblock_discipline',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Research'
 
     NEEDED_DATA_KEYS = ['type', 'unit', 'user_level', 'range', 'possible_values',

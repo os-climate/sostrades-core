@@ -42,6 +42,20 @@ class FunctionManagerDisc(SoSDiscipline):
     """
     Constraints aggregation discipline
     """
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Function Manager',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     MOD_SUFFIX = '_mod'
     INEQ_CONSTRAINT = FunctionManager.INEQ_CONSTRAINT
     EQ_CONSTRAINT = FunctionManager.EQ_CONSTRAINT

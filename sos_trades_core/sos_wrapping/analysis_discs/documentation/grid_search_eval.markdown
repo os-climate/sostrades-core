@@ -30,6 +30,18 @@ Notice the range is set by default as [0,100] and the number of points as 2 (mus
 
 ![2.2](GS_step4.PNG)
 
-Once te evaluated inputs/ouputs and design space are set. The study can be runned.
+Once te evaluated inputs/outputs and design space are set. The study can be run.
 
-## Step 2 : outputs collection
+## Step 3 : Outputs generation
+
+![2.2](GS_step7.PNG)
+
+At the end of the computation, two outputs are generated. A "Samples" output summarize the scenarii created with the name of the scenario and the inputs associated. For each selected outputs in the "Evaluated Outputs" (only one for this actual version), a dict is created with output values for each scenario.
+
+![2.2](GS_step8.PNG)
+
+## Step 4 : Postprocessing
+
+The graphs are contourplots for each identified float columns in the output dict generated. These outputs are contourplotted for 2 or 3 inputs maximum. In the case of 3 inputs selected, a slicer is set in order to show a 3 dimensions contourplot graph.
+
+![2.2](GS_step9.PNG)

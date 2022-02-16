@@ -54,6 +54,20 @@ class GridSearchEval(DoeEval):
     Generic Grid Search evaluation class
     """
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Grid Search Model',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     INPUT_TYPE = ['float']
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'

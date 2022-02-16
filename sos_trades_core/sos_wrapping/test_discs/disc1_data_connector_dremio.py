@@ -21,6 +21,20 @@ from sos_trades_core.execution_engine.data_connector.data_connector_factory impo
 
 
 class Disc1_data_connector_dremio(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_data_connector_dremio',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Fake'
 
     hostname = 'fr0-idlabi-bw37.eu.airbus.corp'

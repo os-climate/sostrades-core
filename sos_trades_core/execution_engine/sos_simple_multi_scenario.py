@@ -35,6 +35,20 @@ class SoSSimpleMultiScenario(SoSVerySimpleMultiScenario):
     ''' 
     Class that build scatter discipline and linked scatter data from scenario defined in scenario_df
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Simple Multi-Scenario',
+        'type': 'Test',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-stream fa-fw',
+        'version': '',
+    }
     TRADE_VARIABLES = 'trade_variables'
     SCENARIO_DF = 'scenario_df'
     SCENARIO_NAME = 'scenario_name'
