@@ -33,6 +33,20 @@ class FORMAnalysis(SoSGradients):
     First Order Reliability Method Analysis based on the gradient computation
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.analysis_discs.form_analysis',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     DESC_IN = {
         'grad_method': {'type': 'string', 'unit': None, 'possible_values': ['Complex Step', '1st order FD', '2nd order FD']},
         'variation_list': {'default': ['+/-10%'], 'type': 'string_list', 'unit': None, 'possible_values': ['+/-5%', '+/-10%', '+/-20%', '+/-50%']},

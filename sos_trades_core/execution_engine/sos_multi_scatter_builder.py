@@ -31,6 +31,20 @@ class SoSMultiScatterBuilder(SoSDisciplineBuilder):
     ''' 
     Class that build several scatter following an input_builder_dict  
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Multi-Scatter Builder Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-object-group fa-fw',
+        'version': '',
+    }
     ASSOCIATED_INPUTS = 'associated_inputs'
 
     def __init__(self, sos_name, ee, associated_builder_list, own_map_name, child_map_name, autogather, builder_child_path=None):

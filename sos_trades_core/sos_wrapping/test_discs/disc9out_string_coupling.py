@@ -18,6 +18,20 @@ from numpy import array
 
 
 class Disc9out(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc9out_string_coupling',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Fake'
 
     DESC_IN = {

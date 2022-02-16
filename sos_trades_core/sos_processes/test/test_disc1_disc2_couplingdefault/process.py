@@ -19,6 +19,14 @@ from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilde
 
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Test Disc1 Disc2 Coupling Default Process',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
         disc_dir = 'sos_trades_core.sos_wrapping.test_discs.'
         mods_dict = {'Disc2': disc_dir + 'disc2.Disc2',

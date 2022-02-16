@@ -18,6 +18,20 @@ from sos_trades_core.execution_engine.data_connector.mock_connector import MockC
 
 
 class Disc2_data_connector(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc2_data_connector',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Fake'
 
     data_connection_dict = {'connector_type': MockConnector.NAME,

@@ -55,6 +55,20 @@ def get_available_linear_solvers():
 class SoSCoupling(SoSDisciplineBuilder, MDAChain):
     ''' Class that computes a chain of SoSDisciplines
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Coupling',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-cogs fa-fw',
+        'version': '',
+    }
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"

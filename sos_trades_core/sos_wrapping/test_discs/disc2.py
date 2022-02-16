@@ -17,6 +17,20 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class Disc2(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc2',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-exchange fa-fw',
+        'version': '',
+    }
     _maturity = 'Fake'
     DESC_IN = {
         'y': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},

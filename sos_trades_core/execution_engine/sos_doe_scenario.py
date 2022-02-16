@@ -29,6 +29,20 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
     Generic implementation of DOE Scenario
     """
     # Default values of algorithms
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.execution_engine.sos_doe_scenario',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     default_algo_options = {
         'n_samples': None,
         'alpha':  'orthogonal',

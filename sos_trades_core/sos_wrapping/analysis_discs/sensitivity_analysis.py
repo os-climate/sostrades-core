@@ -33,6 +33,20 @@ class SensitivityAnalysis(SoSSensitivity):
     Generic Sensitivity Analysis class
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.analysis_discs.sensitivity_analysis',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-chart-line fa-fw',
+        'version': '',
+    }
     DESC_IN = {
         'variation_list': {'default': ['+/-10%'], 'type': 'string_list', 'unit': None, 'possible_values': ['+/-5%', '+/-10%', '+/-20%', '+/-50%']}
     }
