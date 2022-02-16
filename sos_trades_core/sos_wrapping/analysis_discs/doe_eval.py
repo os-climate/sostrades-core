@@ -509,7 +509,7 @@ class DoeEval(SoSEval):
                 """
 
                 processed_sample = self.samples[index]
-                scenario_name = "scenario_" + str(index)
+                scenario_name = "scenario_" + str(index + 1)
                 dict_one_sample = {}
                 for idx, values in enumerate(processed_sample):
                     dict_one_sample[self.eval_in_list[idx]] = values
@@ -520,7 +520,13 @@ class DoeEval(SoSEval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
 
-            parallel.execute(self.samples, exec_callback=store_callback)
+                try:
+                    parallel.execute(self.samples, exec_callback=store_callback)
+                    self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+                except Exception as error:
+                    self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
+                    raise error
+
 
         else:
             # Case of a sequential execution
@@ -627,7 +633,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
+                         ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
