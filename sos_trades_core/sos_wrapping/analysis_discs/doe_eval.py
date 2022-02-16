@@ -405,8 +405,9 @@ class DoeEval(SoSEval):
             filled_options[self.DIMENSION] = self.design_space.dimension
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-
+            filled_options['n_processes'] = int(filled_options['n_processes'])
             algo = self.doe_factory.create(algo_name)
+
             self.samples = algo._generate_samples(**filled_options)
 
             unnormalize_vect = self.design_space.unnormalize_vect
@@ -467,7 +468,7 @@ class DoeEval(SoSEval):
         # After we retrieve the number of processes on which to execute the scenarios
         # Notice that multiprocessing is only possible on a linux environment
         options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-        n_processes = options['n_processes']
+        n_processes = int(options['n_processes'])
         wait_time_between_samples = options['wait_time_between_samples']
 
         if platform.system() == 'Windows' and n_processes != 1:
