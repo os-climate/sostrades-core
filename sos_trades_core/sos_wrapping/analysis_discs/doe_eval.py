@@ -522,7 +522,7 @@ class DoeEval(SoSEval):
 
                 try:
                     parallel.execute(self.samples, exec_callback=store_callback)
-                    self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+                    #self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
                 except Exception as error:
                     self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
                     raise error
