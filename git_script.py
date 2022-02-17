@@ -13,7 +13,6 @@ def update_os_climate(repos_list, branches_list):
             except:
                 print("upstream branch not present in osclimate, branch created")
             git.push('osclimate', branch)
-    print("done 5 ")
 
 
 if '__main__' == __name__:
