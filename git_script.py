@@ -16,5 +16,6 @@ if '__main__' == __name__:
 
     #cloned_repo = Repo.clone_from('https://idas661.eu.airbus.corp/sostrades/sostrades-core.git',r'C:\Users\SP005188\eclipse-workspace\SoSTrades\sostrades-core\git_test')
     #assert cloned_repo.__class__ is Repo
+    print('a simple change')
 
 
