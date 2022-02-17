@@ -1,3 +1,4 @@
+
 # SoSTrades_CORE
 
 
@@ -16,3 +17,4 @@ This package is divided into 6 parts:
 - study_manager: contains generic class to implement studies
 - tests: contains tests on execution_engine functionalities, based on sos_processes and sos_wrapping
 - tools: contains generic tools of execution_engine
+
