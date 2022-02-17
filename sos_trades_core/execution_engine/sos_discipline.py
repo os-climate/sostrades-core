@@ -226,6 +226,7 @@ class SoSDiscipline(MDODiscipline):
         self.check_if_input_change_after_run = False
         self.check_linearize_data_changes = False
         self.check_min_max_gradients = False
+        self.activate_cache = False
         # ----------------------------------------------------
 
         # -- Base disciplinary attributes
@@ -934,8 +935,10 @@ class SoSDiscipline(MDODiscipline):
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
+        self._update_status_dm(self.STATUS_RUNNING)
         result = MDODiscipline.linearize(
             self, input_data, force_all, force_no_exec)
+        self._update_status_dm(self.STATUS_DONE)
 
         self.__check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
