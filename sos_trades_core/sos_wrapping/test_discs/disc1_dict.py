@@ -18,6 +18,20 @@ from pandas import DataFrame
 
 
 class Disc1(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_dict',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-plane fa-fw',
+        'version': '',
+    }
     _maturity = 'Fake'
     DESC_IN = {
         'x_list': {'type': 'float_list', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},

@@ -32,6 +32,20 @@ class SoSMorphMatrixEval(SoSEval):
     '''
         SOSMorphMatrixEval class which creates a sub process to evaluate, built from morphological matrix of scenarios
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Morphological Matrix Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-border-all fa-fw',
+        'version': '',
+    }
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     ACTIVATION_DF = 'activation_morphological_matrix'

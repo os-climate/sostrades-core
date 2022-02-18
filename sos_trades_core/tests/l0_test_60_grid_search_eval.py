@@ -120,11 +120,18 @@ class TestGridSearchEval(unittest.TestCase):
         print(f'Study executed with the samples: \n {doe_disc_samples}')
         print(f'Study generated the output: y_dict \n {y_dict}')
 
-        dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x'],
-                               'lower_bnd': [5.],
-                               'upper_bnd': [7.],
-                               'nb_points': [3],
-                               })
+        # dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x'],
+        #                        'lower_bnd': [5.],
+        #                        'upper_bnd': [7.],
+        #                        'nb_points': [3],
+        #                        })
+        dspace = pd.DataFrame({
+            'shortest_name': ['x'],
+            'lower_bnd': [5.],
+            'upper_bnd': [7.],
+            'nb_points': [3],
+            'full_name': ['GridSearch.Disc1.x'],
+        })
 
         dict_values = {
             f'{self.study_name}.{self.grid_search}.design_space': dspace,

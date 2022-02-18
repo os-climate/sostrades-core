@@ -17,6 +17,20 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class DiscHessian(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc_hessian',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     _maturity = 'Fake'
     DESC_IN = {
         'x': {'type': 'float'},

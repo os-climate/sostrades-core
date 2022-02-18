@@ -18,6 +18,20 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class OldSumValueBlockDiscipline(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.old_sum_value_block_discipline',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     """
     Old sum value block to break the need of business case in multi scenario discipline 
     """

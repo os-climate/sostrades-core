@@ -808,7 +808,7 @@ class TestCache(unittest.TestCase):
         for k, v in scenario.formulation.mda.local_data.items():
             print("\t | " + str(k) + " " + str(v))
 
-    def test_11_sellar_with_cache(self):
+    def test_11_sellar_optim_with_cache(self):
 
         self.study_name = 'optim'
         self.ns = f'{self.study_name}'
@@ -887,16 +887,21 @@ class TestCache(unittest.TestCase):
         y_2_bis = exec_eng.dm.get_value(
             f'{self.ns}.{self.sc_name}.{self.c_name}.y_2_bis')
 
-        print('y_1 = ', y_1)
-        print('y_1_bis = ', y_1_bis)
-        print('y_2 = ', y_2)
-        print('y_2_bis = ', y_2_bis)
-
         self.assertEqual(y_1, y_1_bis)
         self.assertEqual(y_2, y_2_bis)
+
+        y_1_target = (25.588302369877685 + 0j)
+        y_2_target = (12.058488150611574 + 0j)
+
+        self.assertEqual(y_1, y_1_target)
+        self.assertEqual(y_2, y_2_target)
+        self.assertEqual(exec_eng.root_process.sos_disciplines[0].sos_disciplines[
+                         0].local_data['optim.SellarOptimScenario.SellarCoupling.y_1'][0], y_1_target)
+        self.assertEqual(exec_eng.root_process.sos_disciplines[0].sos_disciplines[
+                         0].local_data['optim.SellarOptimScenario.SellarCoupling.y_2'][0], y_2_target)
 
 
 if __name__ == "__main__":
     cls = TestCache()
     # cls.test_10_gemseo_cache()
-    cls.test_11_sellar_with_cache()
+    cls.test_11_sellar_optim_with_cache()
