@@ -58,7 +58,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
                                                     'y_2',
                                                     'z']}
-        self.input_selection_local_dv_x = pd.DataFrame(input_selection_local_dv_x)
+        self.input_selection_local_dv_x = pd.DataFrame(
+            input_selection_local_dv_x)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
                                'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
@@ -84,7 +85,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
                                       'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2']}
-        self.output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
+        self.output_selection_obj_y1_y2 = pd.DataFrame(
+            output_selection_obj_y1_y2)
 
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_doe'
@@ -830,7 +832,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'doe_samples_dataframe')
 
         dimension = sum([len(sublist) if isinstance(
             sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
@@ -859,15 +862,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
 
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_processes': 1, 'wait_time_between_samples': 0.0}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {
+            'n_processes': 1, 'wait_time_between_samples': 0.0}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
-        x_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574, 6.954954792150857]
+        x_values = [9.379763880395856, 8.88644794300546,
+                    3.7137135749628882, 0.0417022004702574, 6.954954792150857]
         z_values = [array([1.515949043849158, 5.6317362409322165]),
                     array([-1.1962705421254114, 6.523436208612142]),
-                    array([-1.9947578026244557, 4.822570933860785]), array([1.7490668861813, 3.617234050834533]),
+                    array([-1.9947578026244557, 4.822570933860785]
+                          ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
         samples_dict = {'x': x_values, 'z': z_values}
@@ -900,7 +906,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'doe_samples_dataframe')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
@@ -908,7 +915,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_obj), 5)
         self.assertEqual(len(doe_disc_y1), 5)
         self.assertEqual(len(doe_disc_y2), 5)
-
 
     def test_13_doe_eval_execution_lhs_on_1_var(self):
 
@@ -968,9 +974,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), n_samples)
-
 
     def test_14_doe_eval_options_and_design_space_after_reconfiguration(self):
 
@@ -1062,7 +1068,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
+        self.assertDictEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.algo_options'), default_algo_options_lhs)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x.reset_index(drop=True), check_dtype=False)
 
@@ -1070,26 +1077,31 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
                      'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
+                             'n_samples': 10, 'face': 'faced'})
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after algo name change
         disc_dict = {'doe.DoEEval.sampling_algo': "fullfact"}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), default_algo_options_lhs)
+        self.assertDictEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.algo_options'), default_algo_options_lhs)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'}}
+        disc_dict = {'doe.DoEEval.algo_options': {
+            'n_samples': 10, 'face': 'faced'}}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
+                             'n_samples': 10, 'face': 'faced'})
 
         # trigger a reconfiguration after eval_inputs and eval_outputs changes
         disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
+                             'n_samples': 10, 'face': 'faced'})
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_z.reset_index(drop=True), check_dtype=False)
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced', 'n_processes': 1,
@@ -1134,9 +1146,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_processes': 1, 'wait_time_between_samples': 0.0}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {
+            'n_processes': 1, 'wait_time_between_samples': 0.0}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.custom_samples_df').columns.tolist(), ['x'])
+        self.assertListEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.custom_samples_df').columns.tolist(), ['x'])
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.custom_samples_df').columns.tolist(),
@@ -1149,10 +1163,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        x_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574, 6.954954792150857]
+        x_values = [9.379763880395856, 8.88644794300546,
+                    3.7137135749628882, 0.0417022004702574, 6.954954792150857]
         z_values = [array([1.515949043849158, 5.6317362409322165]),
                     array([-1.1962705421254114, 6.523436208612142]),
-                    array([-1.9947578026244557, 4.822570933860785]), array([1.7490668861813, 3.617234050834533]),
+                    array([-1.9947578026244557, 4.822570933860785]
+                          ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
         samples_dict = {'x': x_values, 'z': z_values}
@@ -1176,9 +1192,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'doe_samples_dataframe')
         self.assertEqual(len(doe_disc_samples), 5)
-
 
     def test_16_doe_eval_design_space_normalisation(self):
 
@@ -1227,7 +1243,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
         exec_eng.load_study_from_input_dict(values_dict)
 
-        # configure disciplines with the algo lhs and check that generated samples are within default bounds
+        # configure disciplines with the algo lhs and check that generated
+        # samples are within default bounds
         disc_dict = {}
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
@@ -1238,7 +1255,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [0,10.] range
-        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+        generated_x = exec_eng.dm.get_value(
+            'doe.DoEEval.doe_samples_dataframe')['x'].tolist()
         self.assertTrue(all(0 <= element <= 10. for element in generated_x))
 
         # trigger a reconfiguration after options and design space changes
@@ -1246,7 +1264,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
-        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+        generated_x = exec_eng.dm.get_value(
+            'doe.DoEEval.doe_samples_dataframe')['x'].tolist()
         self.assertTrue(all(5. <= element <= 11. for element in generated_x))
 
         # trigger a reconfiguration after algo name change
@@ -1260,10 +1279,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                                                  'wait_time_between_samples': 0.0}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
-        generated_x = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+        generated_x = exec_eng.dm.get_value(
+            'doe.DoEEval.doe_samples_dataframe')['x'].tolist()
         self.assertTrue(all(-9. <= element <= 150. for element in generated_x))
 
-        generated_z = exec_eng.dm.get_value('doe.DoEEval.doe_samples_dataframe')['z'].tolist()
+        generated_z = exec_eng.dm.get_value(
+            'doe.DoEEval.doe_samples_dataframe')['z'].tolist()
         self.assertTrue(
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z))
@@ -1287,15 +1308,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
 
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_processes': 1, 'wait_time_between_samples': 0.0}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {
+            'n_processes': 1, 'wait_time_between_samples': 0.0}
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
-        x_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574, 6.954954792150857]
+        x_values = [9.379763880395856, 8.88644794300546,
+                    3.7137135749628882, 0.0417022004702574, 6.954954792150857]
         local_dv_values = x_values
 
-        samples_dict = {'x': x_values, 'DoEEval.Sellar_Problem.local_dv': local_dv_values}
+        samples_dict = {'x': x_values,
+                        'DoEEval.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.DoEEval.custom_samples_df'] = samples_df
 
@@ -1325,7 +1349,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs('doe_samples_dataframe')
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'doe_samples_dataframe')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
@@ -1450,20 +1475,18 @@ class TestSoSDOEScenario(unittest.TestCase):
             #print(str(stop - start))
             execution_time += stop - start
 
-            exec_eng.load_study_from_input_dict({f'{self.ns}.DoEEval.algo_options':{'n_samples': n_samples, 'n_processes': 20,
-                                                            'wait_time_between_samples': 0.0}})
+            exec_eng.load_study_from_input_dict({f'{self.ns}.DoEEval.algo_options': {'n_samples': n_samples, 'n_processes': 20,
+                                                                                     'wait_time_between_samples': 0.0}})
             start = time()
             exec_eng.execute()
             stop = time()
             # print(str(stop - start))
             execution_time_20 += stop - start
 
-
-
-
-        print("parallel execution with 10 cores in " + str(execution_time / 5) + " seconds")
-        print("parallel execution with 20 cores in " + str(execution_time_20 / 5) + " seconds")
-
+        print("parallel execution with 10 cores in " +
+              str(execution_time / 5) + " seconds")
+        print("parallel execution with 20 cores in " +
+              str(execution_time_20 / 5) + " seconds")
 
     def test_20_doe_eval_with_2_outputs_with_the_same_name(self):
 
@@ -1474,7 +1497,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
                        }
         dspace = pd.DataFrame(dspace_dict)
-
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -1507,7 +1529,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.study_name + '.DoEEval.Disc2.power': 2}
         exec_eng.load_study_from_input_dict(private_values)
 
-        # configure disciplines with the algo lhs and check that generated samples are within default bounds
+        # configure disciplines with the algo lhs and check that generated
+        # samples are within default bounds
 
         input_selection_x_a = {'selected_input': [True, True],
                                'full_name': ['x', 'DoEEval.Disc1.a']}
@@ -1528,16 +1551,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
-        self.assertEqual(len(exec_eng.dm.get_value('doe.DoEEval.Disc1.z_dict')) ,100)
-        self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')) , 100)
-
-
-
-
+        self.assertEqual(len(exec_eng.dm.get_value(
+            'doe.DoEEval.Disc1.z_dict')), 100)
+        self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')), 100)
 
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-
-
+    cls.test_16_doe_eval_design_space_normalisation()

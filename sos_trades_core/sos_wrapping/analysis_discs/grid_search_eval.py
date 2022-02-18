@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pandas as pd
 from gemseo.algos.doe.doe_factory import DOEFactory
 from numpy import array
@@ -478,21 +479,19 @@ class GridSearchEval(DoeEval):
                     # we extract the columns of the dataframe of type float which will represents the possible outputs
                     # we assume that all dataframes contains the same columns
                     # and only look at the first element
-                    output_variables_list_list = [
-                        set(
-                            df.convert_dtypes()
-                            .select_dtypes(include='float')
-                            .columns.tolist()
-                        )
-                        for df in output_df_dict.values()
-                    ]
-                    output_variables = list(
-                        set(
-                            output_variables_list_list[0].intersection(
-                                *output_variables_list_list
-                            )
-                        )
-                    )
+                    output_df = None
+                    # output_df_dict = output_df_dict[list(output_df_dict.keys())[1]]
+                    for scenario, df in output_df_dict.items():
+                        filtered_df = df.copy(deep=True)
+                        filtered_df['scenario'] = f'{scenario}'
+
+                        if output_df is None:
+                            output_df = filtered_df.copy(deep=True)
+                        else:
+                            output_df = pd.concat([output_df, filtered_df], axis=0)
+                    
+                    output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
+                        include='float').columns.to_list()
 
                     # we constitute the full_chart_list by making a product
                     # between the possible inputs combination and outputs list
@@ -510,6 +509,7 @@ class GridSearchEval(DoeEval):
             y_vble = chart[0][1]
 
             # we retrieve the corresponding short name for x and y
+            #GET-->first parameter=key, second parameter=value if the key is not found
             x_short = inputs_name_mapping.get(x_vble, x_vble)
             y_short = inputs_name_mapping.get(y_vble, y_vble)
 
@@ -547,10 +547,13 @@ class GridSearchEval(DoeEval):
                 'z_unit': self.ee.dm.get_data(
                     self.ee.dm.get_all_namespaces_from_var_name(output_origin_name)[0]
                 )['unit'],
+                'z_max': output_df[z_vble].max(skipna=True),
+                'z_min':output_df[z_vble].min(skipna=True),
                 'slider': slider_list,
+                
             }
 
-        return chart_dict
+        return chart_dict, output_df
 
     def get_chart_filter_list(self):
 
@@ -571,8 +574,8 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict = self.prepare_chart_dict(outputs_dict, inputs_dict)
-
+        chart_dict, output_df = self.prepare_chart_dict(outputs_dict, inputs_dict)
+        
         if filters is not None:
             for chart_filter in filters:
                 if chart_filter.filter_key == 'Charts':
@@ -581,16 +584,6 @@ class GridSearchEval(DoeEval):
         if len(chart_dict.keys()) > 0:
             # we create a unique dataframe containing all data that will be
             # used for drawing the graphs
-            output_df = None
-            output_df_dict = outputs_dict[list(outputs_dict.keys())[1]]
-            for scenario, df in output_df_dict.items():
-                filtered_df = df.copy(deep=True)
-                filtered_df['scenario'] = f'{scenario}'
-
-                if output_df is None:
-                    output_df = filtered_df.copy(deep=True)
-                else:
-                    output_df = pd.concat([output_df, filtered_df], axis=0)
 
             doe_samples_df = outputs_dict['doe_samples_dataframe']
             cont_plot_df = doe_samples_df.merge(output_df, how="left", on='scenario')
@@ -601,9 +594,15 @@ class GridSearchEval(DoeEval):
                     if len(chart_info['slider']) == 0:
                         fig = go.Figure()
 
-                        x_data = cont_plot_df[chart_info['x']].to_list()
-                        y_data = cont_plot_df[chart_info['y']].to_list()
-                        z_data = cont_plot_df[chart_info['z']].to_list()
+                        x_data = cont_plot_df[chart_info['x']].replace(np.nan, 'None').to_list()
+                        y_data = cont_plot_df[chart_info['y']].replace(np.nan, 'None').to_list()
+                        z_data = cont_plot_df[chart_info['z']].replace(np.nan, 'None').to_list()
+                        
+                        x_max=max(x_data)
+                        y_max=max(y_data)
+                        x_min=min(x_data)
+                        y_min=min(y_data)
+                        
 
                         fig.add_trace(
                             go.Contour(
@@ -618,6 +617,8 @@ class GridSearchEval(DoeEval):
                                         size=10,
                                         # color = 'white',
                                     ),
+                                    # start=z_min,
+                                    # end=z_max,
                                 ),
                                 colorbar=dict(
                                     title=f'{chart_info["z"]}',
@@ -631,6 +632,26 @@ class GridSearchEval(DoeEval):
                                     tickfont_size=10,
                                 ),
                                 visible=True,
+                                connectgaps=False,
+                                
+                            )
+                        )
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=x_data,
+                                y=y_data,
+                                mode='markers',
+                                marker = dict(
+                                    size = 20,
+                                    color='dimGray',
+                                    # line=dict(
+                                    #     color='MediumPurple',
+                                    #     width=2,
+                                    # )
+                                ),
+                                visible=True,
+                                showlegend=False,
                             )
                         )
 
@@ -642,6 +663,7 @@ class GridSearchEval(DoeEval):
                                 titlefont_size=12,
                                 tickfont_size=10,
                                 automargin=True,
+                                range=[x_min, x_max],
                             ),
                             yaxis=dict(
                                 title=chart_info['y_short'],
@@ -650,9 +672,11 @@ class GridSearchEval(DoeEval):
                                 tickfont_size=10,
                                 # tickformat=',.0%',
                                 automargin=True,
+                                range=[y_min, y_max],
                             ),
                             # margin=dict(l=0.25, b=100)
                         )
+                        
 
                         if len(fig.data) > 0:
                             chart_name = f'<b>{name}</b>'
@@ -666,18 +690,28 @@ class GridSearchEval(DoeEval):
                         slider_short_name = chart_info['slider'][0]['short_name']
                         slider_unit = chart_info['slider'][0]['unit']
                         slider_values = cont_plot_df[col_slider].unique()
+                        z_max=chart_info['z_max']
+                        z_min=chart_info['z_min']
+                        
                         fig = go.Figure()
+                        
                         for slide_value in slider_values:
                             x_data = cont_plot_df.loc[
                                 cont_plot_df[col_slider] == slide_value
-                            ][chart_info['x']].to_list()
+                            ][chart_info['x']].replace(np.nan, 'None').to_list()
                             y_data = cont_plot_df.loc[
                                 cont_plot_df[col_slider] == slide_value
-                            ][chart_info['y']].to_list()
+                            ][chart_info['y']].replace(np.nan, 'None').to_list()
                             z_data = cont_plot_df.loc[
                                 cont_plot_df[col_slider] == slide_value
-                            ][chart_info['z']].to_list()
-
+                            ][chart_info['z']].replace(np.nan, 'None').to_list()
+                            # labels=cont_plot_df.loc[cont_plot_df[col_slider] == slide_value]['scenario']
+                            
+                            x_max=max(x_data)
+                            x_min=min(x_data)
+                            y_min=min(y_data)
+                            y_max=max(y_data)
+                            
                             # Initialization Slider
                             if slide_value == slider_values[-1]:
                                 visible = True
@@ -697,6 +731,9 @@ class GridSearchEval(DoeEval):
                                             size=10,
                                             # color = 'white',
                                         ),
+                                        start=z_min,
+                                        end=z_max,
+                                        
                                     ),
                                     colorbar=dict(
                                         title=f'{chart_info["z"]}',
@@ -710,13 +747,33 @@ class GridSearchEval(DoeEval):
                                         tickfont_size=10,
                                     ),
                                     visible=visible,
+                                    connectgaps=False,
                                 )
                             )
-
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_data,
+                                    y=y_data,
+                                    # name=labels,
+                                    mode='markers',
+                                    marker = dict(
+                                        size = 20,
+                                        color='dimGray',
+                                        # line=dict(
+                                        #     color='MediumPurple',
+                                        #     width=2,
+                                        # )
+                                    ),
+                                    visible=visible,
+                                    showlegend=False,
+                                )
+                            )
+                            
                         # Create and add slider
                         steps = []
 
-                        for i in range(int(len(fig.data))):
+                        for i in range(int(len(fig.data)/2)):
+                        # for i in range(int(len(fig.data)-1)):
 
                             step = dict(
                                 method="update",
@@ -728,7 +785,9 @@ class GridSearchEval(DoeEval):
                                 label=f'{slider_values[i]}{slider_unit}',
                             )
                             # Toggle i'th trace to 'visible'
-                            step["args"][0]["visible"][i] = True
+                            for k in range(2):
+                                step['args'][0]['visible'][i * 2 + k] = True
+                            # step["args"][0]["visible"][i] = True
                             steps.append(step)
 
                         sliders = [
@@ -742,7 +801,8 @@ class GridSearchEval(DoeEval):
                                 pad=dict(t=50),
                             )
                         ]
-
+                        
+                        
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
@@ -752,6 +812,7 @@ class GridSearchEval(DoeEval):
                                 titlefont_size=12,
                                 tickfont_size=10,
                                 automargin=True,
+                                range=[x_min, x_max],
                             ),
                             yaxis=dict(
                                 title=f'{chart_info["y_short"]}',
@@ -760,6 +821,7 @@ class GridSearchEval(DoeEval):
                                 ticksuffix=chart_info["y_unit"],
                                 # tickformat=',.0%',
                                 automargin=True,
+                                range=[y_min, y_max],
                             ),
                             # margin=dict(l=0.25, b=100)
                         )

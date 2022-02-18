@@ -858,3 +858,9 @@ class TestMultiScatterBuilder(unittest.TestCase):
                          'SoSDisciplineScatter')
         self.assertEqual(scatter_gather_sub_names.scatter_builders.cls.__name__,
                          'SoSDisciplineGather')
+
+
+if '__main__' == __name__:
+    cls = TestMultiScatterBuilder()
+    cls.setUp()
+    cls.test_02_multi_scenarios_of_multibuilder_scatter()

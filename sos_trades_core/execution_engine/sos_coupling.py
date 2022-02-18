@@ -85,7 +85,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
         POSSIBLE_VALUES_PRECONDITIONER = [
-                                             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
 
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
@@ -200,7 +200,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             if disc not in self.sos_disciplines:
                 self.ee.factory.add_discipline(disc)
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
-        # high level coupling and we do not have to restore the current_discipline
+        # high level coupling and we do not have to restore the
+        # current_discipline
         if old_current_discipline is not None:
             self.ee.factory.current_discipline = old_current_discipline
 
@@ -220,7 +221,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
                 self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                          ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
                         self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
@@ -236,7 +237,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
                 self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                          ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
                         self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
@@ -296,7 +297,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Return False if at least one sub discipline needs to be configured, True if not
         '''
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
-                self.get_disciplines_to_configure() == [])
+            self.get_disciplines_to_configure() == [])
 
     def configure_execution(self):
         '''
@@ -327,7 +328,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             # keep numerical inputs in data_in
             self._data_in = {key: value for key, value in self._data_in.items(
             ) if
-                             key in self.DESC_IN or key in self.NUM_DESC_IN}
+                key in self.DESC_IN or key in self.NUM_DESC_IN}
             # add coupling inputs in data_in
             gems_grammar_in_keys = self.input_grammar.get_data_names()
             for var_f_name in gems_grammar_in_keys:
@@ -468,11 +469,11 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             preconditioner = copy(self.get_sosdisc_inputs(
                 'linear_solver_MDA_preconditioner'))
             linear_solver_options_MDA['preconditioner_type'] = (
-                                                                       preconditioner != 'None') * preconditioner or None
+                preconditioner != 'None') * preconditioner or None
         else:
             # Scipy case / gmres
             linear_solver_options_MDA['use_ilu_precond'] = (
-                    copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
+                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
 
         num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
             'tol')
@@ -494,10 +495,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             preconditioner = self.get_sosdisc_inputs(
                 'linear_solver_MDO_preconditioner')
             linear_solver_options_MDO['preconditioner_type'] = (
-                                                                       preconditioner != 'None') * preconditioner or None
+                preconditioner != 'None') * preconditioner or None
         else:
             linear_solver_options_MDO['use_ilu_precond'] = (
-                    self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
+                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
 
         self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
         self.linear_solver_options_MDO = linear_solver_options_MDO
@@ -592,8 +593,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
+        self.store_sos_outputs_values(dict_out, update_dm=True)
 
-        self.store_sos_outputs_values(dict_out)
+        # store local data in datamanager
+        self.update_dm_with_local_data()
 
     def pre_run_mda(self):
         '''
@@ -677,9 +680,13 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         ready_disciplines = []
         disc_vs_keys_none = {}
         for disc in disciplines:
-            inputs_values = disc.get_sosdisc_inputs()
+            # get inputs values of disc with full_name
+            inputs_values = disc.get_sosdisc_inputs(
+                in_dict=True, full_name=True)
+            # update inputs values with SoSCoupling local_data
+            inputs_values.update(disc._filter_inputs(self.local_data))
             keys_none = [key for key, value in inputs_values.items()
-                         if value is None and key not in self.NUM_DESC_IN]
+                         if value is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
             if keys_none == []:
                 ready_disciplines.append(disc)
             else:
@@ -699,7 +706,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             In SoSCoupling, self.local_data is updated through MDAChain
             and self._data_out is updated through self.local_data.
         '''
-        SoSDisciplineBuilder._run(self, update_local_data=False)
+        SoSDisciplineBuilder._run(self)
 
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
