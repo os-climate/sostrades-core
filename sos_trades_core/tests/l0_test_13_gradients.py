@@ -110,11 +110,17 @@ class TestGradients(unittest.TestCase):
 
         gradients_output = self.exec_eng.dm.get_value(
             'EETests.GA.gradient_outputs')
+        # check outputs equals local_data
+        self.assertTrue(all(list(gradients_output.values(
+        )) == self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs']))
 
         self.exec_eng.execute()
 
         gradients_output_2 = self.exec_eng.dm.get_value(
             'EETests.GA.gradient_outputs')
+        # check outputs equals local_data
+        self.assertTrue(all(list(gradients_output_2.values(
+        )) == self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs']))
 
         self.assertDictEqual(gradients_output, gradients_output_2,
                              'Two execute in a raw do not give the same result ')
@@ -702,4 +708,4 @@ class TestGradients(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestGradients()
     cls.setUp()
-    cls.test_11_grad_analysis_with_all_types()
+    cls.test_02_gradient_analysis_execute()

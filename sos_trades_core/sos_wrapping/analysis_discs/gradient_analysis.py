@@ -41,7 +41,7 @@ class GradientAnalysis(SoSGradients):
         'gradient_outputs': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY},
     }
 
-    def run(self):
+    def eval_run(self):
         '''
             Overloaded SoSEval method
         '''
@@ -52,7 +52,7 @@ class GradientAnalysis(SoSGradients):
 
         dict_values = {'gradient_outputs': gradient_outputs}
         # put new field value in data_out
-        self.store_sos_outputs_values(dict_values, update_dm=True)
+        self.store_sos_outputs_values(dict_values)
 
     def get_chart_filter_list(self):
 

@@ -169,6 +169,8 @@ class TestMDALoop(unittest.TestCase):
             elif target[key] is array:
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
+                self.assertListEqual(
+                    exec_eng.root_process.local_data[key], target[key])
 
     def test_03_mda_loop_after_dump_load(self):
 
@@ -1033,4 +1035,4 @@ class TestMDALoop(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_01_mda_loop()
+    cls.test_02_mda_numerical_options()

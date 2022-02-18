@@ -487,7 +487,7 @@ class SoSMorphMatrixEval(SoSEval):
 
         return output_dict
 
-    def run(self):
+    def eval_run(self):
         '''
             Overloaded SoSEval method
         '''
@@ -501,7 +501,7 @@ class SoSMorphMatrixEval(SoSEval):
         output_dict = self.launch_morphological_matrix_eval(
             deepcopy(activation_df))
         # store output values
-        self.store_sos_outputs_values(output_dict, update_dm=True)
+        self.store_sos_outputs_values(output_dict)
         # update status of eval process even if no run has been executed
         self._update_status_recursive(self.STATUS_DONE)
 

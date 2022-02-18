@@ -158,7 +158,7 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
 
     def run(self):
         '''
-        Overload the run of SoSScenario to store additional DOE outputs
+        Overload the run method of SoSScenario to store additional DOE outputs
         '''
         SoSScenario.run(self)
 

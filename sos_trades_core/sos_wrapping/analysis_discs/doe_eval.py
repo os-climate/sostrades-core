@@ -438,7 +438,7 @@ class DoeEval(SoSEval):
             self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
 
-    def run(self):
+    def eval_run(self):
         '''
             Overloaded SoSEval method
             The execution of the doe
@@ -559,11 +559,11 @@ class DoeEval(SoSEval):
 
         # saving outputs in the dm
         self.store_sos_outputs_values(
-            {'doe_samples_dataframe': samples_dataframe}, update_dm=True)
+            {'doe_samples_dataframe': samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
-                    global_dict_output[dynamic_output]}, update_dm=True)
+                    global_dict_output[dynamic_output]})
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm

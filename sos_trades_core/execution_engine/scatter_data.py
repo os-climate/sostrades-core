@@ -72,7 +72,7 @@ class SoSScatterData(SoSDiscipline):
                     store_outputs = True
             # run scatter_data to store outputs in dm
             if store_outputs:
-                self.store_scatter_outputs()
+                self.store_scatter_outputs(store_in_dm=True)
 
     def clean_data_out(self, new_names):
         '''
@@ -152,7 +152,7 @@ class SoSScatterData(SoSDiscipline):
 
         self.store_scatter_outputs()
 
-    def store_scatter_outputs(self):
+    def store_scatter_outputs(self, store_in_dm=False):
         '''
         Store outputs in dm 
         '''
@@ -185,4 +185,4 @@ class SoSScatterData(SoSDiscipline):
                                                                                                                                    )
                         dict_values[f'{scatter_name}.{output_name}'] = scatter_output_value
 
-        self.store_sos_outputs_values(dict_values, update_dm=True)
+        self.store_sos_outputs_values(dict_values, update_dm=store_in_dm)

@@ -338,3 +338,19 @@ class SoSEval(SoSDisciplineBuilder):
             outeval_final_dict.update(outeval_base_dict)
 
         return outeval_final_dict
+
+    def eval_run(self):
+        ''' 
+        To be overloaded by inherited classes
+        '''
+        pass
+
+    def run(self):
+        ''' 
+        Overloads SoSDiscipline run method to store local_data in datamanger after running
+        '''
+        self.eval_run()
+
+        # convert local_data into new types and store values in data manager
+        local_data_sos = self._convert_array_into_new_type(self.local_data)
+        self.dm.set_values_from_dict(local_data_sos)

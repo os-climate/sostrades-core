@@ -42,7 +42,7 @@ class SensitivityAnalysis(SoSSensitivity):
         'sensitivity_outputs': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY},
     }
 
-    def run(self):
+    def eval_run(self):
         '''
             Overloaded SoSEval method
         '''
@@ -60,7 +60,7 @@ class SensitivityAnalysis(SoSSensitivity):
 
         dict_values = {'sensitivity_outputs': sens_dict}
         # put new field value in data_out
-        self.store_sos_outputs_values(dict_values, update_dm=True)
+        self.store_sos_outputs_values(dict_values)
 
     def get_chart_filter_list(self):
 
