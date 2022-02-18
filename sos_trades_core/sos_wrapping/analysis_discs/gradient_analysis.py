@@ -41,7 +41,7 @@ class GradientAnalysis(SoSGradients):
         'gradient_outputs': {'type': 'dict', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY},
     }
 
-    def eval_run(self):
+    def run(self):
         '''
             Overloaded SoSEval method
         '''

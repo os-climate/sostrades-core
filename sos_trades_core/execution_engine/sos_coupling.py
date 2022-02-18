@@ -579,12 +579,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
-
         self.store_sos_outputs_values(dict_out, update_dm=True)
 
-        # convert local_data into new types and store values in data manager
-        local_data_sos = self._convert_array_into_new_type(self.local_data)
-        self.dm.set_values_from_dict(local_data_sos)
+        # store local data in datamanager
+        self.update_dm_with_local_data()
 
     def pre_run_mda(self):
         '''
@@ -694,7 +692,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             In SoSCoupling, self.local_data is updated through MDAChain
             and self._data_out is updated through self.local_data.
         '''
-        SoSDisciplineBuilder._run(self, update_local_data=False)
+        SoSDisciplineBuilder._run(self)
 
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:

@@ -438,7 +438,7 @@ class DoeEval(SoSEval):
             self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
 
-    def eval_run(self):
+    def run(self):
         '''
             Overloaded SoSEval method
             The execution of the doe

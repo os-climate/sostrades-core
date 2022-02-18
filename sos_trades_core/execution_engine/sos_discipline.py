@@ -171,6 +171,12 @@ class SoSDiscipline(MDODiscipline):
     #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
     NEW_VAR_TYPE = ['dict', 'dataframe',
                     'string_list', 'string', 'float', 'int']
+
+    UNSUPPORTED_GEMSEO_TYPES = []
+    for type in VAR_TYPE_MAP.keys():
+        if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
+            UNSUPPORTED_GEMSEO_TYPES.append(type)
+
     # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
     # df_dict = dict , string_dict = dict, list_dict = dict
     TYPE_METADATA = "type_metadata"
@@ -616,6 +622,7 @@ class SoSDiscipline(MDODiscipline):
     def _update_with_values(self, to_update, update_with, update_dm=False):
         ''' update <to_update> 'value' field with <update_with>
         '''
+        to_update_local_data = {}
         to_update_dm = {}
         ns_update_with = {}
         for k, v in update_with.items():
@@ -626,22 +633,25 @@ class SoSDiscipline(MDODiscipline):
                     raise Exception(
                         f'It is not possible to update the variable {key} which has a visibility Internal')
                 else:
-                    to_update_dm[self.get_var_full_name(
-                        key, to_update)] = ns_update_with[key]
-
-        # update DM after run
+                    if to_update[key][self.TYPE] in self.UNSUPPORTED_GEMSEO_TYPES:
+                        to_update_dm[self.get_var_full_name(
+                            key, to_update)] = ns_update_with[key]
+                    else:
+                        to_update_local_data[self.get_var_full_name(
+                            key, to_update)] = ns_update_with[key]
 
         if update_dm:
+            # update DM after run
+            self.dm.set_values_from_dict(to_update_local_data)
             self.dm.set_values_from_dict(to_update_dm)
         else:
             # update local_data after run
-            to_update_gemseo = self._convert_new_type_into_array(to_update_dm)
-            self.local_data.update(to_update_gemseo)
+            to_update_local_data_array = self._convert_new_type_into_array(
+                to_update_local_data)
+            self.local_data.update(to_update_local_data_array)
             # need to update outputs that will disappear after filtering the
-            # local_data
-            not_coupled_outputs = {data: value for data, value in self.local_data.items() if data not in self.get_input_output_data_names()
-                                   and self.dm.get_data(data, self.IO_TYPE) == self.IO_TYPE_OUT}
-            self.dm.set_values_from_dict(not_coupled_outputs)
+            # local_data with supported types
+            self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
         '''Get namespace reference by consulting the namespace_manager 
@@ -925,9 +935,12 @@ class SoSDiscipline(MDODiscipline):
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
+        # set LINEARIZE status to get inputs from local_data instead of
+        # datamanager
         self._update_status_dm(self.STATUS_LINEARIZE)
         result = MDODiscipline.linearize(
             self, input_data, force_all, force_no_exec)
+        # reset DONE status
         self._update_status_dm(self.STATUS_DONE)
 
         self.__check_nan_in_data(result)
@@ -1240,7 +1253,7 @@ class SoSDiscipline(MDODiscipline):
 
         return input_data
 
-    def _run(self, update_local_data=True):
+    def _run(self):
         ''' GEMS run method overloaded. Calls specific run() method from SoSDiscipline
         Defines the execution of the process, given that data has been checked.
         '''
@@ -1250,11 +1263,6 @@ class SoSDiscipline(MDODiscipline):
         try:
             # data conversion GEMS > SosStrades
             self._update_type_metadata()
-#             local_data_updt = self._convert_array_into_new_type(
-#                 self.local_data)
-#
-#             # update DM
-#             self.dm.set_values_from_dict(local_data_updt)
 
             # execute model
             self._update_status_dm(self.STATUS_RUNNING)
@@ -1276,11 +1284,6 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_dm(self.STATUS_FAILED)
             self.logger.exception(exc)
             raise exc
-
-#         if update_local_data:
-#             out_dict = self._convert_coupling_outputs_into_gems_format()
-#             #-- Local data is the output dictionary for a GEMS discipline
-#             self.local_data.update(out_dict)  # update output data for gems
 
         # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
         # can failed but FAILED (without an forward exception) status is not
@@ -1315,11 +1318,14 @@ class SoSDiscipline(MDODiscipline):
                     self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
-    def update_dm_with_local_data(self, local_data):
+    def update_dm_with_local_data(self, local_data=None):
         '''
         Update the DM with local data from GEMSEO 
-        Fiorst convert data into SoSTRades format then set values in the DM 
+        First convert data into SoSTrades format then set values in the DM 
         '''
+        if local_data is None:
+            local_data = self.local_data
+
         local_data_sos = self._convert_array_into_new_type(local_data)
 
         self.dm.set_values_from_dict(local_data_sos)

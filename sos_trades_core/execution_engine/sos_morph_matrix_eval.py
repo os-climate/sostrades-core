@@ -487,7 +487,7 @@ class SoSMorphMatrixEval(SoSEval):
 
         return output_dict
 
-    def eval_run(self):
+    def run(self):
         '''
             Overloaded SoSEval method
         '''
