@@ -61,20 +61,15 @@ def execute(
     in_names = cls.get_input_data_names()
 
     # SoSTrades modif: cache capability removal
-    if isinstance(cls, SoSDiscipline):
-        cache_activated = cls.ee.root_process.activate_cache
-    else:
-        cache_activated = cls.disciplines[0].ee.root_process.activate_cache
-
-    out_cached, out_jac = cls.cache.get_outputs(input_data, in_names)
-
-# if cache_activated and out_cached is not None and not isinstance(cls,
-# MDOChain) and not isinstance(cls, MDAGaussSeidel):
-    if cache_activated and out_cached is not None:
-        __update_local_data_from_cache = getattr(
-            cls, "_MDODiscipline__update_local_data_from_cache")
-        __update_local_data_from_cache(input_data, out_cached, out_jac)
-        return cls.local_data
+#     out_cached, out_jac = cls.cache.get_outputs(input_data, in_names)
+#
+# # if out_cached is not None and not isinstance(cls,
+# # MDOChain) and not isinstance(cls, MDAGaussSeidel):
+#     if out_cached is not None:
+#         __update_local_data_from_cache = getattr(
+#             cls, "_MDODiscipline__update_local_data_from_cache")
+#         __update_local_data_from_cache(input_data, out_cached, out_jac)
+#         return cls.local_data
     # end of SoSTrades modif
 
     # Cache was not loaded, see self.linearize

@@ -486,7 +486,6 @@ class ExecutionEngine:
             disc.check_linearize_data_changes = True
             disc.check_min_max_gradients = True
             disc.check_min_max_couplings = True
-            disc.activate_cache = True
         elif mode == "nan":
             disc.nan_check = True
         elif mode == "input_change":
@@ -499,11 +498,9 @@ class ExecutionEngine:
             if isinstance(disc, SoSCoupling):
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
-        elif mode == "activate_cache":
-            disc.activate_cache = True
         else:
             avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_grad", "min_max_couplings", "activate_cache"]
+                           "linearize_data_change", "min_max_grad", "min_max_couplings"]
             raise ValueError("Debug mode %s is not among %s" %
                              (mode, str(avail_debug)))
         # set debug modes of subdisciplines

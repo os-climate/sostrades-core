@@ -226,7 +226,6 @@ class SoSDiscipline(MDODiscipline):
         self.check_if_input_change_after_run = False
         self.check_linearize_data_changes = False
         self.check_min_max_gradients = False
-        self.activate_cache = False
         # ----------------------------------------------------
 
         # -- Base disciplinary attributes
