@@ -21,6 +21,20 @@ from sos_trades_core.execution_engine.data_connector.data_connector_factory impo
 
 
 class Disc1(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_data_connector',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-plane fa-fw',
+        'version': '',
+    }
     _maturity = 'Fake'
 
     data_connection_dict = {'connector_type': MockConnector.NAME,

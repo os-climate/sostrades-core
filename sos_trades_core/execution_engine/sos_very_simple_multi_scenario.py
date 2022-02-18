@@ -29,6 +29,20 @@ class SoSVerySimpleMultiScenario(SoSDisciplineScatter):
     ''' 
     Class that build scatter discipline and linked scatter data from scenario defined in a usecase
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Very Simple Multi-Scenario',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-stream fa-fw',
+        'version': '',
+    }
     SCENARIO_DICT = 'scenario_dict'
     NS_BUSINESS_OUTPUTS = 'ns_business_outputs'
 

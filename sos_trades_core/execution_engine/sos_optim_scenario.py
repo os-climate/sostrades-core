@@ -29,6 +29,20 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
     Generic implementation of Optimization Scenario
     """
     # Default values of algorithms
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Scenario Optimization Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-bezier-curve fa-fw',
+        'version': '',
+    }
     default_algo_options = {'max_iter': 999, 'ftol_rel': 1e-9,
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                             'xtol_abs': 1e-9, 'max_ls_step_size': 0.,

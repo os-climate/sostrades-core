@@ -35,6 +35,20 @@ class SoSEval(SoSDisciplineBuilder):
         SOSEval class which creates a sub process to evaluate
         with different methods (Gradient,FORM,Sensitivity ANalysis, DOE, ...)
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Eval Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     DESC_IN = {
         'eval_inputs': {'type': 'string_list', 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'string_list', 'unit': None, 'structuring': True},

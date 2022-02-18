@@ -18,6 +18,14 @@ limitations under the License.
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_processes.test.test_disc1_data_connector_dremio',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
         mods_dict = {
             'Disc1_data_connector_dremio': 'sos_trades_core.sos_wrapping.test_discs.disc1_data_connector_dremio.Disc1_data_connector_dremio'}

@@ -19,6 +19,14 @@ from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilde
 
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Test Morphological Matrix with setup_sos_disc',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
 
         mod1_path = 'sos_trades_core.sos_wrapping.test_discs.disc1_setup_sos_discipline.Disc1'

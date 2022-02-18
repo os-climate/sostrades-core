@@ -20,6 +20,14 @@ Generate an optimization scenario
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 class ProcessBuilder(BaseProcessBuilder):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Test Sellar Opt IDF Process',
+        'description': '',
+        'category': '',
+        'version': '',
+    }
     def get_builders(self):
         '''
         default initialisation test

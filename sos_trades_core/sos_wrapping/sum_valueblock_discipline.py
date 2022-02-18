@@ -22,6 +22,20 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
     Generic Sum Value Block Discipline to sum outputs of its children
     """
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.sum_valueblock_discipline',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-calculator fa-fw',
+        'version': '',
+    }
     def build_dynamic_io(self):
         '''
         The sum is stored in the same name as the inputs found in the children_list 

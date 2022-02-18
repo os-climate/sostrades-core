@@ -19,6 +19,20 @@ from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilte
 
 
 class Disc1(SoSDiscipline):
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_grid',
+        'type': '',
+        'source': '',
+        'validated': '',
+        'validated_by': '',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': 'fas fa-plane fa-fw',
+        'version': '',
+    }
     _maturity = 'Fake'
     DESC_IN = {
         'x': {'type': 'float'},

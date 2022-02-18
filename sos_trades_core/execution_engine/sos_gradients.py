@@ -29,6 +29,20 @@ class SoSGradients(SoSEval):
     '''SoSGradients class
     '''
 
+
+    # ontology information
+    _ontology_data = {
+        'label': 'Core Gradients Model',
+        'type': 'Official',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     def __init__(self, sos_name, ee, cls_builder):
         '''
         Constructor

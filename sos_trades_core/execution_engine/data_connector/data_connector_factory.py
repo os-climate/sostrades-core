@@ -15,6 +15,7 @@ limitations under the License.
 '''
 
 from sos_trades_core.execution_engine.data_connector.dremio_data_connector import DremioDataConnector
+from sos_trades_core.execution_engine.data_connector.trino_data_connector import TrinoDataConnector
 from sos_trades_core.execution_engine.data_connector.mock_connector import MockConnector
 
 
@@ -27,7 +28,8 @@ class ConnectorFactory:
 
     CONNECTORS = {
         DremioDataConnector.NAME: DremioDataConnector,
-        MockConnector.NAME: MockConnector
+        MockConnector.NAME: MockConnector,
+        TrinoDataConnector.NAME: TrinoDataConnector
     }
 
     @staticmethod

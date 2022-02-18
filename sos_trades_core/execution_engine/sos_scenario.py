@@ -36,6 +36,20 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     Generic implementation of Scenario
     '''
     # Default values of algorithms
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.execution_engine.sos_scenario',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     default_algo_options = {}
     default_parallel_options = {'parallel': False,
                                 'n_processes': cpu_count(),

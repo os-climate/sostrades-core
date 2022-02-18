@@ -37,6 +37,20 @@ class DoeEval(SoSEval):
     '''
     Generic DOE evaluation class
     '''
+
+    # ontology information
+    _ontology_data = {
+        'label': 'sos_trades_core.sos_wrapping.analysis_discs.doe_eval',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     default_algo_options = {}
 
     DEFAULT = 'default'
@@ -391,8 +405,9 @@ class DoeEval(SoSEval):
             filled_options[self.DIMENSION] = self.design_space.dimension
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-
+            filled_options['n_processes'] = int(filled_options['n_processes'])
             algo = self.doe_factory.create(algo_name)
+
             self.samples = algo._generate_samples(**filled_options)
 
             unnormalize_vect = self.design_space.unnormalize_vect
@@ -453,7 +468,7 @@ class DoeEval(SoSEval):
         # After we retrieve the number of processes on which to execute the scenarios
         # Notice that multiprocessing is only possible on a linux environment
         options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-        n_processes = options['n_processes']
+        n_processes = int(options['n_processes'])
         wait_time_between_samples = options['wait_time_between_samples']
 
         if platform.system() == 'Windows' and n_processes != 1:
@@ -494,7 +509,7 @@ class DoeEval(SoSEval):
                 """
 
                 processed_sample = self.samples[index]
-                scenario_name = "scenario_" + str(index)
+                scenario_name = "scenario_" + str(index + 1)
                 dict_one_sample = {}
                 for idx, values in enumerate(processed_sample):
                     dict_one_sample[self.eval_in_list[idx]] = values
@@ -505,7 +520,11 @@ class DoeEval(SoSEval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
 
-            parallel.execute(self.samples, exec_callback=store_callback)
+            try:
+                parallel.execute(self.samples, exec_callback=store_callback)
+                self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+            except:
+                self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
 
         else:
             # Case of a sequential execution
@@ -526,6 +545,9 @@ class DoeEval(SoSEval):
                 for idx, values in enumerate(output_eval):
                     dict_one_output[self.eval_out_list[idx]] = values
                 dict_output[scenario_name] = dict_one_output
+
+                self.logger.info(
+                    f'DOE computation: {int(((i + 1) / len(self.samples)) * 100)}% done.')
 
         # construction of a dataframe of generated samples
         # the key is the scenario and columns are inputs values for the
