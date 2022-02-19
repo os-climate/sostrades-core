@@ -171,6 +171,12 @@ class SoSDiscipline(MDODiscipline):
     #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
     NEW_VAR_TYPE = ['dict', 'dataframe',
                     'string_list', 'string', 'float', 'int']
+
+    UNSUPPORTED_GEMSEO_TYPES = []
+    for type in VAR_TYPE_MAP.keys():
+        if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
+            UNSUPPORTED_GEMSEO_TYPES.append(type)
+
     # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
     # df_dict = dict , string_dict = dict, list_dict = dict
     TYPE_METADATA = "type_metadata"
@@ -179,6 +185,7 @@ class SoSDiscipline(MDODiscipline):
 
     # -- status section
     STATUS_CONFIGURE = 'CONFIGURE'
+    STATUS_LINEARIZE = 'LINEARIZE'
 
     # -- Maturity section
     possible_maturities = [
@@ -612,9 +619,10 @@ class SoSDiscipline(MDODiscipline):
     def get_data_out(self):
         return self._data_out
 
-    def _update_with_values(self, to_update, update_with):
+    def _update_with_values(self, to_update, update_with, update_dm=False):
         ''' update <to_update> 'value' field with <update_with>
         '''
+        to_update_local_data = {}
         to_update_dm = {}
         ns_update_with = {}
         for k, v in update_with.items():
@@ -625,10 +633,25 @@ class SoSDiscipline(MDODiscipline):
                     raise Exception(
                         f'It is not possible to update the variable {key} which has a visibility Internal')
                 else:
-                    to_update_dm[self.get_var_full_name(
-                        key, to_update)] = ns_update_with[key]
+                    if to_update[key][self.TYPE] in self.UNSUPPORTED_GEMSEO_TYPES:
+                        to_update_dm[self.get_var_full_name(
+                            key, to_update)] = ns_update_with[key]
+                    else:
+                        to_update_local_data[self.get_var_full_name(
+                            key, to_update)] = ns_update_with[key]
 
-        self.dm.set_values_from_dict(to_update_dm)
+        if update_dm:
+            # update DM after run
+            self.dm.set_values_from_dict(to_update_local_data)
+            self.dm.set_values_from_dict(to_update_dm)
+        else:
+            # update local_data after run
+            to_update_local_data_array = self._convert_new_type_into_array(
+                to_update_local_data)
+            self.local_data.update(to_update_local_data_array)
+            # need to update outputs that will disappear after filtering the
+            # local_data with supported types
+            self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
         '''Get namespace reference by consulting the namespace_manager 
@@ -738,11 +761,13 @@ class SoSDiscipline(MDODiscipline):
 
         return data_dict
 
-    def get_sosdisc_inputs(self, keys=None, in_dict=False):
-        """Accessor for the inputs values as a list
+    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name=False):
+        """Accessor for the inputs values as a list or dict
 
-        :param data_names: the data names list
-        :returns: the data list
+        :param keys: the input short names list
+        :param in_dict: if output format is dict
+        :param full_name: if keys in output are full names
+        :returns: the inputs values list or dict
         """
 
         if keys is None:
@@ -750,58 +775,73 @@ class SoSDiscipline(MDODiscipline):
             # output format as dict
             keys = list(self.get_data_in().keys())
             in_dict = True
-        inputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_IN)
-
-        if not in_dict:
-            # return inputs in an ordered tuple (default)
+        inputs = self._get_sosdisc_io(
+            keys, io_type=self.IO_TYPE_IN, full_name=full_name)
+        if in_dict:
+            # return inputs in an dictionary
             return inputs
         else:
-            # return inputs in an dictionary
-            formated_inputs = {}
-            for key, val in zip(keys, inputs):
-                formated_inputs[key] = val
-            return formated_inputs
+            # return inputs in an ordered tuple (default)
+            if len(inputs) > 1:
+                return list(inputs.values())
+            else:
+                return list(inputs.values())[0]
 
-    def get_sosdisc_outputs(self, keys=None, in_dict=False):
-        """Accessor for the outputs values as a list
+    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name=False):
+        """Accessor for the outputs values as a list or dict
 
-        :param data_names: the data names list
-        :returns: the data list
+        :param keys: the output short names list
+        :param in_dict: if output format is dict
+        :param full_name: if keys in output are full names
+        :returns: the outputs values list or dict
         """
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
             keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
             in_dict = True
-        outputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_OUT)
-        if not in_dict:
-            # return outputs in an ordered tuple (default)
+        outputs = self._get_sosdisc_io(
+            keys, io_type=self.IO_TYPE_OUT, full_name=full_name)
+        if in_dict:
+            # return outputs in an dictionary
             return outputs
         else:
-            # return outputs in an dictionary
-            formated_outputs = {}
-            for key, val in zip(keys, outputs):
-                formated_outputs[key] = val
-            return formated_outputs
+            # return outputs in an ordered tuple (default)
+            if len(outputs) > 1:
+                return list(outputs.values())
+            else:
+                return list(outputs.values())[0]
 
-    def _get_sosdisc_io(self, keys, io_type):
-        """ generic method to retrieve sos inputs and outputs
+    def _get_sosdisc_io(self, keys, io_type, full_name=False):
+        """ Generic method to retrieve sos inputs and outputs
+
+        :param keys: the data names list
+        :param io_type: 'in' or 'out'
+        :param full_name: if keys in returned dict are full names
+        :returns: dict of keys values
         """
         # convert local key names to namespaced ones
-        variables = self._convert_list_of_keys_to_namespace_name(keys, io_type)
-        if isinstance(variables, string_types):
-            return self.dm.get_value(variables)
-        elif isinstance(variables, list):
-            values_list = [self.dm.get_value(
-                key) for key in variables if key in self.dm.data_id_map]
+        if isinstance(keys, str):
+            keys = [keys]
+        namespaced_keys_dict = {key: namespaced_key for key, namespaced_key in zip(
+            keys, self._convert_list_of_keys_to_namespace_name(keys, io_type))}
 
-            if len(values_list) != len(variables):
-                missing_keys = [
-                    key for key in variables if key not in self.dm.data_id_map]
+        values_dict = {}
+        for key, namespaced_key in namespaced_keys_dict.items():
+            # new_key can be key or namespaced_key according to full_name value
+            new_key = full_name * namespaced_key + (1 - full_name) * key
+            if namespaced_key not in self.dm.data_id_map:
                 raise Exception(
-                    f'The keys {missing_keys} for the discipline {self.get_disc_full_name()} are missing in the data manager')
+                    f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
+            # get data in local_data during run or linearize steps
+            elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
+                values_dict[new_key] = list(self._convert_array_into_new_type(
+                    {namespaced_key: self.local_data[namespaced_key]}).values())[0]
+            # get data in data manager during configure step
+            else:
+                values_dict[new_key] = self.dm.get_value(namespaced_key)
 
-            return values_list
+        return values_dict
 
     # -- execute/runtime section
     def execute(self, input_data=None):
@@ -891,22 +931,17 @@ class SoSDiscipline(MDODiscipline):
                 own_data = {
                     k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
                 self.local_data = own_data
-        # linearize_on_last_state is GEMSEO flag and linearize_on_input_data is SoSTRades flag
-        # It is here to update the dm with input_data (as we do in GEMS for
-        # local_data
-        if not self._linearize_on_last_state and linearize_on_input_data:
-            # self.local_data.update(input_data)
-            only_input_data = {
-                k: v for k, v in input_data.items() if self.is_input_existing(k)}
-            input_data_sostrades = self._convert_array_into_new_type(
-                only_input_data)
-            self.dm.set_values_from_dict(input_data_sostrades)
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
+        # set LINEARIZE status to get inputs from local_data instead of
+        # datamanager
+        self._update_status_dm(self.STATUS_LINEARIZE)
         result = MDODiscipline.linearize(
             self, input_data, force_all, force_no_exec)
+        # reset DONE status
+        self._update_status_dm(self.STATUS_DONE)
 
         self.__check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
@@ -1218,7 +1253,7 @@ class SoSDiscipline(MDODiscipline):
 
         return input_data
 
-    def _run(self, update_local_data=True):
+    def _run(self):
         ''' GEMS run method overloaded. Calls specific run() method from SoSDiscipline
         Defines the execution of the process, given that data has been checked.
         '''
@@ -1228,11 +1263,6 @@ class SoSDiscipline(MDODiscipline):
         try:
             # data conversion GEMS > SosStrades
             self._update_type_metadata()
-            local_data_updt = self._convert_array_into_new_type(
-                self.local_data)
-
-            # update DM
-            self.dm.set_values_from_dict(local_data_updt)
 
             # execute model
             self._update_status_dm(self.STATUS_RUNNING)
@@ -1254,11 +1284,6 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_dm(self.STATUS_FAILED)
             self.logger.exception(exc)
             raise exc
-
-        if update_local_data:
-            out_dict = self._convert_coupling_outputs_into_gems_format()
-            #-- Local data is the output dictionary for a GEMS discipline
-            self.local_data.update(out_dict)  # update output data for gems
 
         # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
         # can failed but FAILED (without an forward exception) status is not
@@ -1293,6 +1318,18 @@ class SoSDiscipline(MDODiscipline):
                     self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
+    def update_dm_with_local_data(self, local_data=None):
+        '''
+        Update the DM with local data from GEMSEO 
+        First convert data into SoSTrades format then set values in the DM 
+        '''
+        if local_data is None:
+            local_data = self.local_data
+
+        local_data_sos = self._convert_array_into_new_type(local_data)
+
+        self.dm.set_values_from_dict(local_data_sos)
+
     def run(self):
         ''' To be overloaded by sublcasses
         '''
@@ -1312,11 +1349,11 @@ class SoSDiscipline(MDODiscipline):
             new_names.append(new_name)
         return new_names
 
-    def store_sos_outputs_values(self, dict_values):
+    def store_sos_outputs_values(self, dict_values, update_dm=False):
         ''' store outputs from 'dict_values' into self._data_out
         '''
         # fill data using data connector if needed
-        self._update_with_values(self._data_out, dict_values)
+        self._update_with_values(self._data_out, dict_values, update_dm)
 
     def fill_output_value_connector(self):
         """
@@ -1382,10 +1419,13 @@ class SoSDiscipline(MDODiscipline):
         """
 
         for var_name in self._data_in.keys():
-            var_f_name = self.get_var_full_name(var_name, self._data_in)
 
-            default_val = self.dm.data_dict[self.dm.get_data_id(
-                var_f_name)][self.DEFAULT]
+            try:
+                var_f_name = self.get_var_full_name(var_name, self._data_in)
+                default_val = self.dm.data_dict[self.dm.get_data_id(
+                    var_f_name)][self.DEFAULT]
+            except:
+                var_f_name = self.get_var_full_name(var_name, self._data_in)
             if self.dm.get_value(var_f_name) is None and default_val is not None:
                 self._data_in[var_name][self.VALUE] = default_val
             else:
@@ -1414,8 +1454,8 @@ class SoSDiscipline(MDODiscipline):
             variables = [self._convert_to_namespace_name(
                 key, io_type) for key in keys]
         else:
-            variables = self._convert_to_namespace_name(
-                keys, io_type)
+            variables = [self._convert_to_namespace_name(
+                keys, io_type)]
         return variables
 
     def __filter_couplings_for_gems(self, io_type):
@@ -1551,7 +1591,7 @@ class SoSDiscipline(MDODiscipline):
         :param status: the status to check
         :type status: string
         """
-        if status != self.STATUS_CONFIGURE:
+        if status not in [self.STATUS_CONFIGURE, self.STATUS_LINEARIZE]:
             super()._check_status(status)
 
     # -- Maturity handling section
