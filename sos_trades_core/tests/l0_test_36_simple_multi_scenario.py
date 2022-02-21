@@ -907,4 +907,4 @@ class TestSimpleMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSimpleMultiScenario()
     cls.setUp()
-    cls.test_08_changing_trade_variables()
+    cls.test_06_trade_on_name_list()

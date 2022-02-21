@@ -500,7 +500,7 @@ class ExecutionEngine:
                     sub_mda.debug_mode_couplings = True
         else:
             avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_grad"]
+                           "linearize_data_change", "min_max_grad", "min_max_couplings"]
             raise ValueError("Debug mode %s is not among %s" %
                              (mode, str(avail_debug)))
         # set debug modes of subdisciplines

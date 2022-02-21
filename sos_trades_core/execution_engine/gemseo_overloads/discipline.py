@@ -15,6 +15,9 @@ limitations under the License.
 '''
 from timeit import default_timer as timer
 from gemseo.core.discipline import MDODiscipline
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from gemseo.core.chain import MDOChain
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
 
 
 def execute(
@@ -60,8 +63,12 @@ def execute(
     # SoSTrades modif: cache capability removal
 #     out_cached, out_jac = cls.cache.get_outputs(input_data, in_names)
 #
+# # if out_cached is not None and not isinstance(cls,
+# # MDOChain) and not isinstance(cls, MDAGaussSeidel):
 #     if out_cached is not None:
-#         self.__update_local_data_from_cache(input_data, out_cached, out_jac)
+#         __update_local_data_from_cache = getattr(
+#             cls, "_MDODiscipline__update_local_data_from_cache")
+#         __update_local_data_from_cache(input_data, out_cached, out_jac)
 #         return cls.local_data
     # end of SoSTrades modif
 

@@ -672,3 +672,9 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                        '\t\t\t\t\t\t\t|_ Airframe', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+
+if '__main__' == __name__:
+    cls = TestMultiScenarioArchiBuilder()
+    cls.setUp()
+    cls.test_03_multi_scenario_of_architecture()
