@@ -644,7 +644,7 @@ class GridSearchEval(DoeEval):
                                 y=y_data,
                                 mode='markers',
                                 marker = dict(
-                                    size = 10,
+                                    size = 5,
                                     color='dimGray',
                                     # line=dict(
                                     #     color='MediumPurple',
@@ -758,7 +758,7 @@ class GridSearchEval(DoeEval):
                                     # name=labels,
                                     mode='markers',
                                     marker = dict(
-                                        size = 10,
+                                        size = 5,
                                         color='dimGray',
                                         # line=dict(
                                         #     color='MediumPurple',
