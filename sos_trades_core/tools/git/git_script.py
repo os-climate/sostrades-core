@@ -9,7 +9,7 @@ def update_os_climate(repos_list, branches_list):
             git.checkout(branch)
             git.pull('origin', branch)
             try:
-                print(git.push('osclimate', branch,'--signed=true'))
+                git.push('osclimate', branch, '--signed=if-asked')
             except:
                 msg = "Something went wrong during the merge of branch %s " % branch
                 msg += "of repository %s" % repository
