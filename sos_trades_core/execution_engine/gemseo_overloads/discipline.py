@@ -63,8 +63,6 @@ def execute(
     # SoSTrades modif: cache capability removal
 #     out_cached, out_jac = cls.cache.get_outputs(input_data, in_names)
 #
-# # if out_cached is not None and not isinstance(cls,
-# # MDOChain) and not isinstance(cls, MDAGaussSeidel):
 #     if out_cached is not None:
 #         __update_local_data_from_cache = getattr(
 #             cls, "_MDODiscipline__update_local_data_from_cache")
