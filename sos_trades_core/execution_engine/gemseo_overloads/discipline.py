@@ -15,9 +15,6 @@ limitations under the License.
 '''
 from timeit import default_timer as timer
 from gemseo.core.discipline import MDODiscipline
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from gemseo.core.chain import MDOChain
-from gemseo.mda.gauss_seidel import MDAGaussSeidel
 
 
 def execute(
