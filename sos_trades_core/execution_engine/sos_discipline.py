@@ -879,7 +879,7 @@ class SoSDiscipline(MDODiscipline):
 
         return result
 
-    def linearize(self, input_data=None, force_all=False, force_no_exec=False, linearize_on_input_data=False,
+    def linearize(self, input_data=None, force_all=False, force_no_exec=False,
                   exec_before_linearize=True):
         """overloads GEMS linearize function
         """

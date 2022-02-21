@@ -622,9 +622,7 @@ class SoSJacobianAssembly(JacobianAssembly):
     def linearize_all_disciplines(
         self,
         input_local_data,  # type: Mapping[str,ndarray]
-        strong_couplings=None,
         force_no_exec=False,
-        linearize_on_input_data=False,
         exec_before_linearize=True
     ):  # type: (...) -> None
         """Linearize all the disciplines.
@@ -632,15 +630,6 @@ class SoSJacobianAssembly(JacobianAssembly):
             input_local_data: The input data of the disciplines.
         """
         parallel_linearization_is_working = True
-
-        if linearize_on_input_data and strong_couplings is not None:
-            local_strong_couplings_data = {
-                k: v for k, v in input_local_data.items() if k in strong_couplings}
-            disc0 = self.coupling_structure.disciplines[0]
-            input_data_sostrades = disc0._convert_array_into_new_type(
-                local_strong_couplings_data)
-            disc0.dm.set_values_from_dict(input_data_sostrades)
-            linearize_on_input_data = False
 
         if self.n_processes > 1 and parallel_linearization_is_working:
 
@@ -652,7 +641,6 @@ class SoSJacobianAssembly(JacobianAssembly):
         else:
             for disc in self.coupling_structure.disciplines:
                 disc.linearize(input_local_data, force_no_exec=force_no_exec,
-                               linearize_on_input_data=linearize_on_input_data,
                                exec_before_linearize=exec_before_linearize)
 
 
