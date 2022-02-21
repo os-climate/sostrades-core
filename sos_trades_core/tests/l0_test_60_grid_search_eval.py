@@ -219,3 +219,5 @@ class TestGridSearchEval(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestGridSearchEval()
     cls.setUp()
+    unittest.main()
+
