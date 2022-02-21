@@ -343,6 +343,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
         # check output values
         self.assertDictEqual(self.exec_eng.dm.get_value(
             'MyCase.MORPH_MATRIX.y_out'), y_out)
+        # check local_data ORPH_MATRIX
+        self.assertTrue(all(list(y_out.values(
+        )) == self.exec_eng.root_process.local_data['MyCase.MORPH_MATRIX.y_out']))
 
     def test_03_morphological_matrix_from_process_2(self):
 

@@ -631,7 +631,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model

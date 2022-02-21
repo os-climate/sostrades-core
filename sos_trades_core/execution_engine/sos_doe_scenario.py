@@ -172,7 +172,7 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
 
     def run(self):
         '''
-        Overload the run of SoSScenario to store additional DOE outputs
+        Overload the run method of SoSScenario to store additional DOE outputs
         '''
         SoSScenario.run(self)
 
@@ -205,7 +205,7 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
         dict_values = {'doe_ds_io': XY_pd,
                        'optim_result': optim_res_dict}
         # put new field value in data_out
-        self.store_sos_outputs_values(dict_values)
+        self.store_sos_outputs_values(dict_values, update_dm=True)
 
     def run_scenario(self):
         '''
