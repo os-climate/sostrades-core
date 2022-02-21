@@ -88,8 +88,8 @@ class PureNewtonRaphson(MDARoot):
             disciplines, n_processes=self.n_processes, use_threading=True
         )
 
-        self.assembly.parallel_linearize.configure_linearize_options(force_no_exec=True,
-                                                                     linearize_on_input_data=False)
+        self.assembly.parallel_linearize.configure_linearize_options(
+            force_no_exec=True)
 
     @staticmethod
     def __check_relax_factor(
@@ -142,10 +142,7 @@ class PureNewtonRaphson(MDARoot):
                 self.strong_couplings, self.strong_couplings, self.strong_couplings)
 
             # Compute all discipline gradients df(x)/dx with x
-            self.assembly.linearize_all_disciplines(old_x,
-                                                    strong_couplings=self.strong_couplings,
-                                                    force_no_exec=True,
-                                                    linearize_on_input_data=True)
+            self.assembly.linearize_all_disciplines(old_x, force_no_exec=True)
 
             # compute coupling_variables(x+k) for the residuals
             self.execute_all_disciplines(old_x)

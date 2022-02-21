@@ -116,15 +116,13 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
                                            wait_time_between_fork=wait_time_between_fork)
         self.logger = get_sos_logger('SoS.EE.ParallelLinearization')
         self.force_no_exec = False
-        self.linearize_on_input_data = False
         self.exec_before_linearize = True
 
-    def configure_linearize_options(self, force_no_exec=False, linearize_on_input_data=False, exec_before_linearize=True):
+    def configure_linearize_options(self, force_no_exec=False, exec_before_linearize=True):
         '''
         Configure options for the call to linearize in parallel for workers
         '''
         self.force_no_exec = force_no_exec
-        self.linearize_on_input_data = linearize_on_input_data
         self.exec_before_linearize = exec_before_linearize
 
     def _update_local_objects(self, ordered_outputs):
@@ -167,15 +165,12 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
             worker = self.worker_list[0]
 
         # return the worker index to order the outputs properly
-        output = self._run_task(worker, input_loc, force_no_exec=self.force_no_exec,
-                                linearize_on_input_data=self.linearize_on_input_data,
-                                exec_before_linearize=self.exec_before_linearize
+        output = self._run_task(worker, input_loc, force_no_exec=self.force_no_exec, exec_before_linearize=self.exec_before_linearize
                                 )
         return task_index, output
 
     @staticmethod
     def _run_task(worker, input_loc, force_no_exec=False,
-                  linearize_on_input_data=False,
                   exec_before_linearize=True):
         """Effectively performs the computation.
 
@@ -185,7 +180,6 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
         :param input_loc: input of the worker
         """
         jac = worker.linearize(input_loc, force_no_exec=force_no_exec,
-                               linearize_on_input_data=linearize_on_input_data,
                                exec_before_linearize=exec_before_linearize)
         local_data, dm_data, status_data = get_data_from_worker(worker)
         return jac, local_data, dm_data, status_data

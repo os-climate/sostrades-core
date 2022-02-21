@@ -1,4 +1,9 @@
 The gridsearch discipline is a subclass imported from the DOE (design of experiments) discipline from GEMSEO. 
+
+The gridsearch allows to find the input parameters which are optimal for a given output. It is a systematic exploration of the input parameters space.
+
+E.g.: how to find the optimal RC/NRC parameters which optimize the cashflow ?
+
 Gridsearch exploration evaluates several number of scenarii generating by combinations among some input variables selected. In fact, from a simple study, a user can chose some inputs, define a range of values they will take for each scenario generated and at the end chose the outputs to display at the end of the computation for each scenario.
 
 The several usage steps are detailed below.
