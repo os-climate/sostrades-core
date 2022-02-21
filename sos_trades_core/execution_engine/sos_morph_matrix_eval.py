@@ -32,7 +32,7 @@ class SoSMorphMatrixEval(SoSEval):
     '''
         SOSMorphMatrixEval class which creates a sub process to evaluate, built from morphological matrix of scenarios
     '''
-    
+
     # ontology information
     _ontology_data = {
         'label': 'Core Morphological Matrix Model',
@@ -493,11 +493,11 @@ class SoSMorphMatrixEval(SoSEval):
         for index, row in selected_scenario_df.iterrows():
             self.ee.logger.info(
                 f'--> {index/total_selected_scenario:.1%} Done, running scenario {index+1}/{total_selected_scenario}: {row["scenario_name"]}')
-            output = deepcopy(
+            output_list = deepcopy(
                 self.FDeval_func(row[list(self.eval_input_dict.keys())].values, convert_to_array=False))
 
-            for key, value in self.namespaced_eval_outputs.items():
-                output_dict[key][row['scenario_name']] = output[value]
+            for i, output in enumerate(self.namespaced_eval_outputs.keys()):
+                output_dict[output][row['scenario_name']] = output_list[i]
 
         return output_dict
 
