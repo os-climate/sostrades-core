@@ -287,16 +287,18 @@ class SoSEval(SoSDisciplineBuilder):
         out_local_data = {key: value for key,
                           value in local_data.items() if key in self.eval_out_list}
 
+        # needed for gradient computation
         self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
             out_values = np.concatenate(list(out_local_data.values())).ravel()
         else:
-            out_values = {}
+            out_values = []
             # get back out_local_data is not enough because some variables
             # could be filtered for unsupported type for gemseo
             for y_id in self.eval_out_list:
-                out_values[y_id] = self.dm.get_value(y_id)
+                y_val = self.dm.get_value(y_id)
+                out_values.append(y_val)
 
         return out_values
 

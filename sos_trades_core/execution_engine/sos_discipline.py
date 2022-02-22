@@ -634,6 +634,7 @@ class SoSDiscipline(MDODiscipline):
                         f'It is not possible to update the variable {key} which has a visibility Internal')
                 else:
                     if to_update[key][self.TYPE] in self.UNSUPPORTED_GEMSEO_TYPES:
+                        # data with unsupported types for gemseo
                         to_update_dm[self.get_var_full_name(
                             key, to_update)] = ns_update_with[key]
                     else:
@@ -643,15 +644,15 @@ class SoSDiscipline(MDODiscipline):
         if update_dm:
             # update DM after run
             self.dm.set_values_from_dict(to_update_local_data)
-            self.dm.set_values_from_dict(to_update_dm)
         else:
             # update local_data after run
             to_update_local_data_array = self._convert_new_type_into_array(
                 to_update_local_data)
             self.local_data.update(to_update_local_data_array)
-            # need to update outputs that will disappear after filtering the
-            # local_data with supported types
-            self.dm.set_values_from_dict(to_update_dm)
+
+        # need to update outputs that will disappear after filtering the
+        # local_data with supported types
+        self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
         '''Get namespace reference by consulting the namespace_manager 
@@ -879,7 +880,7 @@ class SoSDiscipline(MDODiscipline):
 
         return result
 
-    def linearize(self, input_data=None, force_all=False, force_no_exec=False, linearize_on_input_data=False,
+    def linearize(self, input_data=None, force_all=False, force_no_exec=False,
                   exec_before_linearize=True):
         """overloads GEMS linearize function
         """
