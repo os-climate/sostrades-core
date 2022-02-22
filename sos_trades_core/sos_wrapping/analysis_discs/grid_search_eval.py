@@ -488,8 +488,9 @@ class GridSearchEval(DoeEval):
                         if output_df is None:
                             output_df = filtered_df.copy(deep=True)
                         else:
-                            output_df = pd.concat([output_df, filtered_df], axis=0)
-                    
+                            output_df = pd.concat([output_df, filtered_df], axis=0, ignore_index=True)
+                                        
+                    output_df.replace('NA',np.nan,inplace=True)
                     output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
                         include='float').columns.to_list()
 
@@ -643,7 +644,7 @@ class GridSearchEval(DoeEval):
                                 y=y_data,
                                 mode='markers',
                                 marker = dict(
-                                    size = 20,
+                                    size = 5,
                                     color='dimGray',
                                     # line=dict(
                                     #     color='MediumPurple',
@@ -757,7 +758,7 @@ class GridSearchEval(DoeEval):
                                     # name=labels,
                                     mode='markers',
                                     marker = dict(
-                                        size = 20,
+                                        size = 5,
                                         color='dimGray',
                                         # line=dict(
                                         #     color='MediumPurple',
