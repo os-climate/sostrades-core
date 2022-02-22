@@ -1214,14 +1214,15 @@ class SoSDiscipline(MDODiscipline):
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
 
     def get_boundary_jac_for_columns(self, key, column, io_type):
-
-        data_io = self.get_data_io_dict(io_type)
+        data_io_disc = self.get_data_io_dict(io_type)
+        var_full_name = self.get_var_full_name(key, data_io_disc)
+        data_io = self.dm.get_data(var_full_name)
         index_column = None
-        key_type = data_io[key][self.TYPE]
+        key_type = data_io[self.TYPE]
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            metadata = data_io[key][self.TYPE_METADATA][0]
+            metadata = data_io[self.TYPE_METADATA][0]
             lines_nb = metadata['shape'][0]
             # delete the + 1 if we delete the index column
             index_column = metadata['columns'].index(column)
@@ -1229,8 +1230,8 @@ class SoSDiscipline(MDODiscipline):
             lines_nb = None
             index_column = None
         elif key_type == 'dict':
-            value = data_io[key][self.VALUE]
-            metadata = data_io[key][self.TYPE_METADATA]
+            value = data_io[self.VALUE]
+            metadata = data_io[self.TYPE_METADATA]
             dict_keys = [meta['key'][0] for meta in metadata]
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
