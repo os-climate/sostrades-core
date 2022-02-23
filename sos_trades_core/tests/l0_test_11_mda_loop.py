@@ -1029,7 +1029,15 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(values_dict['EE.linear_solver_MDA_options']['max_iter'],
                          sub_mda_class.linear_solver_options['max_iter'])
 
+        import tracemalloc
+        tracemalloc.start()
+
         exec_eng.execute()
+        current, peak = tracemalloc.get_traced_memory()
+        print(
+            f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+
+        tracemalloc.stop()
 
 
 if '__main__' == __name__:
