@@ -28,7 +28,7 @@ os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 from six import string_types
 from functools import reduce
 from copy import deepcopy
-from pandas import DataFrame
+from pandas import DataFrame, MultiIndex
 from numpy import ndarray, append, arange, delete, array
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 from numpy import min as np_min, max as np_max
@@ -1943,6 +1943,10 @@ class SoSDiscipline(MDODiscipline):
 
         # indices = array([_arr[i, 0]
         #                 for i in range(len(_arr))]).real.astype(int64)
+
+        # create multi index columns if tuples in columns
+        if len(_col) > 0 and isinstance(_col[0], tuple):
+            _col = MultiIndex.from_tuples(_col)
 
         df = DataFrame(data=_arr, columns=_col)
 
