@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from scipy.sparse.lil import lil_matrix
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -25,15 +26,17 @@ parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 
-from six import string_types
 from functools import reduce
 from copy import deepcopy
+
 from pandas import DataFrame, MultiIndex
-from numpy import ndarray, append, arange, delete, array
+from numpy import ndarray, append, arange, delete, array, empty
+
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 from numpy import min as np_min, max as np_max
+from collections import defaultdict
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import MDODiscipline, default_dict_factory
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
 from sos_trades_core.api import get_sos_logger
@@ -1017,8 +1020,10 @@ class SoSDiscipline(MDODiscipline):
             indices = self._get_columns_indices(
                 inputs, outputs, input_column, output_column)
 
+        jac_arrays = {key_out: {key_in: value.toarray() for key_in, value in subdict.items()}
+                      for key_out, subdict in self.jac.items()}
         o_k = approx.check_jacobian(
-            self.jac,
+            jac_arrays,
             outputs,
             inputs,
             self,
@@ -1097,6 +1102,84 @@ class SoSDiscipline(MDODiscipline):
         if self.check_min_max_gradients:
             self._check_min_max_gradients(self.jac)
 
+    def _init_jacobian(
+        self,
+        inputs=None,  # type:Optional[Iterable[str]]
+        outputs=None,  # type:Optional[Iterable[str]]
+        with_zeros=False,  # type: bool
+        fill_missing_keys=False,  # type: bool
+    ):  # type: (...) -> None
+        """
+        Overload of GEMSEO code to add sparse matrices to init jacobians,
+
+        Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
+
+        Args:
+            inputs: The inputs wrt the outputs are linearized.
+                If None,
+                the linearization should be performed wrt all inputs.
+            outputs: The outputs to be linearized.
+                If None,
+                the linearization should be performed on all outputs.
+                fill_missing_keys: if True, just fill the missing items
+            with_zeros: If True,
+                the matrices are set to zero
+                otherwise,
+                they are empty matrices.
+            fill_missing_keys: If True,
+                just fill the missing items with zeros/empty
+                but do not override the existing data.
+        """
+
+        if inputs is None:
+            inputs_names = self._differentiated_inputs
+        else:
+            inputs_names = inputs
+        inputs_vals = []
+        for diff_name in inputs_names:
+            inputs_vals.append(self.get_inputs_by_name(diff_name))
+
+        if outputs is None:
+            outputs_names = self._differentiated_outputs
+        else:
+            outputs_names = outputs
+        outputs_vals = []
+        for diff_name in outputs_names:
+            outputs_vals.append(self.get_outputs_by_name(diff_name))
+
+        if with_zeros:
+            # SoSTrades Modification
+            np_method = lil_matrix
+            # end of SoSTrades modification
+        else:
+            np_method = empty
+        if not fill_missing_keys:
+            # When a key is not in the default dict, ie a function is not in
+            # the Jacobian; return an empty defaultdict(None)
+            jac = defaultdict(default_dict_factory)
+            for out_n, out_v in zip(outputs_names, outputs_vals):
+                jac_loc = defaultdict(None)
+                jac[out_n] = jac_loc
+                # When a key is not in the default dict,
+                # ie a variable is not in the
+                # Jacobian; return a defaultdict(None)
+                for in_n, in_v in zip(inputs_names, inputs_vals):
+                    jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+            self.jac = jac
+        else:
+            jac = self.jac
+            # Only fill the missing sub jacobians
+            for out_n, out_v in zip(outputs_names, outputs_vals):
+                jac_loc = jac.get(out_n)
+                if jac_loc is None:
+                    jac_loc = defaultdict(None)
+                    jac[out_n] = jac_loc
+
+                for in_n, in_v in zip(inputs_names, inputs_vals):
+                    sub_jac = jac_loc.get(in_n)
+                    if sub_jac is None:
+                        jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+
     def _check_min_max_gradients(self, jac):
         '''Check of minimum and maximum jacobian values 
         '''
@@ -1148,6 +1231,8 @@ class SoSDiscipline(MDODiscipline):
         new_x_key = self.get_var_full_name(x_key, self._data_in)
 
         if new_x_key in self.jac[new_y_key]:
+            if isinstance(value, ndarray):
+                value = lil_matrix(value)
             self.jac[new_y_key][new_x_key] = value
 
     def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):

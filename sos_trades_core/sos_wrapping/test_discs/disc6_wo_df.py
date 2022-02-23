@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from numpy import array
-import pandas
+import numpy as np
+from scipy.sparse import diags
 # Discipline with dataframe
 
 
@@ -46,10 +46,13 @@ class Disc6(SoSDiscipline):
     def run(self):
         x = self.get_sosdisc_inputs('x')
 
-        h = array([0.5 * (x[0] + 1. / (2 * x[0])),
-                   0.5 * (x[1] + 1. / (2 * x[1]))])
+        h = np.array([0.5 * (x[0] + 1. / (2 * x[0])),
+                      0.5 * (x[1] + 1. / (2 * x[1]))])
         dict_values = {'h': h}
         self.store_sos_outputs_values(dict_values)
 
     def compute_sos_jacobian(self):
-        pass
+        x = self.get_sosdisc_inputs('x')
+        grad = [0.5 * (1.0 - 0.5 / x[0]**2), 0.5 * (1.0 - 0.5 / x[1]**2)]
+        value = diags(grad) / 2
+        self.set_partial_derivative('h', 'x', value)
