@@ -1225,7 +1225,7 @@ class SoSDiscipline(MDODiscipline):
             metadata = data_io[self.TYPE_METADATA][0]
             lines_nb = metadata['shape'][0]
             # delete the + 1 if we delete the index column
-            index_column = metadata['columns'].index(column)
+            index_column = metadata['columns'].to_list().index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
@@ -1736,11 +1736,11 @@ class SoSDiscipline(MDODiscipline):
         new_var_df = var_df.drop(
             columns=[column for column in excluded_columns if column in var_df])
 
-        val_data['indices'] = list(new_var_df.index.values)
+        val_data['indices'] = new_var_df.index
         data = new_var_df.to_numpy()
 
         # indices = var_df.index.to_numpy()
-        columns = new_var_df.columns.to_list()
+        columns = new_var_df.columns
         # To delete indices in convert delete the line below
         # data = hstack((atleast_2d(indices).T, values))
 
@@ -1847,7 +1847,8 @@ class SoSDiscipline(MDODiscipline):
                         # update current dictionary value
                         var_dict[key] = values_list
                         # Update metadata
-                        self.dm.set_data(key, self.TYPE_METADATA, metadata)
+                        self.dm.set_data(key, self.TYPE_METADATA,
+                                         metadata, check_value=False)
 
         return var_dict
 
@@ -1943,10 +1944,6 @@ class SoSDiscipline(MDODiscipline):
 
         # indices = array([_arr[i, 0]
         #                 for i in range(len(_arr))]).real.astype(int64)
-
-        # create multi index columns if tuples in columns
-        if len(_col) > 0 and isinstance(_col[0], tuple):
-            _col = MultiIndex.from_tuples(_col)
 
         df = DataFrame(data=_arr, columns=_col)
 
