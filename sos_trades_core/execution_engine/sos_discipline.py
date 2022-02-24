@@ -2021,40 +2021,38 @@ class SoSDiscipline(MDODiscipline):
         _dtypes = metadata['dtypes']
         _arr = arr_to_convert[:_size]
         # to flatten by lines erase the option 'F' or put the 'C' option
-#         import numpy as np
-#         if len(_arr) != np.prod(list(_shape)):
-#             print('wrong')
-        # TO DO: test object type properly
         _arr = _arr.reshape(_shape, order='F')
 
-        # indices = array([_arr[i, 0]
-        #                 for i in range(len(_arr))]).real.astype(int64)
-
         nb_excluded_col = 0
-#         for column_excl in excluded_columns:
-#             if column_excl in metadata:
-#                 _col.insert(0, column_excl)
-#                 _arr = insert(_arr, 0, array(metadata[column_excl]), 1)
-#                 nb_excluded_col += 1
+        for column_excl in excluded_columns:
+            if column_excl in metadata:
+                _col.insert(0, column_excl)
+                _arr = insert(_arr, 0, array(metadata[column_excl]), 1)
+                nb_excluded_col += 1
 
         # create multi index columns if tuples in columns
 
         if 'indices' in metadata:
-            df = DataFrame(data=_arr, columns=_col, index=metadata['indices'])
+            df = DataFrame(data=_arr, columns=_col,
+                           index=metadata['indices'])
         else:
             df = DataFrame(data=_arr, columns=_col)
 
-        if not list(df.dtypes.values)[nb_excluded_col:] == _dtypes:
+        df_dtypes = df._mgr.get_dtypes()
+        # if _mgr attribute does not exist in further versions switch to the following line (less efficient)
+        # the following line create a series to visualize dtypes
+        #df_dtypes = df.dtypes.values
+        if not list(df_dtypes)[nb_excluded_col:] == _dtypes:
             for col, dtype in zip(metadata['columns'], _dtypes):
                 if len(df[col].values) > 0:
                     if type(df[col].values[0]).__name__ != 'complex' and type(df[col].values[0]).__name__ != 'complex128' and dtype != df[col].dtype:
 
                         df[col] = df[col].astype(dtype)
-
-        for column_excl in excluded_columns:
-            if column_excl in metadata:
-                df.insert(loc=0, column=column_excl,
-                          value=metadata[column_excl])
+#
+#         for column_excl in excluded_columns:
+#             if column_excl in metadata:
+#                 df.insert(loc=0, column=column_excl,
+#                           value=metadata[column_excl])
         return df
 
     def _convert_array_into_new_type(self, local_data):
