@@ -21,6 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from .gemseo_overloads.dependency_graph import DependencyGraph  # pylint: disable=unused-import
 from .gemseo_overloads.mda import MDA  # pylint: disable=unused-import
 from .gemseo_overloads.mda_factory import MDAFactory  # pylint: disable=unused-import
+from .gemseo_overloads.mdo_chain import MDOChain  # pylint: disable=unused-import
 from .gemseo_overloads.sequential_mda import GSNewtonMDA  # pylint: disable=unused-import
 from .gemseo_overloads.newton import MDANewtonRaphson  # pylint: disable=unused-import
 from .gemseo_overloads.data_conversion import DataConversion  # pylint: disable=unused-import
