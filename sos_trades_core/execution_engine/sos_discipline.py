@@ -1821,7 +1821,6 @@ class SoSDiscipline(MDODiscipline):
         new_var_df = var_df.drop(
             columns=[column for column in excluded_columns if column in var_df])
 
-        val_data['indices'] = new_var_df.index
         data = new_var_df.to_numpy()
 
         # indices = var_df.index.to_numpy()
@@ -1836,6 +1835,10 @@ class SoSDiscipline(MDODiscipline):
         val_data['size'] = data.size
         val_data['dtypes'] = [new_var_df[col].dtype for col in columns]
         # to flatten by lines erase the option 'F' or put the 'C' option
+
+        if not (new_var_df.index == arange(0, data.shape[0])).all():
+            val_data['indices'] = new_var_df.index
+
         values_list = append(values_list, data.flatten(order='F'))
         metadata.append(val_data)
         return values_list, metadata
@@ -2026,7 +2029,7 @@ class SoSDiscipline(MDODiscipline):
         nb_excluded_col = 0
         for column_excl in excluded_columns:
             if column_excl in metadata:
-                _col.insert(0, column_excl)
+                _col = _col.insert(0, column_excl)
                 _arr = insert(_arr, 0, array(metadata[column_excl]), 1)
                 nb_excluded_col += 1
 
