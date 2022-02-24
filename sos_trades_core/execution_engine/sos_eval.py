@@ -267,7 +267,7 @@ class SoSEval(SoSDisciplineBuilder):
             x0.append(x_val)
         return np.array(x0)
 
-    def FDeval_func(self, x, convert_to_array=True):
+    def sample_evaluation(self, x, convert_to_array=True):
         '''
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays. 

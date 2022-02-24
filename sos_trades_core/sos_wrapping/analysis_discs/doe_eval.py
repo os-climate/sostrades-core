@@ -465,7 +465,6 @@ class DoeEval(SoSEval):
         #evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(self.samples,convert_to_array=False)
 
-
         #we loop through the samples evaluated to build dictionnaries needed for output generation
         for (scenario_name,evaluated_samples) in evaluation_outputs.items():
 
