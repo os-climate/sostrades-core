@@ -288,35 +288,42 @@ class BaseStudyManager():
 
         # Do not display information on process location on standard run (not
         # DEBUG)
+        study_display_name = ''
         if logger.level == DEBUG:
-            logger.info(
-                f'Study {self.repository_name}.{self.process_name}.{self.study_name} starts...')
+            study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
         else:
-            logger.info(
-                f'Study {self.study_name} starts...')
+            study_display_name = self.study_name
+
+        logger.info(f'Study {study_display_name} starts...')
 
         # Execute study
         start_time = time()
         if self.__run_usecase:
-            self.execution_engine.execute()
-            logger.info(f'Execution time : {time() - start_time} seconds')
-            print(f'Execution time : {time() - start_time} seconds')
-            if for_test:
-                self.__launch_additional_test()
-        else:
-            print(f'Study {self.study_name} is configured not to run.')
-            print(f'Skipping execute.')
-            logger.info(f'Study {self.study_name} is configured not to run.')
-            logger.info(f'Skipping execute.')
+            try:
+                self.execution_engine.execute()
+                message = f'Study {study_display_name} execution time : {time() - start_time} seconds'
+                logger.info(message)
+                print(message)
+                if for_test:
+                    self.__launch_additional_test()
+            except Exception as ex:
+                message = f'Study {study_display_name} execution time on error : {time() - start_time} seconds'
+                logger.info(message)
+                print(message)
+                raise ex
 
-        # Check if addtional test has to be launched
+        else:
+            print(f'Study {study_display_name} is configured not to run.')
+            print(f'Skipping execute.')
+            logger.info(f'Study {study_display_name} is configured not to run.')
+            logger.info(f'Skipping execute.')
 
         # Method after execute and before dump
         try:
             self.after_execute_before_dump()
         except Exception:
             logger.exception(
-                'The following error occcurs in "after_execute_before_dump" methods')
+                'The following error occurs in "after_execute_before_dump" methods')
 
         if dump_study and self.dump_directory is not None:
             self.dump_data(self.dump_directory)
@@ -324,14 +331,7 @@ class BaseStudyManager():
             logger.debug(
                 f'Reference dump to {self.dump_directory}')
 
-        # Do not display information on process location on standard run (not
-        # DEBUG)
-        if logger.level == DEBUG:
-            logger.info(
-                f'Study {self.repository_name}.{self.process_name}.{self.study_name} done.')
-        else:
-            logger.info(
-                f'Study {self.study_name} done.')
+        logger.info(f'Study {study_display_name} done.')
 
     def setup_usecase(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process

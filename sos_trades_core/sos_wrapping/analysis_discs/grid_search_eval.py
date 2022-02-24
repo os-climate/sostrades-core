@@ -488,8 +488,9 @@ class GridSearchEval(DoeEval):
                         if output_df is None:
                             output_df = filtered_df.copy(deep=True)
                         else:
-                            output_df = pd.concat([output_df, filtered_df], axis=0)
-                    
+                            output_df = pd.concat([output_df, filtered_df], axis=0, ignore_index=True)
+                                        
+                    output_df.replace('NA',np.nan,inplace=True)
                     output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
                         include='float').columns.to_list()
 
@@ -527,7 +528,10 @@ class GridSearchEval(DoeEval):
                     slider_list.append(slider)
 
             # chart_name = f'{z_vble} based on {x_short} vs {y_short}'
-            chart_name = f'{z_vble} contour plot'
+            if slider_list!=[]:
+                chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
+            elif slider_list==[]:
+                chart_name = f'{z_vble} contour plot'
 
             # retrieve z variable name by removing _dict from the output name
             output_origin_name = re.sub(r'_dict$', '', output_name)
@@ -643,7 +647,7 @@ class GridSearchEval(DoeEval):
                                 y=y_data,
                                 mode='markers',
                                 marker = dict(
-                                    size = 20,
+                                    size = 5,
                                     color='dimGray',
                                     # line=dict(
                                     #     color='MediumPurple',
@@ -757,7 +761,7 @@ class GridSearchEval(DoeEval):
                                     # name=labels,
                                     mode='markers',
                                     marker = dict(
-                                        size = 20,
+                                        size = 5,
                                         color='dimGray',
                                         # line=dict(
                                         #     color='MediumPurple',

@@ -287,6 +287,7 @@ class SoSEval(SoSDisciplineBuilder):
         out_local_data = {key: value for key,
                           value in local_data.items() if key in self.eval_out_list}
 
+        # needed for gradient computation
         self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
