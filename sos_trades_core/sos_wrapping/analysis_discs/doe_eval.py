@@ -489,7 +489,7 @@ class DoeEval(SoSEval):
             def sample_evaluator(sample_one):
                 """ this is the worker used to evaluate a sample in case of a parallel execution
                     """
-                return self.FDeval_func(sample_one, convert_to_array=False)
+                return self.sample_evaluation(sample_one, convert_to_array=False)
 
             parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
@@ -540,7 +540,7 @@ class DoeEval(SoSEval):
                 # evaluation of samples and generation of a dictionnary of
                 # outputs
                 output_eval = copy.deepcopy(
-                    self.FDeval_func(sample, convert_to_array=False))
+                    self.sample_evaluation(sample, convert_to_array=False))
                 dict_one_output = {}
                 for idx, values in enumerate(output_eval):
                     dict_one_output[self.eval_out_list[idx]] = values
