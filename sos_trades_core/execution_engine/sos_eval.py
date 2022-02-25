@@ -335,8 +335,12 @@ class SoSEval(SoSDisciplineBuilder):
                 "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
 
             # Create the parallel execution object. The function we want to parallelize is the sample_evaluation
+            def sample_evaluator(sample_to_evaluate):
+                """Evaluate a sample
+                """
+                return self.sample_evaluation(sample_to_evaluate, convert_to_array=False)
 
-            parallel = ParallelExecution(self.sample_evaluation(x, convert_to_array), n_processes=n_processes,
+            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
 
             # Define a callback function to store the samples on the fly
