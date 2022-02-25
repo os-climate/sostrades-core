@@ -15,7 +15,7 @@ limitations under the License.
 '''
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from numpy import array
-import pandas
+import numpy as np
 # Discipline with dataframe
 
 
@@ -50,4 +50,6 @@ class Disc7(SoSDiscipline):
         self.store_sos_outputs_values(dict_values)
 
     def compute_sos_jacobian(self):
-        pass
+
+        value = np.ones((2, 2)) / 2
+        self.set_partial_derivative('x', 'h', value)
