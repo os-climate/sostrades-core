@@ -43,8 +43,6 @@ class Study(StudyManager):
         disc_dict[f'{ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_obj_y1_y2
-        disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_processes': 1,
-                                                   'wait_time_between_samples': 0.0}
         x_values = [9.379763880395856, 8.88644794300546,
                     3.7137135749628882, 0.0417022004702574, 6.954954792150857]
         z_values = [array([1.515949043849158, 5.6317362409322165]),
