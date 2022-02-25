@@ -317,8 +317,8 @@ class SoSEval(SoSDisciplineBuilder):
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
         wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
-        if platform.system() == 'Windows' or n_processes ==1 :
-            if n_processes !=1 :
+        if platform.system() == 'Windows' or n_processes == 1:
+            if n_processes != 1:
                 self.logger.warning("multiprocessing is not possible on Windows")
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
@@ -363,11 +363,12 @@ class SoSEval(SoSDisciplineBuilder):
             try:
                 parallel.execute(samples, exec_callback=store_callback)
                 self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
-                print(evaluation_output)
-                print(type(evaluation_output))
-                return sorted(evaluation_output,
-                              key=lambda scenario_name: int(
-                                  scenario_name.split("scenario_")[1]))
+                dict_to_return = {}
+                for (scenario_name, sample_value) in sorted(evaluation_output.items(),
+                                                            key=lambda scenario: int(
+                                                                scenario[0].split("scenario_")[1])):
+                    dict_to_return[scenario_name] = sample_value
+                return dict_to_return
 
 
             except:
