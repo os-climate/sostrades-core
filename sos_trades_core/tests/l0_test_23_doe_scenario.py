@@ -802,8 +802,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 100
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option',
-                                                        'n_processes': 1, 'wait_time_between_samples': 0.0}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -862,8 +861,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
 
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {
-            'n_processes': 1, 'wait_time_between_samples': 0.0}
+
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
@@ -944,8 +942,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
-                                                        'wait_time_between_samples': 0.0}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -987,9 +984,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'face': 'faced',
             'iterations': 5,
             'max_time': 0,
-            'n_processes': 1,
             'seed': 1,
-            'wait_time_between_samples': 0.0,
             'center_bb': 'default',
             'center_cc': 'default',
             'criterion': 'default',
@@ -1104,13 +1099,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                              'n_samples': 10, 'face': 'faced'})
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_z.reset_index(drop=True), check_dtype=False)
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced', 'n_processes': 1,
-                                                  'wait_time_between_samples': 0.0},
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'),
-                             {'n_samples': 100, 'face': 'faced', 'n_processes': 1, 'wait_time_between_samples': 0.0})
+                             {'n_samples': 100, 'face': 'faced'})
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_eval.reset_index(drop=True), check_dtype=False)
 
@@ -1146,8 +1140,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {
-            'n_processes': 1, 'wait_time_between_samples': 0.0}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
             'doe.DoEEval.custom_samples_df').columns.tolist(), ['x'])
@@ -1250,8 +1242,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
-        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced', 'n_processes': 1,
-                                                 'wait_time_between_samples': 0.0}
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples are within [0,10.] range
@@ -1275,8 +1266,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                      'doe.DoEEval.design_space': dspace_eval}
 
         exec_eng.load_study_from_input_dict(disc_dict)
-        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced', 'n_processes': 1,
-                                                 'wait_time_between_samples': 0.0}
+        disc_dict['doe.DoEEval.algo_options'] = {'n_samples': 10, 'face': 'faced'}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         generated_x = exec_eng.dm.get_value(
@@ -1308,8 +1298,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
 
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {
-            'n_processes': 1, 'wait_time_between_samples': 0.0}
+
 
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
@@ -1397,8 +1386,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             n_samples = 1000
             disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
             disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
-                                                            'wait_time_between_samples': 0.0}
+            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
             disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
             disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
             exec_eng.load_study_from_input_dict(disc_dict)
@@ -1453,8 +1441,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             n_samples = 1000
             disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
             disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 10,
-                                                            'wait_time_between_samples': 0.0}
+            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
             disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
             disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
             exec_eng.load_study_from_input_dict(disc_dict)
@@ -1475,8 +1462,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             #print(str(stop - start))
             execution_time += stop - start
 
-            exec_eng.load_study_from_input_dict({f'{self.ns}.DoEEval.algo_options': {'n_samples': n_samples, 'n_processes': 20,
-                                                                                     'wait_time_between_samples': 0.0}})
+            exec_eng.load_study_from_input_dict({f'{self.ns}.DoEEval.algo_options': {'n_samples': n_samples}})
             start = time()
             exec_eng.execute()
             stop = time()
@@ -1546,8 +1532,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = output_selection_z_z
 
         exec_eng.load_study_from_input_dict(disc_dict)
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced', 'n_processes': 1,
-                                                  'wait_time_between_samples': 0.0}, 'doe.DoEEval.design_space': dspace}
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'}, 'doe.DoEEval.design_space': dspace}
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
