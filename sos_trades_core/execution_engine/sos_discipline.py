@@ -2021,20 +2021,14 @@ class SoSDiscipline(MDODiscipline):
         _shape = metadata['shape']
         _size = metadata['size']
         _col = metadata['columns'].copy()
-        _dtypes = metadata['dtypes']
+        _dtypes = metadata['dtypes'].copy()
         _arr = arr_to_convert[:_size]
         # to flatten by lines erase the option 'F' or put the 'C' option
         _arr = _arr.reshape(_shape, order='F')
-
-        nb_excluded_col = 0
-        for column_excl in excluded_columns:
-            if column_excl in metadata:
-                _col = _col.insert(0, column_excl)
-                _arr = insert(_arr, 0, array(metadata[column_excl]), 1)
-                nb_excluded_col += 1
-
         # create multi index columns if tuples in columns
 
+        # Use the 2Darrays init which is 4 times faster than the dict initialization
+        # if indices are stored we use them to reconstruct the dataframe
         if 'indices' in metadata:
             df = DataFrame(data=_arr, columns=_col,
                            index=metadata['indices'])
@@ -2045,17 +2039,27 @@ class SoSDiscipline(MDODiscipline):
         # if _mgr attribute does not exist in further versions switch to the following line (less efficient)
         # the following line create a series to visualize dtypes
         #df_dtypes = df.dtypes.values
-        if not list(df_dtypes)[nb_excluded_col:] == _dtypes:
-            for col, dtype in zip(metadata['columns'], _dtypes):
-                if len(df[col].values) > 0:
-                    if type(df[col].values[0]).__name__ != 'complex' and type(df[col].values[0]).__name__ != 'complex128' and dtype != df[col].dtype:
 
+        # if one types is different from metadata
+        if not list(df_dtypes) == _dtypes:
+            # build a dict of different types to loop only on needed columns
+            diff_dtypes = {_col[i]: _dtypes[i] for i in range(
+                len(_dtypes)) if df_dtypes[i] != _dtypes[i]}
+            # Do not revert complex values if there is because it comes from
+            # complex step
+            for col, dtype in diff_dtypes.items():
+                if len(df[col].values) > 0:
+                    if type(df[col].values[0]).__name__ != 'complex' and type(df[col].values[0]).__name__ != 'complex128':
                         df[col] = df[col].astype(dtype)
-#
-#         for column_excl in excluded_columns:
-#             if column_excl in metadata:
-#                 df.insert(loc=0, column=column_excl,
-#                           value=metadata[column_excl])
+
+        # Insert excluded columns at the beginning of the dataframe
+        # It is faster to add them before the init BUT the type of the column must be the same with a 2D arrays init
+        # Then we need to switch to dict initialization and it becomes slower
+        # than the insert method
+        for column_excl in excluded_columns:
+            if column_excl in metadata:
+                df.insert(loc=0, column=column_excl,
+                          value=metadata[column_excl])
         return df
 
     def _convert_array_into_new_type(self, local_data):
