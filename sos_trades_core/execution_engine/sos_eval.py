@@ -317,14 +317,19 @@ class SoSEval(SoSDisciplineBuilder):
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
         wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
-        if platform.system() == 'Windows' and n_processes != 1:
-            self.logger.warning("multiprocessing is not possible on Windows,"
-                                "we proceed with sequential execution")
-            n_processes = 1
+        if platform.system() == 'Windows' or n_processes ==1 :
+            if n_processes !=1 :
+                self.logger.warning("multiprocessing is not possible on Windows")
+                n_processes = 1
+            self.logger.info("running sos eval in sequential")
+
             for i, x in enumerate(samples):
-                evaluation_output[x] = self.sample_evaluation(x, convert_to_array)
+                scenario_name = "scenario_" + str(i + 1)
+                evaluation_output[scenario_name] = x, self.sample_evaluation(x, convert_to_array)
                 self.logger.info(
                     f' computation progress: {int(((i + 1) / len(samples)) * 100)}% done.')
+            return evaluation_output
+
         if n_processes > 1:
             self.logger.info(
                 "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
@@ -346,14 +351,19 @@ class SoSEval(SoSDisciplineBuilder):
                     index: The sample index.
                     outputs: The outputs of the parallel execution.
                 """
-
-                evaluation_output[samples[index]] = outputs
+                scenario_name = "scenario_" + str(index + 1)
+                evaluation_output[scenario_name] = samples[index], outputs
                 self.logger.info(
                     f' computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
 
             try:
                 parallel.execute(samples, exec_callback=store_callback)
                 self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+                return sorted(evaluation_output,
+                              key=lambda scenario_name: int(
+                                  scenario_name.split("scenario_")[1]))
+
+
             except:
                 self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
 
