@@ -356,7 +356,7 @@ class SoSEval(SoSDisciplineBuilder):
                     outputs: The outputs of the parallel execution.
                 """
                 scenario_name = "scenario_" + str(index + 1)
-                evaluation_output[scenario_name] = samples[index], outputs
+                evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
                     f' computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
 
@@ -364,6 +364,7 @@ class SoSEval(SoSDisciplineBuilder):
                 parallel.execute(samples, exec_callback=store_callback)
                 self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
                 print(evaluation_output)
+                print(type(evaluation_output))
                 return sorted(evaluation_output,
                               key=lambda scenario_name: int(
                                   scenario_name.split("scenario_")[1]))
