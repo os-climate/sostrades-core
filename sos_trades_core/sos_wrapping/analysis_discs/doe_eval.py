@@ -461,8 +461,6 @@ class DoeEval(SoSEval):
         # We first begin by sample generation
         self.samples = self.generate_samples_from_doe_factory()
 
-        # After we retrieve the number of processes on which to execute the scenarios
-        # Notice that multiprocessing is only possible on a linux environment
 
         #evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(self.samples,convert_to_array=False)
@@ -557,7 +555,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
+                         ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
