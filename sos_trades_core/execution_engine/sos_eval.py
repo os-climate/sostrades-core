@@ -13,6 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import platform
+
+from gemseo.core.parallel_execution import ParallelExecution
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -52,6 +56,9 @@ class SoSEval(SoSDisciplineBuilder):
     DESC_IN = {
         'eval_inputs': {'type': 'string_list', 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'string_list', 'unit': None, 'structuring': True},
+        'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+        'wait_time_between_samples': {'type': 'float', 'numerical': True, 'default': 0.0},
+
     }
 
     def __init__(self, sos_name, ee, cls_builder):
@@ -123,7 +130,7 @@ class SoSEval(SoSDisciplineBuilder):
                 SoSCoupling.DESC_IN.keys())
             full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
+                         ]['io_type'] == 'in'
             if is_float and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -285,7 +292,7 @@ class SoSEval(SoSDisciplineBuilder):
             local_data = self.sos_disciplines[0].execute()
 
         out_local_data = {key: value for key,
-                          value in local_data.items() if key in self.eval_out_list}
+                                         value in local_data.items() if key in self.eval_out_list}
 
         # needed for gradient computation
         self.update_dm_with_local_data(out_local_data)
@@ -301,6 +308,54 @@ class SoSEval(SoSDisciplineBuilder):
                 out_values.append(y_val)
 
         return out_values
+
+    def samples_evaluation(self, samples, convert_to_array=True):
+        '''This function executes a parallel execution of the function sample_evaluation
+        over a list a samples. Depending on the numerical parameter n_processes it loops
+        on a sequential or parallel way over the list of samples to evaluate
+        '''
+        evaluation_output = {}
+        n_processes = self.get_sosdisc_inputs('n_processes')
+        wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
+        if platform.system() == 'Windows' and n_processes != 1:
+            self.logger.warning("multiprocessing is not possible on Windows,"
+                                "we proceed with sequential execution")
+            n_processes = 1
+            for i, x in enumerate(samples):
+                evaluation_output[x] = self.sample_evaluation(x, convert_to_array)
+                self.logger.info(
+                    f' computation progress: {int(((i + 1) / len(samples)) * 100)}% done.')
+        if n_processes > 1:
+            self.logger.info(
+                "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
+
+            # Create the parallel execution object. The function we want to parallelize is the sample_evaluation
+
+            parallel = ParallelExecution(self.sample_evaluation(x, convert_to_array), n_processes=n_processes,
+                                         wait_time_between_fork=wait_time_between_samples)
+
+            # Define a callback function to store the samples on the fly
+            # during the parallel execution
+            def store_callback(
+                    index,  # type: int
+                    outputs,  # type: DOELibraryOutputType
+            ):  # type: (...) -> None
+                """Store the outputs in dedicated dictionnary:
+                - Here the dictionnary key is the sample evaluated and the value is the evaluation output
+                Args:
+                    index: The sample index.
+                    outputs: The outputs of the parallel execution.
+                """
+
+                evaluation_output[samples[index]] = outputs
+                self.logger.info(
+                    f' computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
+
+            try:
+                parallel.execute(samples, exec_callback=store_callback)
+                self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+            except:
+                self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
 
     def convert_output_results_toarray(self):
         '''
@@ -339,7 +394,7 @@ class SoSEval(SoSDisciplineBuilder):
             for i, key in enumerate(self.eval_out_list):
                 eval_out_size = len(self.eval_process_disc.local_data[key])
                 output_eval_key = outputs_eval[old_size:old_size +
-                                               eval_out_size]
+                                                        eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
                 if type_sos in ['dict', 'dataframe']:
