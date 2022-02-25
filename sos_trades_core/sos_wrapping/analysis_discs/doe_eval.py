@@ -94,7 +94,9 @@ class DoeEval(SoSEval):
                                 'dataframe_descriptor': {'selected_output': ('bool', None, True),
                                                          'full_name': ('string', None, False)},
                                 'dataframe_edition_locked': False,
-                                'structuring': True}
+                                'structuring': True},
+               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+               'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
                }
 
     DESC_OUT = {
@@ -405,7 +407,9 @@ class DoeEval(SoSEval):
             filled_options[self.DIMENSION] = self.design_space.dimension
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-            filled_options['n_processes'] = int(filled_options['n_processes'])
+            #filled_options['n_processes'] = int(filled_options['n_processes'])
+            filled_options['n_processes'] = self.get_sosdisc_inputs('n_processes')
+            filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs('wait_time_between_fork')
             algo = self.doe_factory.create(algo_name)
 
             self.samples = algo._generate_samples(**filled_options)
@@ -462,107 +466,39 @@ class DoeEval(SoSEval):
         dict_sample = {}
         dict_output = {}
 
-        # We first begin by sample enumeration
+        # We first begin by sample generation
         self.samples = self.generate_samples_from_doe_factory()
 
         # After we retrieve the number of processes on which to execute the scenarios
         # Notice that multiprocessing is only possible on a linux environment
-        options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-        n_processes = int(options['n_processes'])
-        wait_time_between_samples = options['wait_time_between_samples']
 
-        if platform.system() == 'Windows' and n_processes != 1:
-            self.logger.warning("multiprocessing is not possible on Windows,"
-                                "we proceed with sequential execution")
-            n_processes = 1
+        #evaluation of the samples through a call to samples_evaluation
+        evaluation_outputs = self.samples_evaluation(self.samples,convert_to_array=False)
 
-        # We handle the case of a parallel execution here
-        # It happens when the number of specified processes n_processes is
-        # greater than 1
-        if n_processes > 1:
-            self.logger.info(
-                "Running DOE EVAL in parallel on n_processes = %s", str(n_processes))
+        #we loop through the samples evaluated to build dictionnaries needed for output generation
+        for (scenario_name,evaluated_samples) in evaluation_outputs.items():
 
-            # Create the parallel execution object. The function we want to parallelize is the sample evaluation
-            # function
+            #generation of the dictionnary of samples used
+            dict_one_sample = {}
+            current_sample = evaluated_samples[0]
+            for idx, values in enumerate(current_sample):
+                dict_one_sample[self.eval_in_list[idx]] = values
+            dict_sample[scenario_name] = dict_one_sample
 
-            def sample_evaluator(sample_one):
-                """ this is the worker used to evaluate a sample in case of a parallel execution
-                    """
-                return self.sample_evaluation(sample_one, convert_to_array=False)
+            #generation of the dictionnary of outputs
+            dict_one_output = {}
+            current_output = evaluated_samples[1]
+            for idx, values in enumerate(current_output):
+                dict_one_output[self.eval_out_list[idx]] = values
+            dict_output[scenario_name] = dict_one_output
 
-            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
-                                         wait_time_between_fork=wait_time_between_samples)
-
-            # Define a callback function to store the samples on the fly
-            # during the parallel execution
-            def store_callback(
-                    index,  # type: int
-                    outputs,  # type: DOELibraryOutputType
-            ):  # type: (...) -> None
-                """Store the outputs in dedicated dictionnaries:
-                - samples used for the scenario are sctored in dict_sample
-                - outputs for the scenario are stored in dict_output
-                Args:
-                    index: The sample index.
-                    outputs: The outputs of the parallel execution.
-                """
-
-                processed_sample = self.samples[index]
-                scenario_name = "scenario_" + str(index + 1)
-                dict_one_sample = {}
-                for idx, values in enumerate(processed_sample):
-                    dict_one_sample[self.eval_in_list[idx]] = values
-                dict_sample[scenario_name] = dict_one_sample
-
-                dict_one_output = {}
-                for idx, values in enumerate(outputs):
-                    dict_one_output[self.eval_out_list[idx]] = values
-                dict_output[scenario_name] = dict_one_output
-
-            try:
-                parallel.execute(self.samples, exec_callback=store_callback)
-                self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
-            except:
-                self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
-
-        else:
-            # Case of a sequential execution
-            for i, sample in enumerate(self.samples):
-
-                # generation of the dictionnary of samples
-                scenario_name = "scenario_" + str(i + 1)
-                dict_one_sample = {}
-                for idx, values in enumerate(sample):
-                    dict_one_sample[self.eval_in_list[idx]] = values
-                dict_sample[scenario_name] = dict_one_sample
-
-                # evaluation of samples and generation of a dictionnary of
-                # outputs
-                output_eval = copy.deepcopy(
-                    self.sample_evaluation(sample, convert_to_array=False))
-                dict_one_output = {}
-                for idx, values in enumerate(output_eval):
-                    dict_one_output[self.eval_out_list[idx]] = values
-                dict_output[scenario_name] = dict_one_output
-
-                self.logger.info(
-                    f'DOE computation: {int(((i + 1) / len(self.samples)) * 100)}% done.')
 
         # construction of a dataframe of generated samples
-        # the key is the scenario and columns are inputs values for the
-        # considered scenario
-        # Iterations through dictionnaries are done using the sorted function to ensure that
-        # the scenarios are stored in the same order than in samples generation since it is not
-        # guaranteed when on parallel execution. The sort is done according to
-        # the scenario index
-
+        # columns are selected inputs
         columns = ['scenario']
         columns.extend(self.selected_inputs)
         samples_all_row = []
-        for (scenario, scenario_sample) in sorted(dict_sample.items(),
-                                                  key=lambda scenario_name: int(
-                                                      scenario_name[0].split("scenario_")[1])):
+        for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]
             for generated_input in scenario_sample.values():
                 samples_row.append(generated_input)
@@ -573,9 +509,7 @@ class DoeEval(SoSEval):
         # The key is the output name and the value a dictionnary of results
         # with scenarii as keys
         global_dict_output = {key: {} for key in self.eval_out_list}
-        for (scenario, scenario_output) in sorted(dict_output.items(),
-                                                  key=lambda scenario_name: int(
-                                                      scenario_name[0].split("scenario_")[1])):
+        for (scenario, scenario_output) in dict_output.items():
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
