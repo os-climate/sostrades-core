@@ -58,8 +58,7 @@ class Study(StudyManager):
         n_samples = 100
         private_values[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
         private_values[f'{ns}.DoEEval.design_space'] = dspace
-        private_values[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
-                                                        'wait_time_between_samples': 0.0}
+        private_values[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         private_values[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_a
         private_values[f'{ns}.DoEEval.eval_outputs'] = output_selection_z_z
 

@@ -73,7 +73,7 @@ class SoSGradients(SoSEval):
                 'Wrong gradient method, methods available are "Complex Step", "1st order FD" and "2nd order FD"')
 
         grad_eval = FDGradient(
-            grad_method_number, self.FDeval_func, fd_step=eps)
+            grad_method_number, self.sample_evaluation, fd_step=eps)
         grad_eval.set_multi_proc(False)
 
         x0 = self.get_x0()
