@@ -209,8 +209,107 @@ class TestExtendDataframe(unittest.TestCase):
         self.assertTrue(exec_eng.dm.get_value(
             'EE.Disc5.is_dict_empty_list_empty'))
 
+    def test_05_multi_index_column_df(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc7.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc6.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng.configure()
+
+        values_dict = {}
+
+        col = pd.MultiIndex.from_tuples(
+            [('c1', ''), ('c2', '')])
+        df_multi_index_columns = pd.DataFrame(
+            data=[[0.5, 1.0], [0.5, 1.0]], columns=col)
+
+        values_dict['EE.df'] = df_multi_index_columns
+        values_dict['EE.dict_df'] = {'key_1': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2']),
+                                     'key_2': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2'])}
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        disc6 = exec_eng.dm.get_disciplines_with_name('EE.Disc6')[0]
+
+        self.assertTrue(disc6.get_sosdisc_inputs(
+            'df').columns.equals(df_multi_index_columns.columns))
+        self.assertTrue(disc6.get_sosdisc_inputs(
+            'df').equals(df_multi_index_columns))
+
+        df_in_dm = disc6.get_sosdisc_inputs('df')
+        df_converted_array = disc6._convert_new_type_into_array(
+            {'EE.df': df_in_dm})
+        df_reconverted = disc6._convert_array_into_new_type(df_converted_array)
+        self.assertTrue(df_reconverted['EE.df'].equals(df_multi_index_columns))
+        self.assertTrue(df_reconverted['EE.df'].columns.equals(col))
+        self.assertTrue(exec_eng.dm.get_data(
+            'EE.df', 'type_metadata')[0]['columns'].equals(col))
+
+        exec_eng.execute()
+
+        target = [0.7071067811865475, 0.7071067811865475]
+        self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
+
+    def test_06_multi_index_rows_df(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc7.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc6.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng.configure()
+
+        values_dict = {}
+
+        mux = pd.MultiIndex.from_arrays(
+            [list('aaabbbccc'), [0, 1, 2, 0, 1, 2, 0, 1, 2]], names=['one', 'two'])
+        df = pd.DataFrame({'c1': [0.5] * 9, 'c2': [0.5] * 9}, mux)
+
+        values_dict['EE.df'] = df
+        values_dict['EE.dict_df'] = {'key_1': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2']),
+                                     'key_2': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2'])}
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        disc6 = exec_eng.dm.get_disciplines_with_name('EE.Disc6')[0]
+
+        self.assertTrue(disc6.get_sosdisc_inputs(
+            'df').index.equals(mux))
+        self.assertTrue(disc6.get_sosdisc_inputs(
+            'df').equals(df))
+
+        df_in_dm = disc6.get_sosdisc_inputs('df')
+        df_converted_array = disc6._convert_new_type_into_array(
+            {'EE.df': df_in_dm})
+        df_reconverted = disc6._convert_array_into_new_type(df_converted_array)
+        self.assertTrue(df_reconverted['EE.df'].equals(df))
+        self.assertTrue(df_reconverted['EE.df'].index.equals(mux))
+        self.assertTrue(exec_eng.dm.get_data(
+            'EE.df', 'type_metadata')[0]['indices'].equals(mux))
+
+        exec_eng.execute()
+
+        target = [0.7071067811865475, 0.7071067811865475]
+        self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
+
 
 if '__main__' == __name__:
     cls = TestExtendDataframe()
     cls.setUp()
-    cls.test_04_check_empty_df()
+    cls.test_06_multi_index_rows_df()
