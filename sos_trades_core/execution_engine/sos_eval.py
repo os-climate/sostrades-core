@@ -57,7 +57,7 @@ class SoSEval(SoSDisciplineBuilder):
         'eval_inputs': {'type': 'string_list', 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'string_list', 'unit': None, 'structuring': True},
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
-        'wait_time_between_samples': {'type': 'float', 'numerical': True, 'default': 0.0},
+        'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
 
     }
 
