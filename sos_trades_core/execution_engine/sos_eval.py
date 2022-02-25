@@ -363,6 +363,7 @@ class SoSEval(SoSDisciplineBuilder):
             try:
                 parallel.execute(samples, exec_callback=store_callback)
                 self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+                print(evaluation_output)
                 return sorted(evaluation_output,
                               key=lambda scenario_name: int(
                                   scenario_name.split("scenario_")[1]))
