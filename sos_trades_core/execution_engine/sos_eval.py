@@ -317,8 +317,8 @@ class SoSEval(SoSDisciplineBuilder):
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
         wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
-        if platform.system() == 'Windows' or n_processes ==1 :
-            if n_processes !=1 :
+        if platform.system() == 'Windows' or n_processes == 1:
+            if n_processes != 1:
                 self.logger.warning("multiprocessing is not possible on Windows")
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
@@ -335,8 +335,12 @@ class SoSEval(SoSDisciplineBuilder):
                 "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
 
             # Create the parallel execution object. The function we want to parallelize is the sample_evaluation
+            def sample_evaluator(sample_to_evaluate):
+                """Evaluate a sample
+                """
+                return self.sample_evaluation(sample_to_evaluate, convert_to_array=False)
 
-            parallel = ParallelExecution(self.sample_evaluation(x, convert_to_array), n_processes=n_processes,
+            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
 
             # Define a callback function to store the samples on the fly
@@ -352,16 +356,19 @@ class SoSEval(SoSDisciplineBuilder):
                     outputs: The outputs of the parallel execution.
                 """
                 scenario_name = "scenario_" + str(index + 1)
-                evaluation_output[scenario_name] = samples[index], outputs
+                evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
                     f' computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
 
             try:
                 parallel.execute(samples, exec_callback=store_callback)
                 self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
-                return sorted(evaluation_output,
-                              key=lambda scenario_name: int(
-                                  scenario_name.split("scenario_")[1]))
+                dict_to_return = {}
+                for (scenario_name, sample_value) in sorted(evaluation_output.items(),
+                                                            key=lambda scenario: int(
+                                                                scenario[0].split("scenario_")[1])):
+                    dict_to_return[scenario_name] = sample_value
+                return dict_to_return
 
 
             except:
