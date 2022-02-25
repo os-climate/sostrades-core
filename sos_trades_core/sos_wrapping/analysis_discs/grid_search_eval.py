@@ -94,6 +94,8 @@ class GridSearchEval(DoeEval):
             'dataframe_edition_locked': False,
             'structuring': True,
         },
+        'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+        'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
     }
 
     def setup_sos_disciplines(self):
