@@ -19,6 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 import pandas as pd
 import numpy as np
+from pandas.testing import assert_frame_equal
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.sos_wrapping.analysis_discs.grid_search_eval import GridSearchEval
@@ -77,11 +78,6 @@ class TestGridSearchEval(unittest.TestCase):
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dict_values = {
-            # f'{self.study_name}.{self.grid_search}.n_samples': n_samples,
-            # f'{self.study_name}.{self.grid_search}.design_space': design_space,
-            # f'{self.study_name}.{self.grid_search}.algo': algo,
-            # f'{self.study_name}.{self.grid_search}.algo_options':
-            # algo_options,
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
@@ -120,11 +116,6 @@ class TestGridSearchEval(unittest.TestCase):
         print(f'Study executed with the samples: \n {doe_disc_samples}')
         print(f'Study generated the output: y_dict \n {y_dict}')
 
-        # dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x'],
-        #                        'lower_bnd': [5.],
-        #                        'upper_bnd': [7.],
-        #                        'nb_points': [3],
-        #                        })
         dspace = pd.DataFrame({
             'shortest_name': ['x'],
             'lower_bnd': [5.],
@@ -144,6 +135,15 @@ class TestGridSearchEval(unittest.TestCase):
 
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
         y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
+
+        # CHECK THE GRIDSEARCH OUTPUTS
+        doe_disc_samples_ref = pd.DataFrame({'scenario': [
+                                            'scenario_1', 'scenario_2', 'scenario_3'], 'GridSearch.Disc1.x': [5.0, 6.0, 7.0]})
+        y_dict_ref = {'scenario_1': 102.0,
+                      'scenario_2': 122.0, 'scenario_3': 142.0}
+        assert_frame_equal(doe_disc_samples, doe_disc_samples_ref)
+        assert y_dict_ref == y_dict
+
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
 
@@ -186,6 +186,7 @@ class TestGridSearchEval(unittest.TestCase):
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
         doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
         y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
+
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
 
@@ -220,4 +221,3 @@ if '__main__' == __name__:
     cls = TestGridSearchEval()
     cls.setUp()
     unittest.main()
-

@@ -94,6 +94,8 @@ class GridSearchEval(DoeEval):
             'dataframe_edition_locked': False,
             'structuring': True,
         },
+        'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+        'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
     }
 
     def setup_sos_disciplines(self):
@@ -528,7 +530,10 @@ class GridSearchEval(DoeEval):
                     slider_list.append(slider)
 
             # chart_name = f'{z_vble} based on {x_short} vs {y_short}'
-            chart_name = f'{z_vble} contour plot'
+            if slider_list!=[]:
+                chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
+            elif slider_list==[]:
+                chart_name = f'{z_vble} contour plot'
 
             # retrieve z variable name by removing _dict from the output name
             output_origin_name = re.sub(r'_dict$', '', output_name)

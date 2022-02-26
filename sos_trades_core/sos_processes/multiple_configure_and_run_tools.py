@@ -23,6 +23,7 @@ from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
 from os.path import dirname, isdir
 from os import listdir, makedirs, environ
+from logging import DEBUG
 
 from copy import deepcopy
 from tempfile import gettempdir
@@ -377,7 +378,7 @@ def multiple_run(usecase, force_run=False):
             study_1 = BaseStudyManager(repo_name, proc_name, study_name)
             study_1.load_data(from_path=dump_dir)
             study_1.set_dump_directory(base_dir)
-            study_1.run(dump_study=True, for_test=True)
+            study_1.run(logger_level=DEBUG, dump_study=True, for_test=True)
             # Deepcopy dm
             dm_dict_1 = deepcopy(
                 study_1.execution_engine.get_anonimated_data_dict())
@@ -390,7 +391,7 @@ def multiple_run(usecase, force_run=False):
         try:
             study_2 = BaseStudyManager(repo_name, proc_name, study_name)
             study_2.load_data(from_path=dump_dir)
-            study_2.run()
+            study_2.run(logger_level=DEBUG)
             # Deepcopy dm
             dm_dict_2 = deepcopy(
                 study_2.execution_engine.get_anonimated_data_dict())

@@ -50,8 +50,7 @@ class Study(StudyManager):
         n_samples = 100
         disc_dict[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
         disc_dict[f'{ns}.DoEEval.design_space'] = dspace
-        disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': 1,
-                                                   'wait_time_between_samples': 0.0}
+        disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_obj_y1_y2
 

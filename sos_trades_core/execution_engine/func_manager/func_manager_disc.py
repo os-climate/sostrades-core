@@ -53,7 +53,7 @@ class FunctionManagerDisc(SoSDiscipline):
         'last_modification_date': '',
         'category': '',
         'definition': '',
-        'icon': '',
+        'icon': 'fas fa-chart-line fa-fw',
         'version': '',
     }
     MOD_SUFFIX = '_mod'
