@@ -57,20 +57,21 @@ class DesignVar(object):
                 elem_val = np.asarray(elem_val)
 
             # check output length and compute BSpline only if necessary
-            output_length = len(self.output_descriptor[elem]['index'])
+            if not self.output_descriptor[elem]['type'] == 'float':
+                output_length = len(self.output_descriptor[elem]['index'])
 
-            if len(inputs_dict[elem]) == output_length or self.output_descriptor[elem]['type'] == 'float':
-                self.bspline_dict[elem] = {
-                    'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
-            else:
-                list_t_years = np.linspace(0.0, 1.0, output_length)
-                bspline = BSpline(n_poles=len(elem_val))
-                bspline.set_ctrl_pts(elem_val)
-                eval_t, b_array = bspline.eval_list_t(list_t_years)
-                b_array = bspline.update_b_array(b_array, index_false)
+                if len(inputs_dict[elem]) == output_length:
+                    self.bspline_dict[elem] = {
+                        'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
+                else:
+                    list_t_years = np.linspace(0.0, 1.0, output_length)
+                    bspline = BSpline(n_poles=len(elem_val))
+                    bspline.set_ctrl_pts(elem_val)
+                    eval_t, b_array = bspline.eval_list_t(list_t_years)
+                    b_array = bspline.update_b_array(b_array, index_false)
 
-                self.bspline_dict[elem] = {
-                    'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
+                    self.bspline_dict[elem] = {
+                        'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
         #######
 
         # loop over output_descriptor to build output
@@ -78,7 +79,9 @@ class DesignVar(object):
             out_name = self.output_descriptor[key]['out_name']
             out_type = self.output_descriptor[key]['type']
 
-            if out_type == 'array' or out_type == 'float':
+            if out_type == 'float':
+                self.output_dict[out_name] = inputs_dict[key][0]
+            elif out_type == 'array':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
                 if self.output_descriptor[key]['out_name'] not in self.output_dict.keys():

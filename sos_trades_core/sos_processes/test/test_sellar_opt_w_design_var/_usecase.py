@@ -35,6 +35,7 @@ class Study(StudyManager):
 
         INEQ_CONSTRAINT = FunctionManager.INEQ_CONSTRAINT
         OBJECTIVE = FunctionManager.OBJECTIVE
+
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['x_in', 'z_in', 'y_1_in', 'y_2_in'],
                        'value': [1., [5., 2.], 5., 1.],
@@ -46,34 +47,38 @@ class Study(StudyManager):
 
         self.output_descriptor = {}
 
-        self.output_descriptor['x_in'] = {'out_name': 'x', 'type': 'float', 'namespace_in': 'ns_OptimSellar',
-                                          'namespace_out': 'ns_OptimSellar'}
-        self.output_descriptor['z_in'] = {'out_name': 'z', 'type': 'array', 'namespace_in': 'ns_OptimSellar',
-                                          'namespace_out': 'ns_OptimSellar'}
-        self.output_descriptor['y_1_in'] = {'out_name': 'y_1', 'type': 'float',
-                                            'namespace_in': 'ns_OptimSellar', 'namespace_out': 'ns_OptimSellar'}
-        self.output_descriptor['y_2_in'] = {'out_name': 'y_2', 'type': 'float',
-                                            'namespace_in': 'ns_OptimSellar', 'namespace_out': 'ns_OptimSellar'}
-
-
+        self.output_descriptor['x_in'] = {'out_name': 'x',
+                                          'type': 'float',
+                                          'namespace_in': 'ns_OptimSellar',
+                                          'namespace_out': 'ns_OptimSellar'
+                                          }
+        self.output_descriptor['z_in'] = {'out_name': 'z',
+                                          'type': 'array',
+                                          'index': [1., 1.],
+                                          'namespace_in': 'ns_OptimSellar',
+                                          'namespace_out': 'ns_OptimSellar'
+                                          }
+        self.output_descriptor['y_1_in'] = {'out_name': 'y_1',
+                                            'type': 'float',
+                                            'namespace_in': 'ns_OptimSellar',
+                                            'namespace_out': 'ns_OptimSellar'
+                                            }
+        self.output_descriptor['y_2_in'] = {'out_name': 'y_2',
+                                            'type': 'float',
+                                            'namespace_in': 'ns_OptimSellar',
+                                            'namespace_out': 'ns_OptimSellar'
+                                            }
 
         disc_dict = {}
-
         disc_dict[f'{ns}.{self.optim_name}.DesignVar.output_descriptor'] = self.output_descriptor
-
 
         # Optim inputs
         disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 500
         disc_dict[f'{ns}.{self.optim_name}.algo'] = "L-BFGS-B"
         disc_dict[f'{ns}.{self.optim_name}.design_space'] = dspace
-        # TODO: what's wrong with IDF
         disc_dict[f'{ns}.{self.optim_name}.formulation'] = 'MDF'
-        # f'{ns}.{optim_name}.obj'
         disc_dict[f'{ns}.{self.optim_name}.objective_name'] = 'objective_lagrangian'
-        disc_dict[f'{ns}.{self.optim_name}.ineq_constraints'] = [
-        ]
-        # f'{ns}.{self.optim_name}.c_1', f'{ns}.{self.optim_name}.c_2']
-
+        disc_dict[f'{ns}.{self.optim_name}.ineq_constraints'] = []
         disc_dict[f'{ns}.{self.optim_name}.algo_options'] = {
             #"maxls": 6,
             #"maxcor": 3,
@@ -82,10 +87,10 @@ class Study(StudyManager):
         }
 
         # Sellar inputs
-        disc_dict[f'{ns}.{self.optim_name}.x'] = 1.
-        # disc_dict[f'{ns}.{self.optim_name}.y_1'] = array([1.])
-        # disc_dict[f'{ns}.{self.optim_name}.y_2'] = array([1.])
-        disc_dict[f'{ns}.{self.optim_name}.z'] = array([1., 1.])
+        disc_dict[f'{ns}.{self.optim_name}.x_in'] = 1.
+        disc_dict[f'{ns}.{self.optim_name}.y_1_in'] = 5.
+        disc_dict[f'{ns}.{self.optim_name}.y_2_in'] = 1.
+        disc_dict[f'{ns}.{self.optim_name}.z_in'] = array([5., 2.])
         disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.local_dv'] = 10.
 
         func_df = pd.DataFrame(
@@ -102,6 +107,7 @@ class Study(StudyManager):
                     FunctionManagerDisc.FUNC_DF] = func_df
 
         disc_dict.update(values_dict)
+
         return [disc_dict]
 
 
