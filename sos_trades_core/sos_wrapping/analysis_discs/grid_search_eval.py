@@ -639,8 +639,8 @@ class GridSearchEval(DoeEval):
                                 ),
                                 visible=True,
                                 connectgaps=False,
-                                hovertemplate = '{}'.format(chart_info["x_short"]) +': %{x}'+' {}'.format(chart_info["x_unit"])+
-                                                '<br>{}'.format(chart_info["y_short"])+': %{y}'+' {}<br>'.format(chart_info["y_unit"])+
+                                hovertemplate = '{}'.format(chart_info["x_short"]) +': %{x}'+
+                                                '<br>{}'.format(chart_info["y_short"])+': %{y}'+
                                                 '<br><b>{}<b>'.format(chart_info["z"])+': <b> %{z}<b>'+'<b> {}<b><br>'.format(chart_info["z_unit"]),
                                 name="",
                             )
