@@ -74,7 +74,7 @@ def run_all_usecases(processes_repo):
     # Set dir to dump reference
     dump_dir = f'{ gettempdir() }/references'
     if not isdir(dump_dir):
-        makedirs(dump_dir)
+        makedirs(dump_dir, exist_ok=True)
     for repository in process_dict:
         for process in process_dict[repository]:
 
@@ -122,7 +122,7 @@ def run_optim_usecases(processes_repo):
     # Set dir to dump reference
     dump_dir = f'{ gettempdir() }/references'
     if not isdir(dump_dir):
-        makedirs(dump_dir)
+        makedirs(dump_dir, exist_ok=True)
     for repository in process_dict:
         for process in process_dict[repository]:
 

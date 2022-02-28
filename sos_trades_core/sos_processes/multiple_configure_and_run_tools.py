@@ -356,7 +356,7 @@ def multiple_run(usecase, force_run=False):
         base_dir = environ['SOS_TRADES_REFERENCES_SPECIFIC_FOLDER']
 
     if not isdir(base_dir):
-        makedirs(base_dir)
+        makedirs(base_dir, exist_ok=True)
 
     print(f'Reference location for use case {usecase} is {base_dir}')
 
