@@ -29,9 +29,6 @@ class DesignVar(object):
     VALUE = "value"
 
     def __init__(self, inputs_dict):
-        self.year_start = inputs_dict['year_start']
-        self.year_end = inputs_dict['year_end']
-        self.time_step = inputs_dict['time_step']
         self.output_descriptor = inputs_dict['output_descriptor']
         self.output_dict = {}
         self.bspline_dict = {}
@@ -44,8 +41,6 @@ class DesignVar(object):
 
         self.output_dict = {}
         list_ctrl = self.output_descriptor.keys()
-        years = arange(self.year_start, self.year_end + 1, self.time_step)
-        list_t_years = np.linspace(0.0, 1.0, len(years))
 
         for elem in list_ctrl:
 
@@ -61,10 +56,14 @@ class DesignVar(object):
                 elem_val.insert(index_false, value_dv[index_false])
                 elem_val = np.asarray(elem_val)
 
-            if len(inputs_dict[elem]) == len(years):
+            # check output length and compute BSpline only if necessary
+            output_length = len(self.output_descriptor[elem]['index'])
+
+            if len(inputs_dict[elem]) == output_length or self.output_descriptor[elem]['type'] == 'float':
                 self.bspline_dict[elem] = {
-                    'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(len(years))}
+                    'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
             else:
+                list_t_years = np.linspace(0.0, 1.0, output_length)
                 bspline = BSpline(n_poles=len(elem_val))
                 bspline.set_ctrl_pts(elem_val)
                 eval_t, b_array = bspline.eval_list_t(list_t_years)
@@ -79,12 +78,14 @@ class DesignVar(object):
             out_name = self.output_descriptor[key]['out_name']
             out_type = self.output_descriptor[key]['type']
 
-            if out_type == 'array':
+            if out_type == 'array' or out_type == 'float':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
                 if self.output_descriptor[key]['out_name'] not in self.output_dict.keys():
                     # init output dataframes with 'years' index
-                    self.output_dict[out_name] = DataFrame({'years': years}, index=years)
+                    index = self.output_descriptor[key]['index']
+                    index_name = self.output_descriptor[key]['index_name']
+                    self.output_dict[out_name] = DataFrame({index_name: index}, index=index)
 
                 col_name = self.output_descriptor[key]['key']
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']

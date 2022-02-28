@@ -47,9 +47,6 @@ class DesignVarDiscipline(SoSDiscipline):
     LOG_DVAR = 'log_designvar'
 
     DESC_IN = {
-        'year_start': {'type': 'int', 'default': 2020, 'unit': '[-]', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_witness'},
-        'year_end': {'type': 'int', 'default': 2100, 'unit': '[-]', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_witness'},
-        'time_step': {'type': 'int', 'default': 1, 'visibility': 'Shared', 'unit': 'year', 'namespace': 'ns_witness'},
         'output_descriptor': {'type': 'dict', 'editable': False, 'structuring': True},
         'design_space': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
         WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
@@ -69,9 +66,6 @@ class DesignVarDiscipline(SoSDiscipline):
             output_descriptor = self.get_sosdisc_inputs('output_descriptor')
             if output_descriptor:
                 for key in output_descriptor.keys():
-                    # var_name = self.ee.dm.get_all_namespaces(output_descriptor[key]['out_name'])[0]
-                    # var_type = self.ee.dm.get_data(var_name)['type']
-
                     dynamic_inputs[key] = {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_in']}
                     dynamic_outputs[output_descriptor[key]['out_name']] = {'type': output_descriptor[key]['type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_out']}
 
