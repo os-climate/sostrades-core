@@ -258,7 +258,7 @@ class DataSerializer:
         '''
 
         if not Path(study_to_load).is_dir():
-            makedirs(study_to_load)
+            makedirs(study_to_load, exist_ok=True)
             sleep(0.1)
 
         # export full data_dict to unique pickle file
