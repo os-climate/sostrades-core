@@ -966,4 +966,4 @@ class TestAnalyticGradients(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestAnalyticGradients()
     cls.setUp()
-    cls.test_4_optim_scenario_execution_idf_with_user_mode()
+    cls.test_1_check_analytic_gradients_simple_sellar()
