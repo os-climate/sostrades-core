@@ -639,7 +639,10 @@ class GridSearchEval(DoeEval):
                                 ),
                                 visible=True,
                                 connectgaps=False,
-                                
+                                hovertemplate = '{}'.format(chart_info["x_short"]) +': %{x}'+
+                                                '<br>{}'.format(chart_info["y_short"])+': %{y}'+
+                                                '<br><b>{}<b>'.format(chart_info["z"])+': <b> %{z}<b>'+'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                name="",
                             )
                         )
 
@@ -658,6 +661,7 @@ class GridSearchEval(DoeEval):
                                 ),
                                 visible=True,
                                 showlegend=False,
+                                hoverinfo='skip'
                             )
                         )
 
@@ -711,7 +715,7 @@ class GridSearchEval(DoeEval):
                             z_data = cont_plot_df.loc[
                                 cont_plot_df[col_slider] == slide_value
                             ][chart_info['z']].replace(np.nan, 'None').to_list()
-                            # labels=cont_plot_df.loc[cont_plot_df[col_slider] == slide_value]['scenario']
+                            labels=cont_plot_df.loc[cont_plot_df[col_slider] == slide_value]['scenario']
                             
                             x_max=max(x_data)
                             x_min=min(x_data)
@@ -723,7 +727,6 @@ class GridSearchEval(DoeEval):
                                 visible = True
                             else:
                                 visible = False
-
                             fig.add_trace(
                                 go.Contour(
                                     x=x_data,
@@ -754,6 +757,10 @@ class GridSearchEval(DoeEval):
                                     ),
                                     visible=visible,
                                     connectgaps=False,
+                                    hovertemplate = '{}'.format(chart_info["x_short"]) +': %{x}'+
+                                                    '<br>{}'.format(chart_info["y_short"])+': %{y}'+
+                                                    '<br><b>{}<b>'.format(chart_info["z"])+': <b> %{z}<b>'+'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                    name = '{} '.format(slider_short_name) +f': {slide_value}{slider_unit}',
                                 )
                             )
                             fig.add_trace(
@@ -772,6 +779,7 @@ class GridSearchEval(DoeEval):
                                     ),
                                     visible=visible,
                                     showlegend=False,
+                                    hoverinfo='skip',
                                 )
                             )
                             
@@ -808,10 +816,10 @@ class GridSearchEval(DoeEval):
                             )
                         ]
                         
-                        
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
+                            hoverlabel_align = 'left',
                             xaxis=dict(
                                 title=f'{chart_info["x_short"]}',
                                 ticksuffix=chart_info["x_unit"],
@@ -831,6 +839,7 @@ class GridSearchEval(DoeEval):
                             ),
                             # margin=dict(l=0.25, b=100)
                         )
+                        
                         # Create native plotly chart
                         last_value = slider_values[-1]
                         if len(fig.data) > 0:
