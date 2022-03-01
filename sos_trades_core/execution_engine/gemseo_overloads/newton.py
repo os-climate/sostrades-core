@@ -65,7 +65,7 @@ def __init__(
     # Add parallel execution for NewtonRaphson
 
     cls.parallel_execution = SoSDiscParallelExecution(
-        disciplines, n_processes=cls.n_processes, use_threading=False
+        disciplines, n_processes=cls.n_processes, use_threading=True
     )
     # end of SoSTrades modification
 
