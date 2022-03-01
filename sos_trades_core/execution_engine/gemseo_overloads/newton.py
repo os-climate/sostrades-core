@@ -81,7 +81,7 @@ def execute_all_disciplines(
     """
     cls.reset_disciplines_statuses()
 
-    if hasattr(cls, 'n_processes') and cls.n_processes > 1 and platform.system() != 'Windows':
+    if hasattr(cls, 'n_processes') and cls.n_processes < 0 and platform.system() != 'Windows':
         n_disc = len(cls.disciplines)
         inputs_copy_list = [deepcopy(input_local_data) for _ in range(n_disc)]
         cls.parallel_execution.execute(inputs_copy_list)
