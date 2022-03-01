@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import platform
+
 from gemseo.mda.newton import MDANewtonRaphson, MDARoot
 from copy import deepcopy
 from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
@@ -79,7 +81,7 @@ def execute_all_disciplines(
     """
     cls.reset_disciplines_statuses()
 
-    if hasattr(cls, 'n_processes') and cls.n_processes > 1:
+    if hasattr(cls, 'n_processes') and cls.n_processes > 1 and platform.system() != 'Windows':
         n_disc = len(cls.disciplines)
         inputs_copy_list = [deepcopy(input_local_data) for _ in range(n_disc)]
         cls.parallel_execution.execute(inputs_copy_list)
