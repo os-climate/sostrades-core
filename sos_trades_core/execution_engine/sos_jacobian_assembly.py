@@ -55,7 +55,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         # Add parallel execution for NewtonRaphson
 
         self.parallel_linearize = SoSDiscParallelLinearization(
-            self.coupling_structure.disciplines, n_processes=self.n_processes, use_threading=True)
+            self.coupling_structure.disciplines, n_processes=self.n_processes, use_threading=False)
 
     def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
