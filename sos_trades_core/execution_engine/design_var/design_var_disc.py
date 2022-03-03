@@ -206,10 +206,11 @@ class DesignVarDiscipline(SoSDiscipline):
                                                     == parameter, 'value'].to_list()[0][i])
         eval_pts = None
 
-        years = np.arange(self.get_sosdisc_inputs('year_start'), self.get_sosdisc_inputs('year_end') + 1, 1)
         output_descriptor = self.get_sosdisc_inputs('output_descriptor')
         out_name = output_descriptor[parameter]['out_name']
         out_type = output_descriptor[parameter]['type']
+        index = output_descriptor[parameter]['index']
+        index_name = output_descriptor[parameter]['index_name']
 
         if out_type == 'array':
             eval_pts = self.get_sosdisc_outputs(out_name)
@@ -231,7 +232,7 @@ class DesignVarDiscipline(SoSDiscipline):
             if 'complex' in str(type(starting_pts[0])):
                 starting_pts = [np.real(value) for value in starting_pts]
             x_ctrl_pts = np.linspace(
-                years[0], years[-1], len(ctrl_pts))
+                index[0], index[-1], len(ctrl_pts))
             marker_dict = dict(size=150 / len(ctrl_pts), line=dict(
                 width=150 / (3 * len(ctrl_pts)), color='DarkSlateGrey'))
             fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
@@ -239,7 +240,7 @@ class DesignVarDiscipline(SoSDiscipline):
                                      line=dict(color=color_list[0]),
                                      mode='markers',
                                      marker=marker_dict))
-            fig.add_trace(go.Scatter(x=list(years), y=list(eval_pts), name='B-Spline',
+            fig.add_trace(go.Scatter(x=list(index), y=list(eval_pts), name='B-Spline',
                                      line=dict(color=color_list[0]),))
             if init_xvect:
                 marker_dict['opacity'] = 0.5
@@ -249,7 +250,7 @@ class DesignVarDiscipline(SoSDiscipline):
                                          line=dict(color=color_list[0]),
                                          marker=marker_dict))
             fig.update_layout(title={'text': chart_name, 'x': 0.5, 'y': 1.0, 'xanchor': 'center', 'yanchor': 'top'},
-                              xaxis_title='years', yaxis_title=f'value of {parameter}')
+                              xaxis_title=index_name, yaxis_title=f'value of {parameter}')
             new_chart = InstantiatedPlotlyNativeChart(
                 fig, chart_name=chart_name, default_title=True)
         return new_chart
