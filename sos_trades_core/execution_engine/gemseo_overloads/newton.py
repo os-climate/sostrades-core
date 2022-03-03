@@ -22,21 +22,21 @@ from gemseo.core.discipline import MDODiscipline
 
 
 def __init__(
-    cls,
-    disciplines,  # type: Sequence[MDODiscipline]
-    max_mda_iter=10,  # type: int
-    relax_factor=0.99,  # type: float
-    name=None,  # type: Optional[str]
-    grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-    linear_solver="DEFAULT",  # type: str
-    tolerance=1e-6,  # type: float
-    linear_solver_tolerance=1e-12,  # type: float
-    warm_start=False,  # type: bool
-    use_lu_fact=False,  # type: bool
-    coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-    log_convergence=False,  # type:bool
-    linear_solver_options=None,  # type: Mapping[str,Any]
-    n_processes=1
+        cls,
+        disciplines,  # type: Sequence[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        relax_factor=0.99,  # type: float
+        name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        linear_solver="DEFAULT",  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False,  # type:bool
+        linear_solver_options=None,  # type: Mapping[str,Any]
+        n_processes=1
 ):
     """
     Args:
@@ -58,7 +58,7 @@ def __init__(
         coupling_structure=coupling_structure,
         log_convergence=log_convergence,
     )
-    #cls.relax_factor = cls.__check_relax_factor(relax_factor)
+    # cls.relax_factor = cls.__check_relax_factor(relax_factor)
     cls.relax_factor = relax_factor
     cls.linear_solver = linear_solver
 
@@ -71,8 +71,8 @@ def __init__(
 
 
 def execute_all_disciplines(
-    cls,
-    input_local_data,  # type: Mapping[str,ndarray]
+        cls,
+        input_local_data,  # type: Mapping[str,ndarray]
 ):  # type: (...) -> None
     """Execute all the disciplines.
         Come from MDAJacobi
@@ -81,7 +81,7 @@ def execute_all_disciplines(
     """
     cls.reset_disciplines_statuses()
 
-    if hasattr(cls, 'n_processes') and cls.n_processes < 0 and platform.system() != 'Windows':
+    if hasattr(cls, 'n_processes') and cls.n_processes > 1:
         n_disc = len(cls.disciplines)
         inputs_copy_list = [deepcopy(input_local_data) for _ in range(n_disc)]
         cls.parallel_execution.execute(inputs_copy_list)
@@ -118,7 +118,7 @@ def _newton_step(cls):  # type: (...) -> None
         exec_data[c_var] += c_step.real  # SoSTrades fix (.real)
     cls.reset_disciplines_statuses()
     cls.execute_all_disciplines(exec_data)
-    #cls.local_data = exec_data
+    # cls.local_data = exec_data
 
 
 # Set functions to the MDA Class
