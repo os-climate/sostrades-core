@@ -130,7 +130,7 @@ class SoSEval(SoSDisciplineBuilder):
                 SoSCoupling.DESC_IN.keys())
             full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             if is_float and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -267,7 +267,7 @@ class SoSEval(SoSDisciplineBuilder):
             x0.append(x_val)
         return np.array(x0)
 
-    def sample_evaluation(self, x, convert_to_array=True):
+    def sample_evaluation(self, x, scenario_name=None, convert_to_array=True):
         '''
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays. 
@@ -278,6 +278,9 @@ class SoSEval(SoSDisciplineBuilder):
         values_dict = {}
         for i, x_id in enumerate(self.eval_in_list):
             values_dict[x_id] = x[i]
+
+        scenar_id = self.get_disc_full_name() + '.scenario_name'
+        values_dict[scenar_id] = scenario_name
 
         # configure eval process with values_dict inputs
         self.ee.load_study_from_input_dict(
@@ -292,7 +295,7 @@ class SoSEval(SoSDisciplineBuilder):
             local_data = self.sos_disciplines[0].execute()
 
         out_local_data = {key: value for key,
-                                         value in local_data.items() if key in self.eval_out_list}
+                          value in local_data.items() if key in self.eval_out_list}
 
         # needed for gradient computation
         self.update_dm_with_local_data(out_local_data)
@@ -316,16 +319,19 @@ class SoSEval(SoSDisciplineBuilder):
         '''
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
-        wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
+        wait_time_between_samples = self.get_sosdisc_inputs(
+            'wait_time_between_fork')
         if platform.system() == 'Windows' or n_processes == 1:
             if n_processes != 1:
-                self.logger.warning("multiprocessing is not possible on Windows")
+                self.logger.warning(
+                    "multiprocessing is not possible on Windows")
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
 
             for i, x in enumerate(samples):
                 scenario_name = "scenario_" + str(i + 1)
-                evaluation_output[scenario_name] = x, self.sample_evaluation(x, convert_to_array)
+                evaluation_output[scenario_name] = x, self.sample_evaluation(
+                    x, scenario_name, convert_to_array)
                 self.logger.info(
                     f' computation progress: {int(((i + 1) / len(samples)) * 100)}% done.')
             return evaluation_output
@@ -334,7 +340,8 @@ class SoSEval(SoSDisciplineBuilder):
             self.logger.info(
                 "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
 
-            # Create the parallel execution object. The function we want to parallelize is the sample_evaluation
+            # Create the parallel execution object. The function we want to
+            # parallelize is the sample_evaluation
             def sample_evaluator(sample_to_evaluate):
                 """Evaluate a sample
                 """
@@ -362,7 +369,8 @@ class SoSEval(SoSDisciplineBuilder):
 
             try:
                 parallel.execute(samples, exec_callback=store_callback)
-                self.sos_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+                self.sos_disciplines[0]._update_status_recursive(
+                    self.STATUS_DONE)
                 dict_to_return = {}
                 for (scenario_name, sample_value) in sorted(evaluation_output.items(),
                                                             key=lambda scenario: int(
@@ -370,9 +378,9 @@ class SoSEval(SoSDisciplineBuilder):
                     dict_to_return[scenario_name] = sample_value
                 return dict_to_return
 
-
             except:
-                self.sos_disciplines[0]._update_status_recursive(self.STATUS_FAILED)
+                self.sos_disciplines[0]._update_status_recursive(
+                    self.STATUS_FAILED)
 
     def convert_output_results_toarray(self):
         '''
@@ -411,7 +419,7 @@ class SoSEval(SoSDisciplineBuilder):
             for i, key in enumerate(self.eval_out_list):
                 eval_out_size = len(self.eval_process_disc.local_data[key])
                 output_eval_key = outputs_eval[old_size:old_size +
-                                                        eval_out_size]
+                                               eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
                 if type_sos in ['dict', 'dataframe']:
