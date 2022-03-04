@@ -77,10 +77,10 @@ class DesignVar(object):
         # loop over output_descriptor to build output
         for key in self.output_descriptor.keys():
             out_name = self.output_descriptor[key]['out_name']
-            out_type = self.output_descriptor[key]['type']
+            out_type = self.output_descriptor[key]['out_type']
 
             if out_type == 'float':
-                self.output_dict[out_name] = inputs_dict[key][0]
+                self.output_dict[out_name] = inputs_dict[key]
             elif out_type == 'array':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
