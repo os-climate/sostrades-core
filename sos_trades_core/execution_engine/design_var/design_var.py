@@ -44,6 +44,7 @@ class DesignVar(object):
 
         for elem in list_ctrl:
 
+            # checks activated elements
             l_activated = self.dspace.loc[self.dspace[self.VARIABLES]
                                           == elem, self.ACTIVATED_ELEM_LIST].to_list()[0]
             value_dv = self.dspace.loc[self.dspace[self.VARIABLES]
@@ -57,6 +58,7 @@ class DesignVar(object):
                 elem_val = np.asarray(elem_val)
 
             # check output length and compute BSpline only if necessary
+            # remark: float do not require any BSpline usage
             if not self.output_descriptor[elem]['type'] == 'float':
                 output_length = len(self.output_descriptor[elem]['index'])
 
@@ -72,7 +74,6 @@ class DesignVar(object):
 
                     self.bspline_dict[elem] = {
                         'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
-        #######
 
         # loop over output_descriptor to build output
         for key in self.output_descriptor.keys():

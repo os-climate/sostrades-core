@@ -65,6 +65,8 @@ class DesignVarDiscipline(SoSDiscipline):
         dynamic_inputs = {}
         dynamic_outputs = {}
 
+        # loops over the output descriptor to add dynamic inputs and outputs from the loaded usecase.
+        # The structure of the output descriptor dict is checked prior its use
         if 'output_descriptor' in self._data_in:
             output_descriptor = self.get_sosdisc_inputs('output_descriptor')
 
@@ -80,7 +82,6 @@ class DesignVarDiscipline(SoSDiscipline):
 
     def init_execution(self):
         inputs_dict = self.get_sosdisc_inputs()
-
         self.design = DesignVar(inputs_dict)
         self.dict_last_ite = None
 
@@ -151,6 +152,12 @@ class DesignVarDiscipline(SoSDiscipline):
                 raise(ValueError('Output type not yet supported'))
 
     def _check_descriptor(self, output_descriptor):
+        """
+
+        :param output_descriptor: dict input of Design Var Discipline containing all information necessary to build its dynamic inputs and outputs.
+        For each input, data needed are the key, type, and namespace_in and for output out_name, out_type, namespace_out and depending on its type, index, index name and key.
+        :return: True if the dict has the requested data, False otherwise.
+        """
         test = True
 
         for key in output_descriptor.keys():
