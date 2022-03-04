@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from scipy.sparse.lil import lil_matrix
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -25,15 +26,17 @@ parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 
-from six import string_types
 from functools import reduce
 from copy import deepcopy
+
 from pandas import DataFrame, MultiIndex
-from numpy import ndarray, append, arange, delete, array
+from numpy import ndarray, append, arange, delete, array, empty, insert
+
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 from numpy import min as np_min, max as np_max
+from collections import defaultdict
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import MDODiscipline, default_dict_factory
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
 from sos_trades_core.api import get_sos_logger
@@ -1017,8 +1020,10 @@ class SoSDiscipline(MDODiscipline):
             indices = self._get_columns_indices(
                 inputs, outputs, input_column, output_column)
 
+        jac_arrays = {key_out: {key_in: value.toarray() for key_in, value in subdict.items()}
+                      for key_out, subdict in self.jac.items()}
         o_k = approx.check_jacobian(
-            self.jac,
+            jac_arrays,
             outputs,
             inputs,
             self,
@@ -1097,6 +1102,84 @@ class SoSDiscipline(MDODiscipline):
         if self.check_min_max_gradients:
             self._check_min_max_gradients(self.jac)
 
+    def _init_jacobian(
+        self,
+        inputs=None,  # type:Optional[Iterable[str]]
+        outputs=None,  # type:Optional[Iterable[str]]
+        with_zeros=False,  # type: bool
+        fill_missing_keys=False,  # type: bool
+    ):  # type: (...) -> None
+        """
+        Overload of GEMSEO code to add sparse matrices to init jacobians,
+
+        Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
+
+        Args:
+            inputs: The inputs wrt the outputs are linearized.
+                If None,
+                the linearization should be performed wrt all inputs.
+            outputs: The outputs to be linearized.
+                If None,
+                the linearization should be performed on all outputs.
+                fill_missing_keys: if True, just fill the missing items
+            with_zeros: If True,
+                the matrices are set to zero
+                otherwise,
+                they are empty matrices.
+            fill_missing_keys: If True,
+                just fill the missing items with zeros/empty
+                but do not override the existing data.
+        """
+
+        if inputs is None:
+            inputs_names = self._differentiated_inputs
+        else:
+            inputs_names = inputs
+        inputs_vals = []
+        for diff_name in inputs_names:
+            inputs_vals.append(self.get_inputs_by_name(diff_name))
+
+        if outputs is None:
+            outputs_names = self._differentiated_outputs
+        else:
+            outputs_names = outputs
+        outputs_vals = []
+        for diff_name in outputs_names:
+            outputs_vals.append(self.get_outputs_by_name(diff_name))
+
+        if with_zeros:
+            # SoSTrades Modification
+            np_method = lil_matrix
+            # end of SoSTrades modification
+        else:
+            np_method = empty
+        if not fill_missing_keys:
+            # When a key is not in the default dict, ie a function is not in
+            # the Jacobian; return an empty defaultdict(None)
+            jac = defaultdict(default_dict_factory)
+            for out_n, out_v in zip(outputs_names, outputs_vals):
+                jac_loc = defaultdict(None)
+                jac[out_n] = jac_loc
+                # When a key is not in the default dict,
+                # ie a variable is not in the
+                # Jacobian; return a defaultdict(None)
+                for in_n, in_v in zip(inputs_names, inputs_vals):
+                    jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+            self.jac = jac
+        else:
+            jac = self.jac
+            # Only fill the missing sub jacobians
+            for out_n, out_v in zip(outputs_names, outputs_vals):
+                jac_loc = jac.get(out_n)
+                if jac_loc is None:
+                    jac_loc = defaultdict(None)
+                    jac[out_n] = jac_loc
+
+                for in_n, in_v in zip(inputs_names, inputs_vals):
+                    sub_jac = jac_loc.get(in_n)
+                    if sub_jac is None:
+                        jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+
     def _check_min_max_gradients(self, jac):
         '''Check of minimum and maximum jacobian values 
         '''
@@ -1148,6 +1231,8 @@ class SoSDiscipline(MDODiscipline):
         new_x_key = self.get_var_full_name(x_key, self._data_in)
 
         if new_x_key in self.jac[new_y_key]:
+            if isinstance(value, ndarray):
+                value = lil_matrix(value)
             self.jac[new_y_key][new_x_key] = value
 
     def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):
@@ -1736,7 +1821,6 @@ class SoSDiscipline(MDODiscipline):
         new_var_df = var_df.drop(
             columns=[column for column in excluded_columns if column in var_df])
 
-        val_data['indices'] = new_var_df.index
         data = new_var_df.to_numpy()
 
         # indices = var_df.index.to_numpy()
@@ -1751,6 +1835,10 @@ class SoSDiscipline(MDODiscipline):
         val_data['size'] = data.size
         val_data['dtypes'] = [new_var_df[col].dtype for col in columns]
         # to flatten by lines erase the option 'F' or put the 'C' option
+
+        if not (new_var_df.index == arange(0, data.shape[0])).all():
+            val_data['indices'] = new_var_df.index
+
         values_list = append(values_list, data.flatten(order='F'))
         metadata.append(val_data)
         return values_list, metadata
@@ -1932,34 +2020,46 @@ class SoSDiscipline(MDODiscipline):
         # convert list into dataframe using columns from dm.data_dict
         _shape = metadata['shape']
         _size = metadata['size']
-        _col = metadata['columns']
-        _dtypes = metadata['dtypes']
+        _col = metadata['columns'].copy()
+        _dtypes = metadata['dtypes'].copy()
         _arr = arr_to_convert[:_size]
         # to flatten by lines erase the option 'F' or put the 'C' option
-        import numpy as np
-        if len(_arr) != np.prod(list(_shape)):
-            print('wrong')
-        # TO DO: test object type properly
         _arr = _arr.reshape(_shape, order='F')
+        # create multi index columns if tuples in columns
 
-        # indices = array([_arr[i, 0]
-        #                 for i in range(len(_arr))]).real.astype(int64)
-
-        df = DataFrame(data=_arr, columns=_col)
-
-        for col, dtype in zip(_col, _dtypes):
-            if len(df[col].values) > 0:
-                if type(df[col].values[0]).__name__ != 'complex' and type(df[col].values[0]).__name__ != 'complex128':
-                    df[col] = df[col].astype(dtype)
-
+        # Use the 2Darrays init which is 4 times faster than the dict initialization
+        # if indices are stored we use them to reconstruct the dataframe
         if 'indices' in metadata:
-            df.index = metadata['indices']
+            df = DataFrame(data=_arr, columns=_col,
+                           index=metadata['indices'])
+        else:
+            df = DataFrame(data=_arr, columns=_col)
 
+        df_dtypes = df._mgr.get_dtypes()
+        # if _mgr attribute does not exist in further versions switch to the following line (less efficient)
+        # the following line create a series to visualize dtypes
+        #df_dtypes = df.dtypes.values
+
+        # if one types is different from metadata
+        if not list(df_dtypes) == _dtypes:
+            # build a dict of different types to loop only on needed columns
+            diff_dtypes = {_col[i]: _dtypes[i] for i in range(
+                len(_dtypes)) if df_dtypes[i] != _dtypes[i]}
+            # Do not revert complex values if there is because it comes from
+            # complex step
+            for col, dtype in diff_dtypes.items():
+                if len(df[col].values) > 0:
+                    if type(df[col].values[0]).__name__ != 'complex' and type(df[col].values[0]).__name__ != 'complex128':
+                        df[col] = df[col].astype(dtype)
+
+        # Insert excluded columns at the beginning of the dataframe
+        # It is faster to add them before the init BUT the type of the column must be the same with a 2D arrays init
+        # Then we need to switch to dict initialization and it becomes slower
+        # than the insert method
         for column_excl in excluded_columns:
             if column_excl in metadata:
                 df.insert(loc=0, column=column_excl,
                           value=metadata[column_excl])
-
         return df
 
     def _convert_array_into_new_type(self, local_data):

@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import platform
+
 from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization
 """
 Coupled derivatives calculations

@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import platform
+
 from gemseo.mda.newton import MDANewtonRaphson, MDARoot
 from copy import deepcopy
 from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
@@ -20,21 +22,21 @@ from gemseo.core.discipline import MDODiscipline
 
 
 def __init__(
-    cls,
-    disciplines,  # type: Sequence[MDODiscipline]
-    max_mda_iter=10,  # type: int
-    relax_factor=0.99,  # type: float
-    name=None,  # type: Optional[str]
-    grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-    linear_solver="DEFAULT",  # type: str
-    tolerance=1e-6,  # type: float
-    linear_solver_tolerance=1e-12,  # type: float
-    warm_start=False,  # type: bool
-    use_lu_fact=False,  # type: bool
-    coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-    log_convergence=False,  # type:bool
-    linear_solver_options=None,  # type: Mapping[str,Any]
-    n_processes=1
+        cls,
+        disciplines,  # type: Sequence[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        relax_factor=0.99,  # type: float
+        name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        linear_solver="DEFAULT",  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False,  # type:bool
+        linear_solver_options=None,  # type: Mapping[str,Any]
+        n_processes=1
 ):
     """
     Args:
@@ -56,7 +58,7 @@ def __init__(
         coupling_structure=coupling_structure,
         log_convergence=log_convergence,
     )
-    #cls.relax_factor = cls.__check_relax_factor(relax_factor)
+    # cls.relax_factor = cls.__check_relax_factor(relax_factor)
     cls.relax_factor = relax_factor
     cls.linear_solver = linear_solver
 
@@ -69,8 +71,8 @@ def __init__(
 
 
 def execute_all_disciplines(
-    cls,
-    input_local_data,  # type: Mapping[str,ndarray]
+        cls,
+        input_local_data,  # type: Mapping[str,ndarray]
 ):  # type: (...) -> None
     """Execute all the disciplines.
         Come from MDAJacobi
@@ -116,7 +118,7 @@ def _newton_step(cls):  # type: (...) -> None
         exec_data[c_var] += c_step.real  # SoSTrades fix (.real)
     cls.reset_disciplines_statuses()
     cls.execute_all_disciplines(exec_data)
-    #cls.local_data = exec_data
+    # cls.local_data = exec_data
 
 
 # Set functions to the MDA Class
