@@ -29,7 +29,7 @@ class Study(StudyManager):
     def __init__(self, run_usecase=True, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
         self.optim_name = "SellarOptimScenario"
-        self.coupling_name = "Sellar_Problem"
+        self.coupling_name = "SellarCoupling"
 
     def setup_usecase(self):
 
@@ -37,46 +37,38 @@ class Study(StudyManager):
         OBJECTIVE = FunctionManager.OBJECTIVE
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['x_in', 'z_in', 'y_1_in', 'y_2_in'],
-                       'value': [1., [5., 2.], 5., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
-                       'enable_variable': [True, True, True, True],
-                       'activated_elem': [[True], [True, True], [True], [True]]}
+        dspace_dict = {'variable': ['x_in', 'z_in'],
+                       'value': [1., [5., 2.]],
+                       'lower_bnd': [0., [-10., 0.]],
+                       'upper_bnd': [10., [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        self.output_descriptor = {}
-
-        self.output_descriptor['x_in'] = {'out_name': 'x',
-                                          'type': 'float',
-                                          'namespace_in': 'ns_OptimSellar',
-                                          'namespace_out': 'ns_OptimSellar'
-                                          }
-        self.output_descriptor['z_in'] = {'out_name': 'z',
-                                          'type': 'array',
-                                          'index': [1., 1.],
-                                          'namespace_in': 'ns_OptimSellar',
-                                          'namespace_out': 'ns_OptimSellar'
-                                          }
-        self.output_descriptor['y_1_in'] = {'out_name': 'y_1',
-                                            'type': 'float',
-                                            'namespace_in': 'ns_OptimSellar',
-                                            'namespace_out': 'ns_OptimSellar'
-                                            }
-        self.output_descriptor['y_2_in'] = {'out_name': 'y_2',
-                                            'type': 'float',
-                                            'namespace_in': 'ns_OptimSellar',
-                                            'namespace_out': 'ns_OptimSellar'
-                                            }
+        output_descriptor = {'x_in': {'out_name': 'x',
+                                      'type': 'float',
+                                      'out_type': 'float',
+                                      'namespace_in': 'ns_OptimSellar',
+                                      'namespace_out': 'ns_OptimSellar'
+                                      },
+                             'z_in': {'out_name': 'z',
+                                      'type': 'array',
+                                      'out_type': 'array',
+                                      'index': [0, 1],
+                                      'index_name': 'index',
+                                      'namespace_in': 'ns_OptimSellar',
+                                      'namespace_out': 'ns_OptimSellar'
+                                      }
+                             }
 
         disc_dict = {}
-        disc_dict[f'{ns}.{self.optim_name}.DesignVar.output_descriptor'] = self.output_descriptor
+        disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.output_descriptor'] = output_descriptor
 
         # Optim inputs
         disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 500
         disc_dict[f'{ns}.{self.optim_name}.algo'] = "L-BFGS-B"
         disc_dict[f'{ns}.{self.optim_name}.design_space'] = dspace
-        disc_dict[f'{ns}.{self.optim_name}.formulation'] = 'MDF'
+        disc_dict[f'{ns}.{self.optim_name}.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{ns}.{self.optim_name}.objective_name'] = 'objective_lagrangian'
         disc_dict[f'{ns}.{self.optim_name}.ineq_constraints'] = []
         disc_dict[f'{ns}.{self.optim_name}.algo_options'] = {
@@ -86,12 +78,12 @@ class Study(StudyManager):
 
         }
 
-        # Sellar inputs
+        # Sellar and design var inputs
         disc_dict[f'{ns}.{self.optim_name}.x_in'] = 1.
-        disc_dict[f'{ns}.{self.optim_name}.y_1_in'] = 5.
-        disc_dict[f'{ns}.{self.optim_name}.y_2_in'] = 1.
+        disc_dict[f'{ns}.{self.optim_name}.y_1'] = 5.
+        disc_dict[f'{ns}.{self.optim_name}.y_2'] = 1.
         disc_dict[f'{ns}.{self.optim_name}.z_in'] = array([5., 2.])
-        disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.local_dv'] = 10.
+        disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.Sellar_Problem.local_dv'] = 10.
 
         func_df = pd.DataFrame(
             columns=['variable', 'ftype', 'weight', AGGR_TYPE])
@@ -101,7 +93,7 @@ class Study(StudyManager):
         func_df[AGGR_TYPE] = [AGGR_TYPE_SUM, AGGR_TYPE_SUM, AGGR_TYPE_SUM]
         func_mng_name = 'FunctionManager'
 
-        prefix = self.study_name + f'.{self.optim_name}.' + func_mng_name + '.'
+        prefix = f'{self.study_name}.{self.optim_name}.{self.coupling_name}.{func_mng_name}.'
         values_dict = {}
         values_dict[prefix +
                     FunctionManagerDisc.FUNC_DF] = func_df
