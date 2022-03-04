@@ -13,7 +13,5 @@ pyarrow==6.0.1
 pydoe2==1.3.0
 nlopt==2.6.2
 scipy==1.7.1
-gemseo==3.2.1
-gemseo-petsc==1.0.0.post0
 sympy==1.4
 trino
