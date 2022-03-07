@@ -35,7 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
         # add disciplines Sellar
-        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sellar.'
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sellar_for_design_var.'
 
         mod_func = 'sos_trades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
         mod_dv = 'sos_trades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline'
