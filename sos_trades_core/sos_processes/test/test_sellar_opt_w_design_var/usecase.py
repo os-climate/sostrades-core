@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sos_trades_core.study_manager.study_manager import StudyManager
-from numpy import array
+from numpy import array, arange
 import pandas as pd
 from sos_trades_core.execution_engine.func_manager.func_manager import FunctionManager
 from sos_trades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
@@ -38,16 +38,19 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['x_in', 'z_in'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1., 2., 3., 4.], [5., 2.]],
+                       'lower_bnd': [[0., 0., 0., 0.], [-10., 0.]],
+                       'upper_bnd': [[10., 10., 10., 10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
         output_descriptor = {'x_in': {'out_name': 'x',
-                                      'type': 'float',
-                                      'out_type': 'float',
+                                      'type': 'array',
+                                      'out_type': 'dataframe',
+                                      'key': 'value',
+                                      'index': arange(0, 4, 1),
+                                      'index_name': 'index',
                                       'namespace_in': 'ns_OptimSellar',
                                       'namespace_out': 'ns_OptimSellar'
                                       },
@@ -65,7 +68,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.output_descriptor'] = output_descriptor
 
         # Optim inputs
-        disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 500
+        disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 100
         disc_dict[f'{ns}.{self.optim_name}.algo'] = "L-BFGS-B"
         disc_dict[f'{ns}.{self.optim_name}.design_space'] = dspace
         disc_dict[f'{ns}.{self.optim_name}.formulation'] = 'DisciplinaryOpt'
@@ -79,7 +82,7 @@ class Study(StudyManager):
         }
 
         # Sellar and design var inputs
-        disc_dict[f'{ns}.{self.optim_name}.x_in'] = 1.
+        disc_dict[f'{ns}.{self.optim_name}.x_in'] = [1., 1., 1., 1.]
         disc_dict[f'{ns}.{self.optim_name}.y_1'] = 5.
         disc_dict[f'{ns}.{self.optim_name}.y_2'] = 1.
         disc_dict[f'{ns}.{self.optim_name}.z_in'] = array([5., 2.])

@@ -50,23 +50,26 @@ class TestDesignVar(AbstractJacobianUnittest):
         self.c_name = "SellarCoupling"
 
         dspace_dict = {'variable': ['x_in', 'z_in'],
-                       'value': [1., [5., 2., 2., 1., 1., 1.]],
-                       'lower_bnd': [0., [-10., 0., -10., -10., -10., -10.]],
-                       'upper_bnd': [10., [10., 10., 10., 10., 10., 10.]],
+                       'value': [[1., 1., 3., 2.], [5., 2., 2., 1., 1., 1.]],
+                       'lower_bnd': [[0., 0., 0., 0.], [-10., 0., -10., -10., -10., -10.]],
+                       'upper_bnd': [[10., 10., 10., 10.], [10., 10., 10., 10., 10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         self.dspace = pd.DataFrame(dspace_dict)
 
         self.output_descriptor = {'x_in': {'out_name': 'x',
-                                           'type': 'float',
-                                           'out_type': 'float',
+                                           'type': 'array',
+                                           'out_type': 'dataframe',
+                                           'key': 'value',
+                                           'index': np.arange(0, 4, 1),
+                                           'index_name': 'test',
                                            'namespace_in': 'ns_OptimSellar',
                                            'namespace_out': 'ns_OptimSellar'
                                            },
                                   'z_in': {'out_name': 'z',
                                            'type': 'array',
                                            'out_type': 'array',
-                                           'index': np.arange(0, 50, 1),
+                                           'index': np.arange(0, 10, 1),
                                            'index_name': 'index',
                                            'namespace_in': 'ns_OptimSellar',
                                            'namespace_out': 'ns_OptimSellar'
@@ -104,10 +107,10 @@ class TestDesignVar(AbstractJacobianUnittest):
 
         # Sellar inputs
         local_dv = 10.
-        values_dict[f'{self.ns}.{self.sc_name}.x_in'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x_in'] = np.array([1., 1., 3., 2.])
         values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 5.
         values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.z_in'] = np.array([5., 2., 2., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.z_in'] = np.array([5., 2., 2., 1., 1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
 
         # function manager
@@ -132,6 +135,12 @@ class TestDesignVar(AbstractJacobianUnittest):
         self.ee.execute()
 
         disc = self.ee.dm.get_disciplines_with_name(f'{self.ns}.{self.sc_name}.{self.c_name}.DesignVar')[0]
+
+        # checks output type is well created for dataframes (most commonly used)
+        df = disc.get_sosdisc_outputs('x')
+        assert isinstance(df, pd.DataFrame)
+        assert all(df.columns == self.output_descriptor['x_in']['key'])
+
         filters = disc.get_chart_filter_list()
         graph_list = disc.get_post_processing_list(filters)
         # for graph in graph_list:
