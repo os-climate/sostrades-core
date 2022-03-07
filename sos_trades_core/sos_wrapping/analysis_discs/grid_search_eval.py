@@ -496,8 +496,7 @@ class GridSearchEval(DoeEval):
             outputs_names.remove('doe_samples_dataframe')
             for single_output in outputs_names:
                 output_df_dict = outputs_discipline_dict[single_output]
-                # the considered output can only be a dict of dataframe, all other
-                # types will be ignored
+
                 if isinstance(output_df_dict, dict):
                     
                     if all(isinstance(ddict, dict) for ddict in output_df_dict.values()):
@@ -516,6 +515,16 @@ class GridSearchEval(DoeEval):
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
                                 filtered_df['scenario'] = f'{scenario}'
+                                filtered_df.replace('NA', np.nan, inplace=True)
+                                
+                                for name, value_df in filtered_df.items():
+                                    if value_df.dtype=='float':
+                                        if name not in list(output_info_dict.keys()):
+                                            output_info_dict[name]={
+                                                'output_info_name': re.sub(r'_dict$', '', single_output),
+                                                'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
+                                                    re.sub(r'_dict$', '', single_output))[0])['unit'] }
+                                    
                                 #pour chaque column de filtered_df --> Ajouter un clé output_info_dict--> {column_name=output_name: single output, unit: self.ee.dm.get_data(
                                                                                                                                                     # self.ee.dm.get_all_namespaces_from_var_name(chart[2][i])[0])['unit']
                                 # si la column_name exists déjà tu ne fais rien 
@@ -540,10 +549,8 @@ class GridSearchEval(DoeEval):
                                 for col in columns_temp:
                                     if col not in output_df:
                                         output_df.merge(output_df_temp[['scenario',col]],on='scenario', how='left')
-                
-                output_origin_name.append( re.sub(r'_dict$', '', single_output) )   
-                            
-                                
+
+
             output_df.replace('NA', np.nan, inplace=True)
             output_variables = output_df.select_dtypes(
                 include='float').columns.to_list()
@@ -557,12 +564,9 @@ class GridSearchEval(DoeEval):
             # retrieve z variable name by removing _dict from the output name
             # output_origin_name = re.sub(
             #     r'_dict$', '', single_output)
-            chart_list = [list(chart_tuple)+[output_origin_name]
+            chart_list = [list(chart_tuple)+[output_info_dict[chart_tuple[1]]['output_info_name']] + [output_info_dict[chart_tuple[1]]['unit']]
                             for chart_tuple in chart_tuples]
             full_chart_list += chart_list
-
-
-
 
         chart_dict = {}
         # based on the full chart list, we will create a dict will all
@@ -573,14 +577,6 @@ class GridSearchEval(DoeEval):
             x_vble = chart[0][0]
             y_vble = chart[0][1]
             
-            for i in range(len(chart[2])):
-                try:                    
-                    z_unit=self.ee.dm.get_data(
-                        self.ee.dm.get_all_namespaces_from_var_name(chart[2][i])[0])['unit']
-                except IndexError:
-                    print(f'var_name {chart[2][i]} does not found')
-                    next
-                
             
             # we retrieve the corresponding short name for x and y
             # GET-->first parameter=key, second parameter=value if the key is not found
@@ -618,7 +614,7 @@ class GridSearchEval(DoeEval):
                     self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0]
                 )['unit'],
                 'z': z_vble,
-                'z_unit': z_unit,
+                'z_unit': chart[3],
                 'z_max': output_df[z_vble].max(skipna=True),
                 'z_min': output_df[z_vble].min(skipna=True),
                 'slider': slider_list,
