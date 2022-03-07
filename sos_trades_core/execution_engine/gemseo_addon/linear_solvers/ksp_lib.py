@@ -23,7 +23,7 @@ from typing import Union
 
 import petsc4py  # pylint: disable-msg=E0401
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
-from gemseo.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
+from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
 from numpy import arange
 from numpy import array
 from numpy import ndarray
