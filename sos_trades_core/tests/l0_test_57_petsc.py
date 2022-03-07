@@ -23,7 +23,7 @@ from sos_trades_core.execution_engine.sos_coupling import get_available_linear_s
 
 if platform.system() != 'Windows':
     import petsc4py  # pylint: disable-msg=E0401
-    from gemseo_petsc.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
+    from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
     from sos_trades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
     from petsc4py import PETSc  # pylint: disable-msg=E0401
 
