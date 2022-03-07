@@ -267,7 +267,7 @@ class SoSEval(SoSDisciplineBuilder):
             x0.append(x_val)
         return np.array(x0)
 
-    def sample_evaluation(self, x, scenario_name=None, convert_to_array=True):
+    def evaluation(self, x, scenario_name=None, convert_to_array=True):
         '''
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays. 
@@ -330,10 +330,10 @@ class SoSEval(SoSDisciplineBuilder):
 
             for i, x in enumerate(samples):
                 scenario_name = "scenario_" + str(i + 1)
-                evaluation_output[scenario_name] = x, self.sample_evaluation(
+                evaluation_output[scenario_name] = x, self.evaluation(
                     x, scenario_name, convert_to_array)
                 self.logger.info(
-                    f' computation progress: {int(((i + 1) / len(samples)) * 100)}% done.')
+                    f'{scenario_name} has been run.computation progress: {int(((i + 1) / len(samples)) * 100)}% done.')
             return evaluation_output
 
         if n_processes > 1:
@@ -345,7 +345,7 @@ class SoSEval(SoSDisciplineBuilder):
             def sample_evaluator(sample_to_evaluate):
                 """Evaluate a sample
                 """
-                return self.sample_evaluation(sample_to_evaluate, convert_to_array=False)
+                return self.evaluation(sample_to_evaluate, convert_to_array=False)
 
             parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
@@ -365,7 +365,7 @@ class SoSEval(SoSDisciplineBuilder):
                 scenario_name = "scenario_" + str(index + 1)
                 evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
-                    f' computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
+                    f'{scenario_name} has been run. computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
 
             try:
                 parallel.execute(samples, exec_callback=store_callback)
