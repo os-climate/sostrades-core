@@ -148,5 +148,5 @@ class TestDesignVar(AbstractJacobianUnittest):
                         f'{self.ns}.{self.sc_name}.z',
                         ]
 
-        self.check_jacobian(location=dirname(__file__), filename=f'jacobian_design_var_bspline_invest_distrib_full.pkl', discipline=disc, step=1e-15, inputs=input_names,
+        self.check_jacobian(location=dirname(__file__), filename=f'jacobian_design_var_bspline.pkl', discipline=disc, step=1e-15, inputs=input_names,
                             outputs=output_names, derr_approx='complex_step')
