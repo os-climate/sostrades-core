@@ -41,4 +41,4 @@ def get_execution_sequence(cls):
  
     return list(reversed(execution_sequence))
  
-setattr(DependencyGraph, "get_execution_sequence", get_execution_sequence)
+#setattr(DependencyGraph, "get_execution_sequence", get_execution_sequence)

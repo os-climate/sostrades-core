@@ -122,6 +122,6 @@ def _newton_step(cls):  # type: (...) -> None
 
 
 # Set functions to the MDA Class
-setattr(MDANewtonRaphson, "__init__", __init__)
-setattr(MDANewtonRaphson, "_newton_step", _newton_step)
-setattr(MDARoot, "execute_all_disciplines", execute_all_disciplines)
+#setattr(MDANewtonRaphson, "__init__", __init__)
+#setattr(MDANewtonRaphson, "_newton_step", _newton_step)
+#setattr(MDARoot, "execute_all_disciplines", execute_all_disciplines)

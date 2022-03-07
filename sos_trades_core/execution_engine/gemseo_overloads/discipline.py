@@ -268,5 +268,5 @@ def check_jacobian(
     return o_k
 
 
-setattr(MDODiscipline, "execute", execute)
-setattr(MDODiscipline, "check_jacobian", check_jacobian)
+#setattr(MDODiscipline, "execute", execute)
+#setattr(MDODiscipline, "check_jacobian", check_jacobian)

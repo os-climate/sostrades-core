@@ -90,4 +90,4 @@ def __init__(
 
 
 # Set functions to the MDA Class
-setattr(GSNewtonMDA, "__init__", __init__)
+#setattr(GSNewtonMDA, "__init__", __init__)

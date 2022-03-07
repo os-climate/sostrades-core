@@ -111,7 +111,7 @@ class SoSSensitivity(SoSEval):
         for i, x_sample in enumerate(x_samples):
 
             output_eval = copy.deepcopy(
-                self.sample_evaluation(x_sample, convert_to_array=False))
+                self.evaluation(x_sample, convert_to_array=False))
 
             for j, output_sens in enumerate(self.eval_out_list):
                 if variation_samples[i] == 0.0:

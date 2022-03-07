@@ -503,17 +503,6 @@ class SoSMorphMatrixEval(SoSEval):
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
             for i, output in enumerate(self.namespaced_eval_outputs.keys()):
                 output_dict[output][scenario_name_matching[scenario_name]] = evaluated_samples[1][i]
-
-
-        # for index, row in selected_scenario_df.iterrows():
-        #     self.ee.logger.info(
-        #         f'--> {index/total_selected_scenario:.1%} Done, running scenario {index+1}/{total_selected_scenario}: {row["scenario_name"]}')
-        #     output_list = deepcopy(
-        #         self.sample_evaluation(row[list(self.eval_input_dict.keys())].values, convert_to_array=False))
-        #
-        #     for i, output in enumerate(self.namespaced_eval_outputs.keys()):
-        #         output_dict[output][row['scenario_name']] = output_list[i]
-
         return output_dict
 
     def run(self):
