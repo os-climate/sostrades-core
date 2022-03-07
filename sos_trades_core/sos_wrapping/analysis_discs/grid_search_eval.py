@@ -95,7 +95,7 @@ class GridSearchEval(DoeEval):
         },
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
-        'scenario_name': {'type': 'string', 'user_level': 3, 'optional': True, 'visibility': 'Local'},
+        'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local'},
     }
 
     def setup_sos_disciplines(self):
@@ -466,6 +466,8 @@ class GridSearchEval(DoeEval):
         # retrive full input list
         inputs_list = [
             col for col in doe_samples_df.columns if col not in ['scenario']]
+        
+        scenarii=len(doe_samples_df['scenario'])
 
         # generate all combinations of 2 inputs whcich will correspond to the
         # number of charts
@@ -473,41 +475,94 @@ class GridSearchEval(DoeEval):
 
         full_chart_list = []
 
-        # only one output is considered today in the code
+        output_df = None
+        output_df_temp=None
+        
+        output_origin_name=[]
+        # ''''''''only one output is considered today in the code
         # we take only the first output after the doe_sample_dataframe
         outputs_names_list = list(outputs_discipline_dict.keys())
+        
+        
+        output_info_dict={ }
+        #{npv: {output_name: 'GridSearch.Outputs.cashflow_info_total_scenario_df', 'unit': '€'},
+        # irr:}
+        #keys=output_variables
+        #pour chaque column de mon output_df --> je vais avoir le nom et la unit
+        
         if len(outputs_names_list) > 0:
-            output_name = outputs_names_list[1]
-            output_df_dict = outputs_discipline_dict[output_name]
+            # outputs_names = [name for name in outputs_names_list if name not in ['doe_samples_dataframe']]
+            outputs_names=outputs_names_list.copy()
+            outputs_names.remove('doe_samples_dataframe')
+            for single_output in outputs_names:
+                output_df_dict = outputs_discipline_dict[single_output]
+                # the considered output can only be a dict of dataframe, all other
+                # types will be ignored
+                if isinstance(output_df_dict, dict):
+                    
+                    if all(isinstance(ddict, dict) for ddict in output_df_dict.values()):
+                            #change from a dict of dicts to a dict of df
+                        output_df_dict = {key: pd.DataFrame.from_records(
+                            [output_df_dict[key]]) for key in output_df_dict}
 
-            # the considered output can only be a dict of dataframe, all other
-            # types will be ignored
-            if isinstance(output_df_dict, dict):
-                if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
-                    # we extract the columns of the dataframe of type float which will represents the possible outputs
-                    # we assume that all dataframes contains the same columns
-                    # and only look at the first element
-                    output_df = None
-                    # output_df_dict = output_df_dict[list(output_df_dict.keys())[1]]
-                    for scenario, df in output_df_dict.items():
-                        filtered_df = df.copy(deep=True)
-                        filtered_df['scenario'] = f'{scenario}'
+                    if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
+                        
+                        if all((len(df) == 1) for df in output_df_dict.values()):
+    
+                            # we extract the columns of the dataframe of type float which will represents the possible outputs
+                            # we assume that all dataframes contains the same columns
+                            # and only look at the first element
+                            # output_df_dict = output_df_dict[list(output_df_dict.keys())[1]]
+                            for scenario, df in output_df_dict.items():
+                                filtered_df = df.copy(deep=True)
+                                filtered_df['scenario'] = f'{scenario}'
+                                #pour chaque column de filtered_df --> Ajouter un clé output_info_dict--> {column_name=output_name: single output, unit: self.ee.dm.get_data(
+                                                                                                                                                    # self.ee.dm.get_all_namespaces_from_var_name(chart[2][i])[0])['unit']
+                                # si la column_name exists déjà tu ne fais rien 
+                                if output_df is None:
+                                    output_df = filtered_df.copy(deep=True)
+                                elif len(output_df)==scenarii:
+                                    
+                                    if output_df_temp is None:
+                                        output_df_temp=filtered_df.copy(deep=True)
+                                    else:
+                                        output_df_temp = pd.concat(
+                                        [output_df_temp, filtered_df], axis=0, ignore_index=True)
+                                else:
+                                    output_df = pd.concat(
+                                        [output_df, filtered_df], axis=0, ignore_index=True)
 
-                        if output_df is None:
-                            output_df = filtered_df.copy(deep=True)
-                        else:
-                            output_df = pd.concat(
-                                [output_df, filtered_df], axis=0, ignore_index=True)
+                            
+                            if output_df_temp is not None:
+                                output_df_temp.replace('NA', np.nan, inplace=True)
+                                columns_temp=list(output_df_temp.columns)
+                                columns_temp.remove('scenario')
+                                for col in columns_temp:
+                                    if col not in output_df:
+                                        output_df.merge(output_df_temp[['scenario',col]],on='scenario', how='left')
+                
+                output_origin_name.append( re.sub(r'_dict$', '', single_output) )   
+                            
+                                
+            output_df.replace('NA', np.nan, inplace=True)
+            output_variables = output_df.select_dtypes(
+                include='float').columns.to_list()
 
-                    output_df.replace('NA', np.nan, inplace=True)
-                    output_variables = output_df_dict[list(output_df_dict.keys())[0]].select_dtypes(
-                        include='float').columns.to_list()
+            # we constitute the full_chart_list by making a product
+            # between the possible inputs combination and outputs list
+            chart_tuples = list(
+                itertools.product(
+                    inputs_combin, output_variables)
+            )
+            # retrieve z variable name by removing _dict from the output name
+            # output_origin_name = re.sub(
+            #     r'_dict$', '', single_output)
+            chart_list = [list(chart_tuple)+[output_origin_name]
+                            for chart_tuple in chart_tuples]
+            full_chart_list += chart_list
 
-                    # we constitute the full_chart_list by making a product
-                    # between the possible inputs combination and outputs list
-                    full_chart_list += list(
-                        itertools.product(inputs_combin, output_variables)
-                    )
+
+
 
         chart_dict = {}
         # based on the full chart list, we will create a dict will all
@@ -517,10 +572,18 @@ class GridSearchEval(DoeEval):
             z_vble = chart[1]
             x_vble = chart[0][0]
             y_vble = chart[0][1]
-
+            
+            for i in range(len(chart[2])):
+                try:                    
+                    z_unit=self.ee.dm.get_data(
+                        self.ee.dm.get_all_namespaces_from_var_name(chart[2][i])[0])['unit']
+                except IndexError:
+                    print(f'var_name {chart[2][i]} does not found')
+                    next
+                
+            
             # we retrieve the corresponding short name for x and y
-            # GET-->first parameter=key, second parameter=value if the key is
-            # not found
+            # GET-->first parameter=key, second parameter=value if the key is not found
             x_short = inputs_name_mapping.get(x_vble, x_vble)
             y_short = inputs_name_mapping.get(y_vble, y_vble)
 
@@ -543,9 +606,6 @@ class GridSearchEval(DoeEval):
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
 
-            # retrieve z variable name by removing _dict from the output name
-            output_origin_name = re.sub(r'_dict$', '', output_name)
-
             chart_dict[chart_name] = {
                 'x': x_vble,
                 'x_short': x_short,
@@ -558,10 +618,7 @@ class GridSearchEval(DoeEval):
                     self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0]
                 )['unit'],
                 'z': z_vble,
-                'z_unit': self.ee.dm.get_data(
-                    self.ee.dm.get_all_namespaces_from_var_name(
-                        output_origin_name)[0]
-                )['unit'],
+                'z_unit': z_unit,
                 'z_max': output_df[z_vble].max(skipna=True),
                 'z_min': output_df[z_vble].min(skipna=True),
                 'slider': slider_list,
@@ -569,6 +626,8 @@ class GridSearchEval(DoeEval):
             }
 
         return chart_dict, output_df
+
+
 
     def get_chart_filter_list(self):
 
@@ -667,6 +726,7 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 mode='markers',
+                                marker_symbol='x-thin',
                                 marker=dict(
                                     size=5,
                                     color='dimGray',
@@ -739,7 +799,7 @@ class GridSearchEval(DoeEval):
                             y_max = max(y_data)
 
                             # Initialization Slider
-                            if slide_value == slider_values[-1]:
+                            if slide_value == slider_values[0]:
                                 visible = True
                             else:
                                 visible = False
@@ -787,6 +847,7 @@ class GridSearchEval(DoeEval):
                                     y=y_data,
                                     # name=labels,
                                     mode='markers',
+                                    marker_symbol='x-thin',
                                     marker=dict(
                                         size=5,
                                         color='dimGray',
@@ -804,7 +865,7 @@ class GridSearchEval(DoeEval):
                         # Create and add slider
                         steps = []
 
-                        for i in range(int(len(fig.data) / 2)):
+                        for i in range(int(len(fig.data)/2)):
                             # for i in range(int(len(fig.data)-1)):
 
                             step = dict(
