@@ -246,8 +246,8 @@ def store_state_for_warm_start(cls):
 
 
 # Set functions to the MDA Class
-setattr(MDA, "__init__", __init__)
-setattr(MDA, "_current_input_couplings", _current_input_couplings)
-setattr(MDA, "_check_min_max_couplings", _check_min_max_couplings)
-setattr(MDA, "_compute_residual", _compute_residual)
-setattr(MDA, "store_state_for_warm_start", store_state_for_warm_start)
+#setattr(MDA, "__init__", __init__)
+#setattr(MDA, "_current_input_couplings", _current_input_couplings)
+#setattr(MDA, "_check_min_max_couplings", _check_min_max_couplings)
+#setattr(MDA, "_compute_residual", _compute_residual)
+#setattr(MDA, "store_state_for_warm_start", store_state_for_warm_start)

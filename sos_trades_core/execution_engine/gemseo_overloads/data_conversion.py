@@ -104,4 +104,4 @@ def update_dict_from_array(
 
 
 # Set functions to the MDA Class
-setattr(DataConversion, "update_dict_from_array", update_dict_from_array)
+#setattr(DataConversion, "update_dict_from_array", update_dict_from_array)

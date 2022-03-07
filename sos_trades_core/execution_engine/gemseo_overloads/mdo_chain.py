@@ -87,4 +87,4 @@ def reverse_chain_rule(cls, chain_outputs, discipline):
             cls.jac[output] = MDOChain.copy_jacs(discipline.jac[output])
 
 
-setattr(MDOChain, "reverse_chain_rule", reverse_chain_rule)
+#setattr(MDOChain, "reverse_chain_rule", reverse_chain_rule)
