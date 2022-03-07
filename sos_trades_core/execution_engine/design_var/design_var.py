@@ -66,10 +66,10 @@ class DesignVar(object):
                     self.bspline_dict[elem] = {
                         'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
                 else:
-                    list_t_years = np.linspace(0.0, 1.0, output_length)
+                    list_t = np.linspace(0.0, 1.0, output_length)
                     bspline = BSpline(n_poles=len(elem_val))
                     bspline.set_ctrl_pts(elem_val)
-                    eval_t, b_array = bspline.eval_list_t(list_t_years)
+                    eval_t, b_array = bspline.eval_list_t(list_t)
                     b_array = bspline.update_b_array(b_array, index_false)
 
                     self.bspline_dict[elem] = {
@@ -86,10 +86,10 @@ class DesignVar(object):
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
                 if self.output_descriptor[key]['out_name'] not in self.output_dict.keys():
-                    # init output dataframes with 'years' index
+                    # init output dataframes with index
                     index = self.output_descriptor[key]['index']
                     index_name = self.output_descriptor[key]['index_name']
-                    self.output_dict[out_name] = DataFrame({index_name: index}, index=index)
+                    self.output_dict[out_name] = DataFrame({index_name: index}).set_index(index_name)
 
                 col_name = self.output_descriptor[key]['key']
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
