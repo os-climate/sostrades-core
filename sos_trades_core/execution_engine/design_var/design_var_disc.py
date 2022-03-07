@@ -73,8 +73,10 @@ class DesignVarDiscipline(SoSDiscipline):
             if self._check_descriptor(output_descriptor):
                 if output_descriptor:
                     for key in output_descriptor.keys():
-                        dynamic_inputs[key] = {'type': output_descriptor[key]['type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_in']}
-                        dynamic_outputs[output_descriptor[key]['out_name']] = {'type': output_descriptor[key]['out_type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_out']}
+                        dynamic_inputs[key] = {'type': output_descriptor[key]['type'],
+                                               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_in']}
+                        dynamic_outputs[output_descriptor[key]['out_name']] = {
+                            'type': output_descriptor[key]['out_type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_out']}
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
@@ -139,13 +141,15 @@ class DesignVarDiscipline(SoSDiscipline):
         output_descriptor = self.get_sosdisc_inputs('output_descriptor')
 
         for key in output_descriptor.keys():
-            out_type = output_descriptor[key]['type']
+            out_type = output_descriptor[key]['out_type']
             out_name = output_descriptor[key]['out_name']
             if out_type == 'array':
-                self.set_partial_derivative(out_name, key, self.design.bspline_dict[key]['b_array'])
+                self.set_partial_derivative(
+                    out_name, key, self.design.bspline_dict[key]['b_array'])
             elif out_type == 'dataframe':
                 col_name = output_descriptor[key]['key']
-                self.set_partial_derivative_for_other_types((out_name, col_name), (key,), self.design.bspline_dict[key]['b_array'])
+                self.set_partial_derivative_for_other_types(
+                    (out_name, col_name), (key,), self.design.bspline_dict[key]['b_array'])
             elif out_type == 'float':
                 self.set_partial_derivative(out_name, key, np.array([1.]))
             else:
@@ -161,7 +165,8 @@ class DesignVarDiscipline(SoSDiscipline):
         test = True
 
         for key in output_descriptor.keys():
-            needed_keys = ['out_type', 'namespace_in', 'out_name', 'type', 'namespace_out']
+            needed_keys = ['out_type', 'namespace_in',
+                           'out_name', 'type', 'namespace_out']
             messages = [f'Supported output types are {self.OUT_TYPES}.',
                         'Please set the input namespace.',
                         'Please set output_name.',
@@ -171,7 +176,8 @@ class DesignVarDiscipline(SoSDiscipline):
             for n_key in needed_keys:
                 if n_key not in output_descriptor[key].keys():
                     test = False
-                    raise(ValueError(f'Discipline {self.name} output_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
+                    raise(ValueError(
+                        f'Discipline {self.name} output_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
                 else:
                     out_type = output_descriptor[key]['out_type']
                     if out_type == 'float':
@@ -179,8 +185,8 @@ class DesignVarDiscipline(SoSDiscipline):
                     elif out_type == 'array':
                         array_needs = ['index', 'index_name']
                         array_mess = [f'Please set an index describing the length of the output array of {key} (index is also used for post proc representations).',
-                                f'Please set an index name describing for the output array of {key} (index_name is also used for post proc representations).',
-                                ]
+                                      f'Please set an index name describing for the output array of {key} (index_name is also used for post proc representations).',
+                                      ]
                         for k in array_needs:
                             if k not in output_descriptor[key].keys():
                                 test = False
@@ -192,7 +198,7 @@ class DesignVarDiscipline(SoSDiscipline):
                             f'Please set an index to the output dataframe of {key} (index is also used for post proc representations).',
                             f'Please set an index name to the output dataframe of {key} (index_name is also used for post proc representations).',
                             f'Please set a "key" name to the output dataframe of {key} (name of the column in which the output will be written).',
-                            ]
+                        ]
                         for k in dataframe_needs:
                             if k not in output_descriptor[key].keys():
                                 test = False
@@ -200,7 +206,8 @@ class DesignVarDiscipline(SoSDiscipline):
                                     ValueError(f'Discipline {self.name} output_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
                     else:
                         test = False
-                        raise (ValueError(f'Discipline {self.name} output_descriptor[{key}] out_type is not supported. Supported out_types are {self.OUT_TYPES}'))
+                        raise (ValueError(
+                            f'Discipline {self.name} output_descriptor[{key}] out_type is not supported. Supported out_types are {self.OUT_TYPES}'))
 
         return test
 
