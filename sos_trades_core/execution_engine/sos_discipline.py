@@ -255,7 +255,6 @@ class SoSDiscipline(MDODiscipline):
 
         # -- Sub-disciplines attributes
         self.built_sos_disciplines = []
-        self.sos_disciplines = None
         self.in_checkjac = False
         self.reset_sos_disciplines()
         # -- Maturity attribute
