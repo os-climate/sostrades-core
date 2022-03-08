@@ -194,6 +194,39 @@ class TestGridSearchEval(unittest.TestCase):
         print(f'Study executed with the samples: \n {doe_disc_samples}')
         print(f'Study generated the output: y_dict \n {y_dict}')
 
+        # CHANGE THE SELECTED INPUTS TO 2
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = False
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.f', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.g', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.h', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.j', ['selected_input']] = False
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.d', ['selected_input']] = False
+
+        dict_values = {
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.dm.get_value(['MyCase.GridSearch.eval_inputs'][0])
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        self.exec_eng.execute()
+
+        self.exec_eng.dm.get_value(['MyCase.GridSearch.eval_inputs'][0])
+
     def test_02_grid_search_shortest_name(self):
 
         sa_builder = self.exec_eng.factory.get_builder_from_process(
