@@ -78,7 +78,10 @@ class SoSMorphMatrixEval(SoSEval):
                                                        'namespace':  ('string',  None, False),
                                                        'output_variable_name': ('string',  None, True)},
                               'dataframe_edition_locked': False,
-                              'structuring': True}}
+                              'structuring': True},
+               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+               'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
+               }
 
     def __init__(self, sos_name, ee, cls_builder):
         '''
@@ -489,16 +492,17 @@ class SoSMorphMatrixEval(SoSEval):
         selected_scenario_df = activation_df[activation_df['selected_scenario'] == True].reset_index(
             drop=True)
         total_selected_scenario = selected_scenario_df.shape[0]
-
+        samples_to_evaluate = []
+        scenario_name_matching = {}
         for index, row in selected_scenario_df.iterrows():
-            self.ee.logger.info(
-                f'--> {index/total_selected_scenario:.1%} Done, running scenario {index+1}/{total_selected_scenario}: {row["scenario_name"]}')
-            output_list = deepcopy(
-                self.sample_evaluation(row[list(self.eval_input_dict.keys())].values, convert_to_array=False))
+            samples_to_evaluate.append(row[list(self.eval_input_dict.keys())].values)
+            scenario_name_matching["scenario_"+str(index+1)] = row['scenario_name']
 
+        evaluation_outputs = self.samples_evaluation(samples_to_evaluate, convert_to_array=False)
+
+        for (scenario_name, evaluated_samples) in evaluation_outputs.items():
             for i, output in enumerate(self.namespaced_eval_outputs.keys()):
-                output_dict[output][row['scenario_name']] = output_list[i]
-
+                output_dict[output][scenario_name_matching[scenario_name]] = evaluated_samples[1][i]
         return output_dict
 
     def run(self):

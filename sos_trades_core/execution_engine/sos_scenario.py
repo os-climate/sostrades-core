@@ -154,6 +154,10 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 if disc not in self.sos_disciplines:
                     self.ee.factory.add_discipline(disc)
 
+                # append added disciplines to built_sos_disciplines for disciplines cleaning
+                if disc not in self.built_sos_disciplines:
+                    self.built_sos_disciplines.append(disc)
+
             self.ee.factory.current_discipline = old_current_discipline
 
     def configure(self):
@@ -170,7 +174,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
-
     def is_configured(self):
         """
         Return False if at least one sub discipline needs to be configured, True if not

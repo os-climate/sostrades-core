@@ -19,35 +19,48 @@ Generate an optimization scenario
 """
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Opt with Func Manager',
+        'label': 'Core Test Sellar Opt with Design Var',
         'description': '',
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         '''
         default initialisation test
         '''
         # add disciplines Sellar
-        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sellar.'
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sellar_for_design_var.'
+
+        mod_func = 'sos_trades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_dv = 'sos_trades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline'
     
-        mod_func = 'sos_trades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline'
-    
-        mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
+        mods_dict = {'DesignVar': mod_dv,
+                     'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1',
-                     'FunctionManager': mod_func}
+                     'FunctionManager': mod_func,
+
+                     }
     
-        ns_dict = {'ns_functions': self.ee.study_name + '.' + 'SellarOptimScenario',
-                   'ns_optim': self.ee.study_name + '.' + 'SellarOptimScenario',
-    
-                   'ns_OptimSellar': self.ee.study_name + '.SellarOptimScenario'}
+        ns_dict = {'ns_optim': self.ee.study_name + '.SellarOptimScenario',
+                   'ns_OptimSellar': self.ee.study_name + '.SellarOptimScenario',
+                   'ns_functions': self.ee.study_name + '.SellarOptimScenario'
+                   }
+
         builder_list = self.create_builder_list(mods_dict, ns_dict=ns_dict)
+
+        # coupling
+        coupling_builder = self.ee.factory.create_builder_coupling("SellarCoupling")
+        coupling_builder.set_builder_info('cls_builder', builder_list)
+        # coupling_builder.set_builder_info('with_data_io', True)
+
         opt_builder = self.ee.factory.create_optim_builder(
-            'SellarOptimScenario', builder_list)
+            'SellarOptimScenario', [coupling_builder])
     
         return opt_builder
