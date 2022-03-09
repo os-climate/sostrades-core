@@ -546,10 +546,6 @@ class GridSearchEval(DoeEval):
                                                 'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
                                                     re.sub(r'_dict$', '', single_output))[0])['unit']}
 
-                                # pour chaque column de filtered_df --> Ajouter un clé output_info_dict--> {column_name=output_name: single output, unit: self.ee.dm.get_data(
-                                            # self.ee.dm.get_all_namespaces_from_var_name(chart[2][i])[0])['unit']
-                                # si la column_name exists déjà tu ne fais
-                                # rien
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
                                 elif len(output_df) == scenarii:
