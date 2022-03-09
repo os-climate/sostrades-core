@@ -28,7 +28,7 @@ from sos_trades_core.tools.post_processing.post_processing_tools import (
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
     InstantiatedPlotlyNativeChart,
 )
-
+from plotly.validators.scatter.marker import SymbolValidator
 
 '''
 Copyright 2022 Airbus SAS
@@ -743,14 +743,15 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 mode='markers',
-                                marker_symbol='x-thin',
+                                marker_symbol=SymbolValidator().values[SymbolValidator().values.index('x-thin')],
                                 marker=dict(
                                     size=5,
                                     color='dimGray',
-                                    # line=dict(
-                                    #     color='MediumPurple',
-                                    #     width=2,
-                                    # )
+                                    symbol='x-thin',
+                                    line=dict(
+                                        # color='MediumPurple',
+                                        width=2,
+                                    )
                                 ),
                                 visible=True,
                                 showlegend=False,
@@ -864,14 +865,14 @@ class GridSearchEval(DoeEval):
                                     y=y_data,
                                     # name=labels,
                                     mode='markers',
-                                    marker_symbol='x-thin',
+                                    marker_symbol=SymbolValidator().values[SymbolValidator().values.index('x-thin')],
                                     marker=dict(
                                         size=5,
                                         color='dimGray',
-                                        # line=dict(
-                                        #     color='MediumPurple',
-                                        #     width=2,
-                                        # )
+                                        line=dict(
+                                            # color='MediumPurple',
+                                            width=2,
+                                        )
                                     ),
                                     visible=visible,
                                     showlegend=False,
