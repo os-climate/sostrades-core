@@ -360,7 +360,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
                 default_in_dataframe.sort_values(
-                    by=['selected_input'], ascending=False),
+                    by=['selected_input'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
 
@@ -391,7 +391,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
                 default_dataframe.sort_values(
-                    by=['selected_input'], ascending=False),
+                    by=['selected_input'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
         # if eval input set for True value number_var>max_number_var
@@ -417,7 +417,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
                 default_dataframe.sort_values(
-                    by=['selected_input'], ascending=False),
+                    by=['selected_input'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
         else:
@@ -425,7 +425,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
                 eval_input_new_dm.sort_values(
-                    by=['selected_input'], ascending=False),
+                    by=['selected_input'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
 
@@ -434,7 +434,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_out_dataframe.sort_values(
-                    by=['selected_output'], ascending=False),
+                    by=['selected_output'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
 
@@ -453,7 +453,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_dataframe.sort_values(
-                    by=['selected_output'], ascending=False),
+                    by=['selected_output'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
         else:
@@ -461,7 +461,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 eval_output_new_dm.sort_values(
-                    by=['selected_output'], ascending=False),
+                    by=['selected_output'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
 
@@ -743,7 +743,8 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 mode='markers',
-                                marker_symbol=SymbolValidator().values[SymbolValidator().values.index('x-thin')],
+                                marker_symbol=SymbolValidator(
+                                ).values[SymbolValidator().values.index('x-thin')],
                                 marker=dict(
                                     size=5,
                                     color='dimGray',
@@ -865,7 +866,8 @@ class GridSearchEval(DoeEval):
                                     y=y_data,
                                     # name=labels,
                                     mode='markers',
-                                    marker_symbol=SymbolValidator().values[SymbolValidator().values.index('x-thin')],
+                                    marker_symbol=SymbolValidator(
+                                    ).values[SymbolValidator().values.index('x-thin')],
                                     marker=dict(
                                         size=5,
                                         color='dimGray',
