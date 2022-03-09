@@ -126,17 +126,23 @@ class GridSearchEval(DoeEval):
             if set(selected_inputs.tolist()) != set(self.selected_inputs):
                 selected_inputs_has_changed = True
                 self.selected_inputs = selected_inputs.tolist()
+                self.dm.set_data(
+                    f'{self.get_disc_full_name()}.eval_inputs',
+                    'value',
+                    eval_inputs.sort_values(
+                        by=['selected_input', 'full_name'], ascending=False).reset_index(drop=True),
+                    check_value=False,
+                )
+            if set(selected_outputs.tolist()) != set(self.selected_outputs):
+                self.dm.set_data(
+                    f'{self.get_disc_full_name()}.eval_outputs',
+                    'value',
+                    eval_outputs.sort_values(
+                        by=['selected_output', 'full_name'], ascending=False).reset_index(drop=True),
+                    check_value=False,
+                )
             self.selected_outputs = selected_outputs.tolist()
-            # select inputs till  maximum selected input number
-            # selected_inputs_full = [self.conversion_short_full[val]
-            #                         for val in list(selected_inputs) if val in self.conversion_short_full.keys()]
-            # selected_outputs_full = [self.conversion_short_full[val]
-            # for val in list(selected_outputs) if val in
-            # self.conversion_short_full.keys()]
 
-            # self.selected_inputs = selected_inputs_full[
-            #     : self.max_inputs_nb]
-            # self.selected_outputs = selected_outputs_full
             self.selected_inputs = self.selected_inputs[: self.max_inputs_nb]
             selected_inputs_short = selected_inputs_short[: self.max_inputs_nb]
             self.set_eval_in_out_lists(
@@ -325,31 +331,20 @@ class GridSearchEval(DoeEval):
             self.conversion_full_short[val] for val in possible_out_values_full
         ]
 
-        # possible_in_values_short = list(set(possible_in_values_short))
-        # possible_out_values_short = list(set(possible_out_values_short))
-
-        # possible_in_values_short.sort()
-        # possible_out_values_short.sort()
-
-        # default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full_short],
-        #                                      'full_name': possible_in_values_full_short})
-        # default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full_short],
-        #                                       'full_name': possible_out_values_full_short})
-
         default_in_dataframe = pd.DataFrame(
             {
                 'selected_input': [False for invar in possible_in_values_full],
                 'shortest_name': possible_in_values_short,
                 'full_name': possible_in_values_full,
             }
-        ).sort_values(by=['selected_input'], ascending=False)
+        )
         default_out_dataframe = pd.DataFrame(
             {
                 'selected_output': [False for invar in possible_out_values_full],
                 'shortest_name': possible_out_values_short,
                 'full_name': possible_out_values_full,
             }
-        ).sort_values(by=['selected_output'], ascending=False)
+        )
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
@@ -359,8 +354,7 @@ class GridSearchEval(DoeEval):
             self.dm.set_data(
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
-                default_in_dataframe.sort_values(
-                    by=['selected_input'], ascending=False).reset_index(drop=True),
+                default_in_dataframe,
                 check_value=False,
             )
 
@@ -390,8 +384,7 @@ class GridSearchEval(DoeEval):
             self.dm.set_data(
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
-                default_dataframe.sort_values(
-                    by=['selected_input'], ascending=False).reset_index(drop=True),
+                default_dataframe,
                 check_value=False,
             )
         # if eval input set for True value number_var>max_number_var
@@ -416,16 +409,7 @@ class GridSearchEval(DoeEval):
             self.dm.set_data(
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
-                default_dataframe.sort_values(
-                    by=['selected_input'], ascending=False).reset_index(drop=True),
-                check_value=False,
-            )
-        else:
-            self.dm.set_data(
-                f'{self.get_disc_full_name()}.eval_inputs',
-                'value',
-                eval_input_new_dm.sort_values(
-                    by=['selected_input'], ascending=False).reset_index(drop=True),
+                default_dataframe,
                 check_value=False,
             )
 
@@ -453,14 +437,6 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_dataframe.sort_values(
-                    by=['selected_output'], ascending=False).reset_index(drop=True),
-                check_value=False,
-            )
-        else:
-            self.dm.set_data(
-                f'{self.get_disc_full_name()}.eval_outputs',
-                'value',
-                eval_output_new_dm.sort_values(
                     by=['selected_output'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
