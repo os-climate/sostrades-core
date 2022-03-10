@@ -50,7 +50,7 @@ class DesignVarDiscipline(SoSDiscipline):
     OUT_TYPES = ['float', 'array', 'dataframe']
 
     DESC_IN = {
-        'output_descriptor': {'type': 'dict', 'editable': False, 'structuring': True},
+        'output_descriptor': {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
         'design_space': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
         WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
         LOG_DVAR: {'type': 'bool', 'default': False, 'user_level': 3},

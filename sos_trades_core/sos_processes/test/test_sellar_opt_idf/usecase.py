@@ -27,9 +27,9 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
         sc_name = "SellarOptimScenario.SellarCoupling"
         dspace_dict = {'variable': ['x', 'z', 'y_01', 'y_02'],
-                       'value': [1., [5., 2.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -10., -10.],
-                       'upper_bnd': [10., [10., 10.], 10., 10.],
+                       'value': [[1.], [5., 2.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-10.], [-10.]],
+                       'upper_bnd': [[10.], [10., 10.], [10.], [10.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
 #                   'type' : ['float',['float','float'],'float','float']

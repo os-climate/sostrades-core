@@ -895,7 +895,7 @@ class SoSDiscipline(MDODiscipline):
         else:
             self.default_inputs = {}
             input_data = self.get_input_data_for_gems()
-            input_data = self._convert_float_into_array(input_data)
+            #input_data = self._convert_float_into_array(input_data)
             self.default_inputs = input_data
 
         if self.linearization_mode == self.COMPLEX_STEP:
@@ -914,7 +914,7 @@ class SoSDiscipline(MDODiscipline):
             self.exec_for_lin = True
             self.execute(input_data)
             self.exec_for_lin = False
-            self.local_data = self._convert_float_into_array(self.local_data)
+            #self.local_data = self._convert_float_into_array(self.local_data)
             force_no_exec = True
             need_execution_after_lin = False
 
@@ -958,7 +958,7 @@ class SoSDiscipline(MDODiscipline):
         if need_execution_after_lin:
             self.reset_statuses_for_run()
             self.execute(input_data)
-            self.local_data = self._convert_float_into_array(self.local_data)
+            #self.local_data = self._convert_float_into_array(self.local_data)
 
         return result
 
