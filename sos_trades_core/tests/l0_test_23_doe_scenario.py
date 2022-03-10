@@ -45,6 +45,13 @@ class TestSoSDOEScenario(unittest.TestCase):
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
 
+        dspace_dict_optim = {'variable': ['x', 'z', 'y_1', 'y_2'],
+                       'value': [[1.], [5., 2.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
+                       'enable_variable': [True, True, True, True],
+                       'activated_elem': [[True], [True, True], [True], [True]]}
+
         dspace_dict_eval = {'variable': ['x', 'z'],
 
                             'lower_bnd': [0., [-10., 0.]],
@@ -53,6 +60,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.dspace = pd.DataFrame(dspace_dict)
         self.dspace_eval = pd.DataFrame(dspace_dict_eval)
+        self.dspace_optim = pd.DataFrame(dspace_dict_optim)
+
 
         input_selection_local_dv_x = {'selected_input': [True, True, False, False, False],
                                       'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
@@ -113,7 +122,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -178,7 +187,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -247,7 +256,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
             # 'lhs', 'fullfact', ...
             disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-            disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+            disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
             disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
             disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
             # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -321,7 +330,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "fullfact"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -401,7 +410,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -454,7 +463,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = 100
         # 'lhs', 'fullfact', ...
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "lhs"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -498,9 +507,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [2., [2., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[2.], [2., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         #                   'type' : ['float',['float','float'],'float','float']
@@ -552,9 +561,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         factory = exec_eng.factory
 
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 2.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 2.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
         #                   'type' : ['float',['float','float'],'float','float']
@@ -577,7 +586,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
         disc_dict[f'{self.ns}.SellarDoeScenario.algo'] = "CustomDOE"
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
@@ -636,9 +645,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         print(self.sc_name)
 
         dspace_dict = {'variable': ['z', 'h'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         #                   'type' : ['float',['float','float'],'float','float']
@@ -751,7 +760,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         disc_dict[f'{self.ns}.SellarDoeScenario.n_samples'] = n_samples
 
-        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace
+        disc_dict[f'{self.ns}.SellarDoeScenario.design_space'] = self.dspace_optim
         disc_dict[f'{self.ns}.SellarDoeScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarDoeScenario.objective_name'] = 'obj'
         # disc_dict[f'{self.ns}.SellarDoeScenario.ineq_constraints'] = [f'c_1', f'c_2']
