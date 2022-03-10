@@ -81,7 +81,9 @@ class DesignVar(object):
             out_type = self.output_descriptor[key]['out_type']
 
             if out_type == 'float':
-                self.output_dict[out_name] = inputs_dict[key]
+                if inputs_dict[key].size != 1:
+                    raise ValueError(" The input must be of size 1 for a float output")
+                self.output_dict[out_name] = inputs_dict[key][0]
             elif out_type == 'array':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
@@ -94,4 +96,4 @@ class DesignVar(object):
                 col_name = self.output_descriptor[key]['key']
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
             else:
-                raise(ValueError('Output type not yet supported'))
+                raise (ValueError('Output type not yet supported'))
