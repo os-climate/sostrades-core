@@ -30,9 +30,9 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
         sc_name = "SellarOptimScenario"
         dspace_dict = {'variable': ['y_2', 'y_1'],
-                       'value': [6., 6.],
-                       'lower_bnd': [0., 0.],
-                       'upper_bnd': [10., 10.],
+                       'value': [[6.], [6.]],
+                       'lower_bnd': [[0.], [0.]],
+                       'upper_bnd': [[10.], [10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
 #                   'type' : ['float',['float','float'],'float','float']
