@@ -30,6 +30,9 @@ from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plo
 )
 from plotly.validators.scatter.marker import SymbolValidator
 
+from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
+    OntologyDataConnector)
+
 '''
 Copyright 2022 Airbus SAS
 
@@ -79,6 +82,7 @@ class GridSearchEval(DoeEval):
                 'selected_input': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),
             },
             'dataframe_edition_locked': False,
             'structuring': True,
@@ -89,6 +93,7 @@ class GridSearchEval(DoeEval):
                 'selected_output': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),
             },
             'dataframe_edition_locked': False,
             'structuring': True,
@@ -324,12 +329,34 @@ class GridSearchEval(DoeEval):
         self.generate_shortest_name(list(set(possible_in_values_full)))
         self.generate_shortest_name(list(set(possible_out_values_full)))
 
+        # possible_in_values_short = [
+        #     self.conversion_full_short[val] for val in possible_in_values_full
+        # ]
+        # possible_out_values_short = [
+        #     self.conversion_full_short[val] for val in possible_out_values_full
+        # ]
+
+        # ontology name
+        ontology_connector = OntologyDataConnector()
+        data_connection = {
+            'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+        }
+        inputs_val_list = [val.split('.')[-1]
+                           for val in possible_in_values_full]
+        outputs_val_list = [val.split('.')[-1]
+                            for val in possible_out_values_full]
+        args = inputs_val_list + outputs_val_list
+        ontology_connector.set_connector_request(
+            data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
+        conversion_full_ontology = ontology_connector.load_data(
+            data_connection)
+
         possible_in_values_short = [
-            self.conversion_full_short[val] for val in possible_in_values_full
-        ]
+            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+        # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = [
-            self.conversion_full_short[val] for val in possible_out_values_full
-        ]
+            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
+        # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(
             {
