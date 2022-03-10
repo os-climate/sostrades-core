@@ -91,7 +91,7 @@ class DesignVar(object):
                     # init output dataframes with index
                     index = self.output_descriptor[key]['index']
                     index_name = self.output_descriptor[key]['index_name']
-                    self.output_dict[out_name] = DataFrame({index_name: index}).set_index(index_name)
+                    self.output_dict[out_name] = DataFrame({index_name: index})
 
                 col_name = self.output_descriptor[key]['key']
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
