@@ -18,17 +18,19 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for optimization scenario
 """
 
-import unittest
-from numpy import array, set_printoptions
-import pandas as pd
-from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sos_trades_core.sos_processes.test.test_sellar_opt.usecase import Study as study_sellar_opt
-from sos_trades_core.sos_processes.test.test_Griewank_opt.usecase import Study as study_griewank
-from sos_trades_core.sos_processes.test.test_sellar_opt_idf.usecase import Study as study_sellar_idf
 import os
-from gemseo.core.mdo_scenario import MDOScenario
+import unittest
 from copy import deepcopy
+
+import pandas as pd
+from numpy import array, set_printoptions
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+from gemseo.core.mdo_scenario import MDOScenario
+from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+from sos_trades_core.sos_processes.test.test_Griewank_opt.usecase import Study as study_griewank
+from sos_trades_core.sos_processes.test.test_sellar_opt.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_idf.usecase import Study as study_sellar_idf
 
 
 class TestSoSOptimScenario(unittest.TestCase):
@@ -43,9 +45,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.c_name = "SellarCoupling"
 
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 2.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 2.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
 
@@ -65,7 +67,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -101,12 +103,13 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
         # XDSMize test
-#         exec_eng.root_process.xdsmize()
-        # to visualize in an internet browser :
-        # - download XDSMjs at https://github.com/OneraHub/XDSMjs and unzip
-        # - replace existing xdsm.json inside by yours
-        # - in the same folder, type in terminal 'python -m http.server 8080'
-        # - open in browser http://localhost:8080/xdsm.html
+
+    #         exec_eng.root_process.xdsmize()
+    # to visualize in an internet browser :
+    # - download XDSMjs at https://github.com/OneraHub/XDSMjs and unzip
+    # - replace existing xdsm.json inside by yours
+    # - in the same folder, type in terminal 'python -m http.server 8080'
+    # - open in browser http://localhost:8080/xdsm.html
 
     def test_02_optim_scenario_execution_mdf(self):
         print("\n Test 2 : Sellar optim solution check with MDF formulation")
@@ -120,7 +123,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -183,7 +186,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -248,16 +251,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -280,7 +283,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -326,16 +329,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -358,7 +361,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -407,14 +410,14 @@ class TestSoSOptimScenario(unittest.TestCase):
             exec_eng.configure()
 
             dspace_dict = {'variable': ['x', 'z'],
-                           'value': [1., [5., 2.]],
-                           'lower_bnd': [0., [-10., 0.]],
-                           'upper_bnd': [10., [10., 10.]],
+                           'value': [[1.], [5., 2.]],
+                           'lower_bnd': [[0.], [-10., 0.]],
+                           'upper_bnd': [[10.], [10., 10.]],
                            'enable_variable': [True, True],
                            'activated_elem': [[True], [True, True]]}
             dspace = pd.DataFrame(dspace_dict)
 
-            #-- set up disciplines in Scenario
+            # -- set up disciplines in Scenario
             disc_dict = {}
             # Optim inputs
             disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -443,7 +446,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                             1., 1.])
+                1., 1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
             exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -488,16 +491,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -517,11 +520,11 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -561,16 +564,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [2., [2., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[2.], [2., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -590,7 +593,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         2., 2.])
+            2., 2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-9
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -670,16 +673,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [2., [2., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[2.], [2., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -700,7 +703,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         2., 2.])
+            2., 2.])
 
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -711,7 +714,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         computed_jac = exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].jac
 
         self.assertListEqual(sorted(list(computed_jac.keys())), sorted([
-                             f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))
+            f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))
 
     def test_10_update_dspace(self):
 
@@ -726,14 +729,14 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.configure()
 
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 12.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 12.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -763,9 +766,9 @@ class TestSoSOptimScenario(unittest.TestCase):
             pass
 
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 5.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 5.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
         dspace = pd.DataFrame(dspace_dict)
@@ -783,7 +786,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         dspace = deepcopy(uc_cls.execution_engine.dm.get_value(
             f'{uc_cls.study_name}.SellarOptimScenario.design_space'))
-        dspace['value'] = [1., [5., 12.], 1., 1.]
+        dspace['value'] = [[1.], [5., 12.], [1.], [1.]]
 
         values_dict = {
             f'{uc_cls.study_name}.SellarOptimScenario.design_space': dspace}
@@ -794,7 +797,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         except:
             dspace = deepcopy(uc_cls.execution_engine.dm.get_value(
                 f'{uc_cls.study_name}.SellarOptimScenario.design_space'))
-            dspace['value'] = [1., [5., 5.], 1., 1.]
+            dspace['value'] = [[1.], [5., 5.], [1.], [1.]]
 
             values_dict = {
                 f'{uc_cls.study_name}.SellarOptimScenario.design_space': dspace}
@@ -815,16 +818,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
@@ -846,7 +849,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -872,7 +875,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check that design space in GEMS contains the optimal value (not last
         # iteration)
         assert_array_almost_equal(
-            opt_disc.formulation.design_space.get_current_x(), opt_array, err_msg="design space does not have optimal value")
+            opt_disc.formulation.design_space.get_current_x(), opt_array,
+            err_msg="design space does not have optimal value")
 
         # check that in dm we have xopt value
         z = exec_eng.dm.get_value(f'{self.ns}.{self.sc_name}.{self.c_name}.z')
@@ -899,16 +903,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2., 3.]],
-                       'lower_bnd': [0., [-10., 0., 0.]],
-                       'upper_bnd': [10., [10., 10., 10.]],
+                       'value': [[1.], [5., 2., 3.]],
+                       'lower_bnd': [[0.], [-10., 0., 0.]],
+                       'upper_bnd': [[10.], [10., 10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True, False]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
@@ -930,7 +934,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -1007,16 +1011,16 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2., 3.]],
-                       'lower_bnd': [0., [-10., 0., 0.]],
-                       'upper_bnd': [10., [10., 10., 10.]],
+                       'value': [[1.], [5., 2., 3.]],
+                       'lower_bnd': [[0.], [-10., 0., 0.]],
+                       'upper_bnd': [[10.], [10., 10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True, False]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 10
@@ -1039,7 +1043,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
 
@@ -1079,7 +1083,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
-                                                                         1., 1.])
+            1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.dm.set_values_from_dict(values_dict)
         disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = True
