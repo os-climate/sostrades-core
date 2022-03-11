@@ -880,9 +880,10 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_recursive(self.STATUS_DONE)
 
         self.__check_nan_in_data(result)
+        # for disc in self.sos_disciplines:
+        #     self.local_data.update(disc.local_data)
+        #self.update_dm_with_local_data()
 
-        for disc in self.sos_disciplines:
-            self.local_data.update(disc.local_data)
         return result
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
