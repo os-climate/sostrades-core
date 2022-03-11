@@ -44,6 +44,48 @@ from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 
+class SemMock():
+    """ Mock class to override semaphore behaviour into MDODiscipline class"""
+
+    def __init__(self, initial_value):
+        """ Default contructor
+
+            :params: initial semaphore mock value
+            :type: int
+
+        """
+        self.__value = initial_value
+
+    def __enter__(self):
+        """ Context manager entry point methods
+
+            It makes the class works using 'with' statments
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """ Context manager exit point methods
+
+            call when exited 'with' statment
+        """
+        pass
+
+    def get_lock(self):
+        """ Semaphore main behaviour methods
+        """
+        return self
+
+    @property
+    def value(self):
+        """ Semaphore value accessor """
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        """ Semaphore value accessor """
+        self.__value = value
+
+
 class SoSDisciplineException(Exception):
     pass
 
@@ -145,6 +187,8 @@ class SoSDiscipline(MDODiscipline):
     POS_IN_MODE = ['value', 'list', 'dict']
 
     # -- status section
+    STATUS_CONFIGURE = 'CONFIGURE'
+    STATUS_LINEARIZE = 'LINEARIZE'
 
     # -- Maturity section
     possible_maturities = [
@@ -186,6 +230,13 @@ class SoSDiscipline(MDODiscipline):
     def _reload(self, sos_name, ee):
         ''' reload object, eventually with coupling_namespace
         '''
+
+        # ------------DEBUG VARIABLES----------------------------------------
+        self.nan_check = False
+        self.check_if_input_change_after_run = False
+        self.check_linearize_data_changes = False
+        self.check_min_max_gradients = False
+        # ----------------------------------------------------
 
         # -- Base disciplinary attributes
         self.jac_boundaries = {}
@@ -529,7 +580,7 @@ class SoSDiscipline(MDODiscipline):
 
     def set_numerical_parameters(self):
         '''
-        Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN 
+        Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN
         '''
         self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
         cache_type = self.get_sosdisc_inputs('cache_type')
@@ -607,7 +658,7 @@ class SoSDiscipline(MDODiscipline):
         self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
-        '''Get namespace reference by consulting the namespace_manager 
+        '''Get namespace reference by consulting the namespace_manager
         '''
         ns_manager = self.ee.ns_manager
 
@@ -844,6 +895,7 @@ class SoSDiscipline(MDODiscipline):
         else:
             self.default_inputs = {}
             input_data = self.get_input_data_for_gems()
+            #input_data = self._convert_float_into_array(input_data)
             self.default_inputs = input_data
 
         if self.linearization_mode == self.COMPLEX_STEP:
@@ -862,6 +914,7 @@ class SoSDiscipline(MDODiscipline):
             self.exec_for_lin = True
             self.execute(input_data)
             self.exec_for_lin = False
+            #self.local_data = self._convert_float_into_array(self.local_data)
             force_no_exec = True
             need_execution_after_lin = False
 
@@ -905,9 +958,86 @@ class SoSDiscipline(MDODiscipline):
         if need_execution_after_lin:
             self.reset_statuses_for_run()
             self.execute(input_data)
-
+            #self.local_data = self._convert_float_into_array(self.local_data)
 
         return result
+
+    def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
+                       step=1e-7, threshold=1e-8, linearization_mode='auto',
+                       inputs=None, outputs=None, parallel=False,
+                       n_processes=MDODiscipline.N_CPUS,
+                       use_threading=False, wait_time_between_fork=0,
+                       auto_set_step=False, plot_result=False,
+                       file_path="jacobian_errors.pdf",
+                       show=False, figsize_x=10, figsize_y=10, input_column=None, output_column=None,
+                       dump_jac_path=None, load_jac_path=None):
+        """
+        Overload check jacobian to execute the init_execution
+        """
+
+        self.init_execution()
+
+        # if dump_jac_path is provided, we trigger GEMSEO dump
+        if dump_jac_path is not None:
+            reference_jacobian_path = dump_jac_path
+            save_reference_jacobian = True
+        # if dump_jac_path is provided, we trigger GEMSEO dump
+        elif load_jac_path is not None:
+            reference_jacobian_path = load_jac_path
+            save_reference_jacobian = False
+        else:
+            reference_jacobian_path = None
+            save_reference_jacobian = False
+
+        approx = DisciplineJacApprox(
+            self,
+            derr_approx,
+            step,
+            parallel,
+            n_processes,
+            use_threading,
+            wait_time_between_fork,
+        )
+        if inputs is None:
+            inputs = self.get_input_data_names()
+        if outputs is None:
+            outputs = self.get_output_data_names()
+
+        if auto_set_step:
+            approx.auto_set_step(outputs, inputs, print_errors=True)
+
+        # Differentiate analytically
+        self.add_differentiated_inputs(inputs)
+        self.add_differentiated_outputs(outputs)
+        self.linearization_mode = linearization_mode
+        self.reset_statuses_for_run()
+        # Linearize performs execute() if needed
+        self.linearize(input_data)
+
+        if input_column is None and output_column is None:
+            indices = None
+        else:
+            indices = self._get_columns_indices(
+                inputs, outputs, input_column, output_column)
+
+        jac_arrays = {key_out: {key_in: value.toarray() for key_in, value in subdict.items()}
+                      for key_out, subdict in self.jac.items()}
+        o_k = approx.check_jacobian(
+            jac_arrays,
+            outputs,
+            inputs,
+            self,
+            threshold,
+            plot_result=plot_result,
+            file_path=file_path,
+            show=show,
+            figsize_x=figsize_x,
+            figsize_y=figsize_y,
+            reference_jacobian_path=reference_jacobian_path,
+            save_reference_jacobian=save_reference_jacobian,
+            indices=indices,
+        )
+        return o_k
 
     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
         """
@@ -945,9 +1075,152 @@ class SoSDiscipline(MDODiscipline):
 
         return indices
 
+    def _compute_jacobian(self, inputs=None, outputs=None):
+        """Over load of the GEMS function
+        Compute the analytic jacobian of a discipline/model
+        Check if the jacobian in compute_sos_jacobian is OK
 
+        :param inputs: linearization should be performed with respect
+            to inputs list. If None, linearization should
+            be performed wrt all inputs (Default value = None)
+        :param outputs: linearization should be performed on outputs list.
+            If None, linearization should be performed
+            on all outputs (Default value = None)
+        """
+        if self.check_linearize_data_changes:
+            disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
+        # Initialize all matrices to zeros
+        self._init_jacobian(inputs, outputs, with_zeros=True)
 
+        self.compute_sos_jacobian()
+        if self.check_linearize_data_changes:
+            disc_data_after_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
+            self.__check_discipline_data_integrity(disc_data_before_linearize,
+                                                   disc_data_after_linearize,
+                                                   'Discipline data integrity through compute_sos_jacobian')
+        if self.check_min_max_gradients:
+            self._check_min_max_gradients(self.jac)
+
+    def _init_jacobian(
+        self,
+        inputs=None,  # type:Optional[Iterable[str]]
+        outputs=None,  # type:Optional[Iterable[str]]
+        with_zeros=False,  # type: bool
+        fill_missing_keys=False,  # type: bool
+    ):  # type: (...) -> None
+        """
+        Overload of GEMSEO code to add sparse matrices to init jacobians,
+
+        Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
+
+        Args:
+            inputs: The inputs wrt the outputs are linearized.
+                If None,
+                the linearization should be performed wrt all inputs.
+            outputs: The outputs to be linearized.
+                If None,
+                the linearization should be performed on all outputs.
+                fill_missing_keys: if True, just fill the missing items
+            with_zeros: If True,
+                the matrices are set to zero
+                otherwise,
+                they are empty matrices.
+            fill_missing_keys: If True,
+                just fill the missing items with zeros/empty
+                but do not override the existing data.
+        """
+
+        if inputs is None:
+            inputs_names = self._differentiated_inputs
+        else:
+            inputs_names = inputs
+        inputs_vals = []
+        for diff_name in inputs_names:
+            inputs_vals.append(self.get_inputs_by_name(diff_name))
+
+        if outputs is None:
+            outputs_names = self._differentiated_outputs
+        else:
+            outputs_names = outputs
+        outputs_vals = []
+        for diff_name in outputs_names:
+            outputs_vals.append(self.get_outputs_by_name(diff_name))
+
+        if with_zeros:
+            # SoSTrades Modification
+            np_method = lil_matrix
+            # end of SoSTrades modification
+        else:
+            np_method = empty
+        if not fill_missing_keys:
+            # When a key is not in the default dict, ie a function is not in
+            # the Jacobian; return an empty defaultdict(None)
+            jac = defaultdict(default_dict_factory)
+            for out_n, out_v in zip(outputs_names, outputs_vals):
+                jac_loc = defaultdict(None)
+                jac[out_n] = jac_loc
+                # When a key is not in the default dict,
+                # ie a variable is not in the
+                # Jacobian; return a defaultdict(None)
+                for in_n, in_v in zip(inputs_names, inputs_vals):
+                    jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+            self.jac = jac
+        else:
+            jac = self.jac
+            # Only fill the missing sub jacobians
+            for out_n, out_v in zip(outputs_names, outputs_vals):
+                jac_loc = jac.get(out_n)
+                if jac_loc is None:
+                    jac_loc = defaultdict(None)
+                    jac[out_n] = jac_loc
+
+                for in_n, in_v in zip(inputs_names, inputs_vals):
+                    sub_jac = jac_loc.get(in_n)
+                    if sub_jac is None:
+                        jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+
+    def _check_min_max_gradients(self, jac):
+        '''Check of minimum and maximum jacobian values
+        '''
+
+        for out in jac:
+            for inp in self.jac[out]:
+                grad = self.jac[out][inp]
+                # avoid cases when gradient is not required
+                if grad.size > 0:
+                    d_name = self.get_disc_full_name()
+                    #                     cond_number = np.linalg.cond(grad)
+                    #                     if cond_number > 1e10 and not np.isinf(cond_number):
+                    #                         self.logger.info(
+                    # f'The Condition number of the jacobian dr {out} / dr {inp} is
+                    # {cond_number}')
+                    mini = np_min(grad)
+                    if mini < -1e4:
+                        self.logger.info(
+                            "in discipline <%s> : dr<%s> / dr<%s>: minimum gradient value is <%s>" % (
+                                d_name, out, inp, mini))
+
+                    maxi = np_max(grad)
+                    if maxi > 1e4:
+                        self.logger.info(
+                            "in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
+                                d_name, out, inp, maxi))
+
+    #                     grad_abs = np_abs(grad)
+    #                     low_grad_ind = where(grad_abs < 1e-4)[0]
+    #                     if low_grad_ind.size > 0 :
+    #                         self.logger.info(
+    #                             "in discipline <%s> : dr<%s> / dr<%s>: minimum abs gradient value is <%s>" % (d_name, out, inp, grad[low_grad_ind]))
+
+    def compute_sos_jacobian(self):
+        """Compute the analytic jacobian of a discipline/model
+
+        To be overloaded by sub classes.
+        if we need to compute the jacobian this class MUST be implemented else it will return a zeros matrix
+        """
+        raise NotImplementedError(
+            f'The discipline {self.get_disc_full_name()} has no compute_sos_jacobian function (if the jacobian is an empty matrix a pass is needed)')
 
     def set_partial_derivative(self, y_key, x_key, value):
         '''
@@ -1134,8 +1407,8 @@ class SoSDiscipline(MDODiscipline):
 
     def update_dm_with_local_data(self, local_data=None):
         '''
-        Update the DM with local data from GEMSEO 
-        First convert data into SoSTrades format then set values in the DM 
+        Update the DM with local data from GEMSEO
+        First convert data into SoSTrades format then set values in the DM
         '''
         if local_data is None:
             local_data = self.local_data
@@ -1273,8 +1546,8 @@ class SoSDiscipline(MDODiscipline):
         return variables
 
     def __filter_couplings_for_gems(self, io_type):
-        ''' 
-        Filter coupling before sending to GEMS 
+        '''
+        Filter coupling before sending to GEMS
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []
@@ -1396,6 +1669,17 @@ class SoSDiscipline(MDODiscipline):
                              " while re_exec_policy is : " +
                              str(self.re_exec_policy))
 
+    def _check_status(self, status):
+        """
+        Overload the gemseo.discipline _check_status method to take into
+        account our new status (CONFIGURE) and let the gemseo.discipline class make
+        its own assessment afterward
+
+        :param status: the status to check
+        :type status: string
+        """
+        if status not in [self.STATUS_CONFIGURE, self.STATUS_LINEARIZE]:
+            super()._check_status(status)
 
     # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
@@ -1524,7 +1808,7 @@ class SoSDiscipline(MDODiscipline):
 
     def _convert_df_into_array(
             self, var_df, values_list, metadata, keys, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
-        ''' 
+        '''
         Converts dataframe into array, and stores metada
         useful to build the dataframe afterwards
         '''
@@ -1561,7 +1845,7 @@ class SoSDiscipline(MDODiscipline):
 
     def _convert_float_into_array(
             self, var_dict):
-        ''' 
+        '''
         Check element type in var_dict, convert float or int into numpy array
             in order to deal with linearize issues in GEMS
         '''
@@ -1573,7 +1857,7 @@ class SoSDiscipline(MDODiscipline):
 
     def _convert_new_type_into_array(
             self, var_dict):
-        ''' 
+        '''
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
         '''
@@ -1853,7 +2137,7 @@ class SoSDiscipline(MDODiscipline):
         return nested_val
 
     def get_chart_filter_list(self):
-        """ Return a list of ChartFilter instance base on the inherited 
+        """ Return a list of ChartFilter instance base on the inherited
         class post processing filtering capabilities
 
         :return: ChartFilter[]
@@ -1872,15 +2156,28 @@ class SoSDiscipline(MDODiscipline):
 
         return []
 
+    def _init_shared_attrs(self):
+        """Initialize the shared attributes in multiprocessing.
+
+            This method is overriden because in case of huge amount of discipline
+            pre reserved semaphores (3 per class) in MDODiscipline class cause an out of memory
+            caused by the number of file descriptor allocated for those semaphore
+
+            A mock class is used to provide semaphore methods
+        """
+
+        self._n_calls = SemMock(0)
+        self._exec_time = SemMock(0)
+        self._n_calls_linearize = SemMock(0)
 
     def set_configure_status(self, is_configured):
-        """Set boolean is_configured which indicates if the discipline has been configured 
+        """Set boolean is_configured which indicates if the discipline has been configured
             to avoid several configuration in a multi-level process and save time """
 
         self._is_configured = is_configured
 
     def get_configure_status(self):
-        """Get boolean is_configured which indicates if the discipline has been configured 
+        """Get boolean is_configured which indicates if the discipline has been configured
             to avoid several configuration in a multi-level process and save time """
 
         if hasattr(self, '_is_configured'):
@@ -2011,7 +2308,7 @@ class SoSDiscipline(MDODiscipline):
         :type: list
 
         :params: output_var_list
-        :type: list        
+        :type: list
         """
 
         dict_infos_values = {}
