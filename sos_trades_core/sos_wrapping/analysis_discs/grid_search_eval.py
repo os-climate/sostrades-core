@@ -502,7 +502,6 @@ class GridSearchEval(DoeEval):
         output_df = None
         output_df_temp = None
 
-        output_origin_name = []
         # ''''''''only one output is considered today in the code
         # we take only the first output after the doe_sample_dataframe
         outputs_names_list = list(outputs_discipline_dict.keys())
@@ -523,31 +522,40 @@ class GridSearchEval(DoeEval):
 
                 if isinstance(output_df_dict, dict):
 
-                    if all(isinstance(ddict, dict) for ddict in output_df_dict.values()):
+                    if isinstance( list(output_df_dict.values())[0], dict):
                             # change from a dict of dicts to a dict of df
                         output_df_dict = {key: pd.DataFrame.from_records(
                             [output_df_dict[key]]) for key in output_df_dict}
 
-                    if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
+                    if (isinstance( list(output_df_dict.values())[0], pd.DataFrame)) and (len( list(output_df_dict.values())[0]) == 1):
 
-                        if all((len(df) == 1) for df in output_df_dict.values()):
+                        # we extract the columns of the dataframe of type float which will represents the possible outputs
+                        # we assume that all dataframes contains the same columns
+                        # and only look at the first element
+                        
+                        #We select the outputs to plot at the first element
+                        # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
+                        filtered_name=[col for col in list(output_df_dict.values())[0].columns if ((list(output_df_dict.values())[0][col].dtype=='float') or (list(output_df_dict.values())[0][col][0]=='NA'))]
 
-                            # we extract the columns of the dataframe of type float which will represents the possible outputs
-                            # we assume that all dataframes contains the same columns
-                            # and only look at the first element
-                            # output_df_dict = output_df_dict[list(output_df_dict.keys())[1]]
+                        if len(filtered_name)>0 :
+                            
+                            #to delete the outputs values that are nan or 'NA'
+                            for col in filtered_name:
+                                if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all(('NA' in list(output_df_dict.values())[i][col]) for i in range(scenarii)):
+                                    filtered_name.remove(col)
+                            
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
+                                filtered_df=filtered_df[filtered_name]
                                 filtered_df['scenario'] = f'{scenario}'
                                 filtered_df.replace('NA', np.nan, inplace=True)
-
-                                for name, value_df in filtered_df.items():
-                                    if value_df.dtype == 'float':
-                                        if name not in list(output_info_dict.keys()):
-                                            output_info_dict[name] = {
-                                                'output_info_name': re.sub(r'_dict$', '', single_output),
-                                                'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
-                                                    re.sub(r'_dict$', '', single_output))[0])['unit']}
+                                
+                                for name in filtered_name:
+                                    if name not in list(output_info_dict.keys()):
+                                        output_info_dict[name] = {
+                                            'output_info_name': re.sub(r'_dict$', '', single_output),
+                                            'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
+                                                re.sub(r'_dict$', '', single_output))[0])['unit']}
 
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
@@ -572,6 +580,8 @@ class GridSearchEval(DoeEval):
                                     if col not in output_df:
                                         output_df.merge(
                                             output_df_temp[['scenario', col]], on='scenario', how='left')
+                                output_df_temp=None
+
 
             output_df.replace('NA', np.nan, inplace=True)
             output_variables = output_df.select_dtypes(
@@ -584,8 +594,7 @@ class GridSearchEval(DoeEval):
                     inputs_combin, output_variables)
             )
             # retrieve z variable name by removing _dict from the output name
-            # output_origin_name = re.sub(
-            #     r'_dict$', '', single_output)
+
             chart_list = [list(chart_tuple) + [output_info_dict[chart_tuple[1]]['output_info_name']] + [output_info_dict[chart_tuple[1]]['unit']]
                           for chart_tuple in chart_tuples]
             full_chart_list += chart_list
@@ -653,8 +662,8 @@ class GridSearchEval(DoeEval):
         inputs_dict = self.get_sosdisc_inputs()
         chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
-
         chart_list = list(chart_dict.keys())
+
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
 
@@ -817,7 +826,7 @@ class GridSearchEval(DoeEval):
                             y_max = max(y_data)
 
                             # Initialization Slider
-                            if slide_value == slider_values[0]:
+                            if slide_value == slider_values[-1]:
                                 visible = True
                             else:
                                 visible = False
