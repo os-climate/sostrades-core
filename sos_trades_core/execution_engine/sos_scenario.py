@@ -327,7 +327,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         else:
             self.run_scenario()
-
+        outputs = [discipline.get_output_data() for discipline in self.sos_disciplines]
+        for data in outputs:
+            self.local_data.update(data)
         # store local data in datamanager
         self.update_dm_with_local_data()
 
