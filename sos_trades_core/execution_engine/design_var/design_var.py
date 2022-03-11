@@ -16,6 +16,7 @@ limitations under the License.
 from numpy import arange
 from pandas import DataFrame, Series
 from sos_trades_core.tools.bspline.bspline import BSpline
+from copy import deepcopy
 
 import numpy as np
 
@@ -97,3 +98,26 @@ class DesignVar(object):
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
             else:
                 raise (ValueError('Output type not yet supported'))
+
+
+    # def update_design_space_out(self):
+    #     """
+    #     Method to update design space with opt value
+    #     """
+    #     design_space = deepcopy(self.output_descriptor)
+    #     l_variables = design_space[self.VARIABLES]
+    #     for var in l_variables:
+    #         full_name_var = self.get_full_names([var])[0]
+    #         if full_name_var in self.activated_variables:
+    #             value_x_opt = list(self.formulation.design_space._current_x.get(
+    #                 full_name_var))
+    #             if self.dict_desactivated_elem[full_name_var] != {}:
+    #                 # insert a desactivated element
+    #                 value_x_opt.insert(
+    #                     self.dict_desactivated_elem[full_name_var]['position'],
+    #                     self.dict_desactivated_elem[full_name_var]['value'])
+    #
+    #             design_space.loc[design_space[self.VARIABLES] == var, self.VALUE] = pd.Series(
+    #                 [value_x_opt] * len(design_space))
+
+

@@ -99,8 +99,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                'eval_jac': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
                'execute_at_xopt': {'type': 'bool', 'default': True}}
 
-    DESC_OUT = {'design_space_out': {'type': 'dataframe'}
-                }
+
 
     def __init__(self, sos_name, ee, cls_builder):
         """
@@ -347,8 +346,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.opt_problem.evaluate_functions(
             eval_jac=eval_jac, normalize=False)
         # if eval mode design space was not modified
-        self.store_sos_outputs_values(
-            {'design_space_out': design_space}, update_dm=True)
+        # self.store_sos_outputs_values(
+        #     {'design_space_out': design_space}, update_dm=True)
 
     def _run_algorithm(self):
         """

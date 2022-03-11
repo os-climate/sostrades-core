@@ -97,7 +97,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
     DESC_IN.update(SoSScenario.DESC_IN)
 
     DESC_OUT = {}
-    DESC_OUT.update(SoSScenario.DESC_OUT)
+    #DESC_OUT.update(SoSScenario.DESC_OUT)
 
     def __init__(self, sos_name, ee, cls_builder):
         """
@@ -188,7 +188,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
         Post run is possible if execute_at_xopt is activated
         '''
         MDOScenario._run(self)
-        self.update_design_space_out()
+        #self.update_design_space_out()
 
         self.execute_at_xopt()
 
@@ -197,8 +197,6 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
         trigger post run if execute at optimum is activated
         '''
         #
-        print('------ debug parallel ****')
-        print(self.ee.dm.get_all_namespaces_from_var_name('design_space_out'))
         execute_at_opt = self.get_sosdisc_inputs('execute_at_xopt')
 
         if execute_at_opt:
