@@ -881,6 +881,8 @@ class SoSDiscipline(MDODiscipline):
 
         self.__check_nan_in_data(result)
 
+        for disc in self.sos_disciplines:
+            self.local_data.update(disc.local_data)
         return result
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
