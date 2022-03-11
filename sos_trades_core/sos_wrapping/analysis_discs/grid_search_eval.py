@@ -522,34 +522,35 @@ class GridSearchEval(DoeEval):
 
                 if isinstance(output_df_dict, dict):
 
-                    if isinstance( list(output_df_dict.values())[0], dict):
+                    if isinstance(list(output_df_dict.values())[0], dict):
                             # change from a dict of dicts to a dict of df
                         output_df_dict = {key: pd.DataFrame.from_records(
                             [output_df_dict[key]]) for key in output_df_dict}
 
-                    if (isinstance( list(output_df_dict.values())[0], pd.DataFrame)) and (len( list(output_df_dict.values())[0]) == 1):
+                    if (isinstance(list(output_df_dict.values())[0], pd.DataFrame)) and (len(list(output_df_dict.values())[0]) == 1):
 
                         # we extract the columns of the dataframe of type float which will represents the possible outputs
                         # we assume that all dataframes contains the same columns
                         # and only look at the first element
-                        
-                        #We select the outputs to plot at the first element
-                        # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
-                        filtered_name=[col for col in list(output_df_dict.values())[0].columns if ((list(output_df_dict.values())[0][col].dtype=='float') or (list(output_df_dict.values())[0][col][0]=='NA'))]
 
-                        if len(filtered_name)>0 :
-                            
-                            #to delete the outputs values that are nan or 'NA'
+                        # We select the outputs to plot at the first element
+                        # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
+                        filtered_name = [col for col in list(output_df_dict.values())[0].columns if ((list(output_df_dict.values())[
+                            0][col].dtype == 'float') or (list(output_df_dict.values())[0][col][0] == 'NA'))]
+
+                        if len(filtered_name) > 0:
+
+                            # to delete the outputs values that are nan or 'NA'
                             for col in filtered_name:
-                                if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all(('NA' in list(output_df_dict.values())[i][col]) for i in range(scenarii)):
+                                if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all((list(output_df_dict.values())[i][col][0] == 'NA') for i in range(scenarii)):
                                     filtered_name.remove(col)
-                            
+
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
-                                filtered_df=filtered_df[filtered_name]
+                                filtered_df = filtered_df[filtered_name]
                                 filtered_df['scenario'] = f'{scenario}'
                                 filtered_df.replace('NA', np.nan, inplace=True)
-                                
+
                                 for name in filtered_name:
                                     if name not in list(output_info_dict.keys()):
                                         output_info_dict[name] = {
@@ -580,10 +581,9 @@ class GridSearchEval(DoeEval):
                                     if col not in output_df:
                                         output_df.merge(
                                             output_df_temp[['scenario', col]], on='scenario', how='left')
-                                output_df_temp=None
+                                output_df_temp = None
 
-
-            output_df.replace('NA', np.nan, inplace=True)
+            # output_df.replace('NA', np.nan, inplace=True)
             output_variables = output_df.select_dtypes(
                 include='float').columns.to_list()
 
