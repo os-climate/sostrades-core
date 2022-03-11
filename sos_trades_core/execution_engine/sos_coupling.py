@@ -220,6 +220,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if 'linear_solver_MDA' in self._data_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
+                if platform.system() == 'Windows':
+                    raise Exception(
+                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
@@ -236,6 +239,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if 'linear_solver_MDO' in self._data_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
+                if platform.system() == 'Windows':
+                    raise Exception(
+                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \

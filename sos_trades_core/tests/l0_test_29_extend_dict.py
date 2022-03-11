@@ -335,3 +335,35 @@ class TestExtendDict(unittest.TestCase):
             h_out['dataframe'],
             h_out_target['dataframe'],
             "Incorrect output 'h' sos_trades format")
+
+    def test_06_sosdiscipline_large_dict(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_test', self.name)
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc5dict.Disc5'
+        disc5_builder = exec_eng.factory.get_builder_from_module(
+            'Disc5', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(disc5_builder)
+
+        exec_eng.configure()
+
+        dict_multi = {f'key{i}': {'1': i + 1, '2': i + 2,
+                                  '3': i + 3, '4': i + 4} for i in range(500)}
+
+        values_dict = {f'{self.name}.dict_out': dict_multi,
+                       f'{self.name}.z': [3., 0.]}
+        exec_eng.dm.set_values_from_dict(values_dict)
+
+        exec_eng.execute()
+
+        # compare GEMS output with reference local data (GEMS format)
+        target_localdata = {'EE.dict_out': [0.5, 0.5, 8.0, 0.0, 1.0, 3.0, 1.0, 2.0, 0.5, 5.0, 10.0], 'EE.z': [
+            3.0, 0.0], 'EE.h': [0.0, 0.75, 1.0, 0.75]}
+
+
+if '__main__' == __name__:
+    cls = TestExtendDict()
+    cls.setUp()
+    cls.test_06_sosdiscipline_large_dict()
