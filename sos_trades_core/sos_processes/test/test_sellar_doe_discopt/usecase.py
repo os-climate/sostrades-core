@@ -28,9 +28,9 @@ class Study(StudyManager):
         sc_name = "SellarDoeScenario"
         c_name = "SellarCoupling"
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
 #                   'type' : ['float',['float','float'],'float','float']

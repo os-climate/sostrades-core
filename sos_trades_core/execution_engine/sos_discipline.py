@@ -880,6 +880,9 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_recursive(self.STATUS_DONE)
 
         self.__check_nan_in_data(result)
+        # for disc in self.sos_disciplines:
+        #     self.local_data.update(disc.local_data)
+        #self.update_dm_with_local_data()
 
         return result
 
@@ -895,7 +898,7 @@ class SoSDiscipline(MDODiscipline):
         else:
             self.default_inputs = {}
             input_data = self.get_input_data_for_gems()
-            input_data = self._convert_float_into_array(input_data)
+            #input_data = self._convert_float_into_array(input_data)
             self.default_inputs = input_data
 
         if self.linearization_mode == self.COMPLEX_STEP:
@@ -914,7 +917,7 @@ class SoSDiscipline(MDODiscipline):
             self.exec_for_lin = True
             self.execute(input_data)
             self.exec_for_lin = False
-            self.local_data = self._convert_float_into_array(self.local_data)
+            #self.local_data = self._convert_float_into_array(self.local_data)
             force_no_exec = True
             need_execution_after_lin = False
 
@@ -958,7 +961,7 @@ class SoSDiscipline(MDODiscipline):
         if need_execution_after_lin:
             self.reset_statuses_for_run()
             self.execute(input_data)
-            self.local_data = self._convert_float_into_array(self.local_data)
+            #self.local_data = self._convert_float_into_array(self.local_data)
 
         return result
 
@@ -1947,73 +1950,68 @@ class SoSDiscipline(MDODiscipline):
     # -- coupling variables handling
     def _convert_array_into_dict(self, arr_to_convert, new_data, val_datalist):
         # convert list into dict using keys from dm.data_dict
+
         if len(val_datalist) == 0:
             # means the dictionary is empty or None
             return {}
         else:
-            metadata = val_datalist.pop(0)
+            while len(val_datalist) != 0:
+                metadata = val_datalist.pop(0)
+                _type = metadata['type']
+                _keys = metadata['key']
 
-        _type = metadata['type']
-        _keys = metadata['key']
+                nested_keys = _keys[:-1]
+                to_update = self.__get_nested_val(new_data, nested_keys)
+                _key = _keys[-1]
+                # dictionaries
 
-        nested_keys = _keys[:-1]
-        to_update = self.__get_nested_val(new_data, nested_keys)
-        _key = _keys[-1]
-        # dictionaries
-        if _type == dict:
-            to_update[_key] = {}
-            self._convert_array_into_dict(
-                arr_to_convert, new_data, val_datalist)
-        # DataFrames
-        elif _type == DataFrame:
-            _df = self._convert_array_into_df(arr_to_convert, metadata)
-            to_update[_key] = _df
-            _size = metadata['size']
-            arr_to_convert = delete(arr_to_convert, arange(_size))
-            if len(val_datalist) > 0:
-                self._convert_array_into_dict(
-                    arr_to_convert, new_data, val_datalist)
-        # int, float, or complex
-        elif _type in [int, float, np_int32, np_int64, np_float64, np_complex128, bool]:
-            _val = arr_to_convert[0]
-            arr_to_convert = delete(arr_to_convert, [0])
-            to_update[_key] = _type(_val)
-            if len(val_datalist) > 0:
-                self._convert_array_into_dict(
-                    arr_to_convert, new_data, val_datalist)
-        # numpy array or list
-        elif _type in [list, ndarray]:
-            _shape = metadata['shape']
-            _size = metadata['size']
-            _arr = arr_to_convert[:_size]
-            _arr = _arr.reshape(_shape)
-            if _type == list:
-                _arr = _arr.tolist()
-            if 'known_values' in metadata:
-                # Means that we have a string somewhere in the list or array
-                for index_arr, metadata_ind in metadata['known_values'].items():
-                    int_value = int(_arr[index_arr])
-                    _arr[index_arr] = next((strg for strg, int_to_convert in metadata_ind['known_values'].items(
-                    ) if int_to_convert == int_value), None)
+                if _type == dict:
+                    to_update[_key] = {}
+                    self._convert_array_into_dict(
+                        arr_to_convert, new_data, val_datalist)
+                # DataFrames
+                elif _type == DataFrame:
+                    _df = self._convert_array_into_df(arr_to_convert, metadata)
+                    to_update[_key] = _df
+                    _size = metadata['size']
+                    arr_to_convert = delete(arr_to_convert, arange(_size))
 
-            arr_to_convert = delete(arr_to_convert, arange(_size))
+                # int, float, or complex
+                elif _type in [int, float, np_int32, np_int64, np_float64, np_complex128, bool]:
+                    _val = arr_to_convert[0]
+                    arr_to_convert = delete(arr_to_convert, [0])
+                    to_update[_key] = _type(_val)
 
-            to_update[_key] = _arr
-            if len(val_datalist) > 0:
-                self._convert_array_into_dict(
-                    arr_to_convert, new_data, val_datalist)
-        elif _type == str:
-            to_convert = arr_to_convert[0]
-            arr_to_convert = delete(arr_to_convert, [0])
-            _val = next((strg for strg, int_to_convert in metadata['known_values'].items(
-            ) if int_to_convert == to_convert), None)
-            to_update[_key] = _type(_val)
-            if len(val_datalist) > 0:
-                self._convert_array_into_dict(
-                    arr_to_convert, new_data, val_datalist)
-        else:
-            raise Exception(
-                f'The type {_type} in the dict {arr_to_convert} is not taken into account')
+                # numpy array or list
+                elif _type in [list, ndarray]:
+                    _shape = metadata['shape']
+                    _size = metadata['size']
+                    _arr = arr_to_convert[:_size]
+                    _arr = _arr.reshape(_shape)
+                    if _type == list:
+                        _arr = _arr.tolist()
+                    if 'known_values' in metadata:
+                        # Means that we have a string somewhere in the list or
+                        # array
+                        for index_arr, metadata_ind in metadata['known_values'].items():
+                            int_value = int(_arr[index_arr])
+                            _arr[index_arr] = next((strg for strg, int_to_convert in metadata_ind['known_values'].items(
+                            ) if int_to_convert == int_value), None)
+
+                    arr_to_convert = delete(arr_to_convert, arange(_size))
+
+                    to_update[_key] = _arr
+
+                elif _type == str:
+                    to_convert = arr_to_convert[0]
+                    arr_to_convert = delete(arr_to_convert, [0])
+                    _val = next((strg for strg, int_to_convert in metadata['known_values'].items(
+                    ) if int_to_convert == to_convert), None)
+                    to_update[_key] = _type(_val)
+
+                else:
+                    raise Exception(
+                        f'The type {_type} in the dict {arr_to_convert} is not taken into account')
         return to_update
 
     def _convert_array_into_df(self, arr_to_convert, metadata, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):

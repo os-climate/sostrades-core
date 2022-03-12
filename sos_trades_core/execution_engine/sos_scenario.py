@@ -17,18 +17,18 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 from copy import deepcopy
-from numpy import array, ndarray, delete
 from multiprocessing import cpu_count
+
 import pandas as pd
+from numpy import array, ndarray, delete
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.scenario import Scenario
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-
-from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sos_trades_core.execution_engine.data_manager import POSSIBLE_VALUES
+from sos_trades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
+from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 
 
 class SoSScenario(SoSDisciplineBuilder, Scenario):
@@ -81,8 +81,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
-               'algo_options': {'type': 'dict',  'dataframe_descriptor': {VARIABLES: ('string', None, False),
-                                                                          VALUES: ('string', None, True)},
+               'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+                                                                         VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
                                 'structuring': True},
                PARALLEL_OPTIONS: {'type': 'dict',  # SoSDisciplineBuilder.OPTIONAL: True,
@@ -120,12 +120,12 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.OBJECTIVE_NAME = 'objective_name'
         self.FORMULATION_OPTIONS = 'formulation_options'
 
-#        self.SEARCH_PATHS = 'search_paths'
+        #        self.SEARCH_PATHS = 'search_paths'
         self.SCENARIO_MANDATORY_FIELDS = [
             self.DESIGN_SPACE,
             self.FORMULATION,
             self.OBJECTIVE_NAME]
-#            self.SEARCH_PATHS]
+        #            self.SEARCH_PATHS]
         self.OPTIMAL_OBJNAME_SUFFIX = "opt"
         self.dict_desactivated_elem = {}
         self.activated_variables = []
@@ -174,11 +174,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
+
     def is_configured(self):
         """
         Return False if at least one sub discipline needs to be configured, True if not
         """
-        return self.get_configure_status() and not self.check_structuring_variables_changes() and (self.get_disciplines_to_configure() == [])
+        return self.get_configure_status() and not self.check_structuring_variables_changes() and (
+                    self.get_disciplines_to_configure() == [])
 
     def setup_sos_disciplines(self):
         """
@@ -236,10 +238,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
+            if any(type(design_variable).__name__ not in ['array', 'list'] for design_variable in
+                   dspace['value'].tolist()):
+                raise ValueError('A design variable must obligatory be an array')
+
             # build design space
             design_space = self.set_design_space()
             if design_space.variables_names:
-
                 _, formulation, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
@@ -322,7 +327,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         else:
             self.run_scenario()
-
+        outputs = [discipline.get_output_data() for discipline in self.sos_disciplines]
+        for data in outputs:
+            self.local_data.update(data)
         # store local data in datamanager
         self.update_dm_with_local_data()
 
@@ -436,7 +443,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             else:
                 full_names.append(name)
         return self.get_full_names(local_names) + \
-            self._update_study_ns_in_varname(full_names)
+               self._update_study_ns_in_varname(full_names)
 
     def set_diff_method(self):
         """
@@ -545,7 +552,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
         list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
         design_space = DesignSpace()
-        for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem, enabled_variable):
+        for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem,
+                                                            enabled_variable):
 
             # check if variable is enabled to add it or not in the design var
             if enable_var:
@@ -620,25 +628,25 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         """
         Updates input grammar from algo names
         """
-#         # TODO: rename all the scenario grammar properly
-#         ## updates input_grammar of MDOScenario with namespaced inputs
-#         # get input namespaced names
-#         ns_algo, = self._convert_list_of_keys_to_namespace_name(
-#             self.ALGO, self.IO_TYPE_IN)
-#         ns_maxiter, = self._convert_list_of_keys_to_namespace_name(
-#             self.MAX_ITER, self.IO_TYPE_IN)
-#         # build a grammar and initialize it from mandatory fields
-#         gram = JSONGrammar("opt_gram")
-#         gram.initialize_from_data_names([ns_algo, ns_maxiter])
-#         self.input_grammar.update_from(gram)
-#
-#         # fill in the namespaced fields
-#         available_algos = self.get_available_driver_names()
-#         algo_grammar = {"type": "string", "enum": available_algos}
-#         self.input_grammar.set_item_value(ns_algo, algo_grammar)
-#
-#         max_iter_grammar = {"type" : "integer", "minimum":1}
-#         self.input_grammar.set_item_value(ns_maxiter, max_iter_grammar)
+        #         # TODO: rename all the scenario grammar properly
+        #         ## updates input_grammar of MDOScenario with namespaced inputs
+        #         # get input namespaced names
+        #         ns_algo, = self._convert_list_of_keys_to_namespace_name(
+        #             self.ALGO, self.IO_TYPE_IN)
+        #         ns_maxiter, = self._convert_list_of_keys_to_namespace_name(
+        #             self.MAX_ITER, self.IO_TYPE_IN)
+        #         # build a grammar and initialize it from mandatory fields
+        #         gram = JSONGrammar("opt_gram")
+        #         gram.initialize_from_data_names([ns_algo, ns_maxiter])
+        #         self.input_grammar.update_from(gram)
+        #
+        #         # fill in the namespaced fields
+        #         available_algos = self.get_available_driver_names()
+        #         algo_grammar = {"type": "string", "enum": available_algos}
+        #         self.input_grammar.set_item_value(ns_algo, algo_grammar)
+        #
+        #         max_iter_grammar = {"type" : "integer", "minimum":1}
+        #         self.input_grammar.set_item_value(ns_maxiter, max_iter_grammar)
         algo, = self._convert_list_of_keys_to_namespace_name(
             self.ALGO, self.IO_TYPE_IN)
         available_algos = self.get_available_driver_names()
@@ -661,7 +669,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 if self.dict_desactivated_elem[full_name_var] != {}:
                     # insert a desactivated element
                     value_x_opt.insert(
-                        self.dict_desactivated_elem[full_name_var]['position'], self.dict_desactivated_elem[full_name_var]['value'])
+                        self.dict_desactivated_elem[full_name_var]['position'],
+                        self.dict_desactivated_elem[full_name_var]['value'])
 
                 design_space.loc[design_space[self.VARIABLES] == var, self.VALUE] = pd.Series(
                     [value_x_opt] * len(design_space))
@@ -678,34 +687,34 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         :param name: name of the scenario, used as base name for the json
             schema to import: name_input.json and name_output.json
         """
-#         gems_in_keys = list(self._data_in.keys())
-#         gems_out_keys = list(self._data_out.keys())
-#         self._init_grammar_with_keys(gems_in_keys, self.IO_TYPE_IN)
-#         self._init_grammar_with_keys(gems_out_keys, self.IO_TYPE_OUT)
+        #         gems_in_keys = list(self._data_in.keys())
+        #         gems_out_keys = list(self._data_out.keys())
+        #         self._init_grammar_with_keys(gems_in_keys, self.IO_TYPE_IN)
+        #         self._init_grammar_with_keys(gems_out_keys, self.IO_TYPE_OUT)
         self.update_gems_grammar_with_data_io()
 
-#     def _convert_new_type_into_array(self, var_dict):
-#         input_data = SoSDiscipline._convert_new_type_into_array(self,var_dict=var_dict)
-#         # replace integer value by corresponding string for algo name
-#         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
-#         if ns_algo in input_data:
-#             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
-#         return input_data
+    #     def _convert_new_type_into_array(self, var_dict):
+    #         input_data = SoSDiscipline._convert_new_type_into_array(self,var_dict=var_dict)
+    #         # replace integer value by corresponding string for algo name
+    #         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
+    #         if ns_algo in input_data:
+    #             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
+    #         return input_data
 
-#     def check_input_data(self, input_data, raise_exception=True):
-#         """Check the input data validity.
-#
-#         :param input_data: the input data dict
-#         :param raise_exception: Default value = True)
-#         """
-#         # replace integer value by corresponding string for algo name
-#         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
-#         if ns_algo in input_data:
-#             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
-#         try:
-#             self.input_grammar.load_data(input_data, raise_exception)
-#         except InvalidDataException:
-#             raise InvalidDataException("Invalid input data for: " + self.name)
+    #     def check_input_data(self, input_data, raise_exception=True):
+    #         """Check the input data validity.
+    #
+    #         :param input_data: the input data dict
+    #         :param raise_exception: Default value = True)
+    #         """
+    #         # replace integer value by corresponding string for algo name
+    #         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
+    #         if ns_algo in input_data:
+    #             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
+    #         try:
+    #             self.input_grammar.load_data(input_data, raise_exception)
+    #         except InvalidDataException:
+    #             raise InvalidDataException("Invalid input data for: " + self.name)
 
     # -- maturities
     def get_maturity(self):
@@ -769,7 +778,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             for disc in sos_disciplines:
                 sub_out_values = self.fill_possible_values(
                     [disc])  # sub_in_values
-#                 possible_in_values.extend(sub_in_values)
+                #                 possible_in_values.extend(sub_in_values)
                 possible_out_values.extend(sub_out_values)
                 self.find_possible_values(
                     disc.sos_disciplines, possible_out_values)  # possible_in_values
@@ -829,7 +838,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
             if full_id_l != []:
                 if len(full_id_l) > 1:
-                    #full_id = full_id_l[0]
+                    # full_id = full_id_l[0]
                     full_id = self.get_scenario_lagr(full_id_l)
                 else:
                     full_id = full_id_l[0]

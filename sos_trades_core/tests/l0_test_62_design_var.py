@@ -139,7 +139,7 @@ class TestDesignVar(AbstractJacobianUnittest):
         # checks output type is well created for dataframes (most commonly used)
         df = disc.get_sosdisc_outputs('x')
         assert isinstance(df, pd.DataFrame)
-        assert all(df.columns == self.output_descriptor['x_in']['key'])
+        assert all(df.columns == [self.output_descriptor['x_in']['index_name'], self.output_descriptor['x_in']['key']])
 
         filters = disc.get_chart_filter_list()
         graph_list = disc.get_post_processing_list(filters)

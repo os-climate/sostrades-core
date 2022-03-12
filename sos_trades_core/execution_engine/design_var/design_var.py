@@ -16,6 +16,7 @@ limitations under the License.
 from numpy import arange
 from pandas import DataFrame, Series
 from sos_trades_core.tools.bspline.bspline import BSpline
+from copy import deepcopy
 
 import numpy as np
 
@@ -81,7 +82,9 @@ class DesignVar(object):
             out_type = self.output_descriptor[key]['out_type']
 
             if out_type == 'float':
-                self.output_dict[out_name] = inputs_dict[key]
+                if inputs_dict[key].size != 1:
+                    raise ValueError(" The input must be of size 1 for a float output")
+                self.output_dict[out_name] = inputs_dict[key][0]
             elif out_type == 'array':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
@@ -89,9 +92,32 @@ class DesignVar(object):
                     # init output dataframes with index
                     index = self.output_descriptor[key]['index']
                     index_name = self.output_descriptor[key]['index_name']
-                    self.output_dict[out_name] = DataFrame({index_name: index}).set_index(index_name)
+                    self.output_dict[out_name] = DataFrame({index_name: index})
 
                 col_name = self.output_descriptor[key]['key']
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
             else:
-                raise(ValueError('Output type not yet supported'))
+                raise (ValueError('Output type not yet supported'))
+
+
+    # def update_design_space_out(self):
+    #     """
+    #     Method to update design space with opt value
+    #     """
+    #     design_space = deepcopy(self.output_descriptor)
+    #     l_variables = design_space[self.VARIABLES]
+    #     for var in l_variables:
+    #         full_name_var = self.get_full_names([var])[0]
+    #         if full_name_var in self.activated_variables:
+    #             value_x_opt = list(self.formulation.design_space._current_x.get(
+    #                 full_name_var))
+    #             if self.dict_desactivated_elem[full_name_var] != {}:
+    #                 # insert a desactivated element
+    #                 value_x_opt.insert(
+    #                     self.dict_desactivated_elem[full_name_var]['position'],
+    #                     self.dict_desactivated_elem[full_name_var]['value'])
+    #
+    #             design_space.loc[design_space[self.VARIABLES] == var, self.VALUE] = pd.Series(
+    #                 [value_x_opt] * len(design_space))
+
+
