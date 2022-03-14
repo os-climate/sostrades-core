@@ -600,9 +600,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
         self.store_sos_outputs_values(dict_out, update_dm=True)
-
+        print('************', self.local_data)
         # store local data in datamanager
-        self.update_dm_with_local_data()
+-        self.update_dm_with_local_data()
 
     def pre_run_mda(self):
         '''
