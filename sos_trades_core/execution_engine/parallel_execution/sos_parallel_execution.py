@@ -248,7 +248,8 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
         #- update GEMS i/o values
         loc_data = {k: v for k, v in local_data.items(
         ) if k in d.get_input_output_data_names()}
-        d.local_data = loc_data
+        d.local_data.update(loc_data)
+        #disc.local_data.update(d.local_data)
 
     # update metadata
     dm_metadata = dm_data[TYPE_METADATA]
