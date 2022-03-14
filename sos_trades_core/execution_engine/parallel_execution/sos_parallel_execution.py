@@ -49,6 +49,7 @@ class SoSDiscParallelExecution(DiscParallelExecution):
 
             # Update discipline local data
             local_data = output[0]
+            print('***********', local_data.keys())
             #disc.local_data = local_data
             # Update values and metadata in DM
             # TODO: we should do a dm merge?
