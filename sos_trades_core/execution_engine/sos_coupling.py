@@ -602,7 +602,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         self.store_sos_outputs_values(dict_out, update_dm=True)
         print('************', self.local_data)
         # store local data in datamanager
--       self.update_dm_with_local_data()
+        self.update_dm_with_local_data()
 
     def pre_run_mda(self):
         '''
