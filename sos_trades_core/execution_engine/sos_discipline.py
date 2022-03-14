@@ -57,14 +57,14 @@ class SemMock():
         self.__value = initial_value
 
     def __enter__(self):
-        """ Context manager entry point methods 
+        """ Context manager entry point methods
 
             It makes the class works using 'with' statments
         """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """ Context manager exit point methods 
+        """ Context manager exit point methods
 
             call when exited 'with' statment
         """
@@ -580,7 +580,7 @@ class SoSDiscipline(MDODiscipline):
 
     def set_numerical_parameters(self):
         '''
-        Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN 
+        Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN
         '''
         self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
         cache_type = self.get_sosdisc_inputs('cache_type')
@@ -658,7 +658,7 @@ class SoSDiscipline(MDODiscipline):
         self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
-        '''Get namespace reference by consulting the namespace_manager 
+        '''Get namespace reference by consulting the namespace_manager
         '''
         ns_manager = self.ee.ns_manager
 
@@ -1079,9 +1079,9 @@ class SoSDiscipline(MDODiscipline):
         return indices
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Over load of the GEMS function 
-        Compute the analytic jacobian of a discipline/model 
-        Check if the jacobian in compute_sos_jacobian is OK 
+        """Over load of the GEMS function
+        Compute the analytic jacobian of a discipline/model
+        Check if the jacobian in compute_sos_jacobian is OK
 
         :param inputs: linearization should be performed with respect
             to inputs list. If None, linearization should
@@ -1184,7 +1184,7 @@ class SoSDiscipline(MDODiscipline):
                         jac_loc[in_n] = np_method((len(out_v), len(in_v)))
 
     def _check_min_max_gradients(self, jac):
-        '''Check of minimum and maximum jacobian values 
+        '''Check of minimum and maximum jacobian values
         '''
 
         for out in jac:
@@ -1217,7 +1217,7 @@ class SoSDiscipline(MDODiscipline):
     #                             "in discipline <%s> : dr<%s> / dr<%s>: minimum abs gradient value is <%s>" % (d_name, out, inp, grad[low_grad_ind]))
 
     def compute_sos_jacobian(self):
-        """Compute the analytic jacobian of a discipline/model 
+        """Compute the analytic jacobian of a discipline/model
 
         To be overloaded by sub classes.
         if we need to compute the jacobian this class MUST be implemented else it will return a zeros matrix
@@ -1410,8 +1410,8 @@ class SoSDiscipline(MDODiscipline):
 
     def update_dm_with_local_data(self, local_data=None):
         '''
-        Update the DM with local data from GEMSEO 
-        First convert data into SoSTrades format then set values in the DM 
+        Update the DM with local data from GEMSEO
+        First convert data into SoSTrades format then set values in the DM
         '''
         if local_data is None:
             local_data = self.local_data
@@ -1549,8 +1549,8 @@ class SoSDiscipline(MDODiscipline):
         return variables
 
     def __filter_couplings_for_gems(self, io_type):
-        ''' 
-        Filter coupling before sending to GEMS 
+        '''
+        Filter coupling before sending to GEMS
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []
@@ -1811,7 +1811,7 @@ class SoSDiscipline(MDODiscipline):
 
     def _convert_df_into_array(
             self, var_df, values_list, metadata, keys, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
-        ''' 
+        '''
         Converts dataframe into array, and stores metada
         useful to build the dataframe afterwards
         '''
@@ -1848,7 +1848,7 @@ class SoSDiscipline(MDODiscipline):
 
     def _convert_float_into_array(
             self, var_dict):
-        ''' 
+        '''
         Check element type in var_dict, convert float or int into numpy array
             in order to deal with linearize issues in GEMS
         '''
@@ -1860,7 +1860,7 @@ class SoSDiscipline(MDODiscipline):
 
     def _convert_new_type_into_array(
             self, var_dict):
-        ''' 
+        '''
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
         '''
@@ -2135,7 +2135,7 @@ class SoSDiscipline(MDODiscipline):
         return nested_val
 
     def get_chart_filter_list(self):
-        """ Return a list of ChartFilter instance base on the inherited 
+        """ Return a list of ChartFilter instance base on the inherited
         class post processing filtering capabilities
 
         :return: ChartFilter[]
@@ -2169,13 +2169,13 @@ class SoSDiscipline(MDODiscipline):
         self._n_calls_linearize = SemMock(0)
 
     def set_configure_status(self, is_configured):
-        """Set boolean is_configured which indicates if the discipline has been configured 
+        """Set boolean is_configured which indicates if the discipline has been configured
             to avoid several configuration in a multi-level process and save time """
 
         self._is_configured = is_configured
 
     def get_configure_status(self):
-        """Get boolean is_configured which indicates if the discipline has been configured 
+        """Get boolean is_configured which indicates if the discipline has been configured
             to avoid several configuration in a multi-level process and save time """
 
         if hasattr(self, '_is_configured'):
@@ -2306,7 +2306,7 @@ class SoSDiscipline(MDODiscipline):
         :type: list
 
         :params: output_var_list
-        :type: list        
+        :type: list
         """
 
         dict_infos_values = {}
