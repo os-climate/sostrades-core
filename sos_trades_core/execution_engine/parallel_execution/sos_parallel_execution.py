@@ -49,7 +49,8 @@ class SoSDiscParallelExecution(DiscParallelExecution):
 
             # Update discipline local data
             local_data = output[0]
-            #disc.local_data = local_data
+            print('***********', local_data.keys())
+            #self.local_data.update(local_data)
             # Update values and metadata in DM
             # TODO: we should do a dm merge?
             # update values
@@ -59,7 +60,9 @@ class SoSDiscParallelExecution(DiscParallelExecution):
             # Update discipline status
             status_dict = output[2]
             disc.ee.load_disciplines_status_dict(status_dict)
-
+        outputs = [discipline.get_output_data() for discipline in self.worker_list]
+        for data in outputs:
+            self.local_data.update(data)
     @staticmethod
     def _run_task(worker, input_loc):
         """Effectively performs the computation.
