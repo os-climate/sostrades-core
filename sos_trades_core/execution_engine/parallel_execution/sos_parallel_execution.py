@@ -249,7 +249,7 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
         loc_data = {k: v for k, v in local_data.items(
         ) if k in d.get_input_output_data_names()}
         d.local_data = loc_data
-        disc.local_data.update(d.local_data)
+        #disc.local_data.update(d.local_data)
 
     # update metadata
     dm_metadata = dm_data[TYPE_METADATA]
