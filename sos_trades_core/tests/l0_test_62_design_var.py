@@ -57,7 +57,7 @@ class TestDesignVar(AbstractJacobianUnittest):
                        'activated_elem': [[True], [True, True]]}
         self.dspace = pd.DataFrame(dspace_dict)
 
-        self.output_descriptor = {'x_in': {'out_name': 'x',
+        self.design_var_descriptor = {'x_in': {'out_name': 'x',
                                            'type': 'array',
                                            'out_type': 'dataframe',
                                            'key': 'value',
@@ -65,7 +65,7 @@ class TestDesignVar(AbstractJacobianUnittest):
                                            'index_name': 'test',
                                            'namespace_in': 'ns_OptimSellar',
                                            'namespace_out': 'ns_OptimSellar'
-                                           },
+                                               },
                                   'z_in': {'out_name': 'z',
                                            'type': 'array',
                                            'out_type': 'array',
@@ -74,7 +74,7 @@ class TestDesignVar(AbstractJacobianUnittest):
                                            'namespace_in': 'ns_OptimSellar',
                                            'namespace_out': 'ns_OptimSellar'
                                            }
-                                  }
+                                      }
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_w_design_var'
 
@@ -92,7 +92,7 @@ class TestDesignVar(AbstractJacobianUnittest):
         values_dict = {}
 
         # design var
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.DesignVar.output_descriptor'] = self.output_descriptor
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.DesignVar.design_var_descriptor'] = self.design_var_descriptor
 
         # Optim inputs
         values_dict[f'{self.ns}.{self.sc_name}.max_iter'] = 1
@@ -139,7 +139,7 @@ class TestDesignVar(AbstractJacobianUnittest):
         # checks output type is well created for dataframes (most commonly used)
         df = disc.get_sosdisc_outputs('x')
         assert isinstance(df, pd.DataFrame)
-        assert all(df.columns == [self.output_descriptor['x_in']['index_name'], self.output_descriptor['x_in']['key']])
+        assert all(df.columns == [self.design_var_descriptor['x_in']['index_name'], self.design_var_descriptor['x_in']['key']])
 
         filters = disc.get_chart_filter_list()
         graph_list = disc.get_post_processing_list(filters)

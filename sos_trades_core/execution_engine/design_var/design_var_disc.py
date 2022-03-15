@@ -50,7 +50,7 @@ class DesignVarDiscipline(SoSDiscipline):
     OUT_TYPES = ['float', 'array', 'dataframe']
 
     DESC_IN = {
-        'output_descriptor': {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
+        'design_var_descriptor': {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
         'design_space': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
         WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
         LOG_DVAR: {'type': 'bool', 'default': False, 'user_level': 3},
@@ -67,16 +67,16 @@ class DesignVarDiscipline(SoSDiscipline):
 
         # loops over the output descriptor to add dynamic inputs and outputs from the loaded usecase.
         # The structure of the output descriptor dict is checked prior its use
-        if 'output_descriptor' in self._data_in:
-            output_descriptor = self.get_sosdisc_inputs('output_descriptor')
+        if 'design_var_descriptor' in self._data_in:
+            design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
 
-            if self._check_descriptor(output_descriptor):
-                if output_descriptor:
-                    for key in output_descriptor.keys():
-                        dynamic_inputs[key] = {'type': output_descriptor[key]['type'],
-                                               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_in']}
-                        dynamic_outputs[output_descriptor[key]['out_name']] = {
-                            'type': output_descriptor[key]['out_type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': output_descriptor[key]['namespace_out']}
+            if self._check_descriptor(design_var_descriptor):
+                if design_var_descriptor:
+                    for key in design_var_descriptor.keys():
+                        dynamic_inputs[key] = {'type': design_var_descriptor[key]['type'],
+                                               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': design_var_descriptor[key]['namespace_in']}
+                        dynamic_outputs[design_var_descriptor[key]['out_name']] = {
+                            'type': design_var_descriptor[key]['out_type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': design_var_descriptor[key]['namespace_out']}
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
@@ -138,16 +138,16 @@ class DesignVarDiscipline(SoSDiscipline):
 
     def compute_sos_jacobian(self):
 
-        output_descriptor = self.get_sosdisc_inputs('output_descriptor')
+        design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
 
-        for key in output_descriptor.keys():
-            out_type = output_descriptor[key]['out_type']
-            out_name = output_descriptor[key]['out_name']
+        for key in design_var_descriptor.keys():
+            out_type = design_var_descriptor[key]['out_type']
+            out_name = design_var_descriptor[key]['out_name']
             if out_type == 'array':
                 self.set_partial_derivative(
                     out_name, key, self.design.bspline_dict[key]['b_array'])
             elif out_type == 'dataframe':
-                col_name = output_descriptor[key]['key']
+                col_name = design_var_descriptor[key]['key']
                 self.set_partial_derivative_for_other_types(
                     (out_name, col_name), (key,), self.design.bspline_dict[key]['b_array'])
             elif out_type == 'float':
@@ -155,16 +155,16 @@ class DesignVarDiscipline(SoSDiscipline):
             else:
                 raise(ValueError('Output type not yet supported'))
 
-    def _check_descriptor(self, output_descriptor):
+    def _check_descriptor(self, design_var_descriptor):
         """
 
-        :param output_descriptor: dict input of Design Var Discipline containing all information necessary to build its dynamic inputs and outputs.
+        :param design_var_descriptor: dict input of Design Var Discipline containing all information necessary to build its dynamic inputs and outputs.
         For each input, data needed are the key, type, and namespace_in and for output out_name, out_type, namespace_out and depending on its type, index, index name and key.
         :return: True if the dict has the requested data, False otherwise.
         """
         test = True
 
-        for key in output_descriptor.keys():
+        for key in design_var_descriptor.keys():
             needed_keys = ['out_type', 'namespace_in',
                            'out_name', 'type', 'namespace_out']
             messages = [f'Supported output types are {self.OUT_TYPES}.',
@@ -174,12 +174,12 @@ class DesignVarDiscipline(SoSDiscipline):
                         'Please set the output namespace.',
                         ]
             for n_key in needed_keys:
-                if n_key not in output_descriptor[key].keys():
+                if n_key not in design_var_descriptor[key].keys():
                     test = False
                     raise(ValueError(
-                        f'Discipline {self.name} output_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
+                        f'Discipline {self.name} design_var_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
                 else:
-                    out_type = output_descriptor[key]['out_type']
+                    out_type = design_var_descriptor[key]['out_type']
                     if out_type == 'float':
                         continue
                     elif out_type == 'array':
@@ -188,10 +188,10 @@ class DesignVarDiscipline(SoSDiscipline):
                                       f'Please set an index name describing for the output array of {key} (index_name is also used for post proc representations).',
                                       ]
                         for k in array_needs:
-                            if k not in output_descriptor[key].keys():
+                            if k not in design_var_descriptor[key].keys():
                                 test = False
                                 raise (
-                                    ValueError(f'Discipline {self.name} output_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
+                                    ValueError(f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
                     elif out_type == 'dataframe':
                         dataframe_needs = ['index', 'index_name', 'key']
                         dataframe_mess = [
@@ -200,14 +200,14 @@ class DesignVarDiscipline(SoSDiscipline):
                             f'Please set a "key" name to the output dataframe of {key} (name of the column in which the output will be written).',
                         ]
                         for k in dataframe_needs:
-                            if k not in output_descriptor[key].keys():
+                            if k not in design_var_descriptor[key].keys():
                                 test = False
                                 raise (
-                                    ValueError(f'Discipline {self.name} output_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
+                                    ValueError(f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
                     else:
                         test = False
                         raise (ValueError(
-                            f'Discipline {self.name} output_descriptor[{key}] out_type is not supported. Supported out_types are {self.OUT_TYPES}'))
+                            f'Discipline {self.name} design_var_descriptor[{key}] out_type is not supported. Supported out_types are {self.OUT_TYPES}'))
 
         return test
 
@@ -244,7 +244,7 @@ class DesignVarDiscipline(SoSDiscipline):
             init_xvect = False
 
         if 'BSpline' in charts:
-            list_dv = self.get_sosdisc_inputs('output_descriptor')
+            list_dv = self.get_sosdisc_inputs('design_var_descriptor')
             for parameter in list_dv.keys():
                 new_chart = self.get_chart_BSpline(
                     parameter, init_xvect)
@@ -276,17 +276,17 @@ class DesignVarDiscipline(SoSDiscipline):
                                                         == parameter, 'value'].to_list()[0][i])
             eval_pts = None
 
-            output_descriptor = self.get_sosdisc_inputs('output_descriptor')
-            out_name = output_descriptor[parameter]['out_name']
-            out_type = output_descriptor[parameter]['out_type']
-            index = output_descriptor[parameter]['index']
-            index_name = output_descriptor[parameter]['index_name']
+            design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
+            out_name = design_var_descriptor[parameter]['out_name']
+            out_type = design_var_descriptor[parameter]['out_type']
+            index = design_var_descriptor[parameter]['index']
+            index_name = design_var_descriptor[parameter]['index_name']
 
             if out_type == 'array':
                 eval_pts = self.get_sosdisc_outputs(out_name)
 
             elif out_type == 'dataframe':
-                col_name = output_descriptor[parameter]['key']
+                col_name = design_var_descriptor[parameter]['key']
                 eval_pts = self.get_sosdisc_outputs(out_name)[col_name].values
 
             if eval_pts is None:
