@@ -147,7 +147,7 @@ class TestMDANumericalParameters(unittest.TestCase):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
                                    msg="Wrong optimal x solution")
 
-    def _test_02_chech_cache_option(self):
+    def test_02_chech_cache_option(self):
         print("\n Test 2 : check cache_option")
 
         self.name = 'Test'
@@ -276,3 +276,9 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         n_calls_hdf5_cache = self.ee3.root_process.disciplines[0].n_calls
         self.assertEqual(n_calls_hdf5_cache, 2)
+
+
+if __name__ == "__main__":
+    cls = TestMDANumericalParameters()
+    cls.setUp()
+    cls.test_02_chech_cache_option()
