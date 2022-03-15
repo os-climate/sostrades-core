@@ -73,7 +73,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             exec_eng.load_study_from_input_dict(values_dict)
             exec_eng.configure()
             exec_eng.execute()
-            dm_parallel = exec_eng.dm
+            dm_parallel = exec_eng.dm.get_data_dict_values()
             dict_error = {}
             # compare dicts
             keys_parallel = [s for s in dm_sequential.keys() if 'n_subcouplings_parallel' in s]
