@@ -233,7 +233,7 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
         out_f_keys = [d.get_var_full_name(
             k, data_out) for k in data_out.keys()]
         d_values = {get_data(k, VAR_NAME): dm_values[k] for k in out_f_keys}
-        d.store_sos_outputs_values(d_values)
+        d.store_sos_outputs_values(d_values, update_dm=True)
         #- update data in
         data_in = d.get_data_in()
         in_f_keys = [d.get_var_full_name(
