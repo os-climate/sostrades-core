@@ -60,21 +60,20 @@ class DesignVar(object):
 
             # check output length and compute BSpline only if necessary
             # remark: float do not require any BSpline usage
-            if not self.design_var_descriptor[elem]['type'] == 'float':
-                output_length = len(self.design_var_descriptor[elem]['index'])
+            output_length = len(self.design_var_descriptor[elem]['index'])
 
-                if len(inputs_dict[elem]) == output_length:
-                    self.bspline_dict[elem] = {
-                        'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
-                else:
-                    list_t = np.linspace(0.0, 1.0, output_length)
-                    bspline = BSpline(n_poles=len(elem_val))
-                    bspline.set_ctrl_pts(elem_val)
-                    eval_t, b_array = bspline.eval_list_t(list_t)
-                    b_array = bspline.update_b_array(b_array, index_false)
+            if len(inputs_dict[elem]) == output_length:
+                self.bspline_dict[elem] = {
+                    'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
+            else:
+                list_t = np.linspace(0.0, 1.0, output_length)
+                bspline = BSpline(n_poles=len(elem_val))
+                bspline.set_ctrl_pts(elem_val)
+                eval_t, b_array = bspline.eval_list_t(list_t)
+                b_array = bspline.update_b_array(b_array, index_false)
 
-                    self.bspline_dict[elem] = {
-                        'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
+                self.bspline_dict[elem] = {
+                    'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
 
         # loop over design_var_descriptor to build output
         for key in self.design_var_descriptor.keys():

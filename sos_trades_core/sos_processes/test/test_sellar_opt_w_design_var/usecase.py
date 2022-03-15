@@ -46,7 +46,6 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         design_var_descriptor = {'x_in': {'out_name': 'x',
-                                      'type': 'array',
                                       'out_type': 'dataframe',
                                       'key': 'value',
                                       'index': arange(0, 4, 1),
@@ -55,7 +54,6 @@ class Study(StudyManager):
                                       'namespace_out': 'ns_OptimSellar'
                                       },
                              'z_in': {'out_name': 'z',
-                                      'type': 'array',
                                       'out_type': 'array',
                                       'index': [0, 1],
                                       'index_name': 'index',
