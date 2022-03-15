@@ -600,26 +600,11 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
         self.store_sos_outputs_values(dict_out, update_dm=True)
-        # debug parallel
-        # TODO : delete when debug ok
-        print('start debug')
-        print('************',self.sos_name)
-        print(self.local_data)
-        try:
-            var_name = self.dm.get_all_namespaces_from_var_name('temperature_detail_df')[0]
-            print(self.dm.get_value(var_name))
 
-        except:
-            pass
-        print('------------')
+
         # store local data in datamanager
         self.update_dm_with_local_data()
-        try:
-            print(self.dm.get_value(var_name))
 
-        except:
-            pass
-        print('end debug')
     def pre_run_mda(self):
         '''
         Pre run needed if one of the strong coupling variables is None in a MDA 
