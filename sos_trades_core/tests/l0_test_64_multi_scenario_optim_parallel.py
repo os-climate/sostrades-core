@@ -26,23 +26,19 @@ from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_d
 
 
 
-class TestSoSOptimScenario(unittest.TestCase):
+class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
     """
     SoSOptimScenario test class
     """
 
     def setUp(self):
         self.study_name = 'optim'
-
-
-
-
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_ms'
 
-    def test_01_ms_sellar_cleaning(self):
+    def test_01_ms_sellar_sequential_and_parallel(self):
 
-        if platform.system() != 'Windows' or True:
+        if platform.system() != 'Windows':
             print("\n Test 1 : check configure and treeview")
             exec_eng = ExecutionEngine(self.study_name)
             factory = exec_eng.factory
@@ -87,6 +83,6 @@ class TestSoSOptimScenario(unittest.TestCase):
 
 
 if '__main__' == __name__:
-    cls = TestSoSOptimScenario()
+    cls = TestMultiScenarioSoSOptimScenario()
     cls.setUp()
-    cls.test_01_ms_sellar_cleaning()
+    cls.test_01_ms_sellar_sequential_and_parallel()
