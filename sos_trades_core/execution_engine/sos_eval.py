@@ -15,6 +15,9 @@ limitations under the License.
 '''
 import platform
 
+from tqdm import tqdm
+import time
+
 from gemseo.core.parallel_execution import ParallelExecution
 
 '''
@@ -328,12 +331,13 @@ class SoSEval(SoSDisciplineBuilder):
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
 
-            for i, x in enumerate(samples):
+            for i in tqdm(range(len(samples)), ncols=100,  position=0):
+                time.sleep(0.5)
+                self.logger.info(f'   Scenario_{str(i + 1)} is running.')
+                x = samples[i]
                 scenario_name = "scenario_" + str(i + 1)
                 evaluation_output[scenario_name] = x, self.evaluation(
                     x, scenario_name, convert_to_array)
-                self.logger.info(
-                    f'{scenario_name} has been run.computation progress: {int(((i + 1) / len(samples)) * 100)}% done.')
             return evaluation_output
 
         if n_processes > 1:

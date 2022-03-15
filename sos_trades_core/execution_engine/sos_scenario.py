@@ -676,7 +676,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     [value_x_opt] * len(design_space))
 
         self.store_sos_outputs_values(
-            {'design_space_out': design_space}, update_dm=True)
+            {'design_space_out': design_space})
 
     def _init_base_grammar(self, name):
         """ *** GEMS overload ***
