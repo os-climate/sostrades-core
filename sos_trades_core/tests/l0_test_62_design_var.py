@@ -159,3 +159,10 @@ class TestDesignVar(AbstractJacobianUnittest):
 
         self.check_jacobian(location=dirname(__file__), filename=f'jacobian_design_var_bspline.pkl', discipline=disc, step=1e-15, inputs=input_names,
                             outputs=output_names, derr_approx='complex_step')
+
+
+if '__main__' == __name__:
+    cls = TestDesignVar()
+    cls.setUp()
+    cls.test_01_check_execute()
+    cls.test_derivative()

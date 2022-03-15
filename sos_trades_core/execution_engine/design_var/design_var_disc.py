@@ -46,7 +46,6 @@ class DesignVarDiscipline(SoSDiscipline):
     WRITE_XVECT = 'write_xvect'
     LOG_DVAR = 'log_designvar'
     EXPORT_XVECT = 'export_xvect'
-    IN_TYPES = ['float', 'array']
     OUT_TYPES = ['float', 'array', 'dataframe']
 
     DESC_IN = {
@@ -71,12 +70,14 @@ class DesignVarDiscipline(SoSDiscipline):
             design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
 
             if self._check_descriptor(design_var_descriptor):
-                if design_var_descriptor:
-                    for key in design_var_descriptor.keys():
-                        dynamic_inputs[key] = {'type': design_var_descriptor[key]['type'],
-                                               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': design_var_descriptor[key]['namespace_in']}
-                        dynamic_outputs[design_var_descriptor[key]['out_name']] = {
-                            'type': design_var_descriptor[key]['out_type'], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': design_var_descriptor[key]['namespace_out']}
+                for key in design_var_descriptor.keys():
+                    dynamic_inputs[key] = {'type': 'array',
+                                           'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                           'namespace': design_var_descriptor[key]['namespace_in']}
+                    dynamic_outputs[design_var_descriptor[key]['out_name']] = {
+                        'type': design_var_descriptor[key]['out_type'],
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                        'namespace': design_var_descriptor[key]['namespace_out']}
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
@@ -166,11 +167,10 @@ class DesignVarDiscipline(SoSDiscipline):
 
         for key in design_var_descriptor.keys():
             needed_keys = ['out_type', 'namespace_in',
-                           'out_name', 'type', 'namespace_out']
+                           'out_name', 'namespace_out']
             messages = [f'Supported output types are {self.OUT_TYPES}.',
                         'Please set the input namespace.',
                         'Please set output_name.',
-                        f'Supported input types are {self.IN_TYPES}.',
                         'Please set the output namespace.',
                         ]
             for n_key in needed_keys:
@@ -265,62 +265,62 @@ class DesignVarDiscipline(SoSDiscipline):
 
         design_space = self.get_sosdisc_inputs('design_space')
         pts = self.get_sosdisc_inputs(parameter)
-        if not isinstance(pts, float):
-            ctrl_pts = list(pts)
-            starting_pts = list(
-                design_space[design_space['variable'] == parameter]['value'].values[0])
-            for i, activation in enumerate(design_space.loc[design_space['variable']
-                                                            == parameter, 'activated_elem'].to_list()[0]):
-                if not activation and len(design_space.loc[design_space['variable'] == parameter, 'value'].to_list()[0]) > i:
-                    ctrl_pts.insert(i, design_space.loc[design_space['variable']
-                                                        == parameter, 'value'].to_list()[0][i])
-            eval_pts = None
+        ctrl_pts = list(pts)
+        starting_pts = list(
+            design_space[design_space['variable'] == parameter]['value'].values[0])
+        for i, activation in enumerate(design_space.loc[design_space['variable']
+                                                        == parameter, 'activated_elem'].to_list()[0]):
+            if not activation and len(design_space.loc[design_space['variable'] == parameter, 'value'].to_list()[0]) > i:
+                ctrl_pts.insert(i, design_space.loc[design_space['variable']
+                                                    == parameter, 'value'].to_list()[0][i])
+        eval_pts = None
 
-            design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
-            out_name = design_var_descriptor[parameter]['out_name']
-            out_type = design_var_descriptor[parameter]['out_type']
-            index = design_var_descriptor[parameter]['index']
-            index_name = design_var_descriptor[parameter]['index_name']
+        design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
+        out_name = design_var_descriptor[parameter]['out_name']
+        out_type = design_var_descriptor[parameter]['out_type']
+        index = design_var_descriptor[parameter]['index']
+        index_name = design_var_descriptor[parameter]['index_name']
 
-            if out_type == 'array':
-                eval_pts = self.get_sosdisc_outputs(out_name)
+        if out_type == 'array':
+            eval_pts = self.get_sosdisc_outputs(out_name)
 
-            elif out_type == 'dataframe':
-                col_name = design_var_descriptor[parameter]['key']
-                eval_pts = self.get_sosdisc_outputs(out_name)[col_name].values
+        elif out_type == 'dataframe':
+            col_name = design_var_descriptor[parameter]['key']
+            eval_pts = self.get_sosdisc_outputs(out_name)[col_name].values
 
-            if eval_pts is None:
-                print('eval pts not found in sos_disc_outputs')
-                return None
-            else:
-                chart_name = f'B-Spline for {parameter}'
-                fig = go.Figure()
-                if 'complex' in str(type(ctrl_pts[0])):
-                    ctrl_pts = [np.real(value) for value in ctrl_pts]
-                if 'complex' in str(type(eval_pts[0])):
-                    eval_pts = [np.real(value) for value in eval_pts]
-                if 'complex' in str(type(starting_pts[0])):
-                    starting_pts = [np.real(value) for value in starting_pts]
-                x_ctrl_pts = np.linspace(
-                    index[0], index[-1], len(ctrl_pts))
-                marker_dict = dict(size=150 / len(ctrl_pts), line=dict(
-                    width=150 / (3 * len(ctrl_pts)), color='DarkSlateGrey'))
+        if eval_pts is None:
+            print('eval pts not found in sos_disc_outputs')
+            return None
+        else:
+            chart_name = f'B-Spline for {parameter}'
+            fig = go.Figure()
+            if 'complex' in str(type(ctrl_pts[0])):
+                ctrl_pts = [np.real(value) for value in ctrl_pts]
+            if 'complex' in str(type(eval_pts[0])):
+                eval_pts = [np.real(value) for value in eval_pts]
+            if 'complex' in str(type(starting_pts[0])):
+                starting_pts = [np.real(value) for value in starting_pts]
+            x_ctrl_pts = np.linspace(
+                index[0], index[-1], len(ctrl_pts))
+            marker_dict = dict(size=150 / len(ctrl_pts), line=dict(
+                width=150 / (3 * len(ctrl_pts)), color='DarkSlateGrey'))
+            fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
+                                     y=list(ctrl_pts), name='Poles',
+                                     line=dict(color=color_list[0]),
+                                     mode='markers',
+                                     marker=marker_dict))
+            fig.add_trace(go.Scatter(x=list(index), y=list(eval_pts), name='B-Spline',
+                                     line=dict(color=color_list[0]),))
+            if init_xvect:
+                marker_dict['opacity'] = 0.5
                 fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
-                                         y=list(ctrl_pts), name='Poles',
-                                         line=dict(color=color_list[0]),
+                                         y=list(starting_pts), name='Initial Poles',
                                          mode='markers',
+                                         line=dict(color=color_list[0]),
                                          marker=marker_dict))
-                fig.add_trace(go.Scatter(x=list(index), y=list(eval_pts), name='B-Spline',
-                                         line=dict(color=color_list[0]),))
-                if init_xvect:
-                    marker_dict['opacity'] = 0.5
-                    fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
-                                             y=list(starting_pts), name='Initial Poles',
-                                             mode='markers',
-                                             line=dict(color=color_list[0]),
-                                             marker=marker_dict))
-                fig.update_layout(title={'text': chart_name, 'x': 0.5, 'y': 1.0, 'xanchor': 'center', 'yanchor': 'top'},
-                                  xaxis_title=index_name, yaxis_title=f'value of {parameter}')
-                new_chart = InstantiatedPlotlyNativeChart(
-                    fig, chart_name=chart_name, default_title=True)
+            fig.update_layout(title={'text': chart_name, 'x': 0.5, 'y': 1.0, 'xanchor': 'center', 'yanchor': 'top'},
+                              xaxis_title=index_name, yaxis_title=f'value of {parameter}')
+            new_chart = InstantiatedPlotlyNativeChart(
+                fig, chart_name=chart_name, default_title=True)
+
             return new_chart
