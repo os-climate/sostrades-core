@@ -256,10 +256,8 @@ class SoSDiscipline(MDODiscipline):
         # -- Sub-disciplines attributes
         self.built_sos_disciplines = []
         self.in_checkjac = False
-        self.reset_sos_disciplines()
-        # -- Maturity attribute
-        self._maturity = self.get_maturity()
         self._is_configured = False
+        # init MDODiscipline
         MDODiscipline.__init__(
             self, sos_name, grammar_type=self.SOS_GRAMMAR_TYPE)
         # Update status attribute and data manager
@@ -271,6 +269,8 @@ class SoSDiscipline(MDODiscipline):
         self._data_out = None
         self._structuring_variables = None
         self.reset_data()
+        # -- Maturity attribute
+        self._maturity = self.get_maturity()
 
         # Add the discipline in the dm and get its unique disc_id (was in the
         # configure)
@@ -448,11 +448,6 @@ class SoSDiscipline(MDODiscipline):
         io_type specifies 'IN' or 'OUT'
         '''
         self._init_grammar_with_keys(data_keys, io_type)
-
-    def reset_sos_disciplines(self):
-        ''' Empty sos_disciplines list
-        '''
-        self.sos_disciplines = []
 
     def get_sos_diciplines_ids(self):
         return [disc.name for disc in self.sos_disciplines]
