@@ -361,9 +361,9 @@ class SoSDiscipline(MDODiscipline):
         # Remove unavailable GEMS type variables before initialize
         # input_grammar
         if not self.is_sos_coupling:
-            filtered_data_in = self.__filter_couplings_for_gems(
+            filtered_data_in = self.__filter_available_gemseo_types(
                 self.IO_TYPE_IN)
-            filtered_data_out = self.__filter_couplings_for_gems(
+            filtered_data_out = self.__filter_available_gemseo_types(
                 self.IO_TYPE_OUT)
             self.init_gems_grammar(filtered_data_in, self.IO_TYPE_IN)
             self.init_gems_grammar(filtered_data_out, self.IO_TYPE_OUT)
@@ -1539,7 +1539,7 @@ class SoSDiscipline(MDODiscipline):
                 keys, io_type)]
         return variables
 
-    def __filter_couplings_for_gems(self, io_type):
+    def __filter_available_gemseo_types(self, io_type):
         ''' 
         Filter coupling before sending to GEMS 
         '''
