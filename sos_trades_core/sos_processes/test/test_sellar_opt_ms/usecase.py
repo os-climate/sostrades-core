@@ -25,7 +25,8 @@ class Study(StudyManager):
 
         def setup_usecase(self):
             ns = f'{self.study_name}'
-            sc_name = "SellarOptimScenario"
+            sc_name = "SellarOptimScenario.SellarCoupling"
+            sc_name_ncoupling = "SellarOptimScenario"
             dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
                            'value': [[1.], [5., 2.], [5.], [1.]],
                            'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
@@ -61,26 +62,26 @@ class Study(StudyManager):
             disc_dict[f'{ns}.{sc_name}.Sellar_Problem.local_dv'] = 10.
             scatter_scenario_name = 'optimization scenarios'
             scenario_list = ['a=0-1', 'a=0-2']
-            disc_dict[f'{ns}.{scatter_scenario_name}.scenario_list'] = ['a=0-1', 'a=0-2']
+            disc_dict[f'{ns}.{scatter_scenario_name}.scenario_list'] = scenario_list
 
             for scen in scenario_list:
                 disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.Sellar_Problem.local_dv'] = 5.
                 disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.z'] = array([2., 1.])
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.max_iter'] = 200
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.max_iter'] = 200
                 disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.x'] = 500.
 
                 # SLSQP, NLOPT_SLSQP
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.algo'] = "SLSQP"
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.design_space'] = dspace
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.algo'] = "SLSQP"
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.design_space'] = dspace
                 # TODO: what's wrong with IDF
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.formulation'] = 'MDF'
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.formulation'] = 'MDF'
                 # f'{ns}.SellarOptimScenario.obj'
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.objective_name'] = 'obj'
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.ineq_constraints'] = [
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.objective_name'] = 'obj'
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.ineq_constraints'] = [
                     'c_1', 'c_2']
                 # f'{ns}.SellarOptimScenario.c_1', f'{ns}.SellarOptimScenario.c_2']
 
-                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name}.algo_options'] = {"ftol_rel": 1e-10,
+                disc_dict[f'{ns}.{scatter_scenario_name}.{scen}.{sc_name_ncoupling}.algo_options'] = {"ftol_rel": 1e-10,
                                                                        "ineq_tolerance": 2e-3,
                                                                        "normalize_design_space": False}
 
@@ -94,7 +95,6 @@ if '__main__' == __name__:
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=False)
     uc_cls.run()
-    print('*************')
 
 
 
