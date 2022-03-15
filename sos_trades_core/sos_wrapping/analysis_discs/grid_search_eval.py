@@ -690,6 +690,8 @@ class GridSearchEval(DoeEval):
             doe_samples_df = outputs_dict['doe_samples_dataframe']
             cont_plot_df = doe_samples_df.merge(
                 output_df, how="left", on='scenario')
+            cont_plot_df.replace('NA', np.nan, inplace=True)
+            
 
             # we go through the list of charts and draw all of them
             for name, chart_info in chart_dict.items():
