@@ -30,7 +30,7 @@ class DesignVar(object):
     VALUE = "value"
 
     def __init__(self, inputs_dict):
-        self.output_descriptor = inputs_dict['output_descriptor']
+        self.design_var_descriptor = inputs_dict['design_var_descriptor']
         self.output_dict = {}
         self.bspline_dict = {}
         self.dspace = inputs_dict['design_space']
@@ -41,7 +41,7 @@ class DesignVar(object):
         '''
 
         self.output_dict = {}
-        list_ctrl = self.output_descriptor.keys()
+        list_ctrl = self.design_var_descriptor.keys()
 
         for elem in list_ctrl:
 
@@ -60,26 +60,25 @@ class DesignVar(object):
 
             # check output length and compute BSpline only if necessary
             # remark: float do not require any BSpline usage
-            if not self.output_descriptor[elem]['type'] == 'float':
-                output_length = len(self.output_descriptor[elem]['index'])
+            output_length = len(self.design_var_descriptor[elem]['index'])
 
-                if len(inputs_dict[elem]) == output_length:
-                    self.bspline_dict[elem] = {
-                        'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
-                else:
-                    list_t = np.linspace(0.0, 1.0, output_length)
-                    bspline = BSpline(n_poles=len(elem_val))
-                    bspline.set_ctrl_pts(elem_val)
-                    eval_t, b_array = bspline.eval_list_t(list_t)
-                    b_array = bspline.update_b_array(b_array, index_false)
+            if len(inputs_dict[elem]) == output_length:
+                self.bspline_dict[elem] = {
+                    'bspline': None, 'eval_t': inputs_dict[elem], 'b_array': np.identity(output_length)}
+            else:
+                list_t = np.linspace(0.0, 1.0, output_length)
+                bspline = BSpline(n_poles=len(elem_val))
+                bspline.set_ctrl_pts(elem_val)
+                eval_t, b_array = bspline.eval_list_t(list_t)
+                b_array = bspline.update_b_array(b_array, index_false)
 
-                    self.bspline_dict[elem] = {
-                        'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
+                self.bspline_dict[elem] = {
+                    'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
 
-        # loop over output_descriptor to build output
-        for key in self.output_descriptor.keys():
-            out_name = self.output_descriptor[key]['out_name']
-            out_type = self.output_descriptor[key]['out_type']
+        # loop over design_var_descriptor to build output
+        for key in self.design_var_descriptor.keys():
+            out_name = self.design_var_descriptor[key]['out_name']
+            out_type = self.design_var_descriptor[key]['out_type']
 
             if out_type == 'float':
                 if inputs_dict[key].size != 1:
@@ -88,13 +87,13 @@ class DesignVar(object):
             elif out_type == 'array':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
-                if self.output_descriptor[key]['out_name'] not in self.output_dict.keys():
+                if self.design_var_descriptor[key]['out_name'] not in self.output_dict.keys():
                     # init output dataframes with index
-                    index = self.output_descriptor[key]['index']
-                    index_name = self.output_descriptor[key]['index_name']
+                    index = self.design_var_descriptor[key]['index']
+                    index_name = self.design_var_descriptor[key]['index_name']
                     self.output_dict[out_name] = DataFrame({index_name: index})
 
-                col_name = self.output_descriptor[key]['key']
+                col_name = self.design_var_descriptor[key]['key']
                 self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
             else:
                 raise (ValueError('Output type not yet supported'))
@@ -104,7 +103,7 @@ class DesignVar(object):
     #     """
     #     Method to update design space with opt value
     #     """
-    #     design_space = deepcopy(self.output_descriptor)
+    #     design_space = deepcopy(self.design_var_descriptor)
     #     l_variables = design_space[self.VARIABLES]
     #     for var in l_variables:
     #         full_name_var = self.get_full_names([var])[0]

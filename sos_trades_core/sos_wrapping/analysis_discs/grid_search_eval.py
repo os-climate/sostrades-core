@@ -806,6 +806,7 @@ class GridSearchEval(DoeEval):
                         z_min = chart_info['z_min']
 
                         fig = go.Figure()
+                        z_data_None = []
 
                         for slide_value in slider_values:
                             x_data = cont_plot_df.loc[
@@ -817,6 +818,10 @@ class GridSearchEval(DoeEval):
                             z_data = cont_plot_df.loc[
                                 cont_plot_df[col_slider] == slide_value
                             ][chart_info['z']].replace(np.nan, 'None').to_list()
+                            if all(z_data[i] == 'None' for i in range(len(z_data))):
+                                z_data_None.append(True)
+                            else:
+                                z_data_None.append(False)
                             labels = cont_plot_df.loc[cont_plot_df[col_slider]
                                                       == slide_value]['scenario']
 
@@ -950,10 +955,11 @@ class GridSearchEval(DoeEval):
                         # Create native plotly chart
                         last_value = slider_values[-1]
                         if len(fig.data) > 0:
-                            chart_name = f'<b>{name}</b>'
-                            new_chart = InstantiatedPlotlyNativeChart(
-                                fig=fig, chart_name=chart_name, default_legend=False
-                            )
-                            instanciated_charts.append(new_chart)
+                            if not any(z_data_None):
+                                chart_name = f'<b>{name}</b>'
+                                new_chart = InstantiatedPlotlyNativeChart(
+                                    fig=fig, chart_name=chart_name, default_legend=False
+                                )
+                                instanciated_charts.append(new_chart)
 
         return instanciated_charts

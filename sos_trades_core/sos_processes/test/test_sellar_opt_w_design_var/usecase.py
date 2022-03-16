@@ -45,8 +45,7 @@ class Study(StudyManager):
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        output_descriptor = {'x_in': {'out_name': 'x',
-                                      'type': 'array',
+        design_var_descriptor = {'x_in': {'out_name': 'x',
                                       'out_type': 'dataframe',
                                       'key': 'value',
                                       'index': arange(0, 4, 1),
@@ -55,7 +54,6 @@ class Study(StudyManager):
                                       'namespace_out': 'ns_OptimSellar'
                                       },
                              'z_in': {'out_name': 'z',
-                                      'type': 'array',
                                       'out_type': 'array',
                                       'index': [0, 1],
                                       'index_name': 'index',
@@ -65,7 +63,7 @@ class Study(StudyManager):
                              }
 
         disc_dict = {}
-        disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.output_descriptor'] = output_descriptor
+        disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.design_var_descriptor'] = design_var_descriptor
 
         # Optim inputs
         disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 100
