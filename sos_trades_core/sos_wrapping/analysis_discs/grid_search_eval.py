@@ -698,20 +698,19 @@ class GridSearchEval(DoeEval):
             # used for drawing the graphs
 
             doe_samples_df = outputs_dict['doe_samples_dataframe']
-            cont_plot_df = doe_samples_df.merge(
-                output_df, how="left", on='scenario')
+            # cont_plot_df = doe_samples_df.merge(
+            #     output_df, how="left", on='scenario')
 
             # we go through the list of charts and draw all of them
             for name, chart_info in chart_dict.items():
                 if name in graphs_list:
                     if len(chart_info['slider']) == 0:
+                        
                         fig = go.Figure()
 
-                        x_data = cont_plot_df[chart_info['x']].replace(
-                            np.nan, 'None').to_list()
-                        y_data = cont_plot_df[chart_info['y']].replace(
-                            np.nan, 'None').to_list()
-                        z_data = cont_plot_df[chart_info['z']].replace(
+                        x_data = chart_info['chart_data'][chart_info['x']].to_list()
+                        y_data = chart_info['chart_data'][chart_info['y']].to_list()
+                        z_data = chart_info['chart_data'][chart_info['z']].replace(
                             np.nan, 'None').to_list()
 
                         x_max = max(x_data)
@@ -816,15 +815,14 @@ class GridSearchEval(DoeEval):
                         z_min = chart_info['z_min']
                         
                         fig = go.Figure()
-                        # z_data_None = []
 
                         for slide_value in slider_values:
                             x_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
-                            ][chart_info['x']].replace(np.nan, 'None').to_list()
+                            ][chart_info['x']].to_list()
                             y_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
-                            ][chart_info['y']].replace(np.nan, 'None').to_list()
+                            ][chart_info['y']].to_list()
                             z_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
                             ][chart_info['z']].replace(np.nan, 'None').to_list()
