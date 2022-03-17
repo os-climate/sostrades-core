@@ -203,10 +203,10 @@ class SoSDiscipline(MDODiscipline):
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
         'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE,
-                       POSSIBLE_VALUES: [MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE,
-                                         MDODiscipline.MEMORY_FULL_CACHE],
-                       NUMERICAL: True},
-        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True},
+                       POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE],
+                       NUMERICAL: True,
+                       STRUCTURING: True},
+        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
     }
 
     # -- grammars
@@ -378,8 +378,8 @@ class SoSDiscipline(MDODiscipline):
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
             self.update_dm_with_data_dict(self._data_in)
 
-        # Deal with numerical parameters inside the sosdiscipline
-        self.add_numerical_param_to_data_in()
+            # Deal with numerical parameters inside the sosdiscipline
+            self.add_numerical_param_to_data_in()
 
         if self._data_out == {}:
             self._data_out = deepcopy(self.DESC_OUT) or {}
@@ -584,8 +584,11 @@ class SoSDiscipline(MDODiscipline):
             raise Exception(
                 'if the cache type is set to HDF5Cache the cache_file path must be set')
         elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
-            self.set_cache_policy(cache_type=cache_type,
-                                  cache_hdf_file=cache_file_path)
+            if cache_type == 'None':
+                self.cache = None
+            else:
+                self.set_cache_policy(cache_type=cache_type,
+                                      cache_hdf_file=cache_file_path)
 
     def setup_sos_disciplines(self):
         '''

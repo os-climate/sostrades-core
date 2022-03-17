@@ -91,7 +91,7 @@ class TestMDANumericalParameters(unittest.TestCase):
                                                                     "ineq_tolerance": 1e-7,
                                                                     "normalize_design_space": False}
 
-        exec_eng.dm.set_values_from_dict(disc_dict)
+        exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
         local_dv = 10.
@@ -103,7 +103,7 @@ class TestMDANumericalParameters(unittest.TestCase):
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
 
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.configure()
         with self.assertLogs('SoS.EE.Coupling', level='INFO') as cm:
@@ -121,11 +121,11 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         exec_eng2.configure()
 
-        exec_eng2.dm.set_values_from_dict(disc_dict)
+        exec_eng2.load_study_from_input_dict(disc_dict)
 
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.warm_start'] = True
 
-        exec_eng2.dm.set_values_from_dict(values_dict)
+        exec_eng2.load_study_from_input_dict(values_dict)
 
         exec_eng2.configure()
         with self.assertLogs('SoS.EE.Coupling', level='INFO') as cm:
@@ -147,8 +147,8 @@ class TestMDANumericalParameters(unittest.TestCase):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
                                    msg="Wrong optimal x solution")
 
-    def test_02_chech_cache_option(self):
-        print("\n Test 2 : check cache_option")
+    def test_02_chech_simple_cache_option(self):
+        print("\n Test 2 : check SimpleCache")
 
         self.name = 'Test'
         self.ee = ExecutionEngine(self.name)
@@ -176,35 +176,39 @@ class TestMDANumericalParameters(unittest.TestCase):
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
 
-        values_dict = {self.name + '.x': 1.0,
+        values_dict = {self.name + '.x': x,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
 
-        values_dict = {self.name + '.x': 1.0,
+        values_dict = {self.name + '.x': x,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
 
         n_calls_simple_cache = self.ee.root_process.disciplines[0].n_calls
 
         self.assertEqual(n_calls_simple_cache, 3)
-        # Now with memory full cache
-        self.ee2 = ExecutionEngine(self.name)
 
-        disc1_builder = self.ee2.factory.get_builder_from_module(
+    def test_03_chech_memory_full_cache_option(self):
+        print("\n Test 2 : check MemoryFullCache")
+
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', self.mod1_path)
-        self.ee2.factory.set_builders_to_coupling_builder(disc1_builder)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
 
-        self.ee2.ns_manager.add_ns('ns_ac', self.name)
-        self.ee2.configure()
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
         a = 1.0
         b = 2.0
         x = 1.0
@@ -213,36 +217,40 @@ class TestMDANumericalParameters(unittest.TestCase):
                        self.name + '.Disc1.b': b,
                        self.name + '.Disc1.cache_type': 'MemoryFullCache'}
 
-        self.ee2.load_study_from_input_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
-        self.ee2.display_treeview_nodes()
-        self.ee2.execute()
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
 
         values_dict = {self.name + '.x': 3.0,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee2.dm.set_values_from_dict(values_dict)
-        self.ee2.execute()
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
 
-        values_dict = {self.name + '.x': 1.0,
+        values_dict = {self.name + '.x': x,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee2.dm.set_values_from_dict(values_dict)
-        self.ee2.execute()
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
 
-        n_calls_full_memory_cache = self.ee2.root_process.disciplines[0].n_calls
+        n_calls_full_memory_cache = self.ee.root_process.disciplines[0].n_calls
         self.assertEqual(n_calls_full_memory_cache, 2)
 
-        self.ee3 = ExecutionEngine(self.name)
+    def test_04_chech_hdf5_cache_option(self):
+        print("\n Test 2 : check HDF5Cache")
 
-        disc1_builder = self.ee3.factory.get_builder_from_module(
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', self.mod1_path)
-        self.ee3.factory.set_builders_to_coupling_builder(disc1_builder)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
 
-        self.ee3.ns_manager.add_ns('ns_ac', self.name)
-        self.ee3.configure()
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
         a = 1.0
         b = 2.0
         x = 1.0
@@ -252,30 +260,78 @@ class TestMDANumericalParameters(unittest.TestCase):
                        self.name + '.Disc1.cache_type': 'HDF5Cache'}
 
         with self.assertRaises(Exception) as cm:
-            self.ee3.load_study_from_input_dict(values_dict)
+            self.ee.load_study_from_input_dict(values_dict)
         error_message = 'if the cache type is set to HDF5Cache the cache_file path must be set'
         self.assertTrue(str(cm.exception) == error_message)
 
         values_dict[self.name + '.Disc1.cache_file_path'] = 'cache.h5'
-        self.ee3.load_study_from_input_dict(values_dict)
-        self.ee3.execute()
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
 
         values_dict = {self.name + '.x': 3.0,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee3.dm.set_values_from_dict(values_dict)
-        self.ee3.execute()
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
 
-        values_dict = {self.name + '.x': 1.0,
+        values_dict = {self.name + '.x': x,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b}
 
-        self.ee3.dm.set_values_from_dict(values_dict)
-        self.ee3.execute()
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
 
-        n_calls_hdf5_cache = self.ee3.root_process.disciplines[0].n_calls
+        n_calls_hdf5_cache = self.ee.root_process.disciplines[0].n_calls
         self.assertEqual(n_calls_hdf5_cache, 2)
+
+    def test_05_chech_None_cache_option(self):
+        print("\n Test 2 : check HDF5Cache")
+
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', self.mod1_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        a = 1.0
+        b = 2.0
+        x = 1.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b,
+                       self.name + '.Disc1.cache_type': 'None'}
+
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
+
+        values_dict = {self.name + '.x': 3.0,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
+
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
+
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.execute()
+
+        n_calls_without_cache = self.ee.root_process.disciplines[0].n_calls
+
+        self.assertEqual(n_calls_without_cache, 4)
 
 
 if __name__ == "__main__":

@@ -82,7 +82,7 @@ class TestStructuringInputs(unittest.TestCase):
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
         self.assertListEqual(list(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'dyn_input_2'])
+            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
@@ -93,7 +93,7 @@ class TestStructuringInputs(unittest.TestCase):
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
         self.assertListEqual(list(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'dyn_input_2'])
+            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
@@ -400,7 +400,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'authorize_self_coupled_disciplines': {'type': 'bool', 'possible_values': [True, False],
                                                                   'default': False},
                            'linearization_mode': {'type': 'string', 'default': 'auto', 'possible_values': ['auto', 'direct', 'adjoint', 'reverse', 'finite_differences', 'complex_step']},
-                           'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['SimpleCache', 'HDF5Cache', 'MemoryFullCache']},
+                           'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['None', 'SimpleCache', 'HDF5Cache', 'MemoryFullCache']},
                            'cache_file_path': {'type': 'string', 'default': None, 'possible_values': None}
                            }
 
