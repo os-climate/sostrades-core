@@ -377,7 +377,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict({})
 
         coupling_inputs = {'sub_mda_class': {'type': 'string', 'default': 'MDAJacobi', 'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'PureNewtonRaphson',
-                                                                                                           'MDAQuasiNewton', 'GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential']},
+                                                                                                           'MDAQuasiNewton', 'GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential', 'GSPureNewtonorGSMDA']},
                            'max_mda_iter': {'type': 'int', 'default': 30, 'possible_values': None},
                            'n_processes': {'type': 'int', 'default': 1, 'possible_values': None},
                            'chain_linearize': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
