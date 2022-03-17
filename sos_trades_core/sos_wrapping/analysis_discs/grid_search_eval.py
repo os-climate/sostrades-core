@@ -627,16 +627,16 @@ class GridSearchEval(DoeEval):
 
             chart_name = None
             if slider_list != []:
-                z_data_None=False
+                z_data_None=[]
                 col_slider=slider_list[0]['full_name']
                 slider_values=cont_plot_df[col_slider].unique()
                 for slide_value in slider_values:
                     z_data=list(cont_plot_df.loc[cont_plot_df[col_slider]== slide_value,z_vble])
                     if  all(np.isnan(z_data[i]) for i in range(len(z_data))):
-                        z_data_None=True
-                        break
-
-                if not z_data_None:
+                        z_data_None.append(True)
+                    else:
+                        z_data_None.append(False)
+                if not any(z_data_None):
                     chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
                     chart_data=cont_plot_df.loc[:,['scenario',x_vble,y_vble,z_vble,slider_list[0]['full_name']]]
                 
@@ -672,9 +672,9 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        self.chart_dict = self.prepare_chart_dict(
+        chart_dict = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
-        chart_list = list(self.chart_dict.keys())
+        chart_list = list(chart_dict.keys())
 
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
@@ -687,7 +687,8 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict = self.chart_dict.copy()
+        chart_dict = self.prepare_chart_dict(
+            outputs_dict, inputs_dict)
 
         if filters is not None:
             for chart_filter in filters:
@@ -774,7 +775,6 @@ class GridSearchEval(DoeEval):
                             )
                         )
                         
-                        fig.update_traces(reversescale=True, selector=dict(type='contour'))
 
                         fig.update_layout(
                             autosize=True,
@@ -926,8 +926,6 @@ class GridSearchEval(DoeEval):
                             )
                         ]
                         
-                        fig.update_traces(reversescale=True, selector=dict(type='contour'))
-
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
