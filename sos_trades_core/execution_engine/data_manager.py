@@ -290,6 +290,21 @@ class DataManager:
 
         return data_dict_values
 
+    def get_data_dict_list_attr(self, list_attr, excepted=[]):
+        """
+         Return a dictionary of dictionary with all full named keys in the dm and the value of each key from the dm
+         output : dict[key][attr] for each attr in list_attr
+        """
+        data_dict_values_dict = {}
+        data_dict_values_list = [self.get_data_dict_attr(attr, excepted) for attr in list_attr]
+
+        for key in data_dict_values_list[0].keys():
+            data_dict_values_dict[key] = {}
+            for index, attr in enumerate(list_attr):
+                data_dict_values_dict[key][attr] = data_dict_values_list[index][key]
+
+        return data_dict_values_dict
+
     def convert_data_dict_with_ids(self, dict_to_convert):
         ''' Return data_dict with ids keys
         '''
@@ -373,7 +388,7 @@ class DataManager:
                                 # if same discipline: just an update
                                 self.data_dict[var_id].update(
                                     disc_dict[var_name])
-                                #self.no_change = False
+                                # self.no_change = False
                         else:
                             if self.get_disc_full_name(self.data_dict[var_id][ORIGIN]) is None:
                                 # Quick fix to solve cases when
@@ -525,7 +540,7 @@ class DataManager:
         disc_f_name = self.get_disc_full_name(disc_id)
         if disc_f_name not in self.disciplines_id_map:
             msg = "Discipline " + str(disc_f_name) + \
-                " not found in DataManager, "
+                  " not found in DataManager, "
             msg += "it is not possible to delete it."
             raise KeyError(msg)
 
@@ -638,6 +653,7 @@ class DataManager:
             return self.disciplines_dict[disc_id][SoSDiscipline.NS_REFERENCE].value
         else:
             return None
+
     # -- Check if datamanager is usable or not
 
     def check_inputs(self, raise_exeption=True):
