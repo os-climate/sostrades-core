@@ -687,7 +687,7 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict = self.chart_dict.copy()
+        chart_dict = self.chart_dict
 
         if filters is not None:
             for chart_filter in filters:
