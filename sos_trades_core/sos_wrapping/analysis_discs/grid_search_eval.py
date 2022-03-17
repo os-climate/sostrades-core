@@ -233,6 +233,7 @@ class GridSearchEval(DoeEval):
         self.eval_input_types = ['float', 'int', 'string']
         self.max_inputs_nb = 3
         self.conversion_full_short = {}
+        self.chart_dict={}
 
     def generate_shortest_name(self, var_list):
         list_shortest_name = [[] for i in range(len(var_list))]
@@ -662,7 +663,7 @@ class GridSearchEval(DoeEval):
                     'chart_data':chart_data,
                 }
 
-        return chart_dict, output_df
+        return chart_dict
 
     def get_chart_filter_list(self):
 
@@ -670,9 +671,9 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict, output_df = self.prepare_chart_dict(
+        self.chart_dict = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
-        chart_list = list(chart_dict.keys())
+        chart_list = list(self.chart_dict.keys())
 
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
@@ -685,8 +686,7 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict, output_df = self.prepare_chart_dict(
-            outputs_dict, inputs_dict)
+        chart_dict = self.chart_dict
 
         if filters is not None:
             for chart_filter in filters:
@@ -723,7 +723,7 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 z=z_data,
-                                colorscale='YlGnBu',
+                                colorscale='YlGnBu',reversescale=True,
                                 contours=dict(
                                     coloring='heatmap',
                                     showlabels=True,  # show labels on contours
@@ -842,7 +842,7 @@ class GridSearchEval(DoeEval):
                                     x=x_data,
                                     y=y_data,
                                     z=z_data,
-                                    colorscale='YlGnBu',
+                                    colorscale='YlGnBu', reversescale=True,
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours

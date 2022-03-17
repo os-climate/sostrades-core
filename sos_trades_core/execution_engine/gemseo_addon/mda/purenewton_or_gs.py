@@ -16,16 +16,17 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 from copy import deepcopy
 import logging
+#from sos_trades_core.execution_engine.gemseo_addon.mda.gs_purenewton_mda import GSPureNewtonMDA
+
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
 
 from sos_trades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
-from sos_trades_core.execution_engine.gemseo_addon.mda.gs_purenewton_mda import GSPureNewtonMDA
+from gemseo.api import create_mda
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.mda.sequential_mda import MDASequential
 
 
@@ -96,14 +97,25 @@ class GSPureNewtonorGSMDA(MDASequential):
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
-        mda_newton = GSPureNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
+        mda_newton = create_mda(
+            'GSPureNewtonMDA',disciplines,  max_mda_iter=max_mda_iter,
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,
                                  tolerance_gs=tolerance_gs,
                                  use_lu_fact=use_lu_fact, tolerance=tolerance,
                                  relax_factor=relax_factor,
-                                 ** newton_mda_options)
+                                 ** newton_mda_options
+        )
+
+        # mda_newton = GSPureNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
+        #                          name=None, grammar_type=grammar_type,
+        #                          linear_solver=linear_solver,
+        #                          linear_solver_options=linear_solver_options,
+        #                          tolerance_gs=tolerance_gs,
+        #                          use_lu_fact=use_lu_fact, tolerance=tolerance,
+        #                          relax_factor=relax_factor,
+        #                          ** newton_mda_options)
 
         sequence = [mda_gs, mda_newton]
         super(GSPureNewtonorGSMDA,
