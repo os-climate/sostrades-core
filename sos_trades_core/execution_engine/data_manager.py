@@ -1,3 +1,4 @@
+
 '''
 Copyright 2022 Airbus SAS
 
@@ -750,3 +751,4 @@ class DataManager:
             raise ValueError(
                 f'DataManager contains *value errors*: {errors_in_dm_msg}')
         return has_errors_in_dm
+
