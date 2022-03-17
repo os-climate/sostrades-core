@@ -21,12 +21,10 @@ unit test for optimization scenario
 import unittest
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
-import platform
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
 
 
 
-class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
+class TestGSPureNewtonorGSMDA(unittest.TestCase):
     """
     SoSOptimScenario test class
     """
@@ -36,7 +34,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
 
-    def test_01_ms_sellar_sequential_and_parallel(self):
+    def test_01_GSPureNewtonorGSMDA(self):
 
         print("\n Test 1 : check configure and treeview")
         exec_eng = ExecutionEngine(self.study_name)
@@ -71,8 +69,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
         GSPureNR_sequence = exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].sub_mda_list[0].mda_sequence[1]
         assert len(GSPureNR_sequence.residual_history) == 7
 
-
 if '__main__' == __name__:
-    cls = TestMultiScenarioSoSOptimScenario()
+    cls = TestGSPureNewtonorGSMDA()
     cls.setUp()
-    cls.test_01_ms_sellar_sequential_and_parallel()
+    cls.test_01_GSPureNewtonorGSMDA()
