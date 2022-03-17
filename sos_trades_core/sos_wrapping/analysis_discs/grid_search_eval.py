@@ -723,7 +723,7 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 z=z_data,
-                                colorscale='YlGnBu',reversescale=True,
+                                colorscale='YlGnBu',
                                 contours=dict(
                                     coloring='heatmap',
                                     showlabels=True,  # show labels on contours
@@ -773,6 +773,8 @@ class GridSearchEval(DoeEval):
                                 hoverinfo='skip'
                             )
                         )
+                        
+                        fig.update_traces(reversescale=True, selector=dict(type='contour'))
 
                         fig.update_layout(
                             autosize=True,
@@ -837,7 +839,7 @@ class GridSearchEval(DoeEval):
                                     x=x_data,
                                     y=y_data,
                                     z=z_data,
-                                    colorscale='YlGnBu', reversescale=True,
+                                    colorscale='YlGnBu',
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
@@ -923,6 +925,8 @@ class GridSearchEval(DoeEval):
                                 pad=dict(t=50),
                             )
                         ]
+                        
+                        fig.update_traces(reversescale=True, selector=dict(type='contour'))
 
                         fig.update_layout(
                             sliders=sliders,
