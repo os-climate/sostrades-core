@@ -724,7 +724,7 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 z=z_data,
-                                colorscale='YlGnBu',
+                                colorscale='YlGnBu',reversescale=True,
                                 contours=dict(
                                     coloring='heatmap',
                                     showlabels=True,  # show labels on contours
@@ -839,7 +839,7 @@ class GridSearchEval(DoeEval):
                                     x=x_data,
                                     y=y_data,
                                     z=z_data,
-                                    colorscale='YlGnBu',
+                                    colorscale='YlGnBu', reversescale=True,
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
