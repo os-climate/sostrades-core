@@ -388,7 +388,7 @@ class DataManager:
                                 # if same discipline: just an update
                                 self.data_dict[var_id].update(
                                     disc_dict[var_name])
-                                # self.no_change = False
+                                #self.no_change = False
                         else:
                             if self.get_disc_full_name(self.data_dict[var_id][ORIGIN]) is None:
                                 # Quick fix to solve cases when
@@ -540,7 +540,7 @@ class DataManager:
         disc_f_name = self.get_disc_full_name(disc_id)
         if disc_f_name not in self.disciplines_id_map:
             msg = "Discipline " + str(disc_f_name) + \
-                  " not found in DataManager, "
+                " not found in DataManager, "
             msg += "it is not possible to delete it."
             raise KeyError(msg)
 
@@ -653,7 +653,6 @@ class DataManager:
             return self.disciplines_dict[disc_id][SoSDiscipline.NS_REFERENCE].value
         else:
             return None
-
     # -- Check if datamanager is usable or not
 
     def check_inputs(self, raise_exeption=True):
@@ -670,8 +669,8 @@ class DataManager:
             possible_values = self.data_dict[var_id][POSSIBLE_VALUES]
 
             if vtype not in SoSDiscipline.VAR_TYPE_MAP.keys():
-                vtype_err = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
-                self.logger.error(vtype_err)
+                errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
+                self.logger.error(errors_in_dm_msg)
             # check if data is and input and is not optional
             if io_type == IO_TYPE_IN and not optional:
                 if value is None:
