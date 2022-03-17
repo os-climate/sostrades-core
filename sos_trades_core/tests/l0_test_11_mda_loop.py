@@ -1040,6 +1040,82 @@ class TestMDALoop(unittest.TestCase):
         tracemalloc.stop()
 
 
+    def test_16_mda_numerical_options_GSPureNRorGSMDA(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng.configure()
+
+        ''' Default values for numerical options
+        'max_mda_iter': 200.,
+        'n_processes': max_cpu,
+        'chain_linearize': False,
+        'tolerance': 1.e-6,
+        'use_lu_fact': False
+        '''
+
+        values_dict = {}
+        values_dict['EE.h'] = array([8., 9.])
+        values_dict['EE.x'] = array([5., 3.])
+        values_dict['EE.use_lu_fact'] = True
+        values_dict['EE.tolerance'] = 1.e-15
+        values_dict['EE.n_processes'] = 4
+        values_dict['EE.max_mda_iter'] = 50
+        values_dict['EE.sub_mda_class'] = 'GSPureNewtonorGSMDA'
+        values_dict['EE.linear_solver_MDA_options'] = {
+            'max_iter': 5000,
+            'tol': 1e-15}
+
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        mda = exec_eng.root_process
+
+        sub_mda_class = mda.sub_mda_list[0]
+        self.assertEqual(values_dict['EE.tolerance'],
+                         sub_mda_class.tolerance)
+        self.assertEqual(values_dict['EE.max_mda_iter'],
+                         sub_mda_class.max_mda_iter)
+        values_dict['EE.tolerance'] = 1.e-20
+        values_dict['EE.max_mda_iter'] = 150
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        mda = exec_eng.root_process
+
+        sub_mda_class = mda.sub_mda_list[0]
+        self.assertEqual(values_dict['EE.tolerance'],
+                         sub_mda_class.tolerance)
+        self.assertEqual(values_dict['EE.max_mda_iter'],
+                         sub_mda_class.max_mda_iter)
+        self.assertEqual(values_dict['EE.tolerance'],
+                         sub_mda_class.mda_sequence[0].tolerance)
+        self.assertEqual(values_dict['EE.tolerance'],
+                         sub_mda_class.mda_sequence[1].tolerance)
+
+        self.assertEqual(values_dict['EE.max_mda_iter'],
+                         sub_mda_class.mda_sequence[1].max_mda_iter)
+
+        self.assertEqual(values_dict['EE.linear_solver_MDA_options']['tol'],
+                         sub_mda_class.linear_solver_tolerance)
+        self.assertEqual(values_dict['EE.linear_solver_MDA_options']['max_iter'],
+                         sub_mda_class.linear_solver_options['max_iter'])
+
+        NR = sub_mda_class.mda_sequence[1]
+
+        self.assertEqual(values_dict['EE.linear_solver_MDA_options']['max_iter'],
+                         NR.linear_solver_options['max_iter'])
+
+
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
