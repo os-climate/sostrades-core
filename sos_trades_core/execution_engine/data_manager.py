@@ -1,4 +1,3 @@
-
 '''
 Copyright 2022 Airbus SAS
 
@@ -17,16 +16,15 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from itertools import product
-from numpy import can_cast, arange, isin
+from copy import copy
 from uuid import uuid4
 
-from sos_trades_core.api import get_sos_logger
-from sos_trades_core.tools.tree.treeview import TreeView
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from numpy import can_cast
 
-from copy import copy
+from sos_trades_core.api import get_sos_logger
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.tools.tree.serializer import DataSerializer
+from sos_trades_core.tools.tree.treeview import TreeView
 
 TYPE = SoSDiscipline.TYPE
 VALUE = SoSDiscipline.VALUE
@@ -389,7 +387,7 @@ class DataManager:
                                 # if same discipline: just an update
                                 self.data_dict[var_id].update(
                                     disc_dict[var_name])
-                                #self.no_change = False
+                                # self.no_change = False
                         else:
                             if self.get_disc_full_name(self.data_dict[var_id][ORIGIN]) is None:
                                 # Quick fix to solve cases when
@@ -541,7 +539,7 @@ class DataManager:
         disc_f_name = self.get_disc_full_name(disc_id)
         if disc_f_name not in self.disciplines_id_map:
             msg = "Discipline " + str(disc_f_name) + \
-                " not found in DataManager, "
+                  " not found in DataManager, "
             msg += "it is not possible to delete it."
             raise KeyError(msg)
 
@@ -654,6 +652,7 @@ class DataManager:
             return self.disciplines_dict[disc_id][SoSDiscipline.NS_REFERENCE].value
         else:
             return None
+
     # -- Check if datamanager is usable or not
 
     def check_inputs(self, raise_exeption=True):
@@ -751,4 +750,3 @@ class DataManager:
             raise ValueError(
                 f'DataManager contains *value errors*: {errors_in_dm_msg}')
         return has_errors_in_dm
-
