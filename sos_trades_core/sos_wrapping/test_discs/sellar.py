@@ -269,7 +269,7 @@ class Sellar2(SoSDiscipline):
 
         if debug_mode:
             # if debug mode activated raise an error
-            raise
+            raise Exception("debug mode activated to trigger except")
 
 
 if __name__ == '__main__':
