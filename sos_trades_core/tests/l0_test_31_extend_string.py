@@ -135,7 +135,7 @@ class TestExtendString(unittest.TestCase):
         # dict of dict of string list
         disc5_builder.cls.DESC_IN['an_input_6'] = {
             'type': 'dict'}
-        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'list'}
+        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'dict_list'}
         exec_eng.factory.set_builders_to_coupling_builder(disc5_builder)
 
         exec_eng.configure()
@@ -193,7 +193,7 @@ class TestExtendString(unittest.TestCase):
         # dict of dict of string list
         disc5_builder.cls.DESC_IN['an_input_6'] = {
             'type': 'dict'}
-        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'list'}
+        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'dict_list'}
 
         ee2.factory.set_builders_to_coupling_builder(disc5_builder)
         ee2.configure()
