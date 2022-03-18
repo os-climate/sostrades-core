@@ -22,6 +22,7 @@ from gemseo.core.parallel_execution import ParallelExecution
 from numpy import array, ndarray, delete, NaN
 
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
+from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -418,6 +419,8 @@ class DoeEval(SoSEval):
             return self.prepare_samples()
 
     def prepare_samples(self):
+
+
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
