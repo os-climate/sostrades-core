@@ -144,6 +144,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.Disc1.linearization_mode': init_dict('string'),
                     ns_2 + '.Disc1.cache_type': init_dict('string'),
                     ns_2 + '.Disc1.cache_file_path': init_dict('string'),
+                    ns_2 + '.Disc1.debug_mode': init_dict('string'),
                     ns_2 + '.linearization_mode': init_dict('string'),
                     ns_2 + '.linear_solver_MDA': init_dict('string'),
                     ns_2 + '.linear_solver_MDA_preconditioner': init_dict('string'),
@@ -153,6 +154,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.linear_solver_MDO_options': init_dict('dict'),
                     ns_2 + '.cache_type': init_dict('string'),
                     ns_2 + '.cache_file_path': init_dict('string'),
+                    ns_2 + '.debug_mode': init_dict('string'),
                     ns_2 + '.warm_start': init_dict('string'),
                     ns_2 + '.acceleration': init_dict('string'),
                     ns_2 + '.sub_mda_class': init_dict('string'),
@@ -172,7 +174,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     'model_origin': 'NPS.CH19_Kero.Disc1', 'value': None}
         for var_id in ['n_processes', 'warm_start_threshold',
                        'chain_linearize', 'tolerance', 'use_lu_fact',
-                       'linearization_mode', 'cache_type', 'cache_file_path']:
+                       'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']:
             var_n = ns_2 + '.' + var_id
             ref_dict[var_n] = copy(val_dict)
         data_id_map_2 = {}

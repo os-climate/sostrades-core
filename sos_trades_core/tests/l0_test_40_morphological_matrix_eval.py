@@ -79,7 +79,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
 
         # check dynamic inputs 'a_list', 'x_list'
         self.assertListEqual(list(morph_matrix_eval_disc._data_in.keys()), [
-                             'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs', 'eval_outputs','n_processes','wait_time_between_fork', 'linearization_mode', 'cache_type', 'cache_file_path', 'a_list', 'x_list'])
+                             'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs', 'eval_outputs','n_processes','wait_time_between_fork', 'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode', 'a_list', 'x_list'])
 
         # add 'name' and 'b' as selected eval input and remove 'a'
         eval_inputs = self.exec_eng.dm.get_value(
@@ -98,7 +98,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
 
         # check 'name_list' dynamic inputs and 'a_list' removed
         self.assertListEqual(list(morph_matrix_eval_disc._data_in.keys()), [
-                             'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs', 'eval_outputs','n_processes','wait_time_between_fork', 'linearization_mode', 'cache_type', 'cache_file_path', 'x_list', 'b_list', 'name_list'])
+            'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs',
+            'eval_outputs','n_processes','wait_time_between_fork', 'linearization_mode',
+            'cache_type', 'cache_file_path', 'debug_mode', 'x_list', 'b_list', 'name_list'])
 
         # check type, possible_values and range of selected eval inputs
         self.assertListEqual(self.exec_eng.dm.get_data(
