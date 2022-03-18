@@ -1543,9 +1543,9 @@ class SoSDiscipline(MDODiscipline):
         """
 
         if self.nan_check:
-            self.__check_nan_in_data_rec(data, "")
-            raise ValueError(f'NaN values found in {self.sos_name}')
-
+            has_nan=self.__check_nan_in_data_rec(data, "")
+            if has_nan:
+                raise ValueError(f'NaN values found in {self.sos_name}')
     def __check_nan_in_data_rec(self, data, parent_key):
         """ Using entry data, check if nan value exist in data's as recursive
         method
@@ -1557,6 +1557,7 @@ class SoSDiscipline(MDODiscipline):
         :type: str
 
         """
+        has_nan=False
         import pandas as pd
         for data_key, data_value in data.items():
 
@@ -1589,6 +1590,8 @@ class SoSDiscipline(MDODiscipline):
                     full_key = f'{parent_key}/{data_key}'
                 self.logger.debug(f'NaN values found in {full_key}')
                 self.logger.debug(data_value)
+                has_nan=True
+        return has_nan
 
     def __check_discipline_data_integrity(self, left_dict, right_dict, test_subject):
         from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
