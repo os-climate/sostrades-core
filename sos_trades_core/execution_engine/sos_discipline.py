@@ -144,6 +144,8 @@ class SoSDiscipline(MDODiscipline):
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
 
+    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
+
     # -- status section
 
     # -- Maturity section
@@ -163,6 +165,8 @@ class SoSDiscipline(MDODiscipline):
                                          MDODiscipline.MEMORY_FULL_CACHE],
                        NUMERICAL: True},
         'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True},
+        'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+                       NUMERICAL: True, OPTIONAL: True, 'structuring': True}
     }
 
     # -- grammars
@@ -323,8 +327,8 @@ class SoSDiscipline(MDODiscipline):
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
             self.update_dm_with_data_dict(self._data_in)
 
-        # Deal with numerical parameters inside the sosdiscipline
-        self.add_numerical_param_to_data_in()
+            # Deal with numerical parameters inside the sosdiscipline
+            self.add_numerical_param_to_data_in()
 
         if self._data_out == {}:
             self._data_out = deepcopy(self.DESC_OUT) or {}
@@ -536,6 +540,33 @@ class SoSDiscipline(MDODiscipline):
         elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
             self.set_cache_policy(cache_type=cache_type,
                                   cache_hdf_file=cache_file_path)
+
+        #Debug mode
+        debug_mode = self.get_sosdisc_inputs('debug_mode')
+        if debug_mode == "nan":
+            self.nan_check = True
+        elif debug_mode == "input_change":
+            self.check_if_input_change_after_run = True
+        elif debug_mode == "linearize_data_change":
+            self.check_linearize_data_changes = True
+        elif debug_mode == "min_max_grad":
+            self.check_min_max_gradients = True
+        elif debug_mode == "min_max_couplings":
+            self.check_min_max_couplings = True
+        elif debug_mode == "all":
+            self.nan_check = True
+            self.check_if_input_change_after_run = True
+            self.check_linearize_data_changes = True
+            self.check_min_max_gradients = True
+            self.check_min_max_couplings = True
+        if debug_mode != "":
+            if debug_mode == "all":
+                for mode in self.AVAILABLE_DEBUG_MODE not in ["", "all"]:
+                    print(f'Discipline {self.sos_name} set to debug mode {mode}')
+                    self.logger.debug(f'Discipline {self.sos_name} set to debug mode {mode}')
+            else:
+                print(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                self.logger.debug(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def setup_sos_disciplines(self):
         '''
@@ -1513,6 +1544,7 @@ class SoSDiscipline(MDODiscipline):
 
         if self.nan_check:
             self.__check_nan_in_data_rec(data, "")
+            raise ValueError(f'NaN values found in {self.sos_name}')
 
     def __check_nan_in_data_rec(self, data, parent_key):
         """ Using entry data, check if nan value exist in data's as recursive
