@@ -19,6 +19,7 @@ from tqdm import tqdm
 import time
 
 from gemseo.core.parallel_execution import ParallelExecution
+from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -416,6 +417,7 @@ class SoSEval(SoSDisciplineBuilder):
         Reconstruct the metadata saved earlier to get same object in output
         instead of a flatten list
         '''
+
         outeval_final_dict = {}
         for j, key_in in enumerate(self.eval_in_list):
             outeval_dict = {}
