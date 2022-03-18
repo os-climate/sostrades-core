@@ -493,12 +493,13 @@ class GridSearchEval(DoeEval):
 
         scenarii = len(doe_samples_df['scenario'])
 
-        # generate all combinations of 2 inputs whcich will correspond to the
+        # generate all combinations of 2 inputs which will correspond to the
         # number of charts
         inputs_combin = list(itertools.combinations(inputs_list, 2))
 
         full_chart_list = []
-
+        
+        #output_df to stock all results 
         output_df = None
         output_df_temp = None
 
@@ -508,7 +509,6 @@ class GridSearchEval(DoeEval):
 
 
         if len(outputs_names_list) > 0:
-            # outputs_names = [name for name in outputs_names_list if name not in ['doe_samples_dataframe']]
             outputs_names = outputs_names_list.copy()
             outputs_names.remove('doe_samples_dataframe')
             for single_output in outputs_names:
@@ -538,7 +538,9 @@ class GridSearchEval(DoeEval):
                             for col in filtered_name:
                                 if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all((list(output_df_dict.values())[i][col][0] == 'NA') for i in range(scenarii)):
                                     filtered_name.remove(col)
-
+                                    
+                            #Transform the output_dict into  dataframe with length = number of scenarios (output_df)
+                            #   and number of columns = all results for all single outputs
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
                                 filtered_df = filtered_df[filtered_name]
@@ -551,7 +553,7 @@ class GridSearchEval(DoeEval):
                                             'output_info_name': re.sub(r'_dict$', '', single_output),
                                             'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
                                                 re.sub(r'_dict$', '', single_output))[0])['unit']}
-
+                                
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
                                 elif len(output_df) == scenarii:
@@ -576,8 +578,7 @@ class GridSearchEval(DoeEval):
                                         output_df.merge(
                                             output_df_temp[['scenario', col]], on='scenario', how='left')
                                 output_df_temp = None
-
-            # output_df.replace('NA', np.nan, inplace=True)
+            # Select only float type results
             output_variables = output_df.select_dtypes(
                 include='float').columns.to_list()
             cont_plot_df = doe_samples_df.merge(
@@ -662,7 +663,7 @@ class GridSearchEval(DoeEval):
                     'chart_data':chart_data,
                 }
 
-        return chart_dict, output_df
+        return chart_dict
 
     def get_chart_filter_list(self):
 
@@ -670,7 +671,7 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict, output_df = self.prepare_chart_dict(
+        chart_dict = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
         chart_list = list(chart_dict.keys())
 
@@ -685,7 +686,7 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict, output_df = self.prepare_chart_dict(
+        chart_dict = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
 
         if filters is not None:
@@ -698,8 +699,7 @@ class GridSearchEval(DoeEval):
             # used for drawing the graphs
 
             doe_samples_df = outputs_dict['doe_samples_dataframe']
-            # cont_plot_df = doe_samples_df.merge(
-            #     output_df, how="left", on='scenario')
+
 
             # we go through the list of charts and draw all of them
             for name, chart_info in chart_dict.items():
@@ -723,7 +723,7 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 z=z_data,
-                                colorscale='YlGnBu',
+                                colorscale='YlGnBu',reversescale=True,
                                 contours=dict(
                                     coloring='heatmap',
                                     showlabels=True,  # show labels on contours
@@ -731,17 +731,14 @@ class GridSearchEval(DoeEval):
                                         size=10,
                                         # color = 'white',
                                     ),
-                                    # start=z_min,
-                                    # end=z_max,
+
                                 ),
                                 colorbar=dict(
                                     title=f'{chart_info["z"]}',
                                     nticks=10,
-                                    # ticks='outside',
                                     ticklen=5,
                                     tickwidth=1,
                                     ticksuffix=f'{chart_info["z_unit"]}',
-                                    # showticklabels=True,
                                     tickangle=0,
                                     tickfont_size=10,
                                 ),
@@ -776,6 +773,7 @@ class GridSearchEval(DoeEval):
                                 hoverinfo='skip'
                             )
                         )
+                        
 
                         fig.update_layout(
                             autosize=True,
@@ -792,11 +790,9 @@ class GridSearchEval(DoeEval):
                                 ticksuffix=chart_info["y_unit"],
                                 titlefont_size=12,
                                 tickfont_size=10,
-                                # tickformat=',.0%',
                                 automargin=True,
                                 range=[y_min, y_max],
                             ),
-                            # margin=dict(l=0.25, b=100)
                         )
 
                         if len(fig.data) > 0:
@@ -842,7 +838,7 @@ class GridSearchEval(DoeEval):
                                     x=x_data,
                                     y=y_data,
                                     z=z_data,
-                                    colorscale='YlGnBu',
+                                    colorscale='YlGnBu', reversescale=True,
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
@@ -928,7 +924,7 @@ class GridSearchEval(DoeEval):
                                 pad=dict(t=50),
                             )
                         ]
-
+                        
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
