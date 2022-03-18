@@ -229,11 +229,6 @@ class SoSDiscipline(MDODiscipline):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def init_execution(self):
-        """
-        To be used to store additional attributes for wrapping
-        """
-        pass
 
     def get_shared_namespace_list(self, data_dict):
         '''
