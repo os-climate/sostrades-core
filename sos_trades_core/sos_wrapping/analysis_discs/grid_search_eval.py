@@ -493,28 +493,22 @@ class GridSearchEval(DoeEval):
 
         scenarii = len(doe_samples_df['scenario'])
 
-        # generate all combinations of 2 inputs whcich will correspond to the
+        # generate all combinations of 2 inputs which will correspond to the
         # number of charts
         inputs_combin = list(itertools.combinations(inputs_list, 2))
 
         full_chart_list = []
-
+        
+        #output_df to stock all results 
         output_df = None
         output_df_temp = None
 
-        # ''''''''only one output is considered today in the code
-        # we take only the first output after the doe_sample_dataframe
         outputs_names_list = list(outputs_discipline_dict.keys())
 
         output_info_dict = {}
-        #{npv: {output_name: 'GridSearch.Outputs.cashflow_info_total_scenario_df', 'unit': '€'},
-        # irr:}
-        # keys=output_variables
-        # pour chaque column de mon output_df --> je vais avoir le nom et la
-        # unit
+
 
         if len(outputs_names_list) > 0:
-            # outputs_names = [name for name in outputs_names_list if name not in ['doe_samples_dataframe']]
             outputs_names = outputs_names_list.copy()
             outputs_names.remove('doe_samples_dataframe')
             for single_output in outputs_names:
@@ -544,7 +538,9 @@ class GridSearchEval(DoeEval):
                             for col in filtered_name:
                                 if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all((list(output_df_dict.values())[i][col][0] == 'NA') for i in range(scenarii)):
                                     filtered_name.remove(col)
-
+                                    
+                            #Transform the output_dict into  dataframe with length = number of scenarios (output_df)
+                            #   and number of columns = all results for all single outputs
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
                                 filtered_df = filtered_df[filtered_name]
@@ -557,7 +553,7 @@ class GridSearchEval(DoeEval):
                                             'output_info_name': re.sub(r'_dict$', '', single_output),
                                             'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
                                                 re.sub(r'_dict$', '', single_output))[0])['unit']}
-
+                                
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
                                 elif len(output_df) == scenarii:
@@ -582,10 +578,11 @@ class GridSearchEval(DoeEval):
                                         output_df.merge(
                                             output_df_temp[['scenario', col]], on='scenario', how='left')
                                 output_df_temp = None
-
-            # output_df.replace('NA', np.nan, inplace=True)
+            # Select only float type results
             output_variables = output_df.select_dtypes(
                 include='float').columns.to_list()
+            cont_plot_df = doe_samples_df.merge(
+                output_df, how="left", on='scenario')
 
             # we constitute the full_chart_list by making a product
             # between the possible inputs combination and outputs list
@@ -627,32 +624,46 @@ class GridSearchEval(DoeEval):
                     }
                     slider_list.append(slider)
 
-            # chart_name = f'{z_vble} based on {x_short} vs {y_short}'
+            chart_name = None
             if slider_list != []:
-                chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
+                z_data_None=[]
+                col_slider=slider_list[0]['full_name']
+                slider_values=cont_plot_df[col_slider].unique()
+                for slide_value in slider_values:
+                    z_data=list(cont_plot_df.loc[cont_plot_df[col_slider]== slide_value,z_vble])
+                    if  all(np.isnan(z_data[i]) for i in range(len(z_data))):
+                        z_data_None.append(True)
+                    else:
+                        z_data_None.append(False)
+                if not any(z_data_None):
+                    chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
+                    chart_data=cont_plot_df.loc[:,['scenario',x_vble,y_vble,z_vble,slider_list[0]['full_name']]]
+                
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
+                chart_data=cont_plot_df.loc[:,['scenario',x_vble,y_vble,z_vble]]
+                
+            if chart_name is not None: 
+                chart_dict[chart_name] = {
+                    'x': x_vble,
+                    'x_short': x_short,
+                    'x_unit': self.ee.dm.get_data(
+                        self.ee.dm.get_all_namespaces_from_var_name(x_vble)[0]
+                    )['unit'],
+                    'y': y_vble,
+                    'y_short': y_short,
+                    'y_unit': self.ee.dm.get_data(
+                        self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0]
+                    )['unit'],
+                    'z': z_vble,
+                    'z_unit': chart[3],
+                    'z_max': output_df[z_vble].max(skipna=True),
+                    'z_min': output_df[z_vble].min(skipna=True),
+                    'slider': slider_list,
+                    'chart_data':chart_data,
+                }
 
-            chart_dict[chart_name] = {
-                'x': x_vble,
-                'x_short': x_short,
-                'x_unit': self.ee.dm.get_data(
-                    self.ee.dm.get_all_namespaces_from_var_name(x_vble)[0]
-                )['unit'],
-                'y': y_vble,
-                'y_short': y_short,
-                'y_unit': self.ee.dm.get_data(
-                    self.ee.dm.get_all_namespaces_from_var_name(y_vble)[0]
-                )['unit'],
-                'z': z_vble,
-                'z_unit': chart[3],
-                'z_max': output_df[z_vble].max(skipna=True),
-                'z_min': output_df[z_vble].min(skipna=True),
-                'slider': slider_list,
-
-            }
-
-        return chart_dict, output_df
+        return chart_dict
 
     def get_chart_filter_list(self):
 
@@ -660,7 +671,7 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict, output_df = self.prepare_chart_dict(
+        chart_dict = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
         chart_list = list(chart_dict.keys())
 
@@ -675,7 +686,7 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict, output_df = self.prepare_chart_dict(
+        chart_dict = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
 
         if filters is not None:
@@ -688,20 +699,18 @@ class GridSearchEval(DoeEval):
             # used for drawing the graphs
 
             doe_samples_df = outputs_dict['doe_samples_dataframe']
-            cont_plot_df = doe_samples_df.merge(
-                output_df, how="left", on='scenario')
+
 
             # we go through the list of charts and draw all of them
             for name, chart_info in chart_dict.items():
                 if name in graphs_list:
                     if len(chart_info['slider']) == 0:
+                        
                         fig = go.Figure()
 
-                        x_data = cont_plot_df[chart_info['x']].replace(
-                            np.nan, 'None').to_list()
-                        y_data = cont_plot_df[chart_info['y']].replace(
-                            np.nan, 'None').to_list()
-                        z_data = cont_plot_df[chart_info['z']].replace(
+                        x_data = chart_info['chart_data'][chart_info['x']].to_list()
+                        y_data = chart_info['chart_data'][chart_info['y']].to_list()
+                        z_data = chart_info['chart_data'][chart_info['z']].replace(
                             np.nan, 'None').to_list()
 
                         x_max = max(x_data)
@@ -714,7 +723,7 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 z=z_data,
-                                colorscale='YlGnBu',
+                                colorscale='YlGnBu',reversescale=True,
                                 contours=dict(
                                     coloring='heatmap',
                                     showlabels=True,  # show labels on contours
@@ -722,17 +731,14 @@ class GridSearchEval(DoeEval):
                                         size=10,
                                         # color = 'white',
                                     ),
-                                    # start=z_min,
-                                    # end=z_max,
+
                                 ),
                                 colorbar=dict(
                                     title=f'{chart_info["z"]}',
                                     nticks=10,
-                                    # ticks='outside',
                                     ticklen=5,
                                     tickwidth=1,
                                     ticksuffix=f'{chart_info["z_unit"]}',
-                                    # showticklabels=True,
                                     tickangle=0,
                                     tickfont_size=10,
                                 ),
@@ -767,6 +773,7 @@ class GridSearchEval(DoeEval):
                                 hoverinfo='skip'
                             )
                         )
+                        
 
                         fig.update_layout(
                             autosize=True,
@@ -783,11 +790,9 @@ class GridSearchEval(DoeEval):
                                 ticksuffix=chart_info["y_unit"],
                                 titlefont_size=12,
                                 tickfont_size=10,
-                                # tickformat=',.0%',
                                 automargin=True,
                                 range=[y_min, y_max],
                             ),
-                            # margin=dict(l=0.25, b=100)
                         )
 
                         if len(fig.data) > 0:
@@ -801,29 +806,22 @@ class GridSearchEval(DoeEval):
                         col_slider = chart_info['slider'][0]['full_name']
                         slider_short_name = chart_info['slider'][0]['short_name']
                         slider_unit = chart_info['slider'][0]['unit']
-                        slider_values = cont_plot_df[col_slider].unique()
+                        slider_values = chart_info['chart_data'][col_slider].unique()
                         z_max = chart_info['z_max']
                         z_min = chart_info['z_min']
-
+                        
                         fig = go.Figure()
-                        z_data_None = []
 
                         for slide_value in slider_values:
-                            x_data = cont_plot_df.loc[
-                                cont_plot_df[col_slider] == slide_value
-                            ][chart_info['x']].replace(np.nan, 'None').to_list()
-                            y_data = cont_plot_df.loc[
-                                cont_plot_df[col_slider] == slide_value
-                            ][chart_info['y']].replace(np.nan, 'None').to_list()
-                            z_data = cont_plot_df.loc[
-                                cont_plot_df[col_slider] == slide_value
+                            x_data = chart_info['chart_data'].loc[
+                                chart_info['chart_data'][col_slider] == slide_value
+                            ][chart_info['x']].to_list()
+                            y_data = chart_info['chart_data'].loc[
+                                chart_info['chart_data'][col_slider] == slide_value
+                            ][chart_info['y']].to_list()
+                            z_data = chart_info['chart_data'].loc[
+                                chart_info['chart_data'][col_slider] == slide_value
                             ][chart_info['z']].replace(np.nan, 'None').to_list()
-                            if all(z_data[i] == 'None' for i in range(len(z_data))):
-                                z_data_None.append(True)
-                            else:
-                                z_data_None.append(False)
-                            labels = cont_plot_df.loc[cont_plot_df[col_slider]
-                                                      == slide_value]['scenario']
 
                             x_max = max(x_data)
                             x_min = min(x_data)
@@ -840,7 +838,7 @@ class GridSearchEval(DoeEval):
                                     x=x_data,
                                     y=y_data,
                                     z=z_data,
-                                    colorscale='YlGnBu',
+                                    colorscale='YlGnBu', reversescale=True,
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
@@ -877,7 +875,6 @@ class GridSearchEval(DoeEval):
                                 go.Scatter(
                                     x=x_data,
                                     y=y_data,
-                                    # name=labels,
                                     mode='markers',
                                     marker_symbol=SymbolValidator(
                                     ).values[SymbolValidator().values.index('x-thin')],
@@ -927,7 +924,7 @@ class GridSearchEval(DoeEval):
                                 pad=dict(t=50),
                             )
                         ]
-
+                        
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
@@ -955,11 +952,10 @@ class GridSearchEval(DoeEval):
                         # Create native plotly chart
                         last_value = slider_values[-1]
                         if len(fig.data) > 0:
-                            if not any(z_data_None):
-                                chart_name = f'<b>{name}</b>'
-                                new_chart = InstantiatedPlotlyNativeChart(
-                                    fig=fig, chart_name=chart_name, default_legend=False
-                                )
-                                instanciated_charts.append(new_chart)
+                            chart_name = f'<b>{name}</b>'
+                            new_chart = InstantiatedPlotlyNativeChart(
+                                fig=fig, chart_name=chart_name, default_legend=False
+                            )
+                            instanciated_charts.append(new_chart)
 
         return instanciated_charts

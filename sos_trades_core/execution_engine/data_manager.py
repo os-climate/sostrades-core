@@ -654,8 +654,8 @@ class DataManager:
             possible_values = self.data_dict[var_id][POSSIBLE_VALUES]
 
             if vtype not in SoSDiscipline.VAR_TYPE_MAP.keys():
-                vtype_err = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
-                self.logger.error(vtype_err)
+                errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
+                self.logger.error(errors_in_dm_msg)
             # check if data is and input and is not optional
             if io_type == IO_TYPE_IN and not optional:
                 if value is None:
