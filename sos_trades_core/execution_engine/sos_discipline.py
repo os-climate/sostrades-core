@@ -203,7 +203,8 @@ class SoSDiscipline(MDODiscipline):
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
         'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE,
-                       POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE],
+                       POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
+                       # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                        NUMERICAL: True,
                        STRUCTURING: True},
         'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
