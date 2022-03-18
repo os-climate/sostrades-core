@@ -56,7 +56,7 @@ class TestGSPureNewtonorGSMDA(unittest.TestCase):
         exec_eng.configure()
         values_dict['optim.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'GSPureNewtonorGSMDA'
         # activate debug mode to raise error
-        values_dict['optim.SellarOptimScenario.SellarCoupling.debug_mode'] = True
+        values_dict['optim.SellarOptimScenario.SellarCoupling.debug_mode_sellar'] = True
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.configure()
