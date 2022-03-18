@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from copy import deepcopy
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict,\
+from gemseo.utils.compare_data_manager_tooling import compare_dict,\
     delete_keys_from_dict
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
