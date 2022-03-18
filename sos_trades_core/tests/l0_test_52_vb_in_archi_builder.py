@@ -86,7 +86,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Airbus')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'AC_Sales.output']
+                           'cache_type', 'cache_file_path', 'debug_mode', 'AC_Sales.output']
         self.assertListEqual(
             list(disc_airbus._data_in.keys()), data_in_th_list)
 
@@ -99,7 +99,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Boeing')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path', 'AC_Sales.output', 'Services.output']
+                           'cache_file_path', 'debug_mode', 'AC_Sales.output', 'Services.output']
         self.assertListEqual(
             list(disc_boeing._data_in.keys()), data_in_th_list)
         data_out_th_list = ['output_gather', 'output']
@@ -149,7 +149,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Airbus')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'AC_Sales.output_gather']
+                           'cache_type', 'cache_file_path', 'debug_mode', 'AC_Sales.output_gather']
         self.assertListEqual(
             list(disc_airbus._data_in.keys()), data_in_th_list)
 
@@ -162,7 +162,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Boeing')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path', 'Services.output_gather', 'Services.output']
+                           'cache_file_path',  'debug_mode', 'Services.output_gather', 'Services.output']
         self.assertListEqual(
             list(disc_boeing._data_in.keys()), data_in_th_list)
         data_out_th_list = ['output_gather', 'output']
