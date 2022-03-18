@@ -927,7 +927,7 @@ class SoSDiscipline(MDODiscipline):
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_after_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
-            self.__check_discipline_data_integrity(disc_data_before_linearize,
+            self.check_discipline_data_integrity(disc_data_before_linearize,
                                                    disc_data_after_linearize,
                                                    'Discipline data integrity through linearize')
 
@@ -1114,7 +1114,7 @@ class SoSDiscipline(MDODiscipline):
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
                 disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
                                                for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-                self.__check_discipline_data_integrity(disc_inputs_before_execution,
+                self.check_discipline_data_integrity(disc_inputs_before_execution,
                                                        disc_inputs_after_execution,
                                                        'Discipline inputs integrity through run')
 
