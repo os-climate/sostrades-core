@@ -68,16 +68,16 @@ class DesignVarDiscipline(SoSDiscipline):
         # The structure of the output descriptor dict is checked prior its use
         if 'design_var_descriptor' in self._data_in:
             design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
-
-            if self._check_descriptor(design_var_descriptor):
-                for key in design_var_descriptor.keys():
-                    dynamic_inputs[key] = {'type': 'array',
-                                           'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                           'namespace': design_var_descriptor[key]['namespace_in']}
-                    dynamic_outputs[design_var_descriptor[key]['out_name']] = {
-                        'type': design_var_descriptor[key]['out_type'],
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                        'namespace': design_var_descriptor[key]['namespace_out']}
+            if design_var_descriptor is not None:
+                if self._check_descriptor(design_var_descriptor):
+                    for key in design_var_descriptor.keys():
+                        dynamic_inputs[key] = {'type': 'array',
+                                               'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                               'namespace': design_var_descriptor[key]['namespace_in']}
+                        dynamic_outputs[design_var_descriptor[key]['out_name']] = {
+                            'type': design_var_descriptor[key]['out_type'],
+                            'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                            'namespace': design_var_descriptor[key]['namespace_out']}
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
