@@ -28,7 +28,10 @@ from sos_trades_core.tools.post_processing.post_processing_tools import (
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
     InstantiatedPlotlyNativeChart,
 )
+from plotly.validators.scatter.marker import SymbolValidator
 
+from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
+    OntologyDataConnector)
 
 '''
 Copyright 2022 Airbus SAS
@@ -79,6 +82,7 @@ class GridSearchEval(DoeEval):
                 'selected_input': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),
             },
             'dataframe_edition_locked': False,
             'structuring': True,
@@ -89,6 +93,7 @@ class GridSearchEval(DoeEval):
                 'selected_output': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),
             },
             'dataframe_edition_locked': False,
             'structuring': True,
@@ -126,17 +131,23 @@ class GridSearchEval(DoeEval):
             if set(selected_inputs.tolist()) != set(self.selected_inputs):
                 selected_inputs_has_changed = True
                 self.selected_inputs = selected_inputs.tolist()
+                self.dm.set_data(
+                    f'{self.get_disc_full_name()}.eval_inputs',
+                    'value',
+                    eval_inputs.sort_values(
+                        by=['selected_input', 'full_name'], ascending=False).reset_index(drop=True),
+                    check_value=False,
+                )
+            if set(selected_outputs.tolist()) != set(self.selected_outputs):
+                self.dm.set_data(
+                    f'{self.get_disc_full_name()}.eval_outputs',
+                    'value',
+                    eval_outputs.sort_values(
+                        by=['selected_output', 'full_name'], ascending=False).reset_index(drop=True),
+                    check_value=False,
+                )
             self.selected_outputs = selected_outputs.tolist()
-            # select inputs till  maximum selected input number
-            # selected_inputs_full = [self.conversion_short_full[val]
-            #                         for val in list(selected_inputs) if val in self.conversion_short_full.keys()]
-            # selected_outputs_full = [self.conversion_short_full[val]
-            # for val in list(selected_outputs) if val in
-            # self.conversion_short_full.keys()]
 
-            # self.selected_inputs = selected_inputs_full[
-            #     : self.max_inputs_nb]
-            # self.selected_outputs = selected_outputs_full
             self.selected_inputs = self.selected_inputs[: self.max_inputs_nb]
             selected_inputs_short = selected_inputs_short[: self.max_inputs_nb]
             self.set_eval_in_out_lists(
@@ -318,23 +329,34 @@ class GridSearchEval(DoeEval):
         self.generate_shortest_name(list(set(possible_in_values_full)))
         self.generate_shortest_name(list(set(possible_out_values_full)))
 
+        # possible_in_values_short = [
+        #     self.conversion_full_short[val] for val in possible_in_values_full
+        # ]
+        # possible_out_values_short = [
+        #     self.conversion_full_short[val] for val in possible_out_values_full
+        # ]
+
+        # ontology name
+        ontology_connector = OntologyDataConnector()
+        data_connection = {
+            'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+        }
+        inputs_val_list = [val.split('.')[-1]
+                           for val in possible_in_values_full]
+        outputs_val_list = [val.split('.')[-1]
+                            for val in possible_out_values_full]
+        args = inputs_val_list + outputs_val_list
+        ontology_connector.set_connector_request(
+            data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
+        conversion_full_ontology = ontology_connector.load_data(
+            data_connection)
+
         possible_in_values_short = [
-            self.conversion_full_short[val] for val in possible_in_values_full
-        ]
+            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+        # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = [
-            self.conversion_full_short[val] for val in possible_out_values_full
-        ]
-
-        # possible_in_values_short = list(set(possible_in_values_short))
-        # possible_out_values_short = list(set(possible_out_values_short))
-
-        # possible_in_values_short.sort()
-        # possible_out_values_short.sort()
-
-        # default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full_short],
-        #                                      'full_name': possible_in_values_full_short})
-        # default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full_short],
-        #                                       'full_name': possible_out_values_full_short})
+            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
+        # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(
             {
@@ -422,7 +444,8 @@ class GridSearchEval(DoeEval):
             self.dm.set_data(
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
-                default_out_dataframe,
+                default_out_dataframe.sort_values(
+                    by=['selected_output'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
 
@@ -440,7 +463,8 @@ class GridSearchEval(DoeEval):
             self.dm.set_data(
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
-                default_dataframe,
+                default_dataframe.sort_values(
+                    by=['selected_output'], ascending=False).reset_index(drop=True),
                 check_value=False,
             )
 
@@ -466,8 +490,8 @@ class GridSearchEval(DoeEval):
         # retrive full input list
         inputs_list = [
             col for col in doe_samples_df.columns if col not in ['scenario']]
-        
-        scenarii=len(doe_samples_df['scenario'])
+
+        scenarii = len(doe_samples_df['scenario'])
 
         # generate all combinations of 2 inputs whcich will correspond to the
         # number of charts
@@ -476,82 +500,90 @@ class GridSearchEval(DoeEval):
         full_chart_list = []
 
         output_df = None
-        output_df_temp=None
-        
-        output_origin_name=[]
+        output_df_temp = None
+
         # ''''''''only one output is considered today in the code
         # we take only the first output after the doe_sample_dataframe
         outputs_names_list = list(outputs_discipline_dict.keys())
-        
-        
-        output_info_dict={ }
+
+        output_info_dict = {}
         #{npv: {output_name: 'GridSearch.Outputs.cashflow_info_total_scenario_df', 'unit': '€'},
         # irr:}
-        #keys=output_variables
-        #pour chaque column de mon output_df --> je vais avoir le nom et la unit
-        
+        # keys=output_variables
+        # pour chaque column de mon output_df --> je vais avoir le nom et la
+        # unit
+
         if len(outputs_names_list) > 0:
             # outputs_names = [name for name in outputs_names_list if name not in ['doe_samples_dataframe']]
-            outputs_names=outputs_names_list.copy()
+            outputs_names = outputs_names_list.copy()
             outputs_names.remove('doe_samples_dataframe')
             for single_output in outputs_names:
                 output_df_dict = outputs_discipline_dict[single_output]
 
                 if isinstance(output_df_dict, dict):
-                    
-                    if all(isinstance(ddict, dict) for ddict in output_df_dict.values()):
-                            #change from a dict of dicts to a dict of df
+
+                    if isinstance(list(output_df_dict.values())[0], dict):
+                            # change from a dict of dicts to a dict of df
                         output_df_dict = {key: pd.DataFrame.from_records(
                             [output_df_dict[key]]) for key in output_df_dict}
 
-                    if all(isinstance(df, pd.DataFrame) for df in output_df_dict.values()):
-                        
-                        if all((len(df) == 1) for df in output_df_dict.values()):
-    
-                            # we extract the columns of the dataframe of type float which will represents the possible outputs
-                            # we assume that all dataframes contains the same columns
-                            # and only look at the first element
-                            # output_df_dict = output_df_dict[list(output_df_dict.keys())[1]]
+                    if (isinstance(list(output_df_dict.values())[0], pd.DataFrame)) and (len(list(output_df_dict.values())[0]) == 1):
+
+                        # we extract the columns of the dataframe of type float which will represents the possible outputs
+                        # we assume that all dataframes contains the same columns
+                        # and only look at the first element
+
+                        # We select the outputs to plot at the first element
+                        # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
+                        filtered_name = [col for col in list(output_df_dict.values())[0].columns if ((list(output_df_dict.values())[
+                            0][col].dtype == 'float') or (list(output_df_dict.values())[0][col][0] == 'NA'))]
+
+                        if len(filtered_name) > 0:
+
+                            # to delete the outputs values that are nan or 'NA'
+                            for col in filtered_name:
+                                if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all((list(output_df_dict.values())[i][col][0] == 'NA') for i in range(scenarii)):
+                                    filtered_name.remove(col)
+
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
+                                filtered_df = filtered_df[filtered_name]
                                 filtered_df['scenario'] = f'{scenario}'
                                 filtered_df.replace('NA', np.nan, inplace=True)
-                                
-                                for name, value_df in filtered_df.items():
-                                    if value_df.dtype=='float':
-                                        if name not in list(output_info_dict.keys()):
-                                            output_info_dict[name]={
-                                                'output_info_name': re.sub(r'_dict$', '', single_output),
-                                                'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
-                                                    re.sub(r'_dict$', '', single_output))[0])['unit'] }
-                                    
-                                #pour chaque column de filtered_df --> Ajouter un clé output_info_dict--> {column_name=output_name: single output, unit: self.ee.dm.get_data(
-                                                                                                                                                    # self.ee.dm.get_all_namespaces_from_var_name(chart[2][i])[0])['unit']
-                                # si la column_name exists déjà tu ne fais rien 
+
+                                for name in filtered_name:
+                                    if name not in list(output_info_dict.keys()):
+                                        output_info_dict[name] = {
+                                            'output_info_name': re.sub(r'_dict$', '', single_output),
+                                            'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
+                                                re.sub(r'_dict$', '', single_output))[0])['unit']}
+
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
-                                elif len(output_df)==scenarii:
-                                    
+                                elif len(output_df) == scenarii:
+
                                     if output_df_temp is None:
-                                        output_df_temp=filtered_df.copy(deep=True)
+                                        output_df_temp = filtered_df.copy(
+                                            deep=True)
                                     else:
                                         output_df_temp = pd.concat(
-                                        [output_df_temp, filtered_df], axis=0, ignore_index=True)
+                                            [output_df_temp, filtered_df], axis=0, ignore_index=True)
                                 else:
                                     output_df = pd.concat(
                                         [output_df, filtered_df], axis=0, ignore_index=True)
 
-                            
                             if output_df_temp is not None:
-                                output_df_temp.replace('NA', np.nan, inplace=True)
-                                columns_temp=list(output_df_temp.columns)
+                                output_df_temp.replace(
+                                    'NA', np.nan, inplace=True)
+                                columns_temp = list(output_df_temp.columns)
                                 columns_temp.remove('scenario')
                                 for col in columns_temp:
                                     if col not in output_df:
-                                        output_df.merge(output_df_temp[['scenario',col]],on='scenario', how='left')
+                                        output_df.merge(
+                                            output_df_temp[['scenario', col]], on='scenario', how='left')
+                                output_df_temp = None
 
-
-            output_df.replace('NA', np.nan, inplace=True)
+            # output_df.replace('NA', np.nan, inplace=True)
             output_variables = output_df.select_dtypes(
                 include='float').columns.to_list()
 
@@ -562,10 +594,9 @@ class GridSearchEval(DoeEval):
                     inputs_combin, output_variables)
             )
             # retrieve z variable name by removing _dict from the output name
-            # output_origin_name = re.sub(
-            #     r'_dict$', '', single_output)
-            chart_list = [list(chart_tuple)+[output_info_dict[chart_tuple[1]]['output_info_name']] + [output_info_dict[chart_tuple[1]]['unit']]
-                            for chart_tuple in chart_tuples]
+
+            chart_list = [list(chart_tuple) + [output_info_dict[chart_tuple[1]]['output_info_name']] + [output_info_dict[chart_tuple[1]]['unit']]
+                          for chart_tuple in chart_tuples]
             full_chart_list += chart_list
 
         chart_dict = {}
@@ -576,10 +607,10 @@ class GridSearchEval(DoeEval):
             z_vble = chart[1]
             x_vble = chart[0][0]
             y_vble = chart[0][1]
-            
-            
+
             # we retrieve the corresponding short name for x and y
-            # GET-->first parameter=key, second parameter=value if the key is not found
+            # GET-->first parameter=key, second parameter=value if the key is
+            # not found
             x_short = inputs_name_mapping.get(x_vble, x_vble)
             y_short = inputs_name_mapping.get(y_vble, y_vble)
 
@@ -623,8 +654,6 @@ class GridSearchEval(DoeEval):
 
         return chart_dict, output_df
 
-
-
     def get_chart_filter_list(self):
 
         chart_filters = []
@@ -633,8 +662,8 @@ class GridSearchEval(DoeEval):
         inputs_dict = self.get_sosdisc_inputs()
         chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
-
         chart_list = list(chart_dict.keys())
+
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
 
@@ -722,14 +751,16 @@ class GridSearchEval(DoeEval):
                                 x=x_data,
                                 y=y_data,
                                 mode='markers',
-                                marker_symbol='x-thin',
+                                marker_symbol=SymbolValidator(
+                                ).values[SymbolValidator().values.index('x-thin')],
                                 marker=dict(
                                     size=5,
                                     color='dimGray',
-                                    # line=dict(
-                                    #     color='MediumPurple',
-                                    #     width=2,
-                                    # )
+                                    symbol='x-thin',
+                                    line=dict(
+                                        # color='MediumPurple',
+                                        width=2,
+                                    )
                                 ),
                                 visible=True,
                                 showlegend=False,
@@ -775,6 +806,7 @@ class GridSearchEval(DoeEval):
                         z_min = chart_info['z_min']
 
                         fig = go.Figure()
+                        z_data_None = []
 
                         for slide_value in slider_values:
                             x_data = cont_plot_df.loc[
@@ -786,6 +818,10 @@ class GridSearchEval(DoeEval):
                             z_data = cont_plot_df.loc[
                                 cont_plot_df[col_slider] == slide_value
                             ][chart_info['z']].replace(np.nan, 'None').to_list()
+                            if all(z_data[i] == 'None' for i in range(len(z_data))):
+                                z_data_None.append(True)
+                            else:
+                                z_data_None.append(False)
                             labels = cont_plot_df.loc[cont_plot_df[col_slider]
                                                       == slide_value]['scenario']
 
@@ -795,7 +831,7 @@ class GridSearchEval(DoeEval):
                             y_max = max(y_data)
 
                             # Initialization Slider
-                            if slide_value == slider_values[0]:
+                            if slide_value == slider_values[-1]:
                                 visible = True
                             else:
                                 visible = False
@@ -843,14 +879,15 @@ class GridSearchEval(DoeEval):
                                     y=y_data,
                                     # name=labels,
                                     mode='markers',
-                                    marker_symbol='x-thin',
+                                    marker_symbol=SymbolValidator(
+                                    ).values[SymbolValidator().values.index('x-thin')],
                                     marker=dict(
                                         size=5,
                                         color='dimGray',
-                                        # line=dict(
-                                        #     color='MediumPurple',
-                                        #     width=2,
-                                        # )
+                                        line=dict(
+                                            # color='MediumPurple',
+                                            width=2,
+                                        )
                                     ),
                                     visible=visible,
                                     showlegend=False,
@@ -861,7 +898,7 @@ class GridSearchEval(DoeEval):
                         # Create and add slider
                         steps = []
 
-                        for i in range(int(len(fig.data)/2)):
+                        for i in range(int(len(fig.data) / 2)):
                             # for i in range(int(len(fig.data)-1)):
 
                             step = dict(
@@ -918,10 +955,11 @@ class GridSearchEval(DoeEval):
                         # Create native plotly chart
                         last_value = slider_values[-1]
                         if len(fig.data) > 0:
-                            chart_name = f'<b>{name}</b>'
-                            new_chart = InstantiatedPlotlyNativeChart(
-                                fig=fig, chart_name=chart_name, default_legend=False
-                            )
-                            instanciated_charts.append(new_chart)
+                            if not any(z_data_None):
+                                chart_name = f'<b>{name}</b>'
+                                new_chart = InstantiatedPlotlyNativeChart(
+                                    fig=fig, chart_name=chart_name, default_legend=False
+                                )
+                                instanciated_charts.append(new_chart)
 
         return instanciated_charts

@@ -45,7 +45,11 @@ class Disc5(SoSDiscipline):
     def run(self):
         dict_out = self.get_sosdisc_inputs('dict_out')
         key1 = dict_out['key1']
+        if isinstance(key1, dict):
+            key1 = key1['1']
         key2 = dict_out['key2']
+        if isinstance(key2, dict):
+            key2 = key2['1']
         z = self.get_sosdisc_inputs('z')
 
         h = array([0.5 * (key1 + 1. / (2 * key1)),

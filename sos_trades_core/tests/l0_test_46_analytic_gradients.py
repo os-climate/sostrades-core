@@ -41,9 +41,9 @@ class TestAnalyticGradients(unittest.TestCase):
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_coupling'
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 2.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 2.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
         self.dspace = pd.DataFrame(dspace_dict)
@@ -365,9 +365,9 @@ class TestAnalyticGradients(unittest.TestCase):
 
         #-- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
@@ -548,9 +548,9 @@ class TestAnalyticGradients(unittest.TestCase):
 
         #-- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
@@ -750,9 +750,9 @@ class TestAnalyticGradients(unittest.TestCase):
 
         #-- set up design space
         dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)

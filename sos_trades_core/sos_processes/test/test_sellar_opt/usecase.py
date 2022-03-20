@@ -27,9 +27,9 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
         sc_name = "SellarOptimScenario"
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 2.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 2.], [1.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
 #                   'type' : ['float',['float','float'],'float','float']
@@ -52,6 +52,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-10,
                                                                "ineq_tolerance": 2e-3,
                                                                "normalize_design_space": False}
+        disc_dict[f'{ns}.SellarOptimScenario.differentiation_method'] = 'user'
 
         # Sellar inputs
         disc_dict[f'{ns}.{sc_name}.x'] = 1.

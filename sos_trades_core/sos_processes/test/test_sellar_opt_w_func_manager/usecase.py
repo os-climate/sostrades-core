@@ -37,12 +37,12 @@ class Study(StudyManager):
         OBJECTIVE = FunctionManager.OBJECTIVE
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [5., 2.], 5., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
+                       'value': [[1.], [5., 2.], [5.], [1.]],
+                       'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                       'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
                        'enable_variable': [True, True, True, True],
                        'activated_elem': [[True], [True, True], [True], [True]]}
-#                   'type' : ['float',['float','float'],'float','float']
+        #                   'type' : ['float',['float','float'],'float','float']
         dspace = pd.DataFrame(dspace_dict)
 
         disc_dict = {}
