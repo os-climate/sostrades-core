@@ -28,7 +28,7 @@ from logging import DEBUG
 from copy import deepcopy
 from tempfile import gettempdir
 import traceback
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict,\
+from gemseo.utils.compare_data_manager_tooling import compare_dict,\
     delete_keys_from_dict
 from multiprocessing import Process, Queue
 from queue import Empty

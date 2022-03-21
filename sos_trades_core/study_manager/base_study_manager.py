@@ -28,7 +28,7 @@ from sos_trades_core.tools.tree.serializer import DataSerializer
 from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from copy import deepcopy
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20

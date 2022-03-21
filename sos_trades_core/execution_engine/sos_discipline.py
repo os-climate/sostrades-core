@@ -15,6 +15,8 @@ limitations under the License.
 '''
 from scipy.sparse.lil import lil_matrix
 
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -35,7 +37,7 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
 from gemseo.core.discipline import MDODiscipline
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 from sos_trades_core.api import get_sos_logger
 from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
@@ -925,7 +927,7 @@ class SoSDiscipline(MDODiscipline):
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_after_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
-            self.__check_discipline_data_integrity(disc_data_before_linearize,
+            self.check_discipline_data_integrity(disc_data_before_linearize,
                                                    disc_data_after_linearize,
                                                    'Discipline data integrity through linearize')
 
@@ -1112,7 +1114,7 @@ class SoSDiscipline(MDODiscipline):
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
                 disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
                                                for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-                self.__check_discipline_data_integrity(disc_inputs_before_execution,
+                self.check_discipline_data_integrity(disc_inputs_before_execution,
                                                        disc_inputs_after_execution,
                                                        'Discipline inputs integrity through run')
 
@@ -1593,19 +1595,82 @@ class SoSDiscipline(MDODiscipline):
                 has_nan=True
         return has_nan
 
-    def __check_discipline_data_integrity(self, left_dict, right_dict, test_subject):
-        from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
+    def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
+                       step=1e-7, threshold=1e-8, linearization_mode='auto',
+                       inputs=None, outputs=None, parallel=False,
+                       n_processes=MDODiscipline.N_CPUS,
+                       use_threading=False, wait_time_between_fork=0,
+                       auto_set_step=False, plot_result=False,
+                       file_path="jacobian_errors.pdf",
+                       show=False, figsize_x=10, figsize_y=10, input_column=None, output_column=None,
+                       dump_jac_path=None, load_jac_path=None):
+        """
+        Overload check jacobian to execute the init_execution
+        """
 
-        dict_error = {}
-        compare_dict(left_dict, right_dict, '', dict_error)
+        self.init_execution()
 
-        if dict_error != {}:
-            for error in dict_error:
-                output_error = '\n'
-                output_error += f'Error while test {test_subject} on sos discipline {self.sos_name} :\n'
-                output_error += f'Mismatch in {error}: {dict_error.get(error)}'
-                output_error += '\n---------------------------------------------------------'
-                print(output_error)
+        # if dump_jac_path is provided, we trigger GEMSEO dump
+        if dump_jac_path is not None:
+            reference_jacobian_path = dump_jac_path
+            save_reference_jacobian = True
+        # if dump_jac_path is provided, we trigger GEMSEO dump
+        elif load_jac_path is not None:
+            reference_jacobian_path = load_jac_path
+            save_reference_jacobian = False
+        else:
+            reference_jacobian_path = None
+            save_reference_jacobian = False
+
+        approx = DisciplineJacApprox(
+            self,
+            derr_approx,
+            step,
+            parallel,
+            n_processes,
+            use_threading,
+            wait_time_between_fork,
+        )
+        if inputs is None:
+            inputs = self.get_input_data_names()
+        if outputs is None:
+            outputs = self.get_output_data_names()
+
+        if auto_set_step:
+            approx.auto_set_step(outputs, inputs, print_errors=True)
+
+        # Differentiate analytically
+        self.add_differentiated_inputs(inputs)
+        self.add_differentiated_outputs(outputs)
+        self.linearization_mode = linearization_mode
+        self.reset_statuses_for_run()
+        # Linearize performs execute() if needed
+        self.linearize(input_data)
+
+        if input_column is None and output_column is None:
+            indices = None
+        else:
+            indices = self._get_columns_indices(
+                inputs, outputs, input_column, output_column)
+
+        jac_arrays = {key_out: {key_in: value.toarray() for key_in, value in subdict.items()}
+                      for key_out, subdict in self.jac.items()}
+        o_k = approx.check_jacobian(
+            jac_arrays,
+            outputs,
+            inputs,
+            self,
+            threshold,
+            plot_result=plot_result,
+            file_path=file_path,
+            show=show,
+            figsize_x=figsize_x,
+            figsize_y=figsize_y,
+            reference_jacobian_path=reference_jacobian_path,
+            save_reference_jacobian=save_reference_jacobian,
+            indices=indices,
+        )
+        return o_k
 
     def __get_discipline_inputs_outputs_dict_formatted__(self):
         disc_inputs = {self.get_var_full_name(key, self._data_in): {'value': value}
