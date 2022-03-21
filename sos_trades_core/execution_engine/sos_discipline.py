@@ -146,7 +146,8 @@ class SoSDiscipline(MDODiscipline):
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
 
-    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
+    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
+                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
     # -- status section
 
@@ -543,7 +544,7 @@ class SoSDiscipline(MDODiscipline):
             self.set_cache_policy(cache_type=cache_type,
                                   cache_hdf_file=cache_file_path)
 
-        #Debug mode
+        # Debug mode
         debug_mode = self.get_sosdisc_inputs('debug_mode')
         if debug_mode == "nan":
             self.nan_check = True
@@ -564,11 +565,15 @@ class SoSDiscipline(MDODiscipline):
         if debug_mode != "":
             if debug_mode == "all":
                 for mode in self.AVAILABLE_DEBUG_MODE not in ["", "all"]:
-                    print(f'Discipline {self.sos_name} set to debug mode {mode}')
-                    self.logger.debug(f'Discipline {self.sos_name} set to debug mode {mode}')
+                    print(
+                        f'Discipline {self.sos_name} set to debug mode {mode}')
+                    self.logger.debug(
+                        f'Discipline {self.sos_name} set to debug mode {mode}')
             else:
-                print(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                self.logger.debug(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                print(
+                    f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                self.logger.debug(
+                    f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def setup_sos_disciplines(self):
         '''
@@ -1024,7 +1029,7 @@ class SoSDiscipline(MDODiscipline):
         if new_x_key in self.jac[new_y_key]:
             if index_y_column is not None and index_x_column is not None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                               index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
@@ -1032,7 +1037,7 @@ class SoSDiscipline(MDODiscipline):
 
             elif index_y_column is None and index_x_column is not None:
                 self.jac[new_y_key][new_x_key][:, index_x_column *
-                                                  lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                               lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
                                                                         'end': -1},
@@ -1040,7 +1045,7 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                :] = value
+                                               :] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
@@ -1447,8 +1452,10 @@ class SoSDiscipline(MDODiscipline):
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
         '''
-        dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
-        var_dict_converted, dict_to_update_dm = convert_new_type_into_array(var_dict, dm_reduced)
+        dm_reduced = self.dm.convert_data_dict_with_full_name()
+        #dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
+        var_dict_converted, dict_to_update_dm = convert_new_type_into_array(
+            var_dict, dm_reduced)
 
         # update dm
         for key in dict_to_update_dm.keys():
@@ -1462,7 +1469,8 @@ class SoSDiscipline(MDODiscipline):
             returns an updated copy of local_data
         """
 
-        dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
+        dm_reduced = self.dm.convert_data_dict_with_full_name()
+        #dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
         return convert_array_into_new_type(local_data, dm_reduced)
 
     def get_chart_filter_list(self):
@@ -1545,9 +1553,10 @@ class SoSDiscipline(MDODiscipline):
         """
 
         if self.nan_check:
-            has_nan=self.__check_nan_in_data_rec(data, "")
+            has_nan = self.__check_nan_in_data_rec(data, "")
             if has_nan:
                 raise ValueError(f'NaN values found in {self.sos_name}')
+
     def __check_nan_in_data_rec(self, data, parent_key):
         """ Using entry data, check if nan value exist in data's as recursive
         method
@@ -1559,7 +1568,7 @@ class SoSDiscipline(MDODiscipline):
         :type: str
 
         """
-        has_nan=False
+        has_nan = False
         import pandas as pd
         for data_key, data_value in data.items():
 
@@ -1592,7 +1601,7 @@ class SoSDiscipline(MDODiscipline):
                     full_key = f'{parent_key}/{data_key}'
                 self.logger.debug(f'NaN values found in {full_key}')
                 self.logger.debug(data_value)
-                has_nan=True
+                has_nan = True
         return has_nan
 
     def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
