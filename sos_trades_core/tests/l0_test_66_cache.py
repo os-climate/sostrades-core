@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -25,7 +26,6 @@ from os import remove
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
 
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.core.mdo_scenario import MDOScenario
