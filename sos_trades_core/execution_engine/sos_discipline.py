@@ -236,7 +236,6 @@ class SoSDiscipline(MDODiscipline):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-
     def get_shared_namespace_list(self, data_dict):
         '''
         Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared
@@ -933,8 +932,8 @@ class SoSDiscipline(MDODiscipline):
             disc_data_after_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
 
             self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                   disc_data_after_linearize,
-                                                   'Discipline data integrity through linearize')
+                                                 disc_data_after_linearize,
+                                                 'Discipline data integrity through linearize')
 
         if need_execution_after_lin:
             self.reset_statuses_for_run()
@@ -1120,8 +1119,8 @@ class SoSDiscipline(MDODiscipline):
                 disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
                                                for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
                 self.check_discipline_data_integrity(disc_inputs_before_execution,
-                                                       disc_inputs_after_execution,
-                                                       'Discipline inputs integrity through run')
+                                                     disc_inputs_after_execution,
+                                                     'Discipline inputs integrity through run')
 
         except Exception as exc:
             self._update_status_dm(self.STATUS_FAILED)
@@ -1452,10 +1451,10 @@ class SoSDiscipline(MDODiscipline):
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
         '''
-        dm_reduced = self.dm.convert_data_dict_with_full_name()
+        #dm_reduced = self.dm.convert_data_dict_with_full_name()
         #dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
         var_dict_converted, dict_to_update_dm = convert_new_type_into_array(
-            var_dict, dm_reduced)
+            var_dict, self.dm)
 
         # update dm
         for key in dict_to_update_dm.keys():
@@ -1469,9 +1468,8 @@ class SoSDiscipline(MDODiscipline):
             returns an updated copy of local_data
         """
 
-        dm_reduced = self.dm.convert_data_dict_with_full_name()
         #dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
-        return convert_array_into_new_type(local_data, dm_reduced)
+        return convert_array_into_new_type(local_data, self.dm)
 
     def get_chart_filter_list(self):
         """ Return a list of ChartFilter instance base on the inherited
