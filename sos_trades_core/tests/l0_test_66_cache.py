@@ -835,9 +835,9 @@ class TestCache(unittest.TestCase):
         exec_eng.configure()
 
         dspace_dict = {'variable': ['x'],
-                       'value': [1.],
-                       'lower_bnd': [0.],
-                       'upper_bnd': [10.],
+                       'value': [[1.]],
+                       'lower_bnd': [[0.]],
+                       'upper_bnd': [[10.]],
                        'enable_variable': [True],
                        'activated_elem': [[True]]}
         dspace = pd.DataFrame(dspace_dict)
@@ -927,9 +927,9 @@ class TestCache(unittest.TestCase):
         exec_eng.configure()
 
         dspace_dict = {'variable': ['x'],
-                       'value': [1.],
-                       'lower_bnd': [0.],
-                       'upper_bnd': [10.],
+                       'value': [[1.]],
+                       'lower_bnd': [[0.]],
+                       'upper_bnd': [[10.]],
                        'enable_variable': [True],
                        'activated_elem': [[True]]}
         dspace = pd.DataFrame(dspace_dict)

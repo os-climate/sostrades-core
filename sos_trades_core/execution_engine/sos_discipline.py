@@ -904,7 +904,6 @@ class SoSDiscipline(MDODiscipline):
             self.reset_statuses_for_run()
             self.execute(input_data)
 
-
         return result
 
     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
@@ -942,10 +941,6 @@ class SoSDiscipline(MDODiscipline):
                     there is more than one input and output')
 
         return indices
-
-
-
-
 
     def set_partial_derivative(self, y_key, x_key, value):
         '''
@@ -1270,15 +1265,9 @@ class SoSDiscipline(MDODiscipline):
                 keys, io_type)]
         return variables
 
-<<<<<<< HEAD
     def __filter_available_gemseo_types(self, io_type):
         ''' 
-        Filter coupling before sending to GEMS 
-=======
-    def __filter_couplings_for_gems(self, io_type):
-        '''
-        Filter coupling before sending to GEMS
->>>>>>> develop
+        Filter available types before sending to GEMS 
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []
@@ -1399,7 +1388,6 @@ class SoSDiscipline(MDODiscipline):
                              " with status: " + str(self.status) +
                              " while re_exec_policy is : " +
                              str(self.re_exec_policy))
-
 
     # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
@@ -1869,7 +1857,6 @@ class SoSDiscipline(MDODiscipline):
         """
 
         return []
-
 
     def set_configure_status(self, is_configured):
         """Set boolean is_configured which indicates if the discipline has been configured

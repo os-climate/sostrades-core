@@ -400,7 +400,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'authorize_self_coupled_disciplines': {'type': 'bool', 'possible_values': [True, False],
                                                                   'default': False},
                            'linearization_mode': {'type': 'string', 'default': 'auto', 'possible_values': ['auto', 'direct', 'adjoint', 'reverse', 'finite_differences', 'complex_step']},
-                           'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['None', 'SimpleCache', 'HDF5Cache', 'MemoryFullCache']},
+                           'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['None', 'SimpleCache']},
                            'cache_file_path': {'type': 'string', 'default': None, 'possible_values': None}
                            }
 
