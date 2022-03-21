@@ -47,7 +47,7 @@ class ProcessBuilder(BaseProcessBuilder):
             'scenario_list', scenario_map)
 
         builder_cdf_list = self.ee.factory.get_builder_from_process(
-            'sos_trades_core.sos_processes.test', 'test_sellar_opt')
+            'sos_trades_core.sos_processes.test', 'test_sellar_opt_discopt')
 
         scatter_scenario_name = 'optimization scenarios'
         # modify namespaces defined in the child process

@@ -96,7 +96,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         'sub_mda_class': {SoSDiscipline.TYPE: 'string',
                           SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
                                                           'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-                                                          'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential'],
+                                                          'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential', 'GSPureNewtonorGSMDA'],
                           SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True,
                           SoSDiscipline.STRUCTURING: True},
         'max_mda_iter': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 30, SoSDiscipline.NUMERICAL: True,
@@ -452,13 +452,13 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if num_data['sub_mda_class'] == 'MDAGaussSeidel':
             num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
                 'warm_start_threshold'))
-        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA']:
+        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
             #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
             #                 'max_mda_iter_gs'))
             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
                 'tolerance_gs'))
         if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
-                                         'GSorNewtonMDA']:
+                                         'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
 

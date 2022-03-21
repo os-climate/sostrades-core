@@ -19,37 +19,27 @@ unit test for optimization scenario
 """
 
 import unittest
-from numpy import array, set_printoptions
-import pandas as pd
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from numpy.testing import assert_array_almost_equal, assert_array_equal
 from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
-import os
-from gemseo.core.mdo_scenario import MDOScenario
-from copy import deepcopy
 
 
-class TestSoSOptimScenario(unittest.TestCase):
+
+class TestGSPureNewtonorGSMDA(unittest.TestCase):
     """
     SoSOptimScenario test class
     """
 
     def setUp(self):
         self.study_name = 'optim'
-
-
-
-
         self.repo = 'sos_trades_core.sos_processes.test'
-        self.proc_name = 'test_sellar_opt_ms'
+        self.proc_name = 'test_sellar_opt_discopt'
 
-    def test_01_ms_sellar_cleaning(self):
+    def test_01_GSPureNewtonorGSMDA(self):
+
         print("\n Test 1 : check configure and treeview")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-        sc_name = 'SellarOptimScenario'
-        scatter_scenario_name = 'optimization scenarios'
-        ns = self.study_name
+
         opt_builder = factory.get_builder_from_process(repo=self.repo,
                                                        mod_id=self.proc_name)
 
@@ -64,28 +54,22 @@ class TestSoSOptimScenario(unittest.TestCase):
             values_dict.update(dict_item)
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.configure()
-        exec_eng.display_treeview_nodes()
-
-        len_before_clean = len(list(exec_eng.dm.disciplines_id_map.keys()))
-        #delete scenario and configure
-        values_dict[f'{ns}.{scatter_scenario_name}.scenario_list'] = ['a=0-1']
+        values_dict['optim.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'GSPureNewtonorGSMDA'
+        # activate debug mode to raise error
+        values_dict['optim.SellarOptimScenario.SellarCoupling.debug_mode_sellar'] = True
         exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.configure()
         exec_eng.display_treeview_nodes()
-
-        # assert there is no variables of second scenario in dm (so that cleaning went well) and number of disciplines after cleaning is correct
-        scen_name = 'a=0-2'
-        list_var_scen = [f'{ns}.{scatter_scenario_name}.{scen_name}.{sc_name}.Sellar_Problem.local_dv', f'{ns}.{scatter_scenario_name}.{scen_name}.{sc_name}.z',
-                         f'{ns}.{scatter_scenario_name}.{scen_name}.{sc_name}.x', f'{ns}.{scatter_scenario_name}.{scen_name}.{sc_name}.y_2', f'{ns}.{scatter_scenario_name}.{scen_name}.{sc_name}.y_1']
-        for var in list_var_scen:
-            # assert variable is not in dm
-            assert(var not in exec_eng.dm.convert_data_dict_with_full_name().keys())
-
-        len_after_clean = len(list(exec_eng.dm.disciplines_id_map.keys()))
-
-        # assert disciplines are not in dm
-        assert(len_after_clean == 9)
+        exec_eng.execute()
+        # assert residual history of GS sequence is not empty to assert run used GSmda
+        GS_sequence = exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].sub_mda_list[0].mda_sequence[0]
+        assert len(GS_sequence.residual_history) > 0
+        # assert GSPureNR was executed 6 time (5 GS and one NR before raise in compute_sos_jacobian)
+        GSPureNR_sequence = exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].sub_mda_list[0].mda_sequence[1]
+        assert len(GSPureNR_sequence.residual_history) == 7
 
 if '__main__' == __name__:
-    cls = TestSoSOptimScenario()
+    cls = TestGSPureNewtonorGSMDA()
     cls.setUp()
-    cls.test_01_ms_sellar_cleaning()
+    cls.test_01_GSPureNewtonorGSMDA()
