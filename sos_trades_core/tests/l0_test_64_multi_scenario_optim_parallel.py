@@ -22,7 +22,7 @@ import unittest
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
 import platform
-from sos_trades_core.sos_processes.compare_data_manager_tooling import compare_dict
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 
 
