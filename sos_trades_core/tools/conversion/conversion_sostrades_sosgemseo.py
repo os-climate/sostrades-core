@@ -44,7 +44,11 @@ def _get_dataframe_excluded_columns(key, dm_reduced_to_type_and_metadata):
     """ returns the excluded columns of a dataframe
         output : list of excluded columns
     """
-    excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
+    if not isinstance(dm_reduced_to_type_and_metadata, dict):
+        excluded_columns = dm_reduced_to_type_and_metadata.get_data(
+            key, DF_EXCLUDED_COLUMNS)
+    else:
+        excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
     if excluded_columns is None:
         return []
     return excluded_columns
@@ -183,15 +187,21 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
 
     for key, to_convert in local_data_updt.items():
         # get value in DataManager
-        _type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
-        metadata_list = dm_reduced_to_type_and_metadata[key][TYPE_METADATA]
+        if not isinstance(dm_reduced_to_type_and_metadata, dict):
+            _type = dm_reduced_to_type_and_metadata.get_data(key, VAR_TYPE_ID)
+            metadata_list = dm_reduced_to_type_and_metadata.get_data(
+                key, TYPE_METADATA)
+        else:
+            _type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
+            metadata_list = dm_reduced_to_type_and_metadata[key][TYPE_METADATA]
         if to_convert is None:
             local_data_updt[key] = None
         else:
             # check dict type in data_to_update and visibility
             if _type == 'dict' or _type == 'df_dict':
                 if metadata_list is None:
-                    raise ValueError(f' Variable {key} cannot be converted since no metadata is available')
+                    raise ValueError(
+                        f' Variable {key} cannot be converted since no metadata is available')
                 new_data = {}
 
                 local_data_updt[key] = _convert_array_into_dict(
@@ -200,9 +210,11 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
             # check dataframe type in data_in and visibility
             elif _type == 'dataframe':
                 if metadata_list is None:
-                    raise ValueError(f'Variable {key} cannot be converted since no metadata is available')
+                    raise ValueError(
+                        f'Variable {key} cannot be converted since no metadata is available')
                 metadata = metadata_list[0]
-                excluded_columns = _get_dataframe_excluded_columns(key, dm_reduced_to_type_and_metadata)
+                excluded_columns = _get_dataframe_excluded_columns(
+                    key, dm_reduced_to_type_and_metadata)
                 local_data_updt[key] = _convert_array_into_df(
                     to_convert, metadata, excluded_columns)
             elif _type == 'string':
@@ -384,7 +396,11 @@ def convert_new_type_into_array(
 
     dict_to_update_dm = {}
     for key, var in var_dict.items():
-        var_type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
+        if not isinstance(dm_reduced_to_type_and_metadata, dict):
+            var_type = dm_reduced_to_type_and_metadata.get_data(
+                key, VAR_TYPE_ID)
+        else:
+            var_type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
         if var_type in NEW_VAR_TYPE:
             if not isinstance(
                     var, VAR_TYPE_MAP[var_type]) and var is not None:
@@ -400,7 +416,11 @@ def convert_new_type_into_array(
                     metadata = []
                     prev_key = []
                     if var_type in ['dict', 'string', 'string_list']:
-                        prev_metadata = dm_reduced_to_type_and_metadata[key][TYPE_METADATA]
+                        if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                            prev_metadata = dm_reduced_to_type_and_metadata.get_data(
+                                key, TYPE_METADATA)
+                        else:
+                            prev_metadata = dm_reduced_to_type_and_metadata[key][TYPE_METADATA]
                     # if type needs to be converted
                     if var_type == 'dict':
                         # if value is a dictionary
@@ -419,7 +439,12 @@ def convert_new_type_into_array(
                             raise ValueError(msg)
                     elif var_type == 'dataframe':
                         # if value is a DataFrame
-                        excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
+
+                        if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                            excluded_columns = dm_reduced_to_type_and_metadata.get_data(
+                                key, DF_EXCLUDED_COLUMNS)
+                        else:
+                            excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
                         values_list, metadata = _convert_df_into_array(
                             var, values_list, metadata, prev_key, excluded_columns)
                     elif var_type == 'string':
