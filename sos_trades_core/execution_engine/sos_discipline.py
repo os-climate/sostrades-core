@@ -164,10 +164,11 @@ class SoSDiscipline(MDODiscipline):
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
         'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE,
-                       POSSIBLE_VALUES: [MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE,
-                                         MDODiscipline.MEMORY_FULL_CACHE],
-                       NUMERICAL: True},
-        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True},
+                       POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
+                       # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+                       NUMERICAL: True,
+                       STRUCTURING: True},
+        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                        NUMERICAL: True, OPTIONAL: True, 'structuring': True}
     }
@@ -211,12 +212,9 @@ class SoSDiscipline(MDODiscipline):
 
         # -- Sub-disciplines attributes
         self.built_sos_disciplines = []
-        self.sos_disciplines = None
         self.in_checkjac = False
-        self.reset_sos_disciplines()
-        # -- Maturity attribute
-        self._maturity = self.get_maturity()
         self._is_configured = False
+        # init MDODiscipline
         MDODiscipline.__init__(
             self, sos_name, grammar_type=self.SOS_GRAMMAR_TYPE)
         # Update status attribute and data manager
@@ -228,6 +226,8 @@ class SoSDiscipline(MDODiscipline):
         self._data_out = None
         self._structuring_variables = None
         self.reset_data()
+        # -- Maturity attribute
+        self._maturity = self.get_maturity()
 
         # Add the discipline in the dm and get its unique disc_id (was in the
         # configure)
@@ -312,9 +312,9 @@ class SoSDiscipline(MDODiscipline):
         # Remove unavailable GEMS type variables before initialize
         # input_grammar
         if not self.is_sos_coupling:
-            filtered_data_in = self.__filter_couplings_for_gems(
+            filtered_data_in = self.__filter_available_gemseo_types(
                 self.IO_TYPE_IN)
-            filtered_data_out = self.__filter_couplings_for_gems(
+            filtered_data_out = self.__filter_available_gemseo_types(
                 self.IO_TYPE_OUT)
             self.init_gems_grammar(filtered_data_in, self.IO_TYPE_IN)
             self.init_gems_grammar(filtered_data_out, self.IO_TYPE_OUT)
@@ -399,11 +399,6 @@ class SoSDiscipline(MDODiscipline):
         io_type specifies 'IN' or 'OUT'
         '''
         self._init_grammar_with_keys(data_keys, io_type)
-
-    def reset_sos_disciplines(self):
-        ''' Empty sos_disciplines list
-        '''
-        self.sos_disciplines = []
 
     def get_sos_diciplines_ids(self):
         return [disc.name for disc in self.sos_disciplines]
@@ -540,8 +535,11 @@ class SoSDiscipline(MDODiscipline):
             raise Exception(
                 'if the cache type is set to HDF5Cache the cache_file path must be set')
         elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
-            self.set_cache_policy(cache_type=cache_type,
-                                  cache_hdf_file=cache_file_path)
+            if cache_type == 'None':
+                self.cache = None
+            else:
+                self.set_cache_policy(cache_type=cache_type,
+                                      cache_hdf_file=cache_file_path)
 
         # Debug mode
         debug_mode = self.get_sosdisc_inputs('debug_mode')
@@ -1301,9 +1299,9 @@ class SoSDiscipline(MDODiscipline):
                 keys, io_type)]
         return variables
 
-    def __filter_couplings_for_gems(self, io_type):
-        '''
-        Filter coupling before sending to GEMS
+    def __filter_available_gemseo_types(self, io_type):
+        ''' 
+        Filter available types before sending to GEMS 
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []

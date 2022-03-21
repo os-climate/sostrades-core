@@ -708,4 +708,4 @@ class TestGradients(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestGradients()
     cls.setUp()
-    cls.test_02_gradient_analysis_execute()
+    cls.test_06_hessian_with_double_gradient()
