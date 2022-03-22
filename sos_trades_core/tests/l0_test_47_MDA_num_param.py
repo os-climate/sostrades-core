@@ -66,7 +66,7 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
                        'value': [[1.], [5., 2.]],
                        'lower_bnd': [[0.], [-10., 0.]],
@@ -75,7 +75,7 @@ class TestMDANumericalParameters(unittest.TestCase):
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
