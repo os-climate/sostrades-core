@@ -93,7 +93,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}')[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_distrib_df']
+        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
 
         filter = uncertainty_quanti_disc.get_chart_filter_list()
         graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
