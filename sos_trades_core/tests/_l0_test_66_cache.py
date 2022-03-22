@@ -365,7 +365,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -394,7 +394,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -415,7 +415,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -485,7 +485,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -501,7 +501,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -576,7 +576,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -603,7 +603,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -615,7 +615,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
 
         metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
             SoSDiscipline.TYPE_METADATA]
@@ -698,7 +698,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -714,7 +714,7 @@ class TestCache(unittest.TestCase):
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
 
         metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
             SoSDiscipline.TYPE_METADATA]
@@ -779,7 +779,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -793,7 +793,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -807,7 +807,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\n \t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))

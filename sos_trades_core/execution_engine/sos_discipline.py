@@ -510,6 +510,8 @@ class SoSDiscipline(MDODiscipline):
         '''
         Configure the SoSDiscipline
         '''
+        self.set_numerical_parameters()
+        
         if self.check_structuring_variables_changes():
             self.set_structuring_variables_values()
 
@@ -517,7 +519,6 @@ class SoSDiscipline(MDODiscipline):
 
         self.reload_io()
 
-        self.set_numerical_parameters()
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
@@ -527,50 +528,52 @@ class SoSDiscipline(MDODiscipline):
         '''
         Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN
         '''
-        self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
-        cache_type = self.get_sosdisc_inputs('cache_type')
-        cache_file_path = self.get_sosdisc_inputs('cache_file_path')
-
-        if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
-            raise Exception(
-                'if the cache type is set to HDF5Cache the cache_file path must be set')
-        elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
-            if cache_type == 'None':
-                self.cache = None
-            else:
-                self.set_cache_policy(cache_type=cache_type,
-                                      cache_hdf_file=cache_file_path)
-
-        # Debug mode
-        debug_mode = self.get_sosdisc_inputs('debug_mode')
-        if debug_mode == "nan":
-            self.nan_check = True
-        elif debug_mode == "input_change":
-            self.check_if_input_change_after_run = True
-        elif debug_mode == "linearize_data_change":
-            self.check_linearize_data_changes = True
-        elif debug_mode == "min_max_grad":
-            self.check_min_max_gradients = True
-        elif debug_mode == "min_max_couplings":
-            self.check_min_max_couplings = True
-        elif debug_mode == "all":
-            self.nan_check = True
-            self.check_if_input_change_after_run = True
-            self.check_linearize_data_changes = True
-            self.check_min_max_gradients = True
-            self.check_min_max_couplings = True
-        if debug_mode != "":
-            if debug_mode == "all":
-                for mode in self.AVAILABLE_DEBUG_MODE not in ["", "all"]:
+        if self._data_in != {}:
+            self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
+            cache_type = self.get_sosdisc_inputs('cache_type')
+            cache_file_path = self.get_sosdisc_inputs('cache_file_path')
+    
+            if cache_type != self._structuring_variables['cache_type']:
+                if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
+                    raise Exception(
+                        'if the cache type is set to HDF5Cache the cache_file path must be set')
+                elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
+                    if cache_type == 'None':
+                        self.cache = None
+                    else:
+                        self.set_cache_policy(cache_type=cache_type,
+                                              cache_hdf_file=cache_file_path)
+    
+            # Debug mode
+            debug_mode = self.get_sosdisc_inputs('debug_mode')
+            if debug_mode == "nan":
+                self.nan_check = True
+            elif debug_mode == "input_change":
+                self.check_if_input_change_after_run = True
+            elif debug_mode == "linearize_data_change":
+                self.check_linearize_data_changes = True
+            elif debug_mode == "min_max_grad":
+                self.check_min_max_gradients = True
+            elif debug_mode == "min_max_couplings":
+                self.check_min_max_couplings = True
+            elif debug_mode == "all":
+                self.nan_check = True
+                self.check_if_input_change_after_run = True
+                self.check_linearize_data_changes = True
+                self.check_min_max_gradients = True
+                self.check_min_max_couplings = True
+            if debug_mode != "":
+                if debug_mode == "all":
+                    for mode in self.AVAILABLE_DEBUG_MODE not in ["", "all"]:
+                        print(
+                            f'Discipline {self.sos_name} set to debug mode {mode}')
+                        self.logger.debug(
+                            f'Discipline {self.sos_name} set to debug mode {mode}')
+                else:
                     print(
-                        f'Discipline {self.sos_name} set to debug mode {mode}')
+                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
                     self.logger.debug(
-                        f'Discipline {self.sos_name} set to debug mode {mode}')
-            else:
-                print(
-                    f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                self.logger.debug(
-                    f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def setup_sos_disciplines(self):
         '''
