@@ -97,8 +97,11 @@ class OntologyDataConnector(AbstractDataConnector):
                         parameters_data = ontology_response_data['parameters']
                         for parameter_id in result.keys():
                             if parameter_id in parameters_data:
+                                if 'unit' not in parameters_data[parameter_id]:
+                                    parameters_data[parameter_id]['unit'] = ''
                                 if 'label' in parameters_data[parameter_id]:
-                                    result[parameter_id] = parameters_data[parameter_id]['label']
+                                    result[parameter_id] = [
+                                        parameters_data[parameter_id]['label'], parameters_data[parameter_id]['unit']]
 
             except Exception as ex:
                 print(

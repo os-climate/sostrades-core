@@ -353,10 +353,10 @@ class GridSearchEval(DoeEval):
             data_connection)
 
         possible_in_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
         # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
+            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
         # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(
