@@ -34,6 +34,7 @@ import openturns as ot
 from openturns.viewer import View
 from scipy import interpolate
 from scipy.interpolate import RegularGridInterpolator
+from scipy.stats import norm
 import chaospy as cp
 
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -70,8 +71,8 @@ class UncertaintyQuantification(SoSDiscipline):
     }
 
     DESC_OUT = {
-        'input_parameters_distrib_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification'},
-        'output_distrib_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification'},
+        'input_parameters_samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification'},
+        'output_interpolated_values_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification'},
     }
 
     def setup_sos_disciplines(self):
@@ -105,8 +106,12 @@ class UncertaintyQuantification(SoSDiscipline):
                     possible_distrib = ['Normal', 'PERT']
                     distrib = [possible_distrib[random.randrange(
                         len(possible_distrib))] for i in range(len(in_param))]
+
                     input_distribution_default = pd.DataFrame(
-                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 90, 'upper_parameter': 100, 'most_probable_value': 95})
+                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 80, 'upper_parameter': 100, 'most_probable_value': 95})
+                    # no need most probable value for Normal distribution
+                    input_distribution_default.loc[input_distribution_default['distribution']
+                                                   == 'Normal', 'most_probable_value'] = np.nan
 
                     data_details_default = pd.DataFrame()
                     for input in in_param:
@@ -197,7 +202,7 @@ class UncertaintyQuantification(SoSDiscipline):
                     'Exception occurred: possible values in distribution are [Normal, PERT].'
                 )
             distrib_list.append(distrib)
-            input_parameters_distrib_df[f'{input_name}_distrib_value'] = pd.DataFrame(
+            input_parameters_distrib_df[f'{input_name}'] = pd.DataFrame(
                 np.array(distrib.getSample(n)))
 
         # MONTECARLO COMPOSED DISTRIBUTION
@@ -223,13 +228,13 @@ class UncertaintyQuantification(SoSDiscipline):
             y = list(all_data_df[output_name])
             output_values = np.reshape(y, input_dim_tuple)
             f = RegularGridInterpolator(
-                input_parameters_values_tuple, output_values)
+                input_parameters_values_tuple, output_values, bounds_error=False)
             output_distrib = f(composed_distrib_sample)
-            output_distrib_df[f'{output_name}_distrib_value'] = output_distrib
+            output_distrib_df[f'{output_name}'] = output_distrib
 
         dict_values = {
-            'input_parameters_distrib_df': input_parameters_distrib_df,
-            'output_distrib_df': output_distrib_df,
+            'input_parameters_samples_df': input_parameters_distrib_df,
+            'output_interpolated_values_df': output_distrib_df,
         }
 
         self.store_sos_outputs_values(dict_values)
@@ -241,6 +246,7 @@ class UncertaintyQuantification(SoSDiscipline):
         # 99% confidence interval : ratio = 5.15
         if confidence_interval == 0.9:
             ratio = 3.29
+            ratio = norm.ppf(0.95) - norm.ppf(0.05)
         if confidence_interval == 0.95:
             ratio = 3.92
         if confidence_interval == 0.99:
@@ -293,13 +299,13 @@ class UncertaintyQuantification(SoSDiscipline):
                     graphs_list = chart_filter.selected_values
 
         if 'Output distrib' in graphs_list:
-            if 'output_distrib_df' in self.get_sosdisc_outputs():
+            if 'output_interpolated_values_df' in self.get_sosdisc_outputs():
                 output_distrib_df = deepcopy(
-                    self.get_sosdisc_outputs('output_distrib_df')
+                    self.get_sosdisc_outputs('output_interpolated_values_df')
                 )
-            if 'input_parameters_distrib_df' in self.get_sosdisc_outputs():
+            if 'input_parameters_samples_df' in self.get_sosdisc_outputs():
                 input_parameters_distrib_df = deepcopy(
-                    self.get_sosdisc_outputs('input_parameters_distrib_df')
+                    self.get_sosdisc_outputs('input_parameters_samples_df')
                 )
             if 'data_details_df' in self.get_sosdisc_inputs():
                 self.data_details = deepcopy(
@@ -308,13 +314,13 @@ class UncertaintyQuantification(SoSDiscipline):
         for input_name in list(input_parameters_distrib_df.columns):
             input_distrib = list(input_parameters_distrib_df[input_name])
             new_chart = self.histogram_graph(
-                input_distrib, input_name[:-14])
+                input_distrib, input_name)
             instanciated_charts.append(new_chart)
 
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
             new_chart = self.histogram_graph(
-                output_distrib, output_name[:-14])
+                output_distrib, output_name)
             instanciated_charts.append(new_chart)
 
         return instanciated_charts
