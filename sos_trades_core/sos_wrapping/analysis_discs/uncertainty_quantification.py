@@ -67,7 +67,11 @@ class UncertaintyQuantification(SoSDiscipline):
     }
     DESC_IN = {
         'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True},
-        'data_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', },
+        'data_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, },
+
+        'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.], 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2, },
+        'sample_size': {'type': 'float', 'unit': None, 'default': 100000, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2, },
+
     }
 
     DESC_OUT = {
@@ -163,6 +167,8 @@ class UncertaintyQuantification(SoSDiscipline):
         inputs_dict = self.get_sosdisc_inputs()
         samples_df = inputs_dict['samples_df']
         data_df = inputs_dict['data_df']
+        confidence_interval = inputs_dict['confidence_interval'] / 100
+        sample_size = inputs_dict['sample_size']
         input_parameters_names = list(samples_df.columns)[1:]
         output_names = list(data_df.columns)[1:]
         input_distribution_parameters_df = inputs_dict['input_distribution_parameters_df']
@@ -176,7 +182,6 @@ class UncertaintyQuantification(SoSDiscipline):
         all_data_df = all_data_df.sort_values(by=input_parameters_names)
 
         # INPUT PARAMETERS DISTRIBUTION IN [NORMAL, PERT]
-        n = 10000
         input_parameters_distrib_df = pd.DataFrame()
         distrib_list = []
         for input_name in input_parameters_names:
@@ -186,7 +191,7 @@ class UncertaintyQuantification(SoSDiscipline):
                                                          == input_name]['lower_parameter'].values[0],
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['upper_parameter'].values[0],
-                    confidence_interval=0.99
+                    confidence_interval=confidence_interval
                 )
             elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'PERT':
                 distrib = self.PERT_distrib(
@@ -203,13 +208,13 @@ class UncertaintyQuantification(SoSDiscipline):
                 )
             distrib_list.append(distrib)
             input_parameters_distrib_df[f'{input_name}'] = pd.DataFrame(
-                np.array(distrib.getSample(n)))
+                np.array(distrib.getSample(sample_size)))
 
         # MONTECARLO COMPOSED DISTRIBUTION
         R = ot.CorrelationMatrix(len(input_parameters_names))
         copula = ot.NormalCopula(R)
         distribution = ot.ComposedDistribution(distrib_list, copula)
-        composed_distrib_sample = distribution.getSample(n)
+        composed_distrib_sample = distribution.getSample(sample_size)
 
         # for i in range(len(input_parameters)):
         #     graph = distribution.drawMarginal1DPDF(i, 90, 100, 256)
