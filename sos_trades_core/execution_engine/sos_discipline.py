@@ -583,7 +583,8 @@ class SoSDiscipline(MDODiscipline):
     # -- cache handling
     def clear_cache(self):
         # -- Need to clear cache for gradients analysis
-        self.cache.clear()
+        if self.cache is not None:
+            self.cache.clear()
         for discipline in self.sos_disciplines:
             discipline.clear_cache()
 
