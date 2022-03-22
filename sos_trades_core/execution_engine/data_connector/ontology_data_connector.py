@@ -76,10 +76,10 @@ class OntologyDataConnector(AbstractDataConnector):
 
             # Prepare request payload
             payload = {
-                        'ontology_request': {
-                                'parameters': connection_data[OntologyDataConnector.REQUEST_ARGS]
-                            }
-                        }
+                'ontology_request': {
+                    'parameters': connection_data[OntologyDataConnector.REQUEST_ARGS]
+                }
+            }
             # Launch request
             complete_url = f'{self.endpoint}'
 
@@ -101,7 +101,8 @@ class OntologyDataConnector(AbstractDataConnector):
                                     result[parameter_id] = parameters_data[parameter_id]['label']
 
             except Exception as ex:
-                print('The following exception occurs when trying to reach Ontology server', ex)
+                print(
+                    'The following exception occurs when trying to reach Ontology server', ex)
 
             return result
 
@@ -128,15 +129,15 @@ if __name__ == '__main__':
     ontology_connector = OntologyDataConnector()
 
     data_connection = {
-                            'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
-                        }
+        'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+    }
 
-    args = ["CCS_price","CO2_damage_price","CO2_emissions_df","CO2_emitted_forest_df","CO2_objective","CO2_taxes","acceleration","alpha","authorize_self_coupled_disciplines","beta","cache_file_path","cache_type","carboncycle_df","ccs_list","chain_linearize","conso_elasticity","damage_df","deforestation_surface","delta_co2_price","economics_df","energy_investment","energy_list","epsilon0","forest_investment"]
+    args = ["CCS_price", "CO2_damage_price", "CO2_emissions_df", "CO2_emitted_forest_df", "CO2_objective", "CO2_taxes", "acceleration", "alpha", "authorize_self_coupled_disciplines", "beta", "cache_file_path",
+            "cache_type", "carboncycle_df", "ccs_list", "chain_linearize", "conso_elasticity", "damage_df", "deforestation_surface", "economics_df", "energy_investment", "energy_list", "epsilon0", "forest_investment"]
 
-    ontology_connector.set_connector_request(data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
+    ontology_connector.set_connector_request(
+        data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
 
     result = ontology_connector.load_data(data_connection)
 
     print(result)
-
-

@@ -65,7 +65,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         raise TypeError('test_analytic_gradient must be overloaded')
 
     def check_jacobian(self, location, filename, discipline, inputs, outputs, step=1e-15, derr_approx='complex_step',  input_column=None, output_column=None, threshold=1e-8, parallel=False,
-                       n_processes=5, linearization_mode='auto'):
+                       n_processes=5, linearization_mode='auto', directory=PICKLE_DIRECTORY):
         """ Method that encapsulate check_jacobian call in order to witch between loading and dumping mode
         """
 
@@ -74,7 +74,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
 
         local_logger = get_sos_logger('SoS.EE')
 
-        file_path = join(location, AbstractJacobianUnittest.PICKLE_DIRECTORY,
+        file_path = join(location, directory,
                          filename)
 
         if AbstractJacobianUnittest.DUMP_JACOBIAN:

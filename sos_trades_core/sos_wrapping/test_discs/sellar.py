@@ -213,7 +213,7 @@ class Sellar2(SoSDiscipline):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode': {'type': 'bool', 'default':False, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'debug_mode_sellar': {'type': 'bool', 'default':False, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'float',
                         'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
@@ -253,7 +253,7 @@ class Sellar2(SoSDiscipline):
             on all outputs (Default value = None)
         """
 
-        y_1, debug_mode = self.get_sosdisc_inputs(['y_1', 'debug_mode'])
+        y_1, debug_mode = self.get_sosdisc_inputs(['y_1', 'debug_mode_sellar'])
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
             array([1.0 / (2.0 * sqrt(y_1))])))
@@ -269,7 +269,7 @@ class Sellar2(SoSDiscipline):
 
         if debug_mode:
             # if debug mode activated raise an error
-            raise
+            raise Exception("debug mode activated to trigger except")
 
 
 if __name__ == '__main__':

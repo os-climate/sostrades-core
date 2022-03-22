@@ -431,7 +431,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                           disciplines=self.sos_disciplines,
                           name=self.sos_name,
                           grammar_type=self.SOS_GRAMMAR_TYPE,
-                          **num_data)
+                          ** num_data)
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
 
