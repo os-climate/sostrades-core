@@ -195,9 +195,9 @@ class TestStructuringInputs(unittest.TestCase):
             self.assertTrue(self.exec_eng.dm.get_discipline(
                 disc).is_configured())
 
-        full_values_dict[self.study_name +
+        full_values_dict[self.study_name + 
                          '.multi_scenarios.name_list'] = ['name_1', 'name_3', 'name_4']
-        full_values_dict[self.study_name +
+        full_values_dict[self.study_name + 
                          '.multi_scenarios.z_dict'] = {'scenario_1': 1, 'scenario_2': 2, 'scenario_3': 4, 'scenario_4': 0}
 
         scenario_list = ['scenario_1', 'scenario_2',
@@ -207,9 +207,9 @@ class TestStructuringInputs(unittest.TestCase):
             full_values_dict[self.study_name + '.name_4.a'] = 1
             full_values_dict[self.study_name + '.name_3.x'] = 2
             full_values_dict[self.study_name + '.name_4.x'] = 2
-            full_values_dict[self.study_name + '.multi_scenarios.' +
+            full_values_dict[self.study_name + '.multi_scenarios.' + 
                              scenario + '.Disc1.name_3.b'] = 5
-            full_values_dict[self.study_name + '.multi_scenarios.' +
+            full_values_dict[self.study_name + '.multi_scenarios.' + 
                              scenario + '.Disc1.name_4.b'] = 5
 
         t0 = time()
@@ -385,7 +385,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'use_lu_fact': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'warm_start': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'acceleration': {'type': 'string', 'default': 'm2d', 'possible_values': ['m2d', 'secant', 'none']},
-                           'warm_start_threshold': {'type': 'float', 'default': -1, 'possible_values': None},
+                           'warm_start_threshold': {'type': 'float', 'default':-1, 'possible_values': None},
                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
                            'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
@@ -400,7 +400,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'authorize_self_coupled_disciplines': {'type': 'bool', 'possible_values': [True, False],
                                                                   'default': False},
                            'linearization_mode': {'type': 'string', 'default': 'auto', 'possible_values': ['auto', 'direct', 'adjoint', 'reverse', 'finite_differences', 'complex_step']},
-                           'cache_type': {'type': 'string', 'default': 'SimpleCache', 'possible_values': ['None', 'SimpleCache']},
+                           'cache_type': {'type': 'string', 'default': 'None', 'possible_values': ['None', 'SimpleCache']},
                            'cache_file_path': {'type': 'string', 'default': None, 'possible_values': None},
                            'debug_mode': {'type': 'string', 'default': '',
                                           'possible_values': ["", "nan", "input_change", "linearize_data_change", "min_max_grad", "min_max_couplings", "all"], }
