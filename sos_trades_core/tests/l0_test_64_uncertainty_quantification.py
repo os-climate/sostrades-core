@@ -72,7 +72,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.display_treeview_nodes()
 
-        self.data_dir = join(dirname(dirname(__file__)), 'sos_processes', 'test', 'test_uncertainty_quantification', 'data')
+        self.data_dir = join(dirname(dirname(
+            __file__)), 'sos_processes', 'test', 'test_uncertainty_quantification', 'data')
         self.data_df = pd.read_csv(
             join(self.data_dir, 'data_df_2.csv'))[['variable', 'npv', 'total_free_cash_flow', 'max_peak_exposure']]
         self.data_df = self.data_df.rename(columns={'variable': 'scenario'})
