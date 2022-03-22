@@ -163,7 +163,7 @@ class SoSDiscipline(MDODiscipline):
     NUM_DESC_IN = {
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
-        'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE,
+        'cache_type': {TYPE: 'string', DEFAULT: 'None',
                        POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
                        # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                        NUMERICAL: True,
@@ -583,7 +583,8 @@ class SoSDiscipline(MDODiscipline):
     # -- cache handling
     def clear_cache(self):
         # -- Need to clear cache for gradients analysis
-        self.cache.clear()
+        if self.cache is not None:
+            self.cache.clear()
         for discipline in self.sos_disciplines:
             discipline.clear_cache()
 
@@ -1033,11 +1034,11 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column *
+                self.jac[new_y_key][new_x_key][:, index_x_column * 
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end': -1},
+                                                                        'end':-1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
@@ -1046,7 +1047,7 @@ class SoSDiscipline(MDODiscipline):
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end': -1}})
+                                                                        'end':-1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1415,12 +1416,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" +
+            raise ValueError("Unknown re_exec_policy :" + 
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
+            raise ValueError("Trying to run a discipline " + str(type(self)) + 
+                             " with status: " + str(self.status) + 
+                             " while re_exec_policy is : " + 
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1449,8 +1450,8 @@ class SoSDiscipline(MDODiscipline):
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
         '''
-        #dm_reduced = self.dm.convert_data_dict_with_full_name()
-        #dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
+        # dm_reduced = self.dm.convert_data_dict_with_full_name()
+        # dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
         var_dict_converted, dict_to_update_dm = convert_new_type_into_array(
             var_dict, self.dm)
 
@@ -1466,7 +1467,7 @@ class SoSDiscipline(MDODiscipline):
             returns an updated copy of local_data
         """
 
-        #dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
+        # dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
         return convert_array_into_new_type(local_data, self.dm)
 
     def get_chart_filter_list(self):
