@@ -1034,11 +1034,11 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column * 
+                self.jac[new_y_key][new_x_key][:, index_x_column *
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end':-1},
+                                                                        'end': -1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
@@ -1047,7 +1047,7 @@ class SoSDiscipline(MDODiscipline):
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end':-1}})
+                                                                        'end': -1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1416,12 +1416,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" + 
+            raise ValueError("Unknown re_exec_policy :" +
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) + 
-                             " with status: " + str(self.status) + 
-                             " while re_exec_policy is : " + 
+            raise ValueError("Trying to run a discipline " + str(type(self)) +
+                             " with status: " + str(self.status) +
+                             " while re_exec_policy is : " +
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1614,7 +1614,7 @@ class SoSDiscipline(MDODiscipline):
         Overload check jacobian to execute the init_execution
         """
 
-        self.init_execution()
+        # self.init_execution()
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
         if dump_jac_path is not None:
