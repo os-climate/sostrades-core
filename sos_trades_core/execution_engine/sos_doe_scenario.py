@@ -159,13 +159,13 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
     def set_scenario(self):
 
         # pre-set scenario
-        design_space, formulation, obj_full_name = self.pre_set_scenario()
+        design_space, formulation, maximize_objective, obj_full_name = self.pre_set_scenario()
 
-        if None not in [design_space, formulation, obj_full_name]:
+        if None not in [design_space, formulation, maximize_objective, obj_full_name]:
             # DOEScenario creation (GEMS object)
             DOEScenario.__init__(self, self.sos_disciplines, formulation,
                                  obj_full_name, design_space, name=self.sos_name,
-                                 grammar_type=SoSScenario.SOS_GRAMMAR_TYPE)
+                                 grammar_type=SoSScenario.SOS_GRAMMAR_TYPE,maximize_objective=maximize_objective)
 
             self.activated_variables = self.formulation.design_space.variables_names
             self.set_diff_method()
