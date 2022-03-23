@@ -81,9 +81,18 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.doe_samples_dataframe = pd.read_csv(
             join(self.data_dir, 'doe_samples_df_2.csv'))
 
+        # self.input_distribution_parameters_df = pd.read_csv(
+        #     join(self.data_dir, 'input_distribution_parameters_df.csv'))
+        #
+        # self.data_details_df = pd.read_csv(
+        #     join(self.data_dir, 'data_details_df.csv'))
+
         private_values = {
             f'{self.name}.{self.uncertainty_quantification}.samples_df': self.doe_samples_dataframe,
             f'{self.name}.{self.uncertainty_quantification}.data_df': self.data_df,
+            # f'{self.name}.{self.uncertainty_quantification}.input_distribution_parameters_df': self.input_distribution_parameters_df,
+            # f'{self.name}.{self.uncertainty_quantification}.data_details_df':
+            # self.data_details_df,
         }
 
         self.ee.load_study_from_input_dict(private_values)
