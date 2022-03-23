@@ -511,7 +511,7 @@ class SoSDiscipline(MDODiscipline):
         Configure the SoSDiscipline
         '''
         self.set_numerical_parameters()
-        
+
         if self.check_structuring_variables_changes():
             self.set_structuring_variables_values()
 
@@ -529,10 +529,11 @@ class SoSDiscipline(MDODiscipline):
         Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN
         '''
         if self._data_in != {}:
-            self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
+            self.linearization_mode = self.get_sosdisc_inputs(
+                'linearization_mode')
             cache_type = self.get_sosdisc_inputs('cache_type')
             cache_file_path = self.get_sosdisc_inputs('cache_file_path')
-    
+
             if cache_type != self._structuring_variables['cache_type']:
                 if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
                     raise Exception(
@@ -543,7 +544,7 @@ class SoSDiscipline(MDODiscipline):
                     else:
                         self.set_cache_policy(cache_type=cache_type,
                                               cache_hdf_file=cache_file_path)
-    
+
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
             if debug_mode == "nan":
@@ -1617,7 +1618,12 @@ class SoSDiscipline(MDODiscipline):
         Overload check jacobian to execute the init_execution
         """
 
-        # self.init_execution()
+        # The init execution allows to check jacobian without an execute before the check
+        # however if an execute was done, we do not want to restart the model
+        # and potentially loose informations to compute gradients (some
+        # gradients are computed with the model)
+        if self.status != self.STATUS_DONE:
+            self.init_execution()
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
         if dump_jac_path is not None:
