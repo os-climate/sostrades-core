@@ -15,7 +15,6 @@ limitations under the License.
 '''
 
 from copy import deepcopy
-from scipy.stats.tests.test_relative_risk import test_relative_risk_confidence_interval
 from _ast import If
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -507,7 +506,7 @@ class UncertaintyQuantification(SoSDiscipline):
             # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
         }
 
-        # 95 % interval: [9.7, 10.8] B€
+        # 95 % interval: [9.7, 10.8] B
         # Most Probable Value :
         # Median
 
