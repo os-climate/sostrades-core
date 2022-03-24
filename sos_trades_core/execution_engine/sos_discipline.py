@@ -170,7 +170,7 @@ class SoSDiscipline(MDODiscipline):
                        STRUCTURING: True},
         'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                       NUMERICAL: True, OPTIONAL: True, 'structuring': True}
+                       NUMERICAL: True, 'structuring': True}
     }
 
     # -- grammars
@@ -510,7 +510,6 @@ class SoSDiscipline(MDODiscipline):
         '''
         Configure the SoSDiscipline
         '''
-        self.set_numerical_parameters()
 
         if self.check_structuring_variables_changes():
             self.set_structuring_variables_values()
@@ -518,6 +517,8 @@ class SoSDiscipline(MDODiscipline):
         self.setup_sos_disciplines()
 
         self.reload_io()
+
+        self.set_numerical_parameters()
 
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
@@ -544,37 +545,32 @@ class SoSDiscipline(MDODiscipline):
                     else:
                         self.set_cache_policy(cache_type=cache_type,
                                               cache_hdf_file=cache_file_path)
-
-            # Debug mode
-            debug_mode = self.get_sosdisc_inputs('debug_mode')
-            if debug_mode == "nan":
-                self.nan_check = True
-            elif debug_mode == "input_change":
-                self.check_if_input_change_after_run = True
-            elif debug_mode == "linearize_data_change":
-                self.check_linearize_data_changes = True
-            elif debug_mode == "min_max_grad":
-                self.check_min_max_gradients = True
-            elif debug_mode == "min_max_couplings":
-                self.check_min_max_couplings = True
-            elif debug_mode == "all":
-                self.nan_check = True
-                self.check_if_input_change_after_run = True
-                self.check_linearize_data_changes = True
-                self.check_min_max_gradients = True
-                self.check_min_max_couplings = True
-            if debug_mode != "":
-                if debug_mode == "all":
-                    for mode in self.AVAILABLE_DEBUG_MODE not in ["", "all"]:
-                        print(
-                            f'Discipline {self.sos_name} set to debug mode {mode}')
-                        self.logger.debug(
-                            f'Discipline {self.sos_name} set to debug mode {mode}')
-                else:
-                    print(
-                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                    self.logger.debug(
-                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+        # Debug mode
+        debug_mode = self.get_sosdisc_inputs('debug_mode')
+        if debug_mode == "nan":
+            self.nan_check = True
+        elif debug_mode == "input_change":
+            self.check_if_input_change_after_run = True
+        elif debug_mode == "linearize_data_change":
+            self.check_linearize_data_changes = True
+        elif debug_mode == "min_max_grad":
+            self.check_min_max_gradients = True
+        elif debug_mode == "min_max_couplings":
+            self.check_min_max_couplings = True
+        elif debug_mode == "all":
+            self.nan_check = True
+            self.check_if_input_change_after_run = True
+            self.check_linearize_data_changes = True
+            self.check_min_max_gradients = True
+            self.check_min_max_couplings = True
+        if debug_mode != "":
+            if debug_mode == "all":
+                for mode in self.AVAILABLE_DEBUG_MODE:
+                    if mode not in ["", "all"]:
+                        self.logger.debug(f'Discipline {self.sos_name} set to debug mode {mode}')
+            else:
+                self.logger.debug(
+                    f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def setup_sos_disciplines(self):
         '''
@@ -866,6 +862,8 @@ class SoSDiscipline(MDODiscipline):
 
         self.__check_nan_in_data(result)
 
+        if self.check_min_max_couplings:
+            self.display_min_max_couplings()
         return result
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
@@ -920,7 +918,7 @@ class SoSDiscipline(MDODiscipline):
                 self.local_data = own_data
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
+            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in self.input_grammar.data_names}
 
         # set LINEARIZE status to get inputs from local_data instead of
         # datamanager
@@ -932,11 +930,14 @@ class SoSDiscipline(MDODiscipline):
 
         self.__check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_after_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
-
-            self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                 disc_data_after_linearize,
-                                                 'Discipline data integrity through linearize')
+            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in disc_data_before_linearize.keys()}
+            is_output_error=True
+            output_error=self.check_discipline_data_integrity(disc_data_before_linearize,
+                                                              disc_data_after_linearize,
+                                                              'Discipline data integrity through linearize',
+                                                               is_output_error=is_output_error)
+            if output_error != '':
+                raise ValueError(output_error)
 
         if need_execution_after_lin:
             self.reset_statuses_for_run()
@@ -1113,17 +1114,19 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_dm(self.STATUS_RUNNING)
 
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_before_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
-                                                for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
+                disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
 
             self.run()
             self.fill_output_value_connector()
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
-                                               for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-                self.check_discipline_data_integrity(disc_inputs_before_execution,
-                                                     disc_inputs_after_execution,
-                                                     'Discipline inputs integrity through run')
+                disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
+                is_output_error=True
+                output_error=self.check_discipline_data_integrity(disc_inputs_before_execution,
+                                                                  disc_inputs_after_execution,
+                                                                  'Discipline inputs integrity through run',
+                                                                  is_output_error=is_output_error)
+                if output_error!='':
+                    raise ValueError(output_error)
 
         except Exception as exc:
             self._update_status_dm(self.STATUS_FAILED)
@@ -1687,17 +1690,6 @@ class SoSDiscipline(MDODiscipline):
         )
         return o_k
 
-    def __get_discipline_inputs_outputs_dict_formatted__(self):
-        disc_inputs = {self.get_var_full_name(key, self._data_in): {'value': value}
-                       for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-        disc_outputs = {self.get_var_full_name(key, self._data_out): {'value': value}
-                        for key, value in deepcopy(self.get_sosdisc_outputs()).items()}
-        disc_data = {}
-        disc_data.update(disc_inputs)
-        disc_data.update(disc_outputs)
-
-        return disc_data
-
     def get_infos_gradient(self, output_var_list, input_var_list):
         """ Method to linearize an sos_discipline object and get gradient of output_var_list wrt input_var_list
 
@@ -1726,6 +1718,23 @@ class SoSDiscipline(MDODiscipline):
                 )
 
         return dict_infos_values
+    def display_min_max_couplings(self):
+        ''' Method to display the minimum and maximum values among a discipline's couplings
+
+        '''
+        coupling_dict = {}
+        for key, value in self.local_data.items():
+            is_coupling = self.dm.get_data(key, 'coupling')
+            if is_coupling:
+                coupling_dict[key] = abs(value)
+        min_coupling = min(coupling_dict, key=coupling_dict.get)
+        max_coupling = max(coupling_dict, key=coupling_dict.get)
+        self.ee.logger.info(
+            "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
+                self.sos_name, min_coupling, coupling_dict[min_coupling]))
+        self.ee.logger.info(
+            "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
+                self.sos_name, max_coupling, coupling_dict[max_coupling]))
 
     def clean(self):
         """This method cleans a sos_discipline;
