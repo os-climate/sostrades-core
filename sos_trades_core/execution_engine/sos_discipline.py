@@ -567,9 +567,9 @@ class SoSDiscipline(MDODiscipline):
             if debug_mode == "all":
                 for mode in self.AVAILABLE_DEBUG_MODE:
                     if mode not in ["", "all"]:
-                        self.logger.debug(f'Discipline {self.sos_name} set to debug mode {mode}')
+                        self.logger.info(f'Discipline {self.sos_name} set to debug mode {mode}')
             else:
-                self.logger.debug(
+                self.logger.info(
                     f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def setup_sos_disciplines(self):
@@ -1722,19 +1722,20 @@ class SoSDiscipline(MDODiscipline):
         ''' Method to display the minimum and maximum values among a discipline's couplings
 
         '''
-        coupling_dict = {}
+        min_coupling_dict, max_coupling_dict = {}, {}
         for key, value in self.local_data.items():
             is_coupling = self.dm.get_data(key, 'coupling')
             if is_coupling:
-                coupling_dict[key] = abs(value)
-        min_coupling = min(coupling_dict, key=coupling_dict.get)
-        max_coupling = max(coupling_dict, key=coupling_dict.get)
+                min_coupling_dict[key] = min(abs(value))
+                max_coupling_dict[key] = max(abs(value))
+        min_coupling = min(min_coupling_dict, key=min_coupling_dict.get)
+        max_coupling = max(max_coupling_dict, key=max_coupling_dict.get)
         self.ee.logger.info(
             "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
-                self.sos_name, min_coupling, coupling_dict[min_coupling]))
+                self.sos_name, min_coupling, min_coupling_dict[min_coupling]))
         self.ee.logger.info(
             "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
-                self.sos_name, max_coupling, coupling_dict[max_coupling]))
+                self.sos_name, max_coupling, max_coupling_dict[max_coupling]))
 
     def clean(self):
         """This method cleans a sos_discipline;
