@@ -144,6 +144,8 @@ class BaseStudyManager():
         :params: display_treeview, display or not treeview state (optional parameter)
         :type: boolean
         """
+        start_time = time()
+
         logger = self.execution_engine.logger
 
         if display_treeview:
@@ -178,6 +180,10 @@ class BaseStudyManager():
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
             self.execution_engine.display_treeview_nodes()
+
+        study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
+        message = f'Study {study_display_name} loding time : {time() - start_time} seconds'
+        logger.info(message)
 
     def specific_check(self):
         """ Method to overload to have a specific check on input datas
