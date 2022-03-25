@@ -76,6 +76,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     DESC_IN = {'algo': {'type': 'string', 'structuring': True},
                'design_space': {'type': 'dataframe', 'structuring': True},
                'formulation': {'type': 'string', 'structuring': True},
+               'maximize_objective': {'type': 'bool', 'structuring': True,'default': False},
                'objective_name': {'type': 'string', 'structuring': True},
                'differentiation_method': {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
@@ -109,6 +110,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.__factory = ee.factory
         self.cls_builder = cls_builder
         self.formulation = None
+        self.maximize_objective = None
         self.opt_problem = None
         self._maturity = None
 
@@ -117,6 +119,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         self.DESIGN_SPACE = 'design_space'
         self.FORMULATION = 'formulation'
+        self.MAXIMIZE_OBJECTIVE = 'maximize_objective'
         self.OBJECTIVE_NAME = 'objective_name'
         self.FORMULATION_OPTIONS = 'formulation_options'
 
@@ -124,6 +127,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.SCENARIO_MANDATORY_FIELDS = [
             self.DESIGN_SPACE,
             self.FORMULATION,
+            self.MAXIMIZE_OBJECTIVE,
             self.OBJECTIVE_NAME]
         #            self.SEARCH_PATHS]
         self.OPTIMAL_OBJNAME_SUFFIX = "opt"
@@ -219,11 +223,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 self._data_in[self.ALGO][self.EDITABLE] = False
                 self._data_in[self.ALGO_OPTIONS][self.EDITABLE] = False
                 self._data_in[self.FORMULATION][self.EDITABLE] = False
+                self._data_in[self.MAXIMIZE_OBJECTIVE][self.EDITABLE] = False
                 self._data_in[self.PARALLEL_OPTIONS][self.EDITABLE] = False
 
                 self._data_in[self.ALGO][self.OPTIONAL] = True
                 self._data_in[self.ALGO_OPTIONS][self.OPTIONAL] = True
                 self._data_in[self.FORMULATION][self.OPTIONAL] = True
+                self._data_in[self.MAXIMIZE_OBJECTIVE][self.OPTIONAL] = True
                 self._data_in[self.PARALLEL_OPTIONS][self.OPTIONAL] = True
             else:
                 self._data_in['eval_jac'][self.VALUE] = False
@@ -235,6 +241,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         design_space = None
         formulation = None
         obj_full_name = None
+        maximize_objective = False
 
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
@@ -245,14 +252,14 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             # build design space
             design_space = self.set_design_space()
             if design_space.variables_names:
-                _, formulation, obj_name = self.get_sosdisc_inputs(
+                _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
                 # get full objective ids
                 obj_name = self.get_sosdisc_inputs(self.OBJECTIVE_NAME)
                 obj_full_name = self._update_names([obj_name])[0]
 
-        return design_space, formulation, obj_full_name
+        return design_space, formulation, maximize_objective, obj_full_name
 
     def set_scenario(self):
         """
@@ -763,6 +770,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         avail_formulations = self._form_factory.formulations
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
                          self.POSSIBLE_VALUES, avail_formulations)
+        # fill the possible values of maximize_objective
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
+                         self.POSSIBLE_VALUES, [False,True])
 
     # -- Set possible design variables and objevtives
     # adapted from soseval

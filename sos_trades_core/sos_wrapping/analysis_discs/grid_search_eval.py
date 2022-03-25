@@ -127,14 +127,14 @@ class GridSearchEval(DoeEval):
 
             if set(selected_inputs.tolist()) != set(self.selected_inputs):
                 selected_inputs_has_changed = True
-                self.selected_inputs = selected_inputs.tolist()
-                self.dm.set_data(
-                    f'{self.get_disc_full_name()}.eval_inputs',
-                    'value',
-                    eval_inputs.sort_values(
-                        by=['selected_input', 'full_name'], ascending=False).reset_index(drop=True),
-                    check_value=False,
-                )
+                # self.selected_inputs = selected_inputs.tolist()
+                # self.dm.set_data(
+                #     f'{self.get_disc_full_name()}.eval_inputs',
+                #     'value',
+                #     eval_inputs.sort_values(
+                #         by=['selected_input', 'full_name'], ascending=False).reset_index(drop=True),
+                #     check_value=False,
+                # )
             if set(selected_outputs.tolist()) != set(self.selected_outputs):
                 self.dm.set_data(
                     f'{self.get_disc_full_name()}.eval_outputs',
@@ -144,6 +144,15 @@ class GridSearchEval(DoeEval):
                     check_value=False,
                 )
             self.selected_outputs = selected_outputs.tolist()
+
+            self.selected_inputs = selected_inputs.tolist()
+            self.dm.set_data(
+                f'{self.get_disc_full_name()}.eval_inputs',
+                'value',
+                eval_inputs.sort_values(
+                    by=['selected_input', 'full_name'], ascending=False).reset_index(drop=True),
+                check_value=False,
+            )
 
             selected_inputs_short = eval_inputs[eval_inputs['selected_input'] == True][
                 'shortest_name'
@@ -353,10 +362,10 @@ class GridSearchEval(DoeEval):
             data_connection)
 
         possible_in_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
         # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
+            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
         # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(

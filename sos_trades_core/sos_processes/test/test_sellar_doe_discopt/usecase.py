@@ -20,8 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
 
-    def __init__(self):
-        super().__init__(__file__)
+    def __init__(self, execution_engine=None):
+        super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
@@ -44,7 +44,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.{sc_name}.design_space'] = dspace
         disc_dict[f'{ns}.{sc_name}.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{ns}.{sc_name}.objective_name'] = 'obj'
-        #disc_dict[f'{ns}.{sc_name}.ineq_constraints'] = [f'c_1', f'c_2']
+        # disc_dict[f'{ns}.{sc_name}.ineq_constraints'] = [f'c_1', f'c_2']
 
         disc_dict[f'{ns}.{sc_name}.algo_options'] = {'levels': 'None'
                                                      }

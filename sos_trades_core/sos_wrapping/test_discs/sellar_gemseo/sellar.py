@@ -248,7 +248,7 @@ class Sellar1(MDODiscipline):
             y_1_out = array(
                 [self.compute_y_1(x_local, x_shared, y_2)], dtype=complex128
             )
-            self.store_local_data(y_1=y_1_out, y_1_bis=copy(y_1_out))
+            self.store_local_data(y_1=y_1_out)
 
     @staticmethod
     def compute_y_1(
@@ -353,7 +353,7 @@ class Sellar2(MDODiscipline):
             # functional form
             y_2_out = array([self.compute_y_2(x_shared, y_1)],
                             dtype=complex128)
-            self.store_local_data(y_2=y_2_out, y_2_bis=copy(y_2_out))
+            self.store_local_data(y_2=y_2_out)
 
     def _compute_jacobian(
         self,
