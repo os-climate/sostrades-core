@@ -116,7 +116,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
                          SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
                          SoSDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT:-1, SoSDiscipline.NUMERICAL: True,
                                  SoSDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
@@ -426,12 +426,20 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         ''' Configuration of SoSCoupling, call to super class MDAChain
         '''
         num_data = self._get_numerical_inputs()
-
+        
+        # store cache to reset after MDAChain init
+        cache = self.cache
+        
         MDAChain.__init__(self,
                           disciplines=self.sos_disciplines,
                           name=self.sos_name,
                           grammar_type=self.SOS_GRAMMAR_TYPE,
                           ** num_data)
+        
+        # TODO: pass cache to MDAChain init to avoid reset cache, idem for MDOChain
+        self.cache = cache
+        self.set_cache(self.mdo_chain, self.get_sosdisc_inputs('cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+        
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
 
@@ -511,15 +519,16 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
 
         return num_data
 
-    def set_epsilon0(self, mda):
+    def set_epsilon0_and_cache(self, mda):
         '''
         Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
         '''
         if isinstance(mda, MDASequential):
             for sub_mda in mda.mda_sequence:
-                self.set_epsilon0(sub_mda)
+                self.set_epsilon0_and_cache(sub_mda)
         else:
             mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
+            self.set_cache(mda, self.get_sosdisc_inputs('cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
     @property
     def ordered_disc_list(self):
@@ -600,7 +609,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
         self.store_sos_outputs_values(dict_out, update_dm=True)
-
 
         # store local data in datamanager
         self.update_dm_with_local_data()
@@ -945,7 +953,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                             sub_coupling_structures_iterator),
                         **sub_mda_options
                     )
-                    self.set_epsilon0(sub_mda)
+                    self.set_epsilon0_and_cache(sub_mda)
 
                     chained_disciplines.append(sub_mda)
                     self.sub_mda_list.append(sub_mda)

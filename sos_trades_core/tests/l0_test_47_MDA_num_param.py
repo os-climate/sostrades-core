@@ -165,7 +165,7 @@ class TestMDANumericalParameters(unittest.TestCase):
         values_dict = {self.name + '.x': x,
                        self.name + '.Disc1.a': a,
                        self.name + '.Disc1.b': b,
-                       self.name + '.Disc1.cache_type': 'SimpleCache'}
+                       self.name + '.cache_type': 'SimpleCache'}
 
         self.ee.load_study_from_input_dict(values_dict)
 
