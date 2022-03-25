@@ -528,7 +528,7 @@ class UncertaintyQuantification(SoSDiscipline):
         # percent_pos = len([p for p in data if p > 0]) / len(data) * 100
 
         text_right = {
-            'Confidence Interval': f'{int(confidence_interval*100)} % [{format_currency_legend(y_left_boundary)} , {format_currency_legend(y_right_boundary)} ] {unit}',
+            'Confidence Interval': f'{int(confidence_interval*100)} % [{format_currency_legend(y_left_boundary,"")} , {format_currency_legend(y_right_boundary,"")} ] {unit}',
             ' Most probable value': f'{format_currency_legend(most_probable_val, unit)}',
             ' Median': f'{format_currency_legend(median, unit)}',
             # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
