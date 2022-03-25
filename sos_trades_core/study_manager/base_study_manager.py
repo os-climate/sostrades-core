@@ -182,7 +182,7 @@ class BaseStudyManager():
             self.execution_engine.display_treeview_nodes()
 
         study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
-        message = f'Study {study_display_name} loding time : {time() - start_time} seconds'
+        message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
     def specific_check(self):

@@ -54,7 +54,7 @@ class UncertaintyQuantification(SoSDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_wrapping.analysis_discs.uncertainty_quantification',
+        'label': 'Uncertainty Quantification Model',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -62,7 +62,7 @@ class UncertaintyQuantification(SoSDiscipline):
         'last_modification_date': '',
         'category': '',
         'definition': '',
-        # 'icon': 'fas fa-chart-line fa-fw',
+        'icon': 'fas fa-regular fa-chart-scatter fa-fw',
         'version': '',
     }
     DESC_IN = {
