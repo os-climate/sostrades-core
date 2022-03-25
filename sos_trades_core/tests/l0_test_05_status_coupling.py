@@ -75,7 +75,7 @@ class TestStatusCoupling(unittest.TestCase):
         values_dict['EETests.Disc2.constant'] = 4.
         values_dict['EETests.Disc2.power'] = 2
 
-        self.exec_eng.dm.set_values_from_dict(values_dict)
+        self.exec_eng.load_study_from_input_dict(values_dict)
         self.exec_eng.execute()
 
     def test_02_check_status(self):

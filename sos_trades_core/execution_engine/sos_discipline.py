@@ -536,15 +536,14 @@ class SoSDiscipline(MDODiscipline):
             cache_file_path = self.get_sosdisc_inputs('cache_file_path')
 
             if cache_type != self._structuring_variables['cache_type']:
-                if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
-                    raise Exception(
-                        'if the cache type is set to HDF5Cache the cache_file path must be set')
-                elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
-                    if cache_type == 'None':
-                        self.cache = None
-                    else:
-                        self.set_cache_policy(cache_type=cache_type,
-                                              cache_hdf_file=cache_file_path)
+                self.clear_cache()
+                self.set_cache(self, cache_type, cache_file_path)
+                # set cache_type and cache_file_path input values to children
+                for disc in self.sos_disciplines:
+                    if 'cache_type' in disc._data_in:
+                        disc._data_in['cache_type'][self.VALUE] = cache_type
+                        disc._data_in['cache_file_path'][self.VALUE] = cache_file_path
+                        
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
             if debug_mode == "nan":
@@ -571,6 +570,19 @@ class SoSDiscipline(MDODiscipline):
                 else:
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                    
+    def set_cache(self, disc, cache_type, cache_hdf_file):
+        '''
+        Instantiate and set cache for disc if cache_type is not 'None'
+        '''
+        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
+            raise Exception(
+                        'if the cache type is set to HDF5Cache, the cache_file path must be set')
+        else:
+            if cache_type == 'None':
+                disc.cache = None
+            else:
+                disc.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def setup_sos_disciplines(self):
         '''
@@ -931,8 +943,8 @@ class SoSDiscipline(MDODiscipline):
         self.__check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in disc_data_before_linearize.keys()}
-            is_output_error=True
-            output_error=self.check_discipline_data_integrity(disc_data_before_linearize,
+            is_output_error = True
+            output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
                                                               disc_data_after_linearize,
                                                               'Discipline data integrity through linearize',
                                                                is_output_error=is_output_error)
@@ -1039,11 +1051,11 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column *
+                self.jac[new_y_key][new_x_key][:, index_x_column * 
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end': -1},
+                                                                        'end':-1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
@@ -1052,7 +1064,7 @@ class SoSDiscipline(MDODiscipline):
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end': -1}})
+                                                                        'end':-1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1120,12 +1132,12 @@ class SoSDiscipline(MDODiscipline):
             self.fill_output_value_connector()
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
                 disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
-                is_output_error=True
-                output_error=self.check_discipline_data_integrity(disc_inputs_before_execution,
+                is_output_error = True
+                output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
                                                                   disc_inputs_after_execution,
                                                                   'Discipline inputs integrity through run',
                                                                   is_output_error=is_output_error)
-                if output_error!='':
+                if output_error != '':
                     raise ValueError(output_error)
 
         except Exception as exc:
@@ -1423,12 +1435,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" +
+            raise ValueError("Unknown re_exec_policy :" + 
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
+            raise ValueError("Trying to run a discipline " + str(type(self)) + 
+                             " with status: " + str(self.status) + 
+                             " while re_exec_policy is : " + 
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1718,6 +1730,7 @@ class SoSDiscipline(MDODiscipline):
                 )
 
         return dict_infos_values
+
     def display_min_max_couplings(self):
         ''' Method to display the minimum and maximum values among a discipline's couplings
 
