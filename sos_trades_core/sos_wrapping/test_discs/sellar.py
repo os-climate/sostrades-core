@@ -135,17 +135,14 @@ class Sellar1(SoSDiscipline):
                'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'float',
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'y_1_bis': {'type': 'float',
-                            'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ Discipline 1 execution
         """
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
-        y1_out = {'y_1': y_1,
-                  'y_1_bis': copy(y_1)}
+        y1_out = {'y_1': y_1}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -179,18 +176,10 @@ class Sellar1(SoSDiscipline):
 
         self.set_partial_derivative('y_1', 'x', atleast_2d(array([1.0])))
 
-        self.set_partial_derivative('y_1_bis', 'x', atleast_2d(array([1.0])))
-
         self.set_partial_derivative('y_1', 'z', atleast_2d(array(
             [2.0 * z[0], 1.0])))
 
-        self.set_partial_derivative('y_1_bis', 'z', atleast_2d(array(
-            [2.0 * z[0], 1.0])))
-
         self.set_partial_derivative('y_1', 'y_2', atleast_2d(array([-0.2])))
-
-        self.set_partial_derivative(
-            'y_1_bis', 'y_2', atleast_2d(array([-0.2])))
 
 
 class Sellar2(SoSDiscipline):
@@ -225,7 +214,7 @@ class Sellar2(SoSDiscipline):
         """
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         y_2 = self.compute_y_2(y_1, z)
-        y1_out = {'y_2': y_2, 'y_2_bis': copy(y_2)}
+        y1_out = {'y_2': y_2, 'y_2_bis': y_2}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -271,6 +260,7 @@ class Sellar2(SoSDiscipline):
             # if debug mode activated raise an error
             raise Exception("debug mode activated to trigger except")
 
+
 class Sellar3(SoSDiscipline):
     """ Discipline 2 but with NaN in calculation on purpose for test
     """
@@ -308,10 +298,10 @@ class Sellar3(SoSDiscipline):
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': y_2, 'y_2_bis': copy(y_2)}
         if error_string == 'nan':
-            y1_out['y_2']=NaN
+            y1_out['y_2'] = NaN
         elif error_string == 'input_change':
-            y_1=self.local_data[self.get_var_full_name('y_1', self._data_in)]
-            y_1+=0.5
+            y_1 = self.local_data[self.get_var_full_name('y_1', self._data_in)]
+            y_1 += 0.5
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -344,7 +334,7 @@ class Sellar3(SoSDiscipline):
 
         if error_string == 'linearize_data_change':
             y_1 = self.local_data[self.get_var_full_name('y_1', self._data_in)]
-            y_1+=0.5
+            y_1 += 0.5
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
             array([1.0 / (2.0 * sqrt(y_1))])))
@@ -412,6 +402,7 @@ class Sellar3(SoSDiscipline):
                 self.sos_name, max_coupling, coupling_dict[max_coupling]))
         raise ValueError("in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
                 self.sos_name, min_coupling, coupling_dict[min_coupling]))
+
 
 if __name__ == '__main__':
     disc_id = 'coupling_disc'

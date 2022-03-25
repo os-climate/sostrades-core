@@ -248,7 +248,7 @@ class Sellar1(MDODiscipline):
             y_1_out = array(
                 [self.compute_y_1(x_local, x_shared, y_2)], dtype=complex128
             )
-            self.store_local_data(y_1=y_1_out, y_1_bis=copy(y_1_out))
+            self.store_local_data(y_1=y_1_out)
 
     @staticmethod
     def compute_y_1(

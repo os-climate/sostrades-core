@@ -134,17 +134,14 @@ class Sellar1(SoSDiscipline):
                'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'float',
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'y_1_bis': {'type': 'float',
-                            'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ Discipline 1 execution
         """
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
-        y1_out = {'y_1': y_1,
-                  'y_1_bis': copy(y_1)}
+        y1_out = {'y_1': y_1}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -180,20 +177,10 @@ class Sellar1(SoSDiscipline):
             ('y_1',), ('x', 'value'), array([1.0, 0.0, 0.0, 0.0]))
         # self.set_partial_derivative('y_1', 'x', atleast_2d(array([1.0])))
 
-        self.set_partial_derivative_for_other_types(
-            ('y_1_bis',), ('x', 'value'), array([1.0, 0.0, 0.0, 0.0]))
-        # self.set_partial_derivative('y_1_bis', 'x', atleast_2d(array([1.0])))
-
         self.set_partial_derivative('y_1', 'z', atleast_2d(array(
             [2.0 * z[0], 1.0])))
 
-        self.set_partial_derivative('y_1_bis', 'z', atleast_2d(array(
-            [2.0 * z[0], 1.0])))
-
         self.set_partial_derivative('y_1', 'y_2', atleast_2d(array([-0.2])))
-
-        self.set_partial_derivative(
-            'y_1_bis', 'y_2', atleast_2d(array([-0.2])))
 
 
 class Sellar2(SoSDiscipline):
