@@ -195,7 +195,7 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         n_calls_simple_cache = self.ee.root_process.disciplines[0].n_calls
 
-        self.assertEqual(n_calls_simple_cache, 4)
+        self.assertEqual(n_calls_simple_cache, 3)
 
     def _test_03_chech_memory_full_cache_option(self):
         print("\n Test 2 : check MemoryFullCache")
