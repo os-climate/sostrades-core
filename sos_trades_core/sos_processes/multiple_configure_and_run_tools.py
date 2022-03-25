@@ -17,7 +17,6 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 '''
 
-
 from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
 from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
@@ -28,7 +27,7 @@ from logging import DEBUG
 from copy import deepcopy
 from tempfile import gettempdir
 import traceback
-from gemseo.utils.compare_data_manager_tooling import compare_dict,\
+from gemseo.utils.compare_data_manager_tooling import compare_dict, \
     delete_keys_from_dict
 from multiprocessing import Process, Queue
 from queue import Empty
@@ -69,7 +68,7 @@ def manage_process_queue(process_list, message_queue):
         except Empty:
             pass
 
-        time.sleep(0.5)    # Give tasks a chance to put more data in
+        time.sleep(0.5)  # Give tasks a chance to put more data in
         if not message_queue.empty():
             continue
         liveprocs = [p for p in liveprocs if p.is_alive()]
@@ -170,9 +169,9 @@ def configure_twice_all_usecases_and_compare_dm(processes_repo):
 
     """
 
-    if platform.system() == 'Windows':
-        raise OSError(
-            'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
+#     if platform.system() == 'Windows':
+#         raise OSError(
+#             'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
 
     usecase_dict = get_all_usecases(processes_repo)
     message_queue = Queue()
@@ -246,9 +245,9 @@ def run_twice_all_usecases_and_compare_dm(processes_repo, force_run=False):
     :return: [str, str], [test status, error message list]
 
     """
-    if platform.system() == 'Windows':
-        raise OSError(
-            'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the resources consumption')
+#     if platform.system() == 'Windows':
+#         raise OSError(
+#             'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the resources consumption')
 
     usecase_dict = get_all_usecases(processes_repo)
     message_queue = Queue()

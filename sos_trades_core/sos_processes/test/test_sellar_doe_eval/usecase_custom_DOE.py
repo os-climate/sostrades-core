@@ -21,8 +21,8 @@ from sos_trades_core.study_manager.study_manager import StudyManager
 
 class Study(StudyManager):
 
-    def __init__(self):
-        super().__init__(__file__)
+    def __init__(self, execution_engine=None):
+        super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
