@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -21,6 +22,7 @@ import sys
 from copy import deepcopy
 import numpy as np
 import pandas as pd
+from os import remove
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
@@ -72,6 +74,11 @@ class TestCache(unittest.TestCase):
 
         self.disc2_builder.cls.DESC_IN = self.desc_in2
 
+        try:
+            remove('.\cache.h5')
+        except OSError:
+            pass
+
     def test_1_test_cache_discipline_without_input_change(self):
         '''
         check discipline namespace update
@@ -82,18 +89,19 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.a'] = 10.
         values_dict[f'{self.name}.Disc1.b'] = 20.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
-        n_call_1 = self.ee.root_process.n_calls
+        n_call_1 = self.ee.root_process.sos_disciplines[0].n_calls
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_2 = self.ee.root_process.n_calls
+        n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
 
         self.assertEqual(n_call_2, n_call_1)
 
@@ -108,27 +116,28 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.a'] = 10.
         values_dict[f'{self.name}.Disc1.b'] = 20.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
         self.ee.execute()
         # get number of calls after first call
-        n_call_1 = self.ee.root_process.n_calls
+        n_call_1 = self.ee.root_process.sos_disciplines[0].n_calls
 
         # second execute with change of a private parameter
         values_dict[f'{self.name}.Disc1.a'] = 1.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # get number of calls after second call
-        n_call_2 = self.ee.root_process.n_calls
+        n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
         self.assertEqual(n_call_2, n_call_1 + 1)
 
         # third execute with change of a protected parameter
         values_dict[f'{self.name}.x'] = 1.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # get number of calls after third call
-        n_call_2 = self.ee.root_process.n_calls
+        n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
         self.assertEqual(n_call_2, n_call_1 + 2)
 
     def test_3_test_cache_coupling_without_input_change(self):
@@ -143,9 +152,12 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.Disc2.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
 
         # first execute
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
 
         # second execute
@@ -170,7 +182,10 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.Disc2.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -192,7 +207,7 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.a'] = 1.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -206,7 +221,7 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on second discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc2.power'] = 1
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -219,7 +234,7 @@ class TestCache(unittest.TestCase):
 
         # third execute with modif on a protected variable
         values_dict[f'{self.name}.x'] = 2.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -266,7 +281,7 @@ class TestCache(unittest.TestCase):
                        self.name + '.Disc2.power': 2}
 
         # set input data
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -331,7 +346,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -353,12 +368,12 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_new'
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -368,7 +383,7 @@ class TestCache(unittest.TestCase):
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc2.an_input_3'] = {
             'value1': 'new', 'value2': '+++'}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -382,12 +397,12 @@ class TestCache(unittest.TestCase):
         # fourth execute with second modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_new2'
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -403,12 +418,12 @@ class TestCache(unittest.TestCase):
         # but the same as the first execute : all disciplines must be
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_1'
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -450,7 +465,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -473,12 +488,12 @@ class TestCache(unittest.TestCase):
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_2'] = {
             'value1': 'valuenew1', 'value2': 'value_new2'}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -489,12 +504,12 @@ class TestCache(unittest.TestCase):
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = {
             'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -542,7 +557,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -564,12 +579,12 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2', 'AC_new']
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -591,24 +606,24 @@ class TestCache(unittest.TestCase):
         # but the same as the first execute : all disciplines must be
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC3']
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2']
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
 
         metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
             SoSDiscipline.TYPE_METADATA]
@@ -663,7 +678,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -686,12 +701,12 @@ class TestCache(unittest.TestCase):
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_2'] = {'scenario1': [
             'ACnew', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 'string2']}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
         # check
         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -702,12 +717,12 @@ class TestCache(unittest.TestCase):
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = {'scenario1': [
             'AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 'string2']}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
         n_calls_disc1 += 1
-        #n_calls_disc2 += 1
+        # n_calls_disc2 += 1
 
         metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
             SoSDiscipline.TYPE_METADATA]
@@ -737,7 +752,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-    def test_10_gemseo_cache(self):
+    def test_10_cache_on_sellar_optim_gemseo_scenario(self):
 
         disciplines = [Sellar1(residual_form=False),
                        Sellar2(residual_form=False),
@@ -772,7 +787,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -786,7 +801,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -800,7 +815,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\n \t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -808,24 +823,16 @@ class TestCache(unittest.TestCase):
         for k, v in scenario.formulation.mda.local_data.items():
             print("\t | " + str(k) + " " + str(v))
 
-    def test_11_sellar_optim_with_cache(self):
+    def test_11_cache_on_sellar_optim(self):
 
         self.study_name = 'optim'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarOptimScenario"
         self.c_name = "SellarCoupling"
-
-        dspace_dict = {'variable': ['x', 'z', 'y_1', 'y_2'],
-                       'value': [1., [4., 3.], 1., 1.],
-                       'lower_bnd': [0., [-10., 0.], -100., -100.],
-                       'upper_bnd': [10., [10., 10.], 100., 100.],
-                       'enable_variable': [True, True, True, True],
-                       'activated_elem': [[True], [True, True], [True], [True]]}
-
-        self.dspace = pd.DataFrame(dspace_dict)
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
 
+        # build sellar optim process
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -833,75 +840,180 @@ class TestCache(unittest.TestCase):
                                                    mod_id=self.proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(builder)
-
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
-        #-- set up design space
-        dspace_dict = {'variable': ['x', 'z'],
-                       'value': [1., [5., 2.]],
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
-                       'enable_variable': [True, True],
-                       'activated_elem': [[True], [True, True]]}
+        dspace_dict = {'variable': ['x'],
+                       'value': [[1.]],
+                       'lower_bnd': [[0.]],
+                       'upper_bnd': [[10.]],
+                       'enable_variable': [True],
+                       'activated_elem': [[True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
         disc_dict = {}
-        # Optim inputs
-        disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAJacobi'
-        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
+        disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAGaussSeidel'
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
         disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
         disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
         disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
             'c_1', 'c_2']
-
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
                                                                     "ineq_tolerance": 1e-6,
                                                                     "normalize_design_space": True}
-        exec_eng.dm.set_values_from_dict(disc_dict)
-
-        # Sellar inputs
-        local_dv = 10.
-        values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = np.array([
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = np.array([
             1., 1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        values_dict['optim.SellarOptimScenario.max_iter'] = 1
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = 10.
 
-        exec_eng.load_study_from_input_dict(values_dict)
+        # execute sellar optim with SimpleCache and retrieve dm
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        dm_with_simple_cache = exec_eng.dm.get_data_dict_values()
 
-        res = exec_eng.execute()
+        # execute sellar optim with HDF5Cache and retrieve dm
+#         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+#             disc_dict[cache_type_key] = 'HDF5Cache'
+#         for cache_file_paht_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path'):
+#             disc_dict[cache_file_paht_key] = 'cache.h5'
+#         exec_eng.load_study_from_input_dict(disc_dict)
+#         exec_eng.execute()
+#         dm_with_HDF5_cache = exec_eng.dm.get_data_dict_values()
 
-        y_1 = exec_eng.dm.get_value(
-            f'{self.ns}.{self.sc_name}.{self.c_name}.y_1')
-        y_1_bis = exec_eng.dm.get_value(
-            f'{self.ns}.{self.sc_name}.{self.c_name}.y_1_bis')
-        y_2 = exec_eng.dm.get_value(
-            f'{self.ns}.{self.sc_name}.{self.c_name}.y_2')
-        y_2_bis = exec_eng.dm.get_value(
-            f'{self.ns}.{self.sc_name}.{self.c_name}.y_2_bis')
+        # execute sellar optim with MemoryFullCache and retrieve dm
+#         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+#             disc_dict[cache_type_key] = 'MemoryFullCache'
+#         exec_eng.load_study_from_input_dict(disc_dict)
+#         exec_eng.execute()
+#         dm_with_memory_full_cache = exec_eng.dm.get_data_dict_values()
 
-        self.assertEqual(y_1, y_1_bis)
-        self.assertEqual(y_2, y_2_bis)
+        # desactivate cache, execute sellar optim and retrieve dm
+        for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+            disc_dict[cache_type_key] = 'None'
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        dm_without_cache = exec_eng.dm.get_data_dict_values()
 
-        y_1_target = (25.588302369877685 + 0j)
-        y_2_target = (12.058488150611574 + 0j)
+        # remove cache_type keys from dm_with_cache and dm_without_cache
+        for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type') + exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path') + exec_eng.dm.get_all_namespaces_from_var_name('residuals_history'):
+            dm_with_simple_cache.pop(cache_type_key)
+#             dm_with_HDF5_cache.pop(cache_type_key)
+#             dm_with_memory_full_cache.pop(cache_type_key)
+            dm_without_cache.pop(cache_type_key)
 
-        self.assertEqual(y_1, y_1_target)
-        self.assertEqual(y_2, y_2_target)
-        self.assertEqual(exec_eng.root_process.sos_disciplines[0].sos_disciplines[
-                         0].local_data['optim.SellarOptimScenario.SellarCoupling.y_1'][0], y_1_target)
-        self.assertEqual(exec_eng.root_process.sos_disciplines[0].sos_disciplines[
-                         0].local_data['optim.SellarOptimScenario.SellarCoupling.y_2'][0], y_2_target)
+        # compare values in dm_with_cache, dm_with_HDF5_cache,
+        # dm_with_memory_full_cache and dm_without_cache
+        dict_error = {}
+        compare_dict(dm_with_simple_cache,
+                     dm_without_cache, '', dict_error)
+#         compare_dict(dm_with_HDF5_cache,
+#                      dm_without_cache, '', dict_error)
+#         compare_dict(dm_with_memory_full_cache,
+#                      dm_without_cache, '', dict_error)
+        self.assertDictEqual(dict_error, {})
+
+    def test_12_cache_on_sellar_optim_with_warm_start(self):
+
+        self.study_name = 'optim'
+        self.ns = f'{self.study_name}'
+        self.sc_name = "SellarOptimScenario"
+        self.c_name = "SellarCoupling"
+        self.repo = 'sos_trades_core.sos_processes.test'
+        self.proc_name = 'test_sellar_opt_discopt'
+
+        # build sellar optim process
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id=self.proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+        exec_eng.configure()
+
+        dspace_dict = {'variable': ['x'],
+                       'value': [[1.]],
+                       'lower_bnd': [[0.]],
+                       'upper_bnd': [[10.]],
+                       'enable_variable': [True],
+                       'activated_elem': [[True]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        disc_dict = {}
+        # warm_start True
+        disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.warm_start'] = True
+        disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAGaussSeidel'
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
+            'c_1', 'c_2']
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
+                                                                    "ineq_tolerance": 1e-6,
+                                                                    "normalize_design_space": True}
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = np.array([
+            1., 1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = 10.
+
+        # execute sellar optim with SimpleCache and retrieve dm
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        dm_with_simple_cache = exec_eng.dm.get_data_dict_values()
+
+        # execute sellar optim with HDF5Cache and retrieve dm
+#         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+#             disc_dict[cache_type_key] = 'HDF5Cache'
+#         for cache_file_paht_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path'):
+#             disc_dict[cache_file_paht_key] = 'cache.h5'
+#         exec_eng.load_study_from_input_dict(disc_dict)
+#         exec_eng.execute()
+#         dm_with_HDF5_cache = exec_eng.dm.get_data_dict_values()
+
+        # execute sellar optim with MemoryFullCache and retrieve dm
+#         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+#             disc_dict[cache_type_key] = 'MemoryFullCache'
+#         exec_eng.load_study_from_input_dict(disc_dict)
+#         exec_eng.execute()
+#         dm_with_memory_full_cache = exec_eng.dm.get_data_dict_values()
+
+        # desactivate cache, execute sellar optim and retrieve dm
+        for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+            disc_dict[cache_type_key] = 'None'
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        dm_without_cache = exec_eng.dm.get_data_dict_values()
+
+        # remove cache_type keys from dm_with_cache and dm_without_cache
+        for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type') + exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path') + exec_eng.dm.get_all_namespaces_from_var_name('residuals_history'):
+            dm_with_simple_cache.pop(cache_type_key)
+#             dm_with_HDF5_cache.pop(cache_type_key)
+#             dm_with_memory_full_cache.pop(cache_type_key)
+            dm_without_cache.pop(cache_type_key)
+
+        # compare values in dm_with_cache, dm_with_HDF5_cache,
+        # dm_with_memory_full_cache and dm_without_cache
+        dict_error = {}
+        compare_dict(dm_with_simple_cache,
+                     dm_without_cache, '', dict_error)
+#         compare_dict(dm_with_HDF5_cache,
+#                      dm_without_cache, '', dict_error)
+#         compare_dict(dm_with_memory_full_cache,
+#                      dm_without_cache, '', dict_error)
+        self.assertDictEqual(dict_error, {})
 
 
 if __name__ == "__main__":
     cls = TestCache()
+    cls.setUp()
+    cls.test_1_test_cache_discipline_without_input_change()
     # cls.test_10_gemseo_cache()
-    cls.test_11_sellar_optim_with_cache()
+#     cls.test_11_cache_on_sellar_optim()
+#     cls.test_12_cache_on_sellar_optim_with_warm_start()

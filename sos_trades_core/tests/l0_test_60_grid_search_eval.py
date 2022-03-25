@@ -129,6 +129,7 @@ class TestGridSearchEval(unittest.TestCase):
         }
 
         self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.configure()
         self.exec_eng.execute()
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()

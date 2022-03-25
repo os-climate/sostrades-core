@@ -146,7 +146,8 @@ class SoSDiscipline(MDODiscipline):
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
 
-    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
+    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
+                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
     # -- status section
 
@@ -162,13 +163,14 @@ class SoSDiscipline(MDODiscipline):
     NUM_DESC_IN = {
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
-        'cache_type': {TYPE: 'string', DEFAULT: MDODiscipline.SIMPLE_CACHE,
-                       POSSIBLE_VALUES: [MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE,
-                                         MDODiscipline.MEMORY_FULL_CACHE],
-                       NUMERICAL: True},
-        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True},
+        'cache_type': {TYPE: 'string', DEFAULT: 'None',
+                       POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
+                       # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+                       NUMERICAL: True,
+                       STRUCTURING: True},
+        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                       NUMERICAL: True, OPTIONAL: True, 'structuring': True}
+                       NUMERICAL: True, 'structuring': True}
     }
 
     # -- grammars
@@ -210,12 +212,9 @@ class SoSDiscipline(MDODiscipline):
 
         # -- Sub-disciplines attributes
         self.built_sos_disciplines = []
-        self.sos_disciplines = None
         self.in_checkjac = False
-        self.reset_sos_disciplines()
-        # -- Maturity attribute
-        self._maturity = self.get_maturity()
         self._is_configured = False
+        # init MDODiscipline
         MDODiscipline.__init__(
             self, sos_name, grammar_type=self.SOS_GRAMMAR_TYPE)
         # Update status attribute and data manager
@@ -227,6 +226,8 @@ class SoSDiscipline(MDODiscipline):
         self._data_out = None
         self._structuring_variables = None
         self.reset_data()
+        # -- Maturity attribute
+        self._maturity = self.get_maturity()
 
         # Add the discipline in the dm and get its unique disc_id (was in the
         # configure)
@@ -234,7 +235,6 @@ class SoSDiscipline(MDODiscipline):
 
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
-
 
     def get_shared_namespace_list(self, data_dict):
         '''
@@ -312,9 +312,9 @@ class SoSDiscipline(MDODiscipline):
         # Remove unavailable GEMS type variables before initialize
         # input_grammar
         if not self.is_sos_coupling:
-            filtered_data_in = self.__filter_couplings_for_gems(
+            filtered_data_in = self.__filter_available_gemseo_types(
                 self.IO_TYPE_IN)
-            filtered_data_out = self.__filter_couplings_for_gems(
+            filtered_data_out = self.__filter_available_gemseo_types(
                 self.IO_TYPE_OUT)
             self.init_gems_grammar(filtered_data_in, self.IO_TYPE_IN)
             self.init_gems_grammar(filtered_data_out, self.IO_TYPE_OUT)
@@ -399,11 +399,6 @@ class SoSDiscipline(MDODiscipline):
         io_type specifies 'IN' or 'OUT'
         '''
         self._init_grammar_with_keys(data_keys, io_type)
-
-    def reset_sos_disciplines(self):
-        ''' Empty sos_disciplines list
-        '''
-        self.sos_disciplines = []
 
     def get_sos_diciplines_ids(self):
         return [disc.name for disc in self.sos_disciplines]
@@ -515,6 +510,8 @@ class SoSDiscipline(MDODiscipline):
         '''
         Configure the SoSDiscipline
         '''
+        self.set_numerical_parameters()
+
         if self.check_structuring_variables_changes():
             self.set_structuring_variables_values()
 
@@ -522,7 +519,6 @@ class SoSDiscipline(MDODiscipline):
 
         self.reload_io()
 
-        self.set_numerical_parameters()
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
@@ -532,43 +528,47 @@ class SoSDiscipline(MDODiscipline):
         '''
         Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN
         '''
-        self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
-        cache_type = self.get_sosdisc_inputs('cache_type')
-        cache_file_path = self.get_sosdisc_inputs('cache_file_path')
+        if self._data_in != {}:
+            self.linearization_mode = self.get_sosdisc_inputs('linearization_mode')
+            cache_type = self.get_sosdisc_inputs('cache_type')
+            cache_file_path = self.get_sosdisc_inputs('cache_file_path')
+    
+            if cache_type != self._structuring_variables['cache_type']:
+                if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
+                    raise Exception(
+                        'if the cache type is set to HDF5Cache the cache_file path must be set')
+                elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
+                    if cache_type == 'None':
+                        self.cache = None
+                    else:
+                        self.set_cache_policy(cache_type=cache_type,
+                                              cache_hdf_file=cache_file_path)
+            # Debug mode
+            debug_mode = self.get_sosdisc_inputs('debug_mode')
+            if debug_mode == "nan":
+                self.nan_check = True
+            elif debug_mode == "input_change":
+                self.check_if_input_change_after_run = True
+            elif debug_mode == "linearize_data_change":
+                self.check_linearize_data_changes = True
+            elif debug_mode == "min_max_grad":
+                self.check_min_max_gradients = True
+            elif debug_mode == "min_max_couplings":
+                self.check_min_max_couplings = True
+            elif debug_mode == "all":
+                self.nan_check = True
+                self.check_if_input_change_after_run = True
+                self.check_linearize_data_changes = True
+                self.check_min_max_gradients = True
+                self.check_min_max_couplings = True
+            if debug_mode != "":
+                if debug_mode == "all":
 
-        if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
-            raise Exception(
-                'if the cache type is set to HDF5Cache the cache_file path must be set')
-        elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
-            self.set_cache_policy(cache_type=cache_type,
-                                  cache_hdf_file=cache_file_path)
-
-        #Debug mode
-        debug_mode = self.get_sosdisc_inputs('debug_mode')
-        if debug_mode == "nan":
-            self.nan_check = True
-        elif debug_mode == "input_change":
-            self.check_if_input_change_after_run = True
-        elif debug_mode == "linearize_data_change":
-            self.check_linearize_data_changes = True
-        elif debug_mode == "min_max_grad":
-            self.check_min_max_gradients = True
-        elif debug_mode == "min_max_couplings":
-            self.check_min_max_couplings = True
-        elif debug_mode == "all":
-            self.nan_check = True
-            self.check_if_input_change_after_run = True
-            self.check_linearize_data_changes = True
-            self.check_min_max_gradients = True
-            self.check_min_max_couplings = True
-        if debug_mode != "":
-            if debug_mode == "all":
-                for mode in self.AVAILABLE_DEBUG_MODE not in ["", "all"]:
-                    print(f'Discipline {self.sos_name} set to debug mode {mode}')
-                    self.logger.debug(f'Discipline {self.sos_name} set to debug mode {mode}')
-            else:
-                print(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                self.logger.debug(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                    for mode in self.AVAILABLE_DEBUG_MODE:
+                        if mode not in ["", "all"]:
+                            self.logger.info(f'Discipline {self.sos_name} set to debug mode {mode}')
+                else:
+                    self.logger.info(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def setup_sos_disciplines(self):
         '''
@@ -581,7 +581,8 @@ class SoSDiscipline(MDODiscipline):
     # -- cache handling
     def clear_cache(self):
         # -- Need to clear cache for gradients analysis
-        self.cache.clear()
+        if self.cache is not None:
+            self.cache.clear()
         for discipline in self.sos_disciplines:
             discipline.clear_cache()
 
@@ -859,6 +860,8 @@ class SoSDiscipline(MDODiscipline):
 
         self.__check_nan_in_data(result)
 
+        if self.check_min_max_couplings:
+            self.display_min_max_couplings()
         return result
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
@@ -913,7 +916,7 @@ class SoSDiscipline(MDODiscipline):
                 self.local_data = own_data
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_before_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
+            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in self.input_grammar.data_names}
 
         # set LINEARIZE status to get inputs from local_data instead of
         # datamanager
@@ -925,11 +928,14 @@ class SoSDiscipline(MDODiscipline):
 
         self.__check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_after_linearize = self.__get_discipline_inputs_outputs_dict_formatted__()
-
-            self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                   disc_data_after_linearize,
-                                                   'Discipline data integrity through linearize')
+            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in disc_data_before_linearize.keys()}
+            is_output_error = True
+            output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
+                                                              disc_data_after_linearize,
+                                                              'Discipline data integrity through linearize',
+                                                               is_output_error=is_output_error)
+            if output_error != '':
+                raise ValueError(output_error)
 
         if need_execution_after_lin:
             self.reset_statuses_for_run()
@@ -1024,27 +1030,27 @@ class SoSDiscipline(MDODiscipline):
         if new_x_key in self.jac[new_y_key]:
             if index_y_column is not None and index_x_column is not None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                               index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column *
-                                                  lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                self.jac[new_y_key][new_x_key][:, index_x_column * 
+                                               lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end': -1},
+                                                                        'end':-1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                :] = value
+                                               :] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end': -1}})
+                                                                        'end':-1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1106,17 +1112,19 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_dm(self.STATUS_RUNNING)
 
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_before_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
-                                                for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
+                disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
 
             self.run()
             self.fill_output_value_connector()
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_after_execution = {self.get_var_full_name(key, self._data_in): {'value': value}
-                                               for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-                self.check_discipline_data_integrity(disc_inputs_before_execution,
-                                                       disc_inputs_after_execution,
-                                                       'Discipline inputs integrity through run')
+                disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
+                is_output_error = True
+                output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
+                                                                  disc_inputs_after_execution,
+                                                                  'Discipline inputs integrity through run',
+                                                                  is_output_error=is_output_error)
+                if output_error != '':
+                    raise ValueError(output_error)
 
         except Exception as exc:
             self._update_status_dm(self.STATUS_FAILED)
@@ -1297,9 +1305,9 @@ class SoSDiscipline(MDODiscipline):
                 keys, io_type)]
         return variables
 
-    def __filter_couplings_for_gems(self, io_type):
-        '''
-        Filter coupling before sending to GEMS
+    def __filter_available_gemseo_types(self, io_type):
+        ''' 
+        Filter available types before sending to GEMS 
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []
@@ -1413,12 +1421,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" +
+            raise ValueError("Unknown re_exec_policy :" + 
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
+            raise ValueError("Trying to run a discipline " + str(type(self)) + 
+                             " with status: " + str(self.status) + 
+                             " while re_exec_policy is : " + 
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1447,8 +1455,10 @@ class SoSDiscipline(MDODiscipline):
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
         '''
-        dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
-        var_dict_converted, dict_to_update_dm = convert_new_type_into_array(var_dict, dm_reduced)
+        # dm_reduced = self.dm.convert_data_dict_with_full_name()
+        # dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
+        var_dict_converted, dict_to_update_dm = convert_new_type_into_array(
+            var_dict, self.dm)
 
         # update dm
         for key in dict_to_update_dm.keys():
@@ -1462,8 +1472,8 @@ class SoSDiscipline(MDODiscipline):
             returns an updated copy of local_data
         """
 
-        dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
-        return convert_array_into_new_type(local_data, dm_reduced)
+        # dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
+        return convert_array_into_new_type(local_data, self.dm)
 
     def get_chart_filter_list(self):
         """ Return a list of ChartFilter instance base on the inherited
@@ -1545,9 +1555,10 @@ class SoSDiscipline(MDODiscipline):
         """
 
         if self.nan_check:
-            has_nan=self.__check_nan_in_data_rec(data, "")
+            has_nan = self.__check_nan_in_data_rec(data, "")
             if has_nan:
                 raise ValueError(f'NaN values found in {self.sos_name}')
+
     def __check_nan_in_data_rec(self, data, parent_key):
         """ Using entry data, check if nan value exist in data's as recursive
         method
@@ -1559,7 +1570,7 @@ class SoSDiscipline(MDODiscipline):
         :type: str
 
         """
-        has_nan=False
+        has_nan = False
         import pandas as pd
         for data_key, data_value in data.items():
 
@@ -1592,7 +1603,7 @@ class SoSDiscipline(MDODiscipline):
                     full_key = f'{parent_key}/{data_key}'
                 self.logger.debug(f'NaN values found in {full_key}')
                 self.logger.debug(data_value)
-                has_nan=True
+                has_nan = True
         return has_nan
 
     def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
@@ -1607,8 +1618,12 @@ class SoSDiscipline(MDODiscipline):
         """
         Overload check jacobian to execute the init_execution
         """
-
-        self.init_execution()
+        # The init execution allows to check jacobian without an execute before the check
+        # however if an execute was done, we do not want to restart the model
+        # and potentially loose informations to compute gradients (some
+        # gradients are computed with the model)
+        if self.status != self.STATUS_DONE:
+            self.init_execution()
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
         if dump_jac_path is not None:
@@ -1672,17 +1687,6 @@ class SoSDiscipline(MDODiscipline):
         )
         return o_k
 
-    def __get_discipline_inputs_outputs_dict_formatted__(self):
-        disc_inputs = {self.get_var_full_name(key, self._data_in): {'value': value}
-                       for key, value in deepcopy(self.get_sosdisc_inputs()).items()}
-        disc_outputs = {self.get_var_full_name(key, self._data_out): {'value': value}
-                        for key, value in deepcopy(self.get_sosdisc_outputs()).items()}
-        disc_data = {}
-        disc_data.update(disc_inputs)
-        disc_data.update(disc_outputs)
-
-        return disc_data
-
     def get_infos_gradient(self, output_var_list, input_var_list):
         """ Method to linearize an sos_discipline object and get gradient of output_var_list wrt input_var_list
 
@@ -1711,6 +1715,25 @@ class SoSDiscipline(MDODiscipline):
                 )
 
         return dict_infos_values
+
+    def display_min_max_couplings(self):
+        ''' Method to display the minimum and maximum values among a discipline's couplings
+
+        '''
+        min_coupling_dict, max_coupling_dict = {}, {}
+        for key, value in self.local_data.items():
+            is_coupling = self.dm.get_data(key, 'coupling')
+            if is_coupling:
+                min_coupling_dict[key] = min(abs(value))
+                max_coupling_dict[key] = max(abs(value))
+        min_coupling = min(min_coupling_dict, key=min_coupling_dict.get)
+        max_coupling = max(max_coupling_dict, key=max_coupling_dict.get)
+        self.ee.logger.info(
+            "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
+                self.sos_name, min_coupling, min_coupling_dict[min_coupling]))
+        self.ee.logger.info(
+            "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
+                self.sos_name, max_coupling, max_coupling_dict[max_coupling]))
 
     def clean(self):
         """This method cleans a sos_discipline;
