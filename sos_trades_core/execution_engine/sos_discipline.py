@@ -534,15 +534,14 @@ class SoSDiscipline(MDODiscipline):
             cache_file_path = self.get_sosdisc_inputs('cache_file_path')
     
             if cache_type != self._structuring_variables['cache_type']:
-                if cache_type == MDOChain.HDF5_CACHE and cache_file_path is None:
-                    raise Exception(
-                        'if the cache type is set to HDF5Cache the cache_file path must be set')
-                elif cache_type != self._cache_type or cache_file_path != self._cache_file_path:
-                    if cache_type == 'None':
-                        self.cache = None
-                    else:
-                        self.set_cache_policy(cache_type=cache_type,
-                                              cache_hdf_file=cache_file_path)
+                self.clear_cache()
+                self.set_cache(self, cache_type, cache_file_path)
+                # set cache_type and cache_file_path input values to children
+                for disc in self.sos_disciplines:
+                    if 'cache_type' in disc._data_in:
+                        disc._data_in['cache_type'][self.VALUE] = cache_type
+                        disc._data_in['cache_file_path'][self.VALUE] = cache_file_path
+                        
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
             if debug_mode == "nan":
@@ -569,6 +568,19 @@ class SoSDiscipline(MDODiscipline):
                             self.logger.info(f'Discipline {self.sos_name} set to debug mode {mode}')
                 else:
                     self.logger.info(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                    
+    def set_cache(self, disc, cache_type, cache_hdf_file):
+        '''
+        Instantiate and set cache for disc if cache_type is not 'None'
+        '''
+        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
+            raise Exception(
+                        'if the cache type is set to HDF5Cache, the cache_file path must be set')
+        else:
+            if cache_type == 'None':
+                disc.cache = None
+            else:
+                disc.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def setup_sos_disciplines(self):
         '''
