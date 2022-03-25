@@ -93,7 +93,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.get_disc_full_name()}")
 
     @staticmethod
-    def launch_all_pickle_generation(root_module, file_regex='l1*.py'):
+    def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=[PICKLE_DIRECTORY]):
         """ Static method that look for jacobian test to generate associated pickle (in the given folder)
             and then push newly generated files into git repository
         """
@@ -144,10 +144,9 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 for entry in candidate_process:
                     entry.join()
 
-            os.system(
-                f'git add ./{AbstractJacobianUnittest.PICKLE_DIRECTORY}/*.pkl')
-            os.system(
-                'git commit -m "regeneration of jacobian pickles"')
+            for directory in directories:
+                os.system(f'git add ./{directory}/*.pkl')
+            os.system('git commit -m "regeneration of jacobian pickles"')
             os.system('git pull')
             os.system('git push')
         else:

@@ -15,7 +15,7 @@ limitations under the License.
 '''
 
 from copy import deepcopy
-from scipy.stats.tests.test_relative_risk import test_relative_risk_confidence_interval
+from _ast import If
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -38,7 +38,7 @@ from scipy.stats import norm
 import chaospy as cp
 
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
+from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart, \
     InstanciatedSeries
 from sos_trades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 import plotly.graph_objects as go
@@ -54,7 +54,7 @@ class UncertaintyQuantification(SoSDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_wrapping.analysis_discs.uncertainty_quantification',
+        'label': 'Uncertainty Quantification Model',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -62,15 +62,15 @@ class UncertaintyQuantification(SoSDiscipline):
         'last_modification_date': '',
         'category': '',
         'definition': '',
-        # 'icon': 'fas fa-chart-line fa-fw',
+        'icon': 'fas fa-regular fa-chart-scatter fa-fw',
         'version': '',
     }
     DESC_IN = {
         'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True},
         'data_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, },
 
-        'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.], 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2, },
-        'sample_size': {'type': 'float', 'unit': None, 'default': 100000, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2, },
+        'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.], 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2},
+        'sample_size': {'type': 'float', 'unit': None, 'default': 1000, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2},
 
     }
 
@@ -107,15 +107,19 @@ class UncertaintyQuantification(SoSDiscipline):
                     conversion_full_ontology = ontology_connector.load_data(
                         data_connection)
 
-                    possible_distrib = ['Normal', 'PERT']
-                    distrib = [possible_distrib[random.randrange(
-                        len(possible_distrib))] for i in range(len(in_param))]
+                    possible_distrib = ['Normal', 'PERT',
+                                        'LogNormal', 'Triangular']
+                    # distrib = [possible_distrib[random.randrange(
+                    # len(possible_distrib))] for i in range(len(in_param))]
+                    distrib = ['LogNormal', 'Normal', 'Triangular']
 
                     input_distribution_default = pd.DataFrame(
                         {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 80, 'upper_parameter': 100, 'most_probable_value': 95})
                     # no need most probable value for Normal distribution
                     input_distribution_default.loc[input_distribution_default['distribution']
                                                    == 'Normal', 'most_probable_value'] = np.nan
+                    input_distribution_default.loc[input_distribution_default['distribution']
+                                                   == 'LogNormal', 'most_probable_value'] = np.nan
 
                     data_details_default = pd.DataFrame()
                     for input in in_param:
@@ -175,14 +179,13 @@ class UncertaintyQuantification(SoSDiscipline):
         input_distribution_parameters_df['values'] = [sorted(
             list(samples_df[input_name].unique())) for input_name in input_parameters_names]
 
-        # input_distribution_parameters_df['lower_parameter'] = [i+5 for i in list(input_distribution_parameters_df['lower_parameter'])]
-        # input_distribution_parameters_df['upper_parameter'] = [i-5 for i in list(input_distribution_parameters_df['upper_parameter'])]
+        # fixes a particular state of the random generator algorithm thanks to
+        # the seed sample_size
+        ot.RandomGenerator.SetSeed(sample_size)
 
-        all_data_df = samples_df.merge(data_df, on='scenario', how='left')
-        all_data_df = all_data_df.sort_values(by=input_parameters_names)
-
-        # INPUT PARAMETERS DISTRIBUTION IN [NORMAL, PERT]
-        input_parameters_distrib_df = pd.DataFrame()
+        # INPUT PARAMETERS DISTRIBUTION IN
+        # [NORMAL, PERT, LOGNORMAL,TRIANGULAR]
+        input_parameters_samples_df = pd.DataFrame()
         distrib_list = []
         for input_name in input_parameters_names:
             if input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'Normal':
@@ -202,12 +205,29 @@ class UncertaintyQuantification(SoSDiscipline):
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['most_probable_value'].values[0],
                 )
+            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'LogNormal':
+                distrib = self.LogNormal_distrib(
+                    input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
+                                                         == input_name]['lower_parameter'].values[0],
+                    input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
+                                                         == input_name]['upper_parameter'].values[0],
+                    confidence_interval=confidence_interval
+                )
+            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'Triangular':
+                distrib = self.Triangular_distrib(
+                    input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
+                                                         == input_name]['lower_parameter'].values[0],
+                    input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
+                                                         == input_name]['upper_parameter'].values[0],
+                    input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
+                                                         == input_name]['most_probable_value'].values[0],
+                )
             else:
                 self.logger.exception(
                     'Exception occurred: possible values in distribution are [Normal, PERT].'
                 )
             distrib_list.append(distrib)
-            input_parameters_distrib_df[f'{input_name}'] = pd.DataFrame(
+            input_parameters_samples_df[f'{input_name}'] = pd.DataFrame(
                 np.array(distrib.getSample(sample_size)))
 
         # MONTECARLO COMPOSED DISTRIBUTION
@@ -216,6 +236,7 @@ class UncertaintyQuantification(SoSDiscipline):
         distribution = ot.ComposedDistribution(distrib_list, copula)
         composed_distrib_sample = distribution.getSample(sample_size)
 
+        # plot
         # for i in range(len(input_parameters)):
         #     graph = distribution.drawMarginal1DPDF(i, 90, 100, 256)
         #     graph.setTitle(
@@ -223,23 +244,28 @@ class UncertaintyQuantification(SoSDiscipline):
         #     view = View(graph, plot_kw={'color': 'blue'})
 
         # INTERPOLATION
-        input_parameters_values_tuple = tuple([input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['values'].values[0]
-                                               for input_name in input_parameters_names])
+        input_parameters_single_values_tuple = tuple([input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['values'].values[0]
+                                                      for input_name in input_parameters_names])
         input_dim_tuple = tuple([len(sub_t)
-                                 for sub_t in input_parameters_values_tuple])
+                                 for sub_t in input_parameters_single_values_tuple])
 
-        output_distrib_df = pd.DataFrame()
+        # merge and sort data according to scenarii in the right order for
+        # interpolation
+        all_data_df = samples_df.merge(data_df, on='scenario', how='left')
+        all_data_df = all_data_df.sort_values(by=input_parameters_names)
+        output_interpolated_values_df = pd.DataFrame()
         for output_name in output_names:
             y = list(all_data_df[output_name])
+            # adapt output format to be used by RegularGridInterpolator
             output_values = np.reshape(y, input_dim_tuple)
             f = RegularGridInterpolator(
-                input_parameters_values_tuple, output_values, bounds_error=False)
-            output_distrib = f(composed_distrib_sample)
-            output_distrib_df[f'{output_name}'] = output_distrib
+                input_parameters_single_values_tuple, output_values, bounds_error=False)
+            output_interpolated_values = f(composed_distrib_sample)
+            output_interpolated_values_df[f'{output_name}'] = output_interpolated_values
 
         dict_values = {
-            'input_parameters_samples_df': input_parameters_distrib_df,
-            'output_interpolated_values_df': output_distrib_df,
+            'input_parameters_samples_df': input_parameters_samples_df,
+            'output_interpolated_values_df': output_interpolated_values_df,
         }
 
         self.store_sos_outputs_values(dict_values)
@@ -249,20 +275,15 @@ class UncertaintyQuantification(SoSDiscipline):
         # 90% confidence interval : ratio = 3.29
         # 95% confidence interval : ratio = 3.92
         # 99% confidence interval : ratio = 5.15
-        if confidence_interval == 0.9:
-            ratio = 3.29
-            ratio = norm.ppf(0.95) - norm.ppf(0.05)
-        if confidence_interval == 0.95:
-            ratio = 3.92
-        if confidence_interval == 0.99:
-            ratio = 5.15
+        norm_val = float(format(1 - confidence_interval, '.2f')) / 2
+        ratio = norm.ppf(1 - norm_val) - norm.ppf(norm_val)
 
         mu = (lower_bnd + upper_bnd) / 2
         sigma = (upper_bnd - lower_bnd) / ratio
         distrib = ot.Normal(mu, sigma)
 
         # plot
-        # graph = Normaldistribution.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
+        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
         # view = View(graph, plot_kw={'color': 'blue'})
 
         return distrib
@@ -274,7 +295,37 @@ class UncertaintyQuantification(SoSDiscipline):
             ot.ChaospyDistribution(chaospy_dist))
 
         # plot
-        # graph = PERTdistribution.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
+        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
+        # view = View(graph, plot_kw={'color': 'blue'})
+
+        return distrib
+
+    def Triangular_distrib(self, lower_bnd, upper_bnd, most_probable_val):
+        distrib = ot.Triangular(int(lower_bnd), int(
+            most_probable_val), int(upper_bnd))
+
+        # plot
+        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
+        # view = View(graph, plot_kw={'color': 'blue'})
+
+        return distrib
+
+    def LogNormal_distrib(self, lower_bnd, upper_bnd, confidence_interval=0.95):
+        # Normal distribution
+        # 90% confidence interval : ratio = 3.29
+        # 95% confidence interval : ratio = 3.92
+        # 99% confidence interval : ratio = 5.15
+        norm_val = float(format(1 - confidence_interval, '.2f')) / 2
+        ratio = norm.ppf(1 - norm_val) - norm.ppf(norm_val)
+
+        mu = (lower_bnd + upper_bnd) / 2
+        sigma = (upper_bnd - lower_bnd) / ratio
+
+        distrib = ot.LogNormal()
+        distrib.setParameter(ot.LogNormalMuSigma()([mu, sigma, 0]))
+
+        # plot
+        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
         # view = View(graph, plot_kw={'color': 'blue'})
 
         return distrib
@@ -315,69 +366,178 @@ class UncertaintyQuantification(SoSDiscipline):
             if 'data_details_df' in self.get_sosdisc_inputs():
                 self.data_details = deepcopy(
                     self.get_sosdisc_inputs(['data_details_df']))
+            if 'input_distribution_parameters_df' in self.get_sosdisc_inputs():
+                input_distribution_parameters_df = deepcopy(
+                    self.get_sosdisc_inputs(['input_distribution_parameters_df']))
+            if 'confidence_interval' in self.get_sosdisc_inputs():
+                confidence_interval = deepcopy(
+                    self.get_sosdisc_inputs(['confidence_interval'])) / 100
 
         for input_name in list(input_parameters_distrib_df.columns):
             input_distrib = list(input_parameters_distrib_df[input_name])
-            new_chart = self.histogram_graph(
-                input_distrib, input_name)
+            new_chart = self.input_histogram_graph(
+                input_distrib, input_name, input_distribution_parameters_df)
             instanciated_charts.append(new_chart)
 
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
-            new_chart = self.histogram_graph(
-                output_distrib, output_name)
+            new_chart = self.output_histogram_graph(
+                output_distrib, output_name, confidence_interval)
             instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
-    def histogram_graph(self, data, title):
+    def input_histogram_graph(self, data, data_name, distrib_param):
         name = self.data_details.loc[self.data_details["variable"]
-                                     == title]["name"].values[0]
+                                     == data_name]["name"].values[0]
         unit = self.data_details.loc[self.data_details["variable"]
-                                     == title]["unit"].values[0]
+                                     == data_name]["unit"].values[0]
         hist_y = go.Figure()
         hist_y.add_trace(go.Histogram(x=list(data),
                                       nbinsx=100, histnorm='probability'))
 
-        y_describe = pd.Series(list(data)).describe()
+        # statistics on data list
+        distribution_type = distrib_param.loc[distrib_param['parameter']
+                                              == data_name]['distribution'].values[0]
+        data_list = [x for x in data if np.isnan(x) == False]
+        bins = np.histogram_bin_edges(data_list, bins=100)
+        hist = np.histogram(data_list, bins=bins)[0]
+        norm_hist = hist / np.cumsum(hist)[-1]
+
+        y_max = max(norm_hist)
+        lower_param = int(min(bins))
+        upper_param = int(max(bins))
+        most_probable_val = bins[np.argmax(norm_hist)]
+        median = np.median(data_list)
+
         hist_y.update_layout(xaxis=dict(
             title=name,
             ticksuffix=unit),
             yaxis=dict(title='Probability'))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
-                         x0=y_describe.loc['mean'],
-                         x1=y_describe.loc['mean'],
-                         y0=0, y1=1)
-
-        hist_y.add_shape(type='rect',  xref='x', yref='paper',
-                         x0=y_describe.loc['25%'],
-                         x1=y_describe.loc['75%'],
+                         x0=lower_param,
+                         x1=lower_param,
                          y0=0, y1=1,
-                         line=dict(color="LightSeaGreen"),
-                         fillcolor="PaleTurquoise", opacity=0.2)
-        hist_y.add_trace(go.Scatter(x=[y_describe.loc['mean'], y_describe.loc['25%'], y_describe.loc['75%']],
-                                    y=[0.01, 0.01, 0.01],
+                         line=dict(color="black", width=2, dash="dot",))
+
+        hist_y.add_shape(type='line', xref='x', yref='paper',
+                         x0=upper_param,
+                         x1=upper_param,
+                         y0=0, y1=1,
+                         line=dict(color="black", width=2, dash="dot",))
+
+        # if not normal distribution type
+        if distribution_type.find('Normal') == -1:
+            hist_y.add_shape(type='line', xref='x', yref='paper',
+                             x0=most_probable_val,
+                             x1=most_probable_val,
+                             y0=0, y1=1,
+                             line=dict(color="black", width=2, dash="dot",))
+
+        hist_y.add_trace(go.Scatter(x=[lower_param],
+                                    y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=["Mean", "Q1", "Q3"], mode="text"))
+                                    text=["Lower parameter"], mode="text", textposition='top right'))
+        hist_y.add_trace(go.Scatter(x=[upper_param],
+                                    y=[y_max],
+                                    textfont=dict(color="black", size=12),
+                                    text=["Upper parameter"], mode="text", textposition='top left'))
+        # if not normal distribution type
+        if distribution_type.find('Normal') == -1:
+            hist_y.add_trace(go.Scatter(x=[most_probable_val],
+                                        y=[y_max],
+                                        textfont=dict(color="black", size=12),
+                                        text=["Most probable value"], mode="text", textposition='top left'))
 
         hist_y.update_layout(showlegend=False)
 
-        percent_pos = len([p for p in data if p > 0]) / len(data) * 100
+        text_right = {
+            ' Most probable value': f'{format_currency_legend(most_probable_val, unit)}',
+            ' Median': f'{format_currency_legend(median, unit)}',
+            # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
+            # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
+        }
 
-        text_left = {
-            'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
-            'Standard deviation': f"{format_currency_legend(y_describe.loc['std'],unit)}"}
+        new_chart = InstantiatedPlotlyNativeChart(
+            fig=hist_y, chart_name=f'{name} - {distribution_type} Distribution', default_legend=False)
+
+        new_chart.annotation_upper_right = text_right
+        # new_chart.to_plotly().show()
+
+        return new_chart
+
+    def output_histogram_graph(self, data, data_name, confidence_interval):
+        name = self.data_details.loc[self.data_details["variable"]
+                                     == data_name]["name"].values[0]
+        unit = self.data_details.loc[self.data_details["variable"]
+                                     == data_name]["unit"].values[0]
+        hist_y = go.Figure()
+        hist_y.add_trace(go.Histogram(x=list(data),
+                                      nbinsx=100, histnorm='probability'))
+
+        # statistics on data list
+        data_list = [x for x in data if np.isnan(x) == False]
+        bins = np.histogram_bin_edges(data_list, bins=100)
+        hist = np.histogram(data_list, bins=bins)[0]
+        norm_hist = hist / np.cumsum(hist)[-1]
+        y_max = max(norm_hist)
+        most_probable_val = bins[np.argmax(norm_hist)]
+        median = np.median(data_list)
+
+        # left boundary confidence interval
+        lb = float(format(1 - confidence_interval, '.2f')) / 2
+        y_left_boundary = np.nanquantile(list(data), lb)
+        y_right_boundary = np.nanquantile(list(data), 1 - lb)
+        hist_y.update_layout(xaxis=dict(
+            title=name,
+            ticksuffix=unit),
+            yaxis=dict(title='Probability'))
+
+        hist_y.add_shape(type='line', xref='x', yref='paper',
+                         x0=y_left_boundary,
+                         x1=y_left_boundary,
+                         y0=0, y1=1,
+                         line=dict(color="black", width=2, dash="dot",))
+
+        hist_y.add_shape(type='line', xref='x', yref='paper',
+                         x0=y_right_boundary,
+                         x1=y_right_boundary,
+                         y0=0, y1=1,
+                         line=dict(color="black", width=2, dash="dot",))
+
+        hist_y.add_shape(type='rect', xref='x', yref='paper',
+                         x0=y_left_boundary,
+                         x1=y_right_boundary,
+                         y0=0, y1=1,
+                         line=dict(color="LightSeaGreen"),
+                         fillcolor="PaleTurquoise", opacity=0.2)
+        hist_y.add_trace(go.Scatter(x=[y_left_boundary],
+                                    y=[y_max],
+                                    textfont=dict(color="black", size=12),
+                                    text=[f'{format_currency_legend(y_left_boundary,unit)}'], mode="text", textposition='top right'
+                                    ))
+        hist_y.add_trace(go.Scatter(x=[y_right_boundary],
+                                    y=[y_max],
+                                    textfont=dict(color="black", size=12),
+                                    text=[f'{format_currency_legend(y_right_boundary,unit)}'], mode="text", textposition='top left'
+                                    ))
+
+        hist_y.update_layout(showlegend=False)
+
+        # percent_pos = len([p for p in data if p > 0]) / len(data) * 100
 
         text_right = {
-            'First quartile (25%)': f"{format_currency_legend(y_describe.loc['25%'],unit)}",
-            'Third quartile (75%)': f"{format_currency_legend(y_describe.loc['75%'],unit)}",
-            'Percentage of positive values':  f'{percent_pos:9.4f} %'}
+            'Confidence Interval': f'{int(confidence_interval*100)} % [{format_currency_legend(y_left_boundary,"")} , {format_currency_legend(y_right_boundary,"")} ] {unit}',
+            ' Most probable value': f'{format_currency_legend(most_probable_val, unit)}',
+            ' Median': f'{format_currency_legend(median, unit)}',
+            # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
+            # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
+        }
 
         new_chart = InstantiatedPlotlyNativeChart(
             fig=hist_y, chart_name=f'{name} Distribution', default_legend=False)
 
-        new_chart.annotation_upper_left = text_left
         new_chart.annotation_upper_right = text_right
         # new_chart.to_plotly().show()
 
