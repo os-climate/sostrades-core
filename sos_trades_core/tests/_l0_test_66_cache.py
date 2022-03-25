@@ -89,18 +89,19 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.a'] = 10.
         values_dict[f'{self.name}.Disc1.b'] = 20.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
-        n_call_1 = self.ee.root_process.n_calls
+        n_call_1 = self.ee.root_process.sos_disciplines[0].n_calls
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_2 = self.ee.root_process.n_calls
+        n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
 
         self.assertEqual(n_call_2, n_call_1)
 
@@ -115,27 +116,28 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.a'] = 10.
         values_dict[f'{self.name}.Disc1.b'] = 20.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
         self.ee.execute()
         # get number of calls after first call
-        n_call_1 = self.ee.root_process.n_calls
+        n_call_1 = self.ee.root_process.sos_disciplines[0].n_calls
 
         # second execute with change of a private parameter
         values_dict[f'{self.name}.Disc1.a'] = 1.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # get number of calls after second call
-        n_call_2 = self.ee.root_process.n_calls
+        n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
         self.assertEqual(n_call_2, n_call_1 + 1)
 
         # third execute with change of a protected parameter
         values_dict[f'{self.name}.x'] = 1.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # get number of calls after third call
-        n_call_2 = self.ee.root_process.n_calls
+        n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
         self.assertEqual(n_call_2, n_call_1 + 2)
 
     def test_3_test_cache_coupling_without_input_change(self):
@@ -150,9 +152,12 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.Disc2.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
 
         # first execute
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
 
         # second execute
@@ -177,7 +182,10 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.Disc2.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -199,7 +207,7 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.a'] = 1.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -213,7 +221,7 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on second discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc2.power'] = 1
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -226,7 +234,7 @@ class TestCache(unittest.TestCase):
 
         # third execute with modif on a protected variable
         values_dict[f'{self.name}.x'] = 2.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -273,7 +281,7 @@ class TestCache(unittest.TestCase):
                        self.name + '.Disc2.power': 2}
 
         # set input data
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -338,7 +346,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -360,7 +368,7 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_new'
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -375,7 +383,7 @@ class TestCache(unittest.TestCase):
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc2.an_input_3'] = {
             'value1': 'new', 'value2': '+++'}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -389,7 +397,7 @@ class TestCache(unittest.TestCase):
         # fourth execute with second modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_new2'
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -410,7 +418,7 @@ class TestCache(unittest.TestCase):
         # but the same as the first execute : all disciplines must be
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_1'
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -457,7 +465,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -480,7 +488,7 @@ class TestCache(unittest.TestCase):
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_2'] = {
             'value1': 'valuenew1', 'value2': 'value_new2'}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -496,7 +504,7 @@ class TestCache(unittest.TestCase):
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = {
             'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -549,7 +557,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -571,7 +579,7 @@ class TestCache(unittest.TestCase):
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2', 'AC_new']
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -598,7 +606,7 @@ class TestCache(unittest.TestCase):
         # but the same as the first execute : all disciplines must be
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC3']
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -610,7 +618,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2']
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -670,7 +678,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
@@ -693,7 +701,7 @@ class TestCache(unittest.TestCase):
         # so that all disciplines are executed twice
         values_dict[f'{self.name}.Disc1.an_input_2'] = {'scenario1': [
             'ACnew', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 'string2']}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -709,7 +717,7 @@ class TestCache(unittest.TestCase):
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = {'scenario1': [
             'AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 'string2']}
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
         n_calls_sosc += 1
@@ -1004,6 +1012,8 @@ class TestCache(unittest.TestCase):
 
 if __name__ == "__main__":
     cls = TestCache()
+    cls.setUp()
+    cls.test_1_test_cache_discipline_without_input_change()
     # cls.test_10_gemseo_cache()
-    cls.test_11_cache_on_sellar_optim()
-    cls.test_12_cache_on_sellar_optim_with_warm_start()
+#     cls.test_11_cache_on_sellar_optim()
+#     cls.test_12_cache_on_sellar_optim_with_warm_start()
