@@ -111,10 +111,10 @@ class UncertaintyQuantification(SoSDiscipline):
                                         'LogNormal', 'Triangular']
                     # distrib = [possible_distrib[random.randrange(
                     # len(possible_distrib))] for i in range(len(in_param))]
-                    distrib = ['LogNormal', 'Normal', 'Triangular']
+                    distrib = ['Normal', 'PERT', 'Triangular']
 
                     input_distribution_default = pd.DataFrame(
-                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 80, 'upper_parameter': 100, 'most_probable_value': 95})
+                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 80, 'upper_parameter': 120, 'most_probable_value': 110})
                     # no need most probable value for Normal distribution
                     input_distribution_default.loc[input_distribution_default['distribution']
                                                    == 'Normal', 'most_probable_value'] = np.nan
@@ -181,6 +181,7 @@ class UncertaintyQuantification(SoSDiscipline):
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
+        np.random.seed(sample_size)
         ot.RandomGenerator.SetSeed(sample_size)
 
         # INPUT PARAMETERS DISTRIBUTION IN
@@ -438,17 +439,17 @@ class UncertaintyQuantification(SoSDiscipline):
         hist_y.add_trace(go.Scatter(x=[lower_param],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=["Lower parameter"], mode="text", textposition='top right'))
+                                    text=[" Lower parameter"], mode="text", textposition='top right'))
         hist_y.add_trace(go.Scatter(x=[upper_param],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=["Upper parameter"], mode="text", textposition='top left'))
+                                    text=["Upper parameter "], mode="text", textposition='top left'))
         # if not normal distribution type
         if distribution_type.find('Normal') == -1:
             hist_y.add_trace(go.Scatter(x=[most_probable_val],
                                         y=[y_max],
                                         textfont=dict(color="black", size=12),
-                                        text=["Most probable value"], mode="text", textposition='top left'))
+                                        text=[" Most probable value"], mode="text", textposition='top right'))
 
         hist_y.update_layout(showlegend=False)
 
@@ -515,12 +516,12 @@ class UncertaintyQuantification(SoSDiscipline):
         hist_y.add_trace(go.Scatter(x=[y_left_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f'{format_currency_legend(y_left_boundary,unit)}'], mode="text", textposition='top right'
+                                    text=[f'  {format_currency_legend(y_left_boundary,unit)}'], mode="text", textposition='top right'
                                     ))
         hist_y.add_trace(go.Scatter(x=[y_right_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f'{format_currency_legend(y_right_boundary,unit)}'], mode="text", textposition='top left'
+                                    text=[f'{format_currency_legend(y_right_boundary,unit)}  '], mode="text", textposition='top left'
                                     ))
 
         hist_y.update_layout(showlegend=False)
