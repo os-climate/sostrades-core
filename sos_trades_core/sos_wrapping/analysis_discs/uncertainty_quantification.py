@@ -408,6 +408,7 @@ class UncertaintyQuantification(SoSDiscipline):
         y_max = max(norm_hist)
         most_probable_val = bins[np.argmax(norm_hist)]
         median = np.median(data_list)
+        y_mean = np.mean(data_list)
         # left boundary confidence interval
         lb = float(format(1 - confidence_interval, '.2f')) / 2
         y_left_boundary = np.nanquantile(list(data), lb)
@@ -431,28 +432,28 @@ class UncertaintyQuantification(SoSDiscipline):
                          line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
-                         x0=most_probable_val,
-                         x1=most_probable_val,
+                         x0=y_mean,
+                         x1=y_mean,
                          y0=0, y1=1,
                          line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_trace(go.Scatter(x=[y_left_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[" Lower parameter"], mode="text", textposition='top right'))
+                                    text=[" Lower parameter "], mode="text", textposition='top left'))
         hist_y.add_trace(go.Scatter(x=[y_right_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=["Upper parameter "], mode="text", textposition='top left'))
-        hist_y.add_trace(go.Scatter(x=[most_probable_val],
+                                    text=[" Upper parameter "], mode="text", textposition='top right'))
+        hist_y.add_trace(go.Scatter(x=[y_mean],
                                     y=[0.75 * y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[" Most probable value"], mode="text", textposition='top right'))
+                                    text=[" Mean "], mode="text", textposition='top right'))
 
         hist_y.update_layout(showlegend=False)
 
         text_right = {
-            ' Most probable value': f'{format_currency_legend(most_probable_val, unit)}',
+            ' Mean': f'{format_currency_legend(y_mean, unit)}',
             ' Median': f'{format_currency_legend(median, unit)}',
             # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
             # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
@@ -483,6 +484,7 @@ class UncertaintyQuantification(SoSDiscipline):
         y_max = max(norm_hist)
         most_probable_val = bins[np.argmax(norm_hist)]
         median = np.median(data_list)
+        y_mean = np.mean(data_list)
 
         # left boundary confidence interval
         lb = float(format(1 - confidence_interval, '.2f')) / 2
@@ -504,6 +506,11 @@ class UncertaintyQuantification(SoSDiscipline):
                          x1=y_right_boundary,
                          y0=0, y1=1,
                          line=dict(color="black", width=2, dash="dot",))
+        hist_y.add_shape(type='line', xref='x', yref='paper',
+                         x0=y_mean,
+                         x1=y_mean,
+                         y0=0, y1=1,
+                         line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_shape(type='rect',  xref='x', yref='paper',
                          x0=y_left_boundary,
@@ -514,12 +521,17 @@ class UncertaintyQuantification(SoSDiscipline):
         hist_y.add_trace(go.Scatter(x=[y_left_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f'  {format_currency_legend(y_left_boundary,unit)}'], mode="text", textposition='top right'
+                                    text=[f' {format_currency_legend(y_left_boundary,unit)} '], mode="text", textposition='top left'
                                     ))
         hist_y.add_trace(go.Scatter(x=[y_right_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f'{format_currency_legend(y_right_boundary,unit)}  '], mode="text", textposition='top left'
+                                    text=[f' {format_currency_legend(y_right_boundary,unit)} '], mode="text", textposition='top right'
+                                    ))
+        hist_y.add_trace(go.Scatter(x=[y_mean],
+                                    y=[0.75 * y_max],
+                                    textfont=dict(color="black", size=12),
+                                    text=[f' {format_currency_legend(y_mean,unit)} '], mode="text", textposition='top right'
                                     ))
 
         hist_y.update_layout(showlegend=False)
@@ -528,9 +540,8 @@ class UncertaintyQuantification(SoSDiscipline):
 
         text_right = {
             'Confidence Interval': f'{int(confidence_interval*100)} % [{format_currency_legend(y_left_boundary,"")} , {format_currency_legend(y_right_boundary,"")} ] {unit}',
-            ' Most probable value': f'{format_currency_legend(most_probable_val, unit)}',
+            ' Mean': f'{format_currency_legend(y_mean, unit)}',
             ' Median': f'{format_currency_legend(median, unit)}',
-            # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
             # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
         }
 
