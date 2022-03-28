@@ -1,4 +1,4 @@
-scenario,GridSearch.Economics.COC.COC_ratio,GridSearch.Economics.NRC.NTP_FC_BSL.Airframe.multiplier_nrc_aircraft,GridSearch.Economics.RC.NTP_FC_BSL.Airframe.multiplier_rc_aircraft
+scenario,COC,RC,NRC
 scenario_1,85.0,80.0,80.0
 scenario_2,90.0,80.0,80.0
 scenario_3,95.0,80.0,80.0
