@@ -77,6 +77,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.samples_dataframe = pd.read_csv(
             join(self.data_dir, 'samples_df.csv'))
 
+        # fixes a particular state of the random generator algorithm thanks to
+        # the seed sample_size
+        np.random.seed(len(self.samples_dataframe))
+
         Var1 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
         Var2 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
 
