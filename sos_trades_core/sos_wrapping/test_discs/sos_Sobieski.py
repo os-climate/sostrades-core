@@ -24,9 +24,11 @@ from numpy import array, atleast_2d, complex128, ones, zeros
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+import pandas as pd
 
 
-from sos_trades_core.sos_wrapping.test_discs.sobieski.core import SobieskiProblem
+#from sos_trades_core.sos_wrapping.test_discs.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core import SobieskiProblem
 
 class SobieskiMission(SoSDiscipline):
     """ Sobieski range wrapper using the Breguet formula.
@@ -69,7 +71,12 @@ class SobieskiMission(SoSDiscipline):
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.jac = sobieski_problem.derive_blackbox_mission(z, y_14, y_24, y_34)
+        gemseo_jac_dict = sobieski_problem.derive_blackbox_mission(z, y_14, y_24, y_34)
+        #We need to convert 'x_shared' variable of gemseo model into 'z'
+        gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
+        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_dict = sos_jac_pd.to_dict()
+        self.jac = sos_jac_dict
 
 class SobieskiStructure(SoSDiscipline):
     """ Sobieski mass estimation wrapper.
@@ -123,7 +130,12 @@ class SobieskiStructure(SoSDiscipline):
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.jac = sobieski_problem.derive_blackbox_structure(z, y_21, y_31, x_1)
+        gemseo_jac_dict = sobieski_problem.derive_blackbox_structure(z, y_21, y_31, x_1)
+        #We need to convert 'x_shared' variable of gemseo model into 'z'
+        gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
+        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_dict = sos_jac_pd.to_dict()
+        self.jac = sos_jac_dict
 
 class SobieskiAerodynamics(SoSDiscipline):
     """ Sobieski aerodynamic discipline wrapper.
@@ -177,7 +189,12 @@ class SobieskiAerodynamics(SoSDiscipline):
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.jac = sobieski_problem.derive_blackbox_aerodynamics(z, y_12, y_32, x_2)
+        gemseo_jac_dict = sobieski_problem.derive_blackbox_aerodynamics(z, y_12, y_32, x_2)
+        #We need to convert 'x_shared' variable of gemseo model into 'z'
+        gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
+        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_dict = sos_jac_pd.to_dict()
+        self.jac = sos_jac_dict
         
 class SobieskiPropulsion(SoSDiscipline):
     """ Sobieski propulsion propulsion wrapper.
@@ -230,7 +247,11 @@ class SobieskiPropulsion(SoSDiscipline):
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.jac = sobieski_problem.derive_blackbox_propulsion(z, y_23, x_3)
+        gemseo_jac_dict = sobieski_problem.derive_blackbox_propulsion(z, y_23, x_3)
+        gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
+        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_dict = sos_jac_pd.to_dict()
+        self.jac = sos_jac_dict
 
 
 

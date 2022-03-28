@@ -87,73 +87,31 @@ class Study(StudyManager):
         frames = [dspace,dspace_coupl]
         dspace_all = pd.concat(frames)
         
-        dspace_struct = dspace.loc[dspace['variable'] == 'x_1'].reset_index(drop=True)
-        dspace_aero = dspace.loc[dspace['variable'] == 'x_2'].reset_index(drop=True)
-        dspace_prop = dspace.loc[dspace['variable'] == 'x_3'].reset_index(drop=True)
-        dspace_bi_mission = dspace.loc[dspace['variable'] == 'z'].reset_index(drop=True)
+        
         
         
         disc_dict = {}
         # Optim inputs
-        disc_dict[f'{ns}.{sc_name}.max_iter'] = 10
-        disc_dict[f'{ns}.tolerance'] = 1e-14
-        disc_dict[f'{ns}.max_mda_iter'] = 30
-        
-        algo_options = {'xtol_rel': 1e-7, 
-                       'xtol_abs': 1e-7,
-                       'ftol_rel': 1e-7, 
-                       'ftol_abs': 1e-7,
-                        'ineq_tolerance': 1e-4}
-        #sc_struct inputs
-        sub_scenario = 'sc_struct'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.max_iter'] = 30
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.algo'] = "SLSQP"
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.design_space'] = dspace_struct
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.formulation'] = 'DisciplinaryOpt'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.objective_name'] = 'y_11'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.maximize_objective'] = True
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.ineq_constraints'] = [f'g_1']
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.algo_options'] = algo_options
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.cache_type'] = 'SimpleCache'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.struct.cache_type'] = 'SimpleCache'
-        
-        #sc_aero inputs
-        sub_scenario = 'sc_aero'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.max_iter'] = 30
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.algo'] = "SLSQP"
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.design_space'] = dspace_aero
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.formulation'] = 'DisciplinaryOpt'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.objective_name'] = 'y_24'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.maximize_objective'] = True
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.ineq_constraints'] = [f'g_2']
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.algo_options'] = algo_options
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.cache_type'] = 'SimpleCache'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.aero.cache_type'] = 'SimpleCache'
-        
-        #sc_prop inputs
-        sub_scenario = 'sc_prop'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.max_iter'] = 30
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.algo'] = "SLSQP"
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.design_space'] = dspace_prop
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.formulation'] = 'DisciplinaryOpt'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.objective_name'] = 'y_34'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.maximize_objective'] = False
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.ineq_constraints'] = [f'g_3']
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.algo_options'] = algo_options
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.cache_type'] = 'SimpleCache'
-        disc_dict[f'{ns}.{sc_name}.{sub_scenario}.prop.cache_type'] = 'SimpleCache'
-        
         #SobOptimScenario inputs
-        disc_dict[f'{ns}.{sc_name}.max_iter'] = 50
-        disc_dict[f'{ns}.{sc_name}.algo'] = "NLOPT_COBYLA"
-        disc_dict[f'{ns}.{sc_name}.design_space'] = dspace_all# in gemseo I would habve provided dspace_bi_mission In SoStrades I need dspace_all! (if not I have an error???)
-        disc_dict[f'{ns}.{sc_name}.formulation'] = 'BiLevel'
+        disc_dict[f'{ns}.{sc_name}.max_iter'] = 10
+        disc_dict[f'{ns}.{sc_name}.algo'] = "SLSQP"
+        disc_dict[f'{ns}.{sc_name}.design_space'] = dspace_all
+        #disc_dict[f'{ns}.{sc_name}.design_space'] = dspace # does not work!
+        disc_dict[f'{ns}.{sc_name}.formulation'] = 'MDF'
         disc_dict[f'{ns}.{sc_name}.objective_name'] = 'y_4'
         disc_dict[f'{ns}.{sc_name}.maximize_objective'] = True
         disc_dict[f'{ns}.{sc_name}.ineq_constraints'] = [f'g_1', f'g_2', f'g_3']
-        disc_dict[f'{ns}.{sc_name}.algo_options'] = algo_options
+        disc_dict[f'{ns}.{sc_name}.algo_options'] = {"ftol_rel": 1e-10,
+                                                                    "ineq_tolerance": 2e-3,
+                                                                    "normalize_design_space": True}
+        disc_dict[f'{ns}.tolerance'] = 1e-10
+        disc_dict[f'{ns}.max_mda_iter'] = 50
+        disc_dict[f'{ns}.warm_start'] = True
+        disc_dict[f'{ns}.use_lu_fact'] = True
+        disc_dict[f'{ns}.{sc_name}.struct.cache_type'] = 'SimpleCache'
+        disc_dict[f'{ns}.{sc_name}.aero.cache_type'] = 'SimpleCache'
+        disc_dict[f'{ns}.{sc_name}.prop.cache_type'] = 'SimpleCache'
         disc_dict[f'{ns}.{sc_name}.cache_type'] = 'SimpleCache'
-        
         # Disciplines inputs
         disc_dict[f'{ns}.{sc_name}.z'] = [0.05,45000,1.6,5.5,55.,1000]
         disc_dict[f'{ns}.{sc_name}.y_14'] = [50606.9,7306.20]
