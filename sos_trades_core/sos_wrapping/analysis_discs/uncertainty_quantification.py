@@ -447,7 +447,7 @@ class UncertaintyQuantification(SoSDiscipline):
         # if not normal distribution type
         if distribution_type.find('Normal') == -1:
             hist_y.add_trace(go.Scatter(x=[most_probable_val],
-                                        y=[y_max],
+                                        y=[0.75 * y_max],
                                         textfont=dict(color="black", size=12),
                                         text=[" Most probable value"], mode="text", textposition='top right'))
 
