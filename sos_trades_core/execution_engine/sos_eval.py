@@ -19,7 +19,6 @@ from tqdm import tqdm
 import time
 
 from gemseo.core.parallel_execution import ParallelExecution
-from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -332,7 +331,7 @@ class SoSEval(SoSDisciplineBuilder):
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
 
-            for i in tqdm(range(len(samples)), ncols=100,  position=0):
+            for i in tqdm(range(len(samples)), ncols=100, position=0):
                 time.sleep(0.5)
                 self.logger.info(f'   Scenario_{str(i + 1)} is running.')
                 x = samples[i]
@@ -387,31 +386,6 @@ class SoSEval(SoSDisciplineBuilder):
                 self.sos_disciplines[0]._update_status_recursive(
                     self.STATUS_FAILED)
 
-    def convert_output_results_toarray(self):
-        '''
-        COnvert toutput results into array in order to apply FDGradient on it for example
-        '''
-        out_values = []
-        self.eval_out_type = []
-        self.eval_out_list_size = []
-        for y_id in self.eval_out_list:
-
-            y_val = self.dm.get_value(y_id)
-            self.eval_out_type.append(type(y_val))
-            # Need a flatten list for the eval computation if val is dict
-            if type(y_val) in [dict, DataFrame]:
-                val_dict = {y_id: y_val}
-                dict_flatten = self._convert_new_type_into_array(
-                    val_dict)
-                y_val = dict_flatten[y_id].tolist()
-
-            else:
-                y_val = [y_val]
-            self.eval_out_list_size.append(len(y_val))
-            out_values.extend(y_val)
-
-        return np.array(out_values)
-
     def reconstruct_output_results(self, outputs_eval):
         '''
         Reconstruct the metadata saved earlier to get same object in output
@@ -424,7 +398,7 @@ class SoSEval(SoSDisciplineBuilder):
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
                 eval_out_size = len(self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size +
+                output_eval_key = outputs_eval[old_size:old_size + 
                                                eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
@@ -434,7 +408,6 @@ class SoSEval(SoSDisciplineBuilder):
                 else:
                     outeval_dict[key] = output_eval_key[0][j]
 
-            outeval_dict = self._convert_array_into_new_type(outeval_dict)
             outeval_base_dict = {f'{key_out} vs {key_in}': value for key_out, value in zip(
                 self.eval_out_list, outeval_dict.values())}
             outeval_final_dict.update(outeval_base_dict)

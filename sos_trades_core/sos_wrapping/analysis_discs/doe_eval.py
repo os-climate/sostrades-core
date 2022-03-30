@@ -22,7 +22,6 @@ from gemseo.core.parallel_execution import ParallelExecution
 from numpy import array, ndarray, delete, NaN
 
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -400,7 +399,7 @@ class DoeEval(SoSEval):
             filled_options[self.DIMENSION] = self.design_space.dimension
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-            #filled_options['n_processes'] = int(filled_options['n_processes'])
+            # filled_options['n_processes'] = int(filled_options['n_processes'])
             filled_options['n_processes'] = self.get_sosdisc_inputs('n_processes')
             filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs('wait_time_between_fork')
             algo = self.doe_factory.create(algo_name)
@@ -420,11 +419,10 @@ class DoeEval(SoSEval):
 
     def prepare_samples(self):
 
-
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
-            sample_dict = self._convert_array_into_new_type(sample_dict)
+            # sample_dict = self._convert_array_into_new_type(sample_dict)
             ordered_sample = []
             for in_variable in self.eval_in_list:
                 ordered_sample.append(sample_dict[in_variable])
@@ -464,27 +462,25 @@ class DoeEval(SoSEval):
         # We first begin by sample generation
         self.samples = self.generate_samples_from_doe_factory()
 
+        # evaluation of the samples through a call to samples_evaluation
+        evaluation_outputs = self.samples_evaluation(self.samples, convert_to_array=False)
 
-        #evaluation of the samples through a call to samples_evaluation
-        evaluation_outputs = self.samples_evaluation(self.samples,convert_to_array=False)
+        # we loop through the samples evaluated to build dictionnaries needed for output generation
+        for (scenario_name, evaluated_samples) in evaluation_outputs.items():
 
-        #we loop through the samples evaluated to build dictionnaries needed for output generation
-        for (scenario_name,evaluated_samples) in evaluation_outputs.items():
-
-            #generation of the dictionnary of samples used
+            # generation of the dictionnary of samples used
             dict_one_sample = {}
             current_sample = evaluated_samples[0]
             for idx, values in enumerate(current_sample):
                 dict_one_sample[self.eval_in_list[idx]] = values
             dict_sample[scenario_name] = dict_one_sample
 
-            #generation of the dictionnary of outputs
+            # generation of the dictionnary of outputs
             dict_one_output = {}
             current_output = evaluated_samples[1]
             for idx, values in enumerate(current_output):
                 dict_one_output[self.eval_out_list[idx]] = values
             dict_output[scenario_name] = dict_one_output
-
 
         # construction of a dataframe of generated samples
         # columns are selected inputs

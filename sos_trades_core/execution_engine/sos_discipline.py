@@ -655,9 +655,7 @@ class SoSDiscipline(MDODiscipline):
             self.dm.set_values_from_dict(to_update_local_data)
         else:
             # update local_data after run
-            to_update_local_data_array = self._convert_new_type_into_array(
-                to_update_local_data)
-            self.local_data.update(to_update_local_data_array)
+            self.local_data.update(to_update_local_data)
 
         # need to update outputs that will disappear after filtering the
         # local_data with supported types
@@ -846,8 +844,7 @@ class SoSDiscipline(MDODiscipline):
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
-                values_dict[new_key] = list(self._convert_array_into_new_type(
-                    {namespaced_key: self.local_data[namespaced_key]}).values())[0]
+                values_dict[new_key] = self.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
                 values_dict[new_key] = self.dm.get_value(namespaced_key)
@@ -1120,10 +1117,6 @@ class SoSDiscipline(MDODiscipline):
 
             for data_name in input_data_names:
                 input_data[data_name] = self.ee.dm.get_value(data_name)
-            # convert sostrades types into numpy arrays
-            # no need to update DM since call by SoSTrades
-            input_data = self._convert_new_type_into_array(
-                var_dict=input_data)
 
         return input_data
 
@@ -1199,15 +1192,10 @@ class SoSDiscipline(MDODiscipline):
     def update_dm_with_local_data(self, local_data=None):
         '''
         Update the DM with local data from GEMSEO
-        First convert data into SoSTrades format then set values in the DM
         '''
-
         if local_data is None:
             local_data = self.local_data
-
-        local_data_sos = self._convert_array_into_new_type(local_data)
-
-        self.dm.set_values_from_dict(local_data_sos)
+        self.dm.set_values_from_dict(local_data)
 
     def run(self):
         ''' To be overloaded by sublcasses
@@ -1396,19 +1384,6 @@ class SoSDiscipline(MDODiscipline):
             self, key, io_type)
 
         return result
-
-    def _convert_coupling_outputs_into_gems_format(self):
-        ''' convert discipline outputs, that could include data not
-            handled by GEMS, into data handled by GEMS
-        '''
-        out_keys = self.get_output_data_names()
-        # check out_keys types and convert NEW TYPE into GEMS TYPE
-        out_dict = {}
-        for var_f_name in out_keys:
-            var_name = self.dm.get_data(var_f_name, self.VAR_NAME)
-            out_dict[var_f_name] = self._data_out[var_name][self.VALUE]
-        return self._convert_new_type_into_array(
-            out_dict)
 
     # -- status handling section
     def _update_status_dm(self, status):

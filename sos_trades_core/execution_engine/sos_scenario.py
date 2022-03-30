@@ -404,9 +404,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             if val is not None:
                 input_data[data_name] = val
 
-        # convert sostrades types into numpy arrays
-        # no need to update DM since call by SoSTrades
-        input_data = disc._convert_new_type_into_array(var_dict=input_data)
+        # store mdo_chain default inputs
         disc.mdo_chain.default_inputs.update(input_data)
 
         for disc in disc.sos_disciplines:
@@ -579,7 +577,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             var_types = df[self.VARIABLE_TYPE]
         else:
             # set to None for all variables if not exists
-            var_types = [None]*len(names)
+            var_types = [None] * len(names)
         
         design_space = DesignSpace()
         
@@ -652,7 +650,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 value = array(val)
             design_space.add_variable(name, size, var_type, l_b, u_b, value)
         return design_space
-
 
     def update_design_space_out(self):
         """
