@@ -79,7 +79,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
-        np.random.seed(len(self.samples_dataframe))
+        np.random.seed(42)
 
         Var1 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
         Var2 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
