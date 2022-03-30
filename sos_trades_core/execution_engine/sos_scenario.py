@@ -50,7 +50,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         'icon': '',
         'version': '',
     }
-    default_algo_options = {}
+    default_algo_options = {"ftol_rel": 3e-16,
+                            "normalize_design_space": True,
+                            "maxls": 100,
+                            "maxcor": 50,
+                            "pg_tol": 1.e-8,
+                            "max_iter": 500,
+                            "disp": 30}
     default_parallel_options = {'parallel': False,
                                 'n_processes': cpu_count(),
                                 'use_threading': False,
@@ -73,10 +79,17 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
     algo_dict = {}
 
+#                                 'dataframe_descriptor': {VARIABLES: ('string', None, True),
+#                                                          VALUES: ('array', None, True),
+#                                                          LOWER_BOUND: ('array', None, True),
+#                                                          UPPER_BOUND: ('array', None, True),
+#                                                          ENABLE_VARIABLE_BOOL: ('bool', None, True),
+#                                                          LIST_ACTIVATED_ELEM: ('list', None, True), },
+#                                 'dataframe_edition_locked': False,
     DESC_IN = {'algo': {'type': 'string', 'structuring': True},
                'design_space': {'type': 'dataframe', 'structuring': True},
                'formulation': {'type': 'string', 'structuring': True},
-               'maximize_objective': {'type': 'bool', 'structuring': True,'default': False},
+               'maximize_objective': {'type': 'bool', 'structuring': True, 'default': False},
                'objective_name': {'type': 'string', 'structuring': True},
                'differentiation_method': {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
@@ -85,6 +98,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
+                                'default': default_algo_options,
                                 'structuring': True},
                PARALLEL_OPTIONS: {'type': 'dict',  # SoSDisciplineBuilder.OPTIONAL: True,
                                   'dataframe_descriptor': {VARIABLES: ('string', None, False),  # bool
@@ -158,7 +172,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 if disc not in self.sos_disciplines:
                     self.ee.factory.add_discipline(disc)
 
-                # append added disciplines to built_sos_disciplines for disciplines cleaning
+                # append added disciplines to built_sos_disciplines for
+                # disciplines cleaning
                 if disc not in self.built_sos_disciplines:
                     self.built_sos_disciplines.append(disc)
 
@@ -184,7 +199,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         Return False if at least one sub discipline needs to be configured, True if not
         """
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
-                    self.get_disciplines_to_configure() == [])
+            self.get_disciplines_to_configure() == [])
 
     def setup_sos_disciplines(self):
         """
@@ -247,7 +262,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         if dspace is not None:
             if any(type(design_variable).__name__ not in ['array', 'list'] for design_variable in
                    dspace['value'].tolist()):
-                raise ValueError('A design variable must obligatory be an array')
+                raise ValueError(
+                    'A design variable must obligatory be an array')
 
             # build design space
             design_space = self.set_design_space()
@@ -334,7 +350,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
         else:
             self.run_scenario()
-        outputs = [discipline.get_output_data() for discipline in self.sos_disciplines]
+        outputs = [discipline.get_output_data()
+                   for discipline in self.sos_disciplines]
         for data in outputs:
             self.local_data.update(data)
         # store local data in datamanager
@@ -450,7 +467,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             else:
                 full_names.append(name)
         return self.get_full_names(local_names) + \
-               self._update_study_ns_in_varname(full_names)
+            self._update_study_ns_in_varname(full_names)
 
     def set_diff_method(self):
         """
@@ -772,7 +789,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                          self.POSSIBLE_VALUES, avail_formulations)
         # fill the possible values of maximize_objective
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
-                         self.POSSIBLE_VALUES, [False,True])
+                         self.POSSIBLE_VALUES, [False, True])
 
     # -- Set possible design variables and objevtives
     # adapted from soseval

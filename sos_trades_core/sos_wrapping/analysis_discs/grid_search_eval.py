@@ -640,16 +640,14 @@ class GridSearchEval(DoeEval):
                 col_slider = slider_list[0]['full_name']
                 slider_values = cont_plot_df[col_slider].unique()
                 for slide_value in slider_values:
-                    z_data = list(
-                        cont_plot_df.loc[cont_plot_df[col_slider] == slide_value, z_vble])
-                    if all(np.isnan(z_data[i]) for i in range(len(z_data))):
-                        z_data_None.append(True)
-                    else:
-                        z_data_None.append(False)
-                if not any(z_data_None):
+                    z_data=list(cont_plot_df.loc[cont_plot_df[col_slider]== slide_value,z_vble])
+                    if  all(np.isnan(z_data[i]) for i in range(len(z_data))):
+                        z_data_None=True
+                        break
+
+                if not z_data_None:
                     chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
-                    chart_data = cont_plot_df.loc[:, [
-                        'scenario', x_vble, y_vble, z_vble, slider_list[0]['full_name']]]
+                    chart_data=cont_plot_df.loc[:,['scenario',x_vble,y_vble,z_vble,slider_list[0]['full_name']]]
 
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'

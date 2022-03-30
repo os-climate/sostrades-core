@@ -24,6 +24,9 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
+                
+        ns_dict = {'ns_OptimSobieski': self.ee.study_name+ '.SobOptimScenario'}
+        self.ee.ns_manager.add_ns('ns_OptimSobieski', self.ee.study_name + '.SobOptimScenario')
         # add disciplines sos_Sobieski
         disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sos_Sobieski.'
         #create sc_struct
