@@ -409,10 +409,16 @@ class UncertaintyQuantification(SoSDiscipline):
         most_probable_val = bins[np.argmax(norm_hist)]
         median = np.median(data_list)
         y_mean = np.mean(data_list)
-        # left boundary confidence interval
-        lb = float(format(1 - confidence_interval, '.2f')) / 2
-        y_left_boundary = np.nanquantile(list(data), lb)
-        y_right_boundary = np.nanquantile(list(data), 1 - lb)
+        if distrib_param.loc[distrib_param['parameter'] == data_name]['distribution'].values[0] in ['Normal', 'LogNormal']:
+            # left boundary confidence interval
+            lb = float(format(1 - confidence_interval, '.2f')) / 2
+            y_left_boundary = np.nanquantile(list(data), lb)
+            y_right_boundary = np.nanquantile(list(data), 1 - lb)
+        else:
+            y_left_boundary = distrib_param.loc[distrib_param['parameter']
+                                                == data_name]['lower_parameter'].values[0]
+            y_right_boundary = distrib_param.loc[distrib_param['parameter']
+                                                 == data_name]['upper_parameter'].values[0]
 
         hist_y.update_layout(xaxis=dict(
             title=name,
