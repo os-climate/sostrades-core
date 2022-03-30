@@ -565,22 +565,25 @@ class SoSDiscipline(MDODiscipline):
 
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
-                            self.logger.info(f'Discipline {self.sos_name} set to debug mode {mode}')
+                            self.logger.info(
+                                f'Discipline {self.sos_name} set to debug mode {mode}')
                 else:
-                    self.logger.info(f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                    
+                    self.logger.info(
+                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
         Instantiate and set cache for disc if cache_type is not 'None'
         '''
         if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
             raise Exception(
-                        'if the cache type is set to HDF5Cache, the cache_file path must be set')
+                'if the cache type is set to HDF5Cache, the cache_file path must be set')
         else:
             if cache_type == 'None':
                 disc.cache = None
             else:
-                disc.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_hdf_file)
+                disc.set_cache_policy(
+                    cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def setup_sos_disciplines(self):
         '''
@@ -590,7 +593,22 @@ class SoSDiscipline(MDODiscipline):
         '''
         pass
 
+    def set_dynamic_default_values(self, default_values_dict):
+        '''
+        Method to set default value to a variable with short_name in a discipline when the default value varies with other input values
+        i.e. a default array length depends on a number of years
+        PARAM IN : default_values_dict : dict with key is variable short name and value is the default value
+        '''
+
+        for short_key, default_value in default_values_dict.items():
+            if short_key in self._data_in:
+                ns_key = self.get_var_full_name(short_key, self._data_in)
+                self.dm.set_data(ns_key, self.DEFAULT, default_value, False)
+            else:
+                self.logger.info(
+                    f'Try to set a default value for the variable {short_key} in {self.name} which is not an input of this discipline ')
     # -- cache handling
+
     def clear_cache(self):
         # -- Need to clear cache for gradients analysis
         if self.cache is not None:
@@ -928,7 +946,8 @@ class SoSDiscipline(MDODiscipline):
                 self.local_data = own_data
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in self.input_grammar.data_names}
+            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
+                input_data).items() if key in self.input_grammar.data_names}
 
         # set LINEARIZE status to get inputs from local_data instead of
         # datamanager
@@ -940,12 +959,13 @@ class SoSDiscipline(MDODiscipline):
 
         self.__check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(input_data).items() if key in disc_data_before_linearize.keys()}
+            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
+                input_data).items() if key in disc_data_before_linearize.keys()}
             is_output_error = True
             output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                              disc_data_after_linearize,
-                                                              'Discipline data integrity through linearize',
-                                                               is_output_error=is_output_error)
+                                                                disc_data_after_linearize,
+                                                                'Discipline data integrity through linearize',
+                                                                is_output_error=is_output_error)
             if output_error != '':
                 raise ValueError(output_error)
 
@@ -1049,11 +1069,11 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column * 
+                self.jac[new_y_key][new_x_key][:, index_x_column *
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end':-1},
+                                                                        'end': -1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
@@ -1062,7 +1082,7 @@ class SoSDiscipline(MDODiscipline):
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end':-1}})
+                                                                        'end': -1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1124,17 +1144,19 @@ class SoSDiscipline(MDODiscipline):
             self._update_status_dm(self.STATUS_RUNNING)
 
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
+                disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
+                    self.local_data).items() if key in self.input_grammar.data_names}
 
             self.run()
             self.fill_output_value_connector()
             if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(self.local_data).items() if key in self.input_grammar.data_names}
+                disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
+                    self.local_data).items() if key in self.input_grammar.data_names}
                 is_output_error = True
                 output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
-                                                                  disc_inputs_after_execution,
-                                                                  'Discipline inputs integrity through run',
-                                                                  is_output_error=is_output_error)
+                                                                    disc_inputs_after_execution,
+                                                                    'Discipline inputs integrity through run',
+                                                                    is_output_error=is_output_error)
                 if output_error != '':
                     raise ValueError(output_error)
 
@@ -1433,12 +1455,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" + 
+            raise ValueError("Unknown re_exec_policy :" +
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) + 
-                             " with status: " + str(self.status) + 
-                             " while re_exec_policy is : " + 
+            raise ValueError("Trying to run a discipline " + str(type(self)) +
+                             " with status: " + str(self.status) +
+                             " while re_exec_policy is : " +
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
