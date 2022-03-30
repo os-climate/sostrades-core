@@ -35,12 +35,19 @@ class Disc1(SoSDiscipline):
     DESC_IN = {
         'x': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'float', 'default': 10.},
-        'b': {'type': 'float', 'default': 40.}
+        'b': {'type': 'float'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
         'y': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
+
+    def setup_sos_disciplines(self):
+
+        if 'a' in self._data_in:
+            a = self.get_sosdisc_inputs('a')
+            self.set_dynamic_default_values({'b': 4 * a,
+                                             'c': 4 * a})
 
     def run(self):
         x = self.get_sosdisc_inputs('x')
