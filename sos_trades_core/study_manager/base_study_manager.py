@@ -114,6 +114,13 @@ class BaseStudyManager():
         """
         return self.__logger
 
+    @property
+    def study_data_file_path(self):
+        serializer = DataSerializer()
+        serializer.set_dm_pkl_files(study_to_load=self.dump_directory)
+
+        return serializer.dm_pkl_file
+
     def _init_exec_engine(self):
         """ Create an isntance of the execution engine
         """
