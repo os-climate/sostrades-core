@@ -1701,7 +1701,7 @@ class SoSDiscipline(MDODiscipline):
             indices = self._get_columns_indices(
                 inputs, outputs, input_column, output_column)
 
-        jac_arrays = {key_out: {key_in: value.toarray() for key_in, value in subdict.items()}
+        jac_arrays = {key_out: {key_in: value.toarray() if not isinstance(value,ndarray) else value for key_in, value in subdict.items()}
                       for key_out, subdict in self.jac.items()}
         o_k = approx.check_jacobian(
             jac_arrays,
