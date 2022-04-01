@@ -52,7 +52,6 @@ class DiscMixedOpt(SoSDiscipline):
         c.append( 5*x1 + 10*x2 - 56)
         c.append(-4*x1 -  2*x2 + 7 )
         constr = array(c)
-        print("\n \nconstr\n", constr)
         dict_values = {'obj': obj, 'constr': constr}
         
         # put new field value in data_out
