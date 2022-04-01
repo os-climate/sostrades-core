@@ -40,14 +40,22 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
     DUMP_JACOBIAN = False
     PICKLE_DIRECTORY = 'jacobian_pkls'
 
-    def generate_analytic_gradient_pickle(self):
+    def generate_analytic_gradient_pickle(self, test_names=[]):
         """ Main method to launch associated jacobian test and force dump of jacobian pickle
         """
         local_logger = get_sos_logger('SoS.EE')
         jacobian_test_entries = self.analytic_grad_entry()
 
         for entry in jacobian_test_entries:
-
+            is_in_list = False
+            if len(test_names)>0:
+                for test_name in test_names:
+                    if test_name in str(entry):
+                        is_in_list=True
+            else:
+                is_in_list = True
+            if not is_in_list:
+                continue
             try:
                 local_logger.info(
                     f'Jacobian launched on {str(entry)}')
@@ -93,7 +101,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.get_disc_full_name()}")
 
     @staticmethod
-    def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=[PICKLE_DIRECTORY]):
+    def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=[PICKLE_DIRECTORY], test_names=[]):
         """ Static method that look for jacobian test to generate associated pickle (in the given folder)
             and then push newly generated files into git repository
         """
@@ -122,7 +130,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                             f'Execute jacobian dump on {module_name}')
                         inst = obj()
                         process_list.append(
-                            Process(target=inst.generate_analytic_gradient_pickle))
+                            Process(target=inst.generate_analytic_gradient_pickle(test_names=test_names)))
             except Exception as ex:
                 local_logger.error(f'Error on module : {module_name}\n{ex}')
 
