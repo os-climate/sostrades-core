@@ -77,10 +77,19 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                                     'max_ls_step_nb': 500, 'max_fun_eval': 100000,
                                     'normalize_design_space': True, 'eq_tolerance': 1e-2,
                                     'ineq_tolerance': 1e-4, 'scale': None, 'pg_tol': 0.0}
+    
+    default_algo_options_oa = {'max_iter': 999,  # pylint: disable=W0221
+                                    'ftol_abs': 1e-12,
+                                    'algo_options_MILP': {},
+                                    'algo_options_NLP': default_algo_options_nlopt,
+                                    'algo_NLP':'SLSQP',
+                                    'normalize_design_space': False,
+                                }
 
     algo_dict = {"NLOPT": default_algo_options_nlopt,
                  "OPENOPT": default_algo_options_openopt,
                  "P-L-BFGS-B": default_algo_options_plbfgsb,
+                 "OuterApproximation": default_algo_options_oa,
                  }
     is_constraints = True
     INEQ_CONSTRAINTS = 'ineq_constraints'
