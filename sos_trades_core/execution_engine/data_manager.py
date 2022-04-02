@@ -197,6 +197,17 @@ class DataManager:
 
         return disc_list
 
+    def get_discipline_names_with_starting_name(self, starting_name):
+        '''
+        Get all disciplines that starts with starting_name in the datamanager
+        '''
+        disc_list = []
+        for disc_name in self.disciplines_id_map:
+            if disc_name.startswith(starting_name):
+                disc_list.append(disc_name)
+
+        return disc_list
+
     def get_all_namespaces_from_var_name(self, var_name):
         ''' Get all namespaces containing var_name in data_dict 
         '''
@@ -295,7 +306,8 @@ class DataManager:
          output : dict[key][attr] for each attr in list_attr
         """
         data_dict_values_dict = {}
-        data_dict_values_list = [self.get_data_dict_attr(attr, excepted) for attr in list_attr]
+        data_dict_values_list = [self.get_data_dict_attr(
+            attr, excepted) for attr in list_attr]
 
         for key in data_dict_values_list[0].keys():
             data_dict_values_dict[key] = {}
