@@ -17,7 +17,8 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
@@ -103,19 +104,19 @@ class OuterApproximationSolver(object):
         self.int_varnames = int_varnames
         self.float_varnames = float_varnames
             
-    def _check(self, dspace):
-        
-        if len(dspace.get_type(v)) > 1:
-            msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
-            msg += '(different types for each component of the variable is not handled for now)'
-            raise ValueError(msg)
-        
-        if len(self.full_problem.objective.outvars) > 1:
-            raise ValueError("Several outputs in MDOFunction is not allowed")
-        
-        for c in self.full_problem.constraints:
-            if len(c.outvars) > 1:
-                raise ValueError("Several outputs in MDOFunction is not allowed")
+#     def _check(self, dspace):
+#         
+#         if len(dspace.get_type(v)) > 1:
+#             msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
+#             msg += '(different types for each component of the variable is not handled for now)'
+#             raise ValueError(msg)
+#         
+#         if len(self.full_problem.objective.outvars) > 1:
+#             raise ValueError("Several outputs in MDOFunction is not allowed")
+#         
+#         for c in self.full_problem.constraints:
+#             if len(c.outvars) > 1:
+#                 raise ValueError("Several outputs in MDOFunction is not allowed")
                 
     
     def _get_integer_variables_indices(self, dspace):
@@ -214,7 +215,7 @@ class OuterApproximationSolver(object):
         obj_jac = atleast_2d(self.full_problem.objective.jac(x0))
         data_size = deepcopy(self.size_by_varname)
         data_size.update({self.full_problem.objective.outvars[0]: obj_jac.shape[0]})
-        obj_jac_dict = DataConversion.jac_2dmat_to_dict(obj_jac, 
+        obj_jac_dict = split_array_to_dict_of_arrays(obj_jac, 
                                          self.full_problem.objective.outvars, 
                                          self.full_problem.design_space.variables_names,
                                          data_size)
@@ -233,7 +234,7 @@ class OuterApproximationSolver(object):
             c_jac = atleast_2d(c.jac(x0))
             data_size = deepcopy(self.size_by_varname)
             data_size.update({c.outvars[0]: c_jac.shape[0]})
-            c_jac_dict = DataConversion.jac_2dmat_to_dict(c_jac, 
+            c_jac_dict = split_array_to_dict_of_arrays(c_jac, 
                                              c.outvars, 
                                              self.full_problem.design_space.variables_names,
                                              data_size)
@@ -346,12 +347,14 @@ class OuterApproximationSolver(object):
         
         return pb
     
-#     
-#     def update_dual(self, nlp, integer_values):
-#         
-#         nlp.objective.set_frozen_value(integer_values)
-#         
-#         for f in nlp.constraints:
+     
+    def update_dual(self, nlp, integer_values):
+        ''' Updates frozen values of NLP problem with those provided
+        '''
+        nlp.objective.set_frozen_value(integer_values)
+         
+        for f in nlp.constraints:
+            f.set_frozen_value(integer_values)
     
     def solve_dual(self, nlp):
         ''' Solves the dual problem
@@ -399,6 +402,8 @@ class OuterApproximationSolver(object):
     def solve(self):
         ''' Solve the optimization problem
         '''
+        msg = """***\nOuterApproximation Initialization\n***"""
+#         self.logger.info(msg)
         iter_nb = 0
 
         x0 = self.full_problem.design_space.get_current_x()
@@ -432,7 +437,8 @@ class OuterApproximationSolver(object):
                 break
             
             # build NLP(integer solution iteration k)
-            nlp = self.build_dual_pb(xopt_int)   
+#             nlp = self.build_dual_pb(xopt_int)
+            nlp = self.update_dual(nlp, xopt_int)
         
             # compute argmin NLP(integer solution iteration k)
             nlp_sol = self.solve_dual(nlp)
