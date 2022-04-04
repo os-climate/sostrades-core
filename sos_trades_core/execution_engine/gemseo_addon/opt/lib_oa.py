@@ -30,7 +30,7 @@ from gemseo.algos.opt.opt_lib import OptimizationLibrary
 standard_library.install_aliases()
 
 
-LOGGER = logging.getLogger("GEMS")
+LOGGER = logging.getLogger(__name__)
 
 
 class OuterApproximationOpt(OptimizationLibrary):
