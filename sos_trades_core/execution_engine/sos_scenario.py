@@ -50,12 +50,16 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         'icon': '',
         'version': '',
     }
-    default_algo_options = {"ftol_rel": 3e-16,
+
+    default_algo_options = {"ftol_rel": 1e-08,
+                            'ftol_abs': 1e-14,
+                            'xtol_rel': 1e-08,
+                            'xtol_abs': 1e-14,
                             "normalize_design_space": True,
                             "maxls": 100,
                             "maxcor": 50,
                             "pg_tol": 1.e-8,
-                            "max_iter": 500,
+                            "max_iter": 999,
                             "disp": 30}
     default_parallel_options = {'parallel': False,
                                 'n_processes': cpu_count(),
