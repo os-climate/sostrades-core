@@ -70,6 +70,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     TYPE = "type"
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
+    VARIABLE_TYPE = "variable_type"
     # To be defined in the heritage
     is_constraints = None
     INEQ_CONSTRAINTS = 'ineq_constraints'
@@ -572,19 +573,22 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         u_bounds = list(df[self.UPPER_BOUND])
         enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
         list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
+        
+        # looking for the optionnal variable type in the design space
+        if self.VARIABLE_TYPE in df:
+            var_types = df[self.VARIABLE_TYPE]
+        else:
+            # set to None for all variables if not exists
+            var_types = [None]*len(names)
+        
         design_space = DesignSpace()
-        for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem,
-                                                            enabled_variable):
+        
+        for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds, list_activated_elem, enabled_variable, var_types):
 
             # check if variable is enabled to add it or not in the design var
             if enable_var:
                 self.dict_desactivated_elem[dv] = {}
-
-                if [type(val), type(lb), type(ub)] == [str] * 3:
-                    val = val
-                    lb = lb
-                    ub = ub
-                name = dv
+                
                 if type(val) != list and type(val) != ndarray:
                     size = 1
                     var_type = ['float']
@@ -607,8 +611,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     l_b = array(lb)
                     u_b = array(ub)
                     value = array(val)
+                
+                # 'automatic' var_type values are overwritten if filled by the user
+                if vtype is not None:
+                    var_type = vtype
+                
                 design_space.add_variable(
-                    name, size, var_type, l_b, u_b, value)
+                    dv, size, var_type, l_b, u_b, value)
         return design_space
 
     def read_from_dataframe_new(self, df):
