@@ -781,6 +781,9 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.sc_name}.algo_options'] =  {'xtol_rel': 1e-08, 'normalize_design_space': True, 'xtol_abs': 1e-14, 'ftol_rel': 1e-08, 'ftol_abs': 1e-14,
+         'max_iter': 999, 'max_time': 0.0, 'ctol_abs': 1e-06, 'eq_tolerance': 0.01, 'ineq_tolerance': 0.0001,
+         'init_step': 0.25}
 
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.execute()

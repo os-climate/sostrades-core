@@ -35,12 +35,12 @@ NEW_VAR_TYPE = ['dict', 'dataframe',
                 'string_list', 'string', 'float', 'int']
 
 
-def _is_value_type_handled(val):
+def is_value_type_handled(val):
     return isinstance(val, tuple(VAR_TYPE_MAP.values())
                       ) or isinstance(val, np_complex128)
 
 
-def _get_dataframe_excluded_columns(key, dm_reduced_to_type_and_metadata):
+def get_dataframe_excluded_columns(key, dm_reduced_to_type_and_metadata):
     """ returns the excluded columns of a dataframe
         output : list of excluded columns
     """
@@ -54,7 +54,7 @@ def _get_dataframe_excluded_columns(key, dm_reduced_to_type_and_metadata):
     return excluded_columns
 
 
-def __get_nested_val(dict_in, keys):
+def get_nested_val(dict_in, keys):
     ''' returns the value of a nested dictionary of depth len(keys)
     output : d[keys[0]][..][keys[n]]
     '''
@@ -66,7 +66,7 @@ def __get_nested_val(dict_in, keys):
     return nested_val
 
 
-def _convert_array_into_dict(arr_to_convert, new_data, val_datalist):
+def convert_array_into_dict(arr_to_convert, new_data, val_datalist):
     # convert list into dict using keys from dm.data_dict
     if len(val_datalist) == 0:
         # means the dictionary is empty or None
@@ -78,17 +78,17 @@ def _convert_array_into_dict(arr_to_convert, new_data, val_datalist):
             _keys = metadata['key']
 
             nested_keys = _keys[:-1]
-            to_update = __get_nested_val(new_data, nested_keys)
+            to_update = get_nested_val(new_data, nested_keys)
             _key = _keys[-1]
             # dictionaries
 
             if _type == dict:
                 to_update[_key] = {}
-                _convert_array_into_dict(
+                convert_array_into_dict(
                     arr_to_convert, new_data, val_datalist)
             # DataFrames
             elif _type == DataFrame:
-                _df = _convert_array_into_df(arr_to_convert, metadata)
+                _df = convert_array_into_df(arr_to_convert, metadata)
                 to_update[_key] = _df
                 _size = metadata['size']
                 arr_to_convert = delete(arr_to_convert, arange(_size))
@@ -132,7 +132,7 @@ def _convert_array_into_dict(arr_to_convert, new_data, val_datalist):
         return to_update
 
 
-def _convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
+def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
     # convert list into dataframe using columns from dm.data_dict
     _shape = metadata['shape']
     _size = metadata['size']
@@ -204,7 +204,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                         f' Variable {key} cannot be converted since no metadata is available')
                 new_data = {}
 
-                local_data_updt[key] = _convert_array_into_dict(
+                local_data_updt[key] = convert_array_into_dict(
                     to_convert, new_data, deepcopy(metadata_list))
 
             # check dataframe type in data_in and visibility
@@ -213,9 +213,9 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                     raise ValueError(
                         f'Variable {key} cannot be converted since no metadata is available')
                 metadata = metadata_list[0]
-                excluded_columns = _get_dataframe_excluded_columns(
+                excluded_columns = get_dataframe_excluded_columns(
                     key, dm_reduced_to_type_and_metadata)
-                local_data_updt[key] = _convert_array_into_df(
+                local_data_updt[key] = convert_array_into_df(
                     to_convert, metadata, excluded_columns)
             elif _type == 'string':
                 metadata = metadata_list[0]
@@ -245,7 +245,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
     return local_data_updt
 
 
-def _convert_dict_into_array(var_dict, values_list, metadata, prev_keys, prev_metadata):
+def convert_dict_into_array(var_dict, values_list, metadata, prev_keys, prev_metadata):
     '''
     Convert a nested var_dict into a numpy array, and stores metadata
     useful to build the dictionary afterwards
@@ -270,11 +270,11 @@ def _convert_dict_into_array(var_dict, values_list, metadata, prev_keys, prev_me
         if _type == dict:
             # if value is a nested dict
             metadata.append(val_data)
-            values_list, metadata = _convert_dict_into_array(
+            values_list, metadata = convert_dict_into_array(
                 val, values_list, metadata, val_data['key'], prev_metadata)
         elif _type == DataFrame:
             # if value is a dataframe
-            values_list, metadata = _convert_df_into_array(
+            values_list, metadata = convert_df_into_array(
                 val, values_list, metadata, nested_keys)
         elif _type in STANDARD_TYPES:
             # if value is a int or float
@@ -338,7 +338,7 @@ def _convert_dict_into_array(var_dict, values_list, metadata, prev_keys, prev_me
     return values_list, metadata
 
 
-def _convert_df_into_array(var_df, values_list, metadata, keys, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
+def convert_df_into_array(var_df, values_list, metadata, keys, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
     '''
     Converts dataframe into array, and stores metada
     useful to build the dataframe afterwards
@@ -375,7 +375,7 @@ def _convert_df_into_array(var_df, values_list, metadata, keys, excluded_columns
     return values_list, metadata
 
 
-def _convert_float_into_array(var_dict):
+def convert_float_into_array(var_dict):
     '''
     Check element type in var_dict, convert float or int into numpy array
         in order to deal with linearize issues in GEMS
@@ -425,11 +425,11 @@ def convert_new_type_into_array(
                     if var_type == 'dict':
                         # if value is a dictionary
                         all_values = list(var.values())
-                        if all([_is_value_type_handled(val)
+                        if all([is_value_type_handled(val)
                                 for val in all_values]):
                             # convert if all values are handled by
                             # SoSTrades
-                            values_list, metadata = _convert_dict_into_array(
+                            values_list, metadata = convert_dict_into_array(
                                 var, values_list, metadata, prev_key, deepcopy(prev_metadata))
                         else:
                             evaluated_types = [type(val)
@@ -445,7 +445,7 @@ def convert_new_type_into_array(
                                 key, DF_EXCLUDED_COLUMNS)
                         else:
                             excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
-                        values_list, metadata = _convert_df_into_array(
+                        values_list, metadata = convert_df_into_array(
                             var, values_list, metadata, prev_key, excluded_columns)
                     elif var_type == 'string':
                         # if value is a string

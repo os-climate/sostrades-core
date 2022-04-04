@@ -391,9 +391,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     for sub_mda in disc.sub_mda_list:
                         sub_mda.reset_history_each_run = True
 
-                for subdisc in disc.sos_disciplines:
-                    subdisc._cache_type = disc._cache_type
-
     def _set_default_inputs_from_dm(self, disc):
         """
         Based on dm values, default_inputs are set to mdachains,
@@ -656,37 +653,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             design_space.add_variable(name, size, var_type, l_b, u_b, value)
         return design_space
 
-    # -- GEMS overload
-    def _update_input_grammar(self):
-        """
-        Updates input grammar from algo names
-        """
-        #         # TODO: rename all the scenario grammar properly
-        #         ## updates input_grammar of MDOScenario with namespaced inputs
-        #         # get input namespaced names
-        #         ns_algo, = self._convert_list_of_keys_to_namespace_name(
-        #             self.ALGO, self.IO_TYPE_IN)
-        #         ns_maxiter, = self._convert_list_of_keys_to_namespace_name(
-        #             self.MAX_ITER, self.IO_TYPE_IN)
-        #         # build a grammar and initialize it from mandatory fields
-        #         gram = JSONGrammar("opt_gram")
-        #         gram.initialize_from_data_names([ns_algo, ns_maxiter])
-        #         self.input_grammar.update_from(gram)
-        #
-        #         # fill in the namespaced fields
-        #         available_algos = self.get_available_driver_names()
-        #         algo_grammar = {"type": "string", "enum": available_algos}
-        #         self.input_grammar.set_item_value(ns_algo, algo_grammar)
-        #
-        #         max_iter_grammar = {"type" : "integer", "minimum":1}
-        #         self.input_grammar.set_item_value(ns_maxiter, max_iter_grammar)
-        algo, = self._convert_list_of_keys_to_namespace_name(
-            self.ALGO, self.IO_TYPE_IN)
-        available_algos = self.get_available_driver_names()
-        # change type from string to int in GEMs grammar since SoSTrades
-        # converts strings to int
-        algo_grammar = {"type": "integer"}  # "enum": available_algos
-        self.input_grammar.set_item_value(algo, algo_grammar)
 
     def update_design_space_out(self):
         """
@@ -711,45 +677,11 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.store_sos_outputs_values(
             {'design_space_out': design_space})
 
-    def _init_base_grammar(self, name):
-        """ *** GEMS overload ***
-        Initializes the base grammars from MDO scenario inputs and outputs
-        This ensures that subclasses have base scenario inputs and outputs
-        Can be overloaded by subclasses if this is not desired.
-
-        :param name: name of the scenario, used as base name for the json
-            schema to import: name_input.json and name_output.json
-        """
-        #         gems_in_keys = list(self._data_in.keys())
-        #         gems_out_keys = list(self._data_out.keys())
-        #         self._init_grammar_with_keys(gems_in_keys, self.IO_TYPE_IN)
-        #         self._init_grammar_with_keys(gems_out_keys, self.IO_TYPE_OUT)
+    # GEMSEO overload
+    def _update_input_grammar(self):
         self.update_gems_grammar_with_data_io()
+        Scenario._update_input_grammar(self)
 
-    #     def _convert_new_type_into_array(self, var_dict):
-    #         input_data = SoSDiscipline._convert_new_type_into_array(self,var_dict=var_dict)
-    #         # replace integer value by corresponding string for algo name
-    #         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
-    #         if ns_algo in input_data:
-    #             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
-    #         return input_data
-
-    #     def check_input_data(self, input_data, raise_exception=True):
-    #         """Check the input data validity.
-    #
-    #         :param input_data: the input data dict
-    #         :param raise_exception: Default value = True)
-    #         """
-    #         # replace integer value by corresponding string for algo name
-    #         ns_algo, = self._convert_list_of_keys_to_namespace_name(self.ALGO, self.IO_TYPE_IN)
-    #         if ns_algo in input_data:
-    #             input_data[ns_algo] = self.get_sosdisc_inputs(self.ALGO)
-    #         try:
-    #             self.input_grammar.load_data(input_data, raise_exception)
-    #         except InvalidDataException:
-    #             raise InvalidDataException("Invalid input data for: " + self.name)
-
-    # -- maturities
     def get_maturity(self):
         ref_dict_maturity = deepcopy(self.dict_maturity_ref)
         for discipline in self.sos_disciplines:
