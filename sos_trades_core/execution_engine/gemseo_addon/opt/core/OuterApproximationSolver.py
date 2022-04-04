@@ -215,10 +215,11 @@ class OuterApproximationSolver(object):
         obj_jac = atleast_2d(self.full_problem.objective.jac(x0))
         data_size = deepcopy(self.size_by_varname)
         data_size.update({self.full_problem.objective.outvars[0]: obj_jac.shape[0]})
-        obj_jac_dict = split_array_to_dict_of_arrays(obj_jac, 
+        obj_jac_dict = split_array_to_dict_of_arrays(obj_jac,
+                                         data_size,
                                          self.full_problem.objective.outvars, 
                                          self.full_problem.design_space.variables_names,
-                                         data_size)
+                                         )
         obj_f = self.full_problem.objective.func(x0)
         obj_lin = obj_f
         for v in self.full_problem.design_space.variables_names:
@@ -235,9 +236,10 @@ class OuterApproximationSolver(object):
             data_size = deepcopy(self.size_by_varname)
             data_size.update({c.outvars[0]: c_jac.shape[0]})
             c_jac_dict = split_array_to_dict_of_arrays(c_jac, 
+                                            data_size,
                                              c.outvars, 
                                              self.full_problem.design_space.variables_names,
-                                             data_size)
+                                             )
         
             cst_f = c.func(x0)
             cst_lin = cst_f
@@ -355,6 +357,8 @@ class OuterApproximationSolver(object):
          
         for f in nlp.constraints:
             f.set_frozen_value(integer_values)
+        
+        return nlp
     
     def solve_dual(self, nlp):
         ''' Solves the dual problem
