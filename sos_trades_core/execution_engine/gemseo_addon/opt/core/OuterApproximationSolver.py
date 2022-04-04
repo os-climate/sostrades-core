@@ -22,9 +22,12 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
-from numpy import array, append, arange, zeros, matmul, int32, atleast_2d, dot
+import logging
+from numpy import array, append, int32, atleast_2d
 from copy import deepcopy
 import cvxpy as cp
+
+LOGGER = logging.getLogger("OuterApproximation")
 
 class OuterApproximationSolver(object):
     '''
@@ -70,39 +73,49 @@ class OuterApproximationSolver(object):
         self.algo_options_MILP = options[self.ALGO_OPTIONS_MILP]
         self.algo_NLP = options[self.ALGO_NLP]
         self.algo_options_NLP = options[self.ALGO_OPTIONS_NLP]
-    
+
     def init_solver(self):
+        msg = "\n\n***\nOuterApproximation Initialization\n***"
+        LOGGER.info(msg)
         
         dspace = self.full_problem.design_space
-        self._compute_xvect_indices_and_sizes(dspace)
         
-        iv_ind = array([], dtype=int32)
-        for iv in dspace.variables_names:
-            if iv in self.int_varnames:
-                iv_ind = append(iv_ind, dspace.get_variables_indexes([iv]))
+        # get design variables indexes and size
+        self.ind_by_varname = dspace.get_variables_indexes(dspace.variables_names)
+        self.size_by_varname = dspace.variables_sizes
+        
+        # set indices corresponding to integer variables
+        iv_ind, fv_ind = array([], dtype=int32), array([], dtype=int32)
+        iv_names, fv_names = [], []
+        
+        for vname in dspace.variables_names:
+            v_ind = dspace.get_variables_indexes([vname])
+            if dspace.get_type(vname) == [DesignSpace.INTEGER.value]: # pylint: disable=E0602,E1101
+                iv_ind = append(iv_ind, v_ind)
+                iv_names.append(vname)
+            else:
+                fv_ind = append(fv_ind, v_ind)
+                fv_names.append(vname)
+                
         self.integer_indices = iv_ind
+        self.int_varnames = iv_names
+        self.float_varnames = fv_names
         
+        # set indices corresponding to float variables
         fv_ind = array([], dtype=int32)
         for fv in dspace.variables_names:
             if fv in self.float_varnames:
                 fv_ind = append(fv_ind, dspace.get_variables_indexes([fv]))
         self.float_indices = fv_ind
+        
+        # set initial integer solution
+        x0 = dspace.get_current_x()
+        self.x0_integer = x0[self.integer_indices]
+        
+        msg = "Initial guess of integer solution is "
+        msg += str(self.x0_integer)
+        LOGGER.info(msg)
 
-    def _compute_xvect_indices_and_sizes(self, dspace):
-        '''Computes the indices for each variable name
-        '''
-        float_varnames = []
-        int_varnames = []
-        for name in dspace.variables_names:
-            if dspace.get_type(name) == [DesignSpace.INTEGER.value]: # pylint: disable=E0602
-                int_varnames.append(name)
-            else:
-                float_varnames.append(name)
-                
-        self.ind_by_varname = dspace.get_variables_indexes(dspace.variables_names)
-        self.size_by_varname = dspace.variables_sizes
-        self.int_varnames = int_varnames
-        self.float_varnames = float_varnames
             
 #     def _check(self, dspace):
 #         
@@ -123,13 +136,13 @@ class OuterApproximationSolver(object):
         ''' returns integer variables indices in xvect defined by the design space
         '''
         return self._get_x_indices_by_type(dspace, 
-                                           DesignSpace.INTEGER.value)
+                                           DesignSpace.INTEGER.value) # pylint: disable=E0602,E1101
         
     def _get_float_variables_indices(self, dspace):
         ''' returns float variables indices in xvect defined by the design space
         '''
         return self._get_x_indices_by_type(dspace, 
-                                           DesignSpace.FLOAT.value)
+                                           DesignSpace.FLOAT.value) # pylint: disable=E0602,E1101
     
     def _build_full_vect(self, float_vals, int_vals):
         ''' builds the global xvect with continuous and integer values
@@ -363,11 +376,15 @@ class OuterApproximationSolver(object):
     def solve_dual(self, nlp):
         ''' Solves the dual problem
         '''
-        print("self.algo_options_NLP", self.algo_options_NLP)
         cont_sol = OptimizersFactory().execute(nlp, self.algo_NLP,
                           **self.algo_options_NLP#normalize_design_space=False,
                           )
         
+        msg = "Continuous guess of integer solution is "
+        msg += str(cont_sol)
+        LOGGER.info(msg)
+        
+        # add continuous solution to history
         self.cont_solution.append(cont_sol.f_opt)
         
         return cont_sol
@@ -406,12 +423,7 @@ class OuterApproximationSolver(object):
     def solve(self):
         ''' Solve the optimization problem
         '''
-        msg = """***\nOuterApproximation Initialization\n***"""
-#         self.logger.info(msg)
         iter_nb = 0
-
-        x0 = self.full_problem.design_space.get_current_x()
-        self.x0_integer = x0[self.integer_indices]
         
         # build NLP(x0_integer)
         nlp = self.build_dual_pb(self.x0_integer)
@@ -427,15 +439,16 @@ class OuterApproximationSolver(object):
         # initialize primal problem
         mip = self.build_primal_pb()
         
-        print("xsol", xsol)
         while self._termination_criteria(iter_nb, mip):
+            msg = "\n\n***\nOuterApproximation Iteration %i\n***"%iter_nb
+            LOGGER.info(msg)
+            
             # update primal problem
             uk = self.get_upper_bound(iter_nb)
             mip = self.update_primal_pb(mip, nlp, uk, xsol)
             
             # solve primal problem
             xopt_int = self.solve_primal(mip)
-            print("xopt_int", xopt_int)
 
             if xopt_int is None:
                 break
