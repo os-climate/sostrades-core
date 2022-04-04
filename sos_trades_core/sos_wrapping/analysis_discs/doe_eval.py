@@ -464,26 +464,31 @@ class DoeEval(SoSEval):
         # We first begin by sample generation
         self.samples = self.generate_samples_from_doe_factory()
 
+        # Then add the reference scenario (initial point ) to the generated samples
+        self.samples.append([self.ee.dm.get_value(reference_variable_full_name) for reference_variable_full_name in self.eval_in_list])
+        reference_scenario_id = len(self.samples)
 
         #evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(self.samples,convert_to_array=False)
 
         #we loop through the samples evaluated to build dictionnaries needed for output generation
+        reference_scenario = f'scenario_{reference_scenario_id}'
         for (scenario_name,evaluated_samples) in evaluation_outputs.items():
 
             #generation of the dictionnary of samples used
             dict_one_sample = {}
             current_sample = evaluated_samples[0]
+            scenario_naming = scenario_name if scenario_name!= reference_scenario else 'reference'
             for idx, values in enumerate(current_sample):
                 dict_one_sample[self.eval_in_list[idx]] = values
-            dict_sample[scenario_name] = dict_one_sample
+            dict_sample[scenario_naming] = dict_one_sample
 
             #generation of the dictionnary of outputs
             dict_one_output = {}
             current_output = evaluated_samples[1]
             for idx, values in enumerate(current_output):
                 dict_one_output[self.eval_out_list[idx]] = values
-            dict_output[scenario_name] = dict_one_output
+            dict_output[scenario_naming] = dict_one_output
 
 
         # construction of a dataframe of generated samples
