@@ -59,8 +59,8 @@ class OuterApproximationSolver(object):
         self.upper_bounds_candidates = []
         self.upper_bounds = []
         self.lower_bounds = []
-        self.cont_solution = []
-        self.int_solution = []
+        self.cont_solutions = []
+        self.int_solutions = []
         self.x_solution_history = []
         self.ind_by_varname, self.size_by_varname = None, None
     
@@ -174,12 +174,13 @@ class OuterApproximationSolver(object):
         # objective definition
         obj = cp.Minimize(eta)
         
-        # constraints definition
-        ub = cp.Parameter(name=self.UPPER_BOUND)
-        constraints = [eta <= ub - self.epsilon] # eta <= U^(k) - eps
+#         # constraints definition
+#         # (could be handled in termination criteria)
+#         ub = cp.Parameter(name=self.UPPER_BOUND)
+#         constraints = [eta <= ub - self.epsilon] # eta <= U^(k) - eps
         
         # problem definition
-        prob = cp.Problem(obj, constraints)
+        prob = cp.Problem(obj) #, constraints
         
         return prob
     
@@ -189,9 +190,9 @@ class OuterApproximationSolver(object):
         of the NLP(x_int)^{(k)} )
         '''
         x0_dict = self.full_problem.design_space.array_to_dict(x0)
-        # gather eta design variable
+        #- gather eta design variable
         eta = old_primal_pb.var_dict[self.ETA]
-        # gather x design variable if exists (for iterations > 0)
+        #- gather x design variable if exists (for iterations > 0)
         bounds_cst = []
         if len(old_primal_pb.var_dict) > 1:
             all_vars = old_primal_pb.var_dict
@@ -223,8 +224,8 @@ class OuterApproximationSolver(object):
             all_vars.update(float_vars)
             all_vars.update(int_vars)
                 
-        # primal problem constraint :
-        # build dual pb objective linearization
+        #- setup of primal problem constraints :
+        #- build dual pb objective linearization
         obj_jac = atleast_2d(self.full_problem.objective.jac(x0))
         data_size = deepcopy(self.size_by_varname)
         data_size.update({self.full_problem.objective.outvars[0]: obj_jac.shape[0]})
@@ -233,18 +234,26 @@ class OuterApproximationSolver(object):
                                          self.full_problem.objective.outvars, 
                                          self.full_problem.design_space.variables_names,
                                          )
+        # get objective function from main optimization problem
         obj_f = self.full_problem.objective.func(x0)
+        # builds linearization of the objective wrt all design variables
         obj_lin = obj_f
         for v in self.full_problem.design_space.variables_names:
             x_v = all_vars[v]
             x0_v = x0_dict[v]
             dx = x_v - x0_v
             obj_lin += obj_jac_dict[self.full_problem.objective.outvars[0]][v] @ dx
+        # set the objective hyperplane as constraint
         obj_lin = obj_lin <= eta
         
-        # build dual pb constraints linearization
+        #- build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
         cst_linearized = []
+        # for each constraint function from main optimization problem
+        # builds linearization of the constraint wrt all design variables
         for c in self.full_problem.constraints:
+            # compute c(x0)
+            cst_f = c.func(x0)
+            # get dc/dx(x0)
             c_jac = atleast_2d(c.jac(x0))
             data_size = deepcopy(self.size_by_varname)
             data_size.update({c.outvars[0]: c_jac.shape[0]})
@@ -253,8 +262,7 @@ class OuterApproximationSolver(object):
                                              c.outvars, 
                                              self.full_problem.design_space.variables_names,
                                              )
-        
-            cst_f = c.func(x0)
+            # compute c(x0) + dc/dx(x0) . (x - x0)
             cst_lin = cst_f
             for v in self.full_problem.design_space.variables_names:
                 x_v = all_vars[v]
@@ -270,12 +278,11 @@ class OuterApproximationSolver(object):
         primal_pb = cp.Problem(old_primal_pb.objective, 
                                old_primal_pb.constraints + hyperplanes + bounds_cst)
         
-        print('primal_pb', primal_pb.var_dict)
-        
-        # update upper bound parameter value
-        ub = primal_pb.param_dict[self.UPPER_BOUND]
-        print("upper_bnd", upper_bnd)
-        ub.value = upper_bnd
+## handled in the termination criteria
+#         # update upper bound parameter value
+#         ub = primal_pb.param_dict[self.UPPER_BOUND]
+#         print("upper_bnd", upper_bnd)
+#         ub.value = upper_bnd
         
         return primal_pb
     
@@ -286,24 +293,26 @@ class OuterApproximationSolver(object):
         
         if problem.status not in ["infeasible", "unbounded"]:
             # Otherwise, problem.value is inf or -inf, respectively.
-            print("Optimal value: %s" % problem.value)
+            LOGGER.info("Optimal value: %s" % problem.value)
             sol_int = array([])
             for dv in self.full_problem.design_space.variables_names:
                 if dv in self.int_varnames:
                     val = problem.var_dict[dv].value
                     sol_int = append(sol_int, val)
-            self.int_solution.append(sol_int)
+            self.int_solutions.append(sol_int)
             self.lower_bounds.append(problem.value)
         else:
             sol_int = None
+            self.int_solutions.append(None)
+            self.lower_bounds.append(None)
         
         
         for variable in problem.variables():
-            print("Variable %s: value %s" % (variable.name(), variable.value))
+            LOGGER.info("Variable %s: value %s" % (variable.name(), variable.value))
         
-        print ("status:", problem.status)
-        print ("optimal value", problem.value)
-        print ("optimal var", [(k, v) for k, v in problem.var_dict.items()])
+        LOGGER.info("status:" + str(problem.status))
+        LOGGER.info("optimal value " + str(problem.value))
+        LOGGER.info("optimal var " + str([(k, v) for k, v in problem.var_dict.items()]))
         
         return sol_int
 
@@ -325,9 +334,9 @@ class OuterApproximationSolver(object):
         input_dim = sum(full_pb.design_space.variables_sizes.values())
         
         # build restriction of original constraint functions
-        print("integer_indices", self.integer_indices)
-        print("integer_values", integer_values)
-        print("input_dim", input_dim)
+        LOGGER.info("integer_indices " + str(self.integer_indices))
+        LOGGER.info("integer_values " + str(integer_values))
+        LOGGER.info("input_dim "+ str(input_dim))
             
         cst_restricted = []
         for c in full_pb.nonproc_constraints:
@@ -366,11 +375,12 @@ class OuterApproximationSolver(object):
     def update_dual(self, nlp, integer_values):
         ''' Updates frozen values of NLP problem with those provided
         '''
+        nlp.reset(database=False)
         nlp.objective.set_frozen_value(integer_values)
          
         for f in nlp.constraints:
             f.set_frozen_value(integer_values)
-        
+
         return nlp
     
     def solve_dual(self, nlp):
@@ -385,11 +395,10 @@ class OuterApproximationSolver(object):
         LOGGER.info(msg)
         
         # add continuous solution to history
-        self.cont_solution.append(cont_sol.f_opt)
+        self.cont_solutions.append(cont_sol.f_opt)
         
         return cont_sol
     
-            
     # main Outer Approximation algorithm
     def _termination_criteria(self, ite_nb, mip):
         ''' termination criteria computation
@@ -397,189 +406,81 @@ class OuterApproximationSolver(object):
         if ite_nb == 0:
             _continue = True
         else:
-            if mip.status == "infeasible":
+            ub = self.upper_bounds[-1]
+            lb = self.lower_bounds[-1]
+
+            if lb >= ub - self.epsilon :
                 _continue = False
-                msg = "Tolerance reached"
-                print(msg)
-            elif self.upper_bounds[ite_nb-1] - self.lower_bounds[ite_nb-1] <= self.epsilon:
-                _continue = False
-                msg = "Tolerance reached"
-                print(msg)
+                msg = "*** Tolerance reached : upper bound vs lower bound ***\n"
+                msg += "*** \t Upper Bound (UB) = " + str(self.upper_bounds[-1]) + "\n"
+                msg += "*** \t Lower Bound (LB) = " + str(self.lower_bounds[-1]) + "\n"
+                msg += "*** \t UB - LB = " + str(ub-lb) + " <= " + str(self.epsilon)
+                LOGGER.info(msg)
             else:
                 _continue = True
         
         return _continue
     
-    def update_history(self, pb):
-        
+    def update_upper_bounds_history(self, pb):
+        """ update the history
+        """
+        # append the objective solution to the upper bounds candidates
         self.upper_bounds_candidates.append(pb.f_opt)
         
+        # get the best upper bound found so far
         uk = min(self.upper_bounds_candidates)
+        
+        # update the upper bound list with the current best upper bound
         self.upper_bounds.append(uk)
         
-    def get_upper_bound(self, it_nb):
-        return self.upper_bounds[it_nb]
-    
     def solve(self):
-        ''' Solve the optimization problem
+        ''' Solve the optimization problem : iterative process
         '''
         iter_nb = 0
         
+        # init integer solution
+        xopt_int = self.x0_integer
+        
         # build NLP(x0_integer)
-        nlp = self.build_dual_pb(self.x0_integer)
-        
-        # compute argmin NLP(x0)
-        nlp_sol = self.solve_dual(nlp)
-        xopt_cont = nlp_sol.x_opt
-        
-        self.update_history(nlp_sol)
-        
-        xsol = self._build_full_vect(xopt_cont, self.x0_integer)
+        nlp = self.build_dual_pb(xopt_int)
         
         # initialize primal problem
         mip = self.build_primal_pb()
         
         while self._termination_criteria(iter_nb, mip):
-            msg = "\n\n***\nOuterApproximation Iteration %i\n***"%iter_nb
+            msg = "\n\n***\nOuterApproximation Iteration %i\n\n***"%iter_nb
             LOGGER.info(msg)
+
+            # build NLP(integer solution iteration k)
+            nlp = self.build_dual_pb(xopt_int)
+#             nlp = self.update_dual(nlp, xopt_int)
+
+            # compute argmin NLP(integer solution iteration k)
+            nlp_sol = self.solve_dual(nlp)
+            xopt_cont = nlp_sol.x_opt
+            
+            xsol = self._build_full_vect(xopt_cont, xopt_int)
+            
+            # update x history
+            self.x_solution_history.append(xsol)
+            self.update_upper_bounds_history(nlp_sol)
             
             # update primal problem
-            uk = self.get_upper_bound(iter_nb)
+            uk = self.upper_bounds[iter_nb]
             mip = self.update_primal_pb(mip, nlp, uk, xsol)
             
             # solve primal problem
             xopt_int = self.solve_primal(mip)
 
-            if xopt_int is None:
-                break
-            
-            # build NLP(integer solution iteration k)
-#             nlp = self.build_dual_pb(xopt_int)
-            nlp = self.update_dual(nlp, xopt_int)
-        
-            # compute argmin NLP(integer solution iteration k)
-            nlp_sol = self.solve_dual(nlp)
-            xopt_cont = nlp_sol.x_opt
-            xsol = self._build_full_vect(xopt_cont, xopt_int)
-            
-            self.x_solution_history.append(xsol)
-            
-#             data = {""}
-#             self.full_problem.database.store()
-            print("UPPER BOUNDS")
-            print(self.upper_bounds)
-            print("LOWER BOUNDS")
-            print(self.lower_bounds)
-            self.update_history(nlp_sol)
+            LOGGER.info("UPPER BOUNDS")
+            LOGGER.info(self.upper_bounds)
+            LOGGER.info("LOWER BOUNDS")
+            LOGGER.info(self.lower_bounds)
             
             iter_nb +=1
-            
-        print("Integer solution is", self.int_solution)
-        print("Continuous solution is", self.cont_solution)
         
-
-#     def _build_primal_objective(self, dspace):
-#         ''' build primal problem objective function
-#         '''
-#         # gather indices of objective of relaxed problem in xvect
-#         indices = self._compute_xvect_indices(dspace)
-#         i_min, i_max = indices[self.primal_obj_name]
-#         
-#         # relaxed objective function
-#         def primal_obj(xvect):
-#             return xvect[i_min : i_max]
-#         
-#         # relaxed objective jacobian
-#         def primal_obj_jac(xvect):
-#             xlen = len(xvect)
-#             jac = zeros((xlen, xlen))
-#             jac[i_min : i_max, i_min : i_max] = array([[1]]) # identity(i_max-i_min)
-#             return jac
-#         
-#         return MDOFunction(primal_obj,
-#                             self.primal_obj_name,
-#                             args="x",
-#                             expr=self.primal_obj_name,
-#                             jac=primal_obj_jac,
-#                             outvars=self.primal_obj_name,
-#                             f_type=MDOFunction.TYPE_INEQ,
-#                             dim=1)
-#         
-#     def build_primal(self):
-#         ''' build the primal problem
-#         '''
-#         # retrieve full problem
-#         full_pb = self.full_problem
-#         # relaxed objective name added to original design space
-#         dspace = deepcopy(full_pb.dspace)
-#         dspace.add_variable(self.relaxed_obj_name)
-#         # build dual problem
-#         pb = OptimizationProblem(dspace)
-#         # objective setup
-#         obj = self._build_primal_objective(dspace)
-#         pb.objective = obj
-#             
-#         return pb
-#     
-#     def update_primal_pb(self, primal_pb, xvect, iter_nb):
-#         ''' Update primal with supporting hyperplanes 
-#         of objective and constraints
-#         '''
-#         full_pb = self.full_problem
-# 
-#         # build supporting hyperplanes of constraints functions
-#         cst_restricted = []
-#         for c in full_pb.get_right_sign_constraints():
-#             new_c_name = c.name + '_linearized_ite#' + str(iter_nb)
-#             new_c = c.linear_approximation(xvect,
-#                                            name=new_c_name,
-#                                            f_type=MDOFunction.TYPE_INEQ,
-#                                            #expr=f"{f.name}(%s)",
-#                                            args=None)
-#             cst_restricted.append(new_c)
-#             
-#         # build supporting hyperplanes of objective functions
-#         new_o_name = full_pb.objective.name + '_linearized_ite#' + str(iter_nb)
-#         new_o = full_pb.objective.linear_approximation(xvect,
-#                                                        name=new_o_name,
-#                                                        f_type=MDOFunction.TYPE_OBJ,
-#                                                        #expr=f"{f.name}(%s)",
-#                                                        args=None)
-# 
-#         # add linearizations as primal pb constraints
-#         primal_pb.add_constraint(new_o, cstr_type=MDOFunction.TYPE_INEQ)
-#         for c in cst_restricted:
-#             primal_pb.add_constraint(c, cstr_type=MDOFunction.TYPE_INEQ)        
-
-
-
-
-
-#     def _store_x_indices_by_type(self, dspace, vtype):
-#         ''' get integer variables indices in 
-#         xvect associated to the provided design space
-#         '''
-#         ind_dict = self._compute_xvect_indices(dspace)
-#         int_indices = array([], dtype=int32)
-#         for v in ind_dict:
-#             if len(dspace.get_type(v)) > 1:
-#                 msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
-#                 msg += '(different types for each component of the variable is not handled for now)'
-#                 raise ValueError(msg)
-#             if dspace.get_type(v) == [vtype]: # pylint: disable=E0602
-#                 i_min, i_max = ind_dict[v]
-#                 curr_indices = arange(i_min, i_max + 1)
-#                 int_indices = append(int_indices, curr_indices)
-#         return int_indices
-#
-#
-#     def get_integer_varsize_dict(self):
-#         '''
-#         '''
-#         for v in self.int_var_names:
-#             if len(dspace.get_type(v)) > 1:
-#                 msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
-#                 msg += '(different types for each component of the variable is not handled for now)'
-#                 raise ValueError(msg)
-#             if dspace.get_type(v) == [vtype]: # pylint: disable=E0602
+#         LOGGER.info("Integer solution is " + str(self.int_solutions))
+#         LOGGER.info("Continuous solution is"  + str(self.cont_solutions))
+        
+        
                 
