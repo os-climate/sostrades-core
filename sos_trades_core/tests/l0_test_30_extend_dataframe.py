@@ -76,7 +76,7 @@ class TestExtendDataframe(unittest.TestCase):
             elif target[key] is array:
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
-        #-- check dataframe as SoSTrades output
+        # -- check dataframe as SoSTrades output
         disc6 = exec_eng.root_process.sos_disciplines[0]
         df = disc6.get_sosdisc_inputs('df')
         df_target = pd.DataFrame(
@@ -115,7 +115,7 @@ class TestExtendDataframe(unittest.TestCase):
                                  0.70710678]),
                   'EE.dict_df': array([0., 0.70710678, 0.70710678, 0., 0.70710678, 0.70710678]),
                   'EE.df': array([0., 0.707107, 0.707107])}
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -166,12 +166,16 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
 
-        #-- check dataframe as SoSTrades output
+        # -- check dataframe as SoSTrades output
         disc6 = exec_eng.root_process.sos_disciplines[0]
 
-        # Check that in GEMS we do not have year and years columns
-        self.assertListEqual(
-            list(disc6.get_inputs_by_name('EE.df')), [0.5, 0.5])
+        # convert dataframe into array and check data converted and metadata
+        data_dict_converted = disc6._convert_new_type_into_array({'EE.df': exec_eng.dm.get_value('EE.df')})
+        self.assertListEqual(list(data_dict_converted['EE.df']), [0.5, 0.5])
+        metadata = exec_eng.dm.get_data('EE.df', 'type_metadata')[0]
+        self.assertListEqual(metadata['years'], [2020.0])
+        self.assertListEqual(metadata['year'], [2020.0])
+        self.assertListEqual(metadata['columns'].values.tolist(), ['c1', 'c2'])
 
         # Check that in SoSTrades we have the columns back and at the right
         # order
