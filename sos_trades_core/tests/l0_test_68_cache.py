@@ -483,12 +483,6 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_1')[
-            SoSDiscipline.TYPE_METADATA]
-        metadata_ref = [
-            {'known_values': {'value_1': 1, 'value_new': 2, 'value_new2': 3}}]
-        self.assertListEqual(metadata, metadata_ref)
-
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
         # reexecuted
@@ -503,11 +497,6 @@ class TestCache(unittest.TestCase):
 #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_1')[
-            SoSDiscipline.TYPE_METADATA]
-        metadata_ref = [
-            {'known_values': {'value_1': 1, 'value_new': 2, 'value_new2': 3}}]
-        self.assertListEqual(metadata, metadata_ref)
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
         '''
@@ -590,18 +579,6 @@ class TestCache(unittest.TestCase):
 #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-
-        metadata_ref_known_values1 = {
-            'STEPS_bzefivbzei))(((__)----+!!!:;=': 1, 'valuenew1': 2}
-        metadata_ref_known_values2 = {
-            'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva': 1, 'value_new2': 2}
-
-        self.assertDictEqual(
-            metadata[0]['known_values'], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1]['known_values'], metadata_ref_known_values2)
 
     def test_8_test_cache_coupling_with_string_list_change(self):
         '''
@@ -667,18 +644,6 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-        metadata_ref_known_values1 = {'known_values': {'AC1': 1}}
-        metadata_ref_known_values2 = {'known_values': {'AC2': 1}}
-        metadata_ref_known_values3 = {'known_values': {'AC_new': 1}}
-
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-        self.assertDictEqual(
-            metadata[0], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1], metadata_ref_known_values2)
-        self.assertDictEqual(
-            metadata[2], metadata_ref_known_values3)
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
         # reexecuted
@@ -701,17 +666,6 @@ class TestCache(unittest.TestCase):
         n_calls_sosc += 1
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
-
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-
-        metadata_ref_known_values1 = {'known_values': {'AC1': 1}}
-        metadata_ref_known_values2 = {'known_values': {'AC2': 1, 'AC3': 2}}
-
-        self.assertDictEqual(
-            metadata[0], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1], metadata_ref_known_values2)
 
         # check
 #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
@@ -801,23 +755,6 @@ class TestCache(unittest.TestCase):
         n_calls_sosc += 1
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
-
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-        print(metadata)
-        metadata_ref_known_values1 = {0: {'known_values': {
-            'AC1': 1, 'ACnew': 2}}, 1: {'known_values': {'AC2': 1}}}
-        metadata_ref_known_values2 = {
-            0: {'known_values': {'AC3': 1}}, 1: {'known_values': {'AC4': 1}}}
-        metadata_ref_known_values3 = {0: {'known_values': {
-            'string': 1}}, 2: {'known_values': {'string2': 1}}}
-        self.maxDiff = None
-        self.assertDictEqual(
-            metadata[0]['known_values'], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1]['known_values'], metadata_ref_known_values2)
-        self.assertDictEqual(
-            metadata[2]['known_values'], metadata_ref_known_values3)
 
         # check
 #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
@@ -1063,4 +1000,4 @@ class TestCache(unittest.TestCase):
 if __name__ == "__main__":
     cls = TestCache()
     cls.setUp()
-    cls.test_11_recursive_cache_activation()
+    cls.test_12_cache_on_sellar_optim()
