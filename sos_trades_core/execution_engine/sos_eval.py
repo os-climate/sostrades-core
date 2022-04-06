@@ -304,7 +304,8 @@ class SoSEval(SoSDisciplineBuilder):
         self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
-            out_values = np.concatenate(list(out_local_data.values())).ravel()
+            out_local_data_converted = self._convert_new_type_into_array(out_local_data)
+            out_values = np.concatenate(list(out_local_data_converted.values())).ravel()
         else:
             out_values = []
             # get back out_local_data is not enough because some variables
