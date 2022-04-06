@@ -19,6 +19,7 @@ from tqdm import tqdm
 import time
 
 from gemseo.core.parallel_execution import ParallelExecution
+from sos_trades_core.tools.base_functions.compute_len import compute_len
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -398,7 +399,7 @@ class SoSEval(SoSDisciplineBuilder):
             outeval_dict = {}
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
-                eval_out_size = len(self.eval_process_disc.local_data[key])
+                eval_out_size = compute_len(self.eval_process_disc.local_data[key])
                 output_eval_key = outputs_eval[old_size:old_size + 
                                                eval_out_size]
                 old_size = eval_out_size

@@ -46,7 +46,7 @@ class TestGradients(unittest.TestCase):
         cst = x_in[3]
         power = x_in[4]
 
-        func = cst + (a * x + b)**power
+        func = cst + (a * x + b) ** power
 
         return func
 
@@ -91,7 +91,7 @@ class TestGradients(unittest.TestCase):
         self.exec_eng.configure()
         self.exec_eng.display_treeview_nodes()
 
-        #[a,x,b,cst,power]
+        # [a,x,b,cst,power]
         x0 = np.array([3., 2., 10., -10., 2])
 
         values_dict = {}
@@ -111,21 +111,19 @@ class TestGradients(unittest.TestCase):
         gradients_output = self.exec_eng.dm.get_value(
             'EETests.GA.gradient_outputs')
         # check outputs equals local_data
-        self.assertTrue(all(list(gradients_output.values(
-        )) == self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs']))
+        self.assertDictEqual(gradients_output, self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs'])
 
         self.exec_eng.execute()
 
         gradients_output_2 = self.exec_eng.dm.get_value(
             'EETests.GA.gradient_outputs')
         # check outputs equals local_data
-        self.assertTrue(all(list(gradients_output_2.values(
-        )) == self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs']))
+        self.assertDictEqual(gradients_output_2, self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs'])
 
         self.assertDictEqual(gradients_output, gradients_output_2,
                              'Two execute in a raw do not give the same result ')
 
-        #-- Ref gradient computation
+        # -- Ref gradient computation
         err_tol = 4
         eps = round(0.1 ** err_tol, err_tol + 1)
         grad_eval = FDGradient(2, self.demo_func, fd_step=eps)
@@ -169,7 +167,7 @@ class TestGradients(unittest.TestCase):
 
         disc = self.exec_eng.root_process.sos_disciplines[0]
 
-        #-- run gradient with complex step and finite differences
+        # -- run gradient with complex step and finite differences
         dy_dx_ref = disc.get_sosdisc_inputs('a')
         for approx_method in MDODiscipline.APPROX_MODES:
             print("\t Test with approximation mode ", approx_method)
@@ -226,7 +224,7 @@ class TestGradients(unittest.TestCase):
         self.exec_eng.configure()
         self.exec_eng.display_treeview_nodes()
 
-        #[a,x,b,cst,power]
+        # [a,x,b,cst,power]
         x0 = np.array([3., 2., 10., -10., 2])
 
         values_dict = {}
@@ -262,7 +260,7 @@ class TestGradients(unittest.TestCase):
                                             'EETests.y vs EETests.SA.Disc1.b': 0.5,
                                             'EETests.z vs EETests.SA.Disc1.b': 16.25,
                                             'EETests.y vs EETests.SA.Disc2.constant': 0.0,
-                                            'EETests.z vs EETests.SA.Disc2.constant': -0.5}
+                                            'EETests.z vs EETests.SA.Disc2.constant':-0.5}
 
         self.assertDictEqual(sensitivity_output_ref_5_percent, sensitivity_output['+5.0%'],
                              'The comparison with the reference is not correct')
@@ -329,10 +327,10 @@ class TestGradients(unittest.TestCase):
         dzdx = self.exec_eng.dm.get_value(
             'EETests.GA2.DiscConvertGrad.dzdx')
 
-        self.assertAlmostEqual(dzdx,  2 * ax2 * x + cx + exy * y, delta=2.e-3)
+        self.assertAlmostEqual(dzdx, 2 * ax2 * x + cx + exy * y, delta=2.e-3)
         dzdy = self.exec_eng.dm.get_value(
             'EETests.GA2.DiscConvertGrad.dzdy')
-        self.assertAlmostEqual(dzdy,  2 * by2 * y + dy + exy * x, delta=2.e-3)
+        self.assertAlmostEqual(dzdy, 2 * by2 * y + dy + exy * x, delta=2.e-3)
 
         dzdy2 = 2 * by2
         dzdx2 = 2 * ax2
@@ -365,7 +363,7 @@ class TestGradients(unittest.TestCase):
 
         self.exec_eng.display_treeview_nodes()
 
-        #[a,x,b,cst,power]
+        # [a,x,b,cst,power]
         x0 = np.array([3., 2., 10., -10., 2])
         name_list = ['name_1', 'name_2']
         values_dict = {}
@@ -432,12 +430,12 @@ class TestGradients(unittest.TestCase):
                                             'EETests.SA.name_2.z vs EETests.SA.Disc1.name_2.b': 16.25,
                                             'EETests.SA.name_1.y vs EETests.SA.Disc2.name_1.constant': 0.0,
                                             'EETests.SA.name_2.y vs EETests.SA.Disc2.name_1.constant': 0.0,
-                                            'EETests.SA.name_1.z vs EETests.SA.Disc2.name_1.constant': -0.5,
+                                            'EETests.SA.name_1.z vs EETests.SA.Disc2.name_1.constant':-0.5,
                                             'EETests.SA.name_2.z vs EETests.SA.Disc2.name_1.constant': 0.0,
                                             'EETests.SA.name_1.y vs EETests.SA.Disc2.name_2.constant': 0.0,
                                             'EETests.SA.name_2.y vs EETests.SA.Disc2.name_2.constant': 0.0,
                                             'EETests.SA.name_1.z vs EETests.SA.Disc2.name_2.constant': 0.0,
-                                            'EETests.SA.name_2.z vs EETests.SA.Disc2.name_2.constant': -0.5}
+                                            'EETests.SA.name_2.z vs EETests.SA.Disc2.name_2.constant':-0.5}
 
         self.assertDictEqual(sensitivity_output_ref_5_percent, sensitivity_output['+5.0%'],
                              'The comparison with the reference is not correct')
@@ -469,7 +467,7 @@ class TestGradients(unittest.TestCase):
 
         self.exec_eng.display_treeview_nodes()
 
-        #[a,x,b,cst,power]
+        # [a,x,b,cst,power]
         x0 = np.array([3., 2., 10., -10., 2])
         name_list = ['name_1', 'name_2']
         values_dict = {}
@@ -533,14 +531,14 @@ class TestGradients(unittest.TestCase):
                                      'EETests.FORM.name_2.y vs EETests.FORM.Disc1.name_2.b': 0.4999999999988347,
                                      'EETests.FORM.name_1.z vs EETests.FORM.Disc1.name_2.b': 0.4999999999988347,
                                      'EETests.FORM.name_2.z vs EETests.FORM.Disc1.name_2.b': 0.4999999999988347,
-                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_1.constant': -0.0,
-                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_1.constant': -0.0,
-                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_1.constant': -0.0,
-                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_1.constant': -0.0,
-                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_2.constant': -0.0,
-                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_2.constant': -0.0,
-                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_2.constant': -0.0,
-                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_2.constant': -0.0}
+                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_1.constant':-0.0,
+                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_1.constant':-0.0,
+                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_1.constant':-0.0,
+                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_1.constant':-0.0,
+                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_2.constant':-0.0,
+                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_2.constant':-0.0,
+                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_2.constant':-0.0,
+                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_2.constant':-0.0}
 
         self.assertDictEqual(form_output_ref_5_percent, form_output['5.0%'],
                              'The comparison with the reference is not correct')

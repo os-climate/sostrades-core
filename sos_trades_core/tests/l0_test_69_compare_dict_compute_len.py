@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from gemseo.utils.compare_data_manager_tooling import compare_dict
+from sos_trades_core.tools.base_functions.compute_len import compute_len
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -111,4 +112,36 @@ class TestCompareDict(unittest.TestCase):
         compare_dict(self.data_dict_1,
                      self.data_dict_2, '', diff_dict, df_equals=True)
         self.assertEqual(len(diff_dict), len(self.data_dict_1))
+        
+    def test_02_compute_len(self):
+        
+        type_len_0 = ['none', 'array', 'empty_list', 'empty_dict2', 'dataframe_empty']
+        
+        for key in type_len_0:
+            self.assertEqual(compute_len(self.data_dict_1[key]), 0)
+
+        type_len_1 = ['int', 'np_int32', 'np_int64', 'float', 'np_float32', 'np_float64', 'np_complex128', 'bool', 'string', 'dict_list']
+        
+        for key in type_len_1:
+            self.assertEqual(compute_len(self.data_dict_1[key]), 1)
+
+        type_len_2 = ['string_list', 'string_list_list', 'string_dict', 'array_order', 'list', 'order_list', 'float_list', 'empty_dict', 'dict']
+        
+        for key in type_len_2:
+            self.assertEqual(compute_len(self.data_dict_1[key]), 2)
+        
+        type_len_4 = ['dataframe', 'dataframe_col', 'dataframe_index', 'dataframe_order', 'df_dict']
+        
+        for key in type_len_4:
+            self.assertEqual(compute_len(self.data_dict_1[key]), 4)
+        
+        type_len_8 = ['df_list', 'df_list2', 'df_list_order', 'df_dict2']
+        
+        for key in type_len_8:
+            self.assertEqual(compute_len(self.data_dict_1[key]), 8)
+            
+            
+if __name__ == "__main__":
+    cls = TestCompareDict()
+    cls.test_02_compute_len()
         
