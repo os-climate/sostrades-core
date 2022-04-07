@@ -92,8 +92,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
             {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         private_values = {
-            f'{self.name}.{self.uncertainty_quantification}.samples_df': self.samples_dataframe,
-            f'{self.name}.{self.uncertainty_quantification}.data_df': self.data_df,
+            f'{self.name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
+            f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             # f'{self.name}.{self.uncertainty_quantification}.input_distribution_parameters_df': self.input_distribution_parameters_df,
             # f'{self.name}.{self.uncertainty_quantification}.data_details_df':
             # self.data_details_df,

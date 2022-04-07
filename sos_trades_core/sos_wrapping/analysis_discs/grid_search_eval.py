@@ -503,7 +503,7 @@ class GridSearchEval(DoeEval):
                 k: v['shortest_name'] for k, v in eval_inputs_filtered_dict.items()
             }
 
-        doe_samples_df = outputs_discipline_dict['doe_samples_dataframe']
+        doe_samples_df = outputs_discipline_dict['samples_inputs_df']
 
         # retrive full input list
         inputs_list = [
@@ -527,7 +527,7 @@ class GridSearchEval(DoeEval):
 
         if len(outputs_names_list) > 0:
             outputs_names = outputs_names_list.copy()
-            outputs_names.remove('doe_samples_dataframe')
+            outputs_names.remove('samples_inputs_df')
             for single_output in outputs_names:
                 output_df_dict = outputs_discipline_dict[single_output]
 
@@ -730,7 +730,7 @@ class GridSearchEval(DoeEval):
             # we create a unique dataframe containing all data that will be
             # used for drawing the graphs
 
-            doe_samples_df = outputs_dict['doe_samples_dataframe']
+            doe_samples_df = outputs_dict['samples_inputs_df']
 
             # we go through the list of charts and draw all of them
             for name, chart_info in self.chart_dict.items():

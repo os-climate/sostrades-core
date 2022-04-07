@@ -101,7 +101,7 @@ class DoeEval(SoSEval):
                }
 
     DESC_OUT = {
-        'doe_samples_dataframe': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
+        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
     }
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
@@ -513,7 +513,7 @@ class DoeEval(SoSEval):
 
         # saving outputs in the dm
         self.store_sos_outputs_values(
-            {'doe_samples_dataframe': samples_dataframe})
+            {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':

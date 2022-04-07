@@ -40,8 +40,8 @@ class Study(StudyManager):
             join(self.data_dir, 'samples_df.csv'))
 
         dict_values = {
-            f'{self.study_name}.{self.uncertainty_quantification}.samples_df': self.samples_dataframe,
-            f'{self.study_name}.{self.uncertainty_quantification}.data_df': self.data_df,
+            f'{self.study_name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
+            f'{self.study_name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
         }
 
         return dict_values

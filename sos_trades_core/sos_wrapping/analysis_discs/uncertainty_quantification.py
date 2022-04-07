@@ -66,8 +66,8 @@ class UncertaintyQuantification(SoSDiscipline):
         'version': '',
     }
     DESC_IN = {
-        'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True},
-        'data_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, },
+        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True},
+        'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, },
 
         'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.], 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2},
         'sample_size': {'type': 'float', 'unit': None, 'default': 1000, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2},
@@ -85,13 +85,13 @@ class UncertaintyQuantification(SoSDiscipline):
             dynamic_outputs = {}
             dynamic_inputs = {}
 
-            if ('samples_df' in self._data_in) & ('data_df' in self._data_in):
-                if (self.get_sosdisc_inputs('samples_df') is not None) & (self.get_sosdisc_inputs('data_df') is not None):
+            if ('samples_inputs_df' in self._data_in) & ('samples_outputs_df' in self._data_in):
+                if (self.get_sosdisc_inputs('samples_inputs_df') is not None) & (self.get_sosdisc_inputs('samples_outputs_df') is not None):
                     samples_df = self.get_sosdisc_inputs(
-                        'samples_df')
+                        'samples_inputs_df')
                     in_param = list(samples_df.columns)[1:]
                     data_df = self.get_sosdisc_inputs(
-                        'data_df')
+                        'samples_outputs_df')
                     out_param = list(data_df.columns)[1:]
 
                     # ontology name
@@ -169,8 +169,8 @@ class UncertaintyQuantification(SoSDiscipline):
 
     def run(self):
         inputs_dict = self.get_sosdisc_inputs()
-        samples_df = inputs_dict['samples_df']
-        data_df = inputs_dict['data_df']
+        samples_df = inputs_dict['samples_inputs_df']
+        data_df = inputs_dict['samples_outputs_df']
         confidence_interval = inputs_dict['confidence_interval'] / 100
         sample_size = inputs_dict['sample_size']
         input_parameters_names = list(samples_df.columns)[1:]
