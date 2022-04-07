@@ -27,7 +27,7 @@ from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 # https://blogs.sas.com/content/iml/2017/01/18/milp-sas.html
 # expected sol is "x1=5, x2=3.1"
 
-class DiscMixedOpt(SoSDiscipline):
+class DiscMixedOptLinearFeasible(SoSDiscipline):
     __maturity = 'Fake'
     DESC_IN = {
         'x1': {'type': 'array'},
@@ -65,6 +65,46 @@ class DiscMixedOpt(SoSDiscipline):
         self.set_partial_derivative('constr', 'x1', atleast_2d(array([[ 3.],  [5.], [-4.]])))
         self.set_partial_derivative('constr', 'x2', atleast_2d(array([[-2.], [10.], [-2.]])))
     
+# numerical example from
+# https://minlp.com/mat-bar-example3
+class DiscMixedOptNonLinearFeasible(SoSDiscipline):
+    __maturity = 'Fake'
+    DESC_IN = {
+        'x1': {'type': 'array'},
+        'x2': {'type': 'array'}
+    }
+
+    DESC_OUT = {
+        'obj': {'type': 'array'},
+        'constr': {'type': 'array'}
+    }
+
+    def run(self):
+        
+        x1 = self.get_sosdisc_inputs('x1')[0]
+        x2 = self.get_sosdisc_inputs('x2')[0]
+        
+        o = (x1 - 8.) **2 + (x2 - 2.) **2
+        obj = array([o])
+
+        c = []
+        c.append( x1/3. +  x2 - 4.5 )
+        c.append( 0.1*(x1**2) - x2 )
+        constr = array(c)
+        dict_values = {'obj': obj, 'constr': constr}
+        
+        # put new field value in data_out
+        self.store_sos_outputs_values(dict_values)
+        
+    def compute_sos_jacobian(self):
+        x1, x2 = self.get_sosdisc_inputs(['x1', 'x2'])
+
+        self.set_partial_derivative('obj', 'x1', atleast_2d(array([2. * (x1[0] - 8.)])))
+        self.set_partial_derivative('obj', 'x2', atleast_2d(array([2. * (x2[0] - 2.)])))
+        self.set_partial_derivative('constr', 'x1', atleast_2d(array([[ 1./3.],  [0.2*x1[0]]])))
+        self.set_partial_derivative('constr', 'x2', atleast_2d(array([[1], [-1.]])))
+
+
 
 # numerical example from 
 # https://fdocuments.in/reader/full/solving-mixed-integer-nonlinear-programming-minlp-problems-mixed-integer-nonlinear
@@ -104,18 +144,18 @@ class DiscMixedOptUnfeas(SoSDiscipline):
         self.set_partial_derivative('constr', 'y', atleast_2d(array([2.*y])))
         
 if __name__ == "__main__":
-    
+    #--- check gradients of DiscMixedOpt Linear Feasible
     exec_eng = ExecutionEngine("test")
     factory = exec_eng.factory
-    mod = 'sos_trades_core.sos_wrapping.test_discs.disc_mixed_opt.DiscMixedOpt'
+    mod = 'sos_trades_core.sos_wrapping.test_discs.disc_mixed_opt.DiscMixedOptLinearFeasible'
     builder = factory.get_builder_from_module('DiscMixedOpt', mod)
     factory.set_builders_to_coupling_builder(builder)
     exec_eng.configure()
     
     # check at integer solution 1
     disc_dict = {}
-    disc_dict['test.DiscMixedOpt.x1'] = 1.
-    disc_dict['test.DiscMixedOpt.x2'] = 2.
+    disc_dict['test.DiscMixedOpt.x1'] = array([1])
+    disc_dict['test.DiscMixedOpt.x2'] = array([2.])
     
     exec_eng.load_study_from_input_dict(disc_dict)
     
@@ -124,10 +164,34 @@ if __name__ == "__main__":
     
     # check at integer solution 5
     disc_dict = {}
-    disc_dict['test.DiscMixedOpt.x1'] = 5
-    disc_dict['test.DiscMixedOpt.x2'] = 3.
+    disc_dict['test.DiscMixedOpt.x1'] = array([5])
+    disc_dict['test.DiscMixedOpt.x2'] = array([4.])
     
     exec_eng.load_study_from_input_dict(disc_dict)
     
     d = exec_eng.root_process
+    d.check_jacobian(derr_approx=SoSDiscipline.COMPLEX_STEP)
+
+    #--- check gradients of DiscMixedOpt NonLinear Feasible
+    exec_eng = ExecutionEngine("test")
+    factory = exec_eng.factory
+    mod = 'sos_trades_core.sos_wrapping.test_discs.disc_mixed_opt.DiscMixedOptNonLinearFeasible'
+    builder = factory.get_builder_from_module('DiscMixedOpt', mod)
+    factory.set_builders_to_coupling_builder(builder)
+    exec_eng.configure()
+    
+    d = exec_eng.root_process
+
+    # check at integer solution 1
+    disc_dict = {}
+    disc_dict['test.DiscMixedOpt.x1'] = array([7.])
+    disc_dict['test.DiscMixedOpt.x2'] = array([2.])
+    exec_eng.load_study_from_input_dict(disc_dict)
+    d.check_jacobian(derr_approx=SoSDiscipline.COMPLEX_STEP)
+    
+    # check at integer solution 1
+    disc_dict = {}
+    disc_dict['test.DiscMixedOpt.x1'] = array([5.])
+    disc_dict['test.DiscMixedOpt.x2'] = array([13.])
+    exec_eng.load_study_from_input_dict(disc_dict)
     d.check_jacobian(derr_approx=SoSDiscipline.COMPLEX_STEP)
