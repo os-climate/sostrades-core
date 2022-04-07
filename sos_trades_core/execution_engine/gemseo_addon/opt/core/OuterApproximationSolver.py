@@ -196,39 +196,36 @@ class OuterApproximationSolver(object):
         and supporting hyperplanes (linearizations of objecgives and constraints
         of the NLP(x_int)^{(k)} )
         '''
-        x0_dict = self.full_problem.design_space.array_to_dict(x0)
+        full_dspace = self.full_problem.design_space
+        x0_dict = full_dspace.array_to_dict(x0)
         #- gather eta design variable
         eta = old_primal_pb.var_dict[self.ETA]
         #- gather x design variable if exists (for iterations > 0)
         bounds_cst = []
         if len(old_primal_pb.var_dict) > 1:
+            # if there the other design variables than eta have already been created
+            # wee keep them and there is no need to re-build the bound constraints
             all_vars = old_primal_pb.var_dict
         else:
             # if not, x is created with associated bounds constraints
             # create float variables and associated bound constraints
-            float_vars = {}
-            for v in self.float_varnames:
-                v_shape = self.full_problem.design_space.get_current_x_dict()[v].shape
-                fv = cp.Variable(v_shape, v, integer=False)
-                float_vars[v] = fv
-                lb = self.full_problem.design_space.get_lower_bounds([v])
-                bounds_cst.append(lb <= fv)
-                ub = self.full_problem.design_space.get_upper_bounds([v])
-                bounds_cst.append(fv <= ub)
-            # create int variables and associated bound constraints
-            int_vars = {}
-            for v in self.int_varnames:
-                v_shape = self.full_problem.design_space.get_current_x_dict()[v].shape
-                iv = cp.Variable(v_shape, v, integer=True)
-                int_vars[v] = iv
-                lb = self.full_problem.design_space.get_lower_bounds([v])
-                bounds_cst.append(lb <= iv)
-                ub = self.full_problem.design_space.get_upper_bounds([v])
-                bounds_cst.append(iv <= ub)
-            
             all_vars = {}
-            all_vars.update(float_vars)
-            all_vars.update(int_vars)
+            for v in full_dspace.variables_names:
+                # get the dimensions of the variable
+                v_shape = full_dspace.get_current_x_dict()[v].shape
+                # create the design variable as cvxpy object
+                if v in self.float_varnames:
+                    integer=False
+                else:
+                    integer=True
+                dv = cp.Variable(v_shape, v, integer=integer)
+                all_vars[v] = dv
+                # build the constraint on the lower bounds
+                lb = full_dspace.get_lower_bounds([v])
+                bounds_cst.append(lb <= dv)
+                # build the constraint on the upper bound
+                ub = full_dspace.get_upper_bounds([v])
+                bounds_cst.append(dv <= ub)
                 
         #- setup of primal problem constraints :
         #- build dual pb objective linearization
