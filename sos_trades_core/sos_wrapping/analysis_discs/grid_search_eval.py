@@ -243,6 +243,7 @@ class GridSearchEval(DoeEval):
         self.eval_input_types = ['float', 'int', 'string']
         self.max_inputs_nb = 3
         self.conversion_full_short = {}
+        self.chart_dict = {}
 
     def generate_shortest_name(self, var_list):
         list_shortest_name = [[] for i in range(len(var_list))]
@@ -269,6 +270,13 @@ class GridSearchEval(DoeEval):
             {key: value for key, value in zip(var_list, list_shortest_name)}
         )
         return list_shortest_name
+
+    def run(self):
+        DoeEval.run(self)
+        outputs_dict = self.get_sosdisc_outputs()
+        inputs_dict = self.get_sosdisc_inputs()
+        self.chart_dict, output_df = self.prepare_chart_dict(
+            outputs_dict, inputs_dict)
 
     def generate_samples_from_doe_factory(self):
         """
@@ -526,9 +534,18 @@ class GridSearchEval(DoeEval):
                 if isinstance(output_df_dict, dict):
 
                     if isinstance(list(output_df_dict.values())[0], dict):
-                            # change from a dict of dicts to a dict of df
+                        # change from a dict of dicts to a dict of df
                         output_df_dict = {key: pd.DataFrame.from_records(
                             [output_df_dict[key]]) for key in output_df_dict}
+
+                    if isinstance(list(output_df_dict.values())[0], float):
+
+                        output_df_dict = {
+                            key: pd.DataFrame({re.sub(r'_dict$', '', single_output).split('.')[-1]: value}, index=[0]) for
+                            (key, value) in output_df_dict.items()}
+
+                        # output_df=pd.DataFrame({'scenario':list(output_df_dict.keys()),
+                        #     re.sub(r'_dict$', '', single_output).split('.')[-1]:list(output_df_dict.values())})
 
                     if (isinstance(list(output_df_dict.values())[0], pd.DataFrame)) and (len(list(output_df_dict.values())[0]) == 1):
 
@@ -588,6 +605,7 @@ class GridSearchEval(DoeEval):
                                         output_df.merge(
                                             output_df_temp[['scenario', col]], on='scenario', how='left')
                                 output_df_temp = None
+
             # Select only float type results
             output_variables = output_df.select_dtypes(
                 include='float').columns.to_list()
@@ -640,14 +658,16 @@ class GridSearchEval(DoeEval):
                 col_slider = slider_list[0]['full_name']
                 slider_values = cont_plot_df[col_slider].unique()
                 for slide_value in slider_values:
-                    z_data=list(cont_plot_df.loc[cont_plot_df[col_slider]== slide_value,z_vble])
-                    if  all(np.isnan(z_data[i]) for i in range(len(z_data))):
-                        z_data_None=True
+                    z_data = list(
+                        cont_plot_df.loc[cont_plot_df[col_slider] == slide_value, z_vble])
+                    if all(np.isnan(z_data[i]) for i in range(len(z_data))):
+                        z_data_None = True
                         break
 
                 if not z_data_None:
                     chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
-                    chart_data=cont_plot_df.loc[:,['scenario',x_vble,y_vble,z_vble,slider_list[0]['full_name']]]
+                    chart_data = cont_plot_df.loc[:, [
+                        'scenario', x_vble, y_vble, z_vble, slider_list[0]['full_name']]]
 
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
@@ -674,7 +694,7 @@ class GridSearchEval(DoeEval):
                     'chart_data': chart_data,
                 }
 
-        return chart_dict
+        return chart_dict, output_df
 
     def get_chart_filter_list(self):
 
@@ -682,9 +702,9 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict = self.prepare_chart_dict(
+        self.chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
-        chart_list = list(chart_dict.keys())
+        chart_list = list(self.chart_dict.keys())
 
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
@@ -697,22 +717,23 @@ class GridSearchEval(DoeEval):
 
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        chart_dict = self.prepare_chart_dict(
+        self.chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
+        # chart_dict = self.chart_dict
 
         if filters is not None:
             for chart_filter in filters:
                 if chart_filter.filter_key == 'Charts':
                     graphs_list = chart_filter.selected_values
 
-        if len(chart_dict.keys()) > 0:
+        if len(self.chart_dict.keys()) > 0:
             # we create a unique dataframe containing all data that will be
             # used for drawing the graphs
 
             doe_samples_df = outputs_dict['doe_samples_dataframe']
 
             # we go through the list of charts and draw all of them
-            for name, chart_info in chart_dict.items():
+            for name, chart_info in self.chart_dict.items():
                 if name in graphs_list:
                     if len(chart_info['slider']) == 0:
 
