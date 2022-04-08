@@ -25,10 +25,8 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
 
-
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.newton import MDARoot
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -126,15 +124,17 @@ class PureNewtonRaphson(MDARoot):
         # store initial residual
         current_iter = 1
         self.reset_disciplines_statuses()
+        # convert local_data into array
+        old_x = self.disciplines[0]._convert_new_type_into_array(
+            deepcopy(self.local_data))
+
         # self.execute_all_disciplines(self.local_data)
         while not self._termination(current_iter):
 
-            # store  coupling_variables(x)
-            input_couplings = [deepcopy(self.local_data[input])
-                               for input in self.strong_couplings]
-            current_couplings = np.concatenate(input_couplings)
-            # store x=local data
-            old_x = deepcopy(self.local_data)
+            # store coupling_variables(x)
+            input_couplings = [deepcopy(
+                old_x[input]) for input in self.strong_couplings]
+            current_couplings = np.hstack(input_couplings)
 
             # Set coupling variables as differentiated variables for gradient
             # computation
@@ -142,17 +142,19 @@ class PureNewtonRaphson(MDARoot):
                 self.strong_couplings, self.strong_couplings, self.strong_couplings)
 
             # Compute all discipline gradients df(x)/dx with x
-            self.assembly.linearize_all_disciplines(old_x, force_no_exec=True)
+            self.assembly.linearize_all_disciplines(self.local_data, force_no_exec=True)
 
             # compute coupling_variables(x+k) for the residuals
-            self.execute_all_disciplines(old_x)
+            self.execute_all_disciplines(self.local_data)
 
             # get coupling_variables(x+k) from after execution
-            input_couplings = [deepcopy(self.local_data[input])
-                               for input in self.strong_couplings]
+            input_couplings = {input: deepcopy(self.local_data[input])
+                               for input in self.strong_couplings}
 
-            new_couplings = np.concatenate(input_couplings)
-            #res = coupling_variables(x+k) - coupling_variables(x)
+            new_couplings = np.hstack(
+                [value for value in self.disciplines[0]._convert_new_type_into_array(input_couplings).values()])
+
+            # res = coupling_variables(x+k) - coupling_variables(x)
             res = new_couplings - current_couplings
 
             # compute_normed_residual
@@ -180,8 +182,10 @@ class PureNewtonRaphson(MDARoot):
             # update current solution with Newton step
             # we update coupling_variables(n) with newton step
             for c_var, c_step in newton_step_dict.items():
-                self.local_data[c_var] = old_x[c_var] + \
-                    c_step.real  # SoSTrades fix (.real)
+                old_x[c_var] += c_step.real  # SoSTrades fix (.real)
+
+            self.local_data = self.disciplines[0]._convert_array_into_new_type(
+                deepcopy(old_x))
 
             # self.execute_all_disciplines(self.local_data)
 
