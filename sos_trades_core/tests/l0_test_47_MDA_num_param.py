@@ -105,7 +105,6 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         exec_eng.load_study_from_input_dict(values_dict)
 
-        exec_eng.configure()
         with self.assertLogs('SoS.EE.Coupling', level='INFO') as cm:
             exec_eng.execute()
             nb_ite_wo_warm_start = len(cm.output)
@@ -141,7 +140,7 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         for x, x_th in zip(opt_disc.optimization_result.x_opt, exp_x):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,

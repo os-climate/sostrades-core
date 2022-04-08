@@ -193,7 +193,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.h'] = array([8., 9.])
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.n_processes'] = 1
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
@@ -388,7 +388,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.h'] = array([8., 9.])
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.n_processes'] = 1
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
@@ -396,7 +396,7 @@ class TestMDALoop(unittest.TestCase):
 
         exec_eng.execute()
 
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -423,11 +423,11 @@ class TestMDALoop(unittest.TestCase):
             [disc6_builder, disc7_builder])
         exec_eng2.configure()
 
-        exec_eng2.dm.set_values_from_dict(values_dict)
+        exec_eng2.load_study_from_input_dict(values_dict)
 
         exec_eng2.execute()
 
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng2.dm.get_value(key)
@@ -466,7 +466,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.string_dict'] = {'key0': 'toto'}
         values_dict['EE.n_processes'] = 1
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
@@ -474,7 +474,7 @@ class TestMDALoop(unittest.TestCase):
                                  0.70710678]),
                   'EE.x': array([0., 0.707107, 0.707107]),
                   'EE.string_dict': {'key0': 'toto'}}
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -528,15 +528,14 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.n_processes'] = 1
         values_dict['EE.group_mda_disciplines'] = True
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
-        exec_eng.configure()
         exec_eng.execute()
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
                   'EE.x': array([0., 0.707107, 0.707107])}
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -564,7 +563,7 @@ class TestMDALoop(unittest.TestCase):
         self.assertAlmostEqual(x_in[0], x_target[0], delta=tolerance)
         self.assertAlmostEqual(x_out[0], x_target[0], delta=tolerance)
 
-        #- check that the group option has been taken into account
+        # - check that the group option has been taken into account
 
         # we check that in the MDA into the MDOChain
         # there is the MDOChain (ie group of subdiscs) instead of 2 disciplines
@@ -1038,7 +1037,6 @@ class TestMDALoop(unittest.TestCase):
             f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
 
         tracemalloc.stop()
-
 
     def test_16_mda_numerical_options_GSPureNRorGSMDA(self):
 

@@ -142,7 +142,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
@@ -169,7 +169,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         assert_array_almost_equal(
             exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrong optimal x solution")
@@ -205,7 +205,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
@@ -232,7 +232,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.1800 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], places=4, msg="Wrong objective value")
         exp_x = array([1.6653e-16, 2.1339, 0., 3.16, 3.911598])
         assert_array_almost_equal(
             exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrong optimal x solution")
@@ -279,9 +279,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -309,7 +309,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], places=4, msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
             exp_x, opt_disc.optimization_result.x_opt, decimal=4,
@@ -357,9 +357,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -387,7 +387,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], places=4, msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
             exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
@@ -442,9 +442,9 @@ class TestSoSOptimScenario(unittest.TestCase):
             # Sellar inputs
             local_dv = 10.
             values_dict = {}
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                 1., 1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -518,7 +518,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
             1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
@@ -589,12 +589,12 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-9
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-16
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -642,7 +642,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = 'MDANewtonRaphson'
-        values_dict[f'{self.ns}.{self.c_name}.tolerance'] = 1e-9
+        values_dict[f'{self.ns}.{self.c_name}.tolerance'] = 1e-16
 
         exec_eng2.load_study_from_input_dict(values_dict)
         exec_eng2.execute()
@@ -699,9 +699,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.sub_mda_class'] = 'MDANewtonRaphson'
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
 
@@ -845,9 +845,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -930,9 +930,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1039,9 +1039,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
