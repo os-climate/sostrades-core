@@ -1457,7 +1457,7 @@ class SoSDiscipline(MDODiscipline):
         pass
 
     def _convert_new_type_into_array(
-            self, var_dict):
+            self, var_dict, update_dm=True):
         '''
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
@@ -1468,9 +1468,10 @@ class SoSDiscipline(MDODiscipline):
             var_dict, self.dm)
 
         # update dm
-        for key in dict_to_update_dm.keys():
-            self.dm.set_data(key, self.TYPE_METADATA,
-                             dict_to_update_dm[key], check_value=False)
+        if update_dm:
+            for key in dict_to_update_dm.keys():
+                self.dm.set_data(key, self.TYPE_METADATA,
+                                 dict_to_update_dm[key], check_value=False)
 
         return var_dict_converted
 
@@ -1676,7 +1677,7 @@ class SoSDiscipline(MDODiscipline):
             indices = self._get_columns_indices(
                 inputs, outputs, input_column, output_column)
 
-        jac_arrays = {key_out: {key_in: value.toarray() if not isinstance(value,ndarray) else value for key_in, value in subdict.items()}
+        jac_arrays = {key_out: {key_in: value.toarray() if not isinstance(value, ndarray) else value for key_in, value in subdict.items()}
                       for key_out, subdict in self.jac.items()}
         o_k = approx.check_jacobian(
             jac_arrays,
