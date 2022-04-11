@@ -4,6 +4,7 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from numpy import array
 
 from sos_trades_core.api import get_sos_logger
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
 import itertools
 import copy
@@ -82,7 +83,7 @@ class GridSearchEval(DoeEval):
                 'selected_input': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
-                # 'ontology_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),je
             },
             'dataframe_edition_locked': False,
             'structuring': True,
@@ -102,6 +103,8 @@ class GridSearchEval(DoeEval):
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
         'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local'},
     }
+    DESC_OUT = {'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}}
+    DESC_OUT.update(DoeEval.DESC_OUT)
 
     def setup_sos_disciplines(self):
         """
@@ -277,6 +280,8 @@ class GridSearchEval(DoeEval):
         inputs_dict = self.get_sosdisc_inputs()
         self.chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
+        self.store_sos_outputs_values(
+            {'samples_outputs_df': output_df})
 
     def generate_samples_from_doe_factory(self):
         """
@@ -693,8 +698,11 @@ class GridSearchEval(DoeEval):
                     'slider': slider_list,
                     'chart_data': chart_data,
                 }
+                output_df_to_return = output_df.copy()
+                scenario_column = output_df_to_return.pop('scenario')
+                output_df_to_return.insert(0,'scenario',scenario_column)
 
-        return chart_dict, output_df
+        return chart_dict, output_df_to_return
 
     def get_chart_filter_list(self):
 
