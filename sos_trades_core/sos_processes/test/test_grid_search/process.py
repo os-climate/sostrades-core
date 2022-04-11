@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 1 process
+# -- Generate test 1 process
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):
-
     # ontology information
     _ontology_data = {
         'label': 'sos_trades_core.sos_processes.test.test_grid_search',
@@ -27,10 +26,15 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
-    def get_builders(self):
 
+    def get_builders(self):
         mod1_path = 'sos_trades_core.sos_wrapping.test_discs.disc1_grid.Disc1'
         grid_search = 'GridSearch'
+
+        ns_dict = {
+            'ns_grid_search': f'{self.ee.study_name}.GridSearch',
+            'ns_doe_eval': f'{self.ee.study_name}.GridSearch'}
+        self.ee.ns_manager.add_ns_def(ns_dict)
 
         disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', mod1_path)

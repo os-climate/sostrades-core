@@ -86,7 +86,7 @@ class GridSearchEval(DoeEval):
                 # 'ontology_name': ('string', None, False),je
             },
             'dataframe_edition_locked': False,
-            'structuring': True,
+            'structuring': True,'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_grid_search'
         },
         EVAL_OUTPUTS: {
             'type': 'dataframe',
@@ -97,13 +97,13 @@ class GridSearchEval(DoeEval):
                 # 'ontology_name': ('string', None, False),
             },
             'dataframe_edition_locked': False,
-            'structuring': True,
+            'structuring': True,'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_grid_search'
         },
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
         'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local'},
     }
-    DESC_OUT = {'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}}
+    DESC_OUT = {'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_grid_search'}}
     DESC_OUT.update(DoeEval.DESC_OUT)
 
     def setup_sos_disciplines(self):
