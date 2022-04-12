@@ -21,7 +21,6 @@ Common file to have methods of func manager (mainly smooth max and it derivative
 # pylint: disable=unsubscriptable-object
 import numpy as np
 
-
 def smooth_maximum(cst, alpha=3):
     """
     Function
@@ -144,3 +143,33 @@ def get_dsmooth_dvariable_vect(cst, alpha=3):
         grad_value[i][np.logical_not(non_max_idx)[i]] = grad_val_max[i]
 
     return grad_value
+
+def soft_maximum_vect(cst, k=7e2):
+    """
+    Soft maximum function to get the maximum between array of values while always remaining above or equal to the
+    maximum and ensuring gradient continuity.
+    The default value of k is intended for arrays scaled between [-1.0, 1.0], the formula will overflow if
+    k*max(array)>=710.
+    Quasi-arithmetic mean function.
+    https://www.johndcook.com/blog/2010/01/13/soft-maximum/
+    https://www.johndcook.com/blog/2010/01/20/how-to-compute-the-soft-maximum/
+    """
+    cst_array = np.array(cst)
+    if np.amax(cst_array)*k>709:
+        raise ValueError('The value of k*max(cst_array) is too high and would cause an overflow')
+    result = np.log(np.sum(np.exp(k*cst_array), axis=1))/k
+    return result
+
+def get_dsoft_maximum_vect(cst, k=7e2):
+    """
+    Return derivative of soft maximum
+    """
+    cst_array = np.array(cst)
+    result = np.log(np.sum(np.exp(k*cst_array), axis=1)) / k
+
+    d_cst_array = np.ones(cst_array.shape)
+    d_exp = k*d_cst_array*np.exp(k*cst_array)
+    d_sum = d_exp
+    d_log = (1/k) * (d_sum / np.sum(np.exp(k*cst_array), axis=1).reshape(cst_array.shape[0],1))
+
+    return d_log
