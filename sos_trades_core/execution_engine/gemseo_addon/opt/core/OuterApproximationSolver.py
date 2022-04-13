@@ -30,6 +30,9 @@ from pandas.core.frame import DataFrame
 import pandas as pd
 
 # TODO list : 
+# * avoid re-building the NLP
+# * look for a solution to get output dimensions for cases where len(outvars)>0
+# * exclude unfeasible integer solutions
 # * map the max iter termination criteria
 # * add UB/LB values to main database history
 # * add post-processing
@@ -180,7 +183,7 @@ class OuterApproximationSolver(object):
     
     #- primal problem definition
     
-    def build_primal_pb(self):
+    def build_primal_problem(self):
         ''' build primal problem without hyperplanes
         (will be updated at other iterations)
         '''
@@ -200,7 +203,7 @@ class OuterApproximationSolver(object):
         
         return prob
     
-    def update_primal_pb(self, old_primal_pb, dual_pb, upper_bnd, x0):
+    def update_primal_problem(self, old_primal_pb, dual_pb, upper_bnd, x0):
         ''' update primal problem with new upper bound value U^{(k)}
         and supporting hyperplanes (linearizations of objecgives and constraints
         of the NLP(x_int)^{(k)} )
@@ -280,7 +283,6 @@ class OuterApproximationSolver(object):
                 x_v = all_vars[v]
                 x0_v = x0_dict[v]
                 dx = x_v - x0_v
-#                 cst_jac = atleast_2d(c.jac(x0))
                 cst_lin += c_jac_dict[c.outvars[0]][v] @ dx
                 
             cst_linearized.append(cst_lin <= 0)
@@ -304,7 +306,7 @@ class OuterApproximationSolver(object):
         
         return primal_pb
     
-    def solve_primal(self, problem):
+    def solve_primal_problem(self, problem):
         ''' solve the primal problem
         '''
         msg = "\n\n######## MIP Solver \n\n"
@@ -340,7 +342,7 @@ class OuterApproximationSolver(object):
 
     #- dual problem definition
     
-    def build_dual_pb(self, integer_values):
+    def build_dual_problem(self, integer_values):
         ''' Build the dual problem
         '''
         # retrieve full problem
@@ -372,11 +374,9 @@ class OuterApproximationSolver(object):
                                #expr=f"{f.name}(%s)",
                                args=None)
             # build the function with store in main problem database
-#             new_c_w = self.build_wrapped_restriction_function(new_c)
-            new_c_w = new_c
             
             # append the function to the constraint list
-            cst_restricted.append(new_c_w)
+            cst_restricted.append(new_c)
         
         # build restriction of original objective functions
         new_o_name = full_pb.objective.name + '_restricted'
@@ -387,34 +387,44 @@ class OuterApproximationSolver(object):
                                            f_type=MDOFunction.TYPE_OBJ,
                                            #expr=f"{f.name}(%s)",
                                            args=None)
-        # build the function with store in main problem database
-#         new_o_w = self.build_wrapped_restriction_function(new_o)
-        new_o_w = new_o
         
         # build dual problem
         pb = OptimizationProblem(dspace)
         # objective setup
-        pb.objective = new_o_w
+        pb.objective = new_o
         # constraints setup
         for c in cst_restricted:
             pb.add_constraint(c, cstr_type=MDOFunction.TYPE_INEQ)
-        pb.differentiation_method = self.differentiation_method#OptimizationProblem.USER_GRAD# FINITE_DIFFERENCES USER_GRAD
+        pb.differentiation_method = self.differentiation_method  # either FINITE_DIFFERENCES or USER_GRAD
+        
+        # functions are preprocessed once here (before the call in DriverLib at execution)
+        # so that from now nonprocessed_* functions are accessible (see update_nlp)
+        options = self.algo_options_NLP
+        pb.preprocess_functions(
+            normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
+            use_database=options.get(DriverLib.USE_DATABASE_OPTION, True),
+            round_ints=options.get(DriverLib.ROUND_INTS_OPTION, True),
+            eval_obs_jac=False,
+        )
         
         return pb
     
      
-    def update_dual(self, nlp, integer_values):
+    def update_dual_problem(self, nlp, integer_values):
         ''' Updates frozen values of NLP problem with those provided
         '''
-        nlp.reset(database=False)
-        nlp.objective.set_frozen_value(integer_values)
-         
-        for f in nlp.constraints:
+        # reset the database values
+        # This is mandatory to avoid wrong cache use through restricted functions
+        nlp.database.clear(reset_iteration_counter=True)
+        
+        # update frozen values with integer values for objective and constraints
+        nlp.nonproc_objective.set_frozen_value(integer_values)
+        for f in nlp.nonproc_constraints:
             f.set_frozen_value(integer_values)
 
         return nlp
     
-    def solve_dual(self, nlp):
+    def solve_dual_problem(self, nlp):
         ''' Solves the dual problem
         '''
         msg = "\n\n######## NLP Solver \n\n"
@@ -488,13 +498,12 @@ class OuterApproximationSolver(object):
         
         # init integer solution
         xopt_int = self.x0_integer
-        self.xopt_int = xopt_int
         
-#         # initialize NLP(x0_integer)
-#         nlp = self.build_dual_pb(xopt_int)
+        # initialize NLP(x0_integer)
+        nlp = self.build_dual_problem(xopt_int)
         
         # initialize primal problem
-        mip = self.build_primal_pb()
+        mip = self.build_primal_problem()
         
         while self._termination_criteria(self.iter_nb, mip):
             msg = "\n\n" + "*"*20
@@ -502,12 +511,11 @@ class OuterApproximationSolver(object):
             msg += "*"*20 + "\n\n"
             LOGGER.info(msg)
 
-            # build NLP(integer solution iteration k)
-            nlp = self.build_dual_pb(xopt_int)
-#             nlp = self.update_dual(nlp, xopt_int)
+            # update NLP(integer solution iteration k)
+            nlp = self.update_dual_problem(nlp, xopt_int)
 
             # compute argmin NLP(integer solution iteration k)
-            nlp_sol = self.solve_dual(nlp)
+            nlp_sol = self.solve_dual_problem(nlp)
             xopt_cont = nlp_sol.x_opt
             
             # update the full solution vector x
@@ -519,11 +527,10 @@ class OuterApproximationSolver(object):
             
             # update primal problem
             uk = self.upper_bounds[self.iter_nb]
-            mip = self.update_primal_pb(mip, nlp, uk, xsol)
+            mip = self.update_primal_problem(mip, nlp, uk, xsol)
             
             # solve primal problem
-            xopt_int = self.solve_primal(mip)
-            self.xopt_int = xopt_int
+            xopt_int = self.solve_primal_problem(mip)
 
             LOGGER.info("UPPER BOUNDS")
             LOGGER.info(self.upper_bounds)
