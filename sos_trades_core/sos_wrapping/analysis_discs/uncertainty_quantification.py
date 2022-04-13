@@ -95,17 +95,24 @@ class UncertaintyQuantification(SoSDiscipline):
                     out_param = list(data_df.columns)[1:]
 
                     # ontology name
-                    ontology_connector = OntologyDataConnector()
-                    data_connection = {
-                        'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
-                    }
-                    args = in_param + out_param
-                    args = [val.split('.')[-1]
-                            for val in args]
-                    ontology_connector.set_connector_request(
-                        data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
-                    conversion_full_ontology = ontology_connector.load_data(
-                        data_connection)
+                    try:
+                        ontology_connector = OntologyDataConnector()
+                        data_connection = {
+                            'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+                        }
+                        args = in_param + out_param
+                        args = [val.split('.')[-1]
+                                for val in args]
+                        ontology_connector.set_connector_request(
+                            data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
+                        conversion_full_ontology = ontology_connector.load_data(
+                            data_connection)
+                    except Exception as ex:
+                        args = in_param + out_param
+                        args = [val.split('.')[-1]
+                                for val in args]
+                        conversion_full_ontology = {
+                            arg: [arg, ''] for arg in args}
 
                     possible_distrib = ['Normal', 'PERT',
                                         'LogNormal', 'Triangular']

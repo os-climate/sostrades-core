@@ -30,9 +30,9 @@ class Study(StudyManager):
         disc_name = "DiscMixedOpt"
         c_name = "MixedCoupling"
         dspace_dict = {'variable': ['x1', 'x2'],
-                       'value': [[2], [3.]],
+                       'value': [[2], [10.]],
                        'lower_bnd': [[0], [0.]],
-                       'upper_bnd': [[999], [999.]],
+                       'upper_bnd': [[200], [200.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True]],
                        'variable_type' : [DesignSpace.INTEGER, DesignSpace.FLOAT]}
@@ -62,8 +62,8 @@ class Study(StudyManager):
                                                      "algo_options_MILP": algo_options_master}
 
         # subproc inputs
-        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x1'] = array([2.])
-        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x2'] = array([4])
+        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x1'] = array([2])
+        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x2'] = array([4.])
 
         return [disc_dict]
 

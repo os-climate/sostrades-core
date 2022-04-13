@@ -25,7 +25,7 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
         disc_dir = 'sos_trades_core.sos_wrapping.test_discs.disc_mixed_opt.'
-        mods_dict = {'DiscMixedOpt': disc_dir + 'DiscMixedOpt'}
+        mods_dict = {'DiscMixedOpt': disc_dir + 'DiscMixedOptNonLinearFeasible'}
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_mixed_optim': self.ee.study_name + '.MixedOptimScenario'})
         
         coupling_builder = self.ee.factory.create_builder_coupling("MixedCoupling")
