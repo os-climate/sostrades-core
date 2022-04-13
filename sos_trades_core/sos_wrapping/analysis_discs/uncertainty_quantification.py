@@ -116,9 +116,9 @@ class UncertaintyQuantification(SoSDiscipline):
 
             dynamic_outputs = {}
             dynamic_inputs = {}
-
             if (self.EVAL_INPUTS in self._data_in) & (self.EVAL_INPUTS in self._data_in):
-                # if (self.get_sosdisc_inputs('samples_inputs_df') is not None) & (self.get_sosdisc_inputs('samples_outputs_df') is not None):
+                # if (self.get_sosdisc_inputs('samples_inputs_df') is not None) & (self.get_sosdisc_inputs(
+                # 'samples_outputs_df') is not None):
                 eval_outputs = self.get_sosdisc_inputs('eval_outputs')
                 eval_inputs = self.get_sosdisc_inputs('eval_inputs')
 
