@@ -820,10 +820,12 @@ class GridSearchEval(DoeEval):
                         )
                         
                         if len(chart_info['reference_scenario']):
+                            x_ref_scen=chart_info['reference_scenario'][chart_info['x']].to_list()
+                            y_ref_scen=chart_info['reference_scenario'][chart_info['y']].to_list()
                             fig.add_trace(
                                 go.Scatter(
-                                    x= chart_info['reference_scenario'][chart_info['x']].to_list(),
-                                    y=chart_info['reference_scenario'][chart_info['y']].to_list(),
+                                    x= x_ref_scen,
+                                    y=y_ref_scen,
                                     mode='markers',
                                     marker_symbol=SymbolValidator(
                                     ).values[SymbolValidator().values.index('star')],
@@ -835,23 +837,9 @@ class GridSearchEval(DoeEval):
                                         '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                         '<br><b>{}<b>'.format(
                                             chart_info["z"]) + ': <b> {}<b>'.format(float(chart_info['reference_scenario'][chart_info['z']].values)) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                    name="",
+                                    name="Reference Scenario",
                                 )
-                            )
-                            fig.add_annotation(x=float(chart_info['reference_scenario'][chart_info['x']]), 
-                                               y=float(chart_info['reference_scenario'][chart_info['y']]),
-                                text="Reference Scenario",
-                                font=dict(
-                                    size=10,
-                                    color="#de2d26",
-                                    ),
-                                showarrow=True,
-                                arrowhead=1,
-                                arrowsize=1,
-                                arrowwidth=1,
-                                arrowcolor="#de2d26",
-                            )
-                            
+                            )                        
 
                         fig.update_layout(
                             autosize=True,
@@ -901,6 +889,7 @@ class GridSearchEval(DoeEval):
                             z_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
                             ][chart_info['z']].replace(np.nan, 'None').to_list()
+                            
 
                             x_max = max(x_data)
                             x_min = min(x_data)
@@ -947,7 +936,7 @@ class GridSearchEval(DoeEval):
                                     '<br><b>{}<b>'.format(
                                         chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name='{} '.format(
-                                        slider_short_name) + f': {slide_value}{slider_unit}',
+                                        slider_short_name) + f': {float(chart_info["reference_scenario"][col_slider])}{slider_unit}',
                                 )
                             )
                             fig.add_trace(
@@ -972,39 +961,30 @@ class GridSearchEval(DoeEval):
                             )
                             
                             if len(chart_info['reference_scenario']):
+                                x_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['x']].to_list()
+                                y_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['y']].to_list()
+                                
+                                # if float(chart_info['reference_scenario'][col_slider])==slide_value:
                                 fig.add_trace(
                                     go.Scatter(
-                                        x= chart_info['reference_scenario'][chart_info['x']].to_list(),
-                                        y=chart_info['reference_scenario'][chart_info['y']].to_list(),
+                                        x= x_ref_scen,
+                                        y=y_ref_scen,
                                         mode='markers',
                                         marker_symbol=SymbolValidator(
                                         ).values[SymbolValidator().values.index('star')],
                                         marker_color="#f03b20",
                                         marker_size=10,
-                                        visible=True,
+                                        visible=visible,
                                         showlegend=False,
                                         hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
                                             '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                            '<br>{} '.format(
+                                            slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
                                             '<br><b>{}<b>'.format(
                                                 chart_info["z"]) + ': <b> {}<b>'.format(float(chart_info['reference_scenario'][chart_info['z']].values)) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                        name='{} '.format(
-                                            slider_short_name) + f': {slide_value}{slider_unit}',
+                                        name='Reference Scenario',
                                     )
                                 )
-                                
-                                fig.add_annotation(
-                                    x=float(chart_info['reference_scenario'][chart_info['x']]), 
-                                    y=float(chart_info['reference_scenario'][chart_info['y']]), 
-                                    text="Reference Scenario",
-                                    font=dict(
-                                        size=10,
-                                        color="#f03b20",
-                                        ),
-                                    showarrow=True,
-                                    arrowhead=1,
-                                    arrowsize=1,
-                                    arrowwidth=1,
-                                    arrowcolor="#f03b20",)
 
                         # Create and add slider
                         steps = []
@@ -1015,7 +995,7 @@ class GridSearchEval(DoeEval):
 
                         for i in range(int(len(fig.data) / lid)):
                             # for i in range(int(len(fig.data) / 2)):
-
+                            
                             step = dict(
                                 method="update",
                                 args=[
@@ -1065,7 +1045,6 @@ class GridSearchEval(DoeEval):
                                 automargin=True,
                                 range=[y_min, y_max],
                             ),
-                            # margin=dict(l=0.25, b=100)
                         )
 
                         # Create native plotly chart

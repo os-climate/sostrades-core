@@ -280,8 +280,6 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.h', ['selected_input']] = True
 
-        
-
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
         eval_outputs.loc[eval_outputs['full_name'] ==
@@ -322,22 +320,22 @@ class TestGridSearchEval(unittest.TestCase):
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
         
-        yy_dict={'scenario_1':12.0,
-                'scenario_2':25.0,
-                'scenario_3':56.0,
-                'scenario_4':48.0,
-                'scenario_5':19.0,
-                'scenario_6':55.0,
-                'scenario_7':27.0,
-                'scenario_8':32.0,
-                'reference':45.0,}
+        # yy_dict={'scenario_1':12.0,
+        #         'scenario_2':25.0,
+        #         'scenario_3':56.0,
+        #         'scenario_4':48.0,
+        #         'scenario_5':19.0,
+        #         'scenario_6':55.0,
+        #         'scenario_7':27.0,
+        #         'scenario_8':32.0,
+        #         'reference':45.0,}
         
-        new_gsoutputs_dict={'doe_samples_dataframe':doe_disc_samples,
-                            'GridSearch.Disc1.y_dict':yy_dict}
+        # new_gsoutputs_dict={'doe_samples_dataframe':doe_disc_samples,
+        #                     'GridSearch.Disc1.y_dict':yy_dict}
 
-        grid_search_disc.store_sos_outputs_values(
-            new_gsoutputs_dict, update_dm=True
-        )
+        # grid_search_disc.store_sos_outputs_values(
+        #     new_gsoutputs_dict, update_dm=True
+        # )
         # dspace = pd.DataFrame({
         #     'shortest_name': ['f','g', 'h'],
         #     'lower_bnd': [5., 20.,1.],
@@ -359,9 +357,9 @@ class TestGridSearchEval(unittest.TestCase):
 
         filter = grid_search_disc.get_chart_filter_list()
         graph_list = grid_search_disc.get_post_processing_list(filter)
-        # for graph in graph_list:
-        #     #     pass
-        #     graph.to_plotly().show()
+        for graph in graph_list:
+            #     pass
+            graph.to_plotly().show()
 
 
 if '__main__' == __name__:
