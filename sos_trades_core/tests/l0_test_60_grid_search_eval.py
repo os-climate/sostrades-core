@@ -315,7 +315,7 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}')[0]
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
-        doe_disc_samples = grid_search_disc_output['doe_samples_dataframe']
+        doe_disc_samples = grid_search_disc_output['samples_inputs_df']
         y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.design_space')
