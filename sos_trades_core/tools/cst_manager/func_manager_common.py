@@ -20,6 +20,7 @@ Common file to have methods of func manager (mainly smooth max and it derivative
 
 # pylint: disable=unsubscriptable-object
 import numpy as np
+from sos_trades_core.tools.base_functions.exp_min import compute_dfunc_with_exp_min, compute_func_with_exp_min
 
 def smooth_maximum(cst, alpha=3):
     """
@@ -155,9 +156,12 @@ def soft_maximum_vect(cst, k=7e2):
     https://www.johndcook.com/blog/2010/01/20/how-to-compute-the-soft-maximum/
     """
     cst_array = np.array(cst)
-    if np.amax(cst_array)*k>709:
+    cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 5.6E-17/k)
+    if 'complex' in str(cst_array.dtype):
+        cst_array_limited += np.imag(cst_array)*1j
+    if np.amax(cst_array_limited)*k>709:
         raise ValueError('The value of k*max(cst_array) is too high and would cause an overflow')
-    result = np.log(np.sum(np.exp(k*cst_array), axis=1))/k
+    result = np.log(np.sum(np.exp(k*cst_array_limited), axis=1))/k
     return result
 
 def get_dsoft_maximum_vect(cst, k=7e2):
@@ -165,11 +169,13 @@ def get_dsoft_maximum_vect(cst, k=7e2):
     Return derivative of soft maximum
     """
     cst_array = np.array(cst)
-    result = np.log(np.sum(np.exp(k*cst_array), axis=1)) / k
+    cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 5.6E-17/k)
 
     d_cst_array = np.ones(cst_array.shape)
-    d_exp = k*d_cst_array*np.exp(k*cst_array)
+    d_cst_array_limited = d_cst_array * \
+                          compute_dfunc_with_exp_min(np.abs(cst_array), 5.6E-17/k)
+    d_exp = k*d_cst_array_limited*np.exp(k*cst_array_limited)
     d_sum = d_exp
-    d_log = (1/k) * (d_sum / np.sum(np.exp(k*cst_array), axis=1).reshape(cst_array.shape[0],1))
+    d_log = (1/k) * (d_sum / np.sum(np.exp(k*cst_array_limited), axis=1).reshape(cst_array_limited.shape[0],1))
 
     return d_log
