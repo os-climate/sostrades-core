@@ -540,8 +540,8 @@ class SoSDiscipline(MDODiscipline):
                 # set cache_type and cache_file_path input values to children
                 for disc in self.sos_disciplines:
                     if 'cache_type' in disc._data_in:
-                        disc._data_in['cache_type'][self.VALUE] = cache_type
-                        disc._data_in['cache_file_path'][self.VALUE] = cache_file_path
+                        self.dm.set_data(disc.get_var_full_name('cache_type', disc._data_in), self.VALUE, cache_type, check_value=False)
+                        self.dm.set_data(disc.get_var_full_name('cache_file_path', disc._data_in), self.VALUE, cache_file_path, check_value=False)
                         
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
@@ -1701,7 +1701,7 @@ class SoSDiscipline(MDODiscipline):
             indices = self._get_columns_indices(
                 inputs, outputs, input_column, output_column)
 
-        jac_arrays = {key_out: {key_in: value.toarray() if not isinstance(value,ndarray) else value for key_in, value in subdict.items()}
+        jac_arrays = {key_out: {key_in: value.toarray() if not isinstance(value, ndarray) else value for key_in, value in subdict.items()}
                       for key_out, subdict in self.jac.items()}
         o_k = approx.check_jacobian(
             jac_arrays,
