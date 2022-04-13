@@ -48,7 +48,9 @@ class ProcessBuilder(BaseProcessBuilder):
             uncertainty_quantification, mod_path)
 
         ns_dict = {
-            'ns_uncertainty_quantification': f'{self.ee.study_name}.GridSearch'}
+            'ns_uncertainty_quantification': f'{self.ee.study_name}.GridSearch',
+            'ns_doe_eval': f'{self.ee.study_name}.GridSearch',
+            'ns_grid_search': f'{self.ee.study_name}.GridSearch'}
         self.ee.ns_manager.add_ns_def(ns_dict)
 
         return [grid_search_builder, uq_builder]
