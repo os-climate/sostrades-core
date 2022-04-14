@@ -357,9 +357,9 @@ class TestGridSearchEval(unittest.TestCase):
 
         filter = grid_search_disc.get_chart_filter_list()
         graph_list = grid_search_disc.get_post_processing_list(filter)
-        for graph in graph_list:
-            #     pass
-            graph.to_plotly().show()
+        # for graph in graph_list:
+        #     #     pass
+        #     graph.to_plotly().show()
 
 
 if '__main__' == __name__:
