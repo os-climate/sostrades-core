@@ -53,7 +53,7 @@ class TestExtendDict(unittest.TestCase):
         values_dict['EE.z'] = [3., 0.]
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
 
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
@@ -91,7 +91,7 @@ class TestExtendDict(unittest.TestCase):
         values_dict['EE.h'] = h
 
         # store data
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         # -- exec
         exec_eng.execute()
@@ -153,7 +153,7 @@ class TestExtendDict(unittest.TestCase):
                        f'{self.name}.h': array([8., 9.]),
                        f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}
                        }
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
@@ -188,7 +188,7 @@ class TestExtendDict(unittest.TestCase):
         values_dict = {f'{self.name}.dict_out': {
             'key1': {'key11': 0.5, 'key12': 0.5, 'key13': 8., 'key14': {'key141': df, 'key142': array([5])}},
             'key2': 10.}, f'{self.name}.z': [3., 0.]}
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
@@ -252,7 +252,7 @@ class TestExtendDict(unittest.TestCase):
             'md_1': array([3., 4.])}
         h = {'dataframe': DataFrame(data={'col1': array([0.5, 0.5])})}
         values_dict[f'{self.name}.h'] = h
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         # -- compare inputs (GEMS format) to reference
         # gather inputs in native format
@@ -354,7 +354,7 @@ class TestExtendDict(unittest.TestCase):
 
         values_dict = {f'{self.name}.dict_out': dict_multi,
                        f'{self.name}.z': [3., 0.]}
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
@@ -366,4 +366,4 @@ class TestExtendDict(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestExtendDict()
     cls.setUp()
-    cls.test_06_sosdiscipline_large_dict()
+    cls.test_05_extend_dict_soscoupling_nested_dict_and_dataframe()
