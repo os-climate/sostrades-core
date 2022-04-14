@@ -822,6 +822,9 @@ class GridSearchEval(DoeEval):
                         if len(chart_info['reference_scenario']):
                             x_ref_scen=chart_info['reference_scenario'][chart_info['x']].to_list()
                             y_ref_scen=chart_info['reference_scenario'][chart_info['y']].to_list()
+                            z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
+                            legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
+                            
                             fig.add_trace(
                                 go.Scatter(
                                     x= x_ref_scen,
@@ -836,7 +839,7 @@ class GridSearchEval(DoeEval):
                                     hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
                                         '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                         '<br><b>{}<b>'.format(
-                                            chart_info["z"]) + ': <b> {}<b>'.format(float(chart_info['reference_scenario'][chart_info['z']].values)) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                            chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,4),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name="Reference Scenario",
                                 )
                             )                        
@@ -935,8 +938,7 @@ class GridSearchEval(DoeEval):
                                     '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                     '<br><b>{}<b>'.format(
                                         chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                    name='{} '.format(
-                                        slider_short_name) + f': {float(chart_info["reference_scenario"][col_slider])}{slider_unit}',
+                                    name='{} '.format(slider_short_name) + f': {float(chart_info["reference_scenario"][col_slider])}{slider_unit}',
                                 )
                             )
                             fig.add_trace(
@@ -963,6 +965,9 @@ class GridSearchEval(DoeEval):
                             if len(chart_info['reference_scenario']):
                                 x_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['x']].to_list()
                                 y_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['y']].to_list()
+                                z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
+                                legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
+
                                 
                                 # if float(chart_info['reference_scenario'][col_slider])==slide_value:
                                 fig.add_trace(
@@ -979,9 +984,9 @@ class GridSearchEval(DoeEval):
                                         hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
                                             '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                             '<br>{} '.format(
-                                            slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
+                                                slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
                                             '<br><b>{}<b>'.format(
-                                                chart_info["z"]) + ': <b> {}<b>'.format(float(chart_info['reference_scenario'][chart_info['z']].values)) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                                chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,4),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1057,3 +1062,24 @@ class GridSearchEval(DoeEval):
                             instanciated_charts.append(new_chart)
 
         return instanciated_charts
+
+
+def get_order_of_magnitude(maxvalue):
+    
+    if abs(maxvalue) >= 1.0e9:
+        maxvalue = maxvalue / 1.0e9
+        legend_letter = 'B'
+        factor = 1.0e09
+    elif 1.0e9 > abs(maxvalue) >= 1.0e6:
+        maxvalue = maxvalue / 1.0e6
+        legend_letter = 'M'
+        factor = 1.0e06
+    elif 1.0e06 > abs(maxvalue) >= 1.0e03:
+        maxvalue = maxvalue / 1.0e3
+        legend_letter = 'k'
+        factor = 1.0e03
+    else:
+        legend_letter = ''
+        factor = 1.0
+
+    return legend_letter, factor, maxvalue
