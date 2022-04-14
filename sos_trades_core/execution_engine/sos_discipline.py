@@ -1090,18 +1090,21 @@ class SoSDiscipline(MDODiscipline):
         key_type = data_io[self.TYPE]
 
         if key_type == 'dataframe':
+            value = data_io[self.VALUE]
             # Get the number of lines and the index of column from the metadata
-            metadata = data_io[self.TYPE_METADATA][0]
-            lines_nb = metadata['shape'][0]
-            # delete the + 1 if we delete the index column
-            index_column = metadata['columns'].to_list().index(column)
+            if value is None:
+                lines_nb = 0
+                index_column = None
+            else:
+                new_value = value.drop(columns=[column for column in self.DEFAULT_EXCLUDED_COLUMNS if column in value])
+                lines_nb = new_value.to_numpy().shape[0]
+                index_column = new_value.columns.to_list().index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
         elif key_type == 'dict':
             value = data_io[self.VALUE]
-            metadata = data_io[self.TYPE_METADATA]
-            dict_keys = [meta['key'][0] for meta in metadata]
+            dict_keys = list(value.keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
 

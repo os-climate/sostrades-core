@@ -72,11 +72,11 @@ class TestAnalyticGradients(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
-        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = array([local_dv])
 
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -101,7 +101,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         df = pd.DataFrame({'years': arange(1, 5)})
         df['value'] = 2.0
 
@@ -140,7 +140,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -160,9 +160,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -176,7 +176,7 @@ class TestAnalyticGradients(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         for x, x_th in zip(opt_disc.optimization_result.x_opt, exp_x):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
@@ -192,7 +192,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng_fd.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -212,9 +212,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -227,7 +227,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         # check optimal x and f
         self.assertAlmostEqual(
-            opt_disc_fd.optimization_result.f_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
+            opt_disc_fd.optimization_result.f_opt[0], opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
         for x, x_fd in zip(opt_disc.optimization_result.x_opt, opt_disc_fd.optimization_result.x_opt):
             self.assertAlmostEqual(x, x_fd, delta=1.0e-4,
                                    msg="Wrong optimal x solution")
@@ -267,9 +267,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -309,7 +309,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng_fd.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -329,9 +329,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -363,7 +363,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
                        'value': [[1.], [5., 2.]],
                        'lower_bnd': [[0.], [-10., 0.]],
@@ -372,7 +372,7 @@ class TestAnalyticGradients(unittest.TestCase):
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -393,9 +393,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -415,7 +415,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng_mdf.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -435,9 +435,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -477,7 +477,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 100
@@ -497,9 +497,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -546,7 +546,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
                        'value': [[1.], [5., 2.]],
                        'lower_bnd': [[0.], [-10., 0.]],
@@ -555,7 +555,7 @@ class TestAnalyticGradients(unittest.TestCase):
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -576,9 +576,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -627,9 +627,9 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDAQuasiNewton"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -664,9 +664,9 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -748,7 +748,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up design space
+        # -- set up design space
         dspace_dict = {'variable': ['x', 'z'],
                        'value': [[1.], [5., 2.]],
                        'lower_bnd': [[0.], [-10., 0.]],
@@ -757,7 +757,7 @@ class TestAnalyticGradients(unittest.TestCase):
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
@@ -775,13 +775,13 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        values_dict[f'{self.ns}.{self.sc_name}.algo_options'] =  {'xtol_rel': 1e-08, 'normalize_design_space': True, 'xtol_abs': 1e-14, 'ftol_rel': 1e-08, 'ftol_abs': 1e-14,
+        values_dict[f'{self.ns}.{self.sc_name}.algo_options'] = {'xtol_rel': 1e-08, 'normalize_design_space': True, 'xtol_abs': 1e-14, 'ftol_rel': 1e-08, 'ftol_abs': 1e-14,
          'max_iter': 999, 'max_time': 0.0, 'ctol_abs': 1e-06, 'eq_tolerance': 0.01, 'ineq_tolerance': 0.0001,
          'init_step': 0.25}
 
@@ -793,7 +793,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         for x, x_th in zip(opt_disc.optimization_result.x_opt, exp_x):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
@@ -821,17 +821,17 @@ class TestAnalyticGradients(unittest.TestCase):
 
         print('\n in test optim scenario')
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
 
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
-        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = array([local_dv])
         exec_eng.load_study_from_input_dict(values_dict)
 
         dump_jac_path = join(dirname(__file__), 'jac_sellar.pkl')
@@ -862,7 +862,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         df = pd.DataFrame({'years': arange(1, 5)})
         df['value'] = 2.0
 
@@ -899,7 +899,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         df = pd.DataFrame({'years': arange(1, 5)})
         df['value'] = 2.0
 
@@ -939,7 +939,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        #-- set up disciplines in Scenario
+        # -- set up disciplines in Scenario
         df = pd.DataFrame({'years': arange(1, 5)})
         df['value'] = 2.0
 

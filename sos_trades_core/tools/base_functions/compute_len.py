@@ -22,6 +22,8 @@ The gradient of this function can also be used
 from numpy import int32, int64, float32, float64, complex128, ndarray
 from pandas.core.frame import DataFrame
 
+DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
+
 
 def compute_len(obj):
     '''
@@ -31,8 +33,12 @@ def compute_len(obj):
         return 0
     elif isinstance(obj, (int, float, bool, int32, int64, float32, float64, complex128, str)):
         return 1
-    elif isinstance(obj, (ndarray, DataFrame)):
+    elif isinstance(obj, ndarray):
         return obj.size
+    elif isinstance(obj, DataFrame):
+        new_var_df = obj.drop(
+        columns=[column for column in DEFAULT_EXCLUDED_COLUMNS if column in obj])
+        return new_var_df.size
     elif isinstance(obj, (tuple, list)):
         computed_len = 0
         for val in obj:
