@@ -156,7 +156,7 @@ def soft_maximum_vect(cst, k=7e2):
     https://www.johndcook.com/blog/2010/01/20/how-to-compute-the-soft-maximum/
     """
     cst_array = np.array(cst)
-    cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 5.6E-17/k)
+    cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 1.0E-15/k)
     if 'complex' in str(cst_array.dtype):
         cst_array_limited += np.imag(cst_array)*1j
     if np.amax(cst_array_limited)*k>709:
