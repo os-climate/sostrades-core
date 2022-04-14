@@ -96,9 +96,9 @@ class TestMDANumericalParameters(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -140,7 +140,7 @@ class TestMDANumericalParameters(unittest.TestCase):
 
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         for x, x_th in zip(opt_disc.optimization_result.x_opt, exp_x):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,

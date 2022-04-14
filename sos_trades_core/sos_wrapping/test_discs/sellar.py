@@ -68,7 +68,7 @@ class SellarProblem(SoSDiscipline):
         :returns: Objective value
         :rtype: float
         """
-        out = x ** 2 + z[1] + y_1 + exp(-y_2)
+        out = x[0] ** 2 + z[1] + y_1[0] + exp(-y_2[0])
 
         return out
 
@@ -81,7 +81,7 @@ class SellarProblem(SoSDiscipline):
         :returns: Value of the constraint 1
         :rtype: float
         """
-        return 3.16 - y_1
+        return 3.16 - y_1[0]
 
     @staticmethod
     def c_2(y_2):
@@ -92,7 +92,7 @@ class SellarProblem(SoSDiscipline):
         :returns: Value of the constraint 2
         :rtype: float
         """
-        return y_2 - 24.
+        return y_2[0] - 24.
 
     def compute_sos_jacobian(self):
         """
@@ -113,14 +113,14 @@ class SellarProblem(SoSDiscipline):
             [1.0])))
 
         self.set_partial_derivative('obj', 'x', atleast_2d(array(
-            [2.0 * x])))
+            [2.0 * x[0]])))
 
         self.set_partial_derivative('obj', 'z', atleast_2d(array(
             [0.0, 1.0])))
         self.set_partial_derivative('obj', 'y_1', atleast_2d(array(
             [1.0])))
         self.set_partial_derivative('obj', 'y_2', atleast_2d(array(
-            [-exp(-y_2)])))
+            [-exp(-y_2[0])])))
 
         self.set_partial_derivative('obj', 'local_dv', atleast_2d(array(
             [1.0])))
@@ -142,7 +142,7 @@ class Sellar1(SoSDiscipline):
         """
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
-        y1_out = {'y_1': y_1}
+        y1_out = {'y_1': array([y_1])}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -158,7 +158,7 @@ class Sellar1(SoSDiscipline):
         :returns: coupling variable y_1 of discipline 1
         :rtype: float
         """
-        out = z[0] ** 2 + x + z[1] - 0.2 * y_2
+        out = z[0] ** 2 + x[0] + z[1] - 0.2 * y_2[0]
         return out
 
     def compute_sos_jacobian(self):
@@ -212,7 +212,7 @@ class Sellar2(SoSDiscipline):
         """
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         y_2 = self.compute_y_2(y_1, z)
-        y1_out = {'y_2': y_2}
+        y1_out = {'y_2': array([y_2])}
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -226,7 +226,7 @@ class Sellar2(SoSDiscipline):
         :returns: coupling variable y_2
         :rtype: float
         """
-        out = z[0] + z[1] + sqrt(y_1)
+        out = z[0] + z[1] + sqrt(y_1[0])
         return out
 
     def compute_sos_jacobian(self):
@@ -243,7 +243,7 @@ class Sellar2(SoSDiscipline):
         y_1, debug_mode = self.get_sosdisc_inputs(['y_1', 'debug_mode_sellar'])
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-            array([1.0 / (2.0 * sqrt(y_1))])))
+            array([1.0 / (2.0 * sqrt(y_1[0]))])))
 
         self.set_partial_derivative('y_2', 'z', atleast_2d(
             array([1.0, 1.0])))
@@ -286,12 +286,12 @@ class Sellar3(SoSDiscipline):
         error_string = self.get_sosdisc_inputs('error_string')
 
         y_2 = self.compute_y_2(y_1, z)
-        y1_out = {'y_2': y_2}
+        y1_out = {'y_2': array([y_2])}
         if error_string == 'nan':
-            y1_out['y_2'] = NaN
+            y1_out['y_2'] = array([NaN])
         elif error_string == 'input_change':
             y_1 = self.local_data[self.get_var_full_name('y_1', self._data_in)]
-            y_1 += 0.5
+            y_1[0] += 0.5
         self.store_sos_outputs_values(y1_out)
 
     @staticmethod
@@ -305,7 +305,7 @@ class Sellar3(SoSDiscipline):
         :returns: coupling variable y_2
         :rtype: float
         """
-        out = z[0] + z[1] + sqrt(y_1)
+        out = z[0] + z[1] + sqrt(y_1[0])
         return out
 
     def compute_sos_jacobian(self):
@@ -319,15 +319,15 @@ class Sellar3(SoSDiscipline):
             on all outputs (Default value = None)
         """
 
-        y_1 = self.get_sosdisc_inputs(['y_1'])
+        y_1 = self.get_sosdisc_inputs('y_1')
         error_string = self.get_sosdisc_inputs('error_string')
 
         if error_string == 'linearize_data_change':
             y_1 = self.local_data[self.get_var_full_name('y_1', self._data_in)]
-            y_1 += 0.5
+            y_1[0] += 0.5
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-            array([1.0 / (2.0 * sqrt(y_1))])))
+            array([1.0 / (2.0 * sqrt(y_1[0]))])))
 
         self.set_partial_derivative('y_2', 'z', atleast_2d(
             array([1.0, 1.0])))

@@ -76,7 +76,7 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
-        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = array([local_dv])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
 
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -176,7 +176,7 @@ class TestAnalyticGradients(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         for x, x_th in zip(opt_disc.optimization_result.x_opt, exp_x):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
@@ -227,7 +227,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         # check optimal x and f
         self.assertAlmostEqual(
-            opt_disc_fd.optimization_result.f_opt[0], opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
+            opt_disc_fd.optimization_result.f_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
         for x, x_fd in zip(opt_disc.optimization_result.x_opt, opt_disc_fd.optimization_result.x_opt):
             self.assertAlmostEqual(x, x_fd, delta=1.0e-4,
                                    msg="Wrong optimal x solution")
@@ -793,7 +793,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         sellar_obj_opt = 3.18339395 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.optimization_result.f_opt[0], 4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.optimization_result.f_opt, 4, msg="Wrong objective value")
         exp_x = array([8.45997174e-15, 1.97763888, 0.0])
         for x, x_th in zip(opt_disc.optimization_result.x_opt, exp_x):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
@@ -831,7 +831,7 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
-        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = array([local_dv])
+        values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
         dump_jac_path = join(dirname(__file__), 'jac_sellar.pkl')

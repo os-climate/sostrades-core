@@ -947,9 +947,9 @@ class TestCache(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
                                                                     "ineq_tolerance": 1e-6,
                                                                     "normalize_design_space": True}
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = np.array([1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = np.array([1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = np.array([1.])
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = np.array([
             1., 1.])
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = 10.
