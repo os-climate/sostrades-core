@@ -938,7 +938,7 @@ class GridSearchEval(DoeEval):
                                     '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                     '<br><b>{}<b>'.format(
                                         chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                    name='{} '.format(slider_short_name) + f': {float(chart_info["reference_scenario"][col_slider])}{slider_unit}',
+                                    name='{} '.format(slider_short_name) + f': {slide_value}{slider_unit}',
                                 )
                             )
                             fig.add_trace(
@@ -1059,6 +1059,7 @@ class GridSearchEval(DoeEval):
                             new_chart = InstantiatedPlotlyNativeChart(
                                 fig=fig, chart_name=chart_name, default_legend=False
                             )
+                            
                             instanciated_charts.append(new_chart)
 
         return instanciated_charts
