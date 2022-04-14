@@ -40,6 +40,7 @@ from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plo
     InstantiatedPlotlyNativeChart
 
 
+
 class UncertaintyQuantification(SoSDiscipline):
     '''
     Generic Uncertainty Quantification class
@@ -61,11 +62,28 @@ class UncertaintyQuantification(SoSDiscipline):
 
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
+    DEFAULT = 'default'
+    UPPER_BOUND = "upper_bnd"
+    LOWER_BOUND = "lower_bnd"
+    NB_POINTS = 'nb_points'
+
     DESC_IN = {
         'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
                               'namespace': 'ns_uncertainty_quantification', },
         'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                'namespace': 'ns_uncertainty_quantification', },
+        'design_space': {
+            'type': 'dataframe',
+            'dataframe_descriptor': {
+                'shortest_name': ('string', None, False),
+                LOWER_BOUND: ('float', None, True),
+                UPPER_BOUND: ('float', None, True),
+                NB_POINTS: ('int', None, True),
+                'full_name': ('string', None, False),
+            },
+            'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+            'namespace': 'ns_uncertainty_quantification'
+        },
 
         'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.],
                                 'visibility': SoSDiscipline.SHARED_VISIBILITY,
@@ -157,28 +175,51 @@ class UncertaintyQuantification(SoSDiscipline):
                 # distrib = ['Normal', 'PERT', 'Triangular']
                 def random_distribution(input):
                     return np.random.choice([i for i in range(len(possible_distrib))],
-                                            #p=[1 / len(possible_distrib) for input in possible_distrib])
-                                            p = [0,1,0,0])
-                distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
+                                            # p=[1 / len(possible_distrib) for input in possible_distrib])
+                                            p=[0, 1, 0, 0])
 
-                # len(selected_inputs) > 0 and len(selected_outputs) > 0
+                #distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
+                distrib = ['PERT' for input in selected_inputs.tolist()]
 
-                if (len(in_param) == 2):
 
+                if (('design_space' in self._data_in) & (len(in_param) > 0)):
+
+
+
+                    lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
+                    upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
                     input_distribution_default = pd.DataFrame(
-                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': [5, 20],
-                         'upper_parameter': [7, 25],
-                         'most_probable_value': [6, 23]})
-                else:
-                    input_distribution_default = pd.DataFrame(
-                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 80,
-                         'upper_parameter': 120,
-                         'most_probable_value': 110})
-                # no need most probable value for Normal distribution
-                input_distribution_default.loc[input_distribution_default['distribution']
-                                               == 'Normal', 'most_probable_value'] = np.nan
-                input_distribution_default.loc[input_distribution_default['distribution']
-                                               == 'LogNormal', 'most_probable_value'] = np.nan
+                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': lower_bnd,
+                         'upper_parameter': upper_bnd ,
+                         'most_probable_value': [(a+b)/2 for a,b in zip(lower_bnd,upper_bnd)]})
+
+                    input_distribution_default.loc[input_distribution_default['distribution']
+                                                   == 'Normal', 'most_probable_value'] = np.nan
+                    input_distribution_default.loc[input_distribution_default['distribution']
+                                                   == 'LogNormal', 'most_probable_value'] = np.nan
+
+
+
+                    dynamic_inputs['input_distribution_parameters_df'] = {
+                        'type': 'dataframe',
+                        'dataframe_descriptor': {
+                            'parameter': ('string', None, False),
+                            'distribution': ('string', None, True),
+                            'lower_parameter': ('float', None, True),
+                            'upper_parameter': ('float', None, True),
+                            'most_probable_value': ('float', None, True),
+                        },
+                        'unit': None,
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                        'namespace': 'ns_uncertainty_quantification',
+                        'default': input_distribution_default,
+                        'structuring': False
+                    }
+                    if 'input_distribution_parameters_df' in self._data_in:
+                        self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
+
+
+
 
                 data_details_default = pd.DataFrame()
                 for input in in_param:
@@ -191,25 +232,6 @@ class UncertaintyQuantification(SoSDiscipline):
                         '.')[-1]]
                     data_details_default = data_details_default.append(
                         {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
-
-                dynamic_inputs['input_distribution_parameters_df'] = {
-                    'type': 'dataframe',
-                    'dataframe_descriptor': {
-                        'parameter': ('string', None, False),
-                        'distribution': ('string', None, True),
-                        'lower_parameter': ('float', None, True),
-                        'upper_parameter': ('float', None, True),
-                        'most_probable_value': ('float', None, True),
-                    },
-                    'unit': None,
-                    'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                    'namespace': 'ns_uncertainty_quantification',
-                    'default': input_distribution_default,
-                    'structuring': False
-                }
-                if 'input_distribution_parameters_df' in self._data_in:
-                    self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
-
                 dynamic_inputs['data_details_df'] = {
                     'type': 'dataframe',
                     'dataframe_descriptor': {

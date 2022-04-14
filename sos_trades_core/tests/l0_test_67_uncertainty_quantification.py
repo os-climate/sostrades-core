@@ -93,9 +93,18 @@ class TestUncertaintyQuantification(unittest.TestCase):
         output_selection = {'selected_output': [True, True, True],
                             'full_name': ['output1', 'output2', 'output3']}
 
+        dspace = pd.DataFrame({
+            'shortest_name': ['COC','RC', 'NRC'],
+            'lower_bnd': [85., 80.,80.],
+            'upper_bnd': [105., 120.,120.],
+            'nb_points': [10, 10,10],
+            'full_name': ['COC', 'RC','NRC'],
+        })
+
         private_values = {
             f'{self.name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
+            f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             # f'{self.name}.{self.uncertainty_quantification}.input_distribution_parameters_df': self.input_distribution_parameters_df,
             # f'{self.name}.{self.uncertainty_quantification}.data_details_df':
             # self.data_details_df,
