@@ -410,6 +410,7 @@ class SoSEval(SoSDisciplineBuilder):
                 else:
                     outeval_dict[key] = output_eval_key[0][j]
 
+            outeval_dict = self._convert_array_into_new_type(outeval_dict)
             outeval_base_dict = {f'{key_out} vs {key_in}': value for key_out, value in zip(
                 self.eval_out_list, outeval_dict.values())}
             outeval_final_dict.update(outeval_base_dict)
