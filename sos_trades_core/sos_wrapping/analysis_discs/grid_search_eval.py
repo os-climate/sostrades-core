@@ -839,7 +839,7 @@ class GridSearchEval(DoeEval):
                                     hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
                                         '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                         '<br><b>{}<b>'.format(
-                                            chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,4),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                            chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name="Reference Scenario",
                                 )
                             )                        
@@ -869,6 +869,14 @@ class GridSearchEval(DoeEval):
                             new_chart = InstantiatedPlotlyNativeChart(
                                 fig=fig, chart_name=chart_name, default_legend=False
                             )
+                            if len(chart_info['reference_scenario']):
+                                note = {
+                                    'Reference Scenario': ' ' , 
+                                    f'{chart_info["x_short"]}': str(float(chart_info["reference_scenario"][chart_info["x"]].values)) + f'{chart_info["x_unit"]}' , 
+                                    f'{chart_info["y_short"]}': str(float(chart_info["reference_scenario"][chart_info["y"]].values)) + f'{chart_info["y_unit"]}' , 
+                                    f'{chart_info["z"]}':  f'{round(z_ref_hover,5)} {legend_letter}' + f'{chart_info["z_unit"]}',
+                                }
+                                new_chart.annotation_upper_left = note
                             instanciated_charts.append(new_chart)
 
                     if len(chart_info['slider']) == 1:
@@ -986,7 +994,7 @@ class GridSearchEval(DoeEval):
                                             '<br>{} '.format(
                                                 slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
                                             '<br><b>{}<b>'.format(
-                                                chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,4),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                                chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1059,7 +1067,15 @@ class GridSearchEval(DoeEval):
                             new_chart = InstantiatedPlotlyNativeChart(
                                 fig=fig, chart_name=chart_name, default_legend=False
                             )
-                            
+                            if len(chart_info['reference_scenario']):
+                                note = {
+                                    'Reference Scenario': ' ' , 
+                                    f'{chart_info["x_short"]}': str(float(chart_info["reference_scenario"][chart_info["x"]].values)) + f'{chart_info["x_unit"]}' , 
+                                    f'{chart_info["y_short"]}': str(float(chart_info["reference_scenario"][chart_info["y"]].values)) + f'{chart_info["y_unit"]}' , 
+                                    f'{slider_short_name}': str(float(chart_info["reference_scenario"][col_slider].values)) + f'{slider_unit}' ,
+                                    f'{chart_info["z"]}':  f'{round(z_ref_hover,5)} {legend_letter}' + f'{chart_info["z_unit"]}',
+                                }
+                                new_chart.annotation_upper_left = note
                             instanciated_charts.append(new_chart)
 
         return instanciated_charts
