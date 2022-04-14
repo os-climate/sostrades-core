@@ -93,7 +93,7 @@ class GridSearchEval(DoeEval):
         },
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
-        'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local'},
+        'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local','default':"bonjour"},
     }
     DESC_OUT = {'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                        'namespace': 'ns_grid_search'}}

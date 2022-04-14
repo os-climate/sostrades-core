@@ -157,8 +157,8 @@ class UncertaintyQuantification(SoSDiscipline):
                 # distrib = ['Normal', 'PERT', 'Triangular']
                 def random_distribution(input):
                     return np.random.choice([i for i in range(len(possible_distrib))],
-                                            p=[1 / len(possible_distrib) for input in possible_distrib])
-
+                                            #p=[1 / len(possible_distrib) for input in possible_distrib])
+                                            p = [0,1,0,0])
                 distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
 
                 # len(selected_inputs) > 0 and len(selected_outputs) > 0

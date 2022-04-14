@@ -212,11 +212,11 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         print(self.ee.display_treeview_nodes())
 
-        grid_search_io_path = 'Test.GridSearch'
+
         self.grid_search = 'GridSearch'
         self.study_name = 'Test'
 
-        eval_inputs = self.ee.dm.get_value(f'{grid_search_io_path}.eval_inputs')
+        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -275,7 +275,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
-        n_call_root_1 = self.ee.root_process.n_calls
         n_call_grid_search_1 = grid_search_disc.n_calls
         n_call_uq_1 = uq_disc.n_calls
 
@@ -283,7 +282,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_root_2 = self.ee.root_process.n_calls
         n_call_grid_search_2 = grid_search_disc.n_calls
         n_call_uq_2 = uq_disc.n_calls
 
@@ -305,7 +303,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
-        n_call_root_1 = self.ee.root_process.n_calls
         n_call_grid_search_1 = grid_search_disc.n_calls
         n_call_uq_1 = uq_disc.n_calls
 
@@ -313,13 +310,12 @@ class TestUncertaintyQuantification(unittest.TestCase):
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_root_2 = self.ee.root_process.n_calls
         n_call_grid_search_2 = grid_search_disc.n_calls
         n_call_uq_2 = uq_disc.n_calls
 
-        # self.assertEqual(n_call_root_2, n_call_root_1)
-        # self.assertEqual(n_call_grid_search_2, n_call_grid_search_1)
-        #self.assertEqual(n_call_uq_2, n_call_uq_1)
+        # check that neither grid_search nor uq has run
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1)
+        self.assertEqual(n_call_uq_2, n_call_uq_1)
 
         # Third execute with a change of a uq parameter and no change on doe
         dict_values[f'{self.study_name}.{self.grid_search}.confidence_interval'] = 95
@@ -327,31 +323,69 @@ class TestUncertaintyQuantification(unittest.TestCase):
         res_3 = self.ee.execute()
 
         # get number of calls after third call
-        n_call_root_3 = self.ee.root_process.n_calls
         n_call_grid_search_3 = grid_search_disc.n_calls
         n_call_uq_3 = uq_disc.n_calls
 
-        # self.assertEqual(n_call_root_3, n_call_root_2 + 1)
-        # self.assertEqual(n_call_grid_search_3, n_call_grid_search_2)
+        # check that uq has run but grid search hasn't
+        self.assertEqual(n_call_grid_search_3, n_call_grid_search_2)
         self.assertEqual(n_call_uq_3, n_call_uq_2 + 1)
 
         # Fourth execute with a change of a grid_search parameter and no change on uq
+        dict_values[f'{self.study_name}.{self.grid_search}.wait_time_between_fork'] = 5.0
+        self.ee.load_study_from_input_dict(dict_values)
+        res_4 = self.ee.execute()
+
+        # get number of calls after fourth call
+        n_call_grid_search_4 = grid_search_disc.n_calls
+        n_call_uq_4 = uq_disc.n_calls
+
+        # check that grid search has run and uq hasn't
+        self.assertEqual(n_call_grid_search_4, n_call_grid_search_3 + 1)
+        self.assertEqual(n_call_uq_4, n_call_uq_3 )
+
+        # Fifth execute with a change of a common input
         eval_outputs_2 = self.ee.dm.get_value('Test.GridSearch.eval_outputs')
         eval_outputs_2.loc[eval_outputs['full_name'] ==
                            f'{self.grid_search}.Disc1.indicator', ['selected_output']] = True
 
         dict_values[f'{self.study_name}.{self.grid_search}.eval_outputs'] = eval_outputs_2
         self.ee.load_study_from_input_dict(dict_values)
-        res_4 = self.ee.execute()
+        res_5 = self.ee.execute()
 
-        # get number of calls after third call
-        n_call_root_4 = self.ee.root_process.n_calls
-        n_call_grid_search_4 = grid_search_disc.n_calls
-        n_call_uq_4 = uq_disc.n_calls
+        # get number of calls after fifth call
+        n_call_grid_search_5 = grid_search_disc.n_calls
+        n_call_uq_5 = uq_disc.n_calls
 
-        # self.assertEqual(n_call_root_3, n_call_root_2 + 1)
-        self.assertEqual(n_call_grid_search_4, n_call_grid_search_3 + 1)
-        self.assertEqual(n_call_uq_4, n_call_uq_3 + 1)
+        # check that both grid search and uq have run
+        self.assertEqual(n_call_grid_search_5, n_call_grid_search_4 + 1)
+        self.assertEqual(n_call_uq_5, n_call_uq_4 + 1)
+
+        # DESACTIVATE CACHE
+
+        dict_values[f'{self.name}.cache_type'] = 'None'
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # check cache is None
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(uq_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(self.ee.root_process.cache, None)
+        self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
+        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache, None)
+
+        #  execute one more time
+        res_6 = self.ee.execute()
+
+        # get number of calls after changing cache
+        n_call_grid_search_6 = grid_search_disc.n_calls
+        n_call_uq_6 = uq_disc.n_calls
+
+        # check that both grid search and uq have run since there is no more cache
+        self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
+        self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
+
+
+
+
 
 
 if '__main__' == __name__:
