@@ -1085,25 +1085,18 @@ class SoSDiscipline(MDODiscipline):
     def get_boundary_jac_for_columns(self, key, column, io_type):
         data_io_disc = self.get_data_io_dict(io_type)
         var_full_name = self.get_var_full_name(key, data_io_disc)
-        data_io = self.dm.get_data(var_full_name)
-        index_column = None
-        key_type = data_io[self.TYPE]
-
+        key_type = self.dm.get_data(var_full_name, self.TYPE)
+        value = self._get_sosdisc_io(key, io_type)[key]
+        
         if key_type == 'dataframe':
-            value = data_io[self.VALUE]
             # Get the number of lines and the index of column from the metadata
-            if value is None:
-                lines_nb = 0
-                index_column = None
-            else:
-                new_value = value.drop(columns=[column for column in self.DEFAULT_EXCLUDED_COLUMNS if column in value])
-                lines_nb = new_value.to_numpy().shape[0]
-                index_column = new_value.columns.to_list().index(column)
+            new_value = value.drop(columns=[column for column in self.DEFAULT_EXCLUDED_COLUMNS if column in value])
+            lines_nb = new_value.to_numpy().shape[0]
+            index_column = new_value.columns.to_list().index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
         elif key_type == 'dict':
-            value = data_io[self.VALUE]
             dict_keys = list(value.keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
