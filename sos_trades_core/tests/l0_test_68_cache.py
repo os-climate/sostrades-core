@@ -1222,6 +1222,132 @@ class TestCache(unittest.TestCase):
         # check that grid search has not run since cache is not activated
         self.assertEqual(n_call_grid_search_5, n_call_grid_search_4 + 1)
 
+    def _test_14_simple_cache_on_grid_search_subprocess(self):
+        """In this test we prove the ability of the cache to work properly on a grid search
+        We activate simple cache, change a grid search subprocess input (here an input of Disc1)
+        We expect the grid search to run since its subprocess has changed
+        """
+
+        repo = 'sos_trades_core.sos_processes.test'
+        proc_name = 'test_grid_search'
+        sa_builder = self.ee.factory.get_builder_from_process(
+            repo, proc_name)
+
+        self.ee.factory.set_builders_to_coupling_builder(
+            sa_builder)
+        self.ee.load_study_from_input_dict({})
+
+        print(self.ee.display_treeview_nodes())
+
+        self.grid_search = 'GridSearch'
+        self.study_name = 'SoSDisc'
+
+        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.j', ['selected_input']] = True
+
+        eval_outputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] ==
+                         f'{self.grid_search}.Disc1.y', ['selected_output']] = True
+
+        dspace = pd.DataFrame({
+            'shortest_name': ['x', 'j'],
+            'lower_bnd': [5., 20.],
+            'upper_bnd': [7., 25.],
+            'nb_points': [3, 3],
+            'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
+        })
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.grid_search}.design_space': dspace,
+
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
+
+            # UQ
+            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
+            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
+        }
+
+        self.ee.load_study_from_input_dict(dict_values)
+
+        grid_search_disc = self.ee.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+        disc1 = self.ee.dm.get_disciplines_with_name(f'{self.study_name}.{self.grid_search}.Disc1')[0]
+
+        # check cache is None
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(self.ee.root_process.cache, None)
+        self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
+
+        # first execute
+        res_1 = self.ee.execute()
+        # get number of calls after first call
+        n_call_grid_search_1 = grid_search_disc.n_calls
+
+        # second execute without change of parameters
+        res_2 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_2 = grid_search_disc.n_calls
+
+        # check grid_search has run one extra time
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1 + 1)
+
+        # ACTIVATE SIMPLE CACHE ROOT PROCESS
+
+        dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # check that the root process distributes the cache to all its sos_disciplines
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
+
+        # first execute
+        res_1 = self.ee.execute()
+        # get number of calls after first call
+        n_call_grid_search_1 = grid_search_disc.n_calls
+
+        # second execute without change of parameters
+        res_2 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_2 = grid_search_disc.n_calls
+
+        # check that grid search has not run since no input was changed
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1)
+
+        # change an input of disc 1
+        dict_values[f'{self.study_name}.{self.grid_search}.Disc1.d'] = 10.
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # third execute without change of parameters
+        res_3 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_3 = grid_search_disc.n_calls
+
+        # check that grid search has run since the subprocess has changed
+        self.assertEqual(n_call_grid_search_3, n_call_grid_search_2 + 1)
+
 
 if __name__ == "__main__":
     cls = TestCache()
