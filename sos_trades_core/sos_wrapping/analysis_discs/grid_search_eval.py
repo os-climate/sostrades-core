@@ -769,10 +769,12 @@ class GridSearchEval(DoeEval):
 
                             x_data = chart_info['chart_data'][chart_info['x']].to_list(
                             )
+
                             y_data = chart_info['chart_data'][chart_info['y']].to_list(
                             )
                             z_data = chart_info['chart_data'][chart_info['z']].replace(
                                 np.nan, 'None').to_list()
+
 
                             x_max = max(x_data)
                             y_max = max(y_data)
@@ -806,11 +808,13 @@ class GridSearchEval(DoeEval):
                                     visible=True,
                                     connectgaps=False,
                                     hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
+
                                                   '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
                                                   '<br><b>{}<b>'.format(
                                                       chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
                                         chart_info["z_unit"]),
                                     name="",
+
                                 )
                             )
 
@@ -837,8 +841,15 @@ class GridSearchEval(DoeEval):
                             )
 
                             if len(chart_info['reference_scenario']):
-                                x_ref_scen = chart_info['reference_scenario'][chart_info['x']].to_list()
-                                y_ref_scen = chart_info['reference_scenario'][chart_info['y']].to_list()
+
+                                x_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['x']].to_list()
+                                y_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['y']].to_list()
+                                z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
+                                legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
+
+
+                                # if float(chart_info['reference_scenario'][col_slider])==slide_value:
+
                                 fig.add_trace(
                                     go.Scatter(
                                         x=x_ref_scen,
@@ -851,13 +862,14 @@ class GridSearchEval(DoeEval):
                                         visible=True,
                                         showlegend=False,
                                         hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-                                                      '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                                      '<br><b>{}<b>'.format(
-                                                          chart_info["z"]) + ': <b> {}<b>'.format(float(
-                                            chart_info['reference_scenario'][
-                                                chart_info['z']].values)) + '<b> {}<b><br>'.format(
-                                            chart_info["z_unit"]),
-                                        name="Reference Scenario",
+
+                                            '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                            '<br>{} '.format(
+                                                slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
+                                            '<br><b>{}<b>'.format(
+                                                chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        name='Reference Scenario',
+
                                     )
                                 )
 
@@ -1075,6 +1087,7 @@ class GridSearchEval(DoeEval):
                                 ),
                             )
 
+
                             # Create native plotly chart
                             last_value = slider_values[-1]
                             if len(fig.data) > 0:
@@ -1082,7 +1095,38 @@ class GridSearchEval(DoeEval):
                                 new_chart = InstantiatedPlotlyNativeChart(
                                     fig=fig, chart_name=chart_name, default_legend=False
                                 )
-                                instanciated_charts.append(new_chart)
 
-            return instanciated_charts
+                            if len(chart_info['reference_scenario']):
+                                note = {
+                                    'Reference Scenario': ' ' , 
+                                    f'{chart_info["x_short"]}': str(float(chart_info["reference_scenario"][chart_info["x"]].values)) + f'{chart_info["x_unit"]}' , 
+                                    f'{chart_info["y_short"]}': str(float(chart_info["reference_scenario"][chart_info["y"]].values)) + f'{chart_info["y_unit"]}' , 
+                                    f'{slider_short_name}': str(float(chart_info["reference_scenario"][col_slider].values)) + f'{slider_unit}' ,
+                                    f'{chart_info["z"]}':  f'{round(z_ref_hover,5)} {legend_letter}' + f'{chart_info["z_unit"]}',
+                                }
+                                new_chart.annotation_upper_left = note
+                            instanciated_charts.append(new_chart)
+
+        return instanciated_charts
+
+
+def get_order_of_magnitude(maxvalue):
+
+    if abs(maxvalue) >= 1.0e9:
+        maxvalue = maxvalue / 1.0e9
+        legend_letter = 'B'
+        factor = 1.0e09
+    elif 1.0e9 > abs(maxvalue) >= 1.0e6:
+        maxvalue = maxvalue / 1.0e6
+        legend_letter = 'M'
+        factor = 1.0e06
+    elif 1.0e06 > abs(maxvalue) >= 1.0e03:
+        maxvalue = maxvalue / 1.0e3
+        legend_letter = 'k'
+        factor = 1.0e03
+    else:
+        legend_letter = ''
+        factor = 1.0
+
+    return legend_letter, factor, maxvalue
 

@@ -18,6 +18,9 @@ from numpy import array
 import pandas as pd
 from gemseo.algos.design_space import DesignSpace
 
+# numerical example from 
+# https://blogs.sas.com/content/iml/2017/01/18/milp-sas.html
+# expected sol is "x1=5, x2=3.1"
 
 class Study(StudyManager):
 
@@ -30,9 +33,9 @@ class Study(StudyManager):
         disc_name = "DiscMixedOpt"
         c_name = "MixedCoupling"
         dspace_dict = {'variable': ['x1', 'x2'],
-                       'value': [[2], [10.]],
+                       'value': [[2], [3.]],
                        'lower_bnd': [[0], [0.]],
-                       'upper_bnd': [[200], [200.]],
+                       'upper_bnd': [[999], [999.]],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True]],
                        'variable_type' : [DesignSpace.INTEGER, DesignSpace.FLOAT]}
@@ -62,44 +65,10 @@ class Study(StudyManager):
                                                      "algo_options_MILP": algo_options_master}
 
         # subproc inputs
-        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x1'] = array([2])
-        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x2'] = array([4.])
+        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x1'] = array([2.])
+        disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x2'] = array([4])
 
         return [disc_dict]
-
-
-#     def setup_usecase(self):
-#         ns = f'{self.study_name}'
-#         sc_name = "MixedOptimScenario"
-#         disc_name = "DiscMixedOpt"
-#         c_name = "MixedCoupling"
-#         dspace_dict = {'variable': ['x', 'y'],
-#                        'value': [1., 1.],
-#                        'lower_bnd': [0., 1.],
-#                        'upper_bnd': [3., 2.],
-#                        'enable_variable': [True, True],
-#                        'activated_elem': [[True], [True]],
-#                        'variable_type' : [DesignSpace.FLOAT, DesignSpace.INTEGER]}
-#         dspace = pd.DataFrame(dspace_dict)
-# 
-#         # Optim inputs
-#         disc_dict = {}
-#         disc_dict[f'{ns}.{sc_name}.max_iter'] = 100
-#         disc_dict[f'{ns}.{sc_name}.algo'] = "OuterApproximation"
-#         disc_dict[f'{ns}.{sc_name}.design_space'] = dspace
-#         disc_dict[f'{ns}.{sc_name}.formulation'] = 'DisciplinaryOpt'
-#         disc_dict[f'{ns}.{sc_name}.objective_name'] = 'obj'
-#         disc_dict[f'{ns}.{sc_name}.ineq_constraints'] = ['constr']
-#         disc_dict[f'{ns}.{sc_name}.algo_options'] = {"ftol_rel": 1e-10,
-#                                                      "ineq_tolerance": 2e-3,
-#                                                      "normalize_design_space": False}
-# 
-#         # subproc inputs
-#         disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.x'] = array([1.])
-#         disc_dict[f'{ns}.{sc_name}.{c_name}.{disc_name}.y'] = array([1])
-# 
-#         return [disc_dict]
-
 
 if '__main__' == __name__:
     uc_cls = Study()
