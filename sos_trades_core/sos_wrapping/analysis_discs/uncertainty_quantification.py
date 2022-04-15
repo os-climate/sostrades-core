@@ -142,112 +142,112 @@ class UncertaintyQuantification(SoSDiscipline):
 
                 # samples_df = self.get_sosdisc_inputs(
                 #     'samples_inputs_df')
-                selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                              == True]['full_name']
-                # in_param = list(samples_df.columns)[1:]
-                in_param = selected_inputs.tolist()
 
-                selected_outputs = eval_outputs[eval_outputs['selected_output']
-                                                == True]['full_name']
-                # data_df = self.get_sosdisc_inputs(
-                #     'samples_outputs_df')
-                # out_param = list(data_df.columns)[1:]
-                out_param = selected_outputs.tolist()
+                if eval_inputs is not None :
 
-                # ontology name
-                ontology_connector = OntologyDataConnector()
-                data_connection = {
-                    'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
-                }
-                args = in_param + out_param
-                args = [val.split('.')[-1]
-                        for val in args]
-                ontology_connector.set_connector_request(
-                    data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
-                conversion_full_ontology = ontology_connector.load_data(
-                    data_connection)
+                        selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                                      == True]['full_name']
+                        # in_param = list(samples_df.columns)[1:]
+                        in_param = selected_inputs.tolist()
 
-                possible_distrib = ['Normal', 'PERT',
-                                    'LogNormal', 'Triangular']
+                        selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                                        == True]['full_name']
+                        # data_df = self.get_sosdisc_inputs(
+                        #     'samples_outputs_df')
+                        # out_param = list(data_df.columns)[1:]
+                        out_param = selected_outputs.tolist()
 
-                # distrib = [possible_distrib[random.randrange(
-                # len(possible_distrib))] for i in range(len(in_param))]
-                # distrib = ['Normal', 'PERT', 'Triangular']
-                def random_distribution(input):
-                    return np.random.choice([i for i in range(len(possible_distrib))],
-                                            # p=[1 / len(possible_distrib) for input in possible_distrib])
-                                            p=[0, 1, 0, 0])
+                        # ontology name
+                        ontology_connector = OntologyDataConnector()
+                        data_connection = {
+                            'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+                        }
+                        args = in_param + out_param
+                        args = [val.split('.')[-1]
+                                for val in args]
+                        ontology_connector.set_connector_request(
+                            data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
+                        conversion_full_ontology = ontology_connector.load_data(
+                            data_connection)
 
-                #distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
-                distrib = ['PERT' for input in selected_inputs.tolist()]
+                        possible_distrib = ['Normal', 'PERT',
+                                            'LogNormal', 'Triangular']
+
+                        # distrib = [possible_distrib[random.randrange(
+                        # len(possible_distrib))] for i in range(len(in_param))]
+                        # distrib = ['Normal', 'PERT', 'Triangular']
+                        def random_distribution(input):
+                            return np.random.choice([i for i in range(len(possible_distrib))],
+                                                    # p=[1 / len(possible_distrib) for input in possible_distrib])
+                                                    p=[0, 1, 0, 0])
+
+                        #distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
+                        distrib = ['PERT' for input in selected_inputs.tolist()]
 
 
-                if (('design_space' in self._data_in) & (len(in_param) > 0)):
-
-
-
-                    lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
-                    upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
-                    input_distribution_default = pd.DataFrame(
-                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': lower_bnd,
-                         'upper_parameter': upper_bnd ,
-                         'most_probable_value': [(a+b)/2 for a,b in zip(lower_bnd,upper_bnd)]})
-
-                    input_distribution_default.loc[input_distribution_default['distribution']
-                                                   == 'Normal', 'most_probable_value'] = np.nan
-                    input_distribution_default.loc[input_distribution_default['distribution']
-                                                   == 'LogNormal', 'most_probable_value'] = np.nan
+                        if (('design_space' in self._data_in) & (len(in_param) > 0)):
 
 
 
-                    dynamic_inputs['input_distribution_parameters_df'] = {
-                        'type': 'dataframe',
-                        'dataframe_descriptor': {
-                            'parameter': ('string', None, False),
-                            'distribution': ('string', None, True),
-                            'lower_parameter': ('float', None, True),
-                            'upper_parameter': ('float', None, True),
-                            'most_probable_value': ('float', None, True),
-                        },
-                        'unit': None,
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                        'namespace': 'ns_uncertainty_quantification',
-                        'default': input_distribution_default,
-                        'structuring': False
-                    }
-                    if 'input_distribution_parameters_df' in self._data_in:
-                        self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
+                            lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
+                            upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
+                            input_distribution_default = pd.DataFrame(
+                                {'parameter': in_param, 'distribution': distrib, 'lower_parameter': lower_bnd,
+                                 'upper_parameter': upper_bnd ,
+                                 'most_probable_value': [(a+b)/2 for a,b in zip(lower_bnd,upper_bnd)]})
+
+                            input_distribution_default.loc[input_distribution_default['distribution']
+                                                           == 'Normal', 'most_probable_value'] = np.nan
+                            input_distribution_default.loc[input_distribution_default['distribution']
+                                                           == 'LogNormal', 'most_probable_value'] = np.nan
 
 
 
+                            dynamic_inputs['input_distribution_parameters_df'] = {
+                                'type': 'dataframe',
+                                'dataframe_descriptor': {
+                                    'parameter': ('string', None, False),
+                                    'distribution': ('string', None, True),
+                                    'lower_parameter': ('float', None, True),
+                                    'upper_parameter': ('float', None, True),
+                                    'most_probable_value': ('float', None, True),
+                                },
+                                'unit': None,
+                                'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_uncertainty_quantification',
+                                'default': input_distribution_default,
+                                'structuring': False
+                            }
+                            if 'input_distribution_parameters_df' in self._data_in:
+                                self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
 
-                data_details_default = pd.DataFrame()
-                for input in in_param:
-                    [name, unit] = conversion_full_ontology[input.split(
-                        '.')[-1]]
-                    data_details_default = data_details_default.append(
-                        {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
-                for output in out_param:
-                    [name, unit] = conversion_full_ontology[output.split(
-                        '.')[-1]]
-                    data_details_default = data_details_default.append(
-                        {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
-                dynamic_inputs['data_details_df'] = {
-                    'type': 'dataframe',
-                    'dataframe_descriptor': {
-                        'type': ('string', None, False),
-                        'variable': ('string', None, False),
-                        'name': ('string', None, True),
-                        'unit': ('string', None, True),
-                    },
-                    'unit': None,
-                    'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                    'namespace': 'ns_uncertainty_quantification',
-                    'default': data_details_default,
-                    'structuring': False
-                }
-                if 'data_details_df' in self._data_in:
-                    self._data_in['data_details_df']['value'] = data_details_default
+                        data_details_default = pd.DataFrame()
+                        for input in in_param:
+                            [name, unit] = conversion_full_ontology[input.split(
+                                '.')[-1]]
+                            data_details_default = data_details_default.append(
+                                {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
+                        for output in out_param:
+                            [name, unit] = conversion_full_ontology[output.split(
+                                '.')[-1]]
+                            data_details_default = data_details_default.append(
+                                {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
+                        dynamic_inputs['data_details_df'] = {
+                            'type': 'dataframe',
+                            'dataframe_descriptor': {
+                                'type': ('string', None, False),
+                                'variable': ('string', None, False),
+                                'name': ('string', None, True),
+                                'unit': ('string', None, True),
+                            },
+                            'unit': None,
+                            'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                            'namespace': 'ns_uncertainty_quantification',
+                            'default': data_details_default,
+                            'structuring': False
+                        }
+                        if 'data_details_df' in self._data_in:
+                            self._data_in['data_details_df']['value'] = data_details_default
 
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)

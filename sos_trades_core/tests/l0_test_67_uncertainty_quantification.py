@@ -141,11 +141,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         print(self.ee.display_treeview_nodes())
 
-        grid_search_io_path = 'Test.GridSearch'
         self.grid_search = 'GridSearch'
         self.study_name = 'Test'
 
-        eval_inputs = self.ee.dm.get_value(f'{grid_search_io_path}.eval_inputs')
+        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
