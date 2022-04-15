@@ -23,9 +23,19 @@ from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
 import logging
-from numpy import array, append, int32, atleast_2d
+from numpy import array, append, int32, atleast_2d, concatenate
 from copy import deepcopy
 import cvxpy as cp
+from pandas.core.frame import DataFrame
+import pandas as pd
+
+# TODO list : 
+# * avoid re-building the NLP
+# * look for a solution to get output dimensions for cases where len(outvars)>0
+# * exclude unfeasible integer solutions
+# * map the max iter termination criteria
+# * add UB/LB values to main database history
+# * add post-processing
 
 LOGGER = logging.getLogger("OuterApproximation")
 
@@ -34,7 +44,7 @@ class OuterApproximationSolver(object):
     Implementation of Outer Approximation solver
     '''
     ETA = "eta"
-    UPPER_BOUND = "U"
+    UPPER_BOUND = "UB"
     FULL_PROBLEM_DV_NAME = "x"
     MILP_DV_NAME_INT = FULL_PROBLEM_DV_NAME + '_int'
     MILP_DV_NAME_FLOAT = FULL_PROBLEM_DV_NAME + '_float'
@@ -44,6 +54,12 @@ class OuterApproximationSolver(object):
     NORMALIZE_DESIGN_SPACE_OPTION = DriverLib.NORMALIZE_DESIGN_SPACE_OPTION
     MAX_ITER = OptimizationLibrary.MAX_ITER
     F_TOL_ABS = OptimizationLibrary.F_TOL_ABS
+    # tags for problem database
+    UPPER_BOUND_CANDIDATES = UPPER_BOUND + "_history"
+    UPPER_BOUNDS = UPPER_BOUND
+    LOWER_BOUNDS = "LB"
+    OA_ITER_NB = "oa_ite_nb"
+
 
     def __init__(self, problem):
         '''
@@ -63,6 +79,8 @@ class OuterApproximationSolver(object):
         self.int_solutions = []
         self.x_solution_history = []
         self.ind_by_varname, self.size_by_varname = None, None
+        self.opt_history = None
+        self.iter_nb = None
     
     def set_options(self, **options):
         
@@ -115,6 +133,7 @@ class OuterApproximationSolver(object):
         msg = "Initial guess of integer solution is "
         msg += str(self.x0_integer)
         LOGGER.info(msg)
+        
 
             
 #     def _check(self, dspace):
@@ -164,7 +183,7 @@ class OuterApproximationSolver(object):
     
     #- primal problem definition
     
-    def build_primal_pb(self):
+    def build_primal_problem(self):
         ''' build primal problem without hyperplanes
         (will be updated at other iterations)
         '''
@@ -184,45 +203,41 @@ class OuterApproximationSolver(object):
         
         return prob
     
-    def update_primal_pb(self, old_primal_pb, dual_pb, upper_bnd, x0):
+    def update_primal_problem(self, old_primal_pb, dual_pb, upper_bnd, x0):
         ''' update primal problem with new upper bound value U^{(k)}
         and supporting hyperplanes (linearizations of objecgives and constraints
         of the NLP(x_int)^{(k)} )
         '''
-        x0_dict = self.full_problem.design_space.array_to_dict(x0)
+        full_dspace = self.full_problem.design_space
+        x0_dict = full_dspace.array_to_dict(x0)
         #- gather eta design variable
         eta = old_primal_pb.var_dict[self.ETA]
         #- gather x design variable if exists (for iterations > 0)
         bounds_cst = []
         if len(old_primal_pb.var_dict) > 1:
+            # if there the other design variables than eta have already been created
+            # wee keep them and there is no need to re-build the bound constraints
             all_vars = old_primal_pb.var_dict
         else:
-            bounds_cst = []
             # if not, x is created with associated bounds constraints
             # create float variables and associated bound constraints
-            float_vars = {}
-            for v in self.float_varnames:
-                v_shape = self.full_problem.design_space.get_current_x_dict()[v].shape
-                fv = cp.Variable(v_shape, v, integer=False)
-                float_vars[v] = fv
-                lb = self.full_problem.design_space.get_lower_bounds([v])
-                bounds_cst.append(lb <= fv)
-                ub = self.full_problem.design_space.get_upper_bounds([v])
-                bounds_cst.append(fv <= ub)
-            # create int variables and associated bound constraints
-            int_vars = {}
-            for v in self.int_varnames:
-                v_shape = self.full_problem.design_space.get_current_x_dict()[v].shape
-                iv = cp.Variable(v_shape, v, integer=True)
-                int_vars[v] = iv
-                lb = self.full_problem.design_space.get_lower_bounds([v])
-                bounds_cst.append(lb <= iv)
-                ub = self.full_problem.design_space.get_upper_bounds([v])
-                bounds_cst.append(fv <= iv)
-            
             all_vars = {}
-            all_vars.update(float_vars)
-            all_vars.update(int_vars)
+            for v in full_dspace.variables_names:
+                # get the dimensions of the variable
+                v_shape = full_dspace.get_current_x_dict()[v].shape
+                # create the design variable as cvxpy object
+                if v in self.float_varnames:
+                    integer=False
+                else:
+                    integer=True
+                dv = cp.Variable(v_shape, v, integer=integer)
+                all_vars[v] = dv
+                # build the constraint on the lower bounds
+                lb = full_dspace.get_lower_bounds([v])
+                bounds_cst.append(lb <= dv)
+                # build the constraint on the upper bound
+                ub = full_dspace.get_upper_bounds([v])
+                bounds_cst.append(dv <= ub)
                 
         #- setup of primal problem constraints :
         #- build dual pb objective linearization
@@ -268,7 +283,6 @@ class OuterApproximationSolver(object):
                 x_v = all_vars[v]
                 x0_v = x0_dict[v]
                 dx = x_v - x0_v
-#                 cst_jac = atleast_2d(c.jac(x0))
                 cst_lin += c_jac_dict[c.outvars[0]][v] @ dx
                 
             cst_linearized.append(cst_lin <= 0)
@@ -278,6 +292,12 @@ class OuterApproximationSolver(object):
         primal_pb = cp.Problem(old_primal_pb.objective, 
                                old_primal_pb.constraints + hyperplanes + bounds_cst)
         
+        print("\n\n")
+        print("HERE")
+        print("obj " + str(old_primal_pb.objective))
+        for c in old_primal_pb.constraints + hyperplanes + bounds_cst:
+            print("c " + str(c))
+        
 ## handled in the termination criteria
 #         # update upper bound parameter value
 #         ub = primal_pb.param_dict[self.UPPER_BOUND]
@@ -286,11 +306,16 @@ class OuterApproximationSolver(object):
         
         return primal_pb
     
-    def solve_primal(self, problem):
+    def solve_primal_problem(self, problem):
         ''' solve the primal problem
         '''
-        problem.solve(solver=cp.CBC, verbose=False)
+        msg = "\n\n######## MIP Solver \n\n"
+        LOGGER.info(msg)
         
+        # solver execution
+        problem.solve(solver=cp.CBC, verbose=True)
+        
+        # updates the history of bounds and integer solutions according to the status
         if problem.status not in ["infeasible", "unbounded"]:
             # Otherwise, problem.value is inf or -inf, respectively.
             LOGGER.info("Optimal value: %s" % problem.value)
@@ -306,19 +331,18 @@ class OuterApproximationSolver(object):
             self.int_solutions.append(None)
             self.lower_bounds.append(None)
         
-        
+        # display results
         for variable in problem.variables():
             LOGGER.info("Variable %s: value %s" % (variable.name(), variable.value))
         
         LOGGER.info("status:" + str(problem.status))
         LOGGER.info("optimal value " + str(problem.value))
-        LOGGER.info("optimal var " + str([(k, v) for k, v in problem.var_dict.items()]))
         
         return sol_int
 
     #- dual problem definition
     
-    def build_dual_pb(self, integer_values):
+    def build_dual_problem(self, integer_values):
         ''' Build the dual problem
         '''
         # retrieve full problem
@@ -331,7 +355,7 @@ class OuterApproximationSolver(object):
                 cont_vars.append(v)
         dspace = full_pb.design_space.filter(cont_vars, copy=True)
         
-        input_dim = sum(full_pb.design_space.variables_sizes.values())
+        input_dim = sum(full_pb.design_space.variables_sizes.values()) # use dspace.dimension
         
         # build restriction of original constraint functions
         LOGGER.info("integer_indices " + str(self.integer_indices))
@@ -339,7 +363,8 @@ class OuterApproximationSolver(object):
         LOGGER.info("input_dim "+ str(input_dim))
             
         cst_restricted = []
-        for c in full_pb.nonproc_constraints:
+        for c in full_pb.constraints:
+            # builds the restriction
             new_c_name = c.name + '_restricted'
             new_c = c.restrict(self.integer_indices, #frozen indexes
                                integer_values, #frozen values
@@ -348,11 +373,14 @@ class OuterApproximationSolver(object):
                                f_type=MDOFunction.TYPE_INEQ,
                                #expr=f"{f.name}(%s)",
                                args=None)
+            # build the function with store in main problem database
+            
+            # append the function to the constraint list
             cst_restricted.append(new_c)
         
         # build restriction of original objective functions
         new_o_name = full_pb.objective.name + '_restricted'
-        new_o = full_pb.nonproc_objective.restrict(self.integer_indices, #frozen indexes
+        new_o = full_pb.objective.restrict(self.integer_indices, #frozen indexes
                                            integer_values, #frozen values
                                            input_dim,
                                            name=new_o_name,
@@ -367,33 +395,53 @@ class OuterApproximationSolver(object):
         # constraints setup
         for c in cst_restricted:
             pb.add_constraint(c, cstr_type=MDOFunction.TYPE_INEQ)
-        pb.differentiation_method = self.differentiation_method#OptimizationProblem.USER_GRAD# FINITE_DIFFERENCES USER_GRAD
+        pb.differentiation_method = self.differentiation_method  # either FINITE_DIFFERENCES or USER_GRAD
+        
+        # functions are preprocessed once here (before the call in DriverLib at execution)
+        # so that from now nonprocessed_* functions are accessible (see update_nlp)
+        options = self.algo_options_NLP
+        pb.preprocess_functions(
+            normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
+            use_database=options.get(DriverLib.USE_DATABASE_OPTION, True),
+            round_ints=options.get(DriverLib.ROUND_INTS_OPTION, True),
+            eval_obs_jac=False,
+        )
         
         return pb
     
      
-    def update_dual(self, nlp, integer_values):
+    def update_dual_problem(self, nlp, integer_values):
         ''' Updates frozen values of NLP problem with those provided
         '''
-        nlp.reset(database=False)
-        nlp.objective.set_frozen_value(integer_values)
-         
-        for f in nlp.constraints:
+        # reset the database values
+        # This is mandatory to avoid wrong cache use through restricted functions
+        nlp.database.clear(reset_iteration_counter=True)
+        
+        # update frozen values with integer values for objective and constraints
+        nlp.nonproc_objective.set_frozen_value(integer_values)
+        for f in nlp.nonproc_constraints:
             f.set_frozen_value(integer_values)
 
         return nlp
     
-    def solve_dual(self, nlp):
+    def solve_dual_problem(self, nlp):
         ''' Solves the dual problem
         '''
+        msg = "\n\n######## NLP Solver \n\n"
+        LOGGER.info(msg)
+        
         cont_sol = OptimizersFactory().execute(nlp, self.algo_NLP,
                           **self.algo_options_NLP#normalize_design_space=False,
                           )
         
-        msg = "Continuous guess of integer solution is "
+        msg = "Continuous solution is "
         msg += str(cont_sol)
         LOGGER.info(msg)
         
+#         print("SUB PB HIST")
+#         print(nlp.database.get_complete_history(all_iterations=True))
+#         print("OVERALL PB HIST")
+#         print(self.full_problem.database.get_complete_history(all_iterations=True))
         # add continuous solution to history
         self.cont_solutions.append(cont_sol.f_opt)
         
@@ -414,7 +462,7 @@ class OuterApproximationSolver(object):
                 msg = "*** Tolerance reached : upper bound vs lower bound ***\n"
                 msg += "*** \t Upper Bound (UB) = " + str(self.upper_bounds[-1]) + "\n"
                 msg += "*** \t Lower Bound (LB) = " + str(self.lower_bounds[-1]) + "\n"
-                msg += "*** \t UB - LB = " + str(ub-lb) + " <= " + str(self.epsilon)
+                msg += "*** \t UB - LB = " + str(ub-lb) #+ " <= " + str(self.epsilon)
                 LOGGER.info(msg)
             else:
                 _continue = True
@@ -424,41 +472,53 @@ class OuterApproximationSolver(object):
     def update_upper_bounds_history(self, pb):
         """ update the history
         """
-        # append the objective solution to the upper bounds candidates
-        self.upper_bounds_candidates.append(pb.f_opt)
+        # the current upper bound is the optimal value of the objective of the current NLP
+        current_ub = pb.f_opt
         
-        # get the best upper bound found so far
+        # append the objective solution to the upper bounds candidates
+        self.upper_bounds_candidates.append(current_ub)
+        
+        # get the best upper bound found so far (current fopt)
         uk = min(self.upper_bounds_candidates)
         
-        # update the upper bound list with the current best upper bound
+        # update the upper bound list (fopt history) with the current best upper bound
         self.upper_bounds.append(uk)
+
+## use the main optpb db does not seem to be a good solution since overall iterations are different from NLP ones
+#         # store the history to the original problem database
+#         store = self.full_problem.database.store
+#         val_dicts = {self.UPPER_BOUND_CANDIDATES: current_ub,
+#                      self.UPPER_BOUNDS: uk}
+#         store(val_dicts, iter=False)
         
     def solve(self):
         ''' Solve the optimization problem : iterative process
         '''
-        iter_nb = 0
+        self.iter_nb = 0
         
         # init integer solution
         xopt_int = self.x0_integer
         
-        # build NLP(x0_integer)
-        nlp = self.build_dual_pb(xopt_int)
+        # initialize NLP(x0_integer)
+        nlp = self.build_dual_problem(xopt_int)
         
         # initialize primal problem
-        mip = self.build_primal_pb()
+        mip = self.build_primal_problem()
         
-        while self._termination_criteria(iter_nb, mip):
-            msg = "\n\n***\nOuterApproximation Iteration %i\n\n***"%iter_nb
+        while self._termination_criteria(self.iter_nb, mip):
+            msg = "\n\n" + "*"*20
+            msg += "\nOuterApproximation Iteration %i\n"%self.iter_nb
+            msg += "*"*20 + "\n\n"
             LOGGER.info(msg)
 
-            # build NLP(integer solution iteration k)
-            nlp = self.build_dual_pb(xopt_int)
-#             nlp = self.update_dual(nlp, xopt_int)
+            # update NLP(integer solution iteration k)
+            nlp = self.update_dual_problem(nlp, xopt_int)
 
             # compute argmin NLP(integer solution iteration k)
-            nlp_sol = self.solve_dual(nlp)
+            nlp_sol = self.solve_dual_problem(nlp)
             xopt_cont = nlp_sol.x_opt
             
+            # update the full solution vector x
             xsol = self._build_full_vect(xopt_cont, xopt_int)
             
             # update x history
@@ -466,18 +526,76 @@ class OuterApproximationSolver(object):
             self.update_upper_bounds_history(nlp_sol)
             
             # update primal problem
-            uk = self.upper_bounds[iter_nb]
-            mip = self.update_primal_pb(mip, nlp, uk, xsol)
+            uk = self.upper_bounds[self.iter_nb]
+            mip = self.update_primal_problem(mip, nlp, uk, xsol)
             
             # solve primal problem
-            xopt_int = self.solve_primal(mip)
+            xopt_int = self.solve_primal_problem(mip)
 
             LOGGER.info("UPPER BOUNDS")
             LOGGER.info(self.upper_bounds)
             LOGGER.info("LOWER BOUNDS")
             LOGGER.info(self.lower_bounds)
             
-            iter_nb +=1
+            self.iter_nb +=1
+        
+#         nlp = self.build_dual_pb(xopt_int)
+#         nlp_sol = self.solve_dual(nlp)
+#         xopt_cont = nlp_sol.x_opt
+        
+#         xsol = self._build_full_vect(xopt_cont, xopt_int)
+#         
+#         # update x history
+#         self.x_solution_history.append(xsol)
+#         self.update_upper_bounds_history(nlp_sol)
+#         
+#         # update primal problem
+#         uk = self.upper_bounds[self.iter_nb]
+#         mip = self.update_primal_pb(mip, nlp, uk, xsol)
+    
+#         self.store_main_history_data()
+        
+    
+#     def build_wrapped_restriction_function(self, mdo_f):
+#         """ build a wrapping of the restriction function that stores each call
+#         to the database of the main problem
+#         """
+#         
+#         def mdo_f_main_database(xvect):
+#             outval = mdo_f(xvect)
+#             xv = concatenate((self.xopt_int, xvect))
+#             if self.iter_nb == 0:
+#                 ubc, ub, lb = 0, 0, 0
+#             else:
+#                 ubc = self.upper_bounds_candidates[self.iter_nb-1]
+#                 ub = self.upper_bounds[self.iter_nb-1]
+#                 lb = self.lower_bounds[self.iter_nb-1]
+#             name = mdo_f.name.split("_restricted")[0]
+#             val_dict = {name: outval,
+#                         self.UPPER_BOUND_CANDIDATES: ubc,
+#                         self.UPPER_BOUNDS : ub,
+#                         self.LOWER_BOUNDS : lb,
+#                         self.OA_ITER_NB : self.iter_nb}
+#             self.full_problem.database.store(xv, val_dict, add_iter=True)
+#             return mdo_f(xvect)
+#             
+#         return MDOFunction(mdo_f_main_database,
+#                             mdo_f.name,
+#                             jac=mdo_f._jac,
+#                             f_type=mdo_f.f_type,
+#                             expr=mdo_f.expr,
+#                             args=mdo_f.args,
+#                             dim=mdo_f.dim,
+#                             outvars=mdo_f.outvars,)
+    
+    
+#     def store_main_history_data(self):
+#         """ creates the dataframe where the overal optimization monitoring data is stored
+#         """
+#         data = {self.UPPER_BOUND_CANDIDATES: self.upper_bounds_candidates,
+#                 self.UPPER_BOUNDS: self.upper_bounds,
+#                 self.LOWER_BOUNDS: self.lower_bounds}
+#         self.opt_history = DataFrame(data)
         
 #         LOGGER.info("Integer solution is " + str(self.int_solutions))
 #         LOGGER.info("Continuous solution is"  + str(self.cont_solutions))
