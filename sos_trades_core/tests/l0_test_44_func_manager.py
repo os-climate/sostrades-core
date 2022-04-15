@@ -115,8 +115,8 @@ class TestFuncManager(unittest.TestCase):
         self.assertGreater(
             self.func_manager.aggregated_functions[EQ_CONSTRAINT], 0.)
 
-        res = 100. * (self.func_manager.aggregated_functions[OBJECTIVE] +
-                      self.func_manager.aggregated_functions[INEQ_CONSTRAINT] +
+        res = 100. * (self.func_manager.aggregated_functions[OBJECTIVE] + 
+                      self.func_manager.aggregated_functions[INEQ_CONSTRAINT] + 
                       self.func_manager.aggregated_functions[EQ_CONSTRAINT])
 
         self.assertEqual(self.func_manager.mod_obj, res)
@@ -147,7 +147,7 @@ class TestFuncManager(unittest.TestCase):
         EQ_CONSTRAINT = self.func_manager.EQ_CONSTRAINT
         OBJECTIVE_LAGR = FunctionManagerDisc.OBJECTIVE_LAGR
 
-        #-- init the case
+        # -- init the case
         func_mng_name = 'FunctionManager'
         prefix = self.name + '.' + func_mng_name + '.'
 
@@ -163,7 +163,7 @@ class TestFuncManager(unittest.TestCase):
         ee.factory.set_builders_to_coupling_builder(fm_builder)
         ee.configure()
 
-        #-- i/o setup
+        # -- i/o setup
         base_df = pd.DataFrame({'years': arange(10, 13)})
         obj1 = base_df.copy()
         obj1['obj1_values'] = 1.5
@@ -173,7 +173,7 @@ class TestFuncManager(unittest.TestCase):
         cst1['cst1_values'] = np.array([10., 200., -30.])
         cst2 = base_df.copy()
         cst2['cst2_values'] = np.array([40000., 1., -10000.])
-        #cst2['cst2_valuesss'] = np.array([400000., 1., -10000.])
+        # cst2['cst2_valuesss'] = np.array([400000., 1., -10000.])
 
         cst3 = base_df.copy()
         cst3['cst3_values'] = np.array([-10., 0.2, -5.])
@@ -182,7 +182,7 @@ class TestFuncManager(unittest.TestCase):
         eqcst2 = base_df.copy()
         eqcst2['eqcst2_values'] = np.array([0.001, 0.001, 0.00001])
 
-        #-- ~GUI inputs: selection of functions
+        # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight'])
         func_df['variable'] = ['cst1', 'cst2', 'cst3',
@@ -194,7 +194,7 @@ class TestFuncManager(unittest.TestCase):
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
-        #-- data to simulate disciplinary chain outputs
+        # -- data to simulate disciplinary chain outputs
         values_dict[prefix + 'cst1'] = cst1
         values_dict[prefix + 'cst2'] = cst2
         values_dict[prefix + 'cst3'] = cst3
@@ -207,22 +207,22 @@ class TestFuncManager(unittest.TestCase):
 
         ee.display_treeview_nodes(True)
 
-        #-- execution
+        # -- execution
         ee.execute()
-        #-- retrieve outputs
+        # -- retrieve outputs
         disc = ee.dm.get_disciplines_with_name(
             f'{self.name}.{func_mng_name}')[0]
         outputs = disc.get_sosdisc_outputs()
 
-        #-- check outputs with reference data
+        # -- check outputs with reference data
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
         self.assertAlmostEqual(outputs[OBJECTIVE][0], 0.8 * o1 + 0.2 * o2)
         self.assertGreater(outputs[INEQ_CONSTRAINT][0], 0.)
         self.assertGreater(outputs[EQ_CONSTRAINT][0], 0.)
 
-        res = 100. * (outputs[OBJECTIVE][0] +
-                      outputs[INEQ_CONSTRAINT][0] +
+        res = 100. * (outputs[OBJECTIVE][0] + 
+                      outputs[INEQ_CONSTRAINT][0] + 
                       outputs[EQ_CONSTRAINT][0])
 
         self.assertEqual(outputs[OBJECTIVE_LAGR][0], res)
@@ -233,7 +233,7 @@ class TestFuncManager(unittest.TestCase):
         EQ_CONSTRAINT = self.func_manager.EQ_CONSTRAINT
         OBJECTIVE_LAGR = FunctionManagerDisc.OBJECTIVE_LAGR
 
-        #-- init the case
+        # -- init the case
         func_mng_name = 'FunctionManager'
         prefix = self.name + '.' + func_mng_name + '.'
 
@@ -248,7 +248,7 @@ class TestFuncManager(unittest.TestCase):
         ee.factory.set_builders_to_coupling_builder(fm_builder)
         ee.configure()
 
-        #-- i/o setup
+        # -- i/o setup
         base_df = pd.DataFrame({'years': arange(10, 13)})
         obj1 = base_df.copy()
         obj1['obj1_values'] = 1.5
@@ -266,7 +266,7 @@ class TestFuncManager(unittest.TestCase):
         eqcst2 = base_df.copy()
         eqcst2['eqcst2_values'] = np.array([0.001, 0.001, 0.00001])
 
-        #-- ~GUI inputs: selection of functions
+        # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight'])
         func_df['variable'] = ['cst1', 'cst2', 'cst3',
@@ -278,7 +278,7 @@ class TestFuncManager(unittest.TestCase):
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
-        #-- data to simulate disciplinary chain outputs
+        # -- data to simulate disciplinary chain outputs
         values_dict[prefix + 'cst1'] = cst1
         values_dict[prefix + 'cst2'] = cst2
         values_dict[prefix + 'cst3'] = cst3
@@ -291,22 +291,22 @@ class TestFuncManager(unittest.TestCase):
 
         ee.display_treeview_nodes(True)
 
-        #-- execution
+        # -- execution
         ee.execute()
-        #-- retrieve outputs
+        # -- retrieve outputs
         disc = ee.dm.get_disciplines_with_name(
             f'{self.name}.{func_mng_name}')[0]
         outputs = disc.get_sosdisc_outputs()
 
-        #-- check outputs with reference data
+        # -- check outputs with reference data
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
         self.assertAlmostEqual(outputs[OBJECTIVE][0], 0.8 * o1 + 0.2 * o2)
         self.assertGreater(outputs[INEQ_CONSTRAINT][0], 0.)
         self.assertGreater(outputs[EQ_CONSTRAINT][0], 0.)
 
-        res = 100. * (outputs[OBJECTIVE][0] +
-                      outputs[INEQ_CONSTRAINT][0] +
+        res = 100. * (outputs[OBJECTIVE][0] + 
+                      outputs[INEQ_CONSTRAINT][0] + 
                       outputs[EQ_CONSTRAINT][0])
 
         self.assertEqual(outputs[OBJECTIVE_LAGR][0], res)
@@ -323,7 +323,7 @@ class TestFuncManager(unittest.TestCase):
         EQ_CONSTRAINT = self.func_manager.EQ_CONSTRAINT
         OBJECTIVE_LAGR = FunctionManagerDisc.OBJECTIVE_LAGR
 
-        #-- init the case
+        # -- init the case
         func_mng_name = 'FunctionManager'
         prefix = self.name + '.' + func_mng_name + '.'
 
@@ -338,7 +338,7 @@ class TestFuncManager(unittest.TestCase):
         ee.factory.set_builders_to_coupling_builder(fm_builder)
         ee.configure()
 
-        #-- i/o setup
+        # -- i/o setup
         base_df = pd.DataFrame({'years': arange(10, 11)})
         obj1 = base_df.copy()
         obj1['obj1_values'] = 100
@@ -352,18 +352,18 @@ class TestFuncManager(unittest.TestCase):
         cst3['cst3_values'] = 4000
         cst4 = base_df.copy()
         cst4['cst4_values'] = -0.01
-        #-- ~GUI inputs: selection of functions
+        # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight'])
         func_df['variable'] = ['cst1', 'cst2', 'cst3', 'cst4', 'obj1', 'obj2']
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
-                            INEQ_CONSTRAINT,  INEQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
+                            INEQ_CONSTRAINT, INEQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [-0.5, -1., -1., -1., 0.8, 0.2]
 
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
-        #-- data to simulate disciplinary chain outputs
+        # -- data to simulate disciplinary chain outputs
         values_dict[prefix + 'cst1'] = cst1
         values_dict[prefix + 'cst2'] = cst2
         values_dict[prefix + 'cst3'] = cst3
@@ -375,21 +375,21 @@ class TestFuncManager(unittest.TestCase):
 
         ee.display_treeview_nodes(True)
 
-        #-- execution
+        # -- execution
         ee.execute()
-        #-- retrieve outputs
+        # -- retrieve outputs
         disc = ee.dm.get_disciplines_with_name(
             f'{self.name}.{func_mng_name}')[0]
         outputs = disc.get_sosdisc_outputs()
 
-        #-- check outputs with reference data
+        # -- check outputs with reference data
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
         self.assertAlmostEqual(outputs[OBJECTIVE][0], 0.8 * o1 + 0.2 * o2)
         self.assertGreater(outputs[INEQ_CONSTRAINT][0], 0.)
 
-        res = 100. * (outputs[OBJECTIVE][0] +
-                      outputs[INEQ_CONSTRAINT][0] +
+        res = 100. * (outputs[OBJECTIVE][0] + 
+                      outputs[INEQ_CONSTRAINT][0] + 
                       outputs[EQ_CONSTRAINT][0])
 
         self.assertEqual(outputs[OBJECTIVE_LAGR][0], res)
@@ -405,7 +405,7 @@ class TestFuncManager(unittest.TestCase):
         INEQ_CONSTRAINT = self.func_manager.INEQ_CONSTRAINT
         EQ_CONSTRAINT = self.func_manager.EQ_CONSTRAINT
 
-        #-- init the case
+        # -- init the case
         func_mng_name = 'FunctionManager'
         prefix = self.name + '.' + func_mng_name + '.'
 
@@ -420,7 +420,7 @@ class TestFuncManager(unittest.TestCase):
         ee.factory.set_builders_to_coupling_builder(fm_builder)
         ee.configure()
 
-        #-- i/o setup
+        # -- i/o setup
         base_df = pd.DataFrame({'years': arange(10, 13)})
         obj1 = base_df.copy()
         obj1['obj1_values'] = 1.5
@@ -437,7 +437,7 @@ class TestFuncManager(unittest.TestCase):
         eqcst2 = base_df.copy()
         eqcst2['eqcst2_values'] = np.array([0.001, np.inf, 0.00001])
 
-        #-- ~GUI inputs: selection of functions
+        # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight'])
         func_df['variable'] = ['cst1', 'cst2', 'cst3',
@@ -448,7 +448,7 @@ class TestFuncManager(unittest.TestCase):
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
-        #-- data to simulate disciplinary chain outputs
+        # -- data to simulate disciplinary chain outputs
         values_dict[prefix + 'cst1'] = cst1
         values_dict[prefix + 'cst2'] = cst2
         values_dict[prefix + 'cst3'] = cst3
@@ -466,7 +466,7 @@ class TestFuncManager(unittest.TestCase):
         INEQ_CONSTRAINT = self.func_manager.INEQ_CONSTRAINT
         EQ_CONSTRAINT = self.func_manager.EQ_CONSTRAINT
 
-        #-- init the case
+        # -- init the case
         func_mng_name = 'FunctionManager'
         prefix = self.name + '.' + func_mng_name + '.'
 
@@ -481,7 +481,7 @@ class TestFuncManager(unittest.TestCase):
         ee.factory.set_builders_to_coupling_builder(fm_builder)
         ee.configure()
 
-        #-- i/o setup
+        # -- i/o setup
         base_df = pd.DataFrame({'years': arange(10, 13)})
         obj1 = base_df.copy()
         obj1['obj1_values'] = 1.5
@@ -499,7 +499,7 @@ class TestFuncManager(unittest.TestCase):
         eqcst2 = base_df.copy()
         eqcst2['eqcst2_values'] = np.array([0.001, 0.001, 0.00001])
 
-        #-- ~GUI inputs: selection of functions
+        # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight'])
         func_df['variable'] = ['cst1', 'cst2', 'cst3',
@@ -511,7 +511,7 @@ class TestFuncManager(unittest.TestCase):
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
-        #-- data to simulate disciplinary chain outputs
+        # -- data to simulate disciplinary chain outputs
         values_dict[prefix + 'cst1'] = cst1
         values_dict[prefix + 'cst2'] = cst2
         values_dict[prefix + 'cst3'] = cst3
@@ -524,19 +524,19 @@ class TestFuncManager(unittest.TestCase):
 
         ee.display_treeview_nodes(True)
 
-        #-- execution
+        # -- execution
         ee.execute()
-        #-- retrieve outputs
+        # -- retrieve outputs
         disc = ee.dm.get_disciplines_with_name(
             f'{self.name}.{func_mng_name}')[0]
         outputs = disc.get_sosdisc_outputs()
 
-        #-- check outputs with reference data
+        # -- check outputs with reference data
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
 
-        res = 100. * (outputs[OBJECTIVE][0] +
-                      outputs[INEQ_CONSTRAINT][0] +
+        res = 100. * (outputs[OBJECTIVE][0] + 
+                      outputs[INEQ_CONSTRAINT][0] + 
                       outputs[EQ_CONSTRAINT][0])
 
         disc_techno = ee.root_process.sos_disciplines[0]
@@ -548,3 +548,9 @@ class TestFuncManager(unittest.TestCase):
         # get charts
         filter = disc.get_chart_filter_list()
         graph_list = disc.get_post_processing_list(filter)
+        
+
+if '__main__' == __name__:
+    cls = TestFuncManager()
+    cls.setUp()
+    cls.test_07_jacobian_func_manager_disc()
