@@ -1,20 +1,27 @@
 from __future__ import annotations
-
-import copy
-import itertools
-import re
-
-import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-from plotly.validators.scatter.marker import SymbolValidator
+from gemseo.algos.doe.doe_factory import DOEFactory
+from numpy import array
 
 from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
-    OntologyDataConnector)
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
+import itertools
+import copy
+import numpy as np
+import re
+
+
+import itertools
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    TwoAxesInstanciatedChart,
+    InstanciatedSeries,
+)
+from sos_trades_core.tools.post_processing.tables.instanciated_table import (
+    InstanciatedTable,
+)
+import plotly.graph_objects as go
 from sos_trades_core.tools.post_processing.post_processing_tools import (
     align_two_y_axes,
     format_currency_legend,
@@ -22,9 +29,10 @@ from sos_trades_core.tools.post_processing.post_processing_tools import (
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
     InstantiatedPlotlyNativeChart,
 )
+from plotly.validators.scatter.marker import SymbolValidator
 
-
-
+from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
+    OntologyDataConnector)
 
 '''
 Copyright 2022 Airbus SAS
