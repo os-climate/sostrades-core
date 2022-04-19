@@ -170,6 +170,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param n_residuals: number of residuals
         :param n_variables: number of variables
         """
+
         # define the linear function
         def dres_dvar(x_array):
             """The linear operator that represents the square matrix dR/dy
@@ -367,7 +368,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                         pass
                 discipline.add_differentiated_inputs(list(set(disc_inputs)))
 
-            #- unconsistent check in case of a discipline that has no strong couplings (e.g, a discipline dead-end)
+            # - unconsistent check in case of a discipline that has no strong couplings (e.g, a discipline dead-end)
 #             if outputs and not inputs:
 #                 base_msg = (
 #                     "Discipline '{}' has the outputs '{}' that must be "
@@ -411,7 +412,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         # exec_before_linearize is set to False, if you want to come back to old NewtonRaphson
         # put the flag to True
         self.linearize_all_disciplines(in_data, exec_before_linearize=False)
-
+        
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
 
@@ -426,6 +427,8 @@ class SoSJacobianAssembly(JacobianAssembly):
             couplings, couplings, n_couplings, n_couplings, matrix_type=matrix_type
         )
         # form the residuals
+        # #
+        in_data = self.coupling_structure.disciplines[0]._convert_new_type_into_array(in_data)
         res = self.residuals(in_data, couplings)
         # solve the linear system
         factory = LinearSolversFactory()
@@ -480,7 +483,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         # solve the linear system
         factory = LinearSolversFactory()
-        linear_problem = LinearProblem(dres_dy,  res)
+        linear_problem = LinearProblem(dres_dy, res)
         factory.execute(linear_problem, linear_solver, **linear_solver_options)
         newton_step = linear_problem.solution
         self.n_newton_linear_resolutions += 1
@@ -545,7 +548,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                     )
                     self.n_linear_resolutions += 1
                     jac[fun][fun_component, :] = (
-                        dfunction_dx[fun_component, :] +
+                        dfunction_dx[fun_component, :] + 
                         (dres_dx.T.dot(adjoint)).T
                     )
         return jac
@@ -575,10 +578,10 @@ class SoSJacobianAssembly(JacobianAssembly):
         if unknown_dvars:
             raise ValueError(
                 "Some of the specified variables are not "
-                + "inputs of the disciplines: "
-                + str(unknown_dvars)
-                + " possible inputs are: "
-                + str(
+                +"inputs of the disciplines: "
+                +str(unknown_dvars)
+                +" possible inputs are: "
+                +str(
                     [
                         disc.get_input_data_names()
                         for disc in self.coupling_structure.disciplines
@@ -589,9 +592,9 @@ class SoSJacobianAssembly(JacobianAssembly):
         if unknown_outs:
             raise ValueError(
                 "Some outputs are not computed by the disciplines:"
-                + str(unknown_outs)
-                + " available outputs are: "
-                + str(
+                +str(unknown_outs)
+                +" available outputs are: "
+                +str(
                     [
                         disc.get_output_data_names()
                         for disc in self.coupling_structure.disciplines
@@ -602,23 +605,23 @@ class SoSJacobianAssembly(JacobianAssembly):
         for coupling in set(couplings) & set(variables):
             raise ValueError(
                 "Variable "
-                + str(coupling)
-                + " is both a coupling and a design variable"
+                +str(coupling)
+                +" is both a coupling and a design variable"
             )
 
         if matrix_type not in self.AVAILABLE_MAT_TYPES:
             raise ValueError(
                 "Unknown matrix type "
-                + str(matrix_type)
-                + ", available ones are "
-                + str(self.AVAILABLE_MAT_TYPES)
+                +str(matrix_type)
+                +", available ones are "
+                +str(self.AVAILABLE_MAT_TYPES)
             )
 
         if use_lu_fact and matrix_type == self.LINEAR_OPERATOR:
             raise ValueError(
                 "Unsupported LU factorization for "
-                + "LinearOperators! Please use Sparse matrices"
-                + " instead"
+                +"LinearOperators! Please use Sparse matrices"
+                +" instead"
             )
 
     def linearize_all_disciplines(
