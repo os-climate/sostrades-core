@@ -1,4 +1,5 @@
 from __future__ import annotations
+from weakref import ref
 import pandas as pd
 from gemseo.algos.doe.doe_factory import DOEFactory
 from numpy import array
@@ -167,7 +168,7 @@ class GridSearchEval(DoeEval):
             self.set_eval_in_out_lists(
                 self.selected_inputs, self.selected_outputs)
 
-            # grid8seqrch can be done only for selected inputs and outputs
+            # grid_search can be done only for selected inputs and outputs
             if len(self.eval_in_list) > 0:
                 # setting dynamic outputs. One output of type dict per selected
                 # output
@@ -513,14 +514,13 @@ class GridSearchEval(DoeEval):
                 k: v['shortest_name'] for k, v in eval_inputs_filtered_dict.items()
             }
 
-
         doe_samples_df = outputs_discipline_dict['samples_inputs_df']
 
 
         # retrive full input list
         inputs_list = [
             col for col in doe_samples_df.columns if col not in ['scenario']]
-
+        inputs_list.sort(reverse=True)
         scenarii = len(doe_samples_df['scenario'])
 
         # generate all combinations of 2 inputs which will correspond to the
@@ -690,7 +690,7 @@ class GridSearchEval(DoeEval):
                 if not z_data_None:
                     chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
                     chart_data = cont_plot_df.loc[:, [
-                                                         'scenario', x_vble, y_vble, z_vble, slider_list[0]['full_name']]]
+                                                         'scenario', x_vble, y_vble,slider_list[0]['full_name'], z_vble ]]
 
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
@@ -723,64 +723,255 @@ class GridSearchEval(DoeEval):
 
         return chart_dict, output_df_to_return
 
+    def get_chart_filter_list(self):
+        
+        chart_filters = []
+        outputs_dict = self.get_sosdisc_outputs()
+        inputs_dict = self.get_sosdisc_inputs()
+        self.chart_dict, output_df = self.prepare_chart_dict(
+            outputs_dict, inputs_dict)
+        chart_list = list(self.chart_dict.keys()) 
+        if 'reference_scenario' in self.chart_dict[chart_list[0]] :
+            if len(self.chart_dict[chart_list[0]]['reference_scenario']):
+                chart_list.insert(0,'Reference Scenario')
+                
+        chart_filters.append(ChartFilter(
+            'Charts', chart_list, chart_list, 'Charts'))
 
-        def get_chart_filter_list(self):
-            chart_filters = []
+        return chart_filters
 
-            outputs_dict = self.get_sosdisc_outputs()
-            inputs_dict = self.get_sosdisc_inputs()
-            self.chart_dict, output_df = self.prepare_chart_dict(
-                outputs_dict, inputs_dict)
-            chart_list = list(self.chart_dict.keys())
+    def get_post_processing_list(self, filters=None):
 
-            chart_filters.append(ChartFilter(
-                'Charts', chart_list, chart_list, 'Charts'))
+        instanciated_charts = []
 
-            return chart_filters
+        outputs_dict = self.get_sosdisc_outputs()
+        inputs_dict = self.get_sosdisc_inputs()
+        self.chart_dict, output_df = self.prepare_chart_dict(
+            outputs_dict, inputs_dict)
+        # chart_dict = self.chart_dict
 
-        def get_post_processing_list(self, filters=None):
+        if filters is not None:
+            for chart_filter in filters:
+                if chart_filter.filter_key == 'Charts':
+                    graphs_list = chart_filter.selected_values
 
-            instanciated_charts = []
+        if 'Reference Scenario' in graphs_list:
+            
+            fig = go.Figure()
+            
+            first_chart_info=self.chart_dict[list(self.chart_dict.keys())[0]]
+            eval_inputs_df=inputs_dict['design_space'].copy(deep=True)
+            eval_in_list=eval_inputs_df['shortest_name'].to_list()
+            ref_scen_df=self.get_postprocessing_table(first_chart_info, eval_in_list)
+            colores = ['lavender' if tipo=='input' in ref_scen_df['Type'].to_list() else 'floralwhite' for tipo in ref_scen_df['Type'] ]
+            
+            fig.add_trace(
+                go.Table(
+                    header=dict(
+                        values=ref_scen_df.columns.tolist(),
+                        fill_color='midnightblue',
+                        align='center',
+                        font_color='white',
+                    ),
+                    cells=dict(
+                        values=ref_scen_df.T.values.tolist(),
+                        fill_color=[colores],
+                        align='center',
+                    ),
+                )
+            )
 
-            outputs_dict = self.get_sosdisc_outputs()
-            inputs_dict = self.get_sosdisc_inputs()
-            self.chart_dict, output_df = self.prepare_chart_dict(
-                outputs_dict, inputs_dict)
-            # chart_dict = self.chart_dict
-
-            if filters is not None:
-                for chart_filter in filters:
-                    if chart_filter.filter_key == 'Charts':
-                        graphs_list = chart_filter.selected_values
-
-            if len(self.chart_dict.keys()) > 0:
-                # we create a unique dataframe containing all data that will be
-                # used for drawing the graphs
-
-                # doe_samples_df = outputs_dict['doe_samples_dataframe']
+            table_name = 'Reference Scenario Data'
+            number_of_rows = ref_scen_df.shape[0]
+            fig.update_layout(
+                title_text='Reference Scenario',
+                showlegend=False,
+                autosize=True,
+                height=number_of_rows * 30 + 250,
+            )
+            
+            if len(fig.data):
+                    # Create native plotly chart
+                new_chart = InstantiatedPlotlyNativeChart(
+                    fig=fig, chart_name=table_name, default_legend=False, default_font=True, with_default_annotations=False)
+                # new_chart.to_plotly().show()
+                instanciated_charts.append(new_chart)
+            
+        if len(self.chart_dict.keys()) > 0:
+            # we create a unique dataframe containing all data that will be
+            # used for drawing the graphs
 
                 # we go through the list of charts and draw all of them
-                for name, chart_info in self.chart_dict.items():
-                    if name in graphs_list:
+            for name, chart_info in self.chart_dict.items():
+                if name in graphs_list:
+                    
+                    if len(chart_info['slider']) == 0:
 
-                        if len(chart_info['slider']) == 0:
+                        fig = go.Figure()
 
-                            fig = go.Figure()
+                        x_data = chart_info['chart_data'][chart_info['x']].to_list(
+                        )
 
-                            x_data = chart_info['chart_data'][chart_info['x']].to_list(
+                        y_data = chart_info['chart_data'][chart_info['y']].to_list(
+                        )
+                        z_data = chart_info['chart_data'][chart_info['z']].replace(
+                            np.nan, 'None').to_list()
+
+
+                        x_max = max(x_data)
+                        y_max = max(y_data)
+                        x_min = min(x_data)
+                        y_min = min(y_data)
+
+                        fig.add_trace(
+                            go.Contour(
+                                x=x_data,
+                                y=y_data,
+                                z=z_data,
+                                colorscale='YlGnBu', reversescale=True,
+                                contours=dict(
+                                    coloring='heatmap',
+                                    showlabels=True,  # show labels on contours
+                                    labelfont=dict(  # label font properties
+                                        size=10,
+                                        # color = 'white',
+                                    ),
+
+                                ),
+                                colorbar=dict(
+                                    title=f'{chart_info["z"]}',
+                                    nticks=10,
+                                    ticklen=5,
+                                    tickwidth=1,
+                                    ticksuffix=f'{chart_info["z_unit"]}',
+                                    tickangle=0,
+                                    tickfont_size=10,
+                                ),
+                                visible=True,
+                                connectgaps=False,
+                                hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
+
+                                            '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                            '<br><b>{}<b>'.format(
+                                                chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
+                                    chart_info["z_unit"]),
+                                name="",
+
+                            )
+                        )
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=x_data,
+                                y=y_data,
+                                mode='markers',
+                                marker_symbol=SymbolValidator(
+                                ).values[SymbolValidator().values.index('x-thin')],
+                                marker=dict(
+                                    size=5,
+                                    color='dimGray',
+                                    symbol='x-thin',
+                                    line=dict(
+                                        # color='MediumPurple',
+                                        width=2,
+                                    )
+                                ),
+                                visible=True,
+                                showlegend=False,
+                                hoverinfo='skip'
+                                )
                             )
 
-                            y_data = chart_info['chart_data'][chart_info['y']].to_list(
-                            )
-                            z_data = chart_info['chart_data'][chart_info['z']].replace(
-                                np.nan, 'None').to_list()
+                        if len(chart_info['reference_scenario']):
 
+                            x_ref_scen=chart_info['reference_scenario'][chart_info['x']].to_list()
+                            y_ref_scen=chart_info['reference_scenario'][chart_info['y']].to_list()
+                            z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
+                            legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
+
+
+                            # if float(chart_info['reference_scenario'][col_slider])==slide_value:
+
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_ref_scen,
+                                    y=y_ref_scen,
+                                    mode='markers',
+                                    marker_symbol=SymbolValidator(
+                                    ).values[SymbolValidator().values.index('star')],
+                                    marker_color="#f03b20",
+                                    marker_size=10,
+                                    visible=True,
+                                    showlegend=False,
+                                    hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
+
+                                        '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                        '<br>{} '.format(
+                                            chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                    name='Reference Scenario',
+
+                                )
+                            )
+
+                        fig.update_layout(
+                            autosize=True,
+                            xaxis=dict(
+                                title=chart_info['x_short'],
+                                ticksuffix=chart_info["x_unit"],
+                                titlefont_size=12,
+                                tickfont_size=10,
+                                automargin=True,
+                                range=[x_min, x_max],
+                            ),
+                            yaxis=dict(
+                                title=chart_info['y_short'],
+                                ticksuffix=chart_info["y_unit"],
+                                titlefont_size=12,
+                                tickfont_size=10,
+                                automargin=True,
+                                range=[y_min, y_max],
+                            ),
+                        )
+
+                        if len(fig.data) > 0:
+                            chart_name = f'<b>{name}</b>'
+                            new_chart = InstantiatedPlotlyNativeChart(
+                                fig=fig, chart_name=chart_name, default_legend=False
+                            )
+                            instanciated_charts.append(new_chart)
+
+                    if len(chart_info['slider']) == 1:
+                        col_slider = chart_info['slider'][0]['full_name']
+                        slider_short_name = chart_info['slider'][0]['short_name']
+                        slider_unit = chart_info['slider'][0]['unit']
+                        slider_values = chart_info['chart_data'][col_slider].unique(
+                        )
+                        z_max = chart_info['z_max']
+                        z_min = chart_info['z_min']
+
+                        fig = go.Figure()
+
+                        for slide_value in slider_values:
+                            x_data = chart_info['chart_data'].loc[
+                                chart_info['chart_data'][col_slider] == slide_value
+                                ][chart_info['x']].to_list()
+                            y_data = chart_info['chart_data'].loc[
+                                chart_info['chart_data'][col_slider] == slide_value
+                                ][chart_info['y']].to_list()
+                            z_data = chart_info['chart_data'].loc[
+                                chart_info['chart_data'][col_slider] == slide_value
+                                ][chart_info['z']].replace(np.nan, 'None').to_list()
 
                             x_max = max(x_data)
-                            y_max = max(y_data)
                             x_min = min(x_data)
                             y_min = min(y_data)
+                            y_max = max(y_data)
 
+                            # Initialization Slider
+                            if slide_value == slider_values[-1]:
+                                visible = True
+                            else:
+                                visible = False
                             fig.add_trace(
                                 go.Contour(
                                     x=x_data,
@@ -794,30 +985,32 @@ class GridSearchEval(DoeEval):
                                             size=10,
                                             # color = 'white',
                                         ),
+                                        start=z_min,
+                                        end=z_max,
 
                                     ),
                                     colorbar=dict(
                                         title=f'{chart_info["z"]}',
                                         nticks=10,
+                                        ticks='outside',
                                         ticklen=5,
                                         tickwidth=1,
                                         ticksuffix=f'{chart_info["z_unit"]}',
+                                        # showticklabels=True,
                                         tickangle=0,
                                         tickfont_size=10,
                                     ),
-                                    visible=True,
+                                    visible=visible,
                                     connectgaps=False,
                                     hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-
-                                                  '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                                  '<br><b>{}<b>'.format(
-                                                      chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
+                                                '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                                '<br><b>{}<b>'.format(
+                                                    chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
                                         chart_info["z_unit"]),
-                                    name="",
-
+                                    name='{} '.format(
+                                        slider_short_name) + f': {slide_value}{slider_unit}',
                                 )
                             )
-
                             fig.add_trace(
                                 go.Scatter(
                                     x=x_data,
@@ -828,28 +1021,26 @@ class GridSearchEval(DoeEval):
                                     marker=dict(
                                         size=5,
                                         color='dimGray',
-                                        symbol='x-thin',
                                         line=dict(
                                             # color='MediumPurple',
                                             width=2,
                                         )
                                     ),
-                                    visible=True,
+                                    visible=visible,
                                     showlegend=False,
-                                    hoverinfo='skip'
+                                    hoverinfo='skip',
                                 )
                             )
 
                             if len(chart_info['reference_scenario']):
-
-                                x_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['x']].to_list()
-                                y_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['y']].to_list()
-                                z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
-                                legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
-
+                                x_ref_scen = chart_info['reference_scenario'].loc[
+                                    chart_info['reference_scenario'][col_slider] == slide_value][
+                                    chart_info['x']].to_list()
+                                y_ref_scen = chart_info['reference_scenario'].loc[
+                                    chart_info['reference_scenario'][col_slider] == slide_value][
+                                    chart_info['y']].to_list()
 
                                 # if float(chart_info['reference_scenario'][col_slider])==slide_value:
-
                                 fig.add_trace(
                                     go.Scatter(
                                         x=x_ref_scen,
@@ -859,256 +1050,126 @@ class GridSearchEval(DoeEval):
                                         ).values[SymbolValidator().values.index('star')],
                                         marker_color="#f03b20",
                                         marker_size=10,
-                                        visible=True,
+                                        visible=visible,
                                         showlegend=False,
                                         hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-
-                                            '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                            '<br>{} '.format(
-                                                slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
-                                            '<br><b>{}<b>'.format(
-                                                chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                        name='Reference Scenario',
-
-                                    )
-                                )
-
-                            fig.update_layout(
-                                autosize=True,
-                                xaxis=dict(
-                                    title=chart_info['x_short'],
-                                    ticksuffix=chart_info["x_unit"],
-                                    titlefont_size=12,
-                                    tickfont_size=10,
-                                    automargin=True,
-                                    range=[x_min, x_max],
-                                ),
-                                yaxis=dict(
-                                    title=chart_info['y_short'],
-                                    ticksuffix=chart_info["y_unit"],
-                                    titlefont_size=12,
-                                    tickfont_size=10,
-                                    automargin=True,
-                                    range=[y_min, y_max],
-                                ),
-                            )
-
-                            if len(fig.data) > 0:
-                                chart_name = f'<b>{name}</b>'
-                                new_chart = InstantiatedPlotlyNativeChart(
-                                    fig=fig, chart_name=chart_name, default_legend=False
-                                )
-                                instanciated_charts.append(new_chart)
-
-                        if len(chart_info['slider']) == 1:
-                            col_slider = chart_info['slider'][0]['full_name']
-                            slider_short_name = chart_info['slider'][0]['short_name']
-                            slider_unit = chart_info['slider'][0]['unit']
-                            slider_values = chart_info['chart_data'][col_slider].unique(
-                            )
-                            z_max = chart_info['z_max']
-                            z_min = chart_info['z_min']
-
-                            fig = go.Figure()
-
-                            for slide_value in slider_values:
-                                x_data = chart_info['chart_data'].loc[
-                                    chart_info['chart_data'][col_slider] == slide_value
-                                    ][chart_info['x']].to_list()
-                                y_data = chart_info['chart_data'].loc[
-                                    chart_info['chart_data'][col_slider] == slide_value
-                                    ][chart_info['y']].to_list()
-                                z_data = chart_info['chart_data'].loc[
-                                    chart_info['chart_data'][col_slider] == slide_value
-                                    ][chart_info['z']].replace(np.nan, 'None').to_list()
-
-                                x_max = max(x_data)
-                                x_min = min(x_data)
-                                y_min = min(y_data)
-                                y_max = max(y_data)
-
-                                # Initialization Slider
-                                if slide_value == slider_values[-1]:
-                                    visible = True
-                                else:
-                                    visible = False
-                                fig.add_trace(
-                                    go.Contour(
-                                        x=x_data,
-                                        y=y_data,
-                                        z=z_data,
-                                        colorscale='YlGnBu', reversescale=True,
-                                        contours=dict(
-                                            coloring='heatmap',
-                                            showlabels=True,  # show labels on contours
-                                            labelfont=dict(  # label font properties
-                                                size=10,
-                                                # color = 'white',
-                                            ),
-                                            start=z_min,
-                                            end=z_max,
-
-                                        ),
-                                        colorbar=dict(
-                                            title=f'{chart_info["z"]}',
-                                            nticks=10,
-                                            ticks='outside',
-                                            ticklen=5,
-                                            tickwidth=1,
-                                            ticksuffix=f'{chart_info["z_unit"]}',
-                                            # showticklabels=True,
-                                            tickangle=0,
-                                            tickfont_size=10,
-                                        ),
-                                        visible=visible,
-                                        connectgaps=False,
-                                        hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-                                                      '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                                      '<br><b>{}<b>'.format(
-                                                          chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
+                                                    '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                                    '<br>{} '.format(
+                                                        slider_short_name) + ': {}'.format(float(
+                                            chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
+                                                    '<br><b>{}<b>'.format(
+                                                        chart_info["z"]) + ': <b> {}<b>'.format(float(
+                                            chart_info['reference_scenario'][
+                                                chart_info['z']].values)) + '<b> {}<b><br>'.format(
                                             chart_info["z_unit"]),
-                                        name='{} '.format(
-                                            slider_short_name) + f': {float(chart_info["reference_scenario"][col_slider])}{slider_unit}',
-                                    )
-                                )
-                                fig.add_trace(
-                                    go.Scatter(
-                                        x=x_data,
-                                        y=y_data,
-                                        mode='markers',
-                                        marker_symbol=SymbolValidator(
-                                        ).values[SymbolValidator().values.index('x-thin')],
-                                        marker=dict(
-                                            size=5,
-                                            color='dimGray',
-                                            line=dict(
-                                                # color='MediumPurple',
-                                                width=2,
-                                            )
-                                        ),
-                                        visible=visible,
-                                        showlegend=False,
-                                        hoverinfo='skip',
+                                        name='Reference Scenario',
                                     )
                                 )
 
-                                if len(chart_info['reference_scenario']):
-                                    x_ref_scen = chart_info['reference_scenario'].loc[
-                                        chart_info['reference_scenario'][col_slider] == slide_value][
-                                        chart_info['x']].to_list()
-                                    y_ref_scen = chart_info['reference_scenario'].loc[
-                                        chart_info['reference_scenario'][col_slider] == slide_value][
-                                        chart_info['y']].to_list()
+                        # Create and add slider
+                        steps = []
+                        if len(chart_info['reference_scenario']):
+                            lid = 3
+                        else:
+                            lid = 2
 
-                                    # if float(chart_info['reference_scenario'][col_slider])==slide_value:
-                                    fig.add_trace(
-                                        go.Scatter(
-                                            x=x_ref_scen,
-                                            y=y_ref_scen,
-                                            mode='markers',
-                                            marker_symbol=SymbolValidator(
-                                            ).values[SymbolValidator().values.index('star')],
-                                            marker_color="#f03b20",
-                                            marker_size=10,
-                                            visible=visible,
-                                            showlegend=False,
-                                            hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-                                                          '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                                          '<br>{} '.format(
-                                                              slider_short_name) + ': {}'.format(float(
-                                                chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
-                                                          '<br><b>{}<b>'.format(
-                                                              chart_info["z"]) + ': <b> {}<b>'.format(float(
-                                                chart_info['reference_scenario'][
-                                                    chart_info['z']].values)) + '<b> {}<b><br>'.format(
-                                                chart_info["z_unit"]),
-                                            name='Reference Scenario',
-                                        )
-                                    )
+                        for i in range(int(len(fig.data) / lid)):
+                            # for i in range(int(len(fig.data) / 2)):
 
-                            # Create and add slider
-                            steps = []
-                            if len(chart_info['reference_scenario']):
-                                lid = 3
-                            else:
-                                lid = 2
-
-                            for i in range(int(len(fig.data) / lid)):
-                                # for i in range(int(len(fig.data) / 2)):
-
-                                step = dict(
-                                    method="update",
-                                    args=[
-                                        {"visible": [False] * len(fig.data)},
-                                        {"title": f'<b>{name}</b>'},
-                                    ],
-                                    # layout attribute
-                                    label=f'{slider_values[i]}{slider_unit}',
-                                )
-                                # Toggle i'th trace to 'visible'
-                                for k in range(lid):
-                                    step['args'][0]['visible'][i * lid + k] = True
-                                steps.append(step)
-                                # for k in range(2):
-                                # step['args'][0]['visible'][i * 2 + k] = True
-
-                            sliders = [
-                                dict(
-                                    active=len(steps) - 1,
-                                    currentvalue={
-                                        'visible': True,
-                                        "prefix": f'{slider_short_name}: ',
-                                    },
-                                    steps=steps,
-                                    pad=dict(t=50),
-                                )
-                            ]
-
-                            fig.update_layout(
-                                sliders=sliders,
-                                autosize=True,
-                                hoverlabel_align='left',
-                                xaxis=dict(
-                                    title=f'{chart_info["x_short"]}',
-                                    ticksuffix=chart_info["x_unit"],
-                                    titlefont_size=12,
-                                    tickfont_size=10,
-                                    automargin=True,
-                                    range=[x_min, x_max],
-                                ),
-                                yaxis=dict(
-                                    title=f'{chart_info["y_short"]}',
-                                    titlefont_size=12,
-                                    tickfont_size=10,
-                                    ticksuffix=chart_info["y_unit"],
-                                    # tickformat=',.0%',
-                                    automargin=True,
-                                    range=[y_min, y_max],
-                                ),
+                            step = dict(
+                                method="update",
+                                args=[
+                                    {"visible": [False] * len(fig.data)},
+                                    {"title": f'<b>{name}</b>'},
+                                ],
+                                # layout attribute
+                                label=f'{slider_values[i]}{slider_unit}',
                             )
+                            # Toggle i'th trace to 'visible'
+                            for k in range(lid):
+                                step['args'][0]['visible'][i * lid + k] = True
+                            steps.append(step)
+                            # for k in range(2):
+                            # step['args'][0]['visible'][i * 2 + k] = True
 
+                        sliders = [
+                            dict(
+                                active=len(steps) - 1,
+                                currentvalue={
+                                    'visible': True,
+                                    "prefix": f'{slider_short_name}: ',
+                                },
+                                steps=steps,
+                                pad=dict(t=50),
+                            )
+                        ]
 
-                            # Create native plotly chart
-                            last_value = slider_values[-1]
-                            if len(fig.data) > 0:
-                                chart_name = f'<b>{name}</b>'
-                                new_chart = InstantiatedPlotlyNativeChart(
-                                    fig=fig, chart_name=chart_name, default_legend=False
-                                )
+                        fig.update_layout(
+                            sliders=sliders,
+                            autosize=True,
+                            hoverlabel_align='left',
+                            xaxis=dict(
+                                title=f'{chart_info["x_short"]}',
+                                ticksuffix=chart_info["x_unit"],
+                                titlefont_size=12,
+                                tickfont_size=10,
+                                automargin=True,
+                                range=[x_min, x_max],
+                            ),
+                            yaxis=dict(
+                                title=f'{chart_info["y_short"]}',
+                                titlefont_size=12,
+                                tickfont_size=10,
+                                ticksuffix=chart_info["y_unit"],
+                                # tickformat=',.0%',
+                                automargin=True,
+                                range=[y_min, y_max],
+                            ),
+                        )
 
-                            if len(chart_info['reference_scenario']):
-                                note = {
-                                    'Reference Scenario': ' ' , 
-                                    f'{chart_info["x_short"]}': str(float(chart_info["reference_scenario"][chart_info["x"]].values)) + f'{chart_info["x_unit"]}' , 
-                                    f'{chart_info["y_short"]}': str(float(chart_info["reference_scenario"][chart_info["y"]].values)) + f'{chart_info["y_unit"]}' , 
-                                    f'{slider_short_name}': str(float(chart_info["reference_scenario"][col_slider].values)) + f'{slider_unit}' ,
-                                    f'{chart_info["z"]}':  f'{round(z_ref_hover,5)} {legend_letter}' + f'{chart_info["z_unit"]}',
-                                }
-                                new_chart.annotation_upper_left = note
+                        # Create native plotly chart
+                        last_value = slider_values[-1]
+                        if len(fig.data) > 0:
+                            chart_name = f'<b>{name}</b>'
+                            new_chart = InstantiatedPlotlyNativeChart(
+                                fig=fig, chart_name=chart_name, default_legend=False
+                            )
                             instanciated_charts.append(new_chart)
 
             return instanciated_charts
 
+    def get_postprocessing_table(self, ref_scen_dict, eval_in_list):
+        
+        row_ref_scen=copy.deepcopy(ref_scen_dict['reference_scenario'])
+        if len(ref_scen_dict['slider'])==0: 
+            row_ref_scen.rename(columns={
+                ref_scen_dict['x']:ref_scen_dict['x_short'],
+                ref_scen_dict['y']:ref_scen_dict['y_short'],
+            }, inplace=True)
+        elif len(ref_scen_dict['slider'])==1:
+            row_ref_scen.rename(columns={
+                ref_scen_dict['x']:ref_scen_dict['x_short'],
+                ref_scen_dict['y']:ref_scen_dict['y_short'],
+                ref_scen_dict['slider'][0]['full_name']:ref_scen_dict['slider'][0]['short_name'],
+            }, inplace=True)
+        
+        
+        df=row_ref_scen.drop(['scenario'], axis='columns').T.reset_index()
+        df.columns=['Parameter', 'table_value']
+        df['Type']=["input" if param in eval_in_list else "output" for param in df['Parameter']] 
+        df['pretty_value']=df['table_value'].apply(lambda x: str(round(get_order_of_magnitude(x)[-1],5)) + ' '+ get_order_of_magnitude(x)[0])
+        df['unit']='None'    
+        df['unit'].where(df['Parameter']!=ref_scen_dict['x_short'], ref_scen_dict['x_unit'], inplace=True)
+        df['unit'].where(df['Parameter']!=ref_scen_dict['y_short'], ref_scen_dict['y_unit'], inplace=True)
+        if len(ref_scen_dict['slider'])==1:
+            df['unit'].where(df['Parameter']!=ref_scen_dict['slider'][0]['short_name'], ref_scen_dict['slider'][0]['unit'], inplace=True)
+        df['unit'].where(df['unit']!='None', ref_scen_dict['z_unit'], inplace=True)
+        df.replace(np.nan,'None', inplace=True)
+        df['Value']=df['pretty_value'] +  df['unit']
+        
+        table_fig=df[['Type','Parameter','Value']]
+        
+        return table_fig
 
 def get_order_of_magnitude(maxvalue):
 
