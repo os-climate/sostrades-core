@@ -1107,7 +1107,7 @@ class GridSearchEval(DoeEval):
                                 new_chart.annotation_upper_left = note
                             instanciated_charts.append(new_chart)
 
-        return instanciated_charts
+            return instanciated_charts
 
 
 def get_order_of_magnitude(maxvalue):
