@@ -1222,7 +1222,7 @@ class TestCache(unittest.TestCase):
         # check that grid search has not run since cache is not activated
         self.assertEqual(n_call_grid_search_5, n_call_grid_search_4 + 1)
 
-    def test_14_simple_cache_on_grid_search_subprocess(self):
+    def _test_14_simple_cache_on_grid_search_subprocess(self):
         """In this test we prove the ability of the cache to work properly on a grid search
         We activate simple cache, change a grid search subprocess input (here an input of Disc1)
         We expect the grid search to run since its subprocess has changed
