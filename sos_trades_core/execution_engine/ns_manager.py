@@ -159,7 +159,17 @@ class NamespaceManager:
         '''
         return copy(self.shared_ns_dict)
 
+    def get_ns_in_shared_ns_dict(self, ns_name):
+        '''
+        Get a deepcopy of the shared_ns_dict
+        '''
+        if ns_name not in self.shared_ns_dict:
+            raise Exception(
+                f'The namespace {ns_name} is not defined in the namespace manager')
+        else:
+            return self.shared_ns_dict[ns_name]
     #-- Disciplinary name space management
+
     def reset_current_disc_ns(self):
         '''
         Reset the current_disc_ns to None
@@ -425,6 +435,14 @@ class NamespaceManager:
                     new_ns_value_split)
             else:
                 return self.compose_ns([ns_value, extra_ns])
+
+    def modify_all_local_namespaces_with_study_name(self, study_name):
+
+        for ns_dict in self.disc_ns_dict.values():
+            old_local_ns_value = ns_dict['local_ns'].get_value()
+
+            ns_dict['local_ns'].update_value(
+                old_local_ns_value.replace(self.ee.study_name, study_name))
 
 
 class NamespaceManagerException(Exception):
