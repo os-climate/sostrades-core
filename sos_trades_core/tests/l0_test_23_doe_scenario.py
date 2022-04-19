@@ -844,7 +844,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'doe_samples_dataframe')
+            'samples_inputs_df')
 
         dimension = sum([len(sublist) if isinstance(
             sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
@@ -919,7 +919,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'doe_samples_dataframe')
+            'samples_inputs_df')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
@@ -994,7 +994,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'doe_samples_dataframe')
+            'samples_inputs_df')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
@@ -1236,7 +1236,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'doe_samples_dataframe')
+            'samples_inputs_df')
 
         # check that the generated samples are the ones expected (custom sample + reference value)
         expected_doe_disc_samples = pd.DataFrame(
@@ -1310,7 +1310,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         # check that all generated samples (except the last one which is the initial point) are within [0,10.] range
         generated_x = exec_eng.dm.get_value(
-            'doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+            'doe.DoEEval.samples_inputs_df')['x'].tolist()
         self.assertTrue(all(0 <= element <= 10. for element in generated_x[:-1]))
 
         # trigger a reconfiguration after options and design space changes
@@ -1319,7 +1319,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
         generated_x = exec_eng.dm.get_value(
-            'doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+            'doe.DoEEval.samples_inputs_df')['x'].tolist()
         self.assertTrue(all(5. <= element <= 11. for element in generated_x[:-1]))
 
         # trigger a reconfiguration after algo name change
@@ -1333,11 +1333,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         generated_x = exec_eng.dm.get_value(
-            'doe.DoEEval.doe_samples_dataframe')['x'].tolist()
+            'doe.DoEEval.samples_inputs_df')['x'].tolist()
         self.assertTrue(all(-9. <= element <= 150. for element in generated_x[:-1]))
 
         generated_z = exec_eng.dm.get_value(
-            'doe.DoEEval.doe_samples_dataframe')['z'].tolist()
+            'doe.DoEEval.samples_inputs_df')['z'].tolist()
         self.assertTrue(
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z[:-1]))
@@ -1404,7 +1404,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'doe_samples_dataframe')
+            'samples_inputs_df')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
