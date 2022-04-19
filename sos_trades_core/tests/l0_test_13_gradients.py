@@ -150,33 +150,34 @@ class TestGradients(unittest.TestCase):
 
     def test_03_gradients_disc1_gems(self):
 
-        ns_dict = {'ns_ac': f'{self.name}'}
+        ns_dict = {'ns_protected': f'{self.name}'}
         self.exec_eng.ns_manager.add_ns_def(ns_dict)
         # macro_economics
-        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc1.Disc1'
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
-            'Disc1', mod_list)
+            'Disc6', mod_list)
         self.exec_eng.factory.set_builders_to_coupling_builder(disc1_builder)
 
         self.exec_eng.configure()
         data_dict = {}
-        data_dict['EETests.x'] = np.array([5.])
-        data_dict['EETests.Disc1.a'] = np.array([5.])
-        data_dict['EETests.Disc1.b'] = np.array([20.])
+        x = np.array([2., 5.])
+        data_dict['EETests.x'] = x
         self.exec_eng.load_study_from_input_dict(data_dict)
 
         disc = self.exec_eng.root_process.sos_disciplines[0]
 
         # -- run gradient with complex step and finite differences
-        dy_dx_ref = disc.get_sosdisc_inputs('a')
+        dh_dx_ref = np.array([[0.5 - 0.5 / (2 * x[0] ** 2), 0.], [0., 0.5 - 0.5 / (2 * x[1] ** 2)]])
+
         for approx_method in MDODiscipline.APPROX_MODES:
             print("\t Test with approximation mode ", approx_method)
             disc.linearization_mode = approx_method
             jac = disc.linearize(data_dict, force_all=True)
-            dy_dx = jac['EETests.y']['EETests.x'][0]
+            dh_dx = jac['EETests.h']['EETests.x']
             print(jac)
+            print(dh_dx_ref)
             msg = "Gradient computation error with method " + approx_method
-            assert_array_almost_equal(dy_dx, dy_dx_ref, err_msg=msg, decimal=8)
+            assert_array_almost_equal(dh_dx, dh_dx_ref, err_msg=msg, decimal=8)
 
     def test_04_set_grad_possible_values(self):
 
@@ -706,4 +707,4 @@ class TestGradients(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestGradients()
     cls.setUp()
-    cls.test_06_hessian_with_double_gradient()
+    cls.test_03_gradients_disc1_gems()
