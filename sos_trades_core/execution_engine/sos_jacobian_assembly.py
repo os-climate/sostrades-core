@@ -427,7 +427,7 @@ class SoSJacobianAssembly(JacobianAssembly):
             couplings, couplings, n_couplings, n_couplings, matrix_type=matrix_type
         )
         # form the residuals
-        # #
+        # convert into array to compute residuals
         in_data = self.coupling_structure.disciplines[0]._convert_new_type_into_array(in_data)
         res = self.residuals(in_data, couplings)
         # solve the linear system

@@ -116,7 +116,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 else:
                     self.local_data.update(outs)
 
-            # convert local_data into array for next iterate computation
+            # convert local_data into array to compute residual
             self.local_data = self.sos_disciplines[0]._convert_new_type_into_array(self.local_data)
             new_couplings = self._current_strong_couplings()
             self._compute_residual(

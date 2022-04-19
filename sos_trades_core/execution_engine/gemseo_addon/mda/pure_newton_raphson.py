@@ -124,7 +124,7 @@ class PureNewtonRaphson(MDARoot):
         # store initial residual
         current_iter = 1
         self.reset_disciplines_statuses()
-        # convert local_data into array
+        # convert local_data into array to compute concatenades strong couplings
         old_x = self.disciplines[0]._convert_new_type_into_array(
             deepcopy(self.local_data))
 
@@ -151,6 +151,7 @@ class PureNewtonRaphson(MDARoot):
             input_couplings = {input: deepcopy(self.local_data[input])
                                for input in self.strong_couplings}
 
+            # compute new couplings as concatenated strong couplings, converted into arrays
             new_couplings = np.hstack(
                 [value for value in self.disciplines[0]._convert_new_type_into_array(input_couplings).values()])
 
@@ -184,6 +185,7 @@ class PureNewtonRaphson(MDARoot):
             for c_var, c_step in newton_step_dict.items():
                 old_x[c_var] += c_step.real  # SoSTrades fix (.real)
 
+            # convert local_data into SoSTrades types for next execution
             self.local_data = self.disciplines[0]._convert_array_into_new_type(
                 deepcopy(old_x))
 
