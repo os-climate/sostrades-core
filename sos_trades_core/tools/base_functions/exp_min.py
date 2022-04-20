@@ -43,6 +43,10 @@ def compute_func_with_exp_min(values, min_value):
         # minimum value for the exp
         values_copy[values_copy < -200.0 *
                     min_value] = -200.0 * min_value
+
+        min_array = np.ones(len(values_copy)) * min_value
+        if 'complex' in str(values_copy.dtype):
+            min_value = min_array + 1j *  np.imag(values_copy)
         values_new = np.maximum(
             min_value / 10.0 * (9.0 + np.exp(np.minimum(values_copy, min_value) / min_value)
                                 * np.exp(-1)), values_copy)
@@ -61,10 +65,11 @@ def compute_dfunc_with_exp_min(values, min_value):
     dvalues = np.ones(
         len(values))
     if values.min() < min_value:
+        values_copy = values.copy()
             # To avoid underflow : exp(-200) is considered to be the
             # minimum value for the exp
-        values[values < -200.0 * min_value] = -200.0 * min_value
-        dvalues[values < min_value] = np.exp(
-            values[values < min_value] / min_value) * np.exp(-1) / 10.0
+        values_copy[values_copy < -200.0 * min_value] = -200.0 * min_value
+        dvalues[values_copy < min_value] = np.exp(
+            values_copy[values_copy < min_value] / min_value) * np.exp(-1) / 10.0
 
     return dvalues.reshape(len(dvalues), 1)
