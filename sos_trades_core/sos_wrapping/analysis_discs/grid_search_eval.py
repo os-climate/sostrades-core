@@ -1,9 +1,11 @@
 from __future__ import annotations
+from weakref import ref
 import pandas as pd
 from gemseo.algos.doe.doe_factory import DOEFactory
 from numpy import array
 
 from sos_trades_core.api import get_sos_logger
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
 import itertools
 import copy
@@ -82,10 +84,10 @@ class GridSearchEval(DoeEval):
                 'selected_input': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
-                # 'ontology_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),je
             },
             'dataframe_edition_locked': False,
-            'structuring': True,
+            'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_grid_search'
         },
         EVAL_OUTPUTS: {
             'type': 'dataframe',
@@ -96,12 +98,15 @@ class GridSearchEval(DoeEval):
                 # 'ontology_name': ('string', None, False),
             },
             'dataframe_edition_locked': False,
-            'structuring': True,
+            'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_grid_search'
         },
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
-        'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local'},
+        'scenario_name': {'type': 'string', 'user_level': 99, 'optional': True, 'visibility': 'Local','default':"grid_search"},
     }
+    DESC_OUT = {'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                       'namespace': 'ns_grid_search'}}
+    DESC_OUT.update(DoeEval.DESC_OUT)
 
     def setup_sos_disciplines(self):
         """
@@ -163,7 +168,7 @@ class GridSearchEval(DoeEval):
             self.set_eval_in_out_lists(
                 self.selected_inputs, self.selected_outputs)
 
-            # grid8seqrch can be done only for selected inputs and outputs
+            # grid_search can be done only for selected inputs and outputs
             if len(self.eval_in_list) > 0:
                 # setting dynamic outputs. One output of type dict per selected
                 # output
@@ -275,10 +280,12 @@ class GridSearchEval(DoeEval):
         DoeEval.run(self)
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
-        if 'doe_samples_dataframe' in outputs_dict:
-            if outputs_dict['doe_samples_dataframe'] is not None:
-                self.chart_dict, output_df = self.prepare_chart_dict(
-                    outputs_dict, inputs_dict)
+
+        if 'samples_inputs_df' in outputs_dict:
+            if outputs_dict['samples_inputs_df'] is not None:
+                self.chart_dict, output_df = self.prepare_chart_dict( outputs_dict, inputs_dict)
+                self.store_sos_outputs_values(
+                    {'samples_outputs_df': output_df})
 
     def generate_samples_from_doe_factory(self):
         """
@@ -372,10 +379,12 @@ class GridSearchEval(DoeEval):
             data_connection)
 
         possible_in_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
+            for val in possible_in_values_full]
         # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_out_values_full]
+            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
+            for val in possible_out_values_full]
         # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(
@@ -407,7 +416,7 @@ class GridSearchEval(DoeEval):
 
         # if eval input set for only certain var
         elif set(eval_input_new_dm['full_name'].tolist()) != (
-            set(default_in_dataframe['full_name'].tolist())
+                set(default_in_dataframe['full_name'].tolist())
         ):
             default_dataframe = copy.deepcopy(default_in_dataframe)
             if sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
@@ -415,11 +424,11 @@ class GridSearchEval(DoeEval):
                     "You have selected more than 3 inputs. Only the 3 first inputs will be considered."
                 )
                 already_set_names = eval_input_new_dm['full_name'].tolist()[
-                    : self.max_inputs_nb
-                ]
+                                    : self.max_inputs_nb
+                                    ]
                 already_set_values = eval_input_new_dm['selected_input'].tolist()[
-                    : self.max_inputs_nb
-                ]
+                                     : self.max_inputs_nb
+                                     ]
             else:
                 already_set_names = eval_input_new_dm['full_name'].tolist()
                 already_set_values = eval_input_new_dm['selected_input'].tolist(
@@ -442,13 +451,13 @@ class GridSearchEval(DoeEval):
             default_dataframe = copy.deepcopy(default_in_dataframe)
             eval_input_new_dm_true = eval_input_new_dm.loc[
                 eval_input_new_dm['selected_input'] == True
-            ]
+                ]
             already_set_names = eval_input_new_dm_true['full_name'].tolist()[
-                : self.max_inputs_nb
-            ]
+                                : self.max_inputs_nb
+                                ]
             already_set_values = eval_input_new_dm_true['selected_input'].tolist()[
-                : self.max_inputs_nb
-            ]
+                                 : self.max_inputs_nb
+                                 ]
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[
                     default_dataframe['full_name'] == name, 'selected_input'
@@ -471,7 +480,7 @@ class GridSearchEval(DoeEval):
 
         # if eval output set for only certain var
         elif set(eval_output_new_dm['full_name'].tolist()) != (
-            set(default_out_dataframe['full_name'].tolist())
+                set(default_out_dataframe['full_name'].tolist())
         ):
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
@@ -505,12 +514,13 @@ class GridSearchEval(DoeEval):
                 k: v['shortest_name'] for k, v in eval_inputs_filtered_dict.items()
             }
 
-        doe_samples_df = outputs_discipline_dict['doe_samples_dataframe']
-        
+        doe_samples_df = outputs_discipline_dict['samples_inputs_df']
+
+
         # retrive full input list
         inputs_list = [
             col for col in doe_samples_df.columns if col not in ['scenario']]
-
+        inputs_list.sort(reverse=True)
         scenarii = len(doe_samples_df['scenario'])
 
         # generate all combinations of 2 inputs which will correspond to the
@@ -529,7 +539,7 @@ class GridSearchEval(DoeEval):
 
         if len(outputs_names_list) > 0:
             outputs_names = outputs_names_list.copy()
-            outputs_names.remove('doe_samples_dataframe')
+            outputs_names.remove('samples_inputs_df')
             for single_output in outputs_names:
                 output_df_dict = outputs_discipline_dict[single_output]
 
@@ -541,7 +551,6 @@ class GridSearchEval(DoeEval):
                             [output_df_dict[key]]) for key in output_df_dict}
 
                     if isinstance(list(output_df_dict.values())[0], float):
-
                         output_df_dict = {
                             key: pd.DataFrame({re.sub(r'_dict$', '', single_output).split('.')[-1]: value}, index=[0]) for
                             (key, value) in output_df_dict.items()}
@@ -549,7 +558,8 @@ class GridSearchEval(DoeEval):
                         # output_df=pd.DataFrame({'scenario':list(output_df_dict.keys()),
                         #     re.sub(r'_dict$', '', single_output).split('.')[-1]:list(output_df_dict.values())})
 
-                    if (isinstance(list(output_df_dict.values())[0], pd.DataFrame)) and (len(list(output_df_dict.values())[0]) == 1):
+                    if (isinstance(list(output_df_dict.values())[0], pd.DataFrame)) and (
+                            len(list(output_df_dict.values())[0]) == 1):
 
                         # we extract the columns of the dataframe of type float which will represents the possible outputs
                         # we assume that all dataframes contains the same columns
@@ -557,14 +567,16 @@ class GridSearchEval(DoeEval):
 
                         # We select the outputs to plot at the first element
                         # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
-                        filtered_name = [col for col in list(output_df_dict.values())[0].columns if ((list(output_df_dict.values())[
-                            0][col].dtype == 'float') or (list(output_df_dict.values())[0][col][0] == 'NA'))]
+                        filtered_name = [col for col in list(output_df_dict.values())[0].columns if
+                                         ((list(output_df_dict.values())[
+                                               0][col].dtype == 'float') or (list(output_df_dict.values())[0][col][0] == 'NA'))]
 
                         if len(filtered_name) > 0:
 
                             # to delete the outputs values that are nan or 'NA'
                             for col in filtered_name:
-                                if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all((list(output_df_dict.values())[i][col][0] == 'NA') for i in range(scenarii)):
+                                if all(pd.isna([list(output_df_dict.values())[i][col] for i in range(scenarii)])) or all(
+                                        (list(output_df_dict.values())[i][col][0] == 'NA') for i in range(scenarii)):
                                     filtered_name.remove(col)
 
                             # Transform the output_dict into  dataframe with length = number of scenarios (output_df)
@@ -613,14 +625,14 @@ class GridSearchEval(DoeEval):
                 include='float').columns.to_list()
             cont_plot_df = doe_samples_df.merge(
                 output_df, how="left", on='scenario')
-            
+
             if 'reference' in list(cont_plot_df['scenario'].values):
-                #Stock the scenario reference row
-                reference_row=cont_plot_df.loc[cont_plot_df['scenario']=='reference', :].reset_index(drop=True)
-                #remove the scenario reference row from cont_plot_df
-                cont_plot_df=cont_plot_df.loc[cont_plot_df['scenario']!='reference', :]
+                # Stock the scenario reference row
+                reference_row = cont_plot_df.loc[cont_plot_df['scenario'] == 'reference', :].reset_index(drop=True)
+                # remove the scenario reference row from cont_plot_df
+                cont_plot_df = cont_plot_df.loc[cont_plot_df['scenario'] != 'reference', :]
             else:
-                reference_row=[]
+                reference_row = []
 
             # we constitute the full_chart_list by making a product
             # between the possible inputs combination and outputs list
@@ -630,7 +642,8 @@ class GridSearchEval(DoeEval):
             )
             # retrieve z variable name by removing _dict from the output name
 
-            chart_list = [list(chart_tuple) + [output_info_dict[chart_tuple[1]]['output_info_name']] + [output_info_dict[chart_tuple[1]]['unit']]
+            chart_list = [list(chart_tuple) + [output_info_dict[chart_tuple[1]]['output_info_name']] + [
+                output_info_dict[chart_tuple[1]]['unit']]
                           for chart_tuple in chart_tuples]
             full_chart_list += chart_list
 
@@ -677,12 +690,12 @@ class GridSearchEval(DoeEval):
                 if not z_data_None:
                     chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
                     chart_data = cont_plot_df.loc[:, [
-                        'scenario', x_vble, y_vble, z_vble, slider_list[0]['full_name']]]
+                                                         'scenario', x_vble, y_vble,slider_list[0]['full_name'], z_vble ]]
 
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
                 chart_data = cont_plot_df.loc[:, [
-                    'scenario', x_vble, y_vble, z_vble]]
+                                                     'scenario', x_vble, y_vble, z_vble]]
 
             if chart_name is not None:
                 chart_dict[chart_name] = {
@@ -702,21 +715,26 @@ class GridSearchEval(DoeEval):
                     'z_min': output_df[z_vble].min(skipna=True),
                     'slider': slider_list,
                     'chart_data': chart_data,
-                    'reference_scenario':reference_row,
+                    'reference_scenario': reference_row,
                 }
+                output_df_to_return = output_df.copy()
+                scenario_column = output_df_to_return.pop('scenario')
+                output_df_to_return.insert(0, 'scenario', scenario_column)
 
-        return chart_dict, output_df
+        return chart_dict, output_df_to_return
 
     def get_chart_filter_list(self):
-
+        
         chart_filters = []
-
         outputs_dict = self.get_sosdisc_outputs()
         inputs_dict = self.get_sosdisc_inputs()
         self.chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
-        chart_list = list(self.chart_dict.keys())
-
+        chart_list = list(self.chart_dict.keys()) 
+        if 'reference_scenario' in self.chart_dict[chart_list[0]] :
+            if len(self.chart_dict[chart_list[0]]['reference_scenario']):
+                chart_list.insert(0,'Reference Scenario')
+                
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
 
@@ -737,13 +755,53 @@ class GridSearchEval(DoeEval):
                 if chart_filter.filter_key == 'Charts':
                     graphs_list = chart_filter.selected_values
 
+        if 'Reference Scenario' in graphs_list:
+            
+            fig = go.Figure()
+            
+            first_chart_info=self.chart_dict[list(self.chart_dict.keys())[0]]
+            eval_inputs_df=inputs_dict['design_space'].copy(deep=True)
+            eval_in_list=eval_inputs_df['shortest_name'].to_list()
+            ref_scen_df=self.get_postprocessing_table(first_chart_info, eval_in_list)
+            colores = ['lavender' if tipo=='input' in ref_scen_df['Type'].to_list() else 'floralwhite' for tipo in ref_scen_df['Type'] ]
+            
+            fig.add_trace(
+                go.Table(
+                    header=dict(
+                        values=ref_scen_df.columns.tolist(),
+                        fill_color='midnightblue',
+                        align='center',
+                        font_color='white',
+                    ),
+                    cells=dict(
+                        values=ref_scen_df.T.values.tolist(),
+                        fill_color=[colores],
+                        align='center',
+                    ),
+                )
+            )
+
+            table_name = 'Reference Scenario Data'
+            number_of_rows = ref_scen_df.shape[0]
+            fig.update_layout(
+                title_text='Reference Scenario',
+                showlegend=False,
+                autosize=True,
+                height=number_of_rows * 30 + 250,
+            )
+            
+            if len(fig.data):
+                    # Create native plotly chart
+                new_chart = InstantiatedPlotlyNativeChart(
+                    fig=fig, chart_name=table_name, default_legend=False, default_font=True, with_default_annotations=False)
+                # new_chart.to_plotly().show()
+                instanciated_charts.append(new_chart)
+            
         if len(self.chart_dict.keys()) > 0:
             # we create a unique dataframe containing all data that will be
             # used for drawing the graphs
 
-            # doe_samples_df = outputs_dict['doe_samples_dataframe']
-
-            # we go through the list of charts and draw all of them
+                # we go through the list of charts and draw all of them
             for name, chart_info in self.chart_dict.items():
                 if name in graphs_list:
                     
@@ -753,10 +811,12 @@ class GridSearchEval(DoeEval):
 
                         x_data = chart_info['chart_data'][chart_info['x']].to_list(
                         )
+
                         y_data = chart_info['chart_data'][chart_info['y']].to_list(
                         )
                         z_data = chart_info['chart_data'][chart_info['z']].replace(
                             np.nan, 'None').to_list()
+
 
                         x_max = max(x_data)
                         y_max = max(y_data)
@@ -790,10 +850,13 @@ class GridSearchEval(DoeEval):
                                 visible=True,
                                 connectgaps=False,
                                 hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-                                '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                '<br><b>{}<b>'.format(
-                                    chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+
+                                            '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                            '<br><b>{}<b>'.format(
+                                                chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
+                                    chart_info["z_unit"]),
                                 name="",
+
                             )
                         )
 
@@ -816,18 +879,22 @@ class GridSearchEval(DoeEval):
                                 visible=True,
                                 showlegend=False,
                                 hoverinfo='skip'
+                                )
                             )
-                        )
-                        
+
                         if len(chart_info['reference_scenario']):
+
                             x_ref_scen=chart_info['reference_scenario'][chart_info['x']].to_list()
                             y_ref_scen=chart_info['reference_scenario'][chart_info['y']].to_list()
                             z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
                             legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
-                            
+
+
+                            # if float(chart_info['reference_scenario'][col_slider])==slide_value:
+
                             fig.add_trace(
                                 go.Scatter(
-                                    x= x_ref_scen,
+                                    x=x_ref_scen,
                                     y=y_ref_scen,
                                     mode='markers',
                                     marker_symbol=SymbolValidator(
@@ -837,12 +904,14 @@ class GridSearchEval(DoeEval):
                                     visible=True,
                                     showlegend=False,
                                     hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
+
                                         '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                        '<br><b>{}<b>'.format(
+                                        '<br>{} '.format(
                                             chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                    name="Reference Scenario",
+                                    name='Reference Scenario',
+
                                 )
-                            )                        
+                            )
 
                         fig.update_layout(
                             autosize=True,
@@ -869,14 +938,6 @@ class GridSearchEval(DoeEval):
                             new_chart = InstantiatedPlotlyNativeChart(
                                 fig=fig, chart_name=chart_name, default_legend=False
                             )
-                            if len(chart_info['reference_scenario']):
-                                note = {
-                                    'Reference Scenario': ' ' , 
-                                    f'{chart_info["x_short"]}': str(float(chart_info["reference_scenario"][chart_info["x"]].values)) + f'{chart_info["x_unit"]}' , 
-                                    f'{chart_info["y_short"]}': str(float(chart_info["reference_scenario"][chart_info["y"]].values)) + f'{chart_info["y_unit"]}' , 
-                                    f'{chart_info["z"]}':  f'{round(z_ref_hover,5)} {legend_letter}' + f'{chart_info["z_unit"]}',
-                                }
-                                new_chart.annotation_upper_left = note
                             instanciated_charts.append(new_chart)
 
                     if len(chart_info['slider']) == 1:
@@ -893,14 +954,13 @@ class GridSearchEval(DoeEval):
                         for slide_value in slider_values:
                             x_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
-                            ][chart_info['x']].to_list()
+                                ][chart_info['x']].to_list()
                             y_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
-                            ][chart_info['y']].to_list()
+                                ][chart_info['y']].to_list()
                             z_data = chart_info['chart_data'].loc[
                                 chart_info['chart_data'][col_slider] == slide_value
-                            ][chart_info['z']].replace(np.nan, 'None').to_list()
-                            
+                                ][chart_info['z']].replace(np.nan, 'None').to_list()
 
                             x_max = max(x_data)
                             x_min = min(x_data)
@@ -943,10 +1003,12 @@ class GridSearchEval(DoeEval):
                                     visible=visible,
                                     connectgaps=False,
                                     hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-                                    '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                    '<br><b>{}<b>'.format(
-                                        chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(chart_info["z_unit"]),
-                                    name='{} '.format(slider_short_name) + f': {slide_value}{slider_unit}',
+                                                '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                                '<br><b>{}<b>'.format(
+                                                    chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
+                                        chart_info["z_unit"]),
+                                    name='{} '.format(
+                                        slider_short_name) + f': {slide_value}{slider_unit}',
                                 )
                             )
                             fig.add_trace(
@@ -969,18 +1031,19 @@ class GridSearchEval(DoeEval):
                                     hoverinfo='skip',
                                 )
                             )
-                            
-                            if len(chart_info['reference_scenario']):
-                                x_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['x']].to_list()
-                                y_ref_scen=chart_info['reference_scenario'].loc[chart_info['reference_scenario'][col_slider]==slide_value][chart_info['y']].to_list()
-                                z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
-                                legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
 
-                                
+                            if len(chart_info['reference_scenario']):
+                                x_ref_scen = chart_info['reference_scenario'].loc[
+                                    chart_info['reference_scenario'][col_slider] == slide_value][
+                                    chart_info['x']].to_list()
+                                y_ref_scen = chart_info['reference_scenario'].loc[
+                                    chart_info['reference_scenario'][col_slider] == slide_value][
+                                    chart_info['y']].to_list()
+
                                 # if float(chart_info['reference_scenario'][col_slider])==slide_value:
                                 fig.add_trace(
                                     go.Scatter(
-                                        x= x_ref_scen,
+                                        x=x_ref_scen,
                                         y=y_ref_scen,
                                         mode='markers',
                                         marker_symbol=SymbolValidator(
@@ -990,11 +1053,15 @@ class GridSearchEval(DoeEval):
                                         visible=visible,
                                         showlegend=False,
                                         hovertemplate='{}'.format(chart_info["x_short"]) + ': %{x}' +
-                                            '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
-                                            '<br>{} '.format(
-                                                slider_short_name) +': {}'.format(float(chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
-                                            '<br><b>{}<b>'.format(
-                                                chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                                    '<br>{}'.format(chart_info["y_short"]) + ': %{y}' +
+                                                    '<br>{} '.format(
+                                                        slider_short_name) + ': {}'.format(float(
+                                            chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
+                                                    '<br><b>{}<b>'.format(
+                                                        chart_info["z"]) + ': <b> {}<b>'.format(float(
+                                            chart_info['reference_scenario'][
+                                                chart_info['z']].values)) + '<b> {}<b><br>'.format(
+                                            chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1002,13 +1069,13 @@ class GridSearchEval(DoeEval):
                         # Create and add slider
                         steps = []
                         if len(chart_info['reference_scenario']):
-                            lid=3
+                            lid = 3
                         else:
-                            lid=2
+                            lid = 2
 
                         for i in range(int(len(fig.data) / lid)):
                             # for i in range(int(len(fig.data) / 2)):
-                            
+
                             step = dict(
                                 method="update",
                                 args=[
@@ -1023,7 +1090,7 @@ class GridSearchEval(DoeEval):
                                 step['args'][0]['visible'][i * lid + k] = True
                             steps.append(step)
                             # for k in range(2):
-                                # step['args'][0]['visible'][i * 2 + k] = True
+                            # step['args'][0]['visible'][i * 2 + k] = True
 
                         sliders = [
                             dict(
@@ -1036,7 +1103,7 @@ class GridSearchEval(DoeEval):
                                 pad=dict(t=50),
                             )
                         ]
-                        
+
                         fig.update_layout(
                             sliders=sliders,
                             autosize=True,
@@ -1067,22 +1134,45 @@ class GridSearchEval(DoeEval):
                             new_chart = InstantiatedPlotlyNativeChart(
                                 fig=fig, chart_name=chart_name, default_legend=False
                             )
-                            if len(chart_info['reference_scenario']):
-                                note = {
-                                    'Reference Scenario': ' ' , 
-                                    f'{chart_info["x_short"]}': str(float(chart_info["reference_scenario"][chart_info["x"]].values)) + f'{chart_info["x_unit"]}' , 
-                                    f'{chart_info["y_short"]}': str(float(chart_info["reference_scenario"][chart_info["y"]].values)) + f'{chart_info["y_unit"]}' , 
-                                    f'{slider_short_name}': str(float(chart_info["reference_scenario"][col_slider].values)) + f'{slider_unit}' ,
-                                    f'{chart_info["z"]}':  f'{round(z_ref_hover,5)} {legend_letter}' + f'{chart_info["z_unit"]}',
-                                }
-                                new_chart.annotation_upper_left = note
                             instanciated_charts.append(new_chart)
 
-        return instanciated_charts
+            return instanciated_charts
 
+    def get_postprocessing_table(self, ref_scen_dict, eval_in_list):
+        
+        row_ref_scen=copy.deepcopy(ref_scen_dict['reference_scenario'])
+        if len(ref_scen_dict['slider'])==0: 
+            row_ref_scen.rename(columns={
+                ref_scen_dict['x']:ref_scen_dict['x_short'],
+                ref_scen_dict['y']:ref_scen_dict['y_short'],
+            }, inplace=True)
+        elif len(ref_scen_dict['slider'])==1:
+            row_ref_scen.rename(columns={
+                ref_scen_dict['x']:ref_scen_dict['x_short'],
+                ref_scen_dict['y']:ref_scen_dict['y_short'],
+                ref_scen_dict['slider'][0]['full_name']:ref_scen_dict['slider'][0]['short_name'],
+            }, inplace=True)
+        
+        
+        df=row_ref_scen.drop(['scenario'], axis='columns').T.reset_index()
+        df.columns=['Parameter', 'table_value']
+        df['Type']=["input" if param in eval_in_list else "output" for param in df['Parameter']] 
+        df['pretty_value']=df['table_value'].apply(lambda x: str(round(get_order_of_magnitude(x)[-1],5)) + ' '+ get_order_of_magnitude(x)[0])
+        df['unit']='None'    
+        df['unit'].where(df['Parameter']!=ref_scen_dict['x_short'], ref_scen_dict['x_unit'], inplace=True)
+        df['unit'].where(df['Parameter']!=ref_scen_dict['y_short'], ref_scen_dict['y_unit'], inplace=True)
+        if len(ref_scen_dict['slider'])==1:
+            df['unit'].where(df['Parameter']!=ref_scen_dict['slider'][0]['short_name'], ref_scen_dict['slider'][0]['unit'], inplace=True)
+        df['unit'].where(df['unit']!='None', ref_scen_dict['z_unit'], inplace=True)
+        df.replace(np.nan,'None', inplace=True)
+        df['Value']=df['pretty_value'] +  df['unit']
+        
+        table_fig=df[['Type','Parameter','Value']]
+        
+        return table_fig
 
 def get_order_of_magnitude(maxvalue):
-    
+
     if abs(maxvalue) >= 1.0e9:
         maxvalue = maxvalue / 1.0e9
         legend_letter = 'B'
@@ -1100,3 +1190,4 @@ def get_order_of_magnitude(maxvalue):
         factor = 1.0
 
     return legend_letter, factor, maxvalue
+
