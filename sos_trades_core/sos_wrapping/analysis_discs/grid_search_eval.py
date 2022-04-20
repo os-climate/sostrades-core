@@ -721,6 +721,7 @@ class GridSearchEval(DoeEval):
                 scenario_column = output_df_to_return.pop('scenario')
                 output_df_to_return.insert(0, 'scenario', scenario_column)
 
+        chart_dict={key: val  for key, val in  sorted(chart_dict.items()) }
         return chart_dict, output_df_to_return
 
     def get_chart_filter_list(self):
@@ -802,6 +803,7 @@ class GridSearchEval(DoeEval):
             # used for drawing the graphs
 
                 # we go through the list of charts and draw all of them
+            
             for name, chart_info in self.chart_dict.items():
                 if name in graphs_list:
                     
