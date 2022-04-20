@@ -1611,6 +1611,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
 
 if '__main__' == __name__:
-    cls = TestSoSDOEScenario()
-    cls.setUp()
-    cls.test_16_doe_eval_design_space_normalisation()
+    # cls = TestSoSDOEScenario()
+    # cls.setUp()
+    # cls.test_16_doe_eval_design_space_normalisation()
+    unittest.main()
