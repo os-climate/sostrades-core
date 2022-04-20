@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from gemseo.utils.compare_data_manager_tooling import compare_dict
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -84,7 +85,7 @@ class TestCache(unittest.TestCase):
         check discipline namespace update
         '''
         # WITHOUT CACHE
-        
+
         self.ee.select_root_process(self.repo, 'test_disc1')
 
         values_dict = {}
@@ -92,35 +93,35 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.b'] = 20.
         values_dict[f'{self.name}.x'] = 3.
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         # check cache is None
         self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
         self.assertEqual(self.ee.dm.get_value('SoSDisc.Disc1.cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
         self.assertEqual(self.ee.root_process.sos_disciplines[0].cache, None)
-         
+
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.n_calls
         n_call_1 = self.ee.root_process.sos_disciplines[0].n_calls
- 
+
         # second execute without change of parameters
         res_2 = self.ee.execute()
- 
+
         # get number of calls after second call
         n_call_root_2 = self.ee.root_process.n_calls
         n_call_2 = self.ee.root_process.sos_disciplines[0].n_calls
- 
+
         self.assertEqual(n_call_root_2, n_call_root_1 + 1)
         self.assertEqual(n_call_2, n_call_1 + 1)
-        
+
         # ACTIVATE SIMPLE CACHE ROOT PROCESS
-        
+
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         self.assertEqual(self.ee.dm.get_value('SoSDisc.Disc1.cache_type'), 'SimpleCache')
         self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
         self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
@@ -141,28 +142,28 @@ class TestCache(unittest.TestCase):
 
         self.assertEqual(n_call_root_2, n_call_root_1)
         self.assertEqual(n_call_2, n_call_1)
-        
+
         # DESACTIVATE CACHE
-        
+
         values_dict[f'{self.name}.cache_type'] = 'None'
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         # check cache is None
         self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
         self.assertEqual(self.ee.dm.get_value('SoSDisc.Disc1.cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
         self.assertEqual(self.ee.root_process.sos_disciplines[0].cache, None)
-        
+
         # ACTIVATE CACHE FOR DISC1 ONLY
-        
+
         values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
         self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
-        
+
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
@@ -287,7 +288,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -301,7 +302,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 0
         n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -314,7 +315,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -382,7 +383,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 0
         n_calls_disc2 += 0
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -416,7 +417,8 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_1'
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['value_2', 'value_3']
         values_dict[f'{self.name}.Disc2.an_input_3'] = {
-            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
+            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=',
+            'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
@@ -450,7 +452,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -465,7 +467,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 0
         n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -479,7 +481,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -494,7 +496,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -525,7 +527,8 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc1.b'] = 20.
         values_dict[f'{self.name}.Disc1.an_input_1'] = 'value_1'
         values_dict[f'{self.name}.Disc1.an_input_2'] = {
-            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
+            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=',
+            'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
         values_dict[f'{self.name}.Disc2.power'] = 2
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
@@ -560,7 +563,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -568,7 +571,8 @@ class TestCache(unittest.TestCase):
         # but the same as the first execute : all disciplines must be
         # reexecuted
         values_dict[f'{self.name}.Disc1.an_input_2'] = {
-            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
+            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=',
+            'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
@@ -576,7 +580,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -640,7 +644,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -655,7 +659,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -668,13 +672,13 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
 
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -740,7 +744,7 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
@@ -757,13 +761,13 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
 
         # check
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
-#         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
         
@@ -841,9 +845,9 @@ class TestCache(unittest.TestCase):
         print("\n \t in MDA")
         for k, v in scenario.formulation.mda.local_data.items():
             print("\t | " + str(k) + " " + str(v))
-            
+
     def test_11_recursive_cache_activation(self):
-        
+
         self.study_name = 'optim'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarOptimScenario"
@@ -890,7 +894,7 @@ class TestCache(unittest.TestCase):
 
         # execute sellar optim without cache and retrieve dm
         self.ee.load_study_from_input_dict(disc_dict)
-        
+
         def check_cache_name(disc, cache_name):
             self.assertEqual(disc.cache.__class__.__name__, cache_name)
             for sub_disc in disc.sos_disciplines:
@@ -899,13 +903,13 @@ class TestCache(unittest.TestCase):
                 check_cache_name(disc.mdo_chain, cache_name)
                 for sub_mda in disc.sub_mda_list:
                     check_cache_name(sub_mda, cache_name)
-        
+
         check_cache_name(self.ee.root_process, 'NoneType')
-        
+
         # activate root_process cache and check recursive activation
         disc_dict[f'{self.ns}.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(disc_dict)
-        
+
         check_cache_name(self.ee.root_process, 'SimpleCache')
 
     def test_12_cache_on_sellar_optim(self):
@@ -960,20 +964,20 @@ class TestCache(unittest.TestCase):
         dm_without_cache = exec_eng.dm.get_data_dict_values()
 
         # execute sellar optim with HDF5Cache and retrieve dm
-#         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
-#             disc_dict[cache_type_key] = 'HDF5Cache'
-#         for cache_file_paht_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path'):
-#             disc_dict[cache_file_paht_key] = 'cache.h5'
-#         exec_eng.load_study_from_input_dict(disc_dict)
-#         exec_eng.execute()
-#         dm_with_HDF5_cache = exec_eng.dm.get_data_dict_values()
+        #         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+        #             disc_dict[cache_type_key] = 'HDF5Cache'
+        #         for cache_file_paht_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path'):
+        #             disc_dict[cache_file_paht_key] = 'cache.h5'
+        #         exec_eng.load_study_from_input_dict(disc_dict)
+        #         exec_eng.execute()
+        #         dm_with_HDF5_cache = exec_eng.dm.get_data_dict_values()
 
         # execute sellar optim with MemoryFullCache and retrieve dm
-#         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
-#             disc_dict[cache_type_key] = 'MemoryFullCache'
-#         exec_eng.load_study_from_input_dict(disc_dict)
-#         exec_eng.execute()
-#         dm_with_memory_full_cache = exec_eng.dm.get_data_dict_values()
+        #         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
+        #             disc_dict[cache_type_key] = 'MemoryFullCache'
+        #         exec_eng.load_study_from_input_dict(disc_dict)
+        #         exec_eng.execute()
+        #         dm_with_memory_full_cache = exec_eng.dm.get_data_dict_values()
 
         # execute sellar optim with SimpleCache and retrieve dm
         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type'):
@@ -983,10 +987,12 @@ class TestCache(unittest.TestCase):
         dm_with_simple_cache = exec_eng.dm.get_data_dict_values()
 
         # remove cache_type keys from dm_with_cache and dm_without_cache
-        for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name('cache_type') + exec_eng.dm.get_all_namespaces_from_var_name('cache_file_path') + exec_eng.dm.get_all_namespaces_from_var_name('residuals_history'):
+        for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name(
+                'cache_type') + exec_eng.dm.get_all_namespaces_from_var_name(
+            'cache_file_path') + exec_eng.dm.get_all_namespaces_from_var_name('residuals_history'):
             dm_with_simple_cache.pop(cache_type_key)
-#             dm_with_HDF5_cache.pop(cache_type_key)
-#             dm_with_memory_full_cache.pop(cache_type_key)
+            #             dm_with_HDF5_cache.pop(cache_type_key)
+            #             dm_with_memory_full_cache.pop(cache_type_key)
             dm_without_cache.pop(cache_type_key)
 
         # compare values in dm_with_cache, dm_with_HDF5_cache,
@@ -994,11 +1000,294 @@ class TestCache(unittest.TestCase):
         dict_error = {}
         compare_dict(dm_with_simple_cache,
                      dm_without_cache, '', dict_error)
-#         compare_dict(dm_with_HDF5_cache,
-#                      dm_without_cache, '', dict_error)
-#         compare_dict(dm_with_memory_full_cache,
-#                      dm_without_cache, '', dict_error)
+        #         compare_dict(dm_with_HDF5_cache,
+        #                      dm_without_cache, '', dict_error)
+        #         compare_dict(dm_with_memory_full_cache,
+        #                      dm_without_cache, '', dict_error)
         self.assertDictEqual(dict_error, {})
+
+    def test_13_simple_cache_on_grid_search(self):
+        """In this test we prove the ability of the cache to work properly on a grid search
+        """
+
+        repo = 'sos_trades_core.sos_processes.test'
+        proc_name = 'test_grid_search'
+        sa_builder = self.ee.factory.get_builder_from_process(
+            repo, proc_name)
+
+        self.ee.factory.set_builders_to_coupling_builder(
+            sa_builder)
+        self.ee.load_study_from_input_dict({})
+
+        print(self.ee.display_treeview_nodes())
+
+        self.grid_search = 'GridSearch'
+        self.study_name = 'SoSDisc'
+
+        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] == 
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] == 
+                        f'{self.grid_search}.Disc1.j', ['selected_input']] = True
+
+        eval_outputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] == 
+                         f'{self.grid_search}.Disc1.y', ['selected_output']] = True
+
+        dspace = pd.DataFrame({
+            'shortest_name': ['x', 'j'],
+            'lower_bnd': [5., 20.],
+            'upper_bnd': [7., 25.],
+            'nb_points': [3, 3],
+            'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
+        })
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.grid_search}.design_space': dspace,
+
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
+
+            # UQ
+            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
+            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
+        }
+
+        self.ee.load_study_from_input_dict(dict_values)
+
+        grid_search_disc = self.ee.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+        disc1 = self.ee.dm.get_disciplines_with_name(f'{self.study_name}.{self.grid_search}.Disc1')[0]
+
+        # check cache is None
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(self.ee.root_process.cache, None)
+        self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
+
+        # first execute
+        res_1 = self.ee.execute()
+        # get number of calls after first call
+        n_call_grid_search_1 = grid_search_disc.n_calls
+
+        # second execute without change of parameters
+        res_2 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_2 = grid_search_disc.n_calls
+
+        # check grid_search has run one extra time
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1 + 1)
+
+        # ACTIVATE SIMPLE CACHE ROOT PROCESS
+
+        dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # check that the root process distributes the cache to all its sos_disciplines
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
+
+        # first execute
+        res_1 = self.ee.execute()
+        # get number of calls after first call
+        n_call_grid_search_1 = grid_search_disc.n_calls
+
+        # second execute without change of parameters
+        res_2 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_2 = grid_search_disc.n_calls
+
+        # check that grid search has not run since no input was changed
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1)
+
+        # Third execute with a change of the design space
+        dspace = pd.DataFrame({
+            'shortest_name': ['x', 'j'],
+            'lower_bnd': [5., 20.],
+            'upper_bnd': [10., 30.],
+            'nb_points': [6, 11],
+            'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
+        })
+        dict_values[f'{self.study_name}.{self.grid_search}.design_space'] = dspace
+        self.ee.load_study_from_input_dict(dict_values)
+        res_3 = self.ee.execute()
+
+        # get number of calls after third call
+        n_call_grid_search_3 = grid_search_disc.n_calls
+
+        # check that grid search has run
+        self.assertEqual(n_call_grid_search_3, n_call_grid_search_2 + 1)
+
+        # Fourth execute with no change one more time
+        res_4 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_4 = grid_search_disc.n_calls
+
+        # check that grid search has not run since no input was changed
+        self.assertEqual(n_call_grid_search_4, n_call_grid_search_3)
+
+        # DESACTIVATE CACHE
+
+        dict_values[f'{self.name}.cache_type'] = 'None'
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # check cache is None
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(self.ee.root_process.cache, None)
+        self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
+
+        #  execute one more time
+        res_5 = self.ee.execute()
+        # get number of calls after execute
+        n_call_grid_search_5 = grid_search_disc.n_calls
+
+        # check that grid search has not run since cache is not activated
+        self.assertEqual(n_call_grid_search_5, n_call_grid_search_4 + 1)
+
+    def _test_14_simple_cache_on_grid_search_subprocess(self):
+        """In this test we prove the ability of the cache to work properly on a grid search
+        We activate simple cache, change a grid search subprocess input (here an input of Disc1)
+        We expect the grid search to run since its subprocess has changed
+        """
+
+        repo = 'sos_trades_core.sos_processes.test'
+        proc_name = 'test_grid_search'
+        sa_builder = self.ee.factory.get_builder_from_process(
+            repo, proc_name)
+
+        self.ee.factory.set_builders_to_coupling_builder(
+            sa_builder)
+        self.ee.load_study_from_input_dict({})
+
+        print(self.ee.display_treeview_nodes())
+
+        self.grid_search = 'GridSearch'
+        self.study_name = 'SoSDisc'
+
+        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] == 
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] == 
+                        f'{self.grid_search}.Disc1.j', ['selected_input']] = True
+
+        eval_outputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] == 
+                         f'{self.grid_search}.Disc1.y', ['selected_output']] = True
+
+        dspace = pd.DataFrame({
+            'shortest_name': ['x', 'j'],
+            'lower_bnd': [5., 20.],
+            'upper_bnd': [7., 25.],
+            'nb_points': [3, 3],
+            'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
+        })
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.grid_search}.design_space': dspace,
+
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
+
+            # UQ
+            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
+            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
+        }
+
+        self.ee.load_study_from_input_dict(dict_values)
+
+        grid_search_disc = self.ee.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+        disc1 = self.ee.dm.get_disciplines_with_name(f'{self.study_name}.{self.grid_search}.Disc1')[0]
+
+        # check cache is None
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(self.ee.root_process.cache, None)
+        self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
+
+        # first execute
+        res_1 = self.ee.execute()
+        # get number of calls after first call
+        n_call_grid_search_1 = grid_search_disc.n_calls
+
+        # second execute without change of parameters
+        res_2 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_2 = grid_search_disc.n_calls
+
+        # check grid_search has run one extra time
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1 + 1)
+
+        # ACTIVATE SIMPLE CACHE ROOT PROCESS
+
+        dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # check that the root process distributes the cache to all its sos_disciplines
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
+
+        # first execute
+        res_1 = self.ee.execute()
+        # get number of calls after first call
+        n_call_grid_search_1 = grid_search_disc.n_calls
+
+        # second execute without change of parameters
+        res_2 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_2 = grid_search_disc.n_calls
+
+        # check that grid search has not run since no input was changed
+        self.assertEqual(n_call_grid_search_2, n_call_grid_search_1)
+
+        # change an input of disc 1
+        dict_values[f'{self.study_name}.{self.grid_search}.Disc1.d'] = 10.
+        self.ee.load_study_from_input_dict(dict_values)
+
+        # third execute without change of parameters
+        res_3 = self.ee.execute()
+
+        # get number of calls after second call
+        n_call_grid_search_3 = grid_search_disc.n_calls
+
+        # check that grid search has run since the subprocess has changed
+        self.assertEqual(n_call_grid_search_3, n_call_grid_search_2 + 1)
 
 
 if __name__ == "__main__":

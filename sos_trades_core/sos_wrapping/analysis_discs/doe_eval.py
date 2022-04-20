@@ -14,13 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
-import platform
+
+from numpy import array, ndarray, delete, NaN
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.core.parallel_execution import ParallelExecution
-from numpy import array, ndarray, delete, NaN
-
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 
 '''
@@ -89,18 +87,22 @@ class DoeEval(SoSEval):
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
                                                         'full_name': ('string', None, False)},
                                'dataframe_edition_locked': False,
-                               'structuring': True},
+                               'structuring': True,
+                               'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                               'namespace': 'ns_doe_eval'},
                'eval_outputs': {'type': 'dataframe',
                                 'dataframe_descriptor': {'selected_output': ('bool', None, True),
                                                          'full_name': ('string', None, False)},
                                 'dataframe_edition_locked': False,
-                                'structuring': True},
+                                'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_doe_eval'},
                'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
                'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
                }
 
     DESC_OUT = {
-        'doe_samples_dataframe': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
+        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                              'namespace': 'ns_doe_eval'}
     }
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
@@ -300,7 +302,14 @@ class DoeEval(SoSEval):
         """
 
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        variables = self.eval_in_list
+        # variables = self.eval_in_list
+        
+        if 'full_name' in dspace_df:
+            variables = dspace_df['full_name'].tolist()
+            variables = [f'{self.ee.study_name}.{eval}' for eval in variables]
+        else:
+            variables = self.eval_in_list
+
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
@@ -462,25 +471,33 @@ class DoeEval(SoSEval):
         # We first begin by sample generation
         self.samples = self.generate_samples_from_doe_factory()
 
+        # Then add the reference scenario (initial point ) to the generated samples
+        self.samples.append(
+            [self.ee.dm.get_value(reference_variable_full_name) for reference_variable_full_name in self.eval_in_list])
+        reference_scenario_id = len(self.samples)
+
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(self.samples, convert_to_array=False)
 
         # we loop through the samples evaluated to build dictionnaries needed for output generation
+        reference_scenario = f'scenario_{reference_scenario_id}'
+
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
 
             # generation of the dictionnary of samples used
             dict_one_sample = {}
             current_sample = evaluated_samples[0]
+            scenario_naming = scenario_name if scenario_name != reference_scenario else 'reference'
             for idx, values in enumerate(current_sample):
                 dict_one_sample[self.eval_in_list[idx]] = values
-            dict_sample[scenario_name] = dict_one_sample
+            dict_sample[scenario_naming] = dict_one_sample
 
             # generation of the dictionnary of outputs
             dict_one_output = {}
             current_output = evaluated_samples[1]
             for idx, values in enumerate(current_output):
                 dict_one_output[self.eval_out_list[idx]] = values
-            dict_output[scenario_name] = dict_one_output
+            dict_output[scenario_naming] = dict_one_output
 
         # construction of a dataframe of generated samples
         # columns are selected inputs
@@ -504,7 +521,7 @@ class DoeEval(SoSEval):
 
         # saving outputs in the dm
         self.store_sos_outputs_values(
-            {'doe_samples_dataframe': samples_dataframe})
+            {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
@@ -670,3 +687,4 @@ class DoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+

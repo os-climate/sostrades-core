@@ -21,7 +21,6 @@ from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilde
 
 
 class ProcessBuilder(BaseProcessBuilder):
-
     # ontology information
     _ontology_data = {
         'label': 'sos_trades_core.sos_processes.test.test_sellar_doe_eval',
@@ -29,6 +28,7 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         '''
         default initialisation test
@@ -39,7 +39,9 @@ class ProcessBuilder(BaseProcessBuilder):
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1'}
         builder_list = self.create_builder_list(mods_dict,
-                                                ns_dict={'ns_OptimSellar': self.ee.study_name})
+                                                ns_dict={'ns_OptimSellar': self.ee.study_name,
+                                                         'ns_doe_eval': f'{self.ee.study_name}.DoEEval'}
+                                                )
         doe_eval_builder = self.ee.factory.create_evaluator_builder(
             'DoEEval', 'doe_eval', builder_list)
 

@@ -540,8 +540,8 @@ class SoSDiscipline(MDODiscipline):
                 # set cache_type and cache_file_path input values to children
                 for disc in self.sos_disciplines:
                     if 'cache_type' in disc._data_in:
-                        disc._data_in['cache_type'][self.VALUE] = cache_type
-                        disc._data_in['cache_file_path'][self.VALUE] = cache_file_path
+                        self.dm.set_data(disc.get_var_full_name('cache_type', disc._data_in), self.VALUE, cache_type, check_value=False)
+                        self.dm.set_data(disc.get_var_full_name('cache_file_path', disc._data_in), self.VALUE, cache_file_path, check_value=False)
                         
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')

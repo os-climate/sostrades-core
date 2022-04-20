@@ -15,7 +15,7 @@ limitations under the License.
 '''
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Generate a doe scenario
+Generate an optimization scenario
 """
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
@@ -24,9 +24,13 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-        # add disciplines DiscAllType
-        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.disc_all_types.'
-        mods_dict = {'DiscAllTypes': disc_dir + 'DiscAllTypes'}
-        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_test': self.ee.study_name + '.DoEEval','ns_doe_eval': f'{self.ee.study_name}.DoEEval'})
-        doe_eval_builder = self.ee.factory.create_evaluator_builder('DoEEval', 'doe_eval', builder_list)
-        return doe_eval_builder
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.disc_mixed_opt.'
+        mods_dict = {'DiscMixedOpt': disc_dir + 'DiscMixedOptLinearFeasible'}
+        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_mixed_optim': self.ee.study_name + '.MixedOptimScenario'})
+        
+        coupling_builder = self.ee.factory.create_builder_coupling("MixedCoupling")
+        coupling_builder.set_builder_info('cls_builder', builder_list)
+        coupling_builder.set_builder_info('with_data_io', True)
+        opt_builder = self.ee.factory.create_optim_builder('MixedOptimScenario', [coupling_builder])
+           
+        return opt_builder
