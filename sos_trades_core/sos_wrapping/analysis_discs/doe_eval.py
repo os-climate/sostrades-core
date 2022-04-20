@@ -302,7 +302,14 @@ class DoeEval(SoSEval):
         """
 
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        variables = self.eval_in_list
+        # variables = self.eval_in_list
+        
+        if 'full_name' in dspace_df:
+            variables = dspace_df['full_name'].tolist()
+            variables=[f'{self.ee.study_name}.{eval}' for eval in variables]
+        else:
+            variables=self.eval_in_list
+
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
@@ -679,3 +686,4 @@ class DoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+
