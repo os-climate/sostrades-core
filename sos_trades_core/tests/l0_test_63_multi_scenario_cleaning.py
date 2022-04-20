@@ -23,7 +23,7 @@ from numpy import array, set_printoptions
 import pandas as pd
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_ms._usecase import Study as study_sellar_opt
 import os
 from gemseo.core.mdo_scenario import MDOScenario
 from copy import deepcopy
@@ -36,9 +36,6 @@ class TestSoSOptimScenario(unittest.TestCase):
 
     def setUp(self):
         self.study_name = 'optim'
-
-
-
 
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_ms'
@@ -67,7 +64,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes()
 
         len_before_clean = len(list(exec_eng.dm.disciplines_id_map.keys()))
-        #delete scenario and configure
+        # delete scenario and configure
         values_dict[f'{ns}.{scatter_scenario_name}.scenario_list'] = ['a=0-1']
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.display_treeview_nodes()
@@ -84,6 +81,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # assert disciplines are not in dm
         assert(len_after_clean == 9)
+
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()

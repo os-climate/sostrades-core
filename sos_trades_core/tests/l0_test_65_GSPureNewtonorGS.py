@@ -20,7 +20,7 @@ unit test for optimization scenario
 
 import unittest
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_ms._usecase import Study as study_sellar_opt
 
 
 class TestGSPureNewtonorGSMDA(unittest.TestCase):

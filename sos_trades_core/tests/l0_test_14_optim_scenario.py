@@ -29,7 +29,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from gemseo.core.mdo_scenario import MDOScenario
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.sos_processes.test.test_Griewank_opt.usecase import Study as study_griewank
-from sos_trades_core.sos_processes.test.test_sellar_opt.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt._usecase import Study as study_sellar_opt
 from sos_trades_core.sos_processes.test.test_sellar_opt_idf.usecase import Study as study_sellar_idf
 
 
