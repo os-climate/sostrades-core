@@ -115,11 +115,14 @@ class TreeView:
         # Add a tree node if the post processing namespace does not exist in
         # the treenodes
         for namespace in ns_manager.ee.post_processing_manager.namespace_post_processing:
-            ns_value = ns_manager.get_ns_in_shared_ns_dict(namespace).get_value(
-            )
-            if ns_value not in treenodes.keys():
-                treenode = self.add_treenode(
-                    None, ns_value.split(NS_SEP))
+            try:
+                ns_value = ns_manager.get_ns_in_shared_ns_dict(namespace).get_value(
+                )
+                if ns_value not in treenodes.keys():
+                    treenode = self.add_treenode(
+                        None, ns_value.split(NS_SEP))
+            except:
+                pass
 
     def set_treenode_data(self, treenode, key, val):
 
