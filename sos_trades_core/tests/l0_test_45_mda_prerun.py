@@ -125,9 +125,9 @@ class TestMDAPrerun(unittest.TestCase):
         x_target = array([np.sqrt(2.) / 2., np.sqrt(2.) / 2.])
         x_out = disc7.get_sosdisc_outputs('x')
         x_dm = exec_eng.dm.get_value('EE.x')
-        self.assertAlmostEqual(x_dm[0], x_target[0], delta=tolerance)
-        self.assertAlmostEqual(x_in[0], x_target[0], delta=tolerance)
-        self.assertAlmostEqual(x_out[0], x_target[0], delta=tolerance)
+        self.assertAlmostEqual(abs(x_dm[0]), x_target[0], delta=tolerance)
+        self.assertAlmostEqual(abs(x_in[0]), x_target[0], delta=tolerance)
+        self.assertAlmostEqual(abs(x_out[0]), x_target[0], delta=tolerance)
 
     def test_03_mda_init_x(self):
 
