@@ -62,6 +62,8 @@ class Study(StudyManager):
         disc_dict[f'{ns}.y_2'] = array([1.])
         disc_dict[f'{ns}.z'] = array([1., 1.])
         disc_dict[f'{ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.DoEEval.max_mda_iter'] = 100
+        disc_dict[f'{ns}.DoEEval.tolerance'] = 1e-10
 
         return [disc_dict]
 
