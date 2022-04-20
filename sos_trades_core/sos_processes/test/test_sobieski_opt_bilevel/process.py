@@ -19,33 +19,30 @@ Generate an optimization scenario
 """
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
-
 class ProcessBuilder(BaseProcessBuilder):
-
     def get_builders(self):
         '''
         default initialisation test
         '''
                 
-        self.ee.ns_manager.add_ns('ns_OptimSobieski', self.ee.study_name + '.SobOptimScenario.EvalSobOptimScenario')
+        ns_dict = {'ns_OptimSobieski': self.ee.study_name+ '.SobOptimScenario'}
+        self.ee.ns_manager.add_ns('ns_OptimSobieski', self.ee.study_name + '.SobOptimScenario')
         # add disciplines sos_Sobieski
         disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sos_Sobieski.'
-        # create sc_struct
-        struct_builder = self.ee.factory.get_builder_from_module('struct', disc_dir + 'SobieskiStructure')
+        #create sc_struct
+        struct_builder= self.ee.factory.get_builder_from_module('struct', disc_dir + 'SobieskiStructure')
         sc_struct = self.ee.factory.create_optim_builder('sc_struct', [struct_builder])
-        # create sc_aero
-        aero_builder = self.ee.factory.get_builder_from_module('aero', disc_dir + 'SobieskiAerodynamics')
+        #create sc_aero
+        aero_builder= self.ee.factory.get_builder_from_module('aero', disc_dir + 'SobieskiAerodynamics')
         sc_aero = self.ee.factory.create_optim_builder('sc_aero', [aero_builder])
-        # create sc_prop
-        prop_builder = self.ee.factory.get_builder_from_module('prop', disc_dir + 'SobieskiPropulsion')
+        #create sc_prop
+        prop_builder= self.ee.factory.get_builder_from_module('prop', disc_dir + 'SobieskiPropulsion')
         sc_prop = self.ee.factory.create_optim_builder('sc_prop', [prop_builder])
         
-        # create mission 
+        #create mission 
         mission_builder = self.ee.factory.get_builder_from_module('mission', disc_dir + 'SobieskiMission')
-        builder_list = [sc_struct, sc_aero, sc_prop, mission_builder]
-        coupling_builders = self.ee.factory.create_builder_coupling('EvalSobOptimScenario')
-        coupling_builders.set_builder_info('cls_builder', builder_list)
-        # create bilevel optim
-        opt_builder = self.ee.factory.create_optim_builder('SobOptimScenario', [coupling_builders])
+        builder_list=[sc_struct,sc_aero,sc_prop,mission_builder]
+        #create bilevel optim
+        opt_builder = self.ee.factory.create_optim_builder('SobOptimScenario', builder_list)
            
         return opt_builder
