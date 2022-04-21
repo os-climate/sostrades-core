@@ -15,36 +15,30 @@ limitations under the License.
 '''
 
 from copy import deepcopy
-from _ast import If
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from sos_trades_core.execution_engine.sos_sensitivity import SoSSensitivity
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-import numpy as np
 import pandas as pd
-from numpy import float32, float64
-import random
+
+import numpy as np
 
 from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
     OntologyDataConnector)
 
 import openturns as ot
-from openturns.viewer import View
-from scipy import interpolate
 from scipy.interpolate import RegularGridInterpolator
 from scipy.stats import norm
 import chaospy as cp
 
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
-    InstanciatedSeries
-from sos_trades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 import plotly.graph_objects as go
-from sos_trades_core.tools.post_processing.post_processing_tools import align_two_y_axes, format_currency_legend
+from sos_trades_core.tools.post_processing.post_processing_tools import format_currency_legend
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import \
     InstantiatedPlotlyNativeChart
+
 
 
 class UncertaintyQuantification(SoSDiscipline):
@@ -65,18 +59,74 @@ class UncertaintyQuantification(SoSDiscipline):
         'icon': 'fa-solid fa-chart-area',
         'version': '',
     }
-    DESC_IN = {
-        'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True},
-        'data_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, },
 
-        'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.], 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2},
-        'sample_size': {'type': 'float', 'unit': None, 'default': 1000, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification', 'structuring': True, 'numerical': True, 'user_level': 2},
+    EVAL_INPUTS = 'eval_inputs'
+    EVAL_OUTPUTS = 'eval_outputs'
+    DEFAULT = 'default'
+    UPPER_BOUND = "upper_bnd"
+    LOWER_BOUND = "lower_bnd"
+    NB_POINTS = 'nb_points'
+
+    DESC_IN = {
+        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                              'namespace': 'ns_uncertainty_quantification', },
+        'samples_outputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                               'namespace': 'ns_uncertainty_quantification', },
+        'design_space': {
+            'type': 'dataframe',
+            'dataframe_descriptor': {
+                'shortest_name': ('string', None, False),
+                LOWER_BOUND: ('float', None, True),
+                UPPER_BOUND: ('float', None, True),
+                NB_POINTS: ('int', None, True),
+                'full_name': ('string', None, False),
+            },
+            'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+            'namespace': 'ns_uncertainty_quantification'
+        },
+
+        'confidence_interval': {'type': 'float', 'unit': '%', 'default': 90, 'range': [0., 100.],
+                                'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_uncertainty_quantification', 'structuring': False, 'numerical': True,
+                                'user_level': 2},
+        'sample_size': {'type': 'float', 'unit': None, 'default': 1000, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                        'namespace': 'ns_uncertainty_quantification', 'structuring': False, 'numerical': True,
+                        'user_level': 2},
+
+        EVAL_INPUTS: {
+            'type': 'dataframe',
+            'dataframe_descriptor': {
+                'selected_input': ('bool', None, True),
+                'full_name': ('string', None, False),
+                'shortest_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),je
+            },
+            'dataframe_edition_locked': False,
+            'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+            'namespace': 'ns_uncertainty_quantification'
+        },
+        EVAL_OUTPUTS: {
+            'type': 'dataframe',
+            'dataframe_descriptor': {
+                'selected_output': ('bool', None, True),
+                'full_name': ('string', None, False),
+                'shortest_name': ('string', None, False),
+                # 'ontology_name': ('string', None, False),
+            },
+            'dataframe_edition_locked': False,
+            'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+            'namespace': 'ns_uncertainty_quantification'
+        },
 
     }
 
     DESC_OUT = {
-        'input_parameters_samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification'},
-        'output_interpolated_values_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.LOCAL_VISIBILITY, 'namespace': 'ns_uncertainty_quantification'},
+        'input_parameters_samples_df': {'type': 'dataframe', 'unit': None,
+                                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                        'namespace': 'ns_uncertainty_quantification'},
+        'output_interpolated_values_df': {'type': 'dataframe', 'unit': None,
+                                          'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                          'namespace': 'ns_uncertainty_quantification'},
     }
 
     def setup_sos_disciplines(self):
@@ -84,18 +134,30 @@ class UncertaintyQuantification(SoSDiscipline):
 
             dynamic_outputs = {}
             dynamic_inputs = {}
+            if (self.EVAL_INPUTS in self._data_in) & (self.EVAL_INPUTS in self._data_in):
+                # if (self.get_sosdisc_inputs('samples_inputs_df') is not None) & (self.get_sosdisc_inputs(
+                # 'samples_outputs_df') is not None):
+                eval_outputs = self.get_sosdisc_inputs('eval_outputs')
+                eval_inputs = self.get_sosdisc_inputs('eval_inputs')
 
-            if ('samples_df' in self._data_in) & ('data_df' in self._data_in):
-                if (self.get_sosdisc_inputs('samples_df') is not None) & (self.get_sosdisc_inputs('data_df') is not None):
-                    samples_df = self.get_sosdisc_inputs(
-                        'samples_df')
-                    in_param = list(samples_df.columns)[1:]
-                    data_df = self.get_sosdisc_inputs(
-                        'data_df')
-                    out_param = list(data_df.columns)[1:]
+                # samples_df = self.get_sosdisc_inputs(
+                #     'samples_inputs_df')
 
-                    # ontology name
-                    try:
+                if eval_inputs is not None :
+
+                        selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                                      == True]['full_name']
+                        # in_param = list(samples_df.columns)[1:]
+                        in_param = selected_inputs.tolist()
+
+                        selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                                        == True]['full_name']
+                        # data_df = self.get_sosdisc_inputs(
+                        #     'samples_outputs_df')
+                        # out_param = list(data_df.columns)[1:]
+                        out_param = selected_outputs.tolist()
+
+                        # ontology name
                         ontology_connector = OntologyDataConnector()
                         data_connection = {
                             'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
@@ -107,77 +169,97 @@ class UncertaintyQuantification(SoSDiscipline):
                             data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
                         conversion_full_ontology = ontology_connector.load_data(
                             data_connection)
-                    except Exception as ex:
-                        args = in_param + out_param
-                        args = [val.split('.')[-1]
-                                for val in args]
-                        conversion_full_ontology = {
-                            arg: [arg, ''] for arg in args}
 
-                    possible_distrib = ['Normal', 'PERT',
-                                        'LogNormal', 'Triangular']
-                    # distrib = [possible_distrib[random.randrange(
-                    # len(possible_distrib))] for i in range(len(in_param))]
-                    distrib = ['Normal', 'PERT', 'Triangular']
+                        possible_distrib = ['Normal', 'PERT',
+                                            'LogNormal', 'Triangular']
 
-                    input_distribution_default = pd.DataFrame(
-                        {'parameter': in_param, 'distribution': distrib, 'lower_parameter': 80, 'upper_parameter': 120, 'most_probable_value': 110})
-                    # no need most probable value for Normal distribution
-                    input_distribution_default.loc[input_distribution_default['distribution']
-                                                   == 'Normal', 'most_probable_value'] = np.nan
-                    input_distribution_default.loc[input_distribution_default['distribution']
-                                                   == 'LogNormal', 'most_probable_value'] = np.nan
+                        # distrib = [possible_distrib[random.randrange(
+                        # len(possible_distrib))] for i in range(len(in_param))]
+                        # distrib = ['Normal', 'PERT', 'Triangular']
+                        def random_distribution(input):
+                            return np.random.choice([i for i in range(len(possible_distrib))],
+                                                    # p=[1 / len(possible_distrib) for input in possible_distrib])
+                                                    p=[0, 1, 0, 0])
 
-                    data_details_default = pd.DataFrame()
-                    for input in in_param:
-                        [name, unit] = conversion_full_ontology[input.split(
-                            '.')[-1]]
-                        data_details_default = data_details_default.append(
-                            {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
-                    for output in out_param:
-                        [name, unit] = conversion_full_ontology[output.split(
-                            '.')[-1]]
-                        data_details_default = data_details_default.append(
-                            {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
+                        #distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
+                        distrib = ['PERT' for input in selected_inputs.tolist()]
 
-                    dynamic_inputs['input_distribution_parameters_df'] = {
-                        'type': 'dataframe',
-                        'dataframe_descriptor': {
-                            'parameter': ('string', None, False),
-                            'distribution': ('string', None, True),
-                            'lower_parameter': ('float', None, True),
-                            'upper_parameter': ('float', None, True),
-                            'most_probable_value': ('float', None, True),
-                        },
-                        'unit': None,
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                        'namespace': 'ns_uncertainty_quantification',
-                        'default': input_distribution_default,
-                        'structuring': True
-                    }
 
-                    dynamic_inputs['data_details_df'] = {
-                        'type': 'dataframe',
-                        'dataframe_descriptor': {
-                            'type': ('string', None, False),
-                            'variable': ('string', None, False),
-                            'name': ('string', None, True),
-                            'unit': ('string', None, True),
-                        },
-                        'unit': None,
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                        'namespace': 'ns_uncertainty_quantification',
-                        'default': data_details_default,
-                        'structuring': True
-                    }
+                        if (('design_space' in self._data_in) & (len(in_param) > 0)):
+
+
+
+                            lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
+                            upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
+                            input_distribution_default = pd.DataFrame(
+                                {'parameter': in_param, 'distribution': distrib, 'lower_parameter': lower_bnd,
+                                 'upper_parameter': upper_bnd ,
+                                 'most_probable_value': [(a+b)/2 for a,b in zip(lower_bnd,upper_bnd)]})
+
+                            input_distribution_default.loc[input_distribution_default['distribution']
+                                                           == 'Normal', 'most_probable_value'] = np.nan
+                            input_distribution_default.loc[input_distribution_default['distribution']
+                                                           == 'LogNormal', 'most_probable_value'] = np.nan
+
+
+
+                            dynamic_inputs['input_distribution_parameters_df'] = {
+                                'type': 'dataframe',
+                                'dataframe_descriptor': {
+                                    'parameter': ('string', None, False),
+                                    'distribution': ('string', None, True),
+                                    'lower_parameter': ('float', None, True),
+                                    'upper_parameter': ('float', None, True),
+                                    'most_probable_value': ('float', None, True),
+                                },
+                                'unit': None,
+                                'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_uncertainty_quantification',
+                                'default': input_distribution_default,
+                                'structuring': False
+                            }
+                            if 'input_distribution_parameters_df' in self._data_in:
+                                self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
+
+                        data_details_default = pd.DataFrame()
+                        for input in in_param:
+                            [name, unit] = conversion_full_ontology[input.split(
+                                '.')[-1]]
+                            data_details_default = data_details_default.append(
+                                {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
+                        for output in out_param:
+                            [name, unit] = conversion_full_ontology[output.split(
+                                '.')[-1]]
+                            data_details_default = data_details_default.append(
+                                {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
+                        dynamic_inputs['data_details_df'] = {
+                            'type': 'dataframe',
+                            'dataframe_descriptor': {
+                                'type': ('string', None, False),
+                                'variable': ('string', None, False),
+                                'name': ('string', None, True),
+                                'unit': ('string', None, True),
+                            },
+                            'unit': None,
+                            'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                            'namespace': 'ns_uncertainty_quantification',
+                            'default': data_details_default,
+                            'structuring': False
+                        }
+                        if 'data_details_df' in self._data_in:
+                            self._data_in['data_details_df']['value'] = data_details_default
 
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
     def run(self):
+        self.check_inputs_consistency()
         inputs_dict = self.get_sosdisc_inputs()
-        samples_df = inputs_dict['samples_df']
-        data_df = inputs_dict['data_df']
+        samples_df = inputs_dict['samples_inputs_df']
+        data_df = inputs_dict['samples_outputs_df']
+        reference_scenario_index = len(data_df) - 1
+        samples_df = samples_df.drop(index=reference_scenario_index)
+        data_df = data_df.drop(index=reference_scenario_index)
         confidence_interval = inputs_dict['confidence_interval'] / 100
         sample_size = inputs_dict['sample_size']
         input_parameters_names = list(samples_df.columns)[1:]
@@ -192,11 +274,12 @@ class UncertaintyQuantification(SoSDiscipline):
         ot.RandomGenerator.SetSeed(42)
 
         # INPUT PARAMETERS DISTRIBUTION IN
-        #[NORMAL, PERT, LOGNORMAL,TRIANGULAR]
+        # [NORMAL, PERT, LOGNORMAL,TRIANGULAR]
         input_parameters_samples_df = pd.DataFrame()
         distrib_list = []
         for input_name in input_parameters_names:
-            if input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'Normal':
+            if input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name][
+                'distribution'].values[0] == 'Normal':
                 distrib = self.Normal_distrib(
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['lower_parameter'].values[0],
@@ -204,7 +287,8 @@ class UncertaintyQuantification(SoSDiscipline):
                                                          == input_name]['upper_parameter'].values[0],
                     confidence_interval=confidence_interval
                 )
-            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'PERT':
+            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name][
+                'distribution'].values[0] == 'PERT':
                 distrib = self.PERT_distrib(
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['lower_parameter'].values[0],
@@ -213,7 +297,8 @@ class UncertaintyQuantification(SoSDiscipline):
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['most_probable_value'].values[0],
                 )
-            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'LogNormal':
+            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name][
+                'distribution'].values[0] == 'LogNormal':
                 distrib = self.LogNormal_distrib(
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['lower_parameter'].values[0],
@@ -221,7 +306,8 @@ class UncertaintyQuantification(SoSDiscipline):
                                                          == input_name]['upper_parameter'].values[0],
                     confidence_interval=confidence_interval
                 )
-            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['distribution'].values[0] == 'Triangular':
+            elif input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name][
+                'distribution'].values[0] == 'Triangular':
                 distrib = self.Triangular_distrib(
                     input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter']
                                                          == input_name]['lower_parameter'].values[0],
@@ -252,7 +338,9 @@ class UncertaintyQuantification(SoSDiscipline):
         #     view = View(graph, plot_kw={'color': 'blue'})
 
         # INTERPOLATION
-        input_parameters_single_values_tuple = tuple([input_distribution_parameters_df.loc[input_distribution_parameters_df['parameter'] == input_name]['values'].values[0]
+        input_parameters_single_values_tuple = tuple([input_distribution_parameters_df.loc[
+                                                          input_distribution_parameters_df['parameter'] == input_name][
+                                                          'values'].values[0]
                                                       for input_name in input_parameters_names])
         input_dim_tuple = tuple([len(sub_t)
                                  for sub_t in input_parameters_single_values_tuple])
@@ -338,6 +426,21 @@ class UncertaintyQuantification(SoSDiscipline):
 
         return distrib
 
+    def check_inputs_consistency(self):
+        """ check consistency between inputs from eval_inputs and samples_inputs_df
+        """
+        inputs_dict = self.get_sosdisc_inputs()
+        eval_inputs = inputs_dict['eval_inputs']
+        selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                      == True]['full_name']
+        selected_inputs = selected_inputs.tolist()
+        inputs_from_samples = inputs_dict['samples_inputs_df']
+        input_from_samples = list(inputs_from_samples.columns)[1:]
+
+        if set(selected_inputs) != set(input_from_samples):
+            self.logger.exception(
+                'selected inputs from eval inputs must be the same than inputs from the samples inputs dataframe')
+
     def get_chart_filter_list(self):
 
         # For the outputs, making a graph for tco vs year for each range and for specific
@@ -416,7 +519,8 @@ class UncertaintyQuantification(SoSDiscipline):
         most_probable_val = bins[np.argmax(norm_hist)]
         median = np.median(data_list)
         y_mean = np.mean(data_list)
-        if distrib_param.loc[distrib_param['parameter'] == data_name]['distribution'].values[0] in ['Normal', 'LogNormal']:
+        if distrib_param.loc[distrib_param['parameter'] == data_name]['distribution'].values[0] in ['Normal',
+                                                                                                    'LogNormal']:
             # left boundary confidence interval
             lb = float(format(1 - confidence_interval, '.2f')) / 2
             y_left_boundary = np.nanquantile(list(data), lb)
@@ -436,19 +540,19 @@ class UncertaintyQuantification(SoSDiscipline):
                          x0=y_left_boundary,
                          x1=y_left_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot",))
+                         line=dict(color="black", width=2, dash="dot", ))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_right_boundary,
                          x1=y_right_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot",))
+                         line=dict(color="black", width=2, dash="dot", ))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_mean,
                          x1=y_mean,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot",))
+                         line=dict(color="black", width=2, dash="dot", ))
 
         hist_y.add_trace(go.Scatter(x=[y_left_boundary],
                                     y=[y_max],
@@ -512,20 +616,20 @@ class UncertaintyQuantification(SoSDiscipline):
                          x0=y_left_boundary,
                          x1=y_left_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot",))
+                         line=dict(color="black", width=2, dash="dot", ))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_right_boundary,
                          x1=y_right_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot",))
+                         line=dict(color="black", width=2, dash="dot", ))
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_mean,
                          x1=y_mean,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot",))
+                         line=dict(color="black", width=2, dash="dot", ))
 
-        hist_y.add_shape(type='rect',  xref='x', yref='paper',
+        hist_y.add_shape(type='rect', xref='x', yref='paper',
                          x0=y_left_boundary,
                          x1=y_right_boundary,
                          y0=0, y1=1,
@@ -534,17 +638,20 @@ class UncertaintyQuantification(SoSDiscipline):
         hist_y.add_trace(go.Scatter(x=[y_left_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_left_boundary,unit)} '], mode="text", textposition='top left'
+                                    text=[f' {format_currency_legend(y_left_boundary, unit)} '], mode="text",
+                                    textposition='top left'
                                     ))
         hist_y.add_trace(go.Scatter(x=[y_right_boundary],
                                     y=[y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_right_boundary,unit)} '], mode="text", textposition='top right'
+                                    text=[f' {format_currency_legend(y_right_boundary, unit)} '], mode="text",
+                                    textposition='top right'
                                     ))
         hist_y.add_trace(go.Scatter(x=[y_mean],
                                     y=[0.75 * y_max],
                                     textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_mean,unit)} '], mode="text", textposition='top right'
+                                    text=[f' {format_currency_legend(y_mean, unit)} '], mode="text",
+                                    textposition='top right'
                                     ))
 
         hist_y.update_layout(showlegend=False)
@@ -552,7 +659,7 @@ class UncertaintyQuantification(SoSDiscipline):
         # percent_pos = len([p for p in data if p > 0]) / len(data) * 100
 
         text_right = {
-            'Confidence Interval': f'{int(confidence_interval*100)} % [{format_currency_legend(y_left_boundary,"")} , {format_currency_legend(y_right_boundary,"")} ] {unit}',
+            'Confidence Interval': f'{int(confidence_interval * 100)} % [{format_currency_legend(y_left_boundary, "")} , {format_currency_legend(y_right_boundary, "")} ] {unit}',
             ' Mean': f'{format_currency_legend(y_mean, unit)}',
             ' Median': f'{format_currency_legend(median, unit)}',
             # 'Percentage of positive values':  f'{percent_pos:9.4f} %'

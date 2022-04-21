@@ -13,14 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from os.path import join, dirname
+
+import pandas as pd
+
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sos_trades_core.study_manager.study_manager import StudyManager
-import pandas as pd
-import numpy as np
-
-from sos_trades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-
-from os.path import join, dirname
 
 
 class Study(StudyManager):
@@ -29,7 +27,6 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-
         self.uncertainty_quantification = 'UncertaintyQuantification'
 
         self.data_dir = join(dirname(__file__), 'data')
@@ -39,9 +36,31 @@ class Study(StudyManager):
         self.samples_dataframe = pd.read_csv(
             join(self.data_dir, 'samples_df.csv'))
 
+        input_selection = {'selected_input': [True, True, True],
+                           'full_name': ['COC', 'RC', 'NRC'],
+                           'shortest_name': ['COC', 'RC', 'NRC']}
+
+        output_selection = {'selected_output': [True, True, True],
+                            'full_name': ['output1', 'output2', 'output3'],
+                            'shortest_name': ['output1', 'output2', 'output3']}
+        self.input_selection = pd.DataFrame(input_selection)
+        self.output_selection = pd.DataFrame(output_selection)
+
+        dspace = pd.DataFrame({
+            'shortest_name': ['COC', 'RC', 'NRC'],
+            'lower_bnd': [85., 80., 80.],
+            'upper_bnd': [105., 120., 120.],
+            'nb_points': [10, 10, 10],
+            'full_name': ['COC', 'RC', 'NRC'],
+        })
+
         dict_values = {
-            f'{self.study_name}.{self.uncertainty_quantification}.samples_df': self.samples_dataframe,
-            f'{self.study_name}.{self.uncertainty_quantification}.data_df': self.data_df,
+            f'{self.study_name}.{self.uncertainty_quantification}.eval_inputs': self.input_selection,
+            f'{self.study_name}.{self.uncertainty_quantification}.eval_outputs': self.output_selection,
+            f'{self.study_name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
+            f'{self.study_name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
+            f'{self.study_name}.{self.uncertainty_quantification}.design_space': dspace,
+
         }
 
         return dict_values
