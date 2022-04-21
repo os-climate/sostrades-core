@@ -59,10 +59,11 @@ class TestBaseFunction(unittest.TestCase):
         grad = compute_dfunc_with_exp_min(x, min_value)
         for i in range(len(x)):
             x_complex = x.copy()
-            #x_complex = x_complex.astype('complex')
+            # use a step of 1e-8
             x_complex[i] = x[i] + 1e-8
             x_minimized_complex = compute_func_with_exp_min(
                 x_complex, min_value)
+            # compute gradient using finite differences
             dx.append((x_minimized_complex[i] - x_minimized[i]) / 1e-8)
 
         self.assertListEqual(np.array(dx).round(6).tolist(),
