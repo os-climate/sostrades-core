@@ -45,10 +45,8 @@ def compute_func_with_exp_min(values, min_value):
                     min_value] = -200.0 * min_value
 
         min_array = np.ones(len(values_copy)) * min_value
-        if 'complex' in str(values_copy.dtype):
-            min_value = min_array + 1j *  np.imag(values_copy)
         values_new = np.maximum(
-            min_value / 10.0 * (9.0 + np.exp(np.minimum(values_copy, min_value) / min_value)
+            min_array / 10.0 * (9.0 + np.exp(np.minimum(values_copy, min_array) / min_array)
                                 * np.exp(-1)), values_copy)
     else:
         values_new = values.copy()
