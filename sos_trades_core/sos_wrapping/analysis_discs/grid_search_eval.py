@@ -721,6 +721,7 @@ class GridSearchEval(DoeEval):
                 scenario_column = output_df_to_return.pop('scenario')
                 output_df_to_return.insert(0, 'scenario', scenario_column)
 
+        chart_dict={key: val  for key, val in  sorted(chart_dict.items()) }
         return chart_dict, output_df_to_return
 
     def get_chart_filter_list(self):
@@ -802,6 +803,7 @@ class GridSearchEval(DoeEval):
             # used for drawing the graphs
 
                 # we go through the list of charts and draw all of them
+            
             for name, chart_info in self.chart_dict.items():
                 if name in graphs_list:
                     
@@ -888,6 +890,7 @@ class GridSearchEval(DoeEval):
                             y_ref_scen=chart_info['reference_scenario'][chart_info['y']].to_list()
                             z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
                             legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
+                            
 
 
                             # if float(chart_info['reference_scenario'][col_slider])==slide_value:
@@ -1008,7 +1011,7 @@ class GridSearchEval(DoeEval):
                                                     chart_info["z"]) + ': <b> %{z}<b>' + '<b> {}<b><br>'.format(
                                         chart_info["z_unit"]),
                                     name='{} '.format(
-                                        slider_short_name) + f': {slide_value}{slider_unit}',
+                                        slider_short_name) + ': {} {}'.format(round(slide_value,2),slider_unit),
                                 )
                             )
                             fig.add_trace(
@@ -1039,6 +1042,9 @@ class GridSearchEval(DoeEval):
                                 y_ref_scen = chart_info['reference_scenario'].loc[
                                     chart_info['reference_scenario'][col_slider] == slide_value][
                                     chart_info['y']].to_list()
+                                
+                                z_ref_scen=float(chart_info['reference_scenario'][chart_info['z']].values)
+                                legend_letter, factor, z_ref_hover = get_order_of_magnitude(z_ref_scen)
 
                                 # if float(chart_info['reference_scenario'][col_slider])==slide_value:
                                 fig.add_trace(
@@ -1058,10 +1064,7 @@ class GridSearchEval(DoeEval):
                                                         slider_short_name) + ': {}'.format(float(
                                             chart_info['reference_scenario'][col_slider])) + f'{slider_unit}' +
                                                     '<br><b>{}<b>'.format(
-                                                        chart_info["z"]) + ': <b> {}<b>'.format(float(
-                                            chart_info['reference_scenario'][
-                                                chart_info['z']].values)) + '<b> {}<b><br>'.format(
-                                            chart_info["z_unit"]),
+                                                        chart_info["z"]) + ': <b> {} {}<b>'.format(round(z_ref_hover,5),legend_letter) + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1083,7 +1086,7 @@ class GridSearchEval(DoeEval):
                                     {"title": f'<b>{name}</b>'},
                                 ],
                                 # layout attribute
-                                label=f'{slider_values[i]}{slider_unit}',
+                                label='{} {}'.format(round(slider_values[i],2),slider_unit),
                             )
                             # Toggle i'th trace to 'visible'
                             for k in range(lid):

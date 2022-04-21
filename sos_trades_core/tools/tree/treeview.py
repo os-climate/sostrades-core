@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sos_trades_core.execution_engine import ns_manager
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
@@ -104,21 +105,24 @@ class TreeView:
                 try:    # Todo review this code because access on exec engine attribute is not correct
                         # Also do not forget this is here to hide misplaced
                         # output variables in treeview (ns_ac related)
-                    associated_namespaces = list(filter(
-                        lambda ns: ns.value == namespace, ns_manager.ns_list))
-
-                    post_processings = []
-                    if len(associated_namespaces) > 0:
-                        associated_namespace = associated_namespaces[0]
-                        post_processings = ns_manager.ee.post_processing_manager.get_post_processing(
-                            associated_namespace.name)
-
-                    if val['io_type'] == 'in' or len(post_processings) > 0:
+                    if val['io_type'] == 'in':
                         treenode = self.add_treenode(
                             None, namespace.split(NS_SEP))
                         self.set_treenode_data(treenode, key, val)
                 except:
                     pass
+
+        # Add a tree node if the post processing namespace does not exist in
+        # the treenodes
+        for namespace in ns_manager.ee.post_processing_manager.namespace_post_processing:
+            try:
+                ns_value = ns_manager.get_ns_in_shared_ns_dict(namespace).get_value(
+                )
+                if ns_value not in treenodes.keys():
+                    treenode = self.add_treenode(
+                        None, ns_value.split(NS_SEP))
+            except:
+                pass
 
     def set_treenode_data(self, treenode, key, val):
 
