@@ -349,8 +349,7 @@ def convert_df_into_array(var_df, values_list, metadata, keys, excluded_columns=
     val_data = {column: list(var_df[column].values)
                 for column in excluded_columns if column in var_df}
 
-    new_var_df = var_df.drop(
-        columns=[column for column in excluded_columns if column in var_df])
+    new_var_df = var_df[[column for column in var_df.columns if column not in excluded_columns]]
 
     data = new_var_df.to_numpy()
 

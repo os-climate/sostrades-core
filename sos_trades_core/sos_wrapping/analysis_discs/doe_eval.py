@@ -431,7 +431,8 @@ class DoeEval(SoSEval):
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
-            # sample_dict = self._convert_array_into_new_type(sample_dict)
+            # convert arrays in sample_dict into SoSTrades types
+            sample_dict = self._convert_array_into_new_type(sample_dict)
             ordered_sample = []
             for in_variable in self.eval_in_list:
                 ordered_sample.append(sample_dict[in_variable])
