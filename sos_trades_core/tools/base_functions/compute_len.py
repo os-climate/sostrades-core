@@ -36,7 +36,7 @@ def compute_len(obj):
     elif isinstance(obj, ndarray):
         return obj.size
     elif isinstance(obj, DataFrame):
-        return obj[[column for column in obj.columns if column not in DEFAULT_EXCLUDED_COLUMNS]].size
+        return len(obj) * len(set(obj.columns) - set(DEFAULT_EXCLUDED_COLUMNS))
     elif isinstance(obj, (tuple, list)):
         computed_len = 0
         for val in obj:
