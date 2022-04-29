@@ -516,6 +516,7 @@ class FunctionManagerDisc(SoSDiscipline):
                         'objective_lagrangian', variable_name,   np.atleast_2d(weight * 100.0 * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
                     self.set_partial_derivative(
                         'ineq_constraint', variable_name,  np.atleast_2d(weight * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
+                    i = i + 1
 
                 elif isinstance(value_df,  pd.DataFrame):
 
@@ -527,8 +528,8 @@ class FunctionManagerDisc(SoSDiscipline):
                                 ('objective_lagrangian',), (variable_name, col_name),   weight * 100.0 * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
                             self.set_partial_derivative_for_other_types(
                                 ('ineq_constraint',), (variable_name, col_name),  weight * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
+                            i = i + 1
 
-                i = i + 1
             """
             elif self.func_manager.functions[variable_name][self.FTYPE] == self.EQ_CONSTRAINT:
                 value_df = inputs_dict[variable_name]

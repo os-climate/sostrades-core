@@ -96,7 +96,9 @@ class OuterApproximationSolver(object):
         msg = "\n\n***\nOuterApproximation Initialization\n***"
         LOGGER.info(msg)
         
+        # check the problem to avoid cases that are not handled by this algorithm implementation
         dspace = self.full_problem.design_space
+        self._check_problem(dspace, self.full_problem)
         
         # get design variables indexes and size
         self.ind_by_varname = dspace.get_variables_indexes(dspace.variables_names)
@@ -134,21 +136,25 @@ class OuterApproximationSolver(object):
         msg += str(self.x0_integer)
         LOGGER.info(msg)
         
-
-            
-#     def _check(self, dspace):
-#         
-#         if len(dspace.get_type(v)) > 1:
-#             msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
-#             msg += '(different types for each component of the variable is not handled for now)'
-#             raise ValueError(msg)
-#         
-#         if len(self.full_problem.objective.outvars) > 1:
-#             raise ValueError("Several outputs in MDOFunction is not allowed")
-#         
-#         for c in self.full_problem.constraints:
-#             if len(c.outvars) > 1:
-#                 raise ValueError("Several outputs in MDOFunction is not allowed")
+    def _check_problem(self, dspace, problem):
+        ''' performs checks to avoid cases not handled by this algorithm implementation
+        - checks if one vectorized design variable
+        - 
+        '''
+        # checks if a dv vector components have different types
+        for v in dspace.variables_names:
+            if len(dspace.get_type(v)) > 1:
+                msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
+                msg += '(different types for each component of the variable is not handled for now)'
+                raise ValueError(msg)
+        
+        # checks if problem functions have only one output
+        if len(problem.objective.outvars) > 1:
+            raise ValueError("Several outputs in MDOFunction is not allowed")
+         
+        for c in problem.constraints:
+            if len(c.outvars) > 1:
+                raise ValueError("Several outputs in MDOFunction is not allowed")
                 
     
     def _get_integer_variables_indices(self, dspace):
