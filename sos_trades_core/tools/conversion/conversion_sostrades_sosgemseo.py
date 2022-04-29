@@ -1,12 +1,14 @@
 from copy import deepcopy
 from functools import reduce
 
+import numpy as np
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64
 from numpy import ndarray, append, arange, delete, array
 from pandas import DataFrame
 
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
 VAR_TYPE_ID = 'type'
+VAR_SUBTYPE_ID = 'subtype_descriptor'
 TYPE_METADATA = "type_metadata"
 DF_EXCLUDED_COLUMNS = 'dataframe_excluded_columns'
 INT_MAP = (int, np_int32, np_int64, np_complex128)
@@ -21,6 +23,7 @@ VAR_TYPE_MAP = {
     'string_list_list': list,
     'float_list': list,
     'int_list': list,
+    'list': list,
     'dict_list': list,
     'array': ndarray,
     'df_dict': dict,
@@ -32,7 +35,7 @@ VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
 STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
 #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
 NEW_VAR_TYPE = ['dict', 'dataframe',
-                'string_list', 'string', 'float', 'int']
+                'string_list', 'string', 'float', 'int', 'list']
 
 
 def is_value_type_handled(val):
@@ -206,6 +209,22 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
 
                 local_data_updt[key] = convert_array_into_dict(
                     to_convert, new_data, deepcopy(metadata_list))
+            # check list type in data_to_update and visibility
+            if _type == 'list':
+
+                if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                    subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
+
+                else:
+                    subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
+
+                if metadata_list is None and subtype['list'] not in ['int', 'string', 'float']:
+                    raise ValueError(
+                        f' Variable {key} cannot be converted since no metadata is available')
+                # new_data = {}
+                check_list_subtype(key, subtype)
+                local_data_updt[key] = convert_array_into_list(
+                    to_convert, deepcopy(metadata_list), subtype)
 
             # check dataframe type in data_in and visibility
             elif _type == 'dataframe':
@@ -391,7 +410,7 @@ def convert_new_type_into_array(
         var_dict, dm_reduced_to_type_and_metadata):
     '''
     Check element type in var_dict, convert new type into numpy array
-        and stores metadata into DM for afterwards reconversion
+        and stores metadata into DM for after reconversion
     '''
 
     dict_to_update_dm = {}
@@ -476,8 +495,16 @@ def convert_new_type_into_array(
                         # store float into array for gems
                         metadata = {'var_type': type(var)}
                         values_list = array([var])
+                    elif var_type == 'list':
+                        if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                            subtype = dm_reduced_to_type_and_metadata.get_data(
+                                key, VAR_SUBTYPE_ID)
+                        else:
+                            subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
+                            check_list_subtype(key, subtype)
+                        values_list, metadata = convert_list_into_array(var, subtype)
 
-                    # update current dictionary value
+                        # update current dictionary value
                     var_dict[key] = values_list
                     # Update metadata
                     # self.dm.set_data(key, self.TYPE_METADATA,
@@ -499,3 +526,150 @@ def convert_string_to_int(val, val_data):
         int_val = val_data['known_values'][val]
 
     return int_val, val_data
+
+
+def convert_list_into_array(var, subtype):
+    """This function converts a list into an array
+    It also creates the metadata needed to reconvert the array into the initial list
+    """
+    # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
+    if type(subtype['list']).__name__ != 'dict':
+        type_inside_the_list = subtype['list']
+        if type_inside_the_list in ['int', 'string']:
+            raise ValueError(
+                f'conversion of list of ints or string is not supported')
+
+        elif type_inside_the_list == 'float':
+            return array(var), {'length': len(var), 'value': None, 'size': len(var)}
+
+        elif type_inside_the_list == 'array':
+            return np.concatenate([single_element for single_element in var]), {'length': len(var),
+                                                                                'value': [len(var_element) for
+                                                                                          var_element in var],
+
+                                                                                'size': sum([len(var_element) for
+                                                                                             var_element in var])}
+
+        elif type_inside_the_list in ['dataframe', 'dict']:
+
+            list_metadata = {'length': len(var), 'value': [], 'type': type_inside_the_list}
+            converted_values = []
+            size = 0
+            for element_to_convert in var:
+                values_list = []
+                metadata = []
+                prev_key = []
+                prev_metadata = []
+
+                if type_inside_the_list == 'dict':
+
+                    values_list, metadata = convert_dict_into_array(
+                        element_to_convert, values_list, metadata, prev_key, deepcopy(prev_metadata))
+                else:
+
+                    values_list, metadata = convert_df_into_array(
+                        element_to_convert, values_list, metadata, prev_key)
+
+                list_metadata['value'].append((len(values_list), metadata))
+                converted_values.append(values_list)
+                size += len(values_list)
+
+            converted_values_to_return = np.concatenate([single_element for single_element in converted_values])
+            list_metadata['size'] = size
+            return converted_values_to_return, list_metadata
+
+        else:
+            raise ValueError(
+                f' subtype  {type_inside_the_list} is not yet handled in list conversion')
+
+    else:
+        # We have a recursive list
+        list_metadata = {'length': len(var), 'value': [], 'type': 'list'}
+        converted_list = []
+        size = 0
+        for element in var:
+            converted_sublist, converted_submetadata = convert_list_into_array(element, subtype['list'])
+            converted_list.append(converted_sublist)
+            list_metadata['value'].append(converted_submetadata)
+            size += converted_submetadata['size']
+
+        list_metadata['size'] = size
+        return np.concatenate([single_element for single_element in converted_list]), list_metadata
+
+
+def convert_array_into_list(to_convert, metadata, subtype):
+    """ convert an array into initial list
+    """
+    # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
+    if type(subtype['list']).__name__ != 'dict':
+        type_inside_the_list = subtype['list']
+        if type_inside_the_list in ['float', 'int', 'string']:
+            return to_convert.tolist()
+
+        elif type_inside_the_list == 'array':
+            initial_list_length = metadata['length']
+            converted_list = []
+            idx = 0
+            for i in range(initial_list_length):
+                arr_to_convert = to_convert[idx: idx + metadata['value'][i]]
+                converted_list.append(arr_to_convert)
+                idx += metadata['value'][i]
+
+            return converted_list
+
+        elif type_inside_the_list in ['dict', 'dataframe']:
+
+            initial_list_length = metadata['length']
+            converted_list = []
+            idx = 0
+            for i in range(initial_list_length):
+                arr_to_convert = to_convert[idx: idx + metadata['value'][i][0]]
+                if type_inside_the_list == 'dict':
+                    converted_list.append(convert_array_into_dict(arr_to_convert, {}, metadata['value'][i][1]))
+                else:
+                    converted_list.append(convert_array_into_df(arr_to_convert, metadata['value'][i][1][0]))
+
+                idx += metadata['value'][i][0]
+
+            return converted_list
+
+        else:
+            raise ValueError(
+                f' subtype  {type_inside_the_list} is not yet handled in list conversion')
+
+    else:
+        # case of a recursive list
+        initial_list_length = metadata['length']
+        converted_list = []
+        idx = 0
+        for i in range(initial_list_length):
+            arr_to_convert = to_convert[idx: idx + metadata['value'][i]['size']]
+            converted_list.append(convert_array_into_list(arr_to_convert, metadata['value'][i], subtype['list']))
+            idx += metadata['value'][i]['size']
+
+        return converted_list
+
+
+def check_list_subtype(var_full_name, subtype, type_to_check='list'):
+    """This function checks that the subtype given to a list is compliant
+    with the defined standard for subtype
+    """
+    if type(subtype).__name__ != 'dict':
+        raise ValueError(
+            f' subtype of variable {var_full_name} must be a dictionnary')
+    elif list(subtype.keys())[0] != type_to_check or len(list(subtype.keys())) != 1:
+        raise ValueError(
+            f' subtype of variable {var_full_name} should have as unique key the keyword {type_to_check}')
+    elif type(subtype[type_to_check]).__name__ != 'dict':
+        if subtype[type_to_check] == type_to_check:
+            raise ValueError(
+                f' subtype of variable {var_full_name} should indicate the type inside the {type_to_check}')
+        else:
+            pass
+    else:
+        if list(subtype[type_to_check].keys())[0] != type_to_check:
+            raise ValueError(
+                f' subtype of variable {var_full_name} is not compliant with standard')
+        else:
+
+            check_list_subtype(var_full_name, subtype[type_to_check], type_to_check)
