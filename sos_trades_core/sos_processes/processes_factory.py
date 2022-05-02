@@ -72,7 +72,7 @@ class SoSProcessFactory:
 
         self._set_processes_dict()
         
-        #set all the default rights in the dicts for each process
+        # Set all the default rights in the dicts for each process
         self._set_processes_rights_from_file_dict()
 
     @property
@@ -145,26 +145,21 @@ class SoSProcessFactory:
                             self.__user_default_rights_dict[process] =  yaml_data[USER_MAIL]
                         if GROUP_NAME in yaml_data.keys() and yaml_data[GROUP_NAME] is not None:
                             self.__group_default_rights_dict[process] =  yaml_data[GROUP_NAME]                  
-                                                 
-                                                     
-    #-- Private methods
 
     def __add_python_path_processes(self):
-        """ build additonal process repository base on PYTHONPATH libraries
-
+        """
+        Build additional process repository base on PYTHONPATH libraries
         The predicate is look for a folder named 'sos_processes' at the library root
-        
-        Find for each path the file containing default access rights file for this repository
 
+        Find for each path the file containing default access rights file for this repository
         """
         
-        # check for PYTHONPATH envrionment variable
+        # check for PYTHONPATH environment variable
         python_path_libraries = environ.get('PYTHONPATH')
-        
 
         if python_path_libraries is not None and len(python_path_libraries) > 0:
 
-            # Set to list each library of the pythonpath
+            # Set to list each library of the PYTHONPATH
             libraries = python_path_libraries.split(pathsep)
 
             for library in libraries:
@@ -174,19 +169,18 @@ class SoSProcessFactory:
                 if processes_modules is not None and len(processes_modules) > 0:
                     self.__raw_repository_list.extend(processes_modules)
                     
-                    #from python path, add the automatic default right file if exists
+                    # From python path, add the automatic default right file if exists
                     file_name = join(library, DEFAULT_RIGHTS_FILE_NAME)
                     if Path(file_name).exists():
                         self.logger.info('--found default right file--')
-                        #read the file
-                        # open and read the yaml file
+                        # Read the file
+                        # Open and read the yaml file
                         with open(file_name) as stream:
                             yaml_data = yaml.load(stream, Loader=yaml.FullLoader)
                             self.logger.info(f'data from default file:{yaml_data}')
                             if yaml_data is not None:
                                 for process_module in processes_modules:
                                     self.__process_default_right_files[process_module] = yaml_data
-                            
 
     def __get_repositories_by_process(self, repository_module_name):
         """ retrieve the list of process name into the specified module name
@@ -207,6 +201,8 @@ class SoSProcessFactory:
 
             # Load module (if not exist a ModuleNotFoundException is loaded
             repository_module = import_module(repository_module_name)
+
+            self.logger.debug(f'Looking for processes into module {repository_module_name}')
 
             # Get the corresponding filepath
             if repository_module is not None:
@@ -232,6 +228,7 @@ class SoSProcessFactory:
                         repositories_by_process[process_module] = []
                     repositories_by_process[process_module].append(
                         process_name)
+                    self.logger.debug(f'Find {process_module} / {process_name}')
 
             else:
                 self.logger.warning(
