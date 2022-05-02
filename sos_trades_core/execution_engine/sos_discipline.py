@@ -1090,8 +1090,8 @@ class SoSDiscipline(MDODiscipline):
         
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            lines_nb = value.to_numpy().shape[0]
-            index_column = value[[column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS]].columns.to_list().index(column)
+            lines_nb = len(value)
+            index_column = list(set(value.columns) - set(self.DEFAULT_EXCLUDED_COLUMNS)).index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
