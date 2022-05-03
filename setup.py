@@ -34,7 +34,6 @@ reqs_list = [
     'pandas==1.3.0',
     'numpy==1.20.3',
     'cma==3.1.0',
-    'ortools==9.0.9048',
     'PyYAML==5.1.2',
     'dremio_client==0.15.1',
     'pyarrow==6.0.1',
