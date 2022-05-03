@@ -37,12 +37,17 @@ class Disc(SoSDiscipline):
     _maturity = 'Fake'
     dict_data = {'col1': 1., 'col2': 2., 'col3': 3., 'col4': 4.}
     df_data = pd.DataFrame({'col1': [1, 2], 'col2': [3, 0.5]})
+    dict_df_data = {f'key{i}': pd.DataFrame({'col1': [1, 2], 'col2': [3, 0.5]}) for i in range(1, 6)}
     float_list = [1.5, 2., 4., 5.5]
     dict_list = [dict_data, dict_data, dict_data, dict_data]
     array_list = [np.array([1, 2, 3]), np.array([1, 2, 3, 4]), np.array([1, 2, 3, 4, 5]),
                   np.array([1, 2, 3]), np.array([1, 2, 3, 4, 5, 6])]
     list_array_list = [array_list, array_list, array_list, array_list]
     df_list = [df_data, df_data, df_data, df_data, df_data]
+    dict_dict_array = {f'key{i}': {'key1': np.array([1, 2, 3]), 'key2': np.array([1, 2, 3, 4]),
+                                   'key3': np.array([1, 2, 3, 4, 5]),
+                                   'key4': np.array([1, 2, 3]), 'key5': np.array([1, 2, 3, 4, 5, 6])} for i in
+                       range(1, 6)}
 
     DESC_IN = {
         'list_float': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
@@ -71,6 +76,55 @@ class Disc(SoSDiscipline):
                                  'default': [list_array_list, list_array_list, list_array_list, list_array_list,
                                              list_array_list],
                                  'subtype_descriptor': {'list': {'list': {'list': 'array'}}}},
+        'dict_float': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                       'default': {'key1': 0.5, 'key2': 0.5, 'key3': 1., 'key4': 2.5, 'key5': 1.5},
+                       'subtype_descriptor': {'dict': 'float'}},
+        'dict_array': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                       'default': {'key1': np.array([1, 2, 3]), 'key2': np.array([1, 2, 3, 4]),
+                                   'key3': np.array([1, 2, 3, 4, 5]),
+                                   'key4': np.array([1, 2, 3]), 'key5': np.array([1, 2, 3, 4, 5, 6])},
+                       'subtype_descriptor': {'dict': 'array'}},
+        'dict_dataframe': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                           'default': {'key1': df_data, 'key2': df_data,
+                                       'key3': df_data,
+                                       'key4': df_data, 'key5': df_data},
+                           'subtype_descriptor': {'dict': 'dataframe'}},
+        'dict_dataframe_array': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                 'default': {'key1': df_data, 'key2': df_data,
+                                             'key3': df_data,
+                                             'key4': df_data, 'key5': pd.DataFrame(
+                                         data={'col1': [1, np.array([0.70710678, 0.70710678])]})},
+                                 'subtype_descriptor': {'dict': 'dataframe'}},
+        'large_dict': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                       'default': {'key1': df_data, 'key2': df_data,
+                                   'key3': df_data,
+                                   'key4': df_data, 'key5': df_data},
+                       'subtype_descriptor': {'dict': 'dataframe'}},
+        'dict_dict_float': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                            'default': {f'key{i}': {'1': i + 1, '2': i + 2,
+                                                    '3': i + 3, '4': i + 4} for i in range(500)},
+                            'subtype_descriptor': {'dict': {'dict': 'float'}}},
+
+        'dict_dict_dataframe': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                'default': {
+                                    f'key{i}': {f'key{i}': pd.DataFrame({'col1': [1, 2], 'col2': [3, 0.5]}) for i in
+                                                range(1, 6)} for i in range(1, 6)},
+                                'subtype_descriptor': {'dict': {'dict': 'dataframe'}}},
+
+        'dict_dict_dict_array': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                 'default': {f'key{i}': {
+                                     f'key{i}': {'key1': np.array([1, 2, 3]), 'key2': np.array([1, 2, 3, 4]),
+                                                 'key3': np.array([1, 2, 3, 4, 5]),
+                                                 'key4': np.array([1, 2, 3]), 'key5': np.array([1, 2, 3, 4, 5, 6])} for
+                                     i in range(1, 6)} for i in range(1, 6)},
+                                 'subtype_descriptor': {'dict': {'dict': {'dict': 'array'}}}},
+        'dict_list_float': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                            'default': {f'key{i}': [1.5, 2.5, 3.5, 4.5, 5] for i in range(1, 6)},
+                            'subtype_descriptor': {'dict': {'list': 'float'}}},
+        'dict_list_list_dataframe': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                     'default': {'key1': [df_list, df_list, df_list], 'key2':[df_list, df_list, df_list] , 'key3':[df_list, df_list, df_list], 'key4':[df_list, df_list, df_list] , 'key5':[df_list, df_list, df_list] },
+                                     'subtype_descriptor': {'dict': {'list': {'list': 'dataframe'}}}},
+
 
     }
     DESC_OUT = {
