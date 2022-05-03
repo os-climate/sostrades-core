@@ -285,8 +285,16 @@ class GridSearchEval(DoeEval):
             if outputs_dict['samples_inputs_df'] is not None:
                 self.chart_dict, output_df = self.prepare_chart_dict(
                     outputs_dict, inputs_dict)
+            if len(output_df):
                 self.store_sos_outputs_values(
                     {'samples_outputs_df': output_df})
+            else:
+                self.logger.warning(
+                "samples_outputs_df is empty"
+                "No suitable columns were found, i.e, no float or no unique value per scenario"
+                "Consider to select another eval_output"
+            )
+                
 
     def generate_samples_from_doe_factory(self):
         """
