@@ -33,7 +33,7 @@ def smooth_maximum(cst, alpha=3):
 
     k = max_alphax - max_exp
     # Deal with underflow . max with exp(-300)
-    exp_func = np.maximum(min_exp, alpha * cst - k)
+    exp_func = np.maximum(min_exp, np.multiply(alpha, cst) - k)
     den = np.sum(np.exp(exp_func))
     num = np.sum(cst * np.exp(exp_func))
     if den != 0:
