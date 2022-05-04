@@ -98,8 +98,6 @@ class TestExtendString(unittest.TestCase):
         for key in [f'key{i}' for i in range(1, 6)]:
             assert_array_equal(conversion_back['EE.Disc.dict_array'][key], dict_array[key])
 
-        print("done")
-
     def test_02_recursive_dict_conversion(self):
         """ This test proves the ability to convert recursive  dict
         {'dict':{'dict':'float'}}, {'dict':{'dict':'dataframe'}}... into array and
@@ -146,9 +144,6 @@ class TestExtendString(unittest.TestCase):
                                    dict_dict_dataframe[key1][key2],
                                    check_dtype=False)
 
-        print("done")
-
-
     def test_03_recursive_dict_list_conversion(self):
         """ This test proves the ability to convert recursive  dict of list
         {'dict':{'list':'float'}}, {'dict':{'list':'dataframe'}}... into array and
@@ -180,14 +175,19 @@ class TestExtendString(unittest.TestCase):
         for key1 in [f'key{i}' for i in range(1, 6)]:
             for i in range(3):
                 for j in range(5):
-                    assert_frame_equal(conversion_back['EE.Disc.dict_list_list_dataframe'][key1][i][j], dict_list_list_dataframe[key1][i][j],
+                    assert_frame_equal(conversion_back['EE.Disc.dict_list_list_dataframe'][key1][i][j],
+                                       dict_list_list_dataframe[key1][i][j],
                                        check_dtype=False)
 
+        dict_list_dict_dataframe = self.exec_eng.dm.get_value('EE.Disc.dict_list_dict_dataframe')
+        var_dict = {'EE.Disc.dict_list_dict_dataframe': dict_list_dict_dataframe}
 
-
-
-
-        print('done')
-
-
-
+        conversion_into_array = disc._convert_new_type_into_array(var_dict)
+        conversion_back = disc._convert_array_into_new_type(
+            {'EE.Disc.dict_list_dict_dataframe': conversion_into_array['EE.Disc.dict_list_dict_dataframe']})
+        for key1 in [f'key{i}' for i in range(1, 6)]:
+            for i in range(3):
+                for key2 in [f'key{i}' for i in range(1, 6)]:
+                    assert_frame_equal(conversion_back['EE.Disc.dict_list_dict_dataframe'][key1][i][key2],
+                                       dict_list_dict_dataframe[key1][i][key2],
+                                       check_dtype=False)

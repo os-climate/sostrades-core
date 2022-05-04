@@ -38,10 +38,16 @@ class Disc(SoSDiscipline):
     dict_data = {'col1': 1., 'col2': 2., 'col3': 3., 'col4': 4.}
     df_data = pd.DataFrame({'col1': [1, 2], 'col2': [3, 0.5]})
     dict_df_data = {f'key{i}': pd.DataFrame({'col1': [1, 2], 'col2': [3, 0.5]}) for i in range(1, 6)}
+    list_dict_df = [dict_df_data, dict_df_data, dict_df_data]
+    dict_list_dict_df = {'key1': list_dict_df, 'key2': list_dict_df, 'key3': list_dict_df, 'key4': list_dict_df,
+                         'key5': list_dict_df}
     float_list = [1.5, 2., 4., 5.5]
     dict_list = [dict_data, dict_data, dict_data, dict_data]
     array_list = [np.array([1, 2, 3]), np.array([1, 2, 3, 4]), np.array([1, 2, 3, 4, 5]),
                   np.array([1, 2, 3]), np.array([1, 2, 3, 4, 5, 6])]
+    dict_list_array = {'key1': array_list, 'key2': array_list, 'key3': array_list, 'key4': array_list,
+                       'key5': array_list}
+    list_dict_list_array = [dict_list_array, dict_list_array, dict_list_array]
     list_array_list = [array_list, array_list, array_list, array_list]
     df_list = [df_data, df_data, df_data, df_data, df_data]
     dict_dict_array = {f'key{i}': {'key1': np.array([1, 2, 3]), 'key2': np.array([1, 2, 3, 4]),
@@ -60,15 +66,15 @@ class Disc(SoSDiscipline):
         'list_dataframe': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
                            'default': [df_data, df_data, df_data, df_data, df_data],
                            'subtype_descriptor': {'list': 'dataframe'}},
-        'list_dict': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
-                      'default': [dict_data, dict_data, dict_data, dict_data, dict_data],
-                      'subtype_descriptor': {'list': 'dict'}},
+        'list_dict_float': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                            'default': [dict_data, dict_data, dict_data, dict_data, dict_data],
+                            'subtype_descriptor': {'list': {'dict': 'float'}}},
         'list_list_float': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
                             'default': [float_list, float_list, float_list, float_list, float_list],
                             'subtype_descriptor': {'list': {'list': 'float'}}},
-        'list_list_dict': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
-                           'default': [dict_list, dict_list, dict_list, dict_list, dict_list],
-                           'subtype_descriptor': {'list': {'list': 'dict'}}},
+        'list_list_dict_float': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                 'default': [dict_list, dict_list, dict_list, dict_list, dict_list],
+                                 'subtype_descriptor': {'list': {'list': {'dict': 'float'}}}},
         'list_list_dataframe': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
                                 'default': [df_list, df_list, df_list],
                                 'subtype_descriptor': {'list': {'list': 'dataframe'}}},
@@ -122,9 +128,19 @@ class Disc(SoSDiscipline):
                             'default': {f'key{i}': [1.5, 2.5, 3.5, 4.5, 5] for i in range(1, 6)},
                             'subtype_descriptor': {'dict': {'list': 'float'}}},
         'dict_list_list_dataframe': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
-                                     'default': {'key1': [df_list, df_list, df_list], 'key2':[df_list, df_list, df_list] , 'key3':[df_list, df_list, df_list], 'key4':[df_list, df_list, df_list] , 'key5':[df_list, df_list, df_list] },
+                                     'default': {'key1': [df_list, df_list, df_list],
+                                                 'key2': [df_list, df_list, df_list],
+                                                 'key3': [df_list, df_list, df_list],
+                                                 'key4': [df_list, df_list, df_list],
+                                                 'key5': [df_list, df_list, df_list]},
                                      'subtype_descriptor': {'dict': {'list': {'list': 'dataframe'}}}},
 
+        'list_dict_list_array': {'type': 'list', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                 'default': list_dict_list_array,
+                                 'subtype_descriptor': {'list': {'dict': {'list': 'array'}}}},
+        'dict_list_dict_dataframe': {'type': 'dict', 'visibility': SoSDiscipline.LOCAL_VISIBILITY,
+                                     'default': dict_list_dict_df,
+                                     'subtype_descriptor': {'dict': {'list': {'dict': 'dataframe'}}}},
 
     }
     DESC_OUT = {

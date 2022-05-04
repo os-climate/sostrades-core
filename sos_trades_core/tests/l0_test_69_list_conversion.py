@@ -21,18 +21,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 import pprint
-import numpy as np
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
 from os.path import join
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from copy import deepcopy
 from tempfile import gettempdir
-from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
-from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_list_into_array
 
 
 class TestExtendString(unittest.TestCase):
@@ -73,14 +65,6 @@ class TestExtendString(unittest.TestCase):
             {'EE.Disc.list_float': conversion_into_array['EE.Disc.list_float']})
         self.assertListEqual(conversion_back['EE.Disc.list_float'], list_float)
 
-        list_dict = self.exec_eng.dm.get_value('EE.Disc.list_dict')
-        var_dict = {'EE.Disc.list_dict': list_dict}
-
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_dict': conversion_into_array['EE.Disc.list_dict']})
-        self.assertListEqual(conversion_back['EE.Disc.list_dict'], list_dict)
-
         list_df = self.exec_eng.dm.get_value('EE.Disc.list_dataframe')
         var_dict = {'EE.Disc.list_dataframe': list_df}
 
@@ -98,8 +82,6 @@ class TestExtendString(unittest.TestCase):
             {'EE.Disc.list_array': conversion_into_array['EE.Disc.list_array']})
         for i in range(5):
             assert_array_equal(conversion_back['EE.Disc.list_array'][i], list_array[i])
-
-        print("done")
 
     def test_02_recursive_list_conversion(self):
         """ This test proves the ability to convert recursive  list
@@ -122,14 +104,6 @@ class TestExtendString(unittest.TestCase):
         conversion_back = disc._convert_array_into_new_type(
             {'EE.Disc.list_list_float': conversion_into_array['EE.Disc.list_list_float']})
         self.assertListEqual(conversion_back['EE.Disc.list_list_float'], list_list_float)
-
-        list_list_dict = self.exec_eng.dm.get_value('EE.Disc.list_list_dict')
-        var_dict = {'EE.Disc.list_list_dict': list_list_dict}
-
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_list_dict': conversion_into_array['EE.Disc.list_list_dict']})
-        self.assertListEqual(conversion_back['EE.Disc.list_list_dict'], list_list_dict)
 
         list_list_list_array = self.exec_eng.dm.get_value('EE.Disc.list_list_list_array')
         var_dict = {'EE.Disc.list_list_list_array': list_list_list_array}
@@ -154,4 +128,45 @@ class TestExtendString(unittest.TestCase):
                 assert_frame_equal(conversion_back['EE.Disc.list_list_dataframe'][i][j], list_list_dataframe[i][j],
                                    check_dtype=False)
 
-        print("done")
+    def test_03_recursive_list_dict_conversion(self):
+        """ This test proves the ability to convert recursive  list of dict
+        {'list':{'dict':'float'}}, {'list':{'dict':'dataframe'}}... into array and
+                to reconvert it back afterward
+        """
+
+        builder = self.disc_builder
+
+        # Set builder in factory and configure
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
+        self.exec_eng.load_study_from_input_dict({})
+        print(self.exec_eng.display_treeview_nodes())
+        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+
+        list_dict_float = self.exec_eng.dm.get_value('EE.Disc.list_dict_float')
+        var_dict = {'EE.Disc.list_dict_float': list_dict_float}
+
+        conversion_into_array = disc._convert_new_type_into_array(var_dict)
+        conversion_back = disc._convert_array_into_new_type(
+            {'EE.Disc.list_dict_float': conversion_into_array['EE.Disc.list_dict_float']})
+        self.assertListEqual(conversion_back['EE.Disc.list_dict_float'], list_dict_float)
+
+        list_list_dict_float = self.exec_eng.dm.get_value('EE.Disc.list_list_dict_float')
+        var_dict = {'EE.Disc.list_list_dict_float': list_list_dict_float}
+
+        conversion_into_array = disc._convert_new_type_into_array(var_dict)
+        conversion_back = disc._convert_array_into_new_type(
+            {'EE.Disc.list_list_dict_float': conversion_into_array['EE.Disc.list_list_dict_float']})
+        self.assertListEqual(conversion_back['EE.Disc.list_list_dict_float'], list_list_dict_float)
+
+        list_dict_list_array = self.exec_eng.dm.get_value('EE.Disc.list_dict_list_array')
+        var_dict = {'EE.Disc.list_dict_list_array': list_dict_list_array}
+
+        conversion_into_array = disc._convert_new_type_into_array(var_dict)
+        conversion_back = disc._convert_array_into_new_type(
+            {'EE.Disc.list_dict_list_array': conversion_into_array['EE.Disc.list_dict_list_array']})
+
+        for i in range(3):
+            for key1 in [f'key{i}' for i in range(1, 6)]:
+                for k in range(5):
+                    assert_array_equal(conversion_back['EE.Disc.list_dict_list_array'][i][key1][k],
+                                       list_dict_list_array[i][key1][k])

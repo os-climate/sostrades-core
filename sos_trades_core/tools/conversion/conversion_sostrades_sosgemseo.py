@@ -230,7 +230,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                     raise ValueError(
                         f' Variable {key} cannot be converted since no metadata is available')
                 # new_data = {}
-                check_list_subtype(key, subtype)
+                #check_list_subtype(key, subtype)
                 local_data_updt[key] = convert_array_into_list(
                     to_convert, deepcopy(metadata_list), subtype)
 
@@ -421,7 +421,7 @@ def convert_dict_into_array(var_dict, subtype):
         for key, element_to_convert in var_dict.items():
             if recursive_subtype == 'dict':
                 converted_subdict, converted_submetadata = convert_dict_into_array(element_to_convert, subtype['dict'])
-            else :
+            else:
                 converted_subdict, converted_submetadata = convert_list_into_array(element_to_convert, subtype['dict'])
             converted_values.append(converted_subdict)
             dict_metadata['value'][key] = converted_submetadata
@@ -438,7 +438,7 @@ def convert_array_into_dict(to_convert, metadata, subtype):
     if type(subtype['dict']).__name__ != 'dict':
         type_inside_the_dict = subtype['dict']
         if type_inside_the_dict in ['float', 'int', 'string']:
-            return {key: value for (key,value)  in  zip(metadata['value'],to_convert.tolist())}
+            return {key: value for (key, value) in zip(metadata['value'], to_convert.tolist())}
 
 
         elif type_inside_the_dict == 'array':
@@ -479,8 +479,8 @@ def convert_array_into_dict(to_convert, metadata, subtype):
         for key in dict_keys:
             if recursive_subtype == 'dict':
                 converted_dict[key] = convert_array_into_dict(to_convert[idx: idx + metadata['value'][key]['size']],
-                                                          metadata['value'][key], subtype['dict'])
-            else :
+                                                              metadata['value'][key], subtype['dict'])
+            else:
                 converted_dict[key] = convert_array_into_list(to_convert[idx: idx + metadata['value'][key]['size']],
                                                               metadata['value'][key], subtype['dict'])
             idx += metadata['value'][key]['size']
@@ -638,7 +638,7 @@ def convert_new_type_into_array(
                                 key, VAR_SUBTYPE_ID)
                         else:
                             subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                            #check_list_subtype(key, subtype)
+                            # check_list_subtype(key, subtype)
                         values_list, metadata = convert_list_into_array(var, subtype)
 
                         # update current dictionary value
@@ -687,7 +687,7 @@ def convert_list_into_array(var, subtype):
                                                                                 'size': sum([len(var_element) for
                                                                                              var_element in var])}
 
-        elif type_inside_the_list in ['dataframe', 'dict']:
+        elif type_inside_the_list == 'dataframe':
 
             list_metadata = {'length': len(var), 'value': [], 'type': type_inside_the_list}
             converted_values = []
@@ -696,16 +696,9 @@ def convert_list_into_array(var, subtype):
                 values_list = []
                 metadata = []
                 prev_key = []
-                prev_metadata = []
 
-                if type_inside_the_list == 'dict':
-
-                    values_list, metadata = convert_dict_into_array(
-                        element_to_convert, values_list, metadata, prev_key, deepcopy(prev_metadata))
-                else:
-
-                    values_list, metadata = convert_df_into_array(
-                        element_to_convert, values_list, metadata, prev_key)
+                values_list, metadata = convert_df_into_array(
+                    element_to_convert, values_list, metadata, prev_key)
 
                 list_metadata['value'].append((len(values_list), metadata))
                 converted_values.append(values_list)
@@ -721,11 +714,15 @@ def convert_list_into_array(var, subtype):
 
     else:
         # We have a recursive list
+        recursive_subtype = (list(subtype['list'].keys()))[0]
         list_metadata = {'length': len(var), 'value': [], 'type': 'list'}
         converted_list = []
         size = 0
         for element in var:
-            converted_sublist, converted_submetadata = convert_list_into_array(element, subtype['list'])
+            if recursive_subtype == 'list':
+                converted_sublist, converted_submetadata = convert_list_into_array(element, subtype['list'])
+            else:
+                converted_sublist, converted_submetadata = convert_dict_into_array(element, subtype['list'])
             converted_list.append(converted_sublist)
             list_metadata['value'].append(converted_submetadata)
             size += converted_submetadata['size']
@@ -754,17 +751,14 @@ def convert_array_into_list(to_convert, metadata, subtype):
 
             return converted_list
 
-        elif type_inside_the_list in ['dict', 'dataframe']:
+        elif type_inside_the_list == 'dataframe':
 
             initial_list_length = metadata['length']
             converted_list = []
             idx = 0
             for i in range(initial_list_length):
                 arr_to_convert = to_convert[idx: idx + metadata['value'][i][0]]
-                if type_inside_the_list == 'dict':
-                    converted_list.append(convert_array_into_dict(arr_to_convert, {}, metadata['value'][i][1]))
-                else:
-                    converted_list.append(convert_array_into_df(arr_to_convert, metadata['value'][i][1][0]))
+                converted_list.append(convert_array_into_df(arr_to_convert, metadata['value'][i][1][0]))
 
                 idx += metadata['value'][i][0]
 
@@ -776,12 +770,16 @@ def convert_array_into_list(to_convert, metadata, subtype):
 
     else:
         # case of a recursive list
+        recursive_subtype = (list(subtype['list'].keys()))[0]
         initial_list_length = metadata['length']
         converted_list = []
         idx = 0
         for i in range(initial_list_length):
             arr_to_convert = to_convert[idx: idx + metadata['value'][i]['size']]
-            converted_list.append(convert_array_into_list(arr_to_convert, metadata['value'][i], subtype['list']))
+            if recursive_subtype == 'list':
+                converted_list.append(convert_array_into_list(arr_to_convert, metadata['value'][i], subtype['list']))
+            else:
+                converted_list.append(convert_array_into_dict(arr_to_convert, metadata['value'][i], subtype['list']))
             idx += metadata['value'][i]['size']
 
         return converted_list
