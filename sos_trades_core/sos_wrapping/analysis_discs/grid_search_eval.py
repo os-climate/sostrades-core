@@ -622,20 +622,26 @@ class GridSearchEval(DoeEval):
                                 output_df_temp = None
 
             # Select only float type results
-            output_variables = output_df.select_dtypes(
-                include='float').columns.to_list()
-            cont_plot_df = doe_samples_df.merge(
-                output_df, how="left", on='scenario')
+            if output_df is not None:
+                output_variables = output_df.select_dtypes(
+                    include='float').columns.to_list()
+                cont_plot_df = doe_samples_df.merge(
+                    output_df, how="left", on='scenario')
 
-            if 'reference' in list(cont_plot_df['scenario'].values):
-                # Stock the scenario reference row
-                reference_row = cont_plot_df.loc[cont_plot_df['scenario'] == 'reference', :].reset_index(
-                    drop=True)
-                # remove the scenario reference row from cont_plot_df
-                cont_plot_df = cont_plot_df.loc[cont_plot_df['scenario']
-                                                != 'reference', :]
-            else:
-                reference_row = []
+                if 'reference' in list(cont_plot_df['scenario'].values):
+                    # Stock the scenario reference row
+                    reference_row = cont_plot_df.loc[cont_plot_df['scenario'] == 'reference', :].reset_index(
+                        drop=True)
+                    # remove the scenario reference row from cont_plot_df
+                    cont_plot_df = cont_plot_df.loc[cont_plot_df['scenario']
+                                                    != 'reference', :]
+                else:
+                    reference_row = []
+            #if the eval outputs are not suitable for the grid search's post processing         
+            elif output_df is None:
+                output_variables=[]
+                output_df_to_return = pd.DataFrame()
+                cont_plot_df = doe_samples_df
 
             # we constitute the full_chart_list by making a product
             # between the possible inputs combination and outputs list
@@ -644,11 +650,13 @@ class GridSearchEval(DoeEval):
                     inputs_combin, output_variables)
             )
             # retrieve z variable name by removing _dict from the output name
+            
 
             chart_list = [list(chart_tuple) + [output_info_dict[chart_tuple[1]]['output_info_name']] + [
                 output_info_dict[chart_tuple[1]]['unit']]
                 for chart_tuple in chart_tuples]
             full_chart_list += chart_list
+            # if output_df= None --> full_chart_list = []
 
         chart_dict = {}
         # based on the full chart list, we will create a dict will all
@@ -734,8 +742,11 @@ class GridSearchEval(DoeEval):
         inputs_dict = self.get_sosdisc_inputs()
         self.chart_dict, output_df = self.prepare_chart_dict(
             outputs_dict, inputs_dict)
+        
         chart_list = list(self.chart_dict.keys())
-        if 'reference_scenario' in self.chart_dict[chart_list[0]]:
+        
+        if len(chart_list):
+            
             if len(self.chart_dict[chart_list[0]]['reference_scenario']):
                 chart_list.insert(0, 'Reference Scenario')
 
