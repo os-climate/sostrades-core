@@ -22,11 +22,13 @@ from copy import deepcopy
 
 import warnings
 from sos_trades_core.tools.cst_manager.func_manager_common import get_dsmooth_dvariable
-warnings.simplefilter(action='ignore', category=FutureWarning)
 
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.func_manager.func_manager import FunctionManager
+from sos_trades_core.tools.cst_manager.func_manager_common import smooth_maximum, smooth_maximum_vect
+from sos_trades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
 from numpy import float64, ndarray, asarray
 import pandas as pd
 import numpy as np
@@ -34,7 +36,8 @@ from math import isnan
 import csv
 from plotly import graph_objects as go
 
-from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import InstantiatedPlotlyNativeChart
+from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import \
+    InstantiatedPlotlyNativeChart
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 
@@ -77,13 +80,13 @@ class FunctionManagerDisc(SoSDiscipline):
     OPTIM_OUTPUT_DF = 'optim_output_df'
     EXPORT_CSV = 'export_csv'
     DESC_IN = {FUNC_DF: {'type': 'dataframe',
-                         'dataframe_descriptor': {VARIABLE: ('string',  None, True),  # input function
-                                                  FTYPE: ('string',  None, True),
-                                                  WEIGHT: ('float',  None, True),
-                                                  AGGR_TYPE: ('string',  None, True),
+                         'dataframe_descriptor': {VARIABLE: ('string', None, True),  # input function
+                                                  FTYPE: ('string', None, True),
+                                                  WEIGHT: ('float', None, True),
+                                                  AGGR_TYPE: ('string', None, True),
 
                                                   # index of the dataframe
-                                                  INDEX: ('int',  None, True),
+                                                  INDEX: ('int', None, True),
                                                   #                                                   COMPONENT: ('string',  None, True),
                                                   # NAMESPACE_VARIABLE:
                                                   # ('string',  None, True),
@@ -147,7 +150,7 @@ class FunctionManagerDisc(SoSDiscipline):
                             func_dict[var].update({self.COMPONENT: component})
 
                 self.function_dict = func_dict
-                #-- update all i/o function per function
+                # -- update all i/o function per function
                 for f, metadata in self.function_dict.items():
                     # TODO: improve by retrieving desc_i/o info from disciplines
                     # instead of assuming that they all are dataframes
@@ -175,11 +178,11 @@ class FunctionManagerDisc(SoSDiscipline):
                     self.inst_desc_in[f] = {
                         'type': var_type, 'visibility': 'Shared', 'namespace': namespace}
 
-                    #-- output update : constr aggregation and scalarized objective
+                    # -- output update : constr aggregation and scalarized objective
                     out_name = self.__build_mod_names(f)
                     self.inst_desc_out[out_name] = {'type': 'array', 'visibility': 'Shared',
                                                     'namespace': 'ns_optim'}
-                    #-- add function to the FuncManager
+                    # -- add function to the FuncManager
                     ftype = metadata[FunctionManager.FTYPE]
                     w = metadata.get(FunctionManager.WEIGHT, None)
 
@@ -194,19 +197,19 @@ class FunctionManagerDisc(SoSDiscipline):
                     self.func_manager.add_function(
                         f, value=None, ftype=ftype, weight=w, aggr_type=aggr_type)
 
-        #-- output update : aggregation of ineq constraints
+        # -- output update : aggregation of ineq constraints
         self.inst_desc_out[self.INEQ_CONSTRAINT] = {'type': 'array', 'visibility': 'Shared',
                                                     'namespace': 'ns_optim'}
 
-        #-- output update : aggregation of eq constraints
+        # -- output update : aggregation of eq constraints
         self.inst_desc_out[self.EQ_CONSTRAINT] = {'type': 'array', 'visibility': 'Shared',
                                                   'namespace': 'ns_optim'}
 
-        #-- output update : scalarization of objective
+        # -- output update : scalarization of objective
         self.inst_desc_out[self.OBJECTIVE] = {'type': 'array', 'visibility': 'Shared',
                                               'namespace': 'ns_optim'}
 
-        #-- output update : lagrangian penalization
+        # -- output update : lagrangian penalization
         self.inst_desc_out[self.OBJECTIVE_LAGR] = {'type': 'array', 'visibility': 'Shared',
                                                    'namespace': 'ns_optim'}
         self.iter, self.last_len_database = 0, 0
@@ -218,7 +221,7 @@ class FunctionManagerDisc(SoSDiscipline):
 
         f_manager = self.func_manager
 
-        #-- update function values
+        # -- update function values
         for f in self.function_dict.keys():
             fvalue_df = self.get_sosdisc_inputs(f)
             self.check_isnan_inf(f, fvalue_df)
@@ -227,10 +230,10 @@ class FunctionManagerDisc(SoSDiscipline):
             # update func manager with value as array
             f_manager.update_function_value(f, f_arr)
 
-        #-- build aggregation functions
+        # -- build aggregation functions
         f_manager.build_aggregated_functions(eps=1e-3)  # alpha=3
 
-        #--initialize csv
+        # --initialize csv
         s_name = self.ee.study_name
         if self.iter == 0 and self.get_sosdisc_inputs(self.EXPORT_CSV):
             t = time.localtime()
@@ -262,8 +265,8 @@ class FunctionManagerDisc(SoSDiscipline):
             self.iter += 1
             pass
 
-        #-- store output values
-        #self.iter += 1
+        # -- store output values
+        # self.iter += 1
 
         msg1 = [str(self.iter)]
         header = ["iteration "]
@@ -292,7 +295,8 @@ class FunctionManagerDisc(SoSDiscipline):
         header2.extend(['OBJ_LAGR', 'OBJ', 'INEQ', 'EQ'])
 
         msg2.extend([str(f_manager.mod_obj), str(f_manager.aggregated_functions[self.OBJECTIVE]),
-                     str(f_manager.aggregated_functions[self.INEQ_CONSTRAINT]), str(f_manager.aggregated_functions[self.EQ_CONSTRAINT])])
+                     str(f_manager.aggregated_functions[self.INEQ_CONSTRAINT]),
+                     str(f_manager.aggregated_functions[self.EQ_CONSTRAINT])])
 
         if self.get_sosdisc_inputs(self.EXPORT_CSV):
             if self.iter == 1:
@@ -331,7 +335,7 @@ class FunctionManagerDisc(SoSDiscipline):
         # dobjective/dfunction_df
         f_manager = self.func_manager
 
-        #-- update function values
+        # -- update function values
         for f in self.function_dict.keys():
             fvalue_df = self.get_sosdisc_inputs(f)
             self.check_isnan_inf(f, fvalue_df)
@@ -340,7 +344,7 @@ class FunctionManagerDisc(SoSDiscipline):
             # update func manager with value as array
             f_manager.update_function_value(f, f_arr)
 
-        #-- build aggregation functions
+        # -- build aggregation functions
         f_manager.build_aggregated_functions(eps=1e-3)  # alpha=3
 
         var_list = []
@@ -349,7 +353,6 @@ class FunctionManagerDisc(SoSDiscipline):
 
         inputs_dict = self.get_sosdisc_inputs()
         grad_value_l = {}
-        grad_value_l_eq = {}
 
         grad_val_compos = {}
         value_gh_l = []
@@ -358,8 +361,6 @@ class FunctionManagerDisc(SoSDiscipline):
             value_df = inputs_dict[variable_name]
             weight = self.func_manager.functions[variable_name][self.WEIGHT]
             grad_value_l[variable_name] = {}
-            grad_value_l_eq[variable_name] = {}
-
             grad_val_compos[variable_name] = {}
             if self.func_manager.functions[variable_name][self.FTYPE] == self.OBJECTIVE:
 
@@ -372,8 +373,8 @@ class FunctionManagerDisc(SoSDiscipline):
                         grad_value = weight * np.ones(n)
                     elif self.func_manager.functions[variable_name][self.AGGR_TYPE] == 'smax':
                         grad_value = float(weight) * \
-                            np.array(get_dsmooth_dvariable(
-                                self.func_manager.functions[variable_name][self.VALUE]))
+                                     np.array(get_dsmooth_dvariable(
+                                         self.func_manager.functions[variable_name][self.VALUE]))
 
                     self.set_partial_derivative(
                         'objective_lagrangian', variable_name, 100.0 * np.atleast_2d(grad_value))
@@ -391,8 +392,8 @@ class FunctionManagerDisc(SoSDiscipline):
                             elif self.func_manager.functions[variable_name][self.AGGR_TYPE] == 'smax':
 
                                 grad_value = float(weight) * \
-                                    np.array(get_dsmooth_dvariable(
-                                        self.func_manager.functions[variable_name][self.VALUE]))
+                                             np.array(get_dsmooth_dvariable(
+                                                 self.func_manager.functions[variable_name][self.VALUE]))
 
                             self.set_partial_derivative_for_other_types(
                                 ('objective',), (variable_name, col_name), grad_value)
@@ -404,29 +405,23 @@ class FunctionManagerDisc(SoSDiscipline):
                 if isinstance(value_df, pd.DataFrame):
                     for col_name in value_df.columns:
                         if col_name != 'years':
-                            # h: cst_func_smooth_positive_wo_smooth_max, g :
-                            # smooth_max, f: smooth_max
-
+                            # h: cst_func_ineq, g: smooth_max, f: smooth_max
                             # g(h(x)) for each variable , f([g(h(x1), g(h(x2))])
                             # weight
                             weight = self.func_manager.functions[variable_name][self.WEIGHT]
-
-                            #value_df[col_name] = value_df[col_name] * weight
+                            value = value_df[col_name] * weight
                             # h'(x)
-                            grad_value = self.get_dfunc_smooth_dvariable(
-                                value_df[col_name] * weight)
-
+                            grad_value = self.get_dfunc_ineq_dvariable(
+                                value)
                             # h(x)
-                            func_smooth = f_manager.cst_func_smooth_positive_wo_smooth_max(
-                                value_df[col_name] * weight)
-
+                            func_ineq = f_manager.cst_func_ineq(
+                                value)
                             # g(h(x))
                             value_gh_l.append(
-                                f_manager.cst_func_smooth_positive(value_df[col_name] * weight))
-
+                                smooth_maximum(func_ineq))
                             # g'(h(x))
                             grad_val_compos[variable_name][col_name] = get_dsmooth_dvariable(
-                                func_smooth)
+                                func_ineq)
                             # g'(h(x)) * h'(x)
                             grad_val_compos_l = np.array(
                                 grad_value) * np.array(grad_val_compos[variable_name][col_name])
@@ -435,23 +430,18 @@ class FunctionManagerDisc(SoSDiscipline):
 
                 elif isinstance(value_df, np.ndarray):
                     weight = self.func_manager.functions[variable_name][self.WEIGHT]
-
-                    #value_df[col_name] = value_df[col_name] * weight
+                    value = value_df * weight
                     # h'(x)
-                    grad_value = self.get_dfunc_smooth_dvariable(
-                        value_df * weight)
-
+                    grad_value = self.get_dfunc_ineq_dvariable(
+                        value)
                     # h(x)
-                    func_smooth = f_manager.cst_func_smooth_positive_wo_smooth_max(
-                        value_df * weight)
-
+                    func_ineq = f_manager.cst_func_ineq(
+                        value)
                     # g(h(x))
-                    value_gh_l.append(
-                        f_manager.cst_func_smooth_positive(value_df * weight))
-
+                    value_gh_l.append(smooth_maximum(func_ineq))
                     # g'(h(x))
                     grad_val_compos[variable_name] = get_dsmooth_dvariable(
-                        func_smooth)
+                        func_ineq)
                     # g'(h(x)) * h'(x)
                     grad_val_compos_l = np.array(
                         grad_value) * np.array(grad_val_compos[variable_name])
@@ -462,45 +452,98 @@ class FunctionManagerDisc(SoSDiscipline):
                     raise Exception(
                         'Gradients for constraints which are not dataframes or arrays are not yet implemented')
             elif self.func_manager.functions[variable_name][self.FTYPE] == self.EQ_CONSTRAINT:
-                for col_name in value_df.columns:
-                    if col_name != 'years':
+                if isinstance(value_df, pd.DataFrame):
+                    for col_name in value_df.columns:
+                        if col_name != 'years':
+                            # k: sqrt(x**2) h: cst_func_eq, g : smooth_max, f: smooth_max
+                            # g(h(k(x))) for each variable , f([g(h(k(x1)), g(h(k(x2)))])
+                            # weight
+                            weight = self.func_manager.functions[variable_name][self.WEIGHT]
+                            value = np.array(value_df[col_name].values * weight)
+                            # k(x)
+                            k_cst = np.sqrt(compute_func_with_exp_min(value ** 2, 1e-15))
+                            # k'(x)
+                            dk_dcst = 2 * np.ones(len(value)) * value * \
+                                      compute_dfunc_with_exp_min(value ** 2, 1e-15).reshape(value.shape) / (
+                                              2 * k_cst)
 
-                        # k(x)
-                        k_cst = [np.sqrt(np.sign(value) * value)
-                                 for value in value_df[col_name]]
+                            # h(k(x))
+                            h_k = f_manager.cst_func_ineq(
+                                k_cst)
+                            if self.func_manager.functions[variable_name][
+                                self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
+                                h_k = f_manager.cst_func_eq_lintoquad(
+                                    k_cst)
 
-                        # k'(x)
+                            # h'(k(x))
+                            dh_dcst = self.get_dfunc_ineq_dvariable(
+                                k_cst)
+                            if self.func_manager.functions[variable_name][
+                                self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
+                                dh_dcst = self.get_dfunc_eq_lin_to_quad_dvariable(k_cst)
+                            # g(h(k(x)))
+                            value_ghk_l.append(
+                                smooth_maximum(h_k))
 
-                        dk_dcst = [np.sign(
-                            value) / (2 * np.sqrt(np.sign(value) * value)) for value in value_df[col_name]]
+                            # g'(h(k(x)))
+                            grad_val_compos[variable_name][col_name] = get_dsmooth_dvariable(
+                                h_k)
+                            # g'(h(k(x))) * h'(k(x)) * k'(x)
+                            grad_val_compos_l = np.array(grad_val_compos[variable_name][col_name]) * np.array(
+                                dh_dcst) * np.array(dk_dcst)
 
-                        # h'(k(x))
+                            grad_value_l[variable_name][col_name] = grad_val_compos_l
 
-                        dh_k = self.get_dfunc_smooth_dvariable(
+                elif isinstance(value_df, np.ndarray):
+                    # k: sqrt(x**2) h: cst_func_eq, g : smooth_max, f: smooth_max
+                    # g(h(k(x))) for each variable , f([g(h(k(x1)), g(h(k(x2)))])
+                    # weight
+                    weight = self.func_manager.functions[variable_name][self.WEIGHT]
+                    value = value_df * weight
+                    # k(x)
+                    k_cst = np.sqrt(compute_func_with_exp_min(value ** 2, 1e-15))
+                    # k'(x)
+                    dk_dcst = 2 * np.identity(len(value)) * value * \
+                              compute_dfunc_with_exp_min(value ** 2, 1e-15) / (
+                                      2 * k_cst)
+
+                    # h(k(x))
+                    h_k = f_manager.cst_func_ineq(
+                        k_cst)
+                    if self.func_manager.functions[variable_name][
+                        self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
+                        h_k = f_manager.cst_func_eq_lintoquad(
                             k_cst)
 
-                        hk_x = f_manager.cst_func_smooth_positive_wo_smooth_max(
-                            k_cst)
+                    # h'(k(x))
+                    dh_dcst = self.get_dfunc_ineq_dvariable(
+                        k_cst)
+                    if self.func_manager.functions[variable_name][
+                        self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
+                        dh_dcst = self.get_dfunc_eq_lin_to_quad_dvariable(k_cst)
+                    # g(h(k(x)))
+                    value_ghk_l.append(
+                        smooth_maximum(h_k))
 
-                        # g'(h(k(x)))
-                        dg_hk_x = get_dsmooth_dvariable(hk_x)
+                    # g'(h(k(x)))
+                    grad_val_compos[variable_name] = get_dsmooth_dvariable(
+                        h_k)
+                    # g'(h(k(x))) * h'(k(x)) * k'(x)
+                    grad_val_compos_l = np.array(grad_val_compos[variable_name]) * np.array(
+                        dh_dcst) * np.array(dk_dcst)
 
-                        grad_val_compos_l_eq = np.array(
-                            dg_hk_x) * np.array(dh_k) * np.array(dk_dcst)
-                        grad_value_l_eq[variable_name][col_name] = grad_val_compos_l_eq
-
-                        # g(h(k(x)))
-                        ghk_cst = f_manager.cst_func_smooth_positive_eq(
-                            value_df[col_name])
-                        value_ghk_l.append(ghk_cst
-                                           )
+                    grad_value_l[variable_name] = grad_val_compos_l
+                else:
+                    raise Exception(
+                        'Gradients for constraints which are not dataframes or arrays are not yet implemented')
 
         dict_grad_ineq = {}
         dict_grad_eq = {}
         # g'(h(x)) * h'(x)
         if len(value_gh_l) != 0:
             grad_val_ineq = get_dsmooth_dvariable(value_gh_l)
-        #grad_val_eq = self.get_dsmooth_dvariable(value_ghk_l)
+        if len(value_ghk_l) != 0:
+            grad_val_eq = get_dsmooth_dvariable(value_ghk_l)
         i = 0
         j = 0
         for variable_name in self.func_manager.functions.keys():
@@ -508,43 +551,56 @@ class FunctionManagerDisc(SoSDiscipline):
 
                 value_df = inputs_dict[variable_name]
                 dict_grad_ineq[variable_name] = grad_val_ineq[i]
-
+                weight = self.func_manager.functions[variable_name][self.WEIGHT]
                 if isinstance(value_df, np.ndarray):
-                    weight = self.func_manager.functions[variable_name][self.WEIGHT]
-
                     self.set_partial_derivative(
-                        'objective_lagrangian', variable_name,   np.atleast_2d(weight * 100.0 * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
+                        'objective_lagrangian', variable_name,
+                        np.atleast_2d(weight * 100.0 * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
                     self.set_partial_derivative(
-                        'ineq_constraint', variable_name,  np.atleast_2d(weight * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
+                        'ineq_constraint', variable_name,
+                        np.atleast_2d(weight * np.array(grad_value_l[variable_name]) * grad_val_ineq[i]))
                     i = i + 1
 
-                elif isinstance(value_df,  pd.DataFrame):
+                elif isinstance(value_df, pd.DataFrame):
 
                     for col_name in value_df.columns:
                         if col_name != 'years':
-                            weight = self.func_manager.functions[variable_name][self.WEIGHT]
-
                             self.set_partial_derivative_for_other_types(
-                                ('objective_lagrangian',), (variable_name, col_name),   weight * 100.0 * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
+                                ('objective_lagrangian',), (variable_name, col_name),
+                                weight * 100.0 * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
                             self.set_partial_derivative_for_other_types(
-                                ('ineq_constraint',), (variable_name, col_name),  weight * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
+                                ('ineq_constraint',), (variable_name, col_name),
+                                weight * np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i])
                             i = i + 1
 
-            """
             elif self.func_manager.functions[variable_name][self.FTYPE] == self.EQ_CONSTRAINT:
                 value_df = inputs_dict[variable_name]
                 dict_grad_eq[variable_name] = grad_val_eq[j]
-                for col_name in value_df.columns:
-                    if col_name != 'years':
+                weight = self.func_manager.functions[variable_name][self.WEIGHT]
+                if isinstance(value_df, np.ndarray):
+                    self.set_partial_derivative(
+                        'objective_lagrangian', variable_name,
+                        np.atleast_2d(weight * 100.0 * np.array(grad_value_l[variable_name]) * grad_val_eq[j]))
+                    self.set_partial_derivative(
+                        'eq_constraint', variable_name,
+                        np.atleast_2d(weight * np.array(grad_value_l[variable_name]) * grad_val_eq[j]))
+                    j = j + 1
 
-                        self.set_partial_derivative_for_other_types(
-                            ('objective_lagrangian',), (variable_name, col_name),  100.0 * np.array(grad_value_l_eq[variable_name][col_name]) * grad_val_eq[j])
-                j = j + 1
-            """
+                elif isinstance(value_df, pd.DataFrame):
 
-    def get_dfunc_smooth_dvariable(self, value_df, eps=1e-3, alpha=3):
+                    for col_name in value_df.columns:
+                        if col_name != 'years':
+                            self.set_partial_derivative_for_other_types(
+                                ('objective_lagrangian',), (variable_name, col_name),
+                                weight * 100.0 * np.array(grad_value_l[variable_name][col_name]) * grad_val_eq[j])
+                            self.set_partial_derivative_for_other_types(
+                                ('eq_constraint',), (variable_name, col_name),
+                                np.array(weight * grad_value_l[variable_name][col_name]) * grad_val_eq[j])
+                            j = j + 1
+
+    def get_dfunc_ineq_dvariable(self, value_df, eps=1e-3):
         """
-        Get dobjective_dvariable
+        Get dineq_dvariable
         """
         grad_value = []
         # for col in value_df.columns:
@@ -552,28 +608,52 @@ class FunctionManagerDisc(SoSDiscipline):
         valcol = value_df
 
         cst_result = np.zeros_like(valcol)
-        #---get value of espilon2
+        # ---get value of espilon2
         smooth_log = self.get_sosdisc_inputs('smooth_log')
         eps2 = self.get_sosdisc_inputs('eps2')
-
         for iii, val in enumerate(valcol):
             if smooth_log and val > eps2:
+                #res00 + 2 * np.log(val)
                 res = 2.0 / val
             elif val > eps:
-                res = 2.0 * (1.0 - eps / 2.0) * val + eps
-
+                #res = res0 + val ** 2 - eps ** 2
+                res = 2.0 * val
             elif val < -250:
+                #res = 0.0
                 res = 0.0
-
             else:
-
+                #res = eps * (np.exp(val) - 1.)
                 res = eps * np.exp(val)
-
             cst_result[iii] = res
-
         grad_value.extend(cst_result)
 
-        #result_grad = self.get_dsmooth_dvariable(grad_value)
+        return grad_value
+
+    def get_dfunc_eq_lin_to_quad_dvariable(self, value_df, eps=1e-3):
+        """
+        Get dineq_dvariable for lin_to_quad case
+        """
+        grad_value = []
+        # for col in value_df.columns:
+        # if col != 'years':
+        valcol = value_df
+
+        cst_result = np.zeros_like(valcol)
+        # ---get value of espilon2
+        smooth_log = self.get_sosdisc_inputs('smooth_log')
+        eps2 = self.get_sosdisc_inputs('eps2')
+        for iii, val in enumerate(valcol):
+            if val > eps:
+                # res = res0 + val ** 2 - eps ** 2
+                res = 2.0 * val
+            elif val < 0.0:
+                # res = eps * (np.exp(-val) - 1.)
+                res = -eps * np.exp(-val)
+            else:
+                # res = eps * (np.exp(val) - 1.)
+                res = eps * np.exp(val)
+            cst_result[iii] = res
+        grad_value.extend(cst_result)
         return grad_value
 
     def check_isnan_inf(self, key_, value_):
@@ -624,7 +704,8 @@ class FunctionManagerDisc(SoSDiscipline):
             chart_list.remove('ineq_constraints')
         if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
             chart_list.remove('eq_constraints')
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and \
+                self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
             chart_list.remove('objective (colored)')
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'charts'))
@@ -643,7 +724,8 @@ class FunctionManagerDisc(SoSDiscipline):
                 if chart_filter.filter_key == 'charts':
                     charts = chart_filter.selected_values
         if 'objective (colored)' in charts:
-            if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+            if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
+            self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
                 optim_output_df = deepcopy(
                     self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
                 new_chart = self.get_chart_obj_constraints_iterations(optim_output_df, [self.OBJECTIVE],
@@ -728,7 +810,7 @@ class FunctionManagerDisc(SoSDiscipline):
             elif 'eq_constraint' in row['ftype']:
                 eq_list.append(mod_parameter_dict['variable'])
             parameters_dict[mod_parameter_dict['variable']
-                            ] = mod_parameter_dict
+            ] = mod_parameter_dict
 
         # Aggregated objectives and constraints
         dict_aggr_obj = {'variable': self.OBJECTIVE,
@@ -752,7 +834,8 @@ class FunctionManagerDisc(SoSDiscipline):
 
         return parameters_df, obj_list, ineq_list, eq_list
 
-    def get_chart_lagrangian_objective_iterations(self, optim_output, main_parameters, sub_parameters=[], name='lagrangian objective'):
+    def get_chart_lagrangian_objective_iterations(self, optim_output, main_parameters, sub_parameters=[],
+                                                  name='lagrangian objective'):
         """
         Function to create the post proc of aggregated objectives and constraints
         A dropdown menu is used to select between: 
@@ -779,7 +862,8 @@ class FunctionManagerDisc(SoSDiscipline):
             if sum(y) == 0:
                 continue
             fig.add_trace(go.Scatter(x=list(optim_output['iteration'].values),
-                                     y=list(y), stackgroup='group', mode='none', name=parameter + ' (x100)', visible=False))
+                                     y=list(y), stackgroup='group', mode='none', name=parameter + ' (x100)',
+                                     visible=False))
         fig.update_layout(title={'text': chart_name, 'x': 0.5, 'y': 1.0, 'xanchor': 'center', 'yanchor': 'top'},
                           xaxis_title='n iterations', yaxis_title=f'value of {name}')
 
@@ -789,7 +873,7 @@ class FunctionManagerDisc(SoSDiscipline):
                     buttons=list([
                         dict(
                             args=[{'visible': [False if scatter['stackgroup']
-                                               == 'group' else True for scatter in fig.data]}, ],
+                                                        == 'group' else True for scatter in fig.data]}, ],
                             label="Simple",
                             method="restyle"
                         ),
@@ -839,7 +923,8 @@ class FunctionManagerDisc(SoSDiscipline):
             fig, chart_name=chart_name, default_title=True)
         return new_chart
 
-    def get_chart_aggregated_iterations(self, optim_output, main_parameters, objectives={}, ineq_constraints={}, eq_constraints={}, name='aggregated'):
+    def get_chart_aggregated_iterations(self, optim_output, main_parameters, objectives={}, ineq_constraints={},
+                                        eq_constraints={}, name='aggregated'):
         """
         Function to create the post proc of aggregated objectives and constraints
         A dropdown menu is used to select between: 
@@ -914,25 +999,25 @@ class FunctionManagerDisc(SoSDiscipline):
                     buttons=list([
                         dict(
                             args=[{'visible': [True if scatter['customdata'][0]
-                                               == 'aggr' else False for scatter in fig.data]}, ],
+                                                       == 'aggr' else False for scatter in fig.data]}, ],
                             label="All Aggregated",
                             method="restyle"
                         ),
                         dict(
                             args=[{'visible': [True if scatter['customdata'][1]
-                                               == 'obj' else False for scatter in fig.data]}, ],
+                                                       == 'obj' else False for scatter in fig.data]}, ],
                             label="Objective - Detailed",
                             method="restyle"
                         ),
                         dict(
                             args=[{'visible': [True if scatter['customdata'][1]
-                                               == 'ineq' else False for scatter in fig.data]}, ],
+                                                       == 'ineq' else False for scatter in fig.data]}, ],
                             label="Ineq Constraint - Detailed",
                             method="restyle"
                         ),
                         dict(
                             args=[{'visible': [True if scatter['customdata'][1]
-                                               == 'eq' else False for scatter in fig.data]}, ],
+                                                       == 'eq' else False for scatter in fig.data]}, ],
                             label="Eq Constraint - Detailed",
                             method="restyle"
                         ),
@@ -1022,7 +1107,7 @@ class FunctionManagerDisc(SoSDiscipline):
                     i_lvl += [parent[i], ]
             level_list[i] = list(set(i_lvl))
         # parents_list = list(set(np.asarray([parent.split(
-            # '-') for parent in parameters_df[self.PARENT].to_list()]).flatten()))
+        # '-') for parent in parameters_df[self.PARENT].to_list()]).flatten()))
 
         for lvl, parent_level in level_list.items():
             for parent in parent_level:
@@ -1060,8 +1145,8 @@ class FunctionManagerDisc(SoSDiscipline):
                 y = [np.real(value)
                      for value in row[1]['value']]
             hovertemplate = '<br>X: %{x}' + '<br>Y: %{y:.2e}' + \
-                '<br>weight: %{customdata[0]}' + \
-                '<br>aggr_type: %{customdata[1]}'
+                            '<br>weight: %{customdata[0]}' + \
+                            '<br>aggr_type: %{customdata[1]}'
             is_mod = True if '_mod' in row[1]['variable'] else False
             vis = True if row[1][self.PARENT] is None else False
             customdata = [[str(row[1][self.WEIGHT]) for _ in range(len(y))],
@@ -1083,7 +1168,7 @@ class FunctionManagerDisc(SoSDiscipline):
                         [dict(
                             args=[
                                 {'visible': [True if scatter['customdata'][0][2]
-                                             == group else False for scatter in fig.data]},
+                                                     == group else False for scatter in fig.data]},
                             ],
                             label='grouped',
                             method="update"
@@ -1099,7 +1184,7 @@ class FunctionManagerDisc(SoSDiscipline):
                         [dict(
                             args=[
                                 {'visible': [True if scatter['customdata'][0][2]
-                                             == group else False for scatter in fig.data]},
+                                                     == group else False for scatter in fig.data]},
                             ],
                             label='group ' + str(group),
                             method="update"
@@ -1174,9 +1259,11 @@ class FunctionManagerDisc(SoSDiscipline):
                     lambda x: x[0].real)
 
         ineq_constraints = optim_output[[
-            key for key, value in func_dict.items() if value in [self.INEQ_CONSTRAINT]]].astype(float).reset_index(drop=True)
+            key for key, value in func_dict.items() if value in [self.INEQ_CONSTRAINT]]].astype(float).reset_index(
+            drop=True)
         eq_constraints = optim_output[[
-            key for key, value in func_dict.items() if value in [self.EQ_CONSTRAINT]]].astype(float).reset_index(drop=True)
+            key for key, value in func_dict.items() if value in [self.EQ_CONSTRAINT]]].astype(float).reset_index(
+            drop=True)
 
         ineq_constraints_sum = ineq_constraints.sum(axis=1).fillna(0)
         ineq_constraints_max = ineq_constraints.max(axis=1).fillna(0)
@@ -1204,15 +1291,16 @@ class FunctionManagerDisc(SoSDiscipline):
             tot_constraints_max_col = [
                 0 for index, row in tot_constraints.iterrows()]
             tot_constraints_max = [0 for index,
-                                   row in tot_constraints.iterrows()]
+                                         row in tot_constraints.iterrows()]
         fm_ineq = [value
                    for value in optim_output[self.INEQ_CONSTRAINT].values]
         fm_eq = [value
                  for value in optim_output[self.EQ_CONSTRAINT].values]
         tot_constraints_text = [zipped for zipped in zip(
             fm_ineq, fm_eq, tot_constraints_max_col, tot_constraints_max, tot_constraints_sum)]
-        hover_text = ['Iteration : {}<br />INEQ constraint : {}<br />EQ constraint : {}<br />Max constraint name : {}<br />Max constraint value : {}<br />Summed constraint: {}' .format(
-            i + 1, t[0], t[1], t[2], t[3], t[4]) for i, t in enumerate(tot_constraints_text)]
+        hover_text = [
+            'Iteration : {}<br />INEQ constraint : {}<br />EQ constraint : {}<br />Max constraint name : {}<br />Max constraint value : {}<br />Summed constraint: {}'.format(
+                i + 1, t[0], t[1], t[2], t[3], t[4]) for i, t in enumerate(tot_constraints_text)]
 
         def f_log10(value):
             if value < 0:
@@ -1220,6 +1308,7 @@ class FunctionManagerDisc(SoSDiscipline):
             else:
                 log10_value = np.log10(value) + 1.0
             return log10_value
+
         values = [value if abs(value) <= 1.0 else f_log10(value)
                   for value in tot_constraints_sum]
 

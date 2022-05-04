@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import numpy as np
 from sos_trades_core.tools.cst_manager.func_manager_common import smooth_maximum
-
+from sos_trades_core.tools.base_functions.exp_min import compute_func_with_exp_min
 
 class FunctionManager:
     """
@@ -34,7 +34,9 @@ class FunctionManager:
     AGGR = 'aggr'
     AGGR_TYPE_SMAX = 'smax'
     AGGR_TYPE_SUM = 'sum'
-    POS_AGGR_TYPE = [AGGR_TYPE_SMAX, AGGR_TYPE_SUM]
+    AGGR_TYPE_DELTA = 'delta'
+    AGGR_TYPE_LIN_TO_QUAD = 'lin_to_quad'
+    POS_AGGR_TYPE = [AGGR_TYPE_SMAX, AGGR_TYPE_SUM, AGGR_TYPE_DELTA, AGGR_TYPE_LIN_TO_QUAD]
 
     def __init__(self):
         """
@@ -115,15 +117,21 @@ class FunctionManager:
                 #-- smooth maximum of values return the value if it was a float
                 #-- return smooth maximum if objective was an array
                 if aggr_type == 'smax':
-                    res = smooth_maximum(values)
+                    res = smooth_maximum(values, alpha)
                 elif aggr_type == 'sum':
                     res = values.sum()
             elif self.functions[tag][self.FTYPE] == self.INEQ_CONSTRAINT:
                 #-- scale between (0., +inf) and take smooth maximum
-                res = self.cst_func_smooth_positive(values, eps, alpha, tag)
+                cst = self.cst_func_ineq(values, eps, tag)
+                res = smooth_maximum(cst, alpha)
             elif self.functions[tag][self.FTYPE] == self.EQ_CONSTRAINT:
-                #-- scale between (0., +inf) and take smooth maximum
-                res = self.cst_func_smooth_positive_eq(values, alpha)
+                if aggr_type == 'delta':
+                    cst = self.cst_func_eq_delta(values, eps, tag)
+                elif aggr_type == 'lin_to_quad':
+                    cst = self.cst_func_eq_lintoquad(values, eps, tag)
+                else:
+                    cst = self.cst_func_eq(values)
+                res = smooth_maximum(cst, alpha)
 
             dict_mod_func[self.VALUE] = res
             self.mod_functions[tag] = dict_mod_func
@@ -146,12 +154,12 @@ class FunctionManager:
             elif self.mod_functions[tag][self.FTYPE] == self.EQ_CONSTRAINT:
                 all_mod_eq_cst.append(self.mod_functions[tag])
 
-        #-- Objective aggregation
+        #-- Objective aggregation: sum all the objectives
         self.aggregated_functions[self.OBJECTIVE] = 0.
         for obj_dict in all_mod_obj:
             self.aggregated_functions[self.OBJECTIVE] += obj_dict[self.VALUE]
 
-        #-- Inequality constraint aggregation
+        #-- Inequality constraint aggregation: takes the smooth maximum
         ineq_cst_val = []
         for ineq_dict in all_mod_ineq_cst:
             ineq_cst_val.append(ineq_dict[self.VALUE])
@@ -162,7 +170,7 @@ class FunctionManager:
         else:
             self.aggregated_functions[self.INEQ_CONSTRAINT] = 0.
 
-        #-- Equality constraint aggregation
+        #-- Equality constraint aggregation: takes the smooth maximum
         eq_cst_val = []
         for eq_dict in all_mod_eq_cst:
             eq_cst_val.append(eq_dict[self.VALUE])
@@ -173,6 +181,7 @@ class FunctionManager:
         else:
             self.aggregated_functions[self.EQ_CONSTRAINT] = 0.
 
+        #--- Lagrangian objective calculation: sum the aggregated objective and constraints * 100.
         self.mod_obj = 0.
         self.mod_obj += self.aggregated_functions[self.OBJECTIVE]
         self.mod_obj += self.aggregated_functions[self.INEQ_CONSTRAINT]
@@ -180,14 +189,21 @@ class FunctionManager:
         self.mod_obj = 100. * self.mod_obj
         return self.mod_obj
 
-    def cst_func_smooth_positive_eq(self, values, alpha=3, tag='cst'):
+    def cst_func_eq(self, values, tag='cst'):
         """
         Function
         """
         abs_values = np.sqrt(np.sign(values) * values)
-        return self.cst_func_smooth_positive(abs_values, 0.,  alpha, tag=tag)
+        return self.cst_func_ineq(abs_values, 0., tag=tag)
 
-    def cst_func_smooth_positive(self, values, eps=1e-3, alpha=3, tag='cst'):
+    def cst_func_eq_delta(self, values, eps=1e-3, tag='cst'):
+        """
+        Function
+        """
+        abs_values = np.sqrt(compute_func_with_exp_min(np.array(values) ** 2, 1e-15))
+        return self.cst_func_ineq(abs_values, eps, tag=tag)
+
+    def cst_func_ineq(self, values, eps=1e-3, tag='cst'):
         """
         Awesome function
         """
@@ -196,21 +212,18 @@ class FunctionManager:
             if self.smooth_log and val.real > self.eps2:
                 # res0 is the value of the function at val.real=self.eps2 to
                 # ensure continuity
-                res0 = ((1. - eps / 2) * self.eps2 ** 2 +
-                        eps * self.eps2)
-                res = res0 + 2 * np.log(val)
+                res0 = eps * (np.exp(eps) - 1.)
+                res00 = res0 + self.eps2 ** 2 - eps ** 2
+                res = res00 + 2 * np.log(val)
                 print(
                     f'{tag} = {val.real} > eps2 = {self.eps2}, the log function is applied')
-
             elif val.real > eps:
-                res = (1. - eps / 2) * val ** 2 + eps * val
-
+                res0 = eps * (np.exp(eps) - 1.)
+                res = res0 + val ** 2 - eps ** 2
             elif val.real < -250.0:
                 res = 0.0
-
             else:
                 res = eps * (np.exp(val) - 1.)
-
             if np.isnan(res):
                 print(
                     'NaN detected in cst_func_smooth_positive i={}, x={}, r={}, name={}'.format(iii, val, res, tag))
@@ -219,34 +232,31 @@ class FunctionManager:
         if np.any(np.isnan(cst_result)):
             raise Exception('NaN in cst_func_smooth_positive {}'.format(tag))
 
-        s_max = smooth_maximum(cst_result, alpha=alpha)
+        return cst_result
 
-        return s_max
-
-    def cst_func_smooth_positive_wo_smooth_max(self, values, eps=1e-3, alpha=3):
+    def cst_func_eq_lintoquad(self, values, eps=1e-3, tag='cst'):
         """
-        Awesome function
+        Same as cst_func_eq but with a linear increase for negative value
         """
         cst_result = np.zeros_like(values)
         for iii, val in enumerate(values):
-            if self.smooth_log and val > self.eps2:
-                res = ((1. - eps / 2) * self.eps2 ** 2 +
-                       eps * self.eps2) + 2 * np.log(val)
-            elif val > eps:
-                res = (1. - eps / 2) * val ** 2 + eps * val
-            elif val < -250.0:
-                res = 0.0
+            if val.real > eps:
+                #if val > eps: quadratic
+                res0 = eps * (np.exp(eps) - 1.)
+                res = res0 + val ** 2 - eps ** 2
+            elif val.real < 0:
+                # if val < 0: linear
+                res = eps * (np.exp(-val) - 1.)
             else:
-
+                # if 0 < val < eps: linear
                 res = eps * (np.exp(val) - 1.)
-
             if np.isnan(res):
                 print(
-                    'NaN detected in cst_func_smooth_positive i={}, x={}, r={}'.format(iii, val, res))
+                    'NaN detected in cst_func_smooth_positive i={}, x={}, r={}, name={}'.format(iii, val, res, tag))
             cst_result[iii] = res
 
         if np.any(np.isnan(cst_result)):
-            raise Exception('NaN in cst_func_smooth_positive')
+            raise Exception('NaN in cst_func_smooth_positive {}'.format(tag))
 
         return cst_result
 
@@ -260,8 +270,6 @@ class FunctionManager:
             val = values
 
         return smooth_maximum(val, alpha=alpha)
-
-        # return val
 
     def get_mod_func_val(self, tag):
         ''' 

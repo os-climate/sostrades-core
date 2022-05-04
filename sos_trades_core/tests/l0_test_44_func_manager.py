@@ -313,7 +313,7 @@ class TestFuncManager(unittest.TestCase):
 
         disc_techno = ee.root_process.sos_disciplines[0]
 
-        disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
+        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
                                    outputs=['FuncManagerTest.FunctionManager.objective_lagrangian'
                                             ], derr_approx='complex_step')
 
@@ -396,7 +396,7 @@ class TestFuncManager(unittest.TestCase):
 
         disc_techno = ee.root_process.sos_disciplines[0]
 
-        disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.cst4', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
+        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.cst4', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
                                    outputs=['FuncManagerTest.FunctionManager.objective_lagrangian'
                                             ], derr_approx='complex_step')
 
@@ -501,7 +501,7 @@ class TestFuncManager(unittest.TestCase):
 
         #-- ~GUI inputs: selection of functions
 
-        func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight'])
+        func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight', 'aggr'])
         func_df['variable'] = ['cst1', 'cst2', 'cst3',
                                'eqcst1', 'eqcst2', 'obj1', 'obj2']
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
@@ -541,10 +541,104 @@ class TestFuncManager(unittest.TestCase):
 
         disc_techno = ee.root_process.sos_disciplines[0]
 
-        disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
+        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
                                    outputs=['FuncManagerTest.FunctionManager.objective_lagrangian'
                                             ], derr_approx='complex_step')
 
         # get charts
         filter = disc.get_chart_filter_list()
         graph_list = disc.get_post_processing_list(filter)
+
+    def test_11_jacobian_eq_delta_and_lin_to_quad(self):
+        OBJECTIVE = self.func_manager.OBJECTIVE
+        INEQ_CONSTRAINT = self.func_manager.INEQ_CONSTRAINT
+        EQ_CONSTRAINT = self.func_manager.EQ_CONSTRAINT
+
+        # -- init the case
+        func_mng_name = 'FunctionManager'
+        prefix = self.name + '.' + func_mng_name + '.'
+
+        ee = ExecutionEngine(self.name)
+        ns_dict = {'ns_functions': self.name + '.' + func_mng_name,
+                   'ns_optim': self.name + '.' + func_mng_name}
+        ee.ns_manager.add_ns_def(ns_dict)
+
+        mod_list = 'sos_trades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        fm_builder = ee.factory.get_builder_from_module(
+            'FunctionManager', mod_list)
+        ee.factory.set_builders_to_coupling_builder(fm_builder)
+        ee.configure()
+
+        # -- i/o setup
+        base_df = pd.DataFrame({'years': arange(10, 13)})
+        obj1 = base_df.copy()
+        obj1['obj1_values'] = 1.5
+        obj2 = base_df.copy()
+        obj2['obj2_values'] = 1.
+        cst1 = base_df.copy()
+        cst1['cst1_values'] = np.array([10., 200., -30.])
+        cst2 = base_df.copy()
+        cst2['cst2_values'] = np.array([40000., 1., -10000.])
+        cst3 = base_df.copy()
+        cst3['cst3_values'] = np.array([-10., 0.2, -5.])
+        eqcst1 = base_df.copy()
+        eqcst1['eqcst1_values'] = np.array([-10., 10., -5.])
+        eqcst2 = base_df.copy()
+        eqcst2['eqcst2_values'] = np.array([0.001, 0.001, 0.00001])
+        eqcst3 = base_df.copy()
+        eqcst3['eqcst3_values'] = np.array([-12.2, 0.00001, 6.3])
+
+        # -- ~GUI inputs: selection of functions
+
+        func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight', 'aggr'])
+        func_df['variable'] = ['cst1', 'cst2', 'cst3',
+                               'eqcst1', 'eqcst2', 'eqcst3', 'obj1', 'obj2']
+        func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
+                            INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
+        func_df['weight'] = [0.5, 1., -0.2, 0.2, 1.2, -1.5, 0.8, 0.2]
+        func_df['aggr'] = ['sum', 'sum', 'sum', 'delta', 'lin_to_quad', 'delta', 'smax', 'sum']
+        values_dict = {}
+        values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
+
+        # -- data to simulate disciplinary chain outputs
+        values_dict[prefix + 'cst1'] = cst1
+        values_dict[prefix + 'cst2'] = cst2
+        values_dict[prefix + 'cst3'] = cst3
+        values_dict[prefix + 'eqcst1'] = eqcst1
+        values_dict[prefix + 'eqcst2'] = eqcst2
+        values_dict[prefix + 'eqcst3'] = eqcst3
+        values_dict[prefix + 'obj1'] = obj1
+        values_dict[prefix + 'obj2'] = obj2
+
+        ee.load_study_from_input_dict(values_dict)
+
+        ee.display_treeview_nodes(True)
+
+        # -- execution
+        ee.execute()
+        # -- retrieve outputs
+        disc = ee.dm.get_disciplines_with_name(
+            f'{self.name}.{func_mng_name}')[0]
+        outputs = disc.get_sosdisc_outputs()
+
+        # -- check outputs with reference data
+        o1 = obj1['obj1_values'].to_numpy().sum()
+        o2 = obj2['obj2_values'].to_numpy().sum()
+
+        res = 100. * (outputs[OBJECTIVE][0] +
+                      outputs[INEQ_CONSTRAINT][0] +
+                      outputs[EQ_CONSTRAINT][0])
+
+        disc_techno = ee.root_process.sos_disciplines[0]
+
+        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1',
+                                                           'FuncManagerTest.FunctionManager.cst2',
+                                                           'FuncManagerTest.FunctionManager.cst3',
+                                                           'FuncManagerTest.FunctionManager.eqcst1',
+                                                           'FuncManagerTest.FunctionManager.eqcst2',
+                                                           'FuncManagerTest.FunctionManager.eqcst3',
+                                                           'FuncManagerTest.FunctionManager.obj1',
+                                                           'FuncManagerTest.FunctionManager.obj2'],
+                                   outputs=['FuncManagerTest.FunctionManager.objective_lagrangian',
+                                            'FuncManagerTest.FunctionManager.eq_constraint',
+                                            ], derr_approx='complex_step')
