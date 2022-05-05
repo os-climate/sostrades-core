@@ -47,6 +47,9 @@ At the end of the computation, two outputs are generated. A "Samples" output sum
 
 ## Step 4 : Postprocessing
 
-The graphs are contourplots for each identified float columns in the output dict generated. These outputs are contourplotted for 2 or 3 inputs maximum. In the case of 3 inputs selected, a slicer is set in order to show a 3 dimensions contourplot graph.
+The graphs are contour plots for each identified float columns in the output dict generated (only for the cases where there is a unique value per scenario [^1]). These outputs are contourplotted for 2 or 3 inputs maximum. In the case of 3 inputs selected, a slicer is set in order to show a 3 dimensions contourplot graph.
+
+[^1]: if there is no suitable column within the output dict generated (*type float & one value per scenario*), no contourplot graph will be displayed. 
+
 
 ![2.2](GS_step9.PNG)

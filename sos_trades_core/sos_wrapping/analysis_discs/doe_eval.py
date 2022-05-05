@@ -303,12 +303,12 @@ class DoeEval(SoSEval):
 
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         # variables = self.eval_in_list
-        
+
         if 'full_name' in dspace_df:
             variables = dspace_df['full_name'].tolist()
-            variables=[f'{self.ee.study_name}.{eval}' for eval in variables]
+            variables = [f'{self.ee.study_name}.{eval}' for eval in variables]
         else:
-            variables=self.eval_in_list
+            variables = self.eval_in_list
 
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
@@ -409,8 +409,10 @@ class DoeEval(SoSEval):
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
             # filled_options['n_processes'] = int(filled_options['n_processes'])
-            filled_options['n_processes'] = self.get_sosdisc_inputs('n_processes')
-            filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs('wait_time_between_fork')
+            filled_options['n_processes'] = self.get_sosdisc_inputs(
+                'n_processes')
+            filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs(
+                'wait_time_between_fork')
             algo = self.doe_factory.create(algo_name)
 
             self.samples = algo._generate_samples(**filled_options)
@@ -471,15 +473,18 @@ class DoeEval(SoSEval):
         # We first begin by sample generation
         self.samples = self.generate_samples_from_doe_factory()
 
-        # Then add the reference scenario (initial point ) to the generated samples
+        # Then add the reference scenario (initial point ) to the generated
+        # samples
         self.samples.append(
             [self.ee.dm.get_value(reference_variable_full_name) for reference_variable_full_name in self.eval_in_list])
         reference_scenario_id = len(self.samples)
 
         # evaluation of the samples through a call to samples_evaluation
-        evaluation_outputs = self.samples_evaluation(self.samples, convert_to_array=False)
+        evaluation_outputs = self.samples_evaluation(
+            self.samples, convert_to_array=False)
 
-        # we loop through the samples evaluated to build dictionnaries needed for output generation
+        # we loop through the samples evaluated to build dictionnaries needed
+        # for output generation
         reference_scenario = f'scenario_{reference_scenario_id}'
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
 
@@ -519,6 +524,7 @@ class DoeEval(SoSEval):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
+        self.status = 'RUNNING'
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.eval_out_list:
@@ -570,7 +576,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -686,4 +692,3 @@ class DoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
-
