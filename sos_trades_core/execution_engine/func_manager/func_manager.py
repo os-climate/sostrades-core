@@ -244,9 +244,12 @@ class FunctionManager:
                 #if val > eps: quadratic
                 res0 = eps * (np.exp(eps) - 1.)
                 res = res0 + val ** 2 - eps ** 2
-            elif val.real < 0:
+            elif -eps < val.real < 0:
                 # if val < 0: linear
                 res = eps * (np.exp(-val) - 1.)
+            elif val.real < -eps:
+                res0 = eps * (np.exp(eps) - 1.)
+                res= res0 + (-val) - eps
             else:
                 # if 0 < val < eps: linear
                 res = eps * (np.exp(val) - 1.)
