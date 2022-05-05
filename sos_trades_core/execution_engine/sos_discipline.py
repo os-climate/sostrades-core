@@ -37,7 +37,7 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.compare_data_manager_tooling import compare_dict
+from gemseo.utils.compare_data_manager_tooling import dict_are_equals
 from sos_trades_core.api import get_sos_logger
 from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
@@ -1090,8 +1090,8 @@ class SoSDiscipline(MDODiscipline):
         
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            lines_nb = len(value)
-            index_column = list(set(value.columns) - set(self.DEFAULT_EXCLUDED_COLUMNS)).index(column)
+            lines_nb = value.to_numpy().shape[0]
+            index_column = value[[column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS]].columns.to_list().index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
@@ -1529,10 +1529,8 @@ class SoSDiscipline(MDODiscipline):
         try:
             return dict_values_dm != self._structuring_variables
         except:
-            diff_dict = {}
-            compare_dict(dict_values_dm,
-                         self._structuring_variables, '', diff_dict, df_equals=True)
-            return diff_dict != {}
+            return not dict_are_equals(dict_values_dm,
+                         self._structuring_variables)
 
     def set_structuring_variables_values(self):
         '''
