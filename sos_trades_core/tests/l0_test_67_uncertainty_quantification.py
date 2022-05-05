@@ -44,7 +44,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.ee = ExecutionEngine(self.name)
         self.factory = self.ee.factory
 
-    def test_01_uncertainty_quantification(self):
+    def _test_01_uncertainty_quantification(self):
         repo = 'sos_trades_core.sos_processes.test'
         mod_path = 'sos_trades_core.sos_wrapping.analysis_discs.uncertainty_quantification'
 
@@ -127,7 +127,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # for graph in graph_list:
         #     graph.to_plotly().show()
 
-    def test_02_uncertainty_quantification_from_grid_search(self):
+    def _test_02_uncertainty_quantification_from_grid_search(self):
         """In this test we prove the ability to couple a grid search and an uq
         """
         proc_name = 'test_coupling_doe_uq'
@@ -203,7 +203,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out_df = uq_disc_output['output_interpolated_values_df']
         print("bonjour")
 
-    def test_03_simple_cache_on_grid_search_uq_process(self):
+    def _test_03_simple_cache_on_grid_search_uq_process(self):
         """In this test we prove the ability of the cache to work properly on a grid search
         First, we create a process made of a coupling of a grid search and an uq on the grid search's output
         Then we activate the cache , change one uq input while maintaining grid search inputs  and run the process.
