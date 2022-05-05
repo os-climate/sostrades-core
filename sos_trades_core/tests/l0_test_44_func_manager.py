@@ -575,42 +575,48 @@ class TestFuncManager(unittest.TestCase):
         obj1['obj1_values'] = 1.5
         obj2 = base_df.copy()
         obj2['obj2_values'] = 1.
-        cst1 = base_df.copy()
-        cst1['cst1_values'] = np.array([10., 200., -30.])
-        cst2 = base_df.copy()
-        cst2['cst2_values'] = np.array([40000., 1., -10000.])
-        cst3 = base_df.copy()
-        cst3['cst3_values'] = np.array([-10., 0.2, -5.])
-        eqcst1 = base_df.copy()
-        eqcst1['eqcst1_values'] = np.array([-10., 10., -5.])
-        eqcst2 = base_df.copy()
-        eqcst2['eqcst2_values'] = np.array([0.001, 0.001, 0.00001])
-        eqcst3 = base_df.copy()
-        eqcst3['eqcst3_values'] = np.array([-12.2, 0.00001, 6.3])
+        ineq_cst = base_df.copy()
+        ineq_cst['ineq_cst_values'] = np.array([10., 200., -30.])
+        ineq_cst_array = np.array([10., 200., -30.])
+        eqcst_delta = base_df.copy()
+        eqcst_delta['eqcst_delta_values'] = np.array([40., 1., -10.])
+        eqcst_delta2 = base_df.copy()
+        eqcst_delta2['eqcst_delta2_values'] = np.array([0.0001, 1., -0.00003])
+        eqcst_delta_array = np.array([-10., 0.2, -5.])
+        eqcst_lintoquad = base_df.copy()
+        eqcst_lintoquad['eqcst_lintoquad_values'] = np.array([-1., 2., 0.03])
+        eqcst_lintoquad_array = np.array([-0.2, -50., 100.])
 
         # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight', 'aggr'])
-        func_df['variable'] = ['cst1', 'cst2', 'cst3',
-                               'eqcst1', 'eqcst2', 'eqcst3', 'obj1', 'obj2']
+        func_df['variable'] = ['ineq_cst','ineq_cst_array','eqcst_delta','eqcst_delta2',
+                               'eqcst_delta_array','eqcst_lintoquad','eqcst_lintoquad_array',
+                               'obj1', 'obj2']
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
-                            INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
-        func_df['weight'] = [0.5, 1., -0.2, 0.2, 1.2, -1.5, 0.8, 0.2]
-        func_df['aggr'] = ['sum', 'sum', 'sum', 'delta', 'lin_to_quad', 'delta', 'smax', 'sum']
+                            EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT,
+                            OBJECTIVE, OBJECTIVE]
+        func_df['weight'] = [0.5, 1., -0.2, 0.2, 1.2, -1.0, 0.01, 0.8, 0.2]
+        func_df['aggr'] = ['sum', 'sum', 'delta', 'delta', 'delta', 'lin_to_quad', 'lin_to_quad', 'smax', 'sum']
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
         # -- data to simulate disciplinary chain outputs
-        values_dict[prefix + 'cst1'] = cst1
-        values_dict[prefix + 'cst2'] = cst2
-        values_dict[prefix + 'cst3'] = cst3
-        values_dict[prefix + 'eqcst1'] = eqcst1
-        values_dict[prefix + 'eqcst2'] = eqcst2
-        values_dict[prefix + 'eqcst3'] = eqcst3
+        values_dict[prefix + 'ineq_cst'] = ineq_cst
+        values_dict[prefix + 'ineq_cst_array'] = ineq_cst_array
+        values_dict[prefix + 'eqcst_delta'] = eqcst_delta
+        values_dict[prefix + 'eqcst_delta2'] = eqcst_delta2
+        values_dict[prefix + 'eqcst_delta_array'] = eqcst_delta_array
+        values_dict[prefix + 'eqcst_lintoquad'] = eqcst_lintoquad
+        values_dict[prefix + 'eqcst_lintoquad_array'] = eqcst_lintoquad_array
         values_dict[prefix + 'obj1'] = obj1
         values_dict[prefix + 'obj2'] = obj2
 
         ee.load_study_from_input_dict(values_dict)
+
+        ee.dm.set_data(prefix + 'ineq_cst_array', 'type', 'array')
+        ee.dm.set_data(prefix + 'eqcst_delta_array', 'type', 'array')
+        ee.dm.set_data(prefix + 'eqcst_lintoquad_array', 'type', 'array')
 
         ee.display_treeview_nodes(True)
 
@@ -631,12 +637,13 @@ class TestFuncManager(unittest.TestCase):
 
         disc_techno = ee.root_process.sos_disciplines[0]
 
-        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1',
-                                                           'FuncManagerTest.FunctionManager.cst2',
-                                                           'FuncManagerTest.FunctionManager.cst3',
-                                                           'FuncManagerTest.FunctionManager.eqcst1',
-                                                           'FuncManagerTest.FunctionManager.eqcst2',
-                                                           'FuncManagerTest.FunctionManager.eqcst3',
+        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.ineq_cst',
+                                                           'FuncManagerTest.FunctionManager.ineq_cst_array',
+                                                           'FuncManagerTest.FunctionManager.eqcst_delta',
+                                                           'FuncManagerTest.FunctionManager.eqcst_delta2',
+                                                           'FuncManagerTest.FunctionManager.eqcst_delta_array',
+                                                           'FuncManagerTest.FunctionManager.eqcst_lintoquad',
+                                                           'FuncManagerTest.FunctionManager.eqcst_lintoquad_array',
                                                            'FuncManagerTest.FunctionManager.obj1',
                                                            'FuncManagerTest.FunctionManager.obj2'],
                                    outputs=['FuncManagerTest.FunctionManager.objective_lagrangian',

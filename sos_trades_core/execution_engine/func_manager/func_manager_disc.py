@@ -503,8 +503,8 @@ class FunctionManagerDisc(SoSDiscipline):
                     # k(x)
                     k_cst = np.sqrt(compute_func_with_exp_min(value ** 2, 1e-15))
                     # k'(x)
-                    dk_dcst = 2 * np.identity(len(value)) * value * \
-                              compute_dfunc_with_exp_min(value ** 2, 1e-15) / (
+                    dk_dcst = 2 * np.ones(len(value)) * value * \
+                              compute_dfunc_with_exp_min(value ** 2, 1e-15).reshape(value.shape) / (
                                       2 * k_cst)
 
                     # h(k(x))
