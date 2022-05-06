@@ -549,7 +549,6 @@ class SoSDiscipline(MDODiscipline):
                         self.dm.set_data(disc.get_var_full_name(
                             'cache_file_path', disc._data_in), self.VALUE, cache_file_path, check_value=False)
 
-
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
             if debug_mode == "nan":
@@ -1085,7 +1084,7 @@ class SoSDiscipline(MDODiscipline):
         if new_x_key in self.jac[new_y_key]:
             if index_y_column is not None and index_x_column is not None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                               index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
@@ -1093,11 +1092,7 @@ class SoSDiscipline(MDODiscipline):
 
             elif index_y_column is None and index_x_column is not None:
                 self.jac[new_y_key][new_x_key][:, index_x_column *
-<<<<<<< Upstream, based on origin/develop
-                                                  lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
-=======
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
->>>>>>> e9a70ac Add check var data in desc_in for coupling variables and shared input variables
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
                                                                         'end': -1},
@@ -1105,7 +1100,7 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                :] = value
+                                               :] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
