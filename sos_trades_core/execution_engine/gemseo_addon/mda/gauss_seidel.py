@@ -22,7 +22,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from numpy import array
+from numpy import array, hstack
 
 
 class SoSMDAGaussSeidel(MDAGaussSeidel):
@@ -81,7 +81,6 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             self._couplings_warm_start()
         # sostrades modif to support array.size for normalization
         current_couplings = array([0.0])
-        #
 
         relax = self.over_relax_factor
         use_relax = relax != 1.0
@@ -116,9 +115,11 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 else:
                     self.local_data.update(outs)
 
-            # convert local_data into array to compute residual
-            self.local_data = self.sos_disciplines[0]._convert_new_type_into_array(self.local_data)
-            new_couplings = self._current_strong_couplings()
+            # build new_couplings: concatenated strong couplings, converted into arrays
+            input_couplings = {input: self.local_data[input] for input in self.strong_couplings}
+            input_couplings_array = self.disciplines[0]._convert_new_type_into_array(input_couplings, update_dm=False)
+            new_couplings = hstack(input_couplings_array.values())
+            
             self._compute_residual(
                 current_couplings,
                 new_couplings,
@@ -126,11 +127,10 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 first=current_iter == 0,
                 log_normed_residual=self.log_convergence,
             )
+            
             # store current residuals
             current_iter += 1
             current_couplings = new_couplings
-            # convert local_data into SoSTrades types for next execution
-            self.local_data = self.sos_disciplines[0]._convert_array_into_new_type(self.local_data)
 
             # -- SoSTrades modif
             # stores cache history if residual_start filled
