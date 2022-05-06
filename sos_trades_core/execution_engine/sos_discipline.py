@@ -128,12 +128,13 @@ class SoSDiscipline(MDODiscipline):
         'dict': dict,
         'dataframe': DataFrame,
         'bool': bool,
+        'list': list
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
     #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
     NEW_VAR_TYPE = ['dict', 'dataframe',
-                    'string_list', 'string', 'float', 'int']
+                    'string_list', 'string', 'float', 'int', 'list']
 
     UNSUPPORTED_GEMSEO_TYPES = []
     for type in VAR_TYPE_MAP.keys():
@@ -538,9 +539,11 @@ class SoSDiscipline(MDODiscipline):
                 # set cache_type and cache_file_path input values to children
                 for disc in self.sos_disciplines:
                     if 'cache_type' in disc._data_in:
-                        self.dm.set_data(disc.get_var_full_name('cache_type', disc._data_in), self.VALUE, cache_type, check_value=False)
-                        self.dm.set_data(disc.get_var_full_name('cache_file_path', disc._data_in), self.VALUE, cache_file_path, check_value=False)
-                        
+                        self.dm.set_data(disc.get_var_full_name('cache_type', disc._data_in), self.VALUE, cache_type,
+                                         check_value=False)
+                        self.dm.set_data(disc.get_var_full_name('cache_file_path', disc._data_in), self.VALUE,
+                                         cache_file_path, check_value=False)
+
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
             if debug_mode == "nan":
@@ -604,6 +607,7 @@ class SoSDiscipline(MDODiscipline):
             else:
                 self.logger.info(
                     f'Try to set a default value for the variable {short_key} in {self.name} which is not an input of this discipline ')
+
     # -- cache handling
 
     def clear_cache(self):
@@ -1059,27 +1063,27 @@ class SoSDiscipline(MDODiscipline):
         if new_x_key in self.jac[new_y_key]:
             if index_y_column is not None and index_x_column is not None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                                               index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column * 
-                                               lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                self.jac[new_y_key][new_x_key][:, index_x_column *
+                                                  lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end':-1},
+                                                                        'end': -1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                                               :] = value
+                :] = value
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end':-1}})
+                                                                        'end': -1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1452,12 +1456,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" + 
+            raise ValueError("Unknown re_exec_policy :" +
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) + 
-                             " with status: " + str(self.status) + 
-                             " while re_exec_policy is : " + 
+            raise ValueError("Trying to run a discipline " + str(type(self)) +
+                             " with status: " + str(self.status) +
+                             " while re_exec_policy is : " +
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1699,8 +1703,10 @@ class SoSDiscipline(MDODiscipline):
             indices = self._get_columns_indices(
                 inputs, outputs, input_column, output_column)
 
-        jac_arrays = {key_out: {key_in: value.toarray() if not isinstance(value, ndarray) else value for key_in, value in subdict.items()}
-                      for key_out, subdict in self.jac.items()}
+        jac_arrays = {
+            key_out: {key_in: value.toarray() if not isinstance(value, ndarray) else value for key_in, value in
+                      subdict.items()}
+            for key_out, subdict in self.jac.items()}
         o_k = approx.check_jacobian(
             jac_arrays,
             outputs,
