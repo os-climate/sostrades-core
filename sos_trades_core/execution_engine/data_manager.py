@@ -94,6 +94,7 @@ class DataManager:
         self.data_cache = {}
         self.disciplines_dict = {}
         self.disciplines_id_map = {}
+        self.no_check_default_variables = []
 
     def get_data(self, var_f_name, attr=None):
         ''' Get attr value of var_f_name or all data_dict value of var_f_name (if attr=None)
@@ -387,7 +388,7 @@ class DataManager:
                         # Before linking check if var data in the DM and in the
                         # disc are coherent
                         self.check_var_data_mismatch(
-                            var_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
+                            var_name, var_f_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
 
                         # reference the parameter from the data manager to the
                         # discipline
@@ -768,11 +769,22 @@ class DataManager:
                 f'DataManager contains *value errors*: {errors_in_dm_msg}')
         return has_errors_in_dm
 
-    def check_var_data_mismatch(self, var_name, var_id, data1, data2):
+    def check_var_data_mismatch(self, var_name, var_f_name, var_id, data1, data2):
         '''
         Check a mismatch between two dicts 
         '''
+
+        def compare_data(data_name):
+
+            if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:
+                return str(data1[data_name]) != str(
+                    data2[data_name]) or data1[data_name] is None
+            elif var_f_name in self.no_check_default_variables:
+                return False
+            else:
+                return str(data1[data_name]) != str(data2[data_name])
+
         for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
-            if str(data1[data_name]) != str(data2[data_name]):
+            if compare_data(data_name):
                 self.logger.warning(
                     f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_disc_full_name(data1['model_origin'])} different from {data2[data_name]} in {self.get_disc_full_name(var_id)}")
