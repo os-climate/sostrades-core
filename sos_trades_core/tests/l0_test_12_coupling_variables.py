@@ -29,9 +29,9 @@ from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 LOC_DIRNAME = dirname(__file__)
 
 
-class TestExportCoupling(unittest.TestCase):
+class TestCouplingVariables(unittest.TestCase):
     """
-    Export couplings test class
+    Coupling variables test class
     """
 
     def setUp(self):
@@ -87,3 +87,41 @@ class TestExportCoupling(unittest.TestCase):
         # "test_13_export_couplings",
         f_name = join(LOC_DIRNAME, f"{rp.get_disc_full_name()}.csv")
         rp.export_couplings(in_csv=True, f_name=f_name)
+
+    def test_02_checktype_unit_mismatch(self):
+        '''
+        check_var_data_mismatch method in sos_coupling (not recursive)
+        '''
+        namespace = 'MyCase'
+        ee = ExecutionEngine(namespace)
+        ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
+        ee.configure()
+        # check treeview structure
+        exp_tv_list = ['Nodes representation for Treeview MyCase',
+                       '|_ MyCase',
+                       '\t|_ Disc1',
+                       '\t|_ Disc2']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == ee.display_treeview_nodes()
+        #-- setup inputs
+        dm = ee.dm
+        values_dict = {}
+        values_dict[f'{namespace}.Disc2.constant'] = -10.
+        values_dict[f'{namespace}.Disc2.power'] = -10.
+        values_dict[f'{namespace}.Disc1.a'] = 10.
+        values_dict[f'{namespace}.Disc1.b'] = 20.
+        values_dict[f'{namespace}.Disc1.indicator'] = 10.
+        values_dict[f'{namespace}.x'] = 3.
+
+        dm.set_values_from_dict(values_dict)
+
+        ee.configure()
+        rp = ee.root_process
+        # gather couplings data
+        rp.check_var_data_mismatch()
+
+
+if '__main__' == __name__:
+    cls = TestCouplingVariables()
+    cls.setUp()
+    cls.test_02_checktype_unit_mismatch()

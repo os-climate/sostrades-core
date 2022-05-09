@@ -29,7 +29,6 @@ class SoSScatterData(SoSDiscipline):
     Specification: ScatterData discipline collects inputs and distributes them in outputs
     '''
 
-
     # ontology information
     _ontology_data = {
         'label': 'Scatter Data',
@@ -43,6 +42,7 @@ class SoSScatterData(SoSDiscipline):
         'icon': 'fas fa-project-diagram fa-fw',
         'version': '',
     }
+
     def __init__(self, sos_name, ee, map_name, parent=None):
         '''
         CLass to scatter data
@@ -74,9 +74,8 @@ class SoSScatterData(SoSDiscipline):
             if new_scatter_value is not None and new_scatter_value != self.scatter_values:
                 # add sub_varnames to inst_desc_out
                 self.build_inst_desc_out()
-                SoSDiscipline.configure(self)
-            else:
-                self.set_structuring_variables_values()
+                
+            SoSDiscipline.configure(self)
 
             store_outputs = False
             # if var_to_scatter is an input, scatter_data need to be run during
