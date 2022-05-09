@@ -116,7 +116,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
                          SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
                          SoSDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT:-1, SoSDiscipline.NUMERICAL: True,
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
                                  SoSDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
@@ -426,20 +426,25 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         ''' Configuration of SoSCoupling, call to super class MDAChain
         '''
         num_data = self._get_numerical_inputs()
-        
+
         # store cache to reset after MDAChain init
         cache = self.cache
-        
+
         MDAChain.__init__(self,
                           disciplines=self.sos_disciplines,
                           name=self.sos_name,
                           grammar_type=self.SOS_GRAMMAR_TYPE,
                           ** num_data)
-        
-        # TODO: pass cache to MDAChain init to avoid reset cache, idem for MDOChain
+
+        # TODO: pass cache to MDAChain init to avoid reset cache, idem for
+        # MDOChain
         self.cache = cache
-        self.set_cache(self.mdo_chain, self.get_sosdisc_inputs('cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-        
+        self.set_cache(self.mdo_chain, self.get_sosdisc_inputs(
+            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+
+        # Check variables mismatch between coupling disciplines
+        self.check_var_data_mismatch()
+
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
 
@@ -528,7 +533,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 self.set_epsilon0_and_cache(sub_mda)
         else:
             mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
-            self.set_cache(mda, self.get_sosdisc_inputs('cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+            self.set_cache(mda, self.get_sosdisc_inputs(
+                'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
     @property
     def ordered_disc_list(self):
@@ -585,6 +591,44 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             df.to_csv(f_name, index=False)
         else:
             return df
+
+    def check_var_data_mismatch(self):
+        '''
+        Check if a variable data is not coherent between two coupling disciplines
+
+        The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
+        the list of data_to_check is defined below
+        '''
+
+        coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
+        for from_disc, to_disc, c_vars in coupling_vars:
+            for var in c_vars:
+                # from disc is in output
+                from_disc_data = from_disc.get_data_with_full_name(
+                    self.IO_TYPE_OUT, var)
+                # to_disc is in input
+                to_disc_data = to_disc.get_data_with_full_name(
+                    self.IO_TYPE_IN, var)
+                for data_name in self.DATA_TO_CHECK:
+                    # Check if data_names are different
+                    if from_disc_data[data_name] != to_disc_data[data_name]:
+                        self.logger.warning(
+                            f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.get_disc_full_name()} : {to_disc_data[data_name]} and in output of {from_disc.get_disc_full_name()} : {from_disc_data[data_name]}')
+                    # Check if unit is not None
+                    elif from_disc_data[data_name] is None and data_name == self.UNIT:
+                        # if unit is None in a dataframe check if there is a
+                        # dataframe descriptor with unit in it
+                        if from_disc_data[self.TYPE] == 'dataframe':
+                            # if no dataframe descriptor and no unit warning
+                            if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
+                                self.logger.warning(
+                                    f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.get_disc_full_name()} : {to_disc_data[data_name]} and in output of {from_disc.get_disc_full_name()} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
+# TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
+#                             else :
+#                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
+                        else:
+                            self.logger.warning(
+                                f'The unit of the coupling variable {var} is None in input of {to_disc.get_disc_full_name()} : {to_disc_data[data_name]} and in output of {from_disc.get_disc_full_name()} : {from_disc_data[data_name]}')
 
     def run(self):
         '''

@@ -384,6 +384,11 @@ class DataManager:
                 # IO_TYPE_IN HANDLING
                 if io_type == IO_TYPE_IN:
                     if self.data_dict[var_id][IO_TYPE] != IO_TYPE_OUT:
+                        # Before linking check if var data in the DM and in the
+                        # disc are coherent
+                        self.check_var_data_mismatch(
+                            var_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
+
                         # reference the parameter from the data manager to the
                         # discipline
                         disc_dict[var_name] = self.data_dict[var_id]
@@ -679,7 +684,7 @@ class DataManager:
             value = self.data_dict[var_id][VALUE]
             prange = self.data_dict[var_id][RANGE]
             possible_values = self.data_dict[var_id][POSSIBLE_VALUES]
-
+            coupling = self.data_dict[var_id][COUPLING]
             if vtype not in SoSDiscipline.VAR_TYPE_MAP.keys():
                 errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
                 self.logger.error(errors_in_dm_msg)
@@ -762,3 +767,12 @@ class DataManager:
             raise ValueError(
                 f'DataManager contains *value errors*: {errors_in_dm_msg}')
         return has_errors_in_dm
+
+    def check_var_data_mismatch(self, var_name, var_id, data1, data2):
+        '''
+        Check a mismatch between two dicts 
+        '''
+        for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
+            if str(data1[data_name]) != str(data2[data_name]):
+                self.logger.warning(
+                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_disc_full_name(data1['model_origin'])} different from {data2[data_name]} in {self.get_disc_full_name(var_id)}")
