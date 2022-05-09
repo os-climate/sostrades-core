@@ -387,7 +387,7 @@ class DataManager:
                     if self.data_dict[var_id][IO_TYPE] != IO_TYPE_OUT:
                         # Before linking check if var data in the DM and in the
                         # disc are coherent
-                        self.check_var_data_mismatch(
+                        self.check_var_data_input_mismatch(
                             var_name, var_f_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
 
                         # reference the parameter from the data manager to the
@@ -769,9 +769,10 @@ class DataManager:
                 f'DataManager contains *value errors*: {errors_in_dm_msg}')
         return has_errors_in_dm
 
-    def check_var_data_mismatch(self, var_name, var_f_name, var_id, data1, data2):
+    def check_var_data_input_mismatch(self, var_name, var_f_name, var_id, data1, data2):
         '''
-        Check a mismatch between two dicts 
+        Check a mismatch between two dicts (which are data dict for the same input shared by two variables 
+        By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed 
         '''
 
         def compare_data(data_name):

@@ -597,7 +597,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Check if a variable data is not coherent between two coupling disciplines
 
         The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
-        the list of data_to_check is defined below
+        the list of data_to_check is defined in SoSDiscipline
         '''
 
         coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
