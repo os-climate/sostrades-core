@@ -20,7 +20,9 @@ from matplotlib import pyplot as plt
 
 from sos_trades_core.tools.cst_manager.constraint_object import ConstraintObject
 from sos_trades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
+from sos_trades_core.execution_engine.func_manager.func_manager import FunctionManager
 
+# pylint: disable=no-value-for-parameter
 
 class ConstraintManager:
     """
@@ -96,7 +98,7 @@ class ConstraintManager:
 
             # Apply cst_func
             if cst_func is None:
-                cst_func = cst_func_smooth_positive
+                cst_func = smooth_maximum(FunctionManager.cst_func_ineq())
             result = cst_func(values, weights, *args, **kwargs)
 
             if np.isnan(result):
@@ -119,56 +121,6 @@ class ConstraintManager:
 
         with open(filename, 'w') as file:
             file.write(strg)
-
-
-# Functions used in constraint manager (used elsewhere ? )
-
-
-def cst_func_smooth_positive(values, eps=1e-3, alpha=3):
-    """
-    Awesome function
-    """
-    cst_result = np.zeros_like(values)
-    for iii, val in enumerate(values):
-        if val > 1:
-            res = 1 + 2 * np.log(val)
-        elif val > eps:
-            res = (1. - eps / 2) * val ** 2 + eps * val
-        else:
-            res = eps * (np.exp(val) - 1.)
-
-        if np.isnan(res):
-            print(
-                'NaN detected in cst_func_smooth_positive i={}, x={}, r={}'.format(iii, val, res))
-        cst_result[iii] = res
-
-    if np.any(np.isnan(cst_result)):
-        raise Exception('NaN in cst_func_smooth_positive')
-
-    s_max = smooth_maximum(cst_result, alpha=alpha)
-
-    return s_max
-
-
-def cst_func_smooth_positive_eq(values, alpha=3):
-    """
-    Function
-    """
-    abs_values = np.sign(values) * values
-    return cst_func_smooth_positive(abs_values, eps=0., alpha=alpha)
-
-
-def cst_func_smooth_maximum(values, alpha=3, drop_zeros=False):
-    """
-    Function
-    """
-    if drop_zeros:
-        val = values[np.where(values)[0]]
-    else:
-        val = values
-
-    return smooth_maximum(val, alpha=alpha)
-
 
 def cst_func_hard_max(values):
     """
@@ -204,19 +156,26 @@ def compute_delta_type(delta, type='abs'):
         cdelta = -np.sign(delta) * np.sqrt(compute_func_with_exp_min(delta ** 2, 1e-15))
     elif type == 'hardmin':
         cdelta = np.sign(delta) * np.sqrt(compute_func_with_exp_min(delta ** 2, 1e-15))
+    elif type == 'normal':
+        cdelta = delta
+    else:
+        raise Exception('Unknown type of delta_type')
     return cdelta
 
 def compute_dcdelta_dvalue(delta, ddelta_dvalue, type='abs'):
     if type == 'abs':
         dcdelta_dvalue = 2 * delta * ddelta_dvalue * compute_dfunc_with_exp_min(delta ** 2, 1e-15)/(
                     2*np.sqrt(compute_func_with_exp_min(delta ** 2, 1e-15)))
-
     elif type == 'hardmax':
         dcdelta_dvalue = -np.sign(delta) * 2 * delta * ddelta_dvalue * compute_dfunc_with_exp_min(delta ** 2, 1e-15) / (
                     2 * np.sqrt(compute_func_with_exp_min(delta ** 2, 1e-15)))
     elif type == 'hardmin':
         dcdelta_dvalue = np.sign(delta) * 2 * delta * ddelta_dvalue * compute_dfunc_with_exp_min(delta ** 2, 1e-15) / (
                     2 * np.sqrt(compute_func_with_exp_min(delta ** 2, 1e-15)))
+    elif type == 'normal':
+        dcdelta_dvalue = ddelta_dvalue
+    else:
+        raise Exception('Unknown type of delta_type')
     return dcdelta_dvalue
 
 def compute_delta_constraint(value, goal, tolerable_delta=1.0, delta_type='abs', reference_value=1.0, eps=1E-3):
@@ -253,58 +212,23 @@ def compute_ddelta_constraint(value, goal, tolerable_delta=1.0, delta_type='abs'
     ddelta_dvalue = -np.identity(len(value))
     ddelta_dgoal = np.identity(len(goal))
 
-    #Second step
+    # Second step
     cdelta = compute_delta_type(delta, delta_type)
     dcdelta_dvalue = compute_dcdelta_dvalue(delta, ddelta_dvalue, type=delta_type)
     dcdelta_dgoal = compute_dcdelta_dvalue(delta, ddelta_dgoal, type=delta_type)
 
-    #Third step
+    # Third step
     constraint = ((tolerable_delta - cdelta) / reference_value - eps)
     ddelta_constraint_dvalue = -dcdelta_dvalue / reference_value
     ddelta_constraint_dgoal = -dcdelta_dgoal / reference_value
+    ddelta_constraint_dtolerable_delta = np.identity(len(value)) / reference_value
 
-    return ddelta_constraint_dvalue, ddelta_constraint_dgoal
+    return ddelta_constraint_dvalue, ddelta_constraint_dgoal, ddelta_constraint_dtolerable_delta
 
 def delta_constraint_demonstrator():
     """
     Function to plot an example of the delta constraint and its treatment through the function manager
     """
-    def cst_func_smooth_positive(values, eps=1e-3, alpha=3, tag='cst'):
-        """
-        Awesome function
-        """
-        smooth_log = False
-        eps2 = 1e20
-        cst_result = np.zeros_like(values)
-        for iii, val in enumerate(values):
-            if smooth_log and val.real > eps2:
-                # res0 is the value of the function at val.real=eps2 to
-                # ensure continuity
-                res0 = ((1. - eps / 2) * eps2 ** 2 +
-                        eps * eps2)
-                res = res0 + 2 * np.log(val)
-                print(
-                    f'{tag} = {val.real} > eps2 = {eps2}, the log function is applied')
-
-            elif val.real > eps:
-                res = (1. - eps / 2) * val ** 2 + eps * val
-
-            elif val.real < -250.0:
-                res = 0.0
-
-            else:
-                res = eps * (np.exp(val) - 1.)
-
-            if np.isnan(res):
-                print(
-                    'NaN detected in cst_func_smooth_positive i={}, x={}, r={}, name={}'.format(iii, val, res, tag))
-            cst_result[iii] = res
-
-        if np.any(np.isnan(cst_result)):
-            raise Exception('NaN in cst_func_smooth_positive {}'.format(tag))
-
-        return cst_result
-
     tolerable_delta = 1.0
     eps=1E-3
     x = np.linspace(-2.0, 2.0, 100)
@@ -317,16 +241,14 @@ def delta_constraint_demonstrator():
             min_valid_x=np.minimum(min_valid_x, x[i])
             max_valid_x=np.maximum(max_valid_x, x[i])
 
-    abs_delta = np.sqrt(compute_func_with_exp_min(delta ** 2, 1e-15))
+    fm=FunctionManager()
+    fm.configure_smooth_log(False, 1E20)
 
     reference_value = 1E3
-    delta_type='abs'
-    constraint = compute_delta_constraint(y, goal, tolerable_delta=tolerable_delta, delta_type=delta_type, reference_value=reference_value, eps=eps)
+    delta_type = 'normal'
+    constraint = -compute_delta_constraint(y, goal, tolerable_delta=tolerable_delta, delta_type=delta_type, reference_value=reference_value, eps=eps)
     #Multiply constraint by (-1) to mimick the weight that is applied to constraints in func_manager
-    cst=cst_func_smooth_positive(constraint*-1, eps=eps)
-    reference_value_2 = 2 * reference_value
-    constraint_2 = compute_delta_constraint(y, goal, tolerable_delta=tolerable_delta, delta_type=delta_type, reference_value=reference_value_2, eps=eps)
-    cst_2=cst_func_smooth_positive(constraint_2*-1, eps=eps)
+    cst = FunctionManager.cst_func_eq_lintoquad(fm, -constraint, eps=eps)
 
     fig, axs = plt.subplots(3)
     axs[0].plot(x, y, label='y')
@@ -341,11 +263,92 @@ def delta_constraint_demonstrator():
     axs[1].axvline(max_valid_x, linestyle=':', color='black')
     axs[1].legend()
     axs[2].plot(x, cst, '.', label=f'ref={reference_value}')
-    axs[2].plot(x, (1. - eps / 2) * (-constraint) ** 2 + eps * -constraint,
-                linestyle='dotted', color='grey')
-    axs[2].plot(x, cst_2, '.', label=f'ref={reference_value_2}')
-    axs[2].plot(x, (1. - eps / 2) * (-constraint_2) ** 2 + eps * -constraint_2,
-                linestyle='dotted', color='grey')
+    axs[2].plot(x,(-constraint) ** 2, linestyle='dotted', color='black')
+    axs[2].plot(x, (1. - eps / 2) * (-constraint) ** 2 + eps * -constraint, linestyle='dotted', color='grey')
+    axs[2].plot(x, np.abs(eps * (np.exp(-constraint) -1.)), linestyle='dotted', color='green')
+    axs[2].axvline(min_valid_x, linestyle=':', color='black')
+    axs[2].axvline(max_valid_x, linestyle=':', color='black')
+    axs[2].legend()
+    plt.show()
+
+def eq_constraint_demonstrator():
+    """
+    Function to plot an example of the delta constraint and its treatment through the function manager
+    """
+
+    eps=1E-3
+    x = np.linspace(-2.0, 2.0, 100)
+    y = x/1000
+    goal = np.zeros(len(x))
+    delta = (goal - y)
+    min_valid_x, max_valid_x = x[-1], x[0]
+    for i, val in enumerate(delta):
+        if np.abs(val) < eps:
+            min_valid_x = np.minimum(min_valid_x, x[i])
+            max_valid_x = np.maximum(max_valid_x, x[i])
+
+    fm=FunctionManager()
+    fm.configure_smooth_log(False, 1E20)
+
+    constraint = delta
+    #Multiply constraint by (-1) to mimick the weight that is applied to constraints in func_manager
+    #cst = FunctionManager.cst_func_eq_delta(fm, constraint*-1, eps=eps)
+    cst = FunctionManager.cst_func_eq_lintoquad(fm, constraint * -1, eps=eps)
+
+    fig, axs = plt.subplots(3)
+    axs[0].plot(x, y, label='y')
+    axs[0].plot(x, goal, label='goal')
+    axs[0].legend()
+    axs[1].plot(x, constraint*-1.0, label='constraint value * -1')
+    axs[1].axhline(eps, linestyle='--', color='red', label='eps')
+    axs[1].axhline(-eps, linestyle='--', color='red')
+    axs[1].axvline(min_valid_x, linestyle=':', color='black')
+    axs[1].axvline(max_valid_x, linestyle=':', color='black')
+    axs[1].legend()
+    axs[2].plot(x, cst, '.', label=f'cst')
+    axs[2].plot(x,(-constraint) ** 2, label='quad', linestyle='dotted', color='red', alpha=0.5)
+    axs[2].plot(x, eps * (np.exp(np.abs(constraint)) -1.), label='lin', linestyle='dotted', color='green', alpha=0.5)
+    axs[2].axvline(min_valid_x, linestyle=':', color='black')
+    axs[2].axvline(max_valid_x, linestyle=':', color='black')
+    axs[2].legend()
+    plt.show()
+
+def ineq_constraint_demonstrator():
+    """
+    Function to plot an example of the delta constraint and its treatment through the function manager
+    """
+    eps = 1E-3
+    x = np.linspace(-2.0, 2.0, 100)
+    y = x/1000
+    goal = np.zeros(len(x))
+    delta = (goal - y)
+    min_valid_x, max_valid_x = x[-1], x[0]
+    for i, val in enumerate(delta):
+        if np.abs(val) < eps:
+            min_valid_x = np.minimum(min_valid_x, x[i])
+            max_valid_x = np.maximum(max_valid_x, x[i])
+
+    self=ConstraintObject
+    self.smooth_log=False
+    self.eps2=1E20
+
+    constraint = delta
+    #Multiply constraint by (-1) to mimick the weight that is applied to constraints in func_manager
+    cst=FunctionManager.cst_func_ineq(self, constraint*-1, eps=eps)
+
+    fig, axs = plt.subplots(3)
+    axs[0].plot(x, y, label='y')
+    axs[0].plot(x, goal, label='goal')
+    axs[0].legend()
+    axs[1].plot(x, constraint*-1.0, label='constraint value * -1')
+    #axs[1].plot(x, constraint_2 * -1.0, label='constraint value 2 * -1')
+    axs[1].axhline(eps, linestyle='--', color='red', label='eps')
+    axs[1].axvline(min_valid_x, linestyle=':', color='black')
+    axs[1].axvline(max_valid_x, linestyle=':', color='black')
+    axs[1].legend()
+    axs[2].plot(x, cst, '.', label=f'cst')
+    axs[2].plot(x,(-constraint) ** 2, label='quad', linestyle='dotted', color='red', alpha=0.5)
+    axs[2].plot(x, eps * (np.exp(np.abs(constraint)) -1.), label='lin', linestyle='dotted', color='green', alpha=0.5)
     axs[2].axvline(min_valid_x, linestyle=':', color='black')
     axs[2].axvline(max_valid_x, linestyle=':', color='black')
     axs[2].legend()
