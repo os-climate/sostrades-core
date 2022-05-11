@@ -126,7 +126,7 @@ class PureNewtonRaphson(MDARoot):
         self.reset_disciplines_statuses()
         
         # build current_couplings: concatenated strong couplings, converted into arrays
-        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True)
+        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True, update_dm=True)
         
         while not self._termination(current_iter):
 
@@ -142,7 +142,7 @@ class PureNewtonRaphson(MDARoot):
             self.execute_all_disciplines(self.local_data)
 
             # build new_couplings after execution: concatenated strong couplings, converted into arrays
-            new_couplings = self._current_strong_couplings()
+            new_couplings = self._current_strong_couplings(update_dm=True)
 
             # res = coupling_variables(x+k) - coupling_variables(x)
             res = new_couplings - current_couplings
