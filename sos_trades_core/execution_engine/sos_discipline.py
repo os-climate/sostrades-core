@@ -37,7 +37,7 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.compare_data_manager_tooling import dict_are_equals
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sos_trades_core.api import get_sos_logger
 from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
@@ -1529,7 +1529,7 @@ class SoSDiscipline(MDODiscipline):
         try:
             return dict_values_dm != self._structuring_variables
         except:
-            return not dict_are_equals(dict_values_dm,
+            return not dict_are_equal(dict_values_dm,
                          self._structuring_variables)
 
     def set_structuring_variables_values(self):

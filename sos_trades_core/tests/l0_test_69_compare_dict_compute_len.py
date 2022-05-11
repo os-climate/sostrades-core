@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from gemseo.utils.compare_data_manager_tooling import compare_dict, dict_are_equals
+from gemseo.utils.compare_data_manager_tooling import compare_dict, dict_are_equal
 from sos_trades_core.tools.base_functions.compute_len import compute_len
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -113,18 +113,18 @@ class TestCompareDict(unittest.TestCase):
                      self.data_dict_2, '', diff_dict, df_equals=True)
         self.assertEqual(len(diff_dict), len(self.data_dict_1))
         
-    def test_02_dict_are_equals_method(self):
+    def test_02_dict_are_equal_method(self):
 
-        self.assertTrue(dict_are_equals(self.data_dict_1,
+        self.assertTrue(dict_are_equal(self.data_dict_1,
                      self.data_dict_1))
         
-        self.assertTrue(dict_are_equals(self.data_dict_2,
+        self.assertTrue(dict_are_equal(self.data_dict_2,
                      self.data_dict_2))
         
-        self.assertFalse(dict_are_equals(self.data_dict_1,
+        self.assertFalse(dict_are_equal(self.data_dict_1,
                      self.data_dict_2))
         
-        self.assertFalse(dict_are_equals(self.data_dict_2,
+        self.assertFalse(dict_are_equal(self.data_dict_2,
                      self.data_dict_1))
         
     def test_03_compute_len(self):
@@ -157,5 +157,5 @@ class TestCompareDict(unittest.TestCase):
             
 if __name__ == "__main__":
     cls = TestCompareDict()
-    cls.test_02_dict_are_equals_method()
+    cls.test_02_dict_are_equal_method()
         
