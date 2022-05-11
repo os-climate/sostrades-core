@@ -34,7 +34,7 @@ class Study(StudyManager):
         values_dict[f'{ns}.Disc1.x_dict'] = {ac:1.6 for ac in AC_list}
         values_dict[f'{ns}.Disc1.AC_list'] = AC_list
         values_dict[f'{ns}.cache_type'] = 'SimpleCache'
-#         values_dict[f'{ns}.cache_type'] = 'None'
+        values_dict[f'{ns}.cache_type'] = 'None'
 
         return [values_dict]
 
@@ -42,7 +42,4 @@ class Study(StudyManager):
 if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
-#     print(len(uc_cls.ee.factory.sos_disciplines), 'disciplines')
-#     print(len(uc_cls.ee.dm.data_dict), 'variables')
-#     print(len(uc_cls.ee.root_process.all_couplings), 'coupling variables')
     uc_cls.run()
