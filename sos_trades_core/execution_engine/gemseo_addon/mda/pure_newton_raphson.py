@@ -131,7 +131,7 @@ class PureNewtonRaphson(MDARoot):
             # store coupling_variables(x): concatenated strong couplings, converted into arrays
             input_couplings = {input: self.local_data[input] for input in self.strong_couplings}
             input_couplings_array = self.disciplines[0]._convert_new_type_into_array(input_couplings, update_dm=False)
-            current_couplings = np.hstack(input_couplings_array.values())
+            current_couplings = np.hstack(list(input_couplings_array.values()))
             
             # store x=local_data
             old_x = deepcopy(self.local_data)
@@ -151,7 +151,7 @@ class PureNewtonRaphson(MDARoot):
             input_couplings = {input: self.local_data[input]
                                for input in self.strong_couplings}
             input_couplings_array = self.disciplines[0]._convert_new_type_into_array(input_couplings, update_dm=False)
-            new_couplings = np.hstack(input_couplings_array.values())
+            new_couplings = np.hstack(list(input_couplings_array.values()))
 
             # res = coupling_variables(x+k) - coupling_variables(x)
             res = new_couplings - current_couplings

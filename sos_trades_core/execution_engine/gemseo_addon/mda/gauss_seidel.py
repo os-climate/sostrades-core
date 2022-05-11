@@ -118,7 +118,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             # build new_couplings: concatenated strong couplings, converted into arrays
             input_couplings = {input: self.local_data[input] for input in self.strong_couplings}
             input_couplings_array = self.disciplines[0]._convert_new_type_into_array(input_couplings, update_dm=False)
-            new_couplings = hstack(input_couplings_array.values())
+            new_couplings = hstack(list(input_couplings_array.values()))
             
             self._compute_residual(
                 current_couplings,
