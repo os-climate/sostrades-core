@@ -116,7 +116,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
                          SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
                          SoSDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT:-1, SoSDiscipline.NUMERICAL: True,
                                  SoSDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
@@ -270,6 +270,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         - configure all children disciplines
 
         '''
+        if self._data_in != {}:
+            if self._structuring_variables[SoSDiscipline.CACHE_TYPE] != self.get_sosdisc_inputs(SoSDiscipline.CACHE_TYPE) or self._structuring_variables[SoSDiscipline.CACHE_FILE_PATH] != self.get_sosdisc_inputs(SoSDiscipline.CACHE_FILE_PATH):
+                self._cache_inputs_have_changed = True
+        
         SoSDiscipline.configure(self)
 
         disc_to_configure = self.get_disciplines_to_configure()
@@ -277,11 +281,12 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
         else:
+            self.set_children_cache_inputs()
             self.set_configure_status(True)
 
         for disc in disc_to_configure:
             disc.configure()
-
+            
     def get_disciplines_to_configure(self):
         '''
         Get sub disciplines list to configure

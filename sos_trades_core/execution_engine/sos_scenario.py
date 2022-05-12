@@ -425,6 +425,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
         else:
+            self.set_children_cache_inputs()
             self.set_configure_status(True)
 
         for disc in disc_to_configure:
@@ -579,7 +580,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             var_types = df[self.VARIABLE_TYPE]
         else:
             # set to None for all variables if not exists
-            var_types = [None]*len(names)
+            var_types = [None] * len(names)
         
         design_space = DesignSpace()
         
@@ -652,7 +653,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 value = array(val)
             design_space.add_variable(name, size, var_type, l_b, u_b, value)
         return design_space
-
 
     def update_design_space_out(self):
         """

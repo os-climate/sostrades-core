@@ -98,6 +98,8 @@ class SoSDiscipline(MDODiscipline):
     VAR_NAME = 'var_name'
     VISIBLE = 'visible'
     CONNECTOR_DATA = 'connector_data'
+    CACHE_TYPE = 'cache_type'
+    CACHE_FILE_PATH = 'cache_file_path'
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -168,12 +170,12 @@ class SoSDiscipline(MDODiscipline):
     NUM_DESC_IN = {
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
-        'cache_type': {TYPE: 'string', DEFAULT: 'None',
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                        POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
                        # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                        NUMERICAL: True,
                        STRUCTURING: True},
-        'cache_file_path': {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
+        CACHE_FILE_PATH: {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                        NUMERICAL: True, 'structuring': True}
     }
@@ -219,6 +221,7 @@ class SoSDiscipline(MDODiscipline):
         self.built_sos_disciplines = []
         self.in_checkjac = False
         self._is_configured = False
+        self._set_children_cache_inputs = False
         # init MDODiscipline
         MDODiscipline.__init__(
             self, sos_name, grammar_type=self.SOS_GRAMMAR_TYPE)
@@ -537,18 +540,12 @@ class SoSDiscipline(MDODiscipline):
         if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
-            cache_type = self.get_sosdisc_inputs('cache_type')
-            cache_file_path = self.get_sosdisc_inputs('cache_file_path')
+            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
+            cache_file_path = self.get_sosdisc_inputs(self.CACHE_FILE_PATH)
 
-            if cache_type != self._structuring_variables['cache_type']:
+            if cache_type != self._structuring_variables[self.CACHE_TYPE]:
+                self._set_children_cache_inputs = True
                 self.set_cache(self, cache_type, cache_file_path)
-                # set cache_type and cache_file_path input values to children
-                for disc in self.sos_disciplines:
-                    if 'cache_type' in disc._data_in:
-                        self.dm.set_data(disc.get_var_full_name(
-                            'cache_type', disc._data_in), self.VALUE, cache_type, check_value=False)
-                        self.dm.set_data(disc.get_var_full_name(
-                            'cache_file_path', disc._data_in), self.VALUE, cache_file_path, check_value=False)
 
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
@@ -577,7 +574,7 @@ class SoSDiscipline(MDODiscipline):
                 else:
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-
+                    
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
         Instantiate and set cache for disc if cache_type is not 'None'
@@ -590,6 +587,22 @@ class SoSDiscipline(MDODiscipline):
             if cache_type != 'None':
                 disc.set_cache_policy(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
+                
+    def set_children_cache_inputs(self):
+        '''
+        Set cache_type and cache_file_path input values to children, if cache inputs have changed
+        '''
+        if self._set_children_cache_inputs:
+            cache_type = self.get_sosdisc_inputs(SoSDiscipline.CACHE_TYPE)
+            cache_file_path = self.get_sosdisc_inputs(SoSDiscipline.CACHE_FILE_PATH)
+            for disc in self.sos_disciplines:
+                if SoSDiscipline.CACHE_TYPE in disc._data_in:
+                    self.dm.set_data(disc.get_var_full_name(
+                        SoSDiscipline.CACHE_TYPE, disc._data_in), self.VALUE, cache_type, check_value=False)
+                    if cache_file_path is not None:
+                        self.dm.set_data(disc.get_var_full_name(
+                            SoSDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path, check_value=False)
+            self._cache_inputs_have_changed = False
 
     def setup_sos_disciplines(self):
         '''
@@ -1093,11 +1106,11 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column *
+                self.jac[new_y_key][new_x_key][:, index_x_column * 
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end': -1},
+                                                                        'end':-1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
@@ -1106,7 +1119,7 @@ class SoSDiscipline(MDODiscipline):
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end': -1}})
+                                                                        'end':-1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1479,12 +1492,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" +
+            raise ValueError("Unknown re_exec_policy :" + 
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
+            raise ValueError("Trying to run a discipline " + str(type(self)) + 
+                             " with status: " + str(self.status) + 
+                             " while re_exec_policy is : " + 
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
