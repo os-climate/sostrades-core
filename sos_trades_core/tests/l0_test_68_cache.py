@@ -834,7 +834,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-    def test_10_cache_on_sellar_optim_gemseo_scenario(self):
+    def _test_10_cache_on_sellar_optim_gemseo_scenario(self):
 
         disciplines = [Sellar1(residual_form=False),
                        Sellar2(residual_form=False),

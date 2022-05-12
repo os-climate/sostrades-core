@@ -1364,7 +1364,7 @@ class SoSDiscipline(MDODiscipline):
                     filtered_keys.append(full_var_name)
             else:
                 filtered_keys.append(full_var_name)
-
+            #filtered_keys.append(full_var_name)
         return filtered_keys
 
     def delete_numerical_parameters_for_gems(self, var_name):
