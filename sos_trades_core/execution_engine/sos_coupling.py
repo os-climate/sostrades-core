@@ -613,7 +613,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                     # Check if data_names are different
                     if from_disc_data[data_name] != to_disc_data[data_name]:
                         self.logger.warning(
-                            f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.get_disc_full_name()} : {to_disc_data[data_name]} and in output of {from_disc.get_disc_full_name()} : {from_disc_data[data_name]}')
+                            f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
                     # Check if unit is not None
                     elif from_disc_data[data_name] is None and data_name == self.UNIT:
                         # if unit is None in a dataframe check if there is a
@@ -622,13 +622,13 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                             # if no dataframe descriptor and no unit warning
                             if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
                                 self.logger.warning(
-                                    f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.get_disc_full_name()} : {to_disc_data[data_name]} and in output of {from_disc.get_disc_full_name()} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
+                                    f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
 # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
 #                             else :
 #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
                         else:
                             self.logger.warning(
-                                f'The unit of the coupling variable {var} is None in input of {to_disc.get_disc_full_name()} : {to_disc_data[data_name]} and in output of {from_disc.get_disc_full_name()} : {from_disc_data[data_name]}')
+                                f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
 
     def run(self):
         '''
