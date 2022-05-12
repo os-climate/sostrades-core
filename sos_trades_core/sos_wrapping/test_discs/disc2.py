@@ -33,12 +33,12 @@ class Disc2(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'y': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        'constant': {'type': 'float'},
-        'power': {'type': 'int'},
+        'y': {'type': 'float', 'unit': '', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'constant': {'type': 'float', 'unit': ''},
+        'power': {'type': 'int', 'unit': ''},
     }
     DESC_OUT = {
-        'z': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'z': {'type': 'float', 'unit': '', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self):

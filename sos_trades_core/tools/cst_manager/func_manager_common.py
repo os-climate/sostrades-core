@@ -21,6 +21,7 @@ Common file to have methods of func manager (mainly smooth max and it derivative
 # pylint: disable=unsubscriptable-object
 import numpy as np
 from sos_trades_core.tools.base_functions.exp_min import compute_dfunc_with_exp_min, compute_func_with_exp_min
+import warnings
 
 def smooth_maximum(cst, alpha=3):
     """
@@ -32,7 +33,7 @@ def smooth_maximum(cst, alpha=3):
 
     k = max_alphax - max_exp
     # Deal with underflow . max with exp(-300)
-    exp_func = np.maximum(min_exp, alpha * cst - k)
+    exp_func = np.maximum(min_exp, np.multiply(alpha, cst) - k)
     den = np.sum(np.exp(exp_func))
     num = np.sum(cst * np.exp(exp_func))
     if den != 0:
@@ -159,8 +160,8 @@ def soft_maximum_vect(cst, k=7e2):
     cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 1.0E-15/k)
     if 'complex' in str(cst_array.dtype):
         cst_array_limited += np.imag(cst_array)*1j
-    if np.amax(cst_array_limited)*k>709:
-        raise ValueError('The value of k*max(cst_array) is too high and would cause an overflow')
+    if np.amax(abs(cst_array_limited))*k>709:
+        raise ValueError('The absolute value of k*max(cst_array) is too high and would cause a floating point error')
     result = np.log(np.sum(np.exp(k*cst_array_limited), axis=1))/k
     return result
 
@@ -169,13 +170,14 @@ def get_dsoft_maximum_vect(cst, k=7e2):
     Return derivative of soft maximum
     """
     cst_array = np.array(cst)
-    cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 5.6E-17/k)
+    cst_array_limited = np.sign(cst_array)*compute_func_with_exp_min(np.abs(cst_array), 1.0E-15/k)
+    result = np.log(np.sum(np.exp(k * cst_array_limited), axis=1)) / k
 
     d_cst_array = np.ones(cst_array.shape)
     d_cst_array_limited = d_cst_array * \
-                          compute_dfunc_with_exp_min(np.abs(cst_array), 5.6E-17/k)
+                          compute_dfunc_with_exp_min(np.abs(cst_array), 1.0E-15/k)
     d_exp = k*d_cst_array_limited*np.exp(k*cst_array_limited)
     d_sum = d_exp
     d_log = (1/k) * (d_sum / np.sum(np.exp(k*cst_array_limited), axis=1).reshape(cst_array_limited.shape[0],1))
-
+    d_log = np.where(d_log>1E-20, d_log, 0.0)
     return d_log
