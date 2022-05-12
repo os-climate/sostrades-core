@@ -101,6 +101,7 @@ class SoSDiscipline(MDODiscipline):
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
+    NO_UNIT_TYPES = ['bool', 'string', 'string_list']
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}
     DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
@@ -607,6 +608,7 @@ class SoSDiscipline(MDODiscipline):
         for short_key, default_value in default_values_dict.items():
             if short_key in self._data_in:
                 ns_key = self.get_var_full_name(short_key, self._data_in)
+                self.dm.no_check_default_variables.append(ns_key)
                 self.dm.set_data(ns_key, self.DEFAULT, default_value, False)
             else:
                 self.logger.info(
