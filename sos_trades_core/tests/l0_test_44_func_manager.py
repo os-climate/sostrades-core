@@ -590,8 +590,8 @@ class TestFuncManager(unittest.TestCase):
         # -- ~GUI inputs: selection of functions
 
         func_df = pd.DataFrame(columns=['variable', 'ftype', 'weight', 'aggr'])
-        func_df['variable'] = ['ineq_cst','ineq_cst_array','eqcst_delta','eqcst_delta2',
-                               'eqcst_delta_array','eqcst_lintoquad','eqcst_lintoquad_array',
+        func_df['variable'] = ['ineq_cst', 'ineq_cst_array', 'eqcst_delta', 'eqcst_delta2',
+                               'eqcst_delta_array', 'eqcst_lintoquad', 'eqcst_lintoquad_array',
                                'obj1', 'obj2']
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
                             EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT,
@@ -631,8 +631,8 @@ class TestFuncManager(unittest.TestCase):
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
 
-        res = 100. * (outputs[OBJECTIVE][0] +
-                      outputs[INEQ_CONSTRAINT][0] +
+        res = 100. * (outputs[OBJECTIVE][0] + 
+                      outputs[INEQ_CONSTRAINT][0] + 
                       outputs[EQ_CONSTRAINT][0])
 
         disc_techno = ee.root_process.sos_disciplines[0]
@@ -649,4 +649,3 @@ class TestFuncManager(unittest.TestCase):
                                    outputs=['FuncManagerTest.FunctionManager.objective_lagrangian',
                                             'FuncManagerTest.FunctionManager.eq_constraint',
                                             ], derr_approx='complex_step')
->>>>>>> develop
