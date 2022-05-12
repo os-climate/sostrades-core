@@ -35,6 +35,7 @@ OPTIONAL = SoSDiscipline.OPTIONAL
 COUPLING = SoSDiscipline.COUPLING
 EDITABLE = SoSDiscipline.EDITABLE
 IO_TYPE = SoSDiscipline.IO_TYPE
+UNIT = SoSDiscipline.UNIT
 IO_TYPE_IN = SoSDiscipline.IO_TYPE_IN
 IO_TYPE_OUT = SoSDiscipline.IO_TYPE_OUT
 COMPOSED_OF = SoSDiscipline.COMPOSED_OF
@@ -680,6 +681,7 @@ class DataManager:
         for var_id in self.data_dict.keys():
             var_f_name = self.get_var_full_name(var_id)
             io_type = self.data_dict[var_id][IO_TYPE]
+            unit = self.data_dict[var_id][UNIT]
             vtype = self.data_dict[var_id][TYPE]
             optional = self.data_dict[var_id][OPTIONAL]
             value = self.data_dict[var_id][VALUE]
@@ -689,6 +691,12 @@ class DataManager:
             if vtype not in SoSDiscipline.VAR_TYPE_MAP.keys():
                 errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
                 self.logger.error(errors_in_dm_msg)
+
+            # check that the variable has a unit
+            if unit is None:
+                self.logger.warning(
+                    f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
+
             # check if data is and input and is not optional
             if io_type == IO_TYPE_IN and not optional:
                 if value is None:
@@ -788,4 +796,4 @@ class DataManager:
         for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
             if compare_data(data_name):
                 self.logger.warning(
-                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_disc_full_name(data1['model_origin'])} different from {data2[data_name]} in {self.get_disc_full_name(var_id)}")
+                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
