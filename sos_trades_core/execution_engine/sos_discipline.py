@@ -602,7 +602,7 @@ class SoSDiscipline(MDODiscipline):
                     if cache_file_path is not None:
                         self.dm.set_data(disc.get_var_full_name(
                             SoSDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path, check_value=False)
-            self._cache_inputs_have_changed = False
+            self._set_children_cache_inputs = False
 
     def setup_sos_disciplines(self):
         '''
