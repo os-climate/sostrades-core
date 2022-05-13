@@ -25,7 +25,7 @@ class ProcessBuilder(BaseProcessBuilder):
     '''
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Multiscenario Process OF SA',
+        'label': 'Core Test Multiscenario Process Of SA',
         'description': '',
         'category': '',
         'version': '',
