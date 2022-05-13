@@ -71,7 +71,6 @@ class ArchiBuilder(SoSDisciplineBuilder):
     ACTIVATION_DF = 'activation_df'
 
     DEFAULT_VB_FOLDER_LIST = ['sos_trades_core.sos_wrapping']
-    VB_FOLDER_LIST = []
 
     def __init__(self, sos_name, ee, architecture_df, custom_vb_folder_list=None):
         """
@@ -89,6 +88,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
         self.default_df_descriptor = None
         self.activation_columns = []
         self.activation_file_name_dict = {}
+        self.vb_folder_list = []
 
         # set the value block folder list as the custom one given as parameter
         full_vb_folder_list = []
@@ -101,7 +101,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
         for vb_folder in full_vb_folder_list:
             try:
                 import_module(vb_folder)
-                self.VB_FOLDER_LIST.append(vb_folder)
+                self.vb_folder_list.append(vb_folder)
             except:
                 pass
 
@@ -318,7 +318,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
                     builder_name = ns
 
                 disc_builder = self.ee.factory.get_builder_from_class_name(
-                    builder_name, row[self.TYPE], self.VB_FOLDER_LIST
+                    builder_name, row[self.TYPE], self.vb_folder_list
                 )
                 builder_dict[ns] = disc_builder
 
@@ -538,7 +538,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
                             # build first_scatter_builder on first scatter node
                             first_scatter_builder = (
                                 self.ee.factory.get_builder_from_class_name(
-                                    builder.sos_name, args[2], self.VB_FOLDER_LIST
+                                    builder.sos_name, args[2], self.vb_folder_list
                                 )
                             )
                             activ_builders = self.build_scatter_of_scatter(
@@ -552,7 +552,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
                     else:
                         # get builder of scatter
                         scatter_builder = self.ee.factory.get_builder_from_class_name(
-                            namespace, args[1], self.VB_FOLDER_LIST
+                            namespace, args[1], self.vb_folder_list
                         )
                         activ_builders = self.build_action_scatter(
                             namespace, args[0], scatter_builder, builder_name
@@ -607,7 +607,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
 
                     # get builders of scatter_architecture
                     scatter_builder_cls = self.ee.factory.get_builder_from_class_name(
-                        namespace, args[1], self.VB_FOLDER_LIST
+                        namespace, args[1], self.vb_folder_list
                     )
                     activ_builders = self.get_scatter_builder(
                         namespace,
@@ -651,7 +651,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
         """
         if args[1][0] == 'scatter':
             subscatter_builder = self.ee.factory.get_builder_from_class_name(
-                namespace, args[1][2], self.VB_FOLDER_LIST
+                namespace, args[1][2], self.vb_folder_list
             )
             scatter_builder = self.build_action_scatter(
                 namespace, args[1][1], subscatter_builder, builder_name
