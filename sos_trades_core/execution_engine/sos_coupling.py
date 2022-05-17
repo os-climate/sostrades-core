@@ -536,10 +536,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if isinstance(mda, MDASequential):
             for sub_mda in mda.mda_sequence:
                 self.set_epsilon0_and_cache(sub_mda)
-        else:
-            mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
-            self.set_cache(mda, self.get_sosdisc_inputs(
-                'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+        mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
+        self.set_cache(mda, self.get_sosdisc_inputs(
+            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
     @property
     def ordered_disc_list(self):
