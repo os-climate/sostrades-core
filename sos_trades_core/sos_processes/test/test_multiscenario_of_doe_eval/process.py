@@ -1,5 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
+Copyright 2022 Airbus SA
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ limitations under the License.
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 class ProcessBuilder(BaseProcessBuilder):
-    '''This test_multiscenario_of_SA specify an example of a multiscenario
+    '''This test_multiscenario_of_DoE_Eval specify an example of a multiscenario
      of Sensitivity Analysis process.
     It uses the 2 wrapped disciplines : disc1_scenario.Disc1 (orchectrated by the
      test_disc1_scenario process) and disc3_scenario.Disc3.
     '''
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Multiscenario Process Of SA',
+        'label': 'Core Test Multiscenario Process OF DoE_Eval',
         'description': '',
         'category': '',
         'version': '',
@@ -50,7 +50,7 @@ class ProcessBuilder(BaseProcessBuilder):
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
                         'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
+                        'ns_to_update': ['ns_disc3', 'ns_doe_eval', 'ns_barrierr', 'ns_out_disc3']}
         self.ee.smaps_manager.add_build_map(
             'scenario_list', scenario_map)
         # shared namespace
@@ -63,21 +63,19 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_out_disc3', f'{self.ee.study_name}.multi_scenarios')
         self.ee.ns_manager.add_ns(
             'ns_data_ac', self.ee.study_name)
+        self.ee.ns_manager.add_ns(
+            'ns_doe_eval', f'{self.ee.study_name}.multi_scenarios.DoE_Eval')
         # instantiate factory # get instantiator from Discipline class
         builder_list = self.ee.factory.get_builder_from_process(repo=repo,
                                                            mod_id='test_disc1_scenario')
         scatter_list = self.ee.factory.create_multi_scatter_builder_from_list(
             'name_list', builder_list=builder_list, autogather=False)
-            # Choose of  autogather to False as in tests folder
         mod_path = f'{base_path}.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
             'Disc3', mod_path)
         scatter_list.append(disc3_builder)
-        # Begin : added SA step as regard to the standard multiscenarion process test_multiscenario
-        sa_builder = self.ee.factory.create_evaluator_builder(
-            'SA', 'sensitivity', scatter_list)
-        # End : added SA step as regard to the standard multiscenarion process test_multiscenario
+        doe_eval_builder = self.ee.factory.create_evaluator_builder(
+            'DoE_Eval', 'doe_eval', scatter_list)
         multi_scenarios = self.ee.factory.create_multi_scenario_builder(
-            'multi_scenarios', 'scenario_list', [sa_builder], autogather=False)
-            # Choose of  autogather to False as as in tests folder
+            'multi_scenarios', 'scenario_list', [doe_eval_builder], autogather=False)
         return multi_scenarios

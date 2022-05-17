@@ -693,7 +693,7 @@ class DataManager:
                 self.logger.error(errors_in_dm_msg)
 
             # check that the variable has a unit
-            if unit is None:
+            if unit is None and vtype not in SoSDiscipline.NO_UNIT_TYPES:
                 self.logger.warning(
                     f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
 
