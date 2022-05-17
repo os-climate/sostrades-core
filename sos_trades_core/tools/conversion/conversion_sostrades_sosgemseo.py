@@ -215,13 +215,18 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                     except:
                         subtype = None
 
-                if metadata_list is None:
+                # TODO : remove this when we get rid of df_dict type
+                if _type =='dict' and  metadata_list is None:
                     raise ValueError(
                         f' Variable {key} cannot be converted since no metadata is available')
                 new_data = {}
                 if subtype is None :
-                    local_data_updt[key] = convert_array_into_dict_old_version(
-                        to_convert, new_data, deepcopy(metadata_list))
+                    if _type == 'dict':
+                        local_data_updt[key] = convert_array_into_dict_old_version(
+                            to_convert, new_data, deepcopy(metadata_list))
+                    #TODO : remove this when we get rid of df_dict type
+                    else :
+                        local_data_updt[key] = np.array([0])
                 else :
                     check_subtype(key, subtype, 'dict')
                     local_data_updt[key] = convert_array_into_dict(

@@ -1357,14 +1357,16 @@ class SoSDiscipline(MDODiscipline):
             full_var_name = self.get_var_full_name(
                 var_name, self.get_data_io_dict(io_type))
             var_type_id = value[self.VAR_TYPE_ID]
-            # if var type not covered by GEMS
-            if var_type_id not in self.VAR_TYPE_GEMS:
-                # if var type covered by available extended types
-                if var_type_id in self.NEW_VAR_TYPE:
-                    filtered_keys.append(full_var_name)
-            else:
-                filtered_keys.append(full_var_name)
-            #filtered_keys.append(full_var_name)
+            #if var_type_id not in ['df_dict']:
+            filtered_keys.append(full_var_name)
+            #if var type not covered by GEMS
+            # if var_type_id not in self.VAR_TYPE_GEMS:
+            #     # if var type covered by available extended types
+            #     if var_type_id in self.NEW_VAR_TYPE:
+            #         filtered_keys.append(full_var_name)
+            # else:
+            #     filtered_keys.append(full_var_name)
+
         return filtered_keys
 
     def delete_numerical_parameters_for_gems(self, var_name):
@@ -1684,19 +1686,28 @@ class SoSDiscipline(MDODiscipline):
             wait_time_between_fork,
         )
         if inputs is None:
-            inputs = self.get_input_data_names()
+            inputs = self._filter_variables_to_convert(self.get_input_data_names())
         if outputs is None:
-            outputs = self.get_output_data_names()
+            outputs = self._filter_variables_to_convert(self.get_output_data_names())
+
 
         if auto_set_step:
             approx.auto_set_step(outputs, inputs, print_errors=True)
 
         # Differentiate analytically
-        self.add_differentiated_inputs(inputs)
-        self.add_differentiated_outputs(outputs)
+        #self.add_differentiated_inputs(inputs)
+        #self.add_differentiated_outputs(outputs)
+        self._differentiated_inputs = inputs
+        self._differentiated_outputs = outputs
         self.linearization_mode = linearization_mode
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
+        if input_data is None:
+            input_data = {}
+            for data_name in inputs:
+                input_data[data_name] = self.ee.dm.get_value(data_name)
+            input_data = self._convert_new_type_into_array(
+                var_dict=input_data)
         self.linearize(input_data)
 
         if input_column is None and output_column is None:
