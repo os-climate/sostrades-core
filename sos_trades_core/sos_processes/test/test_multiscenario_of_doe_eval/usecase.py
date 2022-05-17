@@ -27,7 +27,7 @@ class Study(StudyManager):
     '''
 
     def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine, run_usecase=False)
+        super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
         ######### Numerical values   ####
