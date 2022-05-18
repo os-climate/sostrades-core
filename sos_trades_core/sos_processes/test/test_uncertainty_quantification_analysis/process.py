@@ -33,7 +33,8 @@ class ProcessBuilder(BaseProcessBuilder):
         uncertainty_quantification = 'UncertaintyQuantification'
 
         ns_dict = {
-            'ns_uncertainty_quantification': f'{self.ee.study_name}.UncertaintyQuantification'}
+            'ns_uncertainty_quantification': f'{self.ee.study_name}.UncertaintyQuantification',
+            'ns_grid_search': f'{self.ee.study_name}.UncertaintyQuantification'}
         self.ee.ns_manager.add_ns_def(ns_dict)
 
         mod_path = 'sos_trades_core.sos_wrapping.analysis_discs.uncertainty_quantification.UncertaintyQuantification'

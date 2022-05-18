@@ -869,7 +869,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -883,7 +883,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -897,7 +897,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\n \t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
+            print("\t | n_calls: " + str(disc.n_calls) + 
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -1084,14 +1084,14 @@ class TestCache(unittest.TestCase):
         self.study_name = 'SoSDisc'
 
         eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.j', ['selected_input']] = True
 
         eval_outputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        eval_outputs.loc[eval_outputs['full_name'] == 
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dspace = pd.DataFrame({
@@ -1243,14 +1243,14 @@ class TestCache(unittest.TestCase):
         self.study_name = 'SoSDisc'
 
         eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.j', ['selected_input']] = True
 
         eval_outputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        eval_outputs.loc[eval_outputs['full_name'] == 
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dspace = pd.DataFrame({
@@ -1347,9 +1347,72 @@ class TestCache(unittest.TestCase):
 
         # check that grid search has run since the subprocess has changed
         self.assertEqual(n_call_grid_search_3, n_call_grid_search_2 + 1)
+        
+    def test_15_set_recursive_cache_scatter(self):
+
+        ns_dict = {'ns_ac': self.name}
+
+        self.ee.ns_manager.add_ns_def(ns_dict)
+
+        mydict_build = {'input_name': 'name_list',
+                        'input_type': 'string_list',
+                        'input_ns': 'ns_barrierr',
+                        'output_name': 'ac_name',
+                        'scatter_ns': 'ns_ac'}
+        self.ee.ns_manager.add_ns('ns_barrierr', self.name)
+
+        self.ee.smaps_manager.add_build_map('name_list', mydict_build)
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc1.Disc1'
+        builder_list = self.factory.get_builder_from_module('Disc1', mod_list)
+
+        scatter_builder = self.ee.factory.create_scatter_builder(
+            'scatter', 'name_list', builder_list)
+
+        self.ee.factory.set_builders_to_coupling_builder(scatter_builder)
+        
+        self.ee.configure()
+        self.ee.display_treeview_nodes()
+
+        dict_values = {self.name + '.name_list': ['name_1', 'name_2'],
+                       self.name + '.scatter.name_1.x': 1,
+                       self.name + '.scatter.name_1.a': 2,
+                       self.name + '.scatter.name_1.b': 3,
+                       self.name + '.scatter.name_2.x': 2,
+                       self.name + '.scatter.name_2.a': 0,
+                       self.name + '.scatter.name_2.b': 5,
+                       self.name + '.cache_type': 'SimpleCache'}
+        self.ee.load_study_from_input_dict(dict_values)
+        
+        for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
+            self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
+            
+        for disc in self.ee.factory.sos_disciplines:
+            self.assertTrue(disc.cache.__class__.__name__, 'SimpleCache')
+            
+        dict_values = {self.name + '.cache_type': 'None'}
+        self.ee.load_study_from_input_dict(dict_values)
+        
+        for disc in self.ee.factory.sos_disciplines:
+            self.assertTrue(disc.cache.__class__.__name__, None)
+            
+        dict_values = {self.name + '.scatter.name_1.cache_type': 'SimpleCache'}
+        self.ee.load_study_from_input_dict(dict_values)
+        
+        for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
+            if 'name_1' in cache_input:
+                self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
+            else:
+                self.assertTrue(self.ee.dm.get_value(cache_input), 'None')
+                
+        dict_values = {self.name + '.cache_type': 'SimpleCache',
+                       self.name + '.scatter.name_1.cache_type': 'None'}
+        self.ee.load_study_from_input_dict(dict_values)
+        
+        for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
+            self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
 
 
 if __name__ == "__main__":
     cls = TestCache()
     cls.setUp()
-    cls.test_11_recursive_cache_activation()
+    cls.test_15_set_recursive_cache_scatter()

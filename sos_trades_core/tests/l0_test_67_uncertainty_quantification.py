@@ -44,7 +44,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.ee = ExecutionEngine(self.name)
         self.factory = self.ee.factory
 
-    def _test_01_uncertainty_quantification(self):
+    def test_01_uncertainty_quantification(self):
         repo = 'sos_trades_core.sos_processes.test'
         mod_path = 'sos_trades_core.sos_wrapping.analysis_discs.uncertainty_quantification'
 
@@ -94,11 +94,11 @@ class TestUncertaintyQuantification(unittest.TestCase):
                             'full_name': ['output1', 'output2', 'output3']}
 
         dspace = pd.DataFrame({
-            'shortest_name': ['COC','RC', 'NRC'],
-            'lower_bnd': [85., 80.,80.],
-            'upper_bnd': [105., 120.,120.],
-            'nb_points': [10, 10,10],
-            'full_name': ['COC', 'RC','NRC'],
+            'shortest_name': ['COC', 'RC', 'NRC'],
+            'lower_bnd': [85., 80., 80.],
+            'upper_bnd': [105., 120., 120.],
+            'nb_points': [10, 10, 10],
+            'full_name': ['COC', 'RC', 'NRC'],
         })
 
         private_values = {
@@ -127,7 +127,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # for graph in graph_list:
         #     graph.to_plotly().show()
 
-    def _test_02_uncertainty_quantification_from_grid_search(self):
+    def test_02_uncertainty_quantification_from_grid_search(self):
         """In this test we prove the ability to couple a grid search and an uq
         """
         proc_name = 'test_coupling_doe_uq'
@@ -144,7 +144,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.study_name = 'Test'
 
-        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -182,7 +183,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
             # UQ
             # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
-            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
+            # f'{self.study_name}.{self.grid_search}.samples_outputs_df':
+            # samples_outputs_df,
         }
 
         self.ee.load_study_from_input_dict(dict_values)
@@ -203,7 +205,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out_df = uq_disc_output['output_interpolated_values_df']
         print("bonjour")
 
-    def _test_03_simple_cache_on_grid_search_uq_process(self):
+    def test_03_simple_cache_on_grid_search_uq_process(self):
         """In this test we prove the ability of the cache to work properly on a grid search
         First, we create a process made of a coupling of a grid search and an uq on the grid search's output
         Then we activate the cache , change one uq input while maintaining grid search inputs  and run the process.
@@ -220,11 +222,11 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         print(self.ee.display_treeview_nodes())
 
-
         self.grid_search = 'GridSearch'
         self.study_name = 'Test'
 
-        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -262,7 +264,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
             # UQ
             # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
-            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
+            # f'{self.study_name}.{self.grid_search}.samples_outputs_df':
+            # samples_outputs_df,
         }
 
         self.ee.load_study_from_input_dict(dict_values)
@@ -274,7 +277,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}')[0]
 
         # check cache is None
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(
+            grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(uq_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
@@ -302,11 +306,16 @@ class TestUncertaintyQuantification(unittest.TestCase):
         dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(dict_values)
 
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
-        self.assertEqual(uq_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
-        self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs(
+            'cache_type'), 'SimpleCache')
+        self.assertEqual(uq_disc.get_sosdisc_inputs(
+            'cache_type'), 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
@@ -338,7 +347,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.assertEqual(n_call_grid_search_3, n_call_grid_search_2)
         self.assertEqual(n_call_uq_3, n_call_uq_2 + 1)
 
-        # Fourth execute with a change of a grid_search parameter and no change on uq
+        # Fourth execute with a change of a grid_search parameter and no change
+        # on uq
         dict_values[f'{self.study_name}.{self.grid_search}.wait_time_between_fork'] = 5.0
         self.ee.load_study_from_input_dict(dict_values)
         res_4 = self.ee.execute()
@@ -349,7 +359,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         # check that grid search has run and uq hasn't
         self.assertEqual(n_call_grid_search_4, n_call_grid_search_3 + 1)
-        self.assertEqual(n_call_uq_4, n_call_uq_3 )
+        self.assertEqual(n_call_uq_4, n_call_uq_3)
 
         # Fifth execute with a change of a common input
         eval_outputs_2 = self.ee.dm.get_value('Test.GridSearch.eval_outputs')
@@ -374,7 +384,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.ee.load_study_from_input_dict(dict_values)
 
         # check cache is None
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(
+            grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(uq_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
@@ -387,13 +398,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
         n_call_grid_search_6 = grid_search_disc.n_calls
         n_call_uq_6 = uq_disc.n_calls
 
-        # check that both grid search and uq have run since there is no more cache
+        # check that both grid search and uq have run since there is no more
+        # cache
         self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
         self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
-
-
-
-
 
 
 if '__main__' == __name__:

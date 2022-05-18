@@ -638,22 +638,25 @@ class FunctionManagerDisc(SoSDiscipline):
         # if col != 'years':
         valcol = value_df
 
-        cst_result = np.zeros_like(valcol)
+        dcst_result = np.zeros_like(valcol)
         # ---get value of espilon2
         smooth_log = self.get_sosdisc_inputs('smooth_log')
         eps2 = self.get_sosdisc_inputs('eps2')
         for iii, val in enumerate(valcol):
             if val > eps:
                 # res = res0 + val ** 2 - eps ** 2
-                res = 2.0 * val
-            elif val < 0.0:
+                dres = 2.0 * val
+            elif -eps < val < 0.0:
                 # res = eps * (np.exp(-val) - 1.)
-                res = -eps * np.exp(-val)
+                dres = -eps * np.exp(-val)
+            elif val < -eps:
+                #res= res0 + (-val) - eps
+                dres = -np.ones(len(val))
             else:
                 # res = eps * (np.exp(val) - 1.)
-                res = eps * np.exp(val)
-            cst_result[iii] = res
-        grad_value.extend(cst_result)
+                dres = eps * np.exp(val)
+            dcst_result[iii] = dres
+        grad_value.extend(dcst_result)
         return grad_value
 
     def check_isnan_inf(self, key_, value_):
