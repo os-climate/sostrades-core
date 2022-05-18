@@ -24,7 +24,7 @@ class Study(StudyManager):
     It uses the 2 wrapped disciplines : disc1_scenario.Disc1
      (orchestrated by the test_disc1_scenario process) and disc3_scenario.Disc3.
     '''
-    def __init__(self, execution_engine=None):
+    def __init__(self, execution_engine=None, run_usecase=False):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
