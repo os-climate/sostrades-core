@@ -85,7 +85,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
         POSSIBLE_VALUES_PRECONDITIONER = [
-                                             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
 
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
@@ -96,19 +96,18 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         'sub_mda_class': {SoSDiscipline.TYPE: 'string',
                           SoSDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
                                                           'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-                                                          'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
-                                                          'GSPureNewtonorGSMDA'],
+                                                          'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential', 'GSPureNewtonorGSMDA'],
                           SoSDiscipline.DEFAULT: 'MDAJacobi', SoSDiscipline.NUMERICAL: True,
                           SoSDiscipline.STRUCTURING: True},
         'max_mda_iter': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 30, SoSDiscipline.NUMERICAL: True,
-                         SoSDiscipline.STRUCTURING: True},
+                         SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         'n_processes': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
-                        SoSDiscipline.STRUCTURING: True},
+                        SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         'chain_linearize': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
                             SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True,
                             SoSDiscipline.STRUCTURING: True},
         'tolerance': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.e-6, SoSDiscipline.NUMERICAL: True,
-                      SoSDiscipline.STRUCTURING: True},
+                      SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         'use_lu_fact': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
                         SoSDiscipline.DEFAULT: False, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'warm_start': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
@@ -118,18 +117,18 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
                          SoSDiscipline.STRUCTURING: True},
         'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
-                                 SoSDiscipline.STRUCTURING: True},
+                                 SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
-                                    SoSDiscipline.STRUCTURING: True},
+                                    SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # 'max_mda_iter_gs': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 5, SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'tolerance_gs': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 10.0, SoSDiscipline.NUMERICAL: True,
-                         SoSDiscipline.STRUCTURING: True},
+                         SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         'relax_factor': {SoSDiscipline.TYPE: 'float', SoSDiscipline.RANGE: [0.0, 1.0], SoSDiscipline.DEFAULT: 0.99,
-                         SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+                         SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # NUMERICAL PARAMETERS OUT OF INIT
         'epsilon0': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.0e-6, SoSDiscipline.NUMERICAL: True,
-                     SoSDiscipline.STRUCTURING: True},
+                     SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # Linear solver for MD0
         'linear_solver_MDO': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
                               SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True,
@@ -139,7 +138,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                              SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
                                              SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'linear_solver_MDO_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
-                                      SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+                                      SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # Linear solver for MDA
         'linear_solver_MDA': {SoSDiscipline.TYPE: 'string', SoSDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
                               SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER, SoSDiscipline.NUMERICAL: True,
@@ -149,7 +148,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                              SoSDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
                                              SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
         'linear_solver_MDA_options': {SoSDiscipline.TYPE: 'dict', SoSDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
-                                      SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True},
+                                      SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # group all disciplines in a MDOChain
         'group_mda_disciplines': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.POSSIBLE_VALUES: [True, False],
                                   SoSDiscipline.DEFAULT: False, SoSDiscipline.USER_LEVEL: 3,
@@ -225,7 +224,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                          ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
                         self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
@@ -244,7 +243,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                          ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
                         self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
@@ -271,6 +270,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         - configure all children disciplines
 
         '''
+        if self._data_in != {}:
+            if self._structuring_variables[SoSDiscipline.CACHE_TYPE] != self.get_sosdisc_inputs(SoSDiscipline.CACHE_TYPE) or self._structuring_variables[SoSDiscipline.CACHE_FILE_PATH] != self.get_sosdisc_inputs(SoSDiscipline.CACHE_FILE_PATH):
+                self._cache_inputs_have_changed = True
+
         SoSDiscipline.configure(self)
 
         disc_to_configure = self.get_disciplines_to_configure()
@@ -278,6 +281,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
         else:
+            self.set_children_cache_inputs()
             self.set_configure_status(True)
 
         for disc in disc_to_configure:
@@ -304,7 +308,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Return False if at least one sub discipline needs to be configured, True if not
         '''
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
-                self.get_disciplines_to_configure() == [])
+            self.get_disciplines_to_configure() == [])
 
     def configure_execution(self):
         '''
@@ -335,7 +339,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             # keep numerical inputs in data_in
             self._data_in = {key: value for key, value in self._data_in.items(
             ) if
-                             key in self.DESC_IN or key in self.NUM_DESC_IN}
+                key in self.DESC_IN or key in self.NUM_DESC_IN}
             # add coupling inputs in data_in
             gems_grammar_in_keys = self.input_grammar.get_data_names()
             for var_f_name in gems_grammar_in_keys:
@@ -435,12 +439,16 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                           disciplines=self.sos_disciplines,
                           name=self.sos_name,
                           grammar_type=self.SOS_GRAMMAR_TYPE,
-                          **num_data)
+                          ** num_data)
 
-        # TODO: pass cache to MDAChain init to avoid reset cache, idem for MDOChain
+        # TODO: pass cache to MDAChain init to avoid reset cache, idem for
+        # MDOChain
         self.cache = cache
-        self.set_cache(self.mdo_chain, self.get_sosdisc_inputs('cache_type'),
-                       self.get_sosdisc_inputs('cache_file_path'))
+        self.set_cache(self.mdo_chain, self.get_sosdisc_inputs(
+            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+
+        # Check variables mismatch between coupling disciplines
+        self.check_var_data_mismatch()
 
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
@@ -485,11 +493,11 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             preconditioner = copy(self.get_sosdisc_inputs(
                 'linear_solver_MDA_preconditioner'))
             linear_solver_options_MDA['preconditioner_type'] = (
-                                                                       preconditioner != 'None') * preconditioner or None
+                preconditioner != 'None') * preconditioner or None
         else:
             # Scipy case / gmres
             linear_solver_options_MDA['use_ilu_precond'] = (
-                    copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
+                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
 
         num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
             'tol')
@@ -511,10 +519,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             preconditioner = self.get_sosdisc_inputs(
                 'linear_solver_MDO_preconditioner')
             linear_solver_options_MDO['preconditioner_type'] = (
-                                                                       preconditioner != 'None') * preconditioner or None
+                preconditioner != 'None') * preconditioner or None
         else:
             linear_solver_options_MDO['use_ilu_precond'] = (
-                    self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
+                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
 
         self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
         self.linear_solver_options_MDO = linear_solver_options_MDO
@@ -528,9 +536,9 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if isinstance(mda, MDASequential):
             for sub_mda in mda.mda_sequence:
                 self.set_epsilon0_and_cache(sub_mda)
-        else:
-            mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
-            self.set_cache(mda, self.get_sosdisc_inputs('cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+        mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
+        self.set_cache(mda, self.get_sosdisc_inputs(
+            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
     @property
     def ordered_disc_list(self):
@@ -587,6 +595,44 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             df.to_csv(f_name, index=False)
         else:
             return df
+
+    def check_var_data_mismatch(self):
+        '''
+        Check if a variable data is not coherent between two coupling disciplines
+
+        The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
+        the list of data_to_check is defined in SoSDiscipline
+        '''
+
+        coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
+        for from_disc, to_disc, c_vars in coupling_vars:
+            for var in c_vars:
+                # from disc is in output
+                from_disc_data = from_disc.get_data_with_full_name(
+                    self.IO_TYPE_OUT, var)
+                # to_disc is in input
+                to_disc_data = to_disc.get_data_with_full_name(
+                    self.IO_TYPE_IN, var)
+                for data_name in self.DATA_TO_CHECK:
+                    # Check if data_names are different
+                    if from_disc_data[data_name] != to_disc_data[data_name]:
+                        self.logger.warning(
+                            f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
+                    # Check if unit is not None
+                    elif from_disc_data[data_name] is None and data_name == self.UNIT:
+                        # if unit is None in a dataframe check if there is a
+                        # dataframe descriptor with unit in it
+                        if from_disc_data[self.TYPE] == 'dataframe':
+                            # if no dataframe descriptor and no unit warning
+                            if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
+                                self.logger.warning(
+                                    f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
+# TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
+#                             else :
+#                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
+                        else:
+                            self.logger.warning(
+                                f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
 
     def run(self):
         '''
@@ -886,7 +932,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
         rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
         rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
-
+        rdict[self.RESIDUALS_HISTORY][self.UNIT] = '-'
         # init other fields
         full_out = self._prepare_data_dict(self.IO_TYPE_OUT, rdict)
         self.dm.update_with_discipline_dict(
