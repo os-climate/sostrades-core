@@ -25,7 +25,7 @@ class Study(StudyManager):
      (orchestrated by the test_disc1_scenario process) and disc3_scenario.Disc3.
     '''
     def __init__(self, execution_engine=None, run_usecase=False):
-        super().__init__(__file__, execution_engine=execution_engine)
+        super().__init__(__file__, execution_engine=execution_engine, run_usecase=run_usecase)
 
     def setup_usecase(self):
 
