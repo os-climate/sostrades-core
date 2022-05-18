@@ -1351,9 +1351,9 @@ class SoSDiscipline(MDODiscipline):
         for var_name, value in full_dict.items():
             # Check if the param is a numerical parameter (function overload in
             # soscoupling)
-            if self.delete_numerical_parameters_for_gems(
-                    var_name):
-                continue
+            # if self.delete_numerical_parameters_for_gems(
+            #         var_name):
+            #     continue
             # Get the full var name
             full_var_name = self.get_var_full_name(
                 var_name, self.get_data_io_dict(io_type))
