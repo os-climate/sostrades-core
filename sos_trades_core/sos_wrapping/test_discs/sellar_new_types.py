@@ -31,11 +31,13 @@ class SellarProblem(SoSDiscipline):
     """ Sellar Optimization Problem functions
     """
     _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_1': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'local_dv': {'type': 'float'}}
+    DESC_IN = {
+        'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+              'namespace': 'ns_OptimSellar'},
+        'y_1': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'local_dv': {'type': 'float'}}
 
     DESC_OUT = {'c_1': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                 'c_2': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
@@ -70,7 +72,7 @@ class SellarProblem(SoSDiscipline):
         :rtype: float
         """
         out = x['value'][0] ** 2 + z[1] + \
-            y_1['value'].values[0] + exp(-y_2['value'].values[0])
+              y_1['value'].values[0] + exp(-y_2['value'].values[0])
         return np.array([out])
 
     @staticmethod
@@ -107,7 +109,7 @@ class SellarProblem(SoSDiscipline):
         """
         # Initialize all matrices to zeros
 
-        x, y_2 = self.get_sosdisc_inputs(['x',  'y_2'])
+        x, y_2 = self.get_sosdisc_inputs(['x', 'y_2'])
 
         self.set_partial_derivative_for_other_types(
             ('c_1',), ('y_1', 'value'), [- 1.0, 0.0, 0.0, 0.0])
@@ -134,8 +136,9 @@ class Sellar1Df(SoSDiscipline):
     """ Discipline 1
     """
     _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+    DESC_IN = {'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'y_2': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                       'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'dataframe',
@@ -166,8 +169,9 @@ class Sellar1Df(SoSDiscipline):
         i = 0
         y_2['years'] = y_2['years'].astype('int64')
         for year in out['years']:
-            out.loc[out['years'] == year, 'value'] = z[0] ** 2 + x['value'][i] + z[1] - 0.2 * y_2.loc[y_2['years'] == year,
-                                                                                                      'value'].values[0]
+            out.loc[out['years'] == year, 'value'] = z[0] ** 2 + x['value'][i] + z[1] - 0.2 * \
+                                                     y_2.loc[y_2['years'] == year,
+                                                             'value'].values[0]
             i += 1
         return out
 
@@ -189,7 +193,7 @@ class Sellar1Df(SoSDiscipline):
             ('y_1', 'value'), ('x', 'value'), np.identity(lines_nb))
 
         self.set_partial_derivative_for_other_types(
-            ('y_1', 'value'), ('z',),  [[2.0 * z[0], 1.0] for i in range(lines_nb)])
+            ('y_1', 'value'), ('z',), [[2.0 * z[0], 1.0] for i in range(lines_nb)])
 
         self.set_partial_derivative_for_other_types(
             ('y_1', 'value'), ('y_2', 'value'), -0.2 * np.identity(lines_nb))
@@ -213,8 +217,9 @@ class Sellar2Df(SoSDiscipline):
         'version': '',
     }
     _maturity = 'Fake'
-    DESC_IN = {'y_1': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {
+        'y_1': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'dataframe',
                         'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -247,7 +252,6 @@ class Sellar2Df(SoSDiscipline):
         return out
 
     def compute_sos_jacobian(self):
-
         y_1 = self.get_sosdisc_inputs('y_1')
 
         lines_nb = len(np.arange(1, 5))
