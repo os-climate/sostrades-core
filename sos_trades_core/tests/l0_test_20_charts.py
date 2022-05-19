@@ -109,6 +109,7 @@ class TestChartTemplate(unittest.TestCase):
         dict_series['visible'] = False
         dict_series['y_axis'] = 'y'
         dict_series['custom_data'] = ''
+        dict_series['marker_symbol'] = 'circle'
 
         dict_obj['series'] = [dict_series]
 
@@ -137,7 +138,7 @@ class TestChartTemplate(unittest.TestCase):
         serie_lines = InstanciatedSeries(
             x_line, y_line, 'line serie', InstanciatedSeries.LINES_DISPLAY)
         serie_scatter = InstanciatedSeries(
-            x_scatter, y_scatter, 'scatter serie', InstanciatedSeries.SCATTER_DISPLAY)
+            x_scatter, y_scatter, 'scatter serie', InstanciatedSeries.SCATTER_DISPLAY, marker_symbol='cross')
 
         from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
 
@@ -151,6 +152,7 @@ class TestChartTemplate(unittest.TestCase):
         chart.add_series(serie_scatter)
         chart.add_series(serie_bar)
         chart.to_plotly()
+
 
     def test_05_create_2D_axes_cumulative_bar_chart(self):
 
