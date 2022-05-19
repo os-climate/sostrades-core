@@ -205,7 +205,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out_df = uq_disc_output['output_interpolated_values_df']
         print("bonjour")
 
-    def test_03_simple_cache_on_grid_search_uq_process(self):
+    def _test_03_simple_cache_on_grid_search_uq_process(self):
         """In this test we prove the ability of the cache to work properly on a grid search
         First, we create a process made of a coupling of a grid search and an uq on the grid search's output
         Then we activate the cache , change one uq input while maintaining grid search inputs  and run the process.
