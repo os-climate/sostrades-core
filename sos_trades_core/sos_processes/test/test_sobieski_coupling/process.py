@@ -44,7 +44,7 @@ class ProcessBuilder(BaseProcessBuilder):
         ns_dict = {'ns_OptimSobieski': self.ee.study_name}
         self.ee.ns_manager.add_ns_def(ns_dict)
         
-        disc_list=[disc0_builder,disc1_builder,disc2_builder,disc2_builder]
+        disc_list=[disc0_builder,disc1_builder,disc2_builder,disc3_builder]
         coupling_builder = self.ee.factory.create_builder_coupling("SobieskyCoupling")
         coupling_builder.set_builder_info('cls_builder', disc_list)
         coupling_builder.set_builder_info('with_data_io', True)

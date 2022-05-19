@@ -35,6 +35,7 @@ OPTIONAL = SoSDiscipline.OPTIONAL
 COUPLING = SoSDiscipline.COUPLING
 EDITABLE = SoSDiscipline.EDITABLE
 IO_TYPE = SoSDiscipline.IO_TYPE
+UNIT = SoSDiscipline.UNIT
 IO_TYPE_IN = SoSDiscipline.IO_TYPE_IN
 IO_TYPE_OUT = SoSDiscipline.IO_TYPE_OUT
 COMPOSED_OF = SoSDiscipline.COMPOSED_OF
@@ -94,6 +95,7 @@ class DataManager:
         self.data_cache = {}
         self.disciplines_dict = {}
         self.disciplines_id_map = {}
+        self.no_check_default_variables = []
 
     def get_data(self, var_f_name, attr=None):
         ''' Get attr value of var_f_name or all data_dict value of var_f_name (if attr=None)
@@ -386,8 +388,8 @@ class DataManager:
                     if self.data_dict[var_id][IO_TYPE] != IO_TYPE_OUT:
                         # Before linking check if var data in the DM and in the
                         # disc are coherent
-                        self.check_var_data_mismatch(
-                            var_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
+                        self.check_var_data_input_mismatch(
+                            var_name, var_f_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
 
                         # reference the parameter from the data manager to the
                         # discipline
@@ -679,6 +681,7 @@ class DataManager:
         for var_id in self.data_dict.keys():
             var_f_name = self.get_var_full_name(var_id)
             io_type = self.data_dict[var_id][IO_TYPE]
+            unit = self.data_dict[var_id][UNIT]
             vtype = self.data_dict[var_id][TYPE]
             optional = self.data_dict[var_id][OPTIONAL]
             value = self.data_dict[var_id][VALUE]
@@ -688,6 +691,12 @@ class DataManager:
             if vtype not in SoSDiscipline.VAR_TYPE_MAP.keys():
                 errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
                 self.logger.error(errors_in_dm_msg)
+
+            # check that the variable has a unit
+            if unit is None and vtype not in SoSDiscipline.NO_UNIT_TYPES:
+                self.logger.warning(
+                    f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
+
             # check if data is and input and is not optional
             if io_type == IO_TYPE_IN and not optional:
                 if value is None:
@@ -768,11 +777,23 @@ class DataManager:
                 f'DataManager contains *value errors*: {errors_in_dm_msg}')
         return has_errors_in_dm
 
-    def check_var_data_mismatch(self, var_name, var_id, data1, data2):
+    def check_var_data_input_mismatch(self, var_name, var_f_name, var_id, data1, data2):
         '''
-        Check a mismatch between two dicts 
+        Check a mismatch between two dicts (which are data dict for the same input shared by two variables 
+        By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed 
         '''
+
+        def compare_data(data_name):
+
+            if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:
+                return str(data1[data_name]) != str(
+                    data2[data_name]) or data1[data_name] is None
+            elif var_f_name in self.no_check_default_variables:
+                return False
+            else:
+                return str(data1[data_name]) != str(data2[data_name])
+
         for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
-            if str(data1[data_name]) != str(data2[data_name]):
+            if compare_data(data_name):
                 self.logger.warning(
-                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_disc_full_name(data1['model_origin'])} different from {data2[data_name]} in {self.get_disc_full_name(var_id)}")
+                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")

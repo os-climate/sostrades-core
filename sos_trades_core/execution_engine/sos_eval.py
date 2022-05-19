@@ -212,6 +212,9 @@ class SoSEval(SoSDisciplineBuilder):
             # Extract variables for eval analysis
             if len(self.sos_disciplines) > 0:
                 self.set_eval_possible_values()
+                
+        if len(self.get_disciplines_to_configure()) == 0:
+            self.set_children_cache_inputs()
 
     def is_configured(self):
         '''
@@ -332,7 +335,7 @@ class SoSEval(SoSDisciplineBuilder):
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
 
-            for i in tqdm(range(len(samples)), ncols=100,  position=0):
+            for i in tqdm(range(len(samples)), ncols=100, position=0):
                 time.sleep(0.5)
                 self.logger.info(f'   Scenario_{str(i + 1)} is running.')
                 x = samples[i]
@@ -424,7 +427,7 @@ class SoSEval(SoSDisciplineBuilder):
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
                 eval_out_size = len(self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size +
+                output_eval_key = outputs_eval[old_size:old_size + 
                                                eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
