@@ -1709,9 +1709,9 @@ class SoSDiscipline(MDODiscipline):
             wait_time_between_fork,
         )
         if inputs is None:
-            inputs = self._filter_variables_to_convert(self.get_input_data_names())
+            inputs = self.get_input_data_names(False)
         if outputs is None:
-            outputs = self._filter_variables_to_convert(self.get_output_data_names())
+            outputs = self.get_output_data_names(False)
 
 
         if auto_set_step:
