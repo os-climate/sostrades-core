@@ -712,8 +712,9 @@ def convert_list_into_array(var, subtype):
     if type(subtype['list']).__name__ != 'dict':
         type_inside_the_list = subtype['list']
         if type_inside_the_list in ['int', 'string']:
-            raise ValueError(
-                f'conversion of list of ints or string is not supported')
+            # raise ValueError(
+            #     f'conversion of list of ints or string is not supported')
+            return var, "no_metadata"
 
 
         elif type_inside_the_list == 'float':
@@ -778,7 +779,10 @@ def convert_array_into_list(to_convert, metadata, subtype):
     if type(subtype['list']).__name__ != 'dict':
         type_inside_the_list = subtype['list']
         if type_inside_the_list in ['float', 'int', 'string']:
-            return to_convert.tolist()
+            if type_inside_the_list in ['int','string']:
+                return to_convert
+            else:
+                return to_convert.tolist()
 
         elif type_inside_the_list == 'array':
             initial_list_length = metadata['length']

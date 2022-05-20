@@ -973,12 +973,11 @@ class TestAnalyticGradients(unittest.TestCase):
             threshold=1.0e-7, linearization_mode='adjoint',
             derr_approx='finite_differences', step=1e-15)
 
-    def _test_16_check_strong_coupling_filter_in_sellar(self):
+    def test_16_check_strong_coupling_filter_in_sellar(self):
         """In this test we prove the ability of the filter on strong couplings to work properly
         We set a sellar process with different types as strong couplings and we check that undesirable
         types are eliminated by the filter
         """
-
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -1007,11 +1006,11 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict[f'{self.ns}.{self.c_name}.y_2'] = df.copy()
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
 
-        #variables introduced for filter testing purpose
+        # variables introduced for filter testing purpose
         values_dict[f'{self.ns}.{self.c_name}.x'] = dict_x
         values_dict[f'{self.ns}.{self.c_name}.string_coupling'] = "sellar"
-        values_dict[f'{self.ns}.{self.c_name}.string_list_coupling'] = ["sellarProblem","Sellar1DF","Sellar2DF"]
-        values_dict[f'{self.ns}.{self.c_name}.float_list_coupling'] = [1.0,2.0,3.0]
+        values_dict[f'{self.ns}.{self.c_name}.string_list_coupling'] = ["sellarProblem", "Sellar1DF", "Sellar2DF"]
+        values_dict[f'{self.ns}.{self.c_name}.float_list_coupling'] = [1.0, 2.0, 3.0]
         values_dict[f'{self.ns}.{self.c_name}.bool_coupling'] = True
         values_dict[f'{self.ns}.{self.c_name}.dict_nosubtype_coupling'] = dict_x
         values_dict[f'{self.ns}.{self.c_name}.df_coupling'] = df.copy()
@@ -1022,7 +1021,23 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.root_process.sos_disciplines[0].check_jacobian(
             threshold=1.0e-7, linearization_mode='adjoint',
             derr_approx='complex_step', step=1e-15)
-        #exec_eng.execute()
+        exec_eng.execute()
+        sellar_coupling = exec_eng.dm.get_disciplines_with_name('optim.SellarCoupling')[0]
+        mda = sellar_coupling.sub_mda_list[0]
+        self.assertListEqual(mda.strong_couplings,
+                             ['optim.SellarCoupling.df_coupling', 'optim.SellarCoupling.float_list_coupling',
+                              'optim.SellarCoupling.y_1', 'optim.SellarCoupling.y_2'])
+        self.assertListEqual(mda.all_couplings,
+                             ['optim.SellarCoupling.df_coupling', 'optim.SellarCoupling.float_list_coupling',
+                              'optim.SellarCoupling.y_1', 'optim.SellarCoupling.y_2'])
+        self.assertListEqual(mda.coupling_structure.strong_couplings(),
+                             ['optim.SellarCoupling.bool_coupling', 'optim.SellarCoupling.df_coupling',
+                              'optim.SellarCoupling.dict_nosubtype_coupling',
+                              'optim.SellarCoupling.float_list_coupling', 'optim.SellarCoupling.string_coupling',
+                              'optim.SellarCoupling.string_list_coupling', 'optim.SellarCoupling.y_1',
+                              'optim.SellarCoupling.y_2'])
+
+        print('done')
 
 
 if '__main__' == __name__:
