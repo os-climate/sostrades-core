@@ -41,19 +41,20 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
     CUMULATIVE_TO_NEXT_Y = 'tonexty'
 
     def add_series(self, series):
-        if (isinstance(series, InstanciatedSeries)):
+        if isinstance(series, InstanciatedSeries):
             self.series.append(series)
         else:
             raise InstanciatedSeriesException(
                 f'given series has the wrong type, {type(series)} instead of InstanciatedSeries')
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
-        @param logger: logging object to log message
-        @type Logging.logger
+        :param logger: logging object to log message
+        :type logger: Logging.logger
 
-        @return plotly.graph_objects.go instance
+        :return plotly.graph_objects.go instance
         """
 
         fig = go.Figure()
@@ -124,13 +125,16 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
 
             elif serie.display_type == InstanciatedSeries.SCATTER_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                         visible=True if serie.visible else 'legendonly', mode='markers', yaxis=serie.y_axis))
+                                         marker_symbol=serie.marker_symbol, mode='markers', yaxis=serie.y_axis,
+                                         visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.BAR_DISPLAY:
-                fig.add_trace(go.Bar(x=abscissa, y=cumulated_values, name=serie.series_name, orientation=self.bar_orientation,
+                fig.add_trace(go.Bar(x=abscissa, y=cumulated_values, name=serie.series_name,
+                                     orientation=self.bar_orientation,
                                      visible=True if serie.visible else 'legendonly', yaxis=serie.y_axis))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                         visible=True if serie.visible else 'legendonly', mode='lines', yaxis=serie.y_axis))
+                                        mode='lines', yaxis=serie.y_axis,
+                                         visible=True if serie.visible else 'legendonly'))
 
         # -- Annotations management
         chart_annotations = []
@@ -224,10 +228,11 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         self.set_csv_data(csv_list)
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+         Method that convert current instance to plotly object and then to a dictionary
 
-        @param logger: logger instance
-        @type Logging.loger
+        :param logger: logger instance
+        :type logger: Logging.loger
         """
         json = self.to_plotly(logger).to_dict()
 

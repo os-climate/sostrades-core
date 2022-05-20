@@ -49,25 +49,28 @@ class SeriesTemplate:
     Y_AXIS_PRIMARY = 'y'
     Y_AXIS_SECONDARY = 'y2'
     CUSTOM_DATA = 'custom_data'
+    MARKER_SYMBOL = 'marker_symbol'
 
     def __init__(self, abscissa=[], ordinate=[], series_name='', display_type='lines', visible=True,
-                 y_axis=Y_AXIS_PRIMARY, custom_data=['']):
+                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle'):
         """ Create a new series to add in a chart
 
-        @param abscissa : list of number values for abscissa
-        @type list of number
-        @param ordinate : list of number values for ordinate
-        @type list of number
-        @param series_name : name of the series
-        @type str
-        @param display_type : type of display allowed for the series (cf. SeriesTemplate.DISPLAY_TYPE_VALUES)
-        @type str
-        @param visible : default visibility of the series
-        @type bool
-        @param y_axis : default axis of the series
-        @type str
-        @param custom_data : custom_data of the series
-        @type str
+        :param abscissa: list of number values for abscissa
+        :type abscissa: list of number
+        :param ordinate: list of number values for ordinate
+        :type ordinate: list of number
+        :param series_name: name of the series
+        :type series_name: str
+        :param display_type: type of display allowed for the series (cf. SeriesTemplate.DISPLAY_TYPE_VALUES)
+        :type display_type: str
+        :param visible: default visibility of the series
+        :type visible: bool
+        :param y_axis: default axis of the series
+        :type y_axis: str
+        :param custom_data: custom_data of the series
+        :type custom_data: str
+        :param marker_symbol: symbol to use to display point on chart ('circle' by default) see: https://plotly.com/python/marker-style/
+        :type marker_symbol: str
         """
 
         self.__ordinate = []
@@ -88,6 +91,7 @@ class SeriesTemplate:
         self.y_axis = y_axis
 
         self.custom_data = custom_data
+        self.marker_symbol = marker_symbol
 
     @property
     def abscissa(self):
@@ -101,12 +105,13 @@ class SeriesTemplate:
         self.__abscissa = values
 
     def abscissa_filtered(self, logger=None):
-        """ return abscissa values filtered on NaN and Infinite values
+        """
+        return abscissa values filtered on NaN and Infinite values
 
-        @param logger: logging system to use
-        @type logging.logger
+        :param logger: logging system to use
+        :type logger: logging.logger
 
-        @return filtered list of values
+        :return filtered list of values
         """
 
         return self.__filter_values(self.abscissa, 'Abscissa', logger)
@@ -123,29 +128,28 @@ class SeriesTemplate:
         self.__ordinate = values
 
     def ordinate_filtered(self, logger=None):
-        """ return ordinate values filtered on NaN and Infinite values
+        """
+        return ordinate values filtered on NaN and Infinite values
 
-        @param logger: logging system to use
-        @type logging.logger
+        :param logger: logging system to use
+        :type logger: logging.logger
 
-        @return filtered list of values
+        :return filtered list of values
         """
 
         return self.__filter_values(self.ordinate, 'Ordinate', logger)
 
     def __filter_values(self, values, property_name, logger=None):
-        """ return values filtered on NaN and Infinite values
+        """
+        return values filtered on NaN and Infinite values
 
-        @param values: values to filter
-        @type list
-
-        @param property_name: property filtered
-        @type str
-
-        @param logger: logging system to use
-        @type logging.logger
-
-        @return filterred list of values
+        :param values: values to filter
+        :type values: list
+        :param property_name: property filtered
+        :type property_name: str
+        :param logger: logging system to use
+        :type logger: logging.logger
+        :return filterred list of values
         """
 
         filtered_series, has_nan = convert_nan(values)
@@ -157,11 +161,12 @@ class SeriesTemplate:
         return filtered_series
 
     def __repr__(self):
-        """ Overload of the class representation
+        """
+        Overload of the class representation
 
         Allow to hide password_hash from serializer point of view
 
-        @return str, string representation of the instance
+        :return str, string representation of the instance
         """
 
         series_string = [f'\nname: {self.series_name}',
@@ -170,15 +175,17 @@ class SeriesTemplate:
                          f'display type: {self.display_type}\n',
                          f'visible: {self.visible}\n',
                          f'y_axis: {self.y_axis}\n',
-                         f'custom_data: {self.custom_data}\n'
+                         f'custom_data: {self.custom_data}\n',
+                         f'marker_symbol: {self.marker_symbol}\n'
                          ]
 
         return '\n'.join(series_string)
 
     def to_dict(self):
-        """ Method that serialize as dict the SeriesTemplate class
+        """
+        Method that serialize as dict the SeriesTemplate class
 
-        @return dict
+        :return dict
         """
 
         dict_obj = {}
@@ -205,15 +212,19 @@ class SeriesTemplate:
         # Serialize custom_data attribute
         dict_obj.update({SeriesTemplate.CUSTOM_DATA: self.custom_data})
 
+        # Serialize marker_symbol attribute
+        dict_obj.update({SeriesTemplate.MARKER_SYMBOL: self.marker_symbol})
+
         return dict_obj
 
     def from_dict(self, dict_obj):
-        """ Method that initialize from dict the SeriesTemplate class
+        """
+        Method that initialize from dict the SeriesTemplate class
 
-        @param dictçobj: dictionary with value to initialize instance
-        @type dict
+        :param dict_obj: dictionary with value to initialize instance
+        :type dict_obj: dict
 
-        @return sos_trades_core.post-processing.charts.chart_filter.ChartFilter
+        :return sos_trades_core.post-processing.charts.chart_filter.ChartFilter
         """
         # Deserialize name attribute
         self.series_name = dict_obj[SeriesTemplate.SERIES_NAME]
@@ -239,9 +250,13 @@ class SeriesTemplate:
         if SeriesTemplate.CUSTOM_DATA in dict_obj:
             self.custom_data = dict_obj[SeriesTemplate.CUSTOM_DATA]
 
+        # Deserialize marker_symbol attribute
+        if SeriesTemplate.MARKER_SYMBOL in dict_obj:
+            self.marker_symbol = dict_obj[SeriesTemplate.MARKER_SYMBOL]
+
 
 class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a 2 dimensionnals chart template 
+    """ Class that define a 2 dimensional chart template 
     """
 
     CHART_NAME = 'chart_name'
@@ -256,31 +271,32 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
     CUMULATIVE_SURFACE = 'cumulative_surface'
     SERIES = 'series'
 
-    def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[], primary_ordinate_axis_range=[],
-                 chart_name='', stacked_bar=False, bar_orientation='v', cumulative_surface=False,
-                 secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[]):
-        """ Create a new chart definition
+    def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[], 
+                 primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v', 
+                 cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[]):
+        """
+         Create a new chart definition
 
-        @param abscissa_axis_name : string that contains chart abscissa axis name
-        @type str
-        @param primary_ordinate_axis_name : string that contains chart primary ordinate axis name
-        @type str
-        @param abscissa_axis_range : array(2) with min and max value range for abscissa axes
-        @type list [min, max]
-        @param primary_ordinate_axis_range : array(2) with min and max value range for primary ordinate axes
-        @type list [min, max]
-        @param chart_name : string that contains chart name
-        @type str
-        @param stacked_bar : boolean that make series values to be stacked 
-        @type boolean
-        @param bar_orientation : allow to set bar orientation to horizontal or vertical 
-        @type str ('v', 'h')
-        @param cumulative_surface : cumulate series values as surface 
-        @type boolean
-        @param secondary_ordinate_axis_name : string that contains chart secondary ordinate axis name
-        @type str
-        @param secondary_ordinate_axis_range : array(2) with min and max value range for secondary ordinate axes
-        @type list [min, max]
+        :param abscissa_axis_name: string that contains chart abscissa axis name
+        :type abscissa_axis_name: str
+        :param primary_ordinate_axis_name: string that contains chart primary ordinate axis name
+        :type primary_ordinate_axis_name: str
+        :param abscissa_axis_range: array(2) with min and max value range for abscissa axes
+        :type abscissa_axis_range: list [min, max]
+        :param primary_ordinate_axis_range: array(2) with min and max value range for primary ordinate axes
+        :type primary_ordinate_axis_range: list [min, max]
+        :param chart_name: string that contains chart name
+        :type chart_name: str
+        :param stacked_bar: boolean that make series values to be stacked
+        :type stacked_bar: boolean
+        :param bar_orientation: allow to set bar orientation to horizontal or vertical
+        :type bar_orientation: str ('v', 'h')
+        :param cumulative_surface: cumulate series values as surface
+        :type cumulative_surface: boolean
+        :param secondary_ordinate_axis_name: string that contains chart secondary ordinate axis name
+        :type secondary_ordinate_axis_name: str
+        :param secondary_ordinate_axis_range: array(2) with min and max value range for secondary ordinate axes
+        :type secondary_ordinate_axis_range: list [min, max]
         """
 
         super().__init__()
@@ -319,10 +335,11 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         self.cumulative_surface = cumulative_surface
 
     def add_series(self, series):
-        """ Add a series instance to the current Chart instance
+        """
+        Add a series instance to the current Chart instance
 
-        @param series, series instance to add
-        @type SeriesTemplate
+        :param series: series instance to add
+        :type series: SeriesTemplate
         """
 
         if isinstance(series, SeriesTemplate):
@@ -332,9 +349,10 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
                 f'given series has the wrong type, {type(series)} instead of SeriesTemplate')
 
     def __repr__(self):
-        """ Overload of the class representation
+        """
+        Overload of the class representation
 
-        @return str, string representation of the instance
+        :return str: string representation of the instance
         """
 
         inline_series_string = '\n'.join(
@@ -370,10 +388,12 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         return '\n'.join(chart_string)
 
     def to_dict(self):
-        """ Method that serialize as dict the SeriesTemplate class
-
-        @return dict
         """
+        Method that serialize as dict the SeriesTemplate class
+
+        :return dict
+        """
+
         dict_obj = {}
         # Serialize chart name attribute
         dict_obj.update({TwoAxesChartTemplate.CHART_NAME: self.chart_name})
@@ -421,12 +441,13 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         return dict_obj
 
     def from_dict(self, dict_obj):
-        """ Method that initialize from dict the SeriesTemplate class
+        """
+        Method that initialize from dict the SeriesTemplate class
 
-        @param dictçobj: dictionary with value to initialize instance
-        @type dict
+        :param dict_obj: dictionary with value to initialize instance
+        :type dict_obj: dict
 
-        @return sos_trades_core.post-processing.charts.chart_filter.ChartFilter
+        :return sos_trades_core.post-processing.charts.chart_filter.ChartFilter
         """
 
         super().from_dict(dict_obj)
