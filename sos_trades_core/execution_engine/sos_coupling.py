@@ -348,9 +348,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                     var_f_name, SoSDisciplineBuilder.VAR_NAME)
                 if var_name not in self.NUM_DESC_IN :
                     self._data_in[var_name] = self.dm.get_data(var_f_name)
-            # self._data_in.update({key: value for key, value in self._data_in.items(
-            # ) if
-            #     key in self.DESC_IN or key in self.NUM_DESC_IN})
 
             # keep residuals_history if in data_out
             if self.RESIDUALS_HISTORY in self._data_out:
@@ -837,9 +834,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                 input_data[data_name] = self.ee.dm.get_value(data_name)
             input_data = self._convert_new_type_into_array(
                 var_dict=input_data)
-
-        #self._differentiated_inputs = inputs
-        #self._differentiated_outputs = outputs
 
         return MDAChain.check_jacobian(self,
                                        input_data=input_data,

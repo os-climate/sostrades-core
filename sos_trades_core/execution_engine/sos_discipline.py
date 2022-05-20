@@ -1379,29 +1379,16 @@ class SoSDiscipline(MDODiscipline):
 
     def __filter_available_gemseo_types(self, io_type):
         ''' 
-        Filter available types before sending to GEMS 
+        Pass all types to  to GEMSEO
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []
         for var_name, value in full_dict.items():
-            # Check if the param is a numerical parameter (function overload in
-            # soscoupling)
-            # if self.delete_numerical_parameters_for_gems(
-            #         var_name):
-            #     continue
-            # Get the full var name
+
             full_var_name = self.get_var_full_name(
                 var_name, self.get_data_io_dict(io_type))
-            var_type_id = value[self.VAR_TYPE_ID]
-            #if var_type_id not in ['df_dict']:
             filtered_keys.append(full_var_name)
-            #if var type not covered by GEMS
-            # if var_type_id not in self.VAR_TYPE_GEMS:
-            #     # if var type covered by available extended types
-            #     if var_type_id in self.NEW_VAR_TYPE:
-            #         filtered_keys.append(full_var_name)
-            # else:
-            #     filtered_keys.append(full_var_name)
+
 
         return filtered_keys
 
@@ -1731,10 +1718,8 @@ class SoSDiscipline(MDODiscipline):
             approx.auto_set_step(outputs, inputs, print_errors=True)
 
         # Differentiate analytically
-        #self.add_differentiated_inputs(inputs)
-        #self.add_differentiated_outputs(outputs)
-        self._differentiated_inputs = inputs
-        self._differentiated_outputs = outputs
+        self.add_differentiated_inputs(inputs)
+        self.add_differentiated_outputs(outputs)
         self.linearization_mode = linearization_mode
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
