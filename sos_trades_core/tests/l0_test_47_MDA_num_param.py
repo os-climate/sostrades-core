@@ -147,7 +147,7 @@ class TestMDANumericalParameters(unittest.TestCase):
             self.assertAlmostEqual(x, x_th, delta=1.0e-4,
                                    msg="Wrong optimal x solution")
 
-    def test_02_chech_simple_cache_option(self):
+    def _test_02_chech_simple_cache_option(self):
         print("\n Test 2 : check SimpleCache")
 
         self.name = 'Test'
