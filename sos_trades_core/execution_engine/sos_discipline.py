@@ -1133,7 +1133,11 @@ class SoSDiscipline(MDODiscipline):
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            metadata = data_io[self.TYPE_METADATA][0]
+            try:
+                metadata = data_io[self.TYPE_METADATA][0]
+            except :
+                print('ici')
+
             lines_nb = metadata['shape'][0]
             # delete the + 1 if we delete the index column
             index_column = metadata['columns'].to_list().index(column)
@@ -1155,7 +1159,7 @@ class SoSDiscipline(MDODiscipline):
         Get input_data for linearize sosdiscipline
         '''
         input_data = {}
-        input_data_names = self.input_grammar.get_data_names()
+        input_data_names = self._filter_variables_to_convert(self.input_grammar.get_data_names())
         if len(input_data_names) > 0:
 
             for data_name in input_data_names:
@@ -1722,12 +1726,12 @@ class SoSDiscipline(MDODiscipline):
         self.linearization_mode = linearization_mode
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
-        if input_data is None:
-            input_data = {}
-            for data_name in inputs:
-                input_data[data_name] = self.ee.dm.get_value(data_name)
-            input_data = self._convert_new_type_into_array(
-                var_dict=input_data)
+        # if input_data is None:
+        #     input_data = {}
+        #     for data_name in inputs:
+        #         input_data[data_name] = self.ee.dm.get_value(data_name)
+        #     input_data = self._convert_new_type_into_array(
+        #         var_dict=input_data)
         self.linearize(input_data)
 
         if input_column is None and output_column is None:
