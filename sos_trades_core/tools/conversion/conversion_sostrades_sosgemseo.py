@@ -204,7 +204,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
             if _type == 'dict' or _type == 'df_dict':
 
                 if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                    try :
+                    try:
                         subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
                     except:
                         subtype = None
@@ -215,14 +215,19 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                     except:
                         subtype = None
 
-                if metadata_list is None:
+                # TODO : remove this when we get rid of df_dict type
+                if _type == 'dict' and metadata_list is None:
                     raise ValueError(
                         f' Variable {key} cannot be converted since no metadata is available')
                 new_data = {}
-                if subtype is None :
-                    local_data_updt[key] = convert_array_into_dict_old_version(
-                        to_convert, new_data, deepcopy(metadata_list))
-                else :
+                if subtype is None:
+                    if _type == 'dict':
+                        local_data_updt[key] = convert_array_into_dict_old_version(
+                            to_convert, new_data, deepcopy(metadata_list))
+                    # TODO : remove this when we get rid of df_dict type
+                    else:
+                        local_data_updt[key] = np.array([0])
+                else:
                     check_subtype(key, subtype, 'dict')
                     local_data_updt[key] = convert_array_into_dict(
                         to_convert, deepcopy(metadata_list), subtype)
@@ -230,9 +235,9 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
             elif _type == 'list':
 
                 if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                    try :
+                    try:
                         subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
-                    except :
+                    except:
                         subtype = None
 
                 else:
@@ -240,7 +245,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                         subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
                     except:
                         subtype = None
-                if subtype is not None :
+                if subtype is not None:
                     if metadata_list is None and subtype['list'] not in ['int', 'string', 'float']:
                         raise ValueError(
                             f' Variable {key} cannot be converted since no metadata is available')
@@ -603,7 +608,7 @@ def convert_new_type_into_array(
                             else:
                                 try:
                                     subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                                    #check_subtype(key, subtype, 'dict')
+                                    # check_subtype(key, subtype, 'dict')
                                 except:
                                     subtype = None
                             if subtype is None:
@@ -667,11 +672,11 @@ def convert_new_type_into_array(
                             except:
                                 subtype = None
                         else:
-                            try :
+                            try:
                                 subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                            except :
+                            except:
                                 subtype = None
-                        if subtype is not None :
+                        if subtype is not None:
                             check_subtype(key, subtype, 'list')
                             values_list, metadata = convert_list_into_array(var, subtype)
 
@@ -707,8 +712,10 @@ def convert_list_into_array(var, subtype):
     if type(subtype['list']).__name__ != 'dict':
         type_inside_the_list = subtype['list']
         if type_inside_the_list in ['int', 'string']:
-            raise ValueError(
-                f'conversion of list of ints or string is not supported')
+            # raise ValueError(
+            #     f'conversion of list of ints or string is not supported')
+            return var, "no_metadata"
+
 
         elif type_inside_the_list == 'float':
             return array(var), {'length': len(var), 'value': None, 'size': len(var)}
@@ -772,7 +779,10 @@ def convert_array_into_list(to_convert, metadata, subtype):
     if type(subtype['list']).__name__ != 'dict':
         type_inside_the_list = subtype['list']
         if type_inside_the_list in ['float', 'int', 'string']:
-            return to_convert.tolist()
+            if type_inside_the_list in ['int','string']:
+                return to_convert
+            else:
+                return to_convert.tolist()
 
         elif type_inside_the_list == 'array':
             initial_list_length = metadata['length']
