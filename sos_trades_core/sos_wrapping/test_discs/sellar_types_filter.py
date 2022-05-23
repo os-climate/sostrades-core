@@ -136,13 +136,30 @@ class Sellar1Df(SoSDiscipline):
     """ Discipline 1
     """
     _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                       'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {
+        'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+              'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'dataframe',
-                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+                'string_coupling': {'type': 'string', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                    'namespace': 'ns_OptimSellar'},
+                'string_list_coupling': {'type': 'list', 'subtype_descriptor': {'list': 'string'},
+                                         'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                         'namespace': 'ns_OptimSellar'},
+                'float_list_coupling': {'type': 'list', 'subtype_descriptor': {'list': 'float'},
+                                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                        'namespace': 'ns_OptimSellar'},
+                'bool_coupling': {'type': 'bool', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                  'namespace': 'ns_OptimSellar'},
+                'dict_nosubtype_coupling': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                            'namespace': 'ns_OptimSellar'},
+                'df_coupling': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_OptimSellar'},
+                }
 
     def run(self):
         """ Discipline 1 execution
@@ -150,7 +167,10 @@ class Sellar1Df(SoSDiscipline):
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
         y1_out = {'y_1': y_1}
-        self.store_sos_outputs_values(y1_out)
+        sellar_output = {'y_1': y_1, 'string_coupling': "", 'string_list_coupling': [], 'float_list_coupling': [],
+                         'bool_coupling': True, 'dict_nosubtype_coupling': {},
+                         'df_coupling': pd.DataFrame({'test': [0], 'test1': [0]})}
+        self.store_sos_outputs_values(sellar_output)
 
     @staticmethod
     def compute_y_1(x, y_2, z):
@@ -219,7 +239,23 @@ class Sellar2Df(SoSDiscipline):
     _maturity = 'Fake'
     DESC_IN = {
         'y_1': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+        'z': {'type': 'array', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'string_coupling': {'type': 'string', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                            'namespace': 'ns_OptimSellar'},
+        'string_list_coupling': {'type': 'list', 'subtype_descriptor': {'list': 'string'},
+                                 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                 'namespace': 'ns_OptimSellar'},
+        'float_list_coupling': {'type': 'list', 'subtype_descriptor': {'list': 'float'},
+                                'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_OptimSellar'},
+        'bool_coupling': {'type': 'bool', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                          'namespace': 'ns_OptimSellar'},
+        'dict_nosubtype_coupling': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                    'namespace': 'ns_OptimSellar'},
+        'df_coupling': {'type': 'dataframe', 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                        'namespace': 'ns_OptimSellar'},
+
+    }
 
     DESC_OUT = {'y_2': {'type': 'dataframe',
                         'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}

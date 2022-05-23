@@ -1143,7 +1143,8 @@ class SoSDiscipline(MDODiscipline):
         elif key_type == 'dict':
             value = data_io[self.VALUE]
             metadata = data_io[self.TYPE_METADATA]
-            dict_keys = [meta['key'][0] for meta in metadata]
+            #dict_keys = [meta['key'][0] for meta in metadata]
+            dict_keys = list(metadata['value'].keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
 
@@ -1378,27 +1379,16 @@ class SoSDiscipline(MDODiscipline):
 
     def __filter_available_gemseo_types(self, io_type):
         ''' 
-        Filter available types before sending to GEMS 
+        Pass all types to  to GEMSEO
         '''
         full_dict = self.get_data_io_dict(io_type)
         filtered_keys = []
         for var_name, value in full_dict.items():
-            # Check if the param is a numerical parameter (function overload in
-            # soscoupling)
-            if self.delete_numerical_parameters_for_gems(
-                    var_name):
-                continue
-            # Get the full var name
+
             full_var_name = self.get_var_full_name(
                 var_name, self.get_data_io_dict(io_type))
-            var_type_id = value[self.VAR_TYPE_ID]
-            # if var type not covered by GEMS
-            if var_type_id not in self.VAR_TYPE_GEMS:
-                # if var type covered by available extended types
-                if var_type_id in self.NEW_VAR_TYPE:
-                    filtered_keys.append(full_var_name)
-            else:
-                filtered_keys.append(full_var_name)
+            filtered_keys.append(full_var_name)
+
 
         return filtered_keys
 
@@ -1718,9 +1708,10 @@ class SoSDiscipline(MDODiscipline):
             wait_time_between_fork,
         )
         if inputs is None:
-            inputs = self.get_input_data_names()
+            inputs = self.get_input_data_names(False)
         if outputs is None:
-            outputs = self.get_output_data_names()
+            outputs = self.get_output_data_names(False)
+
 
         if auto_set_step:
             approx.auto_set_step(outputs, inputs, print_errors=True)
@@ -1731,6 +1722,12 @@ class SoSDiscipline(MDODiscipline):
         self.linearization_mode = linearization_mode
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
+        if input_data is None:
+            input_data = {}
+            for data_name in inputs:
+                input_data[data_name] = self.ee.dm.get_value(data_name)
+            input_data = self._convert_new_type_into_array(
+                var_dict=input_data)
         self.linearize(input_data)
 
         if input_column is None and output_column is None:
