@@ -56,8 +56,9 @@ class Study(StudyManager):
         dspace_dict_xy = {'variable': ['x', 'y'],
                           'lower_bnd': [-5., -5.],
                           'upper_bnd': [+5., +5.],
-                          'enable_variable': [True, True],
-                          'activated_elem': [[True], [True]]}
+                          #'enable_variable': [True, True],
+                          #'activated_elem': [[True], [True]]
+                          }
         my_doe_algo = "lhs"
         n_samples = 4
 
