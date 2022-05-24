@@ -1726,12 +1726,6 @@ class SoSDiscipline(MDODiscipline):
         self.linearization_mode = linearization_mode
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
-        # if input_data is None:
-        #     input_data = {}
-        #     for data_name in inputs:
-        #         input_data[data_name] = self.ee.dm.get_value(data_name)
-        #     input_data = self._convert_new_type_into_array(
-        #         var_dict=input_data)
         self.linearize(input_data)
 
         if input_column is None and output_column is None:

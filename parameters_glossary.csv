@@ -367,7 +367,6 @@ scenario_dict,Scenario Dict,,,,
 scenario_impacts_dict,scenario_impacts_dict,,,,
 scenario_impacts_elementary_flows_dict,scenario_impacts_elementary_flows_dict,,,,
 scenario_list,Scenario List,,,,
-scenario_name,Scenario,,"Environmental scenarios described by the International Energy Agency (CPS : Current Policies Scenario, STEPS : Stated Policies Scenario, SDS : Sustainable Development Scenario, HE : High Electricity price level, LE : Low Electricity price level)",,D - Nominal property
 scenario_name_dict,Scenarii Dict,,,,
 scenario_name_trade,Scenario Name Trade,,,,
 segment_list,Segments List,,,,
@@ -378,7 +377,6 @@ segment_list_SoSTrades_Platform,SoSTrades Segment List for Platform,,List of all
 segment_list_SoSTrades_Services,SoSTrades Segment List for Services,,List of all Segments for actor SoSTrades for Services,,
 selected_scenarios,selected_scenarios,,,,
 sensitivity_outputs,Sensitivity Outputs,,,,D - Nominal property
-shared_scenario_name_dict,shared_scenario_name_dict,,,,
 smooth_log,smooth_log,,,,
 step,step,,,,
 string,string,,,,
