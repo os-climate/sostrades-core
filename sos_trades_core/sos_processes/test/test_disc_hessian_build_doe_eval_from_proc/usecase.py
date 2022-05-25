@@ -47,17 +47,17 @@ class Study(StudyManager):
         input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
                               'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y', 'DoE_Eval.Hessian.ax2',
                                             'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
+        input_selection_xy = pd.DataFrame(input_selection_xy)
+
         output_selection_z = {'selected_output': [True],
                               'full_name': ['DoE_Eval.Hessian.z']}
         output_selection_z = pd.DataFrame(output_selection_z)
 
-        input_selection_xy = pd.DataFrame(input_selection_xy)
-
         dspace_dict_xy = {'variable': ['x', 'y'],
                           'lower_bnd': [-5., -5.],
                           'upper_bnd': [+5., +5.],
-                          #'enable_variable': [True, True],
-                          #'activated_elem': [[True], [True]]
+        #                  'enable_variable': [True, True],
+        #                  'activated_elem': [[True], [True]]
                           }
         my_doe_algo = "lhs"
         n_samples = 4

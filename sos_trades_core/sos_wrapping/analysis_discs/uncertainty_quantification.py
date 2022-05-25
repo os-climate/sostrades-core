@@ -220,7 +220,7 @@ class UncertaintyQuantification(SoSDiscipline):
                                     'upper_parameter': ('float', None, True),
                                     'most_probable_value': ('float', None, True),
                                 },
-                                'unit': None,
+                                'unit': '-',
                                 'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                 'namespace': 'ns_uncertainty_quantification',
                                 'default': input_distribution_default,

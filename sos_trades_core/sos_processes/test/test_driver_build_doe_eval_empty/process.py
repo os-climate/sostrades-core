@@ -21,16 +21,15 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Process DoE_Eval of a Hessian Discipline from a processus of the discipline',
-        'description': 'Process to Instantiate the DoE_Eval of a Hessian Discipline build directly from a processus for discipline creation',
+        'label': 'Process DoE_Eval driver creation',
+        'description': 'Process to instantiate the DoE_Eval without any nested builder or by specifiying the nested builder from a process.py python file',
         'category': '',
         'version': '',
     }
     def get_builders(self):
         repo = 'sos_trades_core.sos_processes.test'
-        builder_list = self.ee.factory.get_builder_from_process(
-                                             repo=repo,mod_id='test_disc_hessian')
+        builder_list = []
         self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoE_Eval')
         doe_eval_builder = self.ee.factory.create_evaluator_builder(
-                                             'DoE_Eval', 'doe_eval', builder_list)
+                                             'DoE_Eval', 'build_doe_eval', builder_list)
         return doe_eval_builder
