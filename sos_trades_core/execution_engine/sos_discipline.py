@@ -320,12 +320,12 @@ class SoSDiscipline(MDODiscipline):
         # Remove unavailable GEMS type variables before initialize
         # input_grammar
         if not self.is_sos_coupling:
-            filtered_data_in = self.__filter_available_gemseo_types(
+            data_in = self.get_data_io_with_full_name(
                 self.IO_TYPE_IN)
-            filtered_data_out = self.__filter_available_gemseo_types(
+            data_out = self.get_data_io_with_full_name(
                 self.IO_TYPE_OUT)
-            self.init_gems_grammar(filtered_data_in, self.IO_TYPE_IN)
-            self.init_gems_grammar(filtered_data_out, self.IO_TYPE_OUT)
+            self.init_gems_grammar(data_in, self.IO_TYPE_IN)
+            self.init_gems_grammar(data_out, self.IO_TYPE_OUT)
 
     def create_data_io_from_desc_io(self):
         '''
@@ -1380,28 +1380,6 @@ class SoSDiscipline(MDODiscipline):
             variables = [self._convert_to_namespace_name(
                 keys, io_type)]
         return variables
-
-    def __filter_available_gemseo_types(self, io_type):
-        ''' 
-        Pass all types to  to GEMSEO
-        '''
-        full_dict = self.get_data_io_dict(io_type)
-        filtered_keys = []
-        for var_name, value in full_dict.items():
-
-            full_var_name = self.get_var_full_name(
-                var_name, self.get_data_io_dict(io_type))
-            filtered_keys.append(full_var_name)
-
-
-        return filtered_keys
-
-    def delete_numerical_parameters_for_gems(self, var_name):
-
-        if var_name in self.NUM_DESC_IN:
-            return True
-        else:
-            return False
 
     def _init_grammar_with_keys(self, names, io_type):
         ''' initialize GEMS grammar with names and type None
