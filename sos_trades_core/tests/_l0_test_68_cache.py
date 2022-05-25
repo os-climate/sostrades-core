@@ -387,7 +387,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-    def test_6_test_cache_coupling_with_string_change(self):
+    def _test_6_test_cache_coupling_with_string_change(self):
         '''
         check discipline namespace update with string change
         and check metadata known values
@@ -607,7 +607,7 @@ class TestCache(unittest.TestCase):
         self.assertDictEqual(
             metadata[1]['known_values'], metadata_ref_known_values2)
 
-    def test_8_test_cache_coupling_with_string_list_change(self):
+    def _test_8_test_cache_coupling_with_string_list_change(self):
         '''
         check discipline namespace update with string change 
         and check metadata known values 

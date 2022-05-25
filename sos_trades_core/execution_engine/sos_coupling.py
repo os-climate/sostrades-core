@@ -828,12 +828,12 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if outputs is None:
             outputs = self.get_output_data_names(False)
 
-        if input_data is None:
-            input_data = {}
-            for data_name in inputs:
-                input_data[data_name] = self.ee.dm.get_value(data_name)
-            input_data = self._convert_new_type_into_array(
-                var_dict=input_data)
+        #if input_data is None:
+            #   input_data = {}
+            #   for data_name in inputs:
+            #       input_data[data_name] = self.ee.dm.get_value(data_name)
+            #  input_data = self._convert_new_type_into_array(
+        #      var_dict=input_data)
 
         return MDAChain.check_jacobian(self,
                                        input_data=input_data,

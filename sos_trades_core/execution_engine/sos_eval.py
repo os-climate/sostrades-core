@@ -87,7 +87,9 @@ class SoSEval(SoSDisciplineBuilder):
         '''
         Create the eval process builder, in a coupling if necessary
         '''
-        if len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
+        if len(self.cls_builder) == 0:
+            disc_builder = None
+        elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
             # if eval process is a list of builders or a non executable builder,
             # then we build a coupling containing the eval porcess
             disc_builder = self.ee.factory.create_builder_coupling(
@@ -158,7 +160,9 @@ class SoSEval(SoSDisciplineBuilder):
         # if we want to build an eval coupling containing eval process,
         # we have to remove SoSEval name in current_ns to build eval coupling
         # at the same node as SoSEval
-        if self.cls_builder[0] != self.eval_process_builder:
+        if len(self.cls_builder) == 0:
+            pass
+        elif self.cls_builder[0] != self.eval_process_builder:
             current_ns = self.ee.ns_manager.current_disc_ns
             self.ee.ns_manager.set_current_disc_ns(
                 current_ns.split(f'.{self.sos_name}')[0])
@@ -212,7 +216,7 @@ class SoSEval(SoSDisciplineBuilder):
             # Extract variables for eval analysis
             if len(self.sos_disciplines) > 0:
                 self.set_eval_possible_values()
-                
+
         if len(self.get_disciplines_to_configure()) == 0:
             self.set_children_cache_inputs()
 
@@ -427,7 +431,7 @@ class SoSEval(SoSDisciplineBuilder):
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
                 eval_out_size = len(self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size + 
+                output_eval_key = outputs_eval[old_size:old_size +
                                                eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
