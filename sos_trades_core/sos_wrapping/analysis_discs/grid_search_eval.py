@@ -756,7 +756,7 @@ class GridSearchEval(DoeEval):
                         break
 
                 if not z_data_None:
-                    chart_name = f'{z_vble} contour plot with {slider_list[0]["short_name"]} as slider'
+                    chart_name = f'{z_vble.split(".")[-1]} contour plot with {slider_list[0]["short_name"]} as slider'
                     chart_data = cont_plot_df.loc[
                         :,
                         [
