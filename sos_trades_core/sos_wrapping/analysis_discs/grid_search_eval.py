@@ -524,7 +524,7 @@ class GridSearchEval(DoeEval):
 
     def prepare_chart_dict(self, outputs_discipline_dict, inputs_discipline_dict={}):
 
-        # generate mapping between longname and short name
+        # generate mapping between long name and short name
         inputs_name_mapping = {}
         if 'eval_inputs' in inputs_discipline_dict:
             eval_inputs = inputs_discipline_dict['eval_inputs']
@@ -587,10 +587,6 @@ class GridSearchEval(DoeEval):
                             for (key, value) in output_df_dict.items()
                         }
 
-                        # output_df=pd.DataFrame({'scenario':list(output_df_dict.keys()),
-                        # re.sub(r'_dict$', '',
-                        # single_output).split('.')[-1]:list(output_df_dict.values())})
-
                     if (
                         isinstance(list(output_df_dict.values())[0], pd.DataFrame)
                     ) and (len(list(output_df_dict.values())[0]) == 1):
@@ -600,7 +596,7 @@ class GridSearchEval(DoeEval):
                         # and only look at the first element
 
                         # We select the outputs to plot at the first element
-                        # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
+
                         filtered_name = [
                             col
                             for col in list(output_df_dict.values())[0].columns
@@ -632,24 +628,17 @@ class GridSearchEval(DoeEval):
                             # single outputs
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
-                                filtered_df = filtered_df[filtered_name]
+                                filtered_df.rename(columns={old_key: re.sub(r'_dict$', '', single_output).split('.')[-1] + f'.{old_key}' for old_key in filtered_df.select_dtypes(include='float').columns.to_list() }, inplace=True)
+                                filtered_df = filtered_df.select_dtypes(include='float')
                                 filtered_df['scenario'] = f'{scenario}'
                                 filtered_df.replace('NA', np.nan, inplace=True)
 
                                 for name in filtered_name:
                                     if name not in list(output_info_dict.keys()):
                                         output_info_dict[name] = {
-                                            'output_info_name': re.sub(
-                                                r'_dict$', '', single_output
-                                            ),
-                                            'unit': self.ee.dm.get_data(
-                                                self.ee.dm.get_all_namespaces_from_var_name(
-                                                    re.sub(r'_dict$', '', single_output)
-                                                )[
-                                                    0
-                                                ]
-                                            )['unit'],
-                                        }
+                                            'output_info_name': re.sub(r'_dict$', '', single_output),
+                                            'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
+                                                re.sub(r'_dict$', '', single_output))[0])['unit']}
 
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
@@ -674,13 +663,14 @@ class GridSearchEval(DoeEval):
                                 output_df_temp.replace('NA', np.nan, inplace=True)
                                 columns_temp = list(output_df_temp.columns)
                                 columns_temp.remove('scenario')
+                                columns_out_df = list(output_df.columns)
+                                columns_out_df.remove('scenario')
+                                
                                 for col in columns_temp:
-                                    if col not in output_df:
-                                        output_df = output_df.merge(
-                                            output_df_temp[['scenario', col]],
-                                            on='scenario',
-                                            how='left',
-                                        )
+                                    if col.split('.')[-1] not in [k.split('.')[-1] for k in columns_out_df]:
+                                        # if col not in [name for name  ]:
+                                        output_df=output_df.merge(
+                                            output_df_temp[['scenario', col]], on='scenario', how='left')
                                 output_df_temp = None
 
             # Select only float type results
@@ -716,10 +706,9 @@ class GridSearchEval(DoeEval):
 
             chart_list = [
                 list(chart_tuple)
-                + [output_info_dict[chart_tuple[1]]['output_info_name']]
-                + [output_info_dict[chart_tuple[1]]['unit']]
-                for chart_tuple in chart_tuples
-            ]
+                + [output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
+                + [output_info_dict[chart_tuple[1].split('.')[-1]]['unit']] for chart_tuple in chart_tuples]
+            
             full_chart_list += chart_list
             # if output_df= None --> full_chart_list = []
 
@@ -782,7 +771,8 @@ class GridSearchEval(DoeEval):
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
                 chart_data = cont_plot_df.loc[:, ['scenario', x_vble, y_vble, z_vble]]
-
+                
+                #METADATA of all plots in GreadSearch 
             if chart_name is not None:
                 chart_dict[chart_name] = {
                     'x': x_vble,
