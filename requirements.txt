@@ -18,3 +18,4 @@ sympy==1.4
 trino
 cvxpy==1.1.18
 cylp==0.91.4
+black==22.3.0
