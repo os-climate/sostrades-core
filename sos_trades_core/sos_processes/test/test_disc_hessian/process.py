@@ -21,8 +21,8 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Process to Instantiate a Hessian Discipline',
-        'description': '',
+        'label': 'Process Hessian Discipline',
+        'description': 'Process to Instantiate a Hessian Discipline',
         'category': '',
         'version': '',
     }

@@ -21,8 +21,8 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Process to Instantiate a Hessian Discipline',
-        'description': '',
+        'label': 'Process DoE_Eval driver creation',
+        'description': 'Process to instantiate the DoE_Eval without any nested builder or by specifiying the nested builder from a process.py python file',
         'category': '',
         'version': '',
     }
