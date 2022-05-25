@@ -524,7 +524,7 @@ class GridSearchEval(DoeEval):
 
     def prepare_chart_dict(self, outputs_discipline_dict, inputs_discipline_dict={}):
 
-        # generate mapping between longname and short name
+        # generate mapping between long name and short name
         inputs_name_mapping = {}
         if 'eval_inputs' in inputs_discipline_dict:
             eval_inputs = inputs_discipline_dict['eval_inputs']
@@ -587,10 +587,6 @@ class GridSearchEval(DoeEval):
                             for (key, value) in output_df_dict.items()
                         }
 
-                        # output_df=pd.DataFrame({'scenario':list(output_df_dict.keys()),
-                        # re.sub(r'_dict$', '',
-                        # single_output).split('.')[-1]:list(output_df_dict.values())})
-
                     if (
                         isinstance(list(output_df_dict.values())[0], pd.DataFrame)
                     ) and (len(list(output_df_dict.values())[0]) == 1):
@@ -600,7 +596,7 @@ class GridSearchEval(DoeEval):
                         # and only look at the first element
 
                         # We select the outputs to plot at the first element
-                        # list(output_df_dict.values())[0].replace('NA', np.nan, inplace=True)
+
                         filtered_name = [
                             col
                             for col in list(output_df_dict.values())[0].columns
@@ -632,7 +628,6 @@ class GridSearchEval(DoeEval):
                             # single outputs
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
-                                # filtered_df.rename(columns={old_key: output_info_dict[name]['output_info_herit'] for old_key in output_df.select_dtypes(include='float').columns.to_list() for name in output_info_dict.keys()}, inplace=True)
                                 filtered_df.rename(columns={old_key: re.sub(r'_dict$', '', single_output).split('.')[-1] + f'.{old_key}' for old_key in filtered_df.select_dtypes(include='float').columns.to_list() }, inplace=True)
                                 filtered_df = filtered_df.select_dtypes(include='float')
                                 filtered_df['scenario'] = f'{scenario}'
@@ -776,7 +771,8 @@ class GridSearchEval(DoeEval):
             elif slider_list == []:
                 chart_name = f'{z_vble} contour plot'
                 chart_data = cont_plot_df.loc[:, ['scenario', x_vble, y_vble, z_vble]]
-
+                
+                #METADATA of all plots in GreadSearch 
             if chart_name is not None:
                 chart_dict[chart_name] = {
                     'x': x_vble,
