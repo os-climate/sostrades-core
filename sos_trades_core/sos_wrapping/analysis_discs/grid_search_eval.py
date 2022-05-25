@@ -929,7 +929,7 @@ class GridSearchEval(DoeEval):
                                     ),
                                 ),
                                 colorbar=dict(
-                                    title=f'{chart_info["z"]}',
+                                    title=f'{chart_info["z"].split(".")[-1]}',
                                     nticks=10,
                                     ticklen=5,
                                     tickwidth=1,
@@ -1105,7 +1105,7 @@ class GridSearchEval(DoeEval):
                                         end=z_max,
                                     ),
                                     colorbar=dict(
-                                        title=f'{chart_info["z"]}',
+                                        title=f'{chart_info["z"].split(".")[-1]}',
                                         nticks=10,
                                         ticks='outside',
                                         ticklen=5,
