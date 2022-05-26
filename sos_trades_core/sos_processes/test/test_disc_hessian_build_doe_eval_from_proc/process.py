@@ -32,5 +32,5 @@ class ProcessBuilder(BaseProcessBuilder):
                                              repo=repo,mod_id='test_disc_hessian')
         self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoE_Eval')
         doe_eval_builder = self.ee.factory.create_evaluator_builder(
-                                             'DoE_Eval', 'doe_eval', builder_list)
+                                             'DoE_Eval', 'build_doe_eval', builder_list)
         return doe_eval_builder

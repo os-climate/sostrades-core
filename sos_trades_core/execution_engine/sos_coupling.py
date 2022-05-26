@@ -345,7 +345,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             for var_f_name in gems_grammar_in_keys:
                 var_name = self.dm.get_data(
                     var_f_name, SoSDisciplineBuilder.VAR_NAME)
-                self._data_in[var_name] = self.dm.get_data(var_f_name)
+                if var_name not in self.NUM_DESC_IN :
+                    self._data_in[var_name] = self.dm.get_data(var_f_name)
 
             # keep residuals_history if in data_out
             if self.RESIDUALS_HISTORY in self._data_out:
@@ -820,6 +821,12 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         else:
             reference_jacobian_path = None
             save_reference_jacobian = False
+
+        if inputs is None:
+            inputs = self.get_input_data_names(False)
+        if outputs is None:
+            outputs = self.get_output_data_names(False)
+
 
         return MDAChain.check_jacobian(self,
                                        input_data=input_data,
