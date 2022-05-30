@@ -497,9 +497,10 @@ class UncertaintyQuantification(SoSDiscipline):
 
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
-            new_chart = self.output_histogram_graph(
-                output_distrib, output_name, confidence_interval)
-            instanciated_charts.append(new_chart)
+            if not all(np.isnan(output_distrib)):
+                new_chart = self.output_histogram_graph(
+                    output_distrib, output_name, confidence_interval)
+                instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
@@ -591,30 +592,31 @@ class UncertaintyQuantification(SoSDiscipline):
 
     def output_histogram_graph(self, data, data_name, confidence_interval):
         
-        name = data_name
-        unit = None
-        if data_name in self.data_details["variable"].values:
-            name = self.data_details.loc[self.data_details["variable"]
-                                         == data_name]["name"].values[0]
-            unit = self.data_details.loc[self.data_details["variable"]
-                                         == data_name]["unit"].values[0]
-        
-        # name=data_name
-        # eval_output_name=data_name
-        
-        # if len(data_name.split('.'))>1:
-        #     name = data_name.split('.')[1]  
-        #     eval_output_name=data_name.split('.')[0]
-        
-        # ns_from_var=self.ee.dm.get_all_namespaces_from_var_name(eval_output_name) 
-        # var_name= ns_from_var
-        
-        # if len(ns_from_var)>0:
-        #     var_name=ns_from_var[0].split(self.ee.study_name + '.')[1]
-
-        # if var_name in self.data_details["variable"].values:
+        # name = data_name
+        # unit = None
+        # if data_name in self.data_details["variable"].values:
+        #     name = self.data_details.loc[self.data_details["variable"]
+        #                                  == data_name]["name"].values[0]
         #     unit = self.data_details.loc[self.data_details["variable"]
-        #                                  == var_name]["unit"].values[0]
+        #                                  == data_name]["unit"].values[0]
+        
+        name=data_name
+        unit = None
+        eval_output_name=data_name
+        
+        if len(data_name.split('.'))>1:
+            name = data_name.split('.')[1]  
+            eval_output_name=data_name.split('.')[0]
+        
+        ns_from_var=self.ee.dm.get_all_namespaces_from_var_name(eval_output_name) 
+        var_name= ns_from_var
+        
+        if len(ns_from_var)>0:
+            var_name=ns_from_var[0].split(self.ee.study_name + '.')[1]
+
+        if var_name in self.data_details["variable"].values:
+            unit = self.data_details.loc[self.data_details["variable"]
+                                         == var_name]["unit"].values[0]
         hist_y = go.Figure()
         hist_y.add_trace(go.Histogram(x=list(data),
                                       nbinsx=100, histnorm='probability'))

@@ -26,7 +26,7 @@ class Study(StudyManager):
     '''
 
     def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine)
+        super().__init__(__file__, execution_engine=execution_engine, run_usecase=False)
 
     def setup_usecase(self):
         ######### Numerical values   ####
@@ -41,12 +41,14 @@ class Study(StudyManager):
 
         input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
                               'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y', 'DoE_Eval.Hessian.ax2',
-                                            'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
+                                            'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy',
+                                            'DoE_Eval.Hessian.exy']}
         input_selection_xy = pd.DataFrame(input_selection_xy)
 
         input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
                               'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y', 'DoE_Eval.Hessian.ax2',
-                                            'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
+                                            'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy',
+                                            'DoE_Eval.Hessian.exy']}
         input_selection_xy = pd.DataFrame(input_selection_xy)
 
         output_selection_z = {'selected_output': [True],
@@ -56,8 +58,8 @@ class Study(StudyManager):
         dspace_dict_xy = {'variable': ['x', 'y'],
                           'lower_bnd': [-5., -5.],
                           'upper_bnd': [+5., +5.],
-        #                  'enable_variable': [True, True],
-        #                  'activated_elem': [[True], [True]]
+                          #                  'enable_variable': [True, True],
+                          #                  'activated_elem': [[True], [True]]
                           }
         my_doe_algo = "lhs"
         n_samples = 4
@@ -90,4 +92,4 @@ class Study(StudyManager):
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.run(for_test=True)
+    uc_cls.run()
