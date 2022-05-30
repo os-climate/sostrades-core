@@ -27,7 +27,6 @@ class ProcessBuilder(BaseProcessBuilder):
         'version': '',
     }
     def get_builders(self):
-        repo = 'sos_trades_core.sos_processes.test'
         builder_list = []
         self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoE_Eval')
         doe_eval_builder = self.ee.factory.create_evaluator_builder(
