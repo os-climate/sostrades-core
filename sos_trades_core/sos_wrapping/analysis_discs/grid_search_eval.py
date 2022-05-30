@@ -308,7 +308,7 @@ class GridSearchEval(DoeEval):
                 self.logger.warning(
                     "samples_outputs_df is empty"
                     "No suitable columns were found, i.e, no float or no unique value per scenario"
-                    "Consider to select another eval_output"
+                    "Please, consider to select another eval_output"
                 )
 
     def generate_samples_from_doe_factory(self):
@@ -769,7 +769,7 @@ class GridSearchEval(DoeEval):
                     ]
 
             elif slider_list == []:
-                chart_name = f'{z_vble} contour plot'
+                chart_name = f'{z_vble.split(".")[-1]} contour plot'
                 chart_data = cont_plot_df.loc[:, ['scenario', x_vble, y_vble, z_vble]]
                 
                 #METADATA of all plots in GreadSearch 
@@ -943,7 +943,7 @@ class GridSearchEval(DoeEval):
                                 + ': %{x}'
                                 + '<br>{}'.format(chart_info["y_short"])
                                 + ': %{y}'
-                                + '<br><b>{}<b>'.format(chart_info["z"])
+                                + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
                                 + ': <b> %{z}<b>'
                                 + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                 name="",
@@ -1007,7 +1007,7 @@ class GridSearchEval(DoeEval):
                                     + ': %{x}'
                                     + '<br>{}'.format(chart_info["y_short"])
                                     + ': %{y}'
-                                    + '<br>{} '.format(chart_info["z"])
+                                    + '<br>{} '.format(chart_info["z"].split(".")[-1])
                                     + ': <b> {} {}<b>'.format(
                                         round(z_ref_hover, 5), legend_letter
                                     )
@@ -1121,7 +1121,7 @@ class GridSearchEval(DoeEval):
                                     + ': %{x}'
                                     + '<br>{}'.format(chart_info["y_short"])
                                     + ': %{y}'
-                                    + '<br><b>{}<b>'.format(chart_info["z"])
+                                    + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
                                     + ': <b> %{z}<b>'
                                     + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name='{} '.format(slider_short_name)
@@ -1208,7 +1208,7 @@ class GridSearchEval(DoeEval):
                                             )
                                         )
                                         + f'{slider_unit}'
-                                        + '<br><b>{}<b>'.format(chart_info["z"])
+                                        + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
                                         + ': <b> {} {}<b>'.format(
                                             round(z_ref_hover, 5), legend_letter
                                         )
@@ -1294,7 +1294,11 @@ class GridSearchEval(DoeEval):
     def get_postprocessing_table(self, ref_scen_dict, eval_in_list):
 
         row_ref_scen = copy.deepcopy(ref_scen_dict['reference_scenario'])
+        cols= list(row_ref_scen.columns)
         if len(ref_scen_dict['slider']) == 0:
+            for col in cols:
+                if ref_scen_dict['z'].split('.')[0] in col:
+                    row_ref_scen.rename(columns={col:col.split('.')[-1]},inplace=True)
             row_ref_scen.rename(
                 columns={
                     ref_scen_dict['x']: ref_scen_dict['x_short'],
@@ -1303,6 +1307,10 @@ class GridSearchEval(DoeEval):
                 inplace=True,
             )
         elif len(ref_scen_dict['slider']) == 1:
+            for col in cols:
+                if ref_scen_dict['z'].split('.')[0] in col:
+                    row_ref_scen.rename(columns={col:col.split('.')[-1]},inplace=True)
+
             row_ref_scen.rename(
                 columns={
                     ref_scen_dict['x']: ref_scen_dict['x_short'],
@@ -1313,6 +1321,7 @@ class GridSearchEval(DoeEval):
                 },
                 inplace=True,
             )
+            
 
         df = row_ref_scen.drop(['scenario'], axis='columns').T.reset_index()
         df.columns = ['Parameter', 'table_value']
