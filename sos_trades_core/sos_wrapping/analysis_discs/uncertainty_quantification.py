@@ -494,9 +494,10 @@ class UncertaintyQuantification(SoSDiscipline):
 
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
-            new_chart = self.output_histogram_graph(
-                output_distrib, output_name, confidence_interval)
-            instanciated_charts.append(new_chart)
+            if not all(np.isnan(output_distrib)):
+                new_chart = self.output_histogram_graph(
+                    output_distrib, output_name, confidence_interval)
+                instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
