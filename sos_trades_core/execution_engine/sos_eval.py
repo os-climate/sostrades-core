@@ -208,7 +208,7 @@ class SoSEval(SoSDisciplineBuilder):
             if not disc.is_sos_coupling:
                 disc.update_gems_grammar_with_data_io()
 
-        if self._data_in == {} or self.get_disciplines_to_configure() == []:
+        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0):
             # Call standard configure methods to set the process discipline
             # tree
             SoSDiscipline.configure(self)
@@ -224,7 +224,7 @@ class SoSEval(SoSDisciplineBuilder):
         '''
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         '''
-        return SoSDiscipline.is_configured(self) and (self.get_disciplines_to_configure() == [])
+        return SoSDiscipline.is_configured(self) and ((self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0)
 
     def set_eval_possible_values(self):
         '''
