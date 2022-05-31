@@ -106,7 +106,9 @@ class BuildDoeEval(SoSEval):
 
     DESC_OUT = {
         'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                              'namespace': 'ns_doe_eval'}
+                              'namespace': 'ns_doe_eval'},
+        'all_ns_dict': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                        'namespace': 'ns_doe_eval'}
     }
     # DESC_IN static parameters
     #   'repo_of_processes': folder root of the processes to be nested inside the DoE.
@@ -198,6 +200,20 @@ class BuildDoeEval(SoSEval):
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
 
+    def build(self):
+        '''
+        Method copied from SoSCoupling: build and store disciplines in sos_disciplines
+        '''
+        if len(self.cls_builder) == 0:
+            if 'repo_of_processes' in self.get_data_io_dict_keys('in') and 'process_folder_name' in self.get_data_io_dict_keys('in'):
+                repo = self.get_sosdisc_inputs('repo_of_processes')
+                mod_id = self.get_sosdisc_inputs('process_folder_name')
+                if repo != 'None' and mod_id != 'None':
+                    cls_builder = self.get_nested_builders_from_process(
+                        repo, mod_id)
+                    self.set_nested_builders(cls_builder)
+        SoSEval.build(self)
+
     def setup_sos_disciplines(self):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
@@ -213,14 +229,6 @@ class BuildDoeEval(SoSEval):
 
         # The setup of the discipline can begin once the algorithm we want to use to generate
         # the samples has been set
-        if len(self.cls_builder) == 0:
-            if 'repo_of_processes' in self.get_data_io_dict_keys('in') and 'process_folder_name' in self.get_data_io_dict_keys('in'):
-                repo = self.get_sosdisc_inputs('repo_of_processes')
-                mod_id = self.get_sosdisc_inputs('process_folder_name')
-                if repo != 'None' and mod_id != 'None':
-                    cls_builder = self.get_nested_builders_from_process(
-                        repo, mod_id)
-                    self.set_nested_builders(cls_builder)
 
         if self.ALGO in self._data_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
@@ -576,8 +584,15 @@ class BuildDoeEval(SoSEval):
 
         # saving outputs in the dm
         self.status = 'RUNNING'
+        my_keys = [key for key in self.ee.ns_manager.all_ns_dict]
+        my_dict = {}
+        for item in my_keys:
+            my_dict[item] = self.ee.ns_manager.all_ns_dict[item].to_dict()
+        my_all_ns_dict = pd.DataFrame.from_dict(my_dict, orient='index')
         self.store_sos_outputs_values(
-            {'samples_inputs_df': samples_dataframe})
+            {'samples_inputs_df': samples_dataframe,
+             'all_ns_dict': my_all_ns_dict
+             })
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
