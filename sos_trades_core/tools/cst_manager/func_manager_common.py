@@ -181,3 +181,73 @@ def get_dsoft_maximum_vect(cst, k=7e2):
     d_log = (1/k) * (d_sum / np.sum(np.exp(k*cst_array_limited), axis=1).reshape(cst_array_limited.shape[0],1))
     d_log = np.where(d_log>1E-20, d_log, 0.0)
     return d_log
+
+def cons_smooth_maximum_vect(cst, alpha=1E16):
+    """
+    Conservative smooth maximum function.
+    This modified version of the smooth_max adds an epsilon value to the smoothed value
+    in order to have a conservative value (always smooth_value > max(values))
+    """
+    cst_array = np.array(cst)
+    max_exp = 650  # max value for exponent input, higher value gives infinity
+    min_exp = -300
+    max_alphax = np.amax(alpha * cst_array, axis=1)
+
+    k = max_alphax - max_exp
+    # Deal with underflow . max with exp(-300)
+    exp_func = np.maximum(min_exp, alpha * cst_array -
+                          np.repeat(k, cst_array.shape[1]).reshape(cst_array.shape))
+    den = np.sum(np.exp(exp_func), axis=1)
+    num = np.sum(cst_array * np.exp(exp_func), axis=1)
+    result = np.where(den != 0, num / den + 0.3 / alpha, np.amax(cst_array, axis=1))
+    if (den == 0).any():
+        print('Warning in smooth_maximum! den equals 0, hard max is used')
+
+    return result
+
+def get_dcons_smooth_dvariable_vect(cst, alpha=1E16):
+    cst_array = np.array(cst)
+    max_exp = 650.0  # max value for exponent input, higher value gives infinity
+    min_exp = -300
+    alphaxcst = alpha * cst_array
+
+    max_alphax = np.amax(alphaxcst, axis=1)
+
+    k = max_alphax - max_exp
+    exp_func = np.maximum(min_exp, alpha * cst_array -
+                          np.repeat(k, cst_array.shape[1]).reshape(cst_array.shape))
+    den = np.sum(np.exp(exp_func), axis=1)
+    num = np.sum(cst_array * np.exp(exp_func), axis=1)
+
+    # Vectorized calculation
+    exp_func = np.maximum(min_exp, alpha * cst_array -
+                          np.repeat(k, cst_array.shape[1]).reshape(cst_array.shape))
+    dden = alpha * np.exp(exp_func)
+    dnum = cst_array * (alpha * np.exp(exp_func)
+                        ) + np.exp(exp_func)
+    grad_value = dnum / np.repeat(den, cst_array.shape[1]).reshape(cst_array.shape) - (
+                np.repeat(num, cst_array.shape[1]).reshape(
+                    cst_array.shape) / np.repeat(den, cst_array.shape[1]).reshape(cst_array.shape)) * (
+                             dden / np.repeat(den, cst_array.shape[1]).reshape(cst_array.shape))
+
+    # Special case for max element
+    max_elem = np.amax(cst_array * np.sign(alpha), axis=1) * np.sign(alpha)
+    non_max_idx = np.array([cst_array[i] != max_elem[i]
+                            for i in np.arange(cst_array.shape[0])]).reshape(cst_array.shape[0], cst_array.shape[1])
+    dden_max = np.sum(-alpha * non_max_idx *
+                      np.exp(np.maximum(min_exp,
+                                        alpha * cst_array - np.repeat(k, cst_array.shape[1]).reshape(cst_array.shape))),
+                      axis=1)
+    dnum_max = np.sum(-alpha * cst_array * non_max_idx *
+                      np.exp(np.maximum(min_exp,
+                                        alpha * cst_array - np.repeat(k, cst_array.shape[1]).reshape(cst_array.shape))),
+                      axis=1)
+    # derivative of den wto cstmax is 0
+    dden_max = dden_max + 0.0
+    dnum_max = dnum_max + 1.0 * np.exp(alpha * max_elem - k)
+    grad_val_max = dnum_max / den - (num / den) * (dden_max / den)
+
+    for i in np.arange(cst_array.shape[0]):
+        grad_value[i][np.logical_not(non_max_idx)[i]] = grad_val_max[i]
+
+    return grad_value
