@@ -77,6 +77,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     EQ_CONSTRAINTS = 'eq_constraints'
     # DESC_I/O
     PARALLEL_OPTIONS = 'parallel_options'
+    # FD step
+    FD_STEP = "fd_step"
 
     algo_dict = {}
 
@@ -96,6 +98,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
+               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6}, 
                'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
@@ -481,8 +484,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     self.logger.warning(
                         f'The differentiation method "{diff_method}" will overload the linearization mode "{disc.linearization_mode}" ')
 
+        fd_step = self.get_sosdisc_inputs(self.FD_STEP)
         Scenario.set_differentiation_method(
-            self, diff_method, 1e-6)
+            self, diff_method, fd_step)
 
     def set_parallel_options(self):
         """
