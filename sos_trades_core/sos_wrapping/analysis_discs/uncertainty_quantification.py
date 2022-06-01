@@ -188,7 +188,7 @@ class UncertaintyQuantification(SoSDiscipline):
                     if (('design_space' in self._data_in) & (len(in_param) > 0)):
 
                         if (self._data_in['design_space']['value'] is not None):
-
+    
                             lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
                             upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
                             input_distribution_default = pd.DataFrame(
@@ -574,46 +574,59 @@ class UncertaintyQuantification(SoSDiscipline):
                          x1=y_mean,
                          y0=0, y1=1,
                          line=dict(color="black", width=2, dash="dot", ))
-
-        hist_y.add_trace(go.Scatter(x=[y_left_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[" Lower parameter "], mode="text", textposition='top left'))
-        hist_y.add_trace(go.Scatter(x=[y_right_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[" Upper parameter "], mode="text", textposition='top right'))
-        hist_y.add_trace(go.Scatter(x=[y_mean],
-                                    y=[0.75 * y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[" Mean "], mode="text", textposition='top right'))
+        
+        hist_y.add_annotation(
+                    x=y_left_boundary,
+                    y=y_max,
+                    font=dict(color="black", size=12),
+                    text=" Lower parameter ",
+                    showarrow=False,
+                    xanchor="right",
+                    )
+        hist_y.add_annotation(
+                    x=y_right_boundary,
+                    y=y_max,
+                    font=dict(color="black", size=12),
+                    text=" Upper parameter ",
+                    showarrow=False,
+                    xanchor="left",
+                    )
+        hist_y.add_annotation(
+                    x=y_mean,
+                    y=0.75*y_max,
+                    font=dict(color="black", size=12),
+                    text=" Mean ",
+                    showarrow=False,
+                    xanchor="left",
+                    )
+        hist_y.add_annotation(
+                    x=0.85,
+                    y=1.15,
+                    font=dict(
+                        family='Arial',
+                        color='#7f7f7f',
+                        size=10),
+                    text=f' Mean: {format_currency_legend(y_mean, unit)} <br> Median: {format_currency_legend(median, unit)} ',
+                    showarrow=False,
+                    xanchor="left",
+                    align="right",
+                    xref= 'paper',
+                    yref=  'paper',
+                    bordercolor='black',
+                    borderwidth=1,
+                    )        
 
         hist_y.update_layout(showlegend=False)
-
-        text_right = {
-            ' Mean': f'{format_currency_legend(y_mean, unit)}',
-            ' Median': f'{format_currency_legend(median, unit)}',
-            # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
-            # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
-        }
 
         new_chart = InstantiatedPlotlyNativeChart(
             fig=hist_y, chart_name=f'{name} - {distribution_type} Distribution', default_legend=False)
 
-        new_chart.annotation_upper_right = text_right
         # new_chart.to_plotly().show()
 
         return new_chart
 
     def output_histogram_graph(self, data, data_name, confidence_interval):
 
-        # name = data_name
-        # unit = None
-        # if data_name in self.data_details["variable"].values:
-        #     name = self.data_details.loc[self.data_details["variable"]
-        #                                  == data_name]["name"].values[0]
-        #     unit = self.data_details.loc[self.data_details["variable"]
-        #                                  == data_name]["unit"].values[0]
 
         name = data_name
         unit = None
@@ -679,40 +692,58 @@ class UncertaintyQuantification(SoSDiscipline):
                          y0=0, y1=1,
                          line=dict(color="LightSeaGreen"),
                          fillcolor="PaleTurquoise", opacity=0.2)
-        hist_y.add_trace(go.Scatter(x=[y_left_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_left_boundary, unit)} '], mode="text",
-                                    textposition='top left'
-                                    ))
-        hist_y.add_trace(go.Scatter(x=[y_right_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_right_boundary, unit)} '], mode="text",
-                                    textposition='top right'
-                                    ))
-        hist_y.add_trace(go.Scatter(x=[y_mean],
-                                    y=[0.75 * y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_mean, unit)} '], mode="text",
-                                    textposition='top right'
-                                    ))
+        
+        hist_y.add_annotation(
+                            x=y_left_boundary,
+                            y=y_max,
+                            font=dict(color="black", size=12),
+                            text=f' {format_currency_legend(y_left_boundary, unit)} ',
+                            showarrow=False,
+                            xanchor="right",
+                            )
+        
+        hist_y.add_annotation(
+                            x=y_right_boundary,
+                            y=y_max,
+                            font=dict(color="black", size=12),
+                            text=f' {format_currency_legend(y_right_boundary, unit)}',
+                            showarrow=False,
+                            xanchor="left",
+                            )
+        
+        hist_y.add_annotation(
+                            x=y_mean,
+                            y=0.75 * y_max,
+                            font=dict(color="black", size=12),
+                            text=f' {format_currency_legend(y_mean, unit)} ',
+                            showarrow=False,
+                            xanchor="left",
+                            )
+        
+        hist_y.add_annotation(
+            x=0.60,
+            y=1.15,
+            font=dict(
+                family='Arial',
+                color='#7f7f7f',
+                size=10),
+            text=f'Confidence Interval: {int(confidence_interval * 100)} % [{format_currency_legend(y_left_boundary,"")}, {format_currency_legend(y_right_boundary,"")}] {unit} <br> Mean: {format_currency_legend(y_mean, unit)} <br> Median: {format_currency_legend(median, unit)} ',
+            showarrow=False,
+            xanchor="left",
+            align="right",
+            xref= 'paper',
+            yref=  'paper',
+            bordercolor='black',
+            borderwidth=1,
+            )
 
         hist_y.update_layout(showlegend=False)
 
         # percent_pos = len([p for p in data if p > 0]) / len(data) * 100
 
-        text_right = {
-            'Confidence Interval': f'{int(confidence_interval * 100)} % [{format_currency_legend(y_left_boundary, "")} , {format_currency_legend(y_right_boundary, "")} ] {unit}',
-            ' Mean': f'{format_currency_legend(y_mean, unit)}',
-            ' Median': f'{format_currency_legend(median, unit)}',
-            # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
-        }
-
         new_chart = InstantiatedPlotlyNativeChart(
             fig=hist_y, chart_name=f'{name} Distribution', default_legend=False)
 
-        new_chart.annotation_upper_right = text_right
         # new_chart.to_plotly().show()
 
         return new_chart
