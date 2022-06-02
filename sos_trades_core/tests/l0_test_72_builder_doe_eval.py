@@ -335,12 +335,12 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         print(study_dump.ee.dm.get_data_dict_values())
         study_dump.ee.configure()
         print(study_dump.ee.dm.get_data_dict_values())
-        # study_dump.run()
+        study_dump.run()
 
-        #study_load = BaseStudyManager(repo, mod_id_empty_doe, 'Essai')
-        # study_load.load_data(from_path=dump_dir)
-        # print(study_load.ee.dm.get_data_dict_values())
-        # study_load.run()
+        study_load = BaseStudyManager(repo, mod_id_empty_doe, 'Essai')
+        study_load.load_data(from_path=dump_dir)
+        print(study_load.ee.dm.get_data_dict_values())
+        study_load.run()
         from shutil import rmtree
         rmtree(dump_dir)
 
