@@ -20,7 +20,6 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from pkg_resources._vendor.jaraco.context import repo_context
 from importlib import import_module
 from os.path import dirname
 from os import listdir
