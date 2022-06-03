@@ -698,6 +698,9 @@ class GridSearchEval(DoeEval):
 
             # Select only float type results
             if output_df is not None:
+                output_df_to_return = output_df.copy()
+                scenario_column = output_df_to_return.pop('scenario')
+                output_df_to_return.insert(0, 'scenario', scenario_column)
                 output_variables = output_df.select_dtypes(
                     include='float'
                 ).columns.to_list()
@@ -819,9 +822,6 @@ class GridSearchEval(DoeEval):
                     'chart_data': chart_data,
                     'reference_scenario': reference_row,
                 }
-                output_df_to_return = output_df.copy()
-                scenario_column = output_df_to_return.pop('scenario')
-                output_df_to_return.insert(0, 'scenario', scenario_column)
 
         chart_dict = {key: val for key, val in sorted(chart_dict.items())}
         return chart_dict, output_df_to_return
