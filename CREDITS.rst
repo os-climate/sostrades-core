@@ -42,3 +42,8 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `nlopt <https://github.com/stevengj/nlopt>`_
     GNU LGPL v2.1
 
+`cvxpy <https://www.cvxpy.org/>`_
+	Apache v2.0
+
+`coinor-cbc <https://github.com/coin-or/Cbc>`_
+	Eclipse Public License - v2.0
