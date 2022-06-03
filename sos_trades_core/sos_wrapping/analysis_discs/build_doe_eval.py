@@ -20,6 +20,9 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
+from importlib import import_module
+from os.path import dirname
+from os import listdir
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -38,14 +41,14 @@ class BuildDoeEval(SoSEval):
 
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_wrapping.analysis_discs.doe_eval',
+        'label': 'DoE_eval driver',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
         'validated_by': 'SoSTrades Project',
         'last_modification_date': '',
         'category': '',
-        'definition': '',
+        'definition': 'DoE driver discipline that implements a Design of Experiment on a nested system (Implementation based on SoSEval driver discipline). Remark: the optimization "formulation" capability is not covered',
         'icon': '',
         'version': '',
     }
@@ -82,10 +85,10 @@ class BuildDoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int']
 
-    DESC_IN = {'repo_of_processes': {'type': 'string', 'structuring': True, 'default': 'None',
-                                     'possible_values': ['None', 'sos_trades_core.sos_processes.test']},
-               'process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None',
-                                               'possible_values': ['None', 'test_disc_hessian']},
+    DESC_IN = {'repo_of_sub_processes': {'type': 'string', 'structuring': True, 'default': 'None',
+                                         'possible_values': ['None', 'sos_trades_core.sos_processes.test']},
+               'sub_process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None',
+                                           'possible_values': ['None', 'test_disc_hessian']},
                'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
@@ -111,9 +114,9 @@ class BuildDoeEval(SoSEval):
                         'namespace': 'ns_doe_eval'}
     }
     # DESC_IN static parameters
-    #   'repo_of_processes': folder root of the processes to be nested inside the DoE.
+    #   'repo_of_sub_processes': folder root of the sub processes to be nested inside the DoE.
     #                        If 'None' then it uses the sos_processes python for doe creation.
-    #   'process_folder_name': selected process folder name to be nested inside the DoE.
+    #   'sub_process_folder_name': selected process folder name to be nested inside the DoE.
     #                        If 'None' then it uses the sos_processes python for doe creation.
     #   'eval_inputs': selection of input variables to be used for the DoE
     #   'eval_outputs': selection of output variables to be used for the DoE (the selected observables)
@@ -122,11 +125,15 @@ class BuildDoeEval(SoSEval):
     #   'wait_time_between_fork':
     # DESC_OUT static parameters
     #   'samples_inputs_df' : copy of the generated or provided input sample
+    #   'all_ns_dict' : a map of ns keys: values
     # DESC_IN dynamic parameters
-    #   'custom_samples_df': provided input sample (in case 'sampling_algo' == 'CustomDOE')
-    #   'design_space': provided design space (in case 'sampling_algo' != 'CustomDOE')
-    #   'algo_options': options (if any) depending of the choice of 'sampling_algo'
-    #                                         (in case 'sampling_algo' != 'CustomDOE')
+    #   if subprocess is not Empty:
+    #                    'usecase_of_sub_process' : either empty or an available usecase of the sub_process
+    #   if 'sampling_algo' == 'CustomDOE':
+    #                        'custom_samples_df': provided input sample
+    #   else:
+    #                        'design_space': provided design space
+    #                        'algo_options': options (if any) depending of the choice of 'sampling_algo'
     # DESC_OUT dynamic parameters
     #   <var observable name>_dict': for each selected output observable doe result
     #                                associated to sample and the selected observable
@@ -202,17 +209,34 @@ class BuildDoeEval(SoSEval):
 
     def build(self):
         '''
-        Method copied from SoSCoupling: build and store disciplines in sos_disciplines
+        Get and build builder from sub_process of doe_eval driver 
         '''
         if len(self.cls_builder) == 0:
-            if 'repo_of_processes' in self.get_data_io_dict_keys('in') and 'process_folder_name' in self.get_data_io_dict_keys('in'):
-                repo = self.get_sosdisc_inputs('repo_of_processes')
-                mod_id = self.get_sosdisc_inputs('process_folder_name')
-                if repo != 'None' and mod_id != 'None':
-                    cls_builder = self.get_nested_builders_from_process(
-                        repo, mod_id)
+            if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+                repo = self.get_sosdisc_inputs('repo_of_sub_processes')
+                sub_process = self.get_sosdisc_inputs(
+                    'sub_process_folder_name')
+                if repo != 'None' and sub_process != 'None':
+                    cls_builder = self.get_nested_builders_from_sub_process(
+                        repo, sub_process)
                     self.set_nested_builders(cls_builder)
         SoSEval.build(self)
+
+    def get_nested_builders_from_sub_process(self, repo, sub_process):
+        """
+        create_nested builders from their nested process
+        """
+        cls_builder = self.ee.factory.get_builder_from_process(
+            repo=repo, mod_id=sub_process)
+        return cls_builder
+
+    def set_nested_builders(self, cls_builder):
+        """
+        Set nested builder to the doe_eval process in case this doe_eval process was instantiated with an empty nested builder
+        """
+        self.cls_builder = cls_builder
+        self.eval_process_builder = self._set_eval_process_builder()
+        return
 
     def setup_sos_disciplines(self):
         """
@@ -229,6 +253,25 @@ class BuildDoeEval(SoSEval):
 
         # The setup of the discipline can begin once the algorithm we want to use to generate
         # the samples has been set
+
+        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+            repo = self.get_sosdisc_inputs('repo_of_sub_processes')
+            sub_process = self.get_sosdisc_inputs('sub_process_folder_name')
+            process = sub_process
+            if repo != 'None' and sub_process != 'None':
+                process_usecase_list = ['Empty']
+                usecase_list = []
+                imported_module = import_module(
+                    '.'.join([repo, sub_process]))
+                process_directory = dirname(imported_module.__file__)
+                for usecase_py in listdir(process_directory):
+                    if usecase_py.startswith('usecase'):
+                        usecase = usecase_py.replace('.py', '')
+                        usecase_list.append(
+                            '.'.join([usecase]))
+                process_usecase_list += usecase_list
+                dynamic_inputs.update(
+                    {'usecase_of_sub_process': {'type': 'string', 'default': 'Empty', 'possible_values': process_usecase_list, 'structuring': True}})
 
         if self.ALGO in self._data_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
@@ -311,6 +354,35 @@ class BuildDoeEval(SoSEval):
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
+        self.load_data_from_usecase_of_subprocess()
+
+    def load_data_from_usecase_of_subprocess(self):
+        """
+        load data of the selected sub process usecase and put them as a child of doe eval
+        """
+        usecase_has_changed = False
+        if 'usecase_of_sub_process' in self._data_in and 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+            usecase = self.get_sosdisc_inputs('usecase_of_sub_process')
+            repository = self.get_sosdisc_inputs('repo_of_sub_processes')
+            process = self.get_sosdisc_inputs('sub_process_folder_name')
+            if self.previous_usecase_of_sub_process != usecase:
+                usecase_has_changed = True
+                self.previous_usecase_of_sub_process = usecase
+            if usecase != 'Empty' and usecase_has_changed:
+                imported_usecase = '.'.join([repository, process, usecase])
+                imported_module = import_module(imported_usecase)
+                study_tmp = getattr(imported_module, 'Study')(
+                    execution_engine=self.ee)
+                # we provide the good prefix to the loaded use_case data
+                study_tmp.study_name = f'{self.ee.study_name}.DoE_Eval'
+                usecase_data = study_tmp.setup_usecase()
+                if not isinstance(usecase_data, list):
+                    usecase_data = [usecase_data]
+                input_dict_to_load = {}
+                for uc_d in usecase_data:
+                    input_dict_to_load.update(uc_d)
+                self.ee.dm.set_values_from_dict(
+                    input_dict_to_load)
 
     def __init__(self, sos_name, ee, cls_builder):
         '''
@@ -327,22 +399,7 @@ class BuildDoeEval(SoSEval):
         self.selected_outputs = []
         self.selected_inputs = []
         self.previous_algo_name = ""
-
-    def get_nested_builders_from_process(self, repo, mod_id):
-        """
-        create_nested builders from process
-        """
-        cls_builder = self.ee.factory.get_builder_from_process(
-            repo=repo, mod_id=mod_id)
-        return cls_builder
-
-    def set_nested_builders(self, cls_builder):
-        """
-        Set nested builder to the doe_eval process in case this doe_eval process was instantiated with an empty builder
-        """
-        self.cls_builder = cls_builder
-        self.eval_process_builder = self._set_eval_process_builder()
-        return
+        self.previous_usecase_of_sub_process = ""
 
     def create_design_space(self):
         """
@@ -589,6 +646,7 @@ class BuildDoeEval(SoSEval):
         for item in my_keys:
             my_dict[item] = self.ee.ns_manager.all_ns_dict[item].to_dict()
         my_all_ns_dict = pd.DataFrame.from_dict(my_dict, orient='index')
+        del my_all_ns_dict['dependency_disc_list']
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe,
              'all_ns_dict': my_all_ns_dict
