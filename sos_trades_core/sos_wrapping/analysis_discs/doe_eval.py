@@ -524,7 +524,6 @@ class DoeEval(SoSEval):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.status = 'RUNNING'
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.eval_out_list:
@@ -571,13 +570,14 @@ class DoeEval(SoSEval):
 
         for data_in_key in disc._data_in.keys():
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
+            is_structuring = disc._data_in[data_in_key].get(self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
-            if is_input_type and is_in_type and not in_coupling_numerical:
+                         ]['io_type'] == 'in'
+            if is_input_type and is_in_type and not in_coupling_numerical and not is_structuring:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 # we remove the study name from the variable full  name for a
@@ -633,9 +633,11 @@ class DoeEval(SoSEval):
         if eval_input_new_dm is None:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
+
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            self.check_eval_io( eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(), is_eval_input=True)
             default_dataframe = copy.deepcopy(default_in_dataframe)
             already_set_names = eval_input_new_dm['full_name'].tolist()
             already_set_values = eval_input_new_dm['selected_input'].tolist()
@@ -651,6 +653,8 @@ class DoeEval(SoSEval):
             # check if the eval_inputs need to be updtated after a subprocess
             # configure
         elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                               is_eval_input=False)
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
             already_set_values = eval_output_new_dm['selected_output'].tolist()
@@ -692,3 +696,20 @@ class DoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+
+    def check_eval_io(self, given_list, default_list, is_eval_input):
+        '''
+        Set the evaluation variable list (in and out) present in the DM
+        which fits with the eval_in_base_list filled in the usecase or by the user
+        '''
+        if is_eval_input:
+            input_type = "input"
+        else:
+            input_type = "output "
+
+        for given_io in given_list:
+            if given_io not in given_list:
+                self.logger.error(f' The {input_type} {given_io} is not among possible values.Either it is '
+                                  f'incorrectly written, doesnt have the correct full name or its type is not in '
+                                  f'admissible types (int, array, float). The configuration may not  be effective and '
+                                  f'dynamic inputs not created ')
