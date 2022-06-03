@@ -266,6 +266,7 @@ class DoeEval(SoSEval):
                 if 'algo_options' in self._data_in and algo_name_has_changed:
                     self._data_in['algo_options']['value'] = default_dict
 
+
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
@@ -637,7 +638,8 @@ class DoeEval(SoSEval):
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-            self.check_eval_io( eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(), is_eval_input=True)
+            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                               is_eval_input=True)
             default_dataframe = copy.deepcopy(default_in_dataframe)
             already_set_names = eval_input_new_dm['full_name'].tolist()
             already_set_values = eval_input_new_dm['selected_input'].tolist()
@@ -653,7 +655,7 @@ class DoeEval(SoSEval):
             # check if the eval_inputs need to be updtated after a subprocess
             # configure
         elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
                                is_eval_input=False)
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
@@ -698,18 +700,22 @@ class DoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in out_list]
 
     def check_eval_io(self, given_list, default_list, is_eval_input):
-        '''
+        """
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
-        '''
-        if is_eval_input:
-            input_type = "input"
-        else:
-            input_type = "output "
+        """
 
         for given_io in given_list:
-            if given_io not in given_list:
-                self.logger.error(f' The {input_type} {given_io} is not among possible values.Either it is '
-                                  f'incorrectly written, doesnt have the correct full name or its type is not in '
-                                  f'admissible types (int, array, float). The configuration may not  be effective and '
-                                  f'dynamic inputs not created ')
+            if given_io not in default_list:
+                if is_eval_input:
+                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+                                f'input of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
+                                f'be created. '
+
+                else:
+                    error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+                                f'output of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning). Dynamic inputs might  not be created. '
+
+                self.logger.info(error_msg)
