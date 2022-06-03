@@ -145,19 +145,19 @@ class UncertaintyQuantification(SoSDiscipline):
                 # samples_df = self.get_sosdisc_inputs(
                 #     'samples_inputs_df')
 
-                if eval_inputs is not None:
+                if (eval_inputs is not None) & (eval_outputs is not None):
 
                     selected_inputs = eval_inputs[eval_inputs['selected_input']
                                                   == True]['full_name']
-                    # in_param = list(samples_df.columns)[1:]
+
                     in_param = selected_inputs.tolist()
+                    # in_param.sort()
 
                     selected_outputs = eval_outputs[eval_outputs['selected_output']
                                                     == True]['full_name']
-                    # data_df = self.get_sosdisc_inputs(
-                    #     'samples_outputs_df')
-                    # out_param = list(data_df.columns)[1:]
+
                     out_param = selected_outputs.tolist()
+                    out_param.sort()
 
                     # ontology name
                     ontology_connector = OntologyDataConnector()
@@ -205,47 +205,47 @@ class UncertaintyQuantification(SoSDiscipline):
                                                            == 'LogNormal', 'most_probable_value'] = np.nan
 
                             data_details_default = pd.DataFrame()
-                            for input in in_param:
+                            for input in list(set(in_param)):
                                 [name, unit] = conversion_full_ontology[input.split(
                                     '.')[-1]]
                                 data_details_default = data_details_default.append(
                                     {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
-                            for output in out_param:
+                            for output in list(set(out_param)):
                                 [name, unit] = conversion_full_ontology[output.split(
                                     '.')[-1]]
                                 data_details_default = data_details_default.append(
                                     {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
 
-                                dynamic_inputs['input_distribution_parameters_df'] = {
-                                    'type': 'dataframe',
-                                    'dataframe_descriptor': {
-                                        'parameter': ('string', None, False),
-                                        'distribution': ('string', None, True),
-                                        'lower_parameter': ('float', None, True),
-                                        'upper_parameter': ('float', None, True),
-                                        'most_probable_value': ('float', None, True),
-                                    },
-                                    'unit': '-',
-                                    'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                    'namespace': 'ns_uncertainty_quantification',
-                                    'default': input_distribution_default,
-                                    'structuring': False
-                                }
+                            dynamic_inputs['input_distribution_parameters_df'] = {
+                                'type': 'dataframe',
+                                'dataframe_descriptor': {
+                                    'parameter': ('string', None, False),
+                                    'distribution': ('string', None, True),
+                                    'lower_parameter': ('float', None, True),
+                                    'upper_parameter': ('float', None, True),
+                                    'most_probable_value': ('float', None, True),
+                                },
+                                'unit': '-',
+                                'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_uncertainty_quantification',
+                                'default': input_distribution_default,
+                                'structuring': False
+                            }
 
-                                dynamic_inputs['data_details_df'] = {
-                                    'type': 'dataframe',
-                                    'dataframe_descriptor': {
-                                        'type': ('string', None, False),
-                                        'variable': ('string', None, False),
-                                        'name': ('string', None, True),
-                                        'unit': ('string', None, True),
-                                    },
-                                    'unit': None,
-                                    'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                    'namespace': 'ns_uncertainty_quantification',
-                                    'default': data_details_default,
-                                    'structuring': False
-                                }
+                            dynamic_inputs['data_details_df'] = {
+                                'type': 'dataframe',
+                                'dataframe_descriptor': {
+                                    'type': ('string', None, False),
+                                    'variable': ('string', None, False),
+                                    'name': ('string', None, True),
+                                    'unit': ('string', None, True),
+                                },
+                                'unit': None,
+                                'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                'namespace': 'ns_uncertainty_quantification',
+                                'default': data_details_default,
+                                'structuring': False
+                            }
 
                             if 'input_distribution_parameters_df' in self._data_in:
                                 self._data_in['input_distribution_parameters_df']['value'] = self.get_sosdisc_inputs(
@@ -254,6 +254,8 @@ class UncertaintyQuantification(SoSDiscipline):
                                     'data_details_df')
                                 if (self.get_sosdisc_inputs('design_space')['full_name'].to_list() != in_param) or (self.get_sosdisc_inputs('input_distribution_parameters_df')['lower_parameter'].to_list() != self.get_sosdisc_inputs('design_space')['lower_bnd'].to_list()) or (self.get_sosdisc_inputs('input_distribution_parameters_df')['upper_parameter'].to_list() != self.get_sosdisc_inputs('design_space')['upper_bnd'].to_list()):
                                     self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
+                                    self._data_in['data_details_df']['value'] = data_details_default
+                                if (self.get_sosdisc_inputs('data_details_df')['variable'].to_list() != (in_param + out_param)):
                                     self._data_in['data_details_df']['value'] = data_details_default
 
             self.add_inputs(dynamic_inputs)

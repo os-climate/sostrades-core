@@ -85,10 +85,11 @@ class BuildDoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int']
 
-    DESC_IN = {'repo_of_sub_processes': {'type': 'string', 'structuring': True, 'default': 'None',
-                                         'possible_values': ['None', 'sos_trades_core.sos_processes.test']},
-               'sub_process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None',
-                                           'possible_values': ['None', 'test_disc_hessian']},
+    DESC_IN = {'repo_of_sub_processes': {'type': 'string', 'structuring': True, 'default': 'None', 'possible_values': ['None', 'sos_trades_core.sos_processes.test']
+                                         },
+               'sub_process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None'
+                                           #,'possible_values': ['None', 'test_disc_hessian']
+                                           },
                'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
