@@ -266,7 +266,6 @@ class DoeEval(SoSEval):
                 if 'algo_options' in self._data_in and algo_name_has_changed:
                     self._data_in['algo_options']['value'] = default_dict
 
-
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
@@ -634,7 +633,6 @@ class DoeEval(SoSEval):
         if eval_input_new_dm is None:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
-
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):

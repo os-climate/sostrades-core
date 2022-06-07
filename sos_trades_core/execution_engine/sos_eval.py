@@ -297,7 +297,7 @@ class SoSEval(SoSDisciplineBuilder):
         for var_f_name, var_value in values_dict.items():
             self.ee.dm.set_data(var_f_name,
                                 'value', var_value, check_value=False)
-        self.ee.factory.init_execution()
+        #self.ee.factory.init_execution()
 
         # execute eval process stored in children
         if len(self.sos_disciplines) > 1:
