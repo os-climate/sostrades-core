@@ -1050,6 +1050,19 @@ class TestSoSDOEScenario(unittest.TestCase):
             'criterion': 'default',
             'levels': 'default'
         }
+        algo_full_options = {
+            'n_samples': 10,
+            'alpha': 'orthogonal',
+            'eval_jac': False,
+            'face': 'faced',
+            'iterations': 5,
+            'max_time': 0,
+            'seed': 1,
+            'center_bb': 'default',
+            'center_cc': 'default',
+            'criterion': 'default',
+            'levels': 'default'
+        }
 
         dspace_dict_x = {'variable': ['x'],
 
@@ -1132,8 +1145,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
                      'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
-            'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
@@ -1148,23 +1160,22 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {'doe.DoEEval.algo_options': {
             'n_samples': 10, 'face': 'faced'}}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
-            'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
 
         # trigger a reconfiguration after eval_inputs and eval_outputs changes
         disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
-            'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_z.reset_index(drop=True), check_dtype=False)
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
+        algo_full_options.update({'n_samples':100})
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'),
-                             {'n_samples': 100, 'face': 'faced'})
+                             algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_eval.reset_index(drop=True), check_dtype=False)
 
@@ -1569,10 +1580,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        my_handler = UnitTestHandler()
-        exec_eng.logger.addHandler(my_handler)
-
         proc_name = "test_disc1_disc2_doe_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)

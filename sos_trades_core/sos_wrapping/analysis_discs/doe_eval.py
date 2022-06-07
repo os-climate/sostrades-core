@@ -29,6 +29,7 @@ from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_eval import SoSEval
 import pandas as pd
+from collections import ChainMap
 
 
 class DoeEval(SoSEval):
@@ -259,12 +260,18 @@ class DoeEval(SoSEval):
                 default_dict = self.get_algo_default_options(algo_name)
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                         'dataframe_edition_locked': False,
+                                                        'structuring': True,
 
                                                         'dataframe_descriptor': {
                                                             self.VARIABLES: ('string', None, False),
                                                             self.VALUES: ('string', None, True)}}})
+                all_options = list(default_dict.keys())
                 if 'algo_options' in self._data_in and algo_name_has_changed:
                     self._data_in['algo_options']['value'] = default_dict
+                if 'algo_options' in self._data_in and self._data_in['algo_options']['value'] is not None and list(
+                        self._data_in['algo_options']['value'].keys()) != all_options:
+                    options_map = ChainMap(self._data_in['algo_options']['value'], default_dict)
+                    self._data_in['algo_options']['value'] = {key: options_map[key] for key in all_options}
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
