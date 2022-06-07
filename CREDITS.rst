@@ -47,3 +47,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 
 `coinor-cbc <https://github.com/coin-or/Cbc>`_
 	Eclipse Public License - v2.0
+
+`pymoo <https://pymoo.org/>`_
+	Apache v2.0
+	

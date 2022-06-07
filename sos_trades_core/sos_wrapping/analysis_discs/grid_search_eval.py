@@ -453,6 +453,8 @@ class GridSearchEval(DoeEval):
         elif set(eval_input_new_dm['shortest_name'].tolist()) != (
             set(default_in_dataframe['shortest_name'].tolist())
         ):
+            self.check_eval_io(eval_input_new_dm['shortest_name'].tolist(), default_in_dataframe['shortest_name'].tolist(),
+                               is_eval_input=True)
             default_dataframe = copy.deepcopy(default_in_dataframe)
             if sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
                 self.logger.warning(
@@ -518,6 +520,8 @@ class GridSearchEval(DoeEval):
         elif set(eval_output_new_dm['shortest_name'].tolist()) != (
             set(default_out_dataframe['shortest_name'].tolist())
         ):
+            self.check_eval_io(eval_output_new_dm['shortest_name'].tolist(), default_out_dataframe['shortest_name'].tolist(),
+                               is_eval_input=False)
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
             already_set_values = eval_output_new_dm['selected_output'].tolist()
