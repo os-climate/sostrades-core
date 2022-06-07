@@ -20,6 +20,7 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
+from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
 from os.path import dirname
 from os import listdir
@@ -88,7 +89,6 @@ class BuildDoeEval(SoSEval):
     DESC_IN = {'repo_of_sub_processes': {'type': 'string', 'structuring': True, 'default': 'None', 'possible_values': ['None', 'sos_trades_core.sos_processes.test']
                                          },
                'sub_process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None'
-                                           #,'possible_values': ['None', 'test_disc_hessian']
                                            },
                'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
@@ -220,6 +220,8 @@ class BuildDoeEval(SoSEval):
                 if repo != 'None' and sub_process != 'None':
                     cls_builder = self.get_nested_builders_from_sub_process(
                         repo, sub_process)
+                    if not isinstance(cls_builder, list):
+                        cls_builder = [cls_builder]
                     self.set_nested_builders(cls_builder)
         SoSEval.build(self)
 
@@ -255,21 +257,50 @@ class BuildDoeEval(SoSEval):
         # The setup of the discipline can begin once the algorithm we want to use to generate
         # the samples has been set
 
+        # check ns keys
+        if 0 == 1:
+            current_ns_keys = [
+                key for key in self.ee.ns_manager.shared_ns_dict]
+            print(current_ns_keys)
+            changed_key = [
+                key for key in current_ns_keys if key not in self.previous_ns_keys]
+            changed_key = [key for key in changed_key if key != 'ns_doe_eval']
+            changed_key = [key for key in changed_key if key != 'ns_doe']
+            changed_key = [
+                key for key in changed_key if self.ee.study_name not in key]
+            print(changed_key)
+            if changed_key != []:
+                self.previous_ns_keys = changed_key
+                for key in changed_key:
+                    self.ee.ns_manager.add_ns(
+                        key, f'DoE_Eval.{self.ee.ns_manager.shared_ns_dict[key].get_value()}')
+                #    print('translated:  ' + key + ' from ' + self.ee.ns_manager.shared_ns_dict[key].get_value() + ' to ' +
+                #          f'DoE_Eval.{self.ee.ns_manager.shared_ns_dict[key].get_value()}')
+        # configure the sub_process_folder_name list
+        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+            repo = self.get_sosdisc_inputs('repo_of_sub_processes')
+            if repo != 'None':
+                sub_process_folder_name = ['None', 'test_disc_hessian']
+                sub_process_folder_name += [
+                    'test_disc1_disc2_coupling', 'test_sellar_coupling']
+                process_factory = SoSProcessFactory(additional_repository_list=[
+                    repo], search_python_path=False)
+                process_list_dict = process_factory.get_processes_dict()
+                filtered_process_list = [
+                    proc_name for proc_name in process_list_dict[repo] if 'test_proc_build_' in proc_name]
+                sub_process_folder_name += filtered_process_list
+                dynamic_inputs.update(
+                    {'sub_process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None', 'possible_values': sub_process_folder_name  # test_proc_build_*
+                                                 }})
+
+        # configure the usecase_of_sub_process list
         if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             sub_process = self.get_sosdisc_inputs('sub_process_folder_name')
-            process = sub_process
             if repo != 'None' and sub_process != 'None':
                 process_usecase_list = ['Empty']
-                usecase_list = []
-                imported_module = import_module(
-                    '.'.join([repo, sub_process]))
-                process_directory = dirname(imported_module.__file__)
-                for usecase_py in listdir(process_directory):
-                    if usecase_py.startswith('usecase'):
-                        usecase = usecase_py.replace('.py', '')
-                        usecase_list.append(
-                            '.'.join([usecase]))
+                usecase_list = self.get_usecase_possible_values(
+                    repo, sub_process)
                 process_usecase_list += usecase_list
                 dynamic_inputs.update(
                     {'usecase_of_sub_process': {'type': 'string', 'default': 'Empty', 'possible_values': process_usecase_list, 'structuring': True}})
@@ -357,6 +388,22 @@ class BuildDoeEval(SoSEval):
         self.add_outputs(dynamic_outputs)
         self.load_data_from_usecase_of_subprocess()
 
+    def get_usecase_possible_values(self, repo, sub_process):
+        '''
+            Once subprocess has been selected,
+            get the possible values for usecases if any
+        '''
+        usecase_list = []
+        imported_module = import_module(
+            '.'.join([repo, sub_process]))
+        process_directory = dirname(imported_module.__file__)
+        for usecase_py in listdir(process_directory):
+            if usecase_py.startswith('usecase'):
+                usecase = usecase_py.replace('.py', '')
+                usecase_list.append(
+                    '.'.join([usecase]))
+        return usecase_list
+
     def load_data_from_usecase_of_subprocess(self):
         """
         load data of the selected sub process usecase and put them as a child of doe eval
@@ -382,6 +429,7 @@ class BuildDoeEval(SoSEval):
                 input_dict_to_load = {}
                 for uc_d in usecase_data:
                     input_dict_to_load.update(uc_d)
+                print(input_dict_to_load)
                 self.ee.dm.set_values_from_dict(
                     input_dict_to_load)
 
@@ -401,6 +449,7 @@ class BuildDoeEval(SoSEval):
         self.selected_inputs = []
         self.previous_algo_name = ""
         self.previous_usecase_of_sub_process = ""
+        self.previous_ns_keys = []
 
     def create_design_space(self):
         """
@@ -642,12 +691,14 @@ class BuildDoeEval(SoSEval):
 
         # saving outputs in the dm
         self.status = 'RUNNING'
+        #########################################################
         my_keys = [key for key in self.ee.ns_manager.all_ns_dict]
         my_dict = {}
         for item in my_keys:
             my_dict[item] = self.ee.ns_manager.all_ns_dict[item].to_dict()
         my_all_ns_dict = pd.DataFrame.from_dict(my_dict, orient='index')
         del my_all_ns_dict['dependency_disc_list']
+        #########################################################
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe,
              'all_ns_dict': my_all_ns_dict
