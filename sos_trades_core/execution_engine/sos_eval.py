@@ -132,6 +132,7 @@ class SoSEval(SoSDisciplineBuilder):
         poss_out_values = []
         for data_in_key in disc._data_in.keys():
             is_float = disc._data_in[data_in_key][self.TYPE] == 'float'
+            # structuring variables are excluded from possible values!!!
             is_structuring = disc._data_in[data_in_key].get(self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
@@ -226,8 +227,8 @@ class SoSEval(SoSDisciplineBuilder):
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         '''
         return SoSDiscipline.is_configured(self) and (
-                    (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(
-                self.cls_builder) == 0)
+                (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(
+            self.cls_builder) == 0)
 
     def set_eval_possible_values(self):
         '''
@@ -293,11 +294,13 @@ class SoSEval(SoSDisciplineBuilder):
         for i, x_id in enumerate(self.eval_in_list):
             values_dict[x_id] = x[i]
 
+        # Because we use set_data instead of load_data_from_inputs_dict it isn't possible
+        # to run  soseval on a structuring variable. Therefore structuring variables are
+        # excluded from eval possible values
         # set values_dict in the data manager to execute the sub process
         for var_f_name, var_value in values_dict.items():
             self.ee.dm.set_data(var_f_name,
                                 'value', var_value, check_value=False)
-        #self.ee.factory.init_execution()
 
         # execute eval process stored in children
         if len(self.sos_disciplines) > 1:
