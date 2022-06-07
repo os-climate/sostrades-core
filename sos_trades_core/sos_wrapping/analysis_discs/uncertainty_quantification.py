@@ -142,19 +142,19 @@ class UncertaintyQuantification(SoSDiscipline):
                 # samples_df = self.get_sosdisc_inputs(
                 #     'samples_inputs_df')
 
-                if eval_inputs is not None:
+                if (eval_inputs is not None) & (eval_outputs is not None):
 
                     selected_inputs = eval_inputs[eval_inputs['selected_input']
                                                   == True]['full_name']
-                    # in_param = list(samples_df.columns)[1:]
+
                     in_param = selected_inputs.tolist()
+                    # in_param.sort()
 
                     selected_outputs = eval_outputs[eval_outputs['selected_output']
                                                     == True]['full_name']
-                    # data_df = self.get_sosdisc_inputs(
-                    #     'samples_outputs_df')
-                    # out_param = list(data_df.columns)[1:]
+
                     out_param = selected_outputs.tolist()
+                    out_param.sort()
 
                     # ontology name
                     ontology_connector = OntologyDataConnector()
@@ -187,29 +187,31 @@ class UncertaintyQuantification(SoSDiscipline):
 
                     if (('design_space' in self._data_in) & (len(in_param) > 0)):
 
-                        lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
-                        upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
-                        input_distribution_default = pd.DataFrame(
-                            {'parameter': in_param, 'distribution': distrib, 'lower_parameter': lower_bnd,
-                             'upper_parameter': upper_bnd,
-                             'most_probable_value': [(a + b) / 2 for a, b in zip(lower_bnd, upper_bnd)]})
+                        if (self._data_in['design_space']['value'] is not None):
 
-                        input_distribution_default.loc[input_distribution_default['distribution']
-                                                       == 'Normal', 'most_probable_value'] = np.nan
-                        input_distribution_default.loc[input_distribution_default['distribution']
-                                                       == 'LogNormal', 'most_probable_value'] = np.nan
+                            lower_bnd = self._data_in['design_space']['value'][self.LOWER_BOUND]
+                            upper_bnd = self._data_in['design_space']['value'][self.UPPER_BOUND]
+                            input_distribution_default = pd.DataFrame(
+                                {'parameter': in_param, 'distribution': distrib, 'lower_parameter': lower_bnd,
+                                 'upper_parameter': upper_bnd,
+                                 'most_probable_value': [(a + b) / 2 for a, b in zip(lower_bnd, upper_bnd)]})
 
-                        data_details_default = pd.DataFrame()
-                        for input in in_param:
-                            [name, unit] = conversion_full_ontology[input.split(
-                                '.')[-1]]
-                            data_details_default = data_details_default.append(
-                                {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
-                        for output in out_param:
-                            [name, unit] = conversion_full_ontology[output.split(
-                                '.')[-1]]
-                            data_details_default = data_details_default.append(
-                                {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
+                            input_distribution_default.loc[input_distribution_default['distribution']
+                                                           == 'Normal', 'most_probable_value'] = np.nan
+                            input_distribution_default.loc[input_distribution_default['distribution']
+                                                           == 'LogNormal', 'most_probable_value'] = np.nan
+
+                            data_details_default = pd.DataFrame()
+                            for input in list(set(in_param)):
+                                [name, unit] = conversion_full_ontology[input.split(
+                                    '.')[-1]]
+                                data_details_default = data_details_default.append(
+                                    {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
+                            for output in list(set(out_param)):
+                                [name, unit] = conversion_full_ontology[output.split(
+                                    '.')[-1]]
+                                data_details_default = data_details_default.append(
+                                    {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
 
                             dynamic_inputs['input_distribution_parameters_df'] = {
                                 'type': 'dataframe',
@@ -242,14 +244,16 @@ class UncertaintyQuantification(SoSDiscipline):
                                 'structuring': False
                             }
 
-                        if 'input_distribution_parameters_df' in self._data_in:
-                            self._data_in['input_distribution_parameters_df']['value'] = self.get_sosdisc_inputs(
-                                'input_distribution_parameters_df')
-                            self._data_in['data_details_df']['value'] = self.get_sosdisc_inputs(
-                                'data_details_df')
-                            if self.get_sosdisc_inputs('input_distribution_parameters_df')['parameter'].to_list() != in_param:
-                                self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
-                                self._data_in['data_details_df']['value'] = data_details_default
+                            if 'input_distribution_parameters_df' in self._data_in:
+                                self._data_in['input_distribution_parameters_df']['value'] = self.get_sosdisc_inputs(
+                                    'input_distribution_parameters_df')
+                                self._data_in['data_details_df']['value'] = self.get_sosdisc_inputs(
+                                    'data_details_df')
+                                if (self.get_sosdisc_inputs('design_space')['full_name'].to_list() != in_param) or (self.get_sosdisc_inputs('input_distribution_parameters_df')['lower_parameter'].to_list() != self.get_sosdisc_inputs('design_space')['lower_bnd'].to_list()) or (self.get_sosdisc_inputs('input_distribution_parameters_df')['upper_parameter'].to_list() != self.get_sosdisc_inputs('design_space')['upper_bnd'].to_list()):
+                                    self._data_in['input_distribution_parameters_df']['value'] = input_distribution_default
+                                    self._data_in['data_details_df']['value'] = data_details_default
+                                if (self.get_sosdisc_inputs('data_details_df')['variable'].to_list() != (in_param + out_param)):
+                                    self._data_in['data_details_df']['value'] = data_details_default
 
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -450,7 +454,19 @@ class UncertaintyQuantification(SoSDiscipline):
 
         chart_filters = []
 
-        chart_list = ['Output distrib']
+        in_names = []
+        out_names = []
+        if 'data_details_df' in self.get_sosdisc_inputs():
+            data_df = self.get_sosdisc_inputs(['data_details_df'])
+            in_names = data_df.loc[data_df['type']
+                                   == 'input', 'name'].to_list()
+        if 'output_interpolated_values_df' in self.get_sosdisc_outputs():
+            out_df = self.get_sosdisc_outputs(
+                ['output_interpolated_values_df']).keys().to_list()
+            out_names = [n.split('.')[-1] for n in out_df]
+
+        names_list = in_names + out_names
+        chart_list = [n + ' Distribution' for n in names_list]
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'Charts'))
 
@@ -467,37 +483,41 @@ class UncertaintyQuantification(SoSDiscipline):
                 if chart_filter.filter_key == 'Charts':
                     graphs_list = chart_filter.selected_values
 
-        if 'Output distrib' in graphs_list:
-            if 'output_interpolated_values_df' in self.get_sosdisc_outputs():
-                output_distrib_df = deepcopy(
-                    self.get_sosdisc_outputs('output_interpolated_values_df')
-                )
-            if 'input_parameters_samples_df' in self.get_sosdisc_outputs():
-                input_parameters_distrib_df = deepcopy(
-                    self.get_sosdisc_outputs('input_parameters_samples_df')
-                )
-            if 'data_details_df' in self.get_sosdisc_inputs():
-                self.data_details = deepcopy(
-                    self.get_sosdisc_inputs(['data_details_df']))
-            if 'input_distribution_parameters_df' in self.get_sosdisc_inputs():
-                input_distribution_parameters_df = deepcopy(
-                    self.get_sosdisc_inputs(['input_distribution_parameters_df']))
-            if 'confidence_interval' in self.get_sosdisc_inputs():
-                confidence_interval = deepcopy(
-                    self.get_sosdisc_inputs(['confidence_interval'])) / 100
+        if 'output_interpolated_values_df' in self.get_sosdisc_outputs():
+            output_distrib_df = deepcopy(
+                self.get_sosdisc_outputs('output_interpolated_values_df')
+            )
+        if 'input_parameters_samples_df' in self.get_sosdisc_outputs():
+            input_parameters_distrib_df = deepcopy(
+                self.get_sosdisc_outputs('input_parameters_samples_df')
+            )
+        if 'data_details_df' in self.get_sosdisc_inputs():
+            self.data_details = deepcopy(
+                self.get_sosdisc_inputs(['data_details_df']))
+        if 'input_distribution_parameters_df' in self.get_sosdisc_inputs():
+            input_distribution_parameters_df = deepcopy(
+                self.get_sosdisc_inputs(['input_distribution_parameters_df']))
+        if 'confidence_interval' in self.get_sosdisc_inputs():
+            confidence_interval = deepcopy(
+                self.get_sosdisc_inputs(['confidence_interval'])) / 100
 
         for input_name in list(input_parameters_distrib_df.columns):
             input_distrib = list(input_parameters_distrib_df[input_name])
-            new_chart = self.input_histogram_graph(
-                input_distrib, input_name, input_distribution_parameters_df, confidence_interval)
-            instanciated_charts.append(new_chart)
+            input_distrib_name = self.data_details.loc[self.data_details["variable"]
+                                                       == input_name]["name"].values[0] + ' Distribution'
+            if input_distrib_name in graphs_list:
+                new_chart = self.input_histogram_graph(
+                    input_distrib, input_name, input_distribution_parameters_df, confidence_interval)
+                instanciated_charts.append(new_chart)
 
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
+            output_distrib_name = output_name.split('.')[-1] + ' Distribution'
             if not all(np.isnan(output_distrib)):
-                new_chart = self.output_histogram_graph(
-                    output_distrib, output_name, confidence_interval)
-                instanciated_charts.append(new_chart)
+                if output_distrib_name in graphs_list:
+                    new_chart = self.output_histogram_graph(
+                        output_distrib, output_name, confidence_interval)
+                    instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
@@ -557,61 +577,78 @@ class UncertaintyQuantification(SoSDiscipline):
                          y0=0, y1=1,
                          line=dict(color="black", width=2, dash="dot", ))
 
-        hist_y.add_trace(go.Scatter(x=[y_left_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[" Lower parameter "], mode="text", textposition='top left'))
-        hist_y.add_trace(go.Scatter(x=[y_right_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[" Upper parameter "], mode="text", textposition='top right'))
-        hist_y.add_trace(go.Scatter(x=[y_mean],
-                                    y=[0.75 * y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[" Mean "], mode="text", textposition='top right'))
+        hist_y.add_annotation(
+            x=y_left_boundary,
+            y=y_max,
+            font=dict(color="black", size=12),
+            text=" Lower parameter ",
+            showarrow=False,
+            xanchor="right",
+        )
+        hist_y.add_annotation(
+            x=y_right_boundary,
+            y=y_max,
+            font=dict(color="black", size=12),
+            text=" Upper parameter ",
+            showarrow=False,
+            xanchor="left",
+        )
+        hist_y.add_annotation(
+            x=y_mean,
+            y=0.75 * y_max,
+            font=dict(color="black", size=12),
+            text=" Mean ",
+            showarrow=False,
+            xanchor="left",
+        )
+        hist_y.add_annotation(
+            x=0.85,
+            y=1.15,
+            font=dict(
+                family='Arial',
+                color='#7f7f7f',
+                size=10),
+            text=f' Mean: {format_currency_legend(y_mean, unit)} <br> Median: {format_currency_legend(median, unit)} ',
+            showarrow=False,
+            xanchor="left",
+            align="right",
+            xref='paper',
+            yref='paper',
+            bordercolor='black',
+            borderwidth=1,
+        )
 
         hist_y.update_layout(showlegend=False)
-
-        text_right = {
-            ' Mean': f'{format_currency_legend(y_mean, unit)}',
-            ' Median': f'{format_currency_legend(median, unit)}',
-            # 'Mean':  f"{format_currency_legend(y_describe.loc['mean'],unit)}",
-            # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
-        }
 
         new_chart = InstantiatedPlotlyNativeChart(
             fig=hist_y, chart_name=f'{name} - {distribution_type} Distribution', default_legend=False)
 
-        new_chart.annotation_upper_right = text_right
         # new_chart.to_plotly().show()
 
         return new_chart
 
     def output_histogram_graph(self, data, data_name, confidence_interval):
-        
-        # name = data_name
-        # unit = None
-        # if data_name in self.data_details["variable"].values:
-        #     name = self.data_details.loc[self.data_details["variable"]
-        #                                  == data_name]["name"].values[0]
-        #     unit = self.data_details.loc[self.data_details["variable"]
-        #                                  == data_name]["unit"].values[0]
-        
-        name=data_name
-        unit = None
-        eval_output_name=data_name
-        
-        if len(data_name.split('.'))>1:
-            name = data_name.split('.')[1]  
-            eval_output_name=data_name.split('.')[0]
-        
-        ns_from_var=self.ee.dm.get_all_namespaces_from_var_name(eval_output_name) 
-        var_name= ns_from_var
-        
-        if len(ns_from_var)>0:
-            var_name=ns_from_var[0].split(self.ee.study_name + '.')[1]
 
-        if var_name in self.data_details["variable"].values:
+        name = data_name
+        unit = None
+        eval_output_name = data_name
+
+        if len(data_name.split('.')) > 1:
+            name = data_name.split('.')[1]
+            eval_output_name = data_name.split('.')[0]
+
+        ns_from_var = self.ee.dm.get_all_namespaces_from_var_name(
+            eval_output_name)
+        ns_from_var_wo_study_list = [elem.split(
+            self.ee.study_name + '.')[1] for elem in ns_from_var]
+        var_name_list = list(set(ns_from_var_wo_study_list) & set(
+            self.data_details['variable'].to_list()))
+        if len(var_name_list) > 0:
+            var_name = var_name_list[0]
+        else:
+            var_name = None
+
+        if var_name is not None:
             unit = self.data_details.loc[self.data_details["variable"]
                                          == var_name]["unit"].values[0]
         hist_y = go.Figure()
@@ -660,40 +697,58 @@ class UncertaintyQuantification(SoSDiscipline):
                          y0=0, y1=1,
                          line=dict(color="LightSeaGreen"),
                          fillcolor="PaleTurquoise", opacity=0.2)
-        hist_y.add_trace(go.Scatter(x=[y_left_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_left_boundary, unit)} '], mode="text",
-                                    textposition='top left'
-                                    ))
-        hist_y.add_trace(go.Scatter(x=[y_right_boundary],
-                                    y=[y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_right_boundary, unit)} '], mode="text",
-                                    textposition='top right'
-                                    ))
-        hist_y.add_trace(go.Scatter(x=[y_mean],
-                                    y=[0.75 * y_max],
-                                    textfont=dict(color="black", size=12),
-                                    text=[f' {format_currency_legend(y_mean, unit)} '], mode="text",
-                                    textposition='top right'
-                                    ))
+
+        hist_y.add_annotation(
+            x=y_left_boundary,
+            y=y_max,
+            font=dict(color="black", size=12),
+            text=f' {format_currency_legend(y_left_boundary, unit)} ',
+            showarrow=False,
+            xanchor="right",
+        )
+
+        hist_y.add_annotation(
+            x=y_right_boundary,
+            y=y_max,
+            font=dict(color="black", size=12),
+            text=f' {format_currency_legend(y_right_boundary, unit)}',
+            showarrow=False,
+            xanchor="left",
+        )
+
+        hist_y.add_annotation(
+            x=y_mean,
+            y=0.75 * y_max,
+            font=dict(color="black", size=12),
+            text=f' {format_currency_legend(y_mean, unit)} ',
+            showarrow=False,
+            xanchor="left",
+        )
+
+        hist_y.add_annotation(
+            x=0.60,
+            y=1.15,
+            font=dict(
+                family='Arial',
+                color='#7f7f7f',
+                size=10),
+            text=f'Confidence Interval: {int(confidence_interval * 100)} % [{format_currency_legend(y_left_boundary,"")}, {format_currency_legend(y_right_boundary,"")}] {unit} <br> Mean: {format_currency_legend(y_mean, unit)} <br> Median: {format_currency_legend(median, unit)} ',
+            showarrow=False,
+            xanchor="left",
+            align="right",
+            xref='paper',
+            yref='paper',
+            bordercolor='black',
+            borderwidth=1,
+        )
 
         hist_y.update_layout(showlegend=False)
 
         # percent_pos = len([p for p in data if p > 0]) / len(data) * 100
 
-        text_right = {
-            'Confidence Interval': f'{int(confidence_interval * 100)} % [{format_currency_legend(y_left_boundary, "")} , {format_currency_legend(y_right_boundary, "")} ] {unit}',
-            ' Mean': f'{format_currency_legend(y_mean, unit)}',
-            ' Median': f'{format_currency_legend(median, unit)}',
-            # 'Percentage of positive values':  f'{percent_pos:9.4f} %'
-        }
-
         new_chart = InstantiatedPlotlyNativeChart(
             fig=hist_y, chart_name=f'{name} Distribution', default_legend=False)
 
-        new_chart.annotation_upper_right = text_right
         # new_chart.to_plotly().show()
 
         return new_chart
