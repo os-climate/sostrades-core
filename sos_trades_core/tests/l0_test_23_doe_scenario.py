@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+from logging import Handler
 from time import time
 
 from pandas._testing import assert_frame_equal
@@ -30,6 +32,19 @@ import pandas as pd
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 import os
 from os.path import dirname, join
+
+
+class UnitTestHandler(Handler):
+    """
+    Logging handler for UnitTest
+    """
+
+    def __init__(self):
+        Handler.__init__(self)
+        self.msg_list = []
+
+    def emit(self, record):
+        self.msg_list.append(record.msg)
 
 
 class TestSoSDOEScenario(unittest.TestCase):
@@ -1035,6 +1050,19 @@ class TestSoSDOEScenario(unittest.TestCase):
             'criterion': 'default',
             'levels': 'default'
         }
+        algo_full_options = {
+            'n_samples': 10,
+            'alpha': 'orthogonal',
+            'eval_jac': False,
+            'face': 'faced',
+            'iterations': 5,
+            'max_time': 0,
+            'seed': 1,
+            'center_bb': 'default',
+            'center_cc': 'default',
+            'criterion': 'default',
+            'levels': 'default'
+        }
 
         dspace_dict_x = {'variable': ['x'],
 
@@ -1117,8 +1145,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
                      'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
-            'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
@@ -1133,23 +1160,22 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {'doe.DoEEval.algo_options': {
             'n_samples': 10, 'face': 'faced'}}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
-            'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
 
         # trigger a reconfiguration after eval_inputs and eval_outputs changes
         disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), {
-            'n_samples': 10, 'face': 'faced'})
+        self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_z.reset_index(drop=True), check_dtype=False)
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
+        algo_full_options.update({'n_samples':100})
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'),
-                             {'n_samples': 100, 'face': 'faced'})
+                             algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_eval.reset_index(drop=True), check_dtype=False)
 
@@ -1554,7 +1580,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
         proc_name = "test_disc1_disc2_doe_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
@@ -1608,6 +1633,62 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(exec_eng.dm.get_value(
             'doe.DoEEval.Disc1.z_dict')), 101)
         self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')), 101)
+
+    def test_21_warning_in_case_of_a_wrong_inputs_outputs_in_doe_eval(self):
+        """ We check that a warning is displayed in doe eval in case the user
+        sets a value for eval inputs or outputs which is not among the possible
+        values.
+        """
+
+        wrong_input_selection_x = {'selected_input': [False, True, False, False, False],
+                                   'full_name': ['DoEEval.Sellar_Problem.local_dv', 'debug_mode_sellar', 'y_1',
+                                                 'y_2',
+                                                 'z']}
+        wrong_input_selection_x = pd.DataFrame(wrong_input_selection_x)
+
+        wrong_output_selection_obj = {'selected_output': [False, False, True, False, False],
+                                      'full_name': ['z', 'c_2', 'acceleration', 'y_1', 'y_2']}
+        wrong_output_selection_obj = pd.DataFrame(wrong_output_selection_obj)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        exec_eng.logger.setLevel(logging.INFO)
+        my_handler = UnitTestHandler()
+        exec_eng.logger.addHandler(my_handler)
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines
+        values_dict = {}
+        values_dict[f'{self.ns}.x'] = 1.
+        values_dict[f'{self.ns}.y_1'] = 1.
+        values_dict[f'{self.ns}.y_2'] = 1.
+        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = 10
+
+        # configure disciplines with the algo lhs
+        disc_dict = {}
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = wrong_input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = wrong_output_selection_obj
+
+        disc_dict.update(values_dict)
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        msg_log_error_input_debug_mode =  'The input debug_mode_sellar in eval_inputs is not among possible values. Check if it is an input of the subprocess with the correct full name (without study name at the beginning) and within allowed types (int, array, float). Dynamic inputs might  not be created. '
+        msg_log_error_output_z = 'The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. '
+        msg_log_error_acceleration = 'The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. '
+        self.assertTrue(msg_log_error_input_debug_mode in my_handler.msg_list)
+        self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
+        self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)
 
 
 if '__main__' == __name__:
