@@ -81,7 +81,7 @@ class DoeEval(SoSEval):
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
     NS_SEP = '.'
-    INPUT_TYPE = ['float', 'array', 'int']
+    INPUT_TYPE = ['float', 'array', 'int', 'string']
 
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
