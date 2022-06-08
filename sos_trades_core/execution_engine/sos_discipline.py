@@ -1321,6 +1321,21 @@ class SoSDiscipline(MDODiscipline):
             self)
         self.disc_id = self.dm.update_disciplines_dict(
             self.disc_id, disc_dict_info, disc_ns_name)
+        
+    def _set_dm_cache_map(self):
+        '''
+        Update cache_map dict in DM with cache and its children recursively
+        '''
+        if self.cache is not None:
+            # set disc infos string list with full name, class name and anonimaed i/o for hashed uid generation
+            disc_info_list = [self.get_disc_full_name().split(self.ee.study_name)[-1], self.__class__.__name__, self.get_anonimated_data_io(self)]
+            hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
+            # store cache and hashed uid in data manager maps
+            self.dm.cache_map[hashed_uid] = self.cache
+            self.dm.gemseo_disciplines_id_map[hashed_uid] = self
+        # store children cache recursively
+        for disc in self.sos_disciplines:
+            disc._set_dm_cache_map() 
 
     def get_var_full_name(self, var_name, disc_dict):
         ''' Get namespaced variable from namespace and var_name in disc_dict
@@ -1364,6 +1379,20 @@ class SoSDiscipline(MDODiscipline):
     def get_disc_id_from_namespace(self):
 
         return self.ee.dm.get_discipline_ids_list(self.get_disc_full_name())
+    
+    def get_anonimated_data_io(self, disc):
+        '''
+        return list of anonimated input and output keys for serialisation purpose
+        '''
+        anonimated_data_io = ''
+
+        for key in disc.get_input_data_names():
+            anonimated_data_io += key.split(self.ee.study_name)[-1]
+            
+        for key in disc.get_output_data_names():
+            anonimated_data_io += key.split(self.ee.study_name)[-1]
+
+        return anonimated_data_io
 
     def _convert_list_of_keys_to_namespace_name(self, keys, io_type):
 
