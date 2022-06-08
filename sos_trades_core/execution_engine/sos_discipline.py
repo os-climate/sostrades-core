@@ -320,12 +320,12 @@ class SoSDiscipline(MDODiscipline):
         # Remove unavailable GEMS type variables before initialize
         # input_grammar
         if not self.is_sos_coupling:
-            filtered_data_in = self.__filter_available_gemseo_types(
+            data_in = self.get_data_io_with_full_name(
                 self.IO_TYPE_IN)
-            filtered_data_out = self.__filter_available_gemseo_types(
+            data_out = self.get_data_io_with_full_name(
                 self.IO_TYPE_OUT)
-            self.init_gems_grammar(filtered_data_in, self.IO_TYPE_IN)
-            self.init_gems_grammar(filtered_data_out, self.IO_TYPE_OUT)
+            self.init_gems_grammar(data_in, self.IO_TYPE_IN)
+            self.init_gems_grammar(data_out, self.IO_TYPE_OUT)
 
     def create_data_io_from_desc_io(self):
         '''
@@ -1143,7 +1143,8 @@ class SoSDiscipline(MDODiscipline):
         elif key_type == 'dict':
             value = data_io[self.VALUE]
             metadata = data_io[self.TYPE_METADATA]
-            dict_keys = [meta['key'][0] for meta in metadata]
+            #dict_keys = [meta['key'][0] for meta in metadata]
+            dict_keys = list(metadata['value'].keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
 
@@ -1404,39 +1405,6 @@ class SoSDiscipline(MDODiscipline):
             variables = [self._convert_to_namespace_name(
                 keys, io_type)]
         return variables
-
-    def __filter_available_gemseo_types(self, io_type):
-        ''' 
-        Filter available types before sending to GEMS 
-        '''
-        full_dict = self.get_data_io_dict(io_type)
-        filtered_keys = []
-        for var_name, value in full_dict.items():
-            # Check if the param is a numerical parameter (function overload in
-            # soscoupling)
-            if self.delete_numerical_parameters_for_gems(
-                    var_name):
-                continue
-            # Get the full var name
-            full_var_name = self.get_var_full_name(
-                var_name, self.get_data_io_dict(io_type))
-            var_type_id = value[self.VAR_TYPE_ID]
-            # if var type not covered by GEMS
-            if var_type_id not in self.VAR_TYPE_GEMS:
-                # if var type covered by available extended types
-                if var_type_id in self.NEW_VAR_TYPE:
-                    filtered_keys.append(full_var_name)
-            else:
-                filtered_keys.append(full_var_name)
-
-        return filtered_keys
-
-    def delete_numerical_parameters_for_gems(self, var_name):
-
-        if var_name in self.NUM_DESC_IN:
-            return True
-        else:
-            return False
 
     def _init_grammar_with_keys(self, names, io_type):
         ''' initialize GEMS grammar with names and type None
@@ -1748,9 +1716,10 @@ class SoSDiscipline(MDODiscipline):
             wait_time_between_fork,
         )
         if inputs is None:
-            inputs = self.get_input_data_names()
+            inputs = self.get_input_data_names(filtered_inputs=True)
         if outputs is None:
-            outputs = self.get_output_data_names()
+            outputs = self.get_output_data_names(filtered_outputs=True)
+
 
         if auto_set_step:
             approx.auto_set_step(outputs, inputs, print_errors=True)

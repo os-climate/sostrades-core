@@ -505,7 +505,7 @@ class TestMDALoop(unittest.TestCase):
         disc6_builder.cls.DESC_IN.pop('string_dict')
         disc7_builder.cls.DESC_OUT.pop('string_dict')
 
-    def test_06_mda_loop_with_discipline_grouping(self):
+    def _test_06_mda_loop_with_discipline_grouping(self):
 
         exec_eng = ExecutionEngine(self.name)
 

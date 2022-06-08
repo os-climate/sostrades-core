@@ -34,13 +34,13 @@ class Disc3(SoSDiscipline):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'z': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_disc3'},
-        'constant': {'type': 'float'},
-        'power': {'type': 'int'}
+        'z': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_disc3'},
+        'constant': {'type': 'float', 'unit': '-'},
+        'power': {'type': 'int', 'unit': '-'}
     }
 
     DESC_OUT = {
-        'o': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_out_disc3'}
+        'o': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_out_disc3'}
     }
 
     def run(self):

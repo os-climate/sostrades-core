@@ -16,6 +16,7 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 from copy import copy
 from uuid import uuid4
 from hashlib import sha256
@@ -714,7 +715,7 @@ class DataManager:
 
             # check that the variable has a unit
             if unit is None and vtype not in SoSDiscipline.NO_UNIT_TYPES:
-                self.logger.warning(
+                self.logger.debug(
                     f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
 
             # check if data is and input and is not optional
@@ -803,17 +804,18 @@ class DataManager:
         By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed 
         '''
 
-        def compare_data(data_name):
+        if self.logger.level <= logging.DEBUG:
+            def compare_data(data_name):
 
-            if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:
-                return str(data1[data_name]) != str(
-                    data2[data_name]) or data1[data_name] is None
-            elif var_f_name in self.no_check_default_variables:
-                return False
-            else:
-                return str(data1[data_name]) != str(data2[data_name])
+                if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:
+                    return str(data1[data_name]) != str(
+                        data2[data_name]) or data1[data_name] is None
+                elif var_f_name in self.no_check_default_variables:
+                    return False
+                else:
+                    return str(data1[data_name]) != str(data2[data_name])
 
-        for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
-            if compare_data(data_name):
-                self.logger.warning(
-                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
+            for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
+                if compare_data(data_name):
+                    self.logger.debug(
+                        f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
