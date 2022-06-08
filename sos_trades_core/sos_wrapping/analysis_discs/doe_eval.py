@@ -173,6 +173,24 @@ class DoeEval(SoSEval):
                  "fullfact": default_algo_options_fullfact,
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
+    
+    def __init__(self, sos_name, ee, cls_builder):
+        '''
+        Constructor
+        '''
+        # if 'ns_doe' does not exist in ns_manager, we create this new namespace to store output dictionaries associated to eval_outputs
+        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
+            ee.ns_manager.add_ns('ns_doe', ee.study_name)
+        super(DoeEval, self).__init__(sos_name, ee, cls_builder)
+        self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
+        self.doe_factory = DOEFactory()
+        self.design_space = None
+        self.samples = None
+        self.customed_samples = None
+        self.dict_desactivated_elem = {}
+        self.selected_outputs = []
+        self.selected_inputs = []
+        self.previous_algo_name = ""
 
     def setup_sos_disciplines(self):
         """
@@ -275,22 +293,6 @@ class DoeEval(SoSEval):
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
-
-    def __init__(self, sos_name, ee, cls_builder):
-        '''
-        Constructor
-        '''
-        ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super(DoeEval, self).__init__(sos_name, ee, cls_builder)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
-        self.doe_factory = DOEFactory()
-        self.design_space = None
-        self.samples = None
-        self.customed_samples = None
-        self.dict_desactivated_elem = {}
-        self.selected_outputs = []
-        self.selected_inputs = []
-        self.previous_algo_name = ""
 
     def create_design_space(self):
         """
