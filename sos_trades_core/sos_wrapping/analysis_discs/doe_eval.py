@@ -723,4 +723,4 @@ class DoeEval(SoSEval):
                                 f'output of the subprocess with the correct full name (without study name at the ' \
                                 f'beginning). Dynamic inputs might  not be created. '
 
-                self.logger.info(error_msg)
+                self.logger.warning(error_msg)
