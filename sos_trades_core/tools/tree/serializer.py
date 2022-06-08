@@ -33,7 +33,6 @@ from sos_trades_core.execution_engine.ns_manager import NS_SEP
 CSV_SEP = ','
 FILE_URL = 'file:///'
 
-
 # def anonymize_dict(dict_to_convert, anonymize_fct=None):
 #     if anonymize_fct is not None:
 #         converted_dict = {}
@@ -69,6 +68,7 @@ class DataSerializer:
     pkl_filename = 'dm.pkl'
     val_filename = 'dm_values.csv'
     disc_status_filename = 'disciplines_status.pkl'
+    cache_filename = 'cache.pkl'
 
     default_persistance_strategy = DirectLoadDump
 
@@ -83,6 +83,7 @@ class DataSerializer:
         self.study_filename = study_filename
         self.dm_val_file = None
         self.dm_pkl_file = None
+        self.cache_file = None
         # set load/dump strategy
         self.direct_rw_strategy = DirectLoadDump()
         self.encryption_strategy = None
@@ -136,6 +137,14 @@ class DataSerializer:
         status_dict_f = join(study_to_load, self.disc_status_filename)
 
         rw_strategy.dump(status_dict, status_dict_f)
+        
+    def load_cache_dict(self, study_to_load, rw_strategy):
+        ''' load disciplines status from binary file (containing disc/status info into dictionary) '''
+
+        cache_dict_f = self.get_dm_file(study_to_load=study_to_load,
+                                         file_type=self.cache_filename)
+
+        return rw_strategy.load(cache_dict_f)
 
     def load_disc_status_dict(self, study_to_load, rw_strategy):
         ''' load disciplines status from binary file (containing disc/status info into dictionary) '''
@@ -250,7 +259,7 @@ class DataSerializer:
         self.dm_val_file = self.get_dm_file(study_to_load=study_to_load,
                                             file_type=self.val_filename)
 
-    def put_dict_from_study(self, study_to_load, rw_strategy,  data_dict):
+    def put_dict_from_study(self, study_to_load, rw_strategy, data_dict):
         '''
         :params: anonymize_function, a function that map a given key of the data
         dictionary using rule for the saving process
@@ -266,6 +275,23 @@ class DataSerializer:
 
         # serialise raw tree_node.data dict with pickle
         rw_strategy.dump(data_dict, self.dm_pkl_file)
+        
+    def put_cache_from_study(self, study_to_load, rw_strategy, cache_map):
+        '''
+        :params: anonymize_function, a function that map a given key of the data
+        dictionary using rule for the saving process
+        :type: function
+        '''
+
+        if not Path(study_to_load).is_dir():
+            makedirs(study_to_load, exist_ok=True)
+            sleep(0.1)
+
+        # export full cache_map to unique pickle file
+        self.cache_file = join(study_to_load, self.cache_filename)
+
+        # serialise raw cache_map with pickle
+        rw_strategy.dump(cache_map, self.cache_file)
 
     def get_dict_from_study(self, study_to_load, rw_strategy):
         ''' function that load every pickle files into a location
