@@ -129,7 +129,7 @@ class BuildDoeEval(SoSEval):
                'sub_process_folder_name': {'type': 'string',
                                            'structuring': True,
                                            'default': 'None',
-                                           'editable': False
+                                           'editable': True
                                            },
                'sampling_algo': {'type': 'string',
                                  'structuring': True},
@@ -321,7 +321,7 @@ class BuildDoeEval(SoSEval):
         if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             if repo == 'None':
-                self._data_in['sub_process_folder_name']['editable'] = False
+                self._data_in['sub_process_folder_name']['editable'] = True
             else:
                 self._data_in['sub_process_folder_name']['editable'] = True
 
@@ -488,7 +488,7 @@ class BuildDoeEval(SoSEval):
                 input_dict_to_load = {}
                 for uc_d in usecase_data:
                     input_dict_to_load.update(uc_d)
-                #print(input_dict_to_load)
+                # print(input_dict_to_load)
                 self.ee.dm.set_values_from_dict(
                     input_dict_to_load)
 
