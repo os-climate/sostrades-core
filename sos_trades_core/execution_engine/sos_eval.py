@@ -294,10 +294,9 @@ class SoSEval(SoSDisciplineBuilder):
             values_dict[x_id] = x[i]
 
         # set values_dict in the data manager to execute the sub process
-        for var_f_name, var_value in values_dict.items():
-            self.ee.dm.set_data(var_f_name,
-                                'value', var_value, check_value=False)
-        #self.ee.factory.init_execution()
+
+        self.ee.dm.set_values_from_dict(values_dict)
+
 
         # execute eval process stored in children
         if len(self.sos_disciplines) > 1:
