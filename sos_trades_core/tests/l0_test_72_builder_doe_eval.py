@@ -679,8 +679,8 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         print('repo_of_sub_processes: ' +
               study_dump.ee.dm.get_data(value_2_print)['value'])
         value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
-        print('sub_process_folder_name: ' +
-              study_dump.ee.dm.get_data(value_2_print)['value'])
+        # print('sub_process_folder_name: ' +
+        #      study_dump.ee.dm.get_data(value_2_print)['value'])
         # update with subprocess Hessian selection and filled subprocess data
         print(
             '################################################################################')
@@ -688,6 +688,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             'STEP_2: update with subprocess Hessian selection and filled subprocess data')
         dict_values = self.setup_usecase(restricted=False)
         study_dump.load_data(from_input_dict=dict_values)
+        study_dump.ee.configure()
         study_dump.dump_data(dump_dir)
         print(study_dump.ee.dm.get_data_dict_values())
         # Check that repo_of_sub_processes and sub_process_folder_name are set
@@ -725,23 +726,25 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # update subprocess
         print(
             '################################################################################')
-        print(
-            'STEP_4.1: update subprocess selection by come back to None')
-        #
-        mod_id = 'None'
-        dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
-        study_dump.load_data(from_input_dict=dict_values)
-        study_dump.dump_data(dump_dir)
-        print(study_dump.ee.dm.get_data_dict_values())
-        # Check that repo_of_sub_processes and sub_process_folder_name are set
-        value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
-        print('repo_of_sub_processes: ' +
-              study_dump.ee.dm.get_data(value_2_print)['value'])
-        value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
-        print('sub_process_folder_name: ' +
-              study_dump.ee.dm.get_data(value_2_print)['value'])
-        value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
+        if 0 == 1:
+            print(
+                'STEP_4.1: update subprocess selection by come back to None')
+            #
+            mod_id = 'None'
+            dict_values = {}
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
+            study_dump.load_data(from_input_dict=dict_values)
+            study_dump.dump_data(dump_dir)
+            print(study_dump.ee.dm.get_data_dict_values())
+            # Check that repo_of_sub_processes and sub_process_folder_name are
+            # set
+            value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
+            print('repo_of_sub_processes: ' +
+                  study_dump.ee.dm.get_data(value_2_print)['value'])
+            value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
+            print('sub_process_folder_name: ' +
+                  study_dump.ee.dm.get_data(value_2_print)['value'])
+            value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
         print(
             '################################################################################')
         print(
