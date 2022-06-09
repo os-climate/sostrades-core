@@ -172,34 +172,34 @@ class TestLoadSimpleCache(unittest.TestCase):
     def test_04_dump_and_load_disc1_cache(self):
         
         # run study, then dump dm and disciplines status
-        study_dump = study_disc1_disc2()
-        study_dump.set_dump_directory(
+        study_1 = study_disc1_disc2()
+        study_1.set_dump_directory(
             self.dump_dir)
-        study_dump.load_data()
+        study_1.load_data()
         # cache activation for Disc1
-        dict_values = {f'{study_dump.study_name}.Disc1.cache_type': 'SimpleCache'}
-        study_dump.load_data(from_input_dict=dict_values)
+        dict_values = {f'{study_1.study_name}.Disc1.cache_type': 'SimpleCache'}
+        study_1.load_data(from_input_dict=dict_values)
         
         # run with dump cache_map
-        study_dump.load_cache()
-        study_dump.run(dump_study=True)
+        study_1.load_cache()
+        study_1.run(dump_study=True)
         
         # check dumped cache pickle existence
-        cache_pkl_path = join(self.dump_dir, 'sos_trades_core.sos_processes.test', 'test_disc1_disc2_coupling', study_dump.study_name, 'cache.pkl')
+        cache_pkl_path = join(self.dump_dir, 'sos_trades_core.sos_processes.test', 'test_disc1_disc2_coupling', study_1.study_name, 'cache.pkl')
         self.assertTrue(exists(cache_pkl_path))
-        cache_map_from_pkl = study_dump.setup_cache_map_dict(self.dump_dir)
+        cache_map_from_pkl = study_1.setup_cache_map_dict(self.dump_dir)
         self.assertEqual(len(cache_map_from_pkl), 1)
         
         # load dumped dm in a new study
-        study_load = BaseStudyManager(self.repo_name, self.proc_name_disc1_disc2, study_dump.study_name)
-        study_load.load_data(from_path=self.dump_dir)
-        study_load.load_disciplines_data(study_folder_path=self.dump_dir)
-        study_load.load_cache(study_folder_path=self.dump_dir)
+        study_2 = BaseStudyManager(self.repo_name, self.proc_name_disc1_disc2, study_1.study_name)
+        study_2.load_data(from_path=self.dump_dir)
+        study_2.load_disciplines_data(study_folder_path=self.dump_dir)
+        study_2.load_cache(study_folder_path=self.dump_dir)
         
         # run study and check if cache is used
-        study_load.run()
+        study_2.run()
         
-        for disc in study_load.ee.factory.sos_disciplines:
+        for disc in study_2.ee.factory.sos_disciplines:
             if disc.name == 'Disc1':
                 self.assertEqual(disc.n_calls, 0)
             else:
@@ -259,9 +259,6 @@ if '__main__' == __name__:
     cls.setUp()
 #     cls.test_01_cache_map()
 #     cls.test_02_dump_and_load_cache_on_disc1_process()
-    cls.test_03_dump_and_load_cache_None()
-#     cls.test_04_dump_and_load_disc1_cache()
-    
-#     cls.test_04_load_cache_on_disc1()
+#     cls.test_03_dump_and_load_cache_None()
+    cls.test_04_dump_and_load_disc1_cache()
 #     cls.test_05_load_cache_on_sellar()
-    cls.tearDown()
