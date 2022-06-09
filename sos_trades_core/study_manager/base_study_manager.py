@@ -252,9 +252,6 @@ class BaseStudyManager():
 
         self._put_cache_into_file(study_folder_path, cache_map)
         
-        logger = self.execution_engine.logger
-        logger.info('The cache has been dumped in a pickle file')
-        
     def load_cache(self, study_folder_path=None):
         """ Method that load cache into the execution engine
 
@@ -265,12 +262,10 @@ class BaseStudyManager():
         loaded_cache_map = self.setup_cache_map_dict(study_folder_path)
 
         # Load disciplines cache from loaded cache map
-        self.execution_engine.load_cache_from_map(
-            loaded_cache_map)
+        if loaded_cache_map is not None:
+            self.execution_engine.load_cache_from_map(
+                loaded_cache_map)
         
-        logger = self.execution_engine.logger
-        logger.info('The cache has been loaded from a pickle file')
-
     def load_disciplines_data(self, study_folder_path=None):
         """ Method that load data into the execution engine
 
