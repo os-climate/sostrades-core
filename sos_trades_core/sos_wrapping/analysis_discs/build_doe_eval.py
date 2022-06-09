@@ -130,7 +130,7 @@ class BuildDoeEval(SoSEval):
                'sub_process_folder_name': {'type': 'string',
                                            'structuring': True,
                                            'default': 'None',
-                                           'editable': True
+                                           'editable': False
                                            },
                'sampling_algo': {'type': 'string',
                                  'structuring': True},
@@ -257,7 +257,9 @@ class BuildDoeEval(SoSEval):
         Get and build builder from sub_process of doe_eval driver 
         '''
         sub_process_folder_name_has_changed = False
-        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+        # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
+        # 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             sub_process = self.get_sosdisc_inputs(
                 'sub_process_folder_name')
@@ -322,10 +324,11 @@ class BuildDoeEval(SoSEval):
 
         # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
         # 'sub_process_folder_name' in self._data_in:
-        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
+        if 'repo_of_sub_processes' in self._data_in:
+            # and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             if repo == 'None':
-                self._data_in['sub_process_folder_name']['editable'] = True
+                self._data_in['sub_process_folder_name']['editable'] = False
             else:
                 self._data_in['sub_process_folder_name']['editable'] = True
 
@@ -350,12 +353,11 @@ class BuildDoeEval(SoSEval):
                 sub_process_folder_name += filtered_process_list
                 # dynamic_inputs.update(
                 #    {'sub_process_folder_name': {'type': 'string', 'default': 'None', 'possible_values': sub_process_folder_name, 'structuring': True
-                #                                 }})
+                #                                }})
                 # if 'sub_process_folder_name' in self._data_in and
                 # repo_of_sub_processes_has_changed:
                 if 'sub_process_folder_name' in self._data_in:
                     self._data_in['sub_process_folder_name']['possible_values'] = sub_process_folder_name
-                    #self._data_in['sub_process_folder_name']['value'] = 'None'
 
         # configure the usecase_of_sub_process list
         # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
