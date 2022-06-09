@@ -236,15 +236,15 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             if my_usecase == 1:
                 my_usecase = 'usecase'
             input_selection = {'selected_input': [True, True],
-                               'full_name': ['SellarCoupling.x', 'SellarCoupling.z']}
+                               'full_name': ['DoE_Eval.SellarCoupling.x', 'DoE_Eval.SellarCoupling.z']}
             input_selection = pd.DataFrame(input_selection)
 
             output_selection = {'selected_output': [False, False, True, True, True],
-                                'full_name': ['SellarCoupling.c_1', 'SellarCoupling.c_2', 'SellarCoupling.obj',
-                                              'SellarCoupling.y_1', 'SellarCoupling.y_2']}
+                                'full_name': ['DoE_Eval.SellarCoupling.c_1', 'DoE_Eval.SellarCoupling.c_2', 'DoE_Eval.SellarCoupling.obj',
+                                              'DoE_Eval.SellarCoupling.y_1', 'DoE_Eval.SellarCoupling.y_2']}
             output_selection = pd.DataFrame(output_selection)
 
-            dspace_dict = {'variable': ['SellarCoupling.x', 'SellarCoupling.z'],
+            dspace_dict = {'variable': ['DoE_Eval.SellarCoupling.x', 'DoE_Eval.SellarCoupling.z'],
 
                            'lower_bnd': [0., [-10., 0.]],
                            'upper_bnd': [10., [10., 10.]],
@@ -277,7 +277,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # SubProcess selection values
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase_toto'  # provide a warning if not existing use_case
+        # my_usecase = 'usecase_toto'  # provide a warning if not existing
+        # use_case
+        my_usecase = 'usecase'
         ######### Numerical values   ####
 
         input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
@@ -428,7 +430,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
         # provide inputs to the set doe with disciplines
-        values_dict = self.setup_usecase()[0]
+        values_dict = self.setup_usecase(restricted=True)[0]
         self.exec_eng.load_study_from_input_dict(values_dict)
         self.exec_eng.configure()
         self.exec_eng.display_treeview_nodes()
@@ -437,14 +439,14 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         print('Inputs')
         print(self.exec_eng.dm.get_data_dict_values())
 
-    def test_05_build_doe_eval_with_nested_proc_selection_through_process_driver(self):
+    def test_05_1_build_doe_eval_with_nested_proc_selection_through_process_driver(self):
         '''
         Test the creation of the doe without nested disciplines directly from DoE_eval class : 
         through_process_test_driver_build_doe_eval_empty.
         And then its update with with an input process for discipline selection.
         It is then used (fill data and execute)
         '''
-        print('test_05_build_doe_eval_with_nested_proc_selection_through_process_driver')
+        print('test_05_1_build_doe_eval_with_nested_proc_selection_through_process_driver')
         # setup an empty doe and configure
         driver_repo = 'sos_trades_core.sos_processes.test'
         driver_mod_id = 'test_driver_build_doe_eval_empty'
@@ -470,6 +472,24 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         print(self.exec_eng.execute())
         print('Inputs')
         print(self.exec_eng.dm.get_data_dict_values())
+
+    def test_05_2_build_doe_eval_with_nested_proc_selection_through_process_driver(self):
+        '''
+        Test the creation of the doe without nested disciplines directly from DoE_eval class : 
+        through_process_test_driver_build_doe_eval_empty.
+        And then its update with with an input process for discipline selection.
+        It is then used (fill data and execute)
+        '''
+        print('test_05_2_build_doe_eval_with_nested_proc_selection_through_process_driver')
+        # setup an empty doe and configure
+        driver_repo = 'sos_trades_core.sos_processes.test'
+        driver_mod_id = 'test_driver_build_doe_eval_empty'
+        doe_eval_builder = self.exec_eng.factory.get_builder_from_process(
+            repo=driver_repo, mod_id=driver_mod_id)
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
         # Provide subprocess and provide data input
         values_dict = self.setup_usecase(restricted=False)[0]
         self.exec_eng.load_study_from_input_dict(values_dict)
@@ -506,14 +526,14 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         study_dump.load_data(from_input_dict=dict_values)
         study_dump.dump_data(dump_dir)
         print(study_dump.ee.dm.get_data_dict_values())
-        study_dump.ee.configure()
-        print(study_dump.ee.dm.get_data_dict_values())
-        study_dump.run()
+        # study_dump.ee.configure()
+        # print(study_dump.ee.dm.get_data_dict_values())
+        # study_dump.run()
 
-        study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
-        study_load.load_data(from_path=dump_dir)
-        print(study_load.ee.dm.get_data_dict_values())
-        study_load.run()
+        #study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        # study_load.load_data(from_path=dump_dir)
+        # print(study_load.ee.dm.get_data_dict_values())
+        # study_load.run()
         from shutil import rmtree
         rmtree(dump_dir)
 
@@ -554,7 +574,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
         study_load.load_data(from_path=dump_dir)
         print(study_load.ee.dm.get_data_dict_values())
-        study_load.run()
+        # study_load.run()
         from shutil import rmtree
         rmtree(dump_dir)
 
@@ -580,7 +600,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
-        my_test = 6
+        my_test = 1
         dict_values = self.setup_usecase_from_sub_usecase(
             restricted=False, my_test=my_test, my_usecase=1)
         dict_values = dict_values[0]
@@ -598,25 +618,32 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             coupling_name = "SellarCoupling"
             ns = f'{self.study_name}'
             from numpy import array
-            dict_values[f'{ns}.{coupling_name}.x'] = 1.
-            dict_values[f'{ns}.{coupling_name}.y_1'] = 1.
-            dict_values[f'{ns}.{coupling_name}.y_2'] = 1.
-            dict_values[f'{ns}.{coupling_name}.z'] = array([1., 1.])
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.z'] = array([1., 1.])
             dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
+        print("toto")
+        print(dict_values)
         study_dump.load_data(from_input_dict=dict_values)
-        print(study_dump.ee.display_treeview_nodes(True))
+        # print(study_dump.ee.display_treeview_nodes(True))
 
         study_dump.dump_data(dump_dir)
-        # print(study_dump.ee.dm.get_data_dict_values())
-        print(study_dump.ee.display_treeview_nodes(True))
-        study_dump.run()
         print(study_dump.ee.dm.get_data_dict_values())
-
-        #study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
-        # study_load.load_data(from_path=dump_dir)
-        # print(study_load.ee.dm.get_data_dict_values())
-        # study_load.run()
+        print(study_dump.ee.display_treeview_nodes(True))
+        skip_run = False
+        if skip_run == False:
+            local_run = True
+            if local_run == True:
+                study_dump.run()
+                print(study_dump.ee.dm.get_data_dict_values())
+            else:
+                study_load = BaseStudyManager(
+                    repo, mod_id_empty_doe, 'MyStudy')
+                study_load.load_data(from_path=dump_dir)
+                print(study_load.ee.dm.get_data_dict_values())
+                study_load.run()
         from shutil import rmtree
         rmtree(dump_dir)
 
@@ -720,29 +747,33 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         print(
             'STEP_4.2: update subprocess selection by come back to Hessian')
         #
-        mod_id = 'test_disc_hessian'
-        dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
-        study_dump.load_data(from_input_dict=dict_values)
-        study_dump.dump_data(dump_dir)
-        print(study_dump.ee.dm.get_data_dict_values())
-        # Check that repo_of_sub_processes and sub_process_folder_name are set
-        value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
-        print('repo_of_sub_processes: ' +
-              study_dump.ee.dm.get_data(value_2_print)['value'])
-        value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
-        print('sub_process_folder_name: ' +
-              study_dump.ee.dm.get_data(value_2_print)['value'])
-        value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
-        print('usecase_of_sub_process: ' +
-              study_dump.ee.dm.get_data(value_2_print)['value'])
+        skip = True
+        if skip == False:
+            mod_id = 'test_disc_hessian'
+            dict_values = {}
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
+            study_dump.load_data(from_input_dict=dict_values)
+            study_dump.dump_data(dump_dir)
+            print(study_dump.ee.dm.get_data_dict_values())
+            # Check that repo_of_sub_processes and sub_process_folder_name are
+            # set
+            value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
+            print('repo_of_sub_processes: ' +
+                  study_dump.ee.dm.get_data(value_2_print)['value'])
+            value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
+            print('sub_process_folder_name: ' +
+                  study_dump.ee.dm.get_data(value_2_print)['value'])
+            value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
+            print('usecase_of_sub_process: ' +
+                  study_dump.ee.dm.get_data(value_2_print)['value'])
         print(
             '################################################################################')
         print(
             'STEP_4.3: update subprocess selection by replacing by disc1_all_types')
         #
         mod_id = 'test_proc_build_disc1_all_types'
-        my_usecase = 'Empty'  # PB if provided as None!
+        #mod_id = 'test_sellar_coupling'
+        my_usecase = 'usecase1'
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
         dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = my_usecase
@@ -761,7 +792,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
               study_dump.ee.dm.get_data(value_2_print)['value'])
         # Run
         flag_run = False
-        flag_local = False
+        flag_local = True
         if flag_run:
             print(
                 '################################################################################')
@@ -804,16 +835,16 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         ns = f'{self.study_name}'
 
         input_selection = {'selected_input': [True, True],
-                           'full_name': ['SellarCoupling.x',
-                                         'SellarCoupling.z']}
+                           'full_name': ['DoE_Eval.SellarCoupling.x',
+                                         'DoE_Eval.SellarCoupling.z']}
         input_selection = pd.DataFrame(input_selection)
 
         output_selection = {'selected_output': [False, False, True, True, True],
-                            'full_name': ['SellarCoupling.c_1', 'SellarCoupling.c_2', 'SellarCoupling.obj',
-                                          'SellarCoupling.y_1', 'SellarCoupling.y_2']}
+                            'full_name': ['DoE_Eval.SellarCoupling.c_1', 'DoE_Eval.SellarCoupling.c_2', 'DoE_Eval.SellarCoupling.obj',
+                                          'DoE_Eval.SellarCoupling.y_1', 'DoE_Eval.SellarCoupling.y_2']}
         output_selection = pd.DataFrame(output_selection)
 
-        dspace_dict = {'variable': ['SellarCoupling.x', 'SellarCoupling.z'],
+        dspace_dict = {'variable': ['DoE_Eval.SellarCoupling.x', 'DoE_Eval.SellarCoupling.z'],
 
                        'lower_bnd': [0., [-10., 0.]],
                        'upper_bnd': [10., [10., 10.]],
@@ -830,40 +861,68 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         study_dump.load_data(from_input_dict=dict_values)
         print(study_dump.ee.display_treeview_nodes(True))
 
-        dict_values[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
-        dict_values[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
-        dict_values[f'{self.study_name}.DoE_Eval.design_space'] = dspace
+        skip = False
+        if skip == False:
+            dict_values[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
+            dict_values[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
+            dict_values[f'{self.study_name}.DoE_Eval.design_space'] = dspace
 
-        dict_values[f'{self.study_name}.DoE_Eval.sampling_algo'] = my_doe_algo
-        dict_values[f'{self.study_name}.DoE_Eval.algo_options'] = {
-            'n_samples': n_samples}
+            dict_values[f'{self.study_name}.DoE_Eval.sampling_algo'] = my_doe_algo
+            dict_values[f'{self.study_name}.DoE_Eval.algo_options'] = {
+                'n_samples': n_samples}
 
-        from numpy import array
-        dict_values[f'{ns}.{coupling_name}.x'] = 1.
-        dict_values[f'{ns}.{coupling_name}.y_1'] = 1.
-        dict_values[f'{ns}.{coupling_name}.y_2'] = 1.
-        dict_values[f'{ns}.{coupling_name}.z'] = array([1., 1.])
-        dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+            from numpy import array
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.z'] = array([1., 1.])
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
-        study_dump.load_data(from_input_dict=dict_values)
-        print(study_dump.ee.display_treeview_nodes(True))
+            study_dump.load_data(from_input_dict=dict_values)
+            print(study_dump.ee.display_treeview_nodes(True))
 
-        study_dump.dump_data(dump_dir)
-        # print(study_dump.ee.dm.get_data_dict_values())
-        print(study_dump.ee.display_treeview_nodes(True))
-        study_dump.run()
-        print(study_dump.ee.dm.get_data_dict_values())
+            study_dump.dump_data(dump_dir)
+            # print(study_dump.ee.dm.get_data_dict_values())
+            print(study_dump.ee.display_treeview_nodes(True))
+            study_dump.run()
+            print(study_dump.ee.dm.get_data_dict_values())
 
-        #study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
-        # study_load.load_data(from_path=dump_dir)
-        # print(study_load.ee.dm.get_data_dict_values())
-        # study_load.run()
-        from shutil import rmtree
-        rmtree(dump_dir)
+            #study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+            # study_load.load_data(from_path=dump_dir)
+            # print(study_load.ee.dm.get_data_dict_values())
+            # study_load.run()
+            from shutil import rmtree
+            rmtree(dump_dir)
 
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    my_test.test_09_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc_and_updates()
-    # my_test.test_08_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc()
-    # my_test.test_10_build_doe_eval_with_nested_proc_selection_sellar()
+    test_selector = 9
+    if test_selector == 1:
+        my_test.setUp()
+        my_test.test_01_build_doe_eval_from_python_and_disc()
+    elif test_selector == 2:
+        my_test.setUp()
+        my_test.test_02_build_doe_eval_from_python_and_proc()
+    elif test_selector == 3:
+        my_test.setUp()
+        my_test.test_03_build_doe_eval_with_empty_disc()
+    elif test_selector == 4:
+        my_test.setUp()
+        my_test.test_04_build_doe_eval_with_nested_proc_selection()
+    elif test_selector == 5_1:
+        my_test.setUp()
+        my_test.test_05_1_build_doe_eval_with_nested_proc_selection_through_process_driver()
+    elif test_selector == 5_2:
+        my_test.setUp()
+        my_test.test_05_2_build_doe_eval_with_nested_proc_selection_through_process_driver()
+    elif test_selector == 6:
+        my_test.test_06_build_doe_eval_with_nested_proc_selection_through_process_driver_Hessian_subproc()
+    elif test_selector == 7:
+        my_test.test_07_build_doe_eval_with_nested_proc_selection_through_process_driver_bad_usecase()
+    elif test_selector == 8:
+        my_test.test_08_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc()
+    elif test_selector == 9:
+        my_test.test_09_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc_and_updates()
+    elif test_selector == 10:
+        my_test.test_10_build_doe_eval_with_nested_proc_selection_sellar()
