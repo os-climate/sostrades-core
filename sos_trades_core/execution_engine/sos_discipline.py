@@ -68,6 +68,7 @@ class SoSDiscipline(MDODiscipline):
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
     TYPE = 'type'
+    SUBTYPE = 'subtype_descriptor'
     COUPLING = 'coupling'
     VISIBILITY = 'visibility'
     LOCAL_VISIBILITY = 'Local'

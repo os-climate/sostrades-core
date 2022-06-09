@@ -100,8 +100,8 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
 
     # DESC_I/O
     DESC_IN = {'max_iter': {'type': 'float'},
-               INEQ_CONSTRAINTS: {'type': 'string_list', 'default': [], 'structuring': True},
-               EQ_CONSTRAINTS: {'type': 'string_list', 'default': [], 'structuring': True},
+               INEQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'structuring': True},
+               EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'structuring': True},
                }
     DESC_IN.update(SoSScenario.DESC_IN)
 

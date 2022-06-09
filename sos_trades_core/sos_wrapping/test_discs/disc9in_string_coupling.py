@@ -18,7 +18,6 @@ from numpy import array
 
 
 class Disc9in(SoSDiscipline):
-
     # ontology information
     _ontology_data = {
         'label': 'sos_trades_core.sos_wrapping.test_discs.disc9in_string_coupling',
@@ -38,12 +37,14 @@ class Disc9in(SoSDiscipline):
 
     DESC_OUT = {
         'string': {'type': 'string', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'string_list': {'type': 'string_list', 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'string_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'visibility': 'Shared',
+                        'namespace': 'ns_test'},
         'string_dict': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'string_dict_of_dict': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'dict_mix_types': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'dict_dict_dict_list_string': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_list': {'type': 'float_list', 'visibility': 'Shared', 'namespace': 'ns_test'}
+        'dict_list': {'type': 'list', 'subtype_descriptor': {'list': {'dict': {'dict': {'list': 'string'}}}},
+                      'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     def run(self):
@@ -52,26 +53,32 @@ class Disc9in(SoSDiscipline):
         if x > 0:
             dict_values = {'string': 'x is > 0',
                            'string_list': ['&1234(-_)=+6789$%!ABCabc', f'{x}{x}{x}{x}{x}{x}{x}', 'STEPS-HE'],
-                           'string_dict': {'key0': 'STEPS-HE', 'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
-                           'string_dict_of_dict': {'dict1': {'key1': 'STEPS-HE', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
-                                                   'dict2': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
-                           'dict_mix_types': {'AC1': {'string': 'NA', 'float': x ** 3, 'integer': int(x ** (1.0 / 2.0)), 'list': [x, 2 * x], 'dict': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
-                                              'AC2': {'string': 'NA', 'float': x ** 4, 'integer': int(x ** (3.0 / 2.0)), 'list': [x, 3 * x], 'dict': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}}},
+                           'string_dict': {'key0': 'STEPS-HE', 'key1': 'positive',
+                                           'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
+                           'string_dict_of_dict': {
+                               'dict1': {'key1': 'STEPS-HE', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
+                               'dict2': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
+                           'dict_mix_types': {'AC1': {'string': 'NA', 'float': x ** 3, 'integer': int(x ** (1.0 / 2.0)),
+                                                      'list': [x, 2 * x], 'dict': {'key1': 'positive',
+                                                                                   'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
+                                              'AC2': {'string': 'NA', 'float': x ** 4, 'integer': int(x ** (3.0 / 2.0)),
+                                                      'list': [x, 3 * x], 'dict': {'key1': 'positive',
+                                                                                   'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}}},
                            'dict_list': [{'key_1': {
                                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_2': {
-                               'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                                   'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                                   'scenario1': ['AC1', 'AC2']}}, {'key_11': {
+                               'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_22': {
                                    'scenario1': ['AC1', 'AC2']}}],
                            'dict_dict_dict_list_string': {'s1': {'key_1': {
                                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_2': {
-                               'scenario1': ['AC1', 'AC2']}},
+                                   'scenario1': ['AC1', 'AC2']}},
                                's2': {'key_11': {
                                    'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
-                               'key_22': {
-                                   'scenario1': ['AC1', 'AC2']}}}
+                                   'key_22': {
+                                       'scenario1': ['AC1', 'AC2']}}}
                            }
         else:
             dict_values = {'string': 'x is > 0',
@@ -82,17 +89,17 @@ class Disc9in(SoSDiscipline):
                            'dict_list': [{'key_1': {
                                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_2': {
-                               'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                                   'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                                   'scenario1': ['AC1', 'AC2']}}, {'key_11': {
+                               'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_22': {
                                    'scenario1': ['AC1', 'AC2']}}],
                            'dict_dict_dict_list_string': {'s1': {'key_1': {
                                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_2': {
-                               'scenario1': ['AC1', 'AC2']}},
+                                   'scenario1': ['AC1', 'AC2']}},
                                's2': {'key_11': {
                                    'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
-                               'key_22': {
-                                   'scenario1': ['AC1', 'AC2']}}}
+                                   'key_22': {
+                                       'scenario1': ['AC1', 'AC2']}}}
                            }
         self.store_sos_outputs_values(dict_values)

@@ -48,7 +48,7 @@ class SensitivityAnalysis(SoSSensitivity):
         'version': '',
     }
     DESC_IN = {
-        'variation_list': {'default': ['+/-10%'], 'type': 'string_list', 'unit': None, 'possible_values': ['+/-5%', '+/-10%', '+/-20%', '+/-50%']}
+        'variation_list': {'default': ['+/-10%'], 'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'possible_values': ['+/-5%', '+/-10%', '+/-20%', '+/-50%']}
     }
     DESC_IN.update(SoSEval.DESC_IN)
 

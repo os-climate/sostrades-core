@@ -36,12 +36,12 @@ class Disc9out(SoSDiscipline):
 
     DESC_IN = {
         'string': {'type': 'string', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'string_list': {'type': 'string_list', 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'string_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'visibility': 'Shared', 'namespace': 'ns_test'},
         'string_dict': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'string_dict_of_dict': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'dict_mix_types': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'dict_dict_dict_list_string': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_list': {'type': 'float_list', 'visibility': 'Shared', 'namespace': 'ns_test'}
+        'dict_list': {'type': 'list', 'subtype_descriptor': {'list': 'float'}, 'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {'z': {'type': 'float'}}
