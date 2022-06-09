@@ -298,9 +298,6 @@ class SoSEval(SoSDisciplineBuilder):
         # to run  soseval on a structuring variable. Therefore structuring variables are
         # excluded from eval possible values
         # set values_dict in the data manager to execute the sub process
-        # for var_f_name, var_value in values_dict.items():
-        #     self.ee.dm.set_data(var_f_name,
-        #                         'value', var_value, check_value=False)
         self.ee.dm.set_values_from_dict(values_dict)
 
         # execute eval process stored in children
