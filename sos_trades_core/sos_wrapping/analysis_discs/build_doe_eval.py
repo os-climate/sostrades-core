@@ -48,14 +48,14 @@ class BuildDoeEval(SoSEval):
                                     |_ eval_outputs (structuring)
                                     |_ sampling_algo (structuring)
                                             |_ custom_samples_df (dynamic: sampling_algo=="CustomDOE")
-                                            |_ design_space (dynamic: sampling_algo!="CustomDOE")
-                                            |_ algo_options (structuring, dynamic: sampling_algo!='None' and eval_inputs not empty and eval_output not empty)
+                                            |_ design_space (dynamic: sampling_algo!="CustomDOE") NB: default design space depends on eval_inputs
+                                            |_ algo_options (structuring, dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty)
             |_ n_processes
             |_ wait_time_between_fork
         |_ DESC_OUT
             |_ samples_inputs_df
             |_ all_ns_dict
-            |_ <var>_dict (dynamic, for <var> in eval_outputs)
+            |_ <var>_dict (dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
     Description of Desc parameters:
         'repo_of_sub_processes':    folder root of the sub processes to be nested inside the DoE.
                                     If 'None' then it uses the sos_processes python for doe creation.
@@ -320,7 +320,9 @@ class BuildDoeEval(SoSEval):
         # The setup of the discipline can begin once the algorithm we want to use to generate
         # the samples has been set
 
-        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self._data_in:
+        # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
+        # 'sub_process_folder_name' in self._data_in:
+        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             if repo == 'None':
                 self._data_in['sub_process_folder_name']['editable'] = True
@@ -329,7 +331,8 @@ class BuildDoeEval(SoSEval):
 
         # configure the sub_process_folder_name list
         repo_of_sub_processes_has_changed = False
-        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in'):
+        # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in'):
+        if 'repo_of_sub_processes' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             if repo != self.previous_repo_of_sub_processes:
                 repo_of_sub_processes_has_changed = True
@@ -355,7 +358,9 @@ class BuildDoeEval(SoSEval):
                     #self._data_in['sub_process_folder_name']['value'] = 'None'
 
         # configure the usecase_of_sub_process list
-        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+        # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
+        # 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             sub_process = self.get_sosdisc_inputs('sub_process_folder_name')
             if repo != 'None' and sub_process != 'None':
@@ -448,8 +453,10 @@ class BuildDoeEval(SoSEval):
                     self._data_in['algo_options']['value'] = default_dict
                 if 'algo_options' in self._data_in and self._data_in['algo_options']['value'] is not None and list(
                         self._data_in['algo_options']['value'].keys()) != all_options:
-                    options_map = ChainMap(self._data_in['algo_options']['value'], default_dict)
-                    self._data_in['algo_options']['value'] = {key: options_map[key] for key in all_options}
+                    options_map = ChainMap(
+                        self._data_in['algo_options']['value'], default_dict)
+                    self._data_in['algo_options']['value'] = {
+                        key: options_map[key] for key in all_options}
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
@@ -785,13 +792,14 @@ class BuildDoeEval(SoSEval):
 
         for data_in_key in disc._data_in.keys():
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
-            is_structuring = disc._data_in[data_in_key].get(self.STRUCTURING, False)
+            is_structuring = disc._data_in[data_in_key].get(
+                self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             if is_input_type and is_in_type and not in_coupling_numerical and not is_structuring:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
