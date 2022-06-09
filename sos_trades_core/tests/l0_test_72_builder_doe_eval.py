@@ -320,72 +320,6 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
         return [values_dict]
 
-    def test_01_build_doe_eval_from_python_and_disc(self):
-        '''
-        Test the creation of the doe and nested disciplines from a python sos_processes with an input wrapped discipline
-        It is then used (fill data and execute)
-        '''
-        print('test_01_build_doe_eval_from_python_and_disc')
-        mod_path = 'sos_trades_core.sos_wrapping.test_discs.disc_hessian.DiscHessian'
-        disc_name = 'Hessian'
-        disc_builder = self.exec_eng.factory.get_builder_from_module(
-            disc_name, mod_path)
-        builder_list = [disc_builder]
-
-        self.exec_eng.ns_manager.add_ns('ns_doe_eval', 'MyStudy.DoE_Eval')
-        # doe_eval_builder = self.exec_eng.factory.create_evaluator_builder(
-        #    'DoE_Eval', 'build_doe_eval', builder_list)
-        doe_eval_builder = self.exec_eng.factory.create_evaluator_builder(
-            'DoE_Eval', 'build_doe_eval', builder_list)
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            doe_eval_builder)
-        self.exec_eng.configure()
-        self.exec_eng.display_treeview_nodes()
-        values_dict = self.setup_usecase()[0]
-        self.exec_eng.load_study_from_input_dict(values_dict)
-        self.exec_eng.configure()
-        self.exec_eng.display_treeview_nodes()
-        # run
-        print(self.exec_eng.execute())
-        print('Inputs')
-        print(self.exec_eng.dm.get_data_dict_values())
-
-    def test_02_build_doe_eval_from_python_and_proc(self):
-        '''
-        Test the creation of the doe and nested disciplines from a python sos_processes with an input process for discipline selection
-        It is then used (fill data and execute)
-        '''
-        print('test_02_build_doe_eval_from_python_and_proc')
-        repo = 'sos_trades_core.sos_processes.test'
-        mod_id = 'test_disc_hessian'
-
-        builder_list = self.exec_eng.factory.get_builder_from_process(
-            repo=repo, mod_id=mod_id)
-        self.exec_eng.ns_manager.add_ns(
-            'ns_doe_eval', f'{self.exec_eng.study_name}.DoE_Eval')
-        doe_eval_builder = self.exec_eng.factory.create_evaluator_builder(
-            'DoE_Eval', 'build_doe_eval', builder_list)
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            doe_eval_builder)
-        self.exec_eng.configure()
-        self.exec_eng.display_treeview_nodes()
-        values_dict = self.setup_usecase()[0]
-        self.exec_eng.load_study_from_input_dict(values_dict)
-        self.exec_eng.configure()
-        self.exec_eng.display_treeview_nodes()
-        # run
-        print(self.exec_eng.execute())
-        print('Inputs')
-        print(self.exec_eng.dm.get_data_dict_values())
-        # Check that repo_of_sub_processes and sub_process_folder_name are set
-        value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
-        print('repo_of_sub_processes: ' +
-              self.exec_eng.dm.get_data(value_2_print)['value'])
-        value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
-        print('sub_process_folder_name: ' +
-              self.exec_eng.dm.get_data(value_2_print)['value'])
-        value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
-
     def test_03_build_doe_eval_with_empty_disc(self):
         '''
         Test the creation of the doe without nested disciplines and directly from DoE_eval class
@@ -900,14 +834,8 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 9
-    if test_selector == 1:
-        my_test.setUp()
-        my_test.test_01_build_doe_eval_from_python_and_disc()
-    elif test_selector == 2:
-        my_test.setUp()
-        my_test.test_02_build_doe_eval_from_python_and_proc()
-    elif test_selector == 3:
+    test_selector = 10
+    if test_selector == 3:
         my_test.setUp()
         my_test.test_03_build_doe_eval_with_empty_disc()
     elif test_selector == 4:
