@@ -90,6 +90,10 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                  "OPENOPT": default_algo_options_openopt,
                  "P-L-BFGS-B": default_algo_options_plbfgsb,
                  "OuterApproximation": default_algo_options_oa,
+                 "PYMOO_GA": {"normalize_design_space": False},
+                 "PYMOO_NSGA2": {"normalize_design_space": False},
+                 "PYMOO_NSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
+                 "PYMOO_UNSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
                  }
     is_constraints = True
     INEQ_CONSTRAINTS = 'ineq_constraints'
