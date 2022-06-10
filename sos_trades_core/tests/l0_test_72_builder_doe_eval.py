@@ -834,7 +834,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 9
+    test_selector = 10
     if test_selector == 3:
         my_test.setUp()
         my_test.test_03_build_doe_eval_with_empty_disc()

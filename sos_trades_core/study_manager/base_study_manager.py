@@ -240,7 +240,32 @@ class BaseStudyManager():
         data = self.execution_engine.get_anonimated_data_dict()
 
         self._put_data_into_file(study_folder_path, data)
+        
+    def dump_cache(self, study_folder_path):
+        """ Method that dump cache_map from the data manager to a file
 
+        :params: study_folder_path, location of pickle file to load
+        :type: str
+        """
+        # Retrieve cache_map to dump
+        cache_map = self.execution_engine.get_cache_map_to_dump()
+
+        self._put_cache_into_file(study_folder_path, cache_map)
+        
+    def load_cache(self, study_folder_path=None):
+        """ Method that load cache into the execution engine
+
+        :params: study_folder_path, location of pickle file to load (optional parameter)
+        :type: str
+        """
+        # Retrieve the cache map to load
+        loaded_cache_map = self.setup_cache_map_dict(study_folder_path)
+
+        # Load disciplines cache from loaded cache map
+        if loaded_cache_map is not None:
+            self.execution_engine.load_cache_from_map(
+                loaded_cache_map)
+        
     def load_disciplines_data(self, study_folder_path=None):
         """ Method that load data into the execution engine
 
@@ -341,6 +366,7 @@ class BaseStudyManager():
         if dump_study and self.dump_directory is not None:
             self.dump_data(self.dump_directory)
             self.dump_disciplines_data(self.dump_directory)
+            self.dump_cache(self.dump_directory)
             logger.debug(
                 f'Reference dump to {self.dump_directory}')
 
@@ -360,6 +386,21 @@ class BaseStudyManager():
             return self._get_data_from_file(study_folder_path)
 
         return []
+    
+    def setup_cache_map_dict(self, study_folder_path=None):
+        """ Method to overload in order to provide data to the loaded study process
+        from a specific way
+
+        :params: study_folder_path, location of pickle file to load (optional parameter)
+        :type: str
+
+        :return: dictionary, {str: *}
+        """
+
+        if study_folder_path is not None and isdir(study_folder_path):
+            return self._get_cache_from_file(study_folder_path)
+
+        return {}
 
     def setup_disciplines_data(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process
@@ -478,6 +519,41 @@ class BaseStudyManager():
 
             serializer.put_dict_from_study(
                 study_folder_path, self.__rw_strategy, data)
+            
+    def _put_cache_into_file(self, study_folder_path, data):
+        """ Method that load save from a file using an serializer object strategy (set with the according setter)
+        File will be entirely overwrittent
+
+        :params: study_folder_path, location of pickle file to save
+        :type: str
+
+        :params: data, data to save
+        :type: dict
+
+        """
+
+        if study_folder_path is not None:
+            serializer = DataSerializer()
+
+            serializer.put_cache_from_study(
+                study_folder_path, self.__rw_strategy, data)
+            
+    def _get_cache_from_file(self, study_folder_path):
+        """ Method that load discipline data into the execution engine
+
+        :params: study_folder_path, location of pickle file to load
+        :type: str
+        """
+        result = {}
+
+        serializer = DataSerializer()
+
+        if study_folder_path is not None:
+
+            result = serializer.load_cache_dict(
+                study_folder_path, self.__rw_strategy)
+
+        return result
 
     def _get_disciplines_data_from_file(self, study_folder_path):
         """ Method that load discipline data into the execution engine
