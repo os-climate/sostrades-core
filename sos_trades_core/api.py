@@ -16,8 +16,11 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License. 
 '''
-from sos_trades_core.tools.sos_logger import SoSLogging
+
+from logging import getLogger, INFO
 
 
 def get_sos_logger(name):
-    return SoSLogging(name).logger
+    sos_logger = getLogger(name)
+    sos_logger.setLevel(INFO)
+    return sos_logger
