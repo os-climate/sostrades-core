@@ -219,7 +219,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     values_dict = deepcopy(default_dict)
 
                     for k in algo_options.keys():
-                        if algo_options[k] not in [None, 'None']:
+                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)):
                             values_dict.update({k: algo_options[k]})
 
                     self._data_in[self.ALGO_OPTIONS][self.VALUE] = values_dict
