@@ -17,10 +17,11 @@ specific language governing permissions and limitations
 under the License. 
 '''
 
-from logging import getLogger, INFO
+from logging import getLogger, INFO, basicConfig
 
 
 def get_sos_logger(name):
+    basicConfig(level=INFO)
     sos_logger = getLogger(name)
-    sos_logger.setLevel(INFO)
+    #sos_logger.setLevel(INFO)
     return sos_logger
