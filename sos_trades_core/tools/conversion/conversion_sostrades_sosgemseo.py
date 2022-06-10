@@ -6,6 +6,7 @@ from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_com
 from numpy import ndarray, append, arange, array
 from pandas import DataFrame
 
+BASE_TYPE_EXCLUDED = ['int', 'string']
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
 VAR_TYPE_ID = 'type'
 VAR_SUBTYPE_ID = 'subtype_descriptor'
@@ -216,7 +217,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                         subtype = None
 
                 # TODO : remove this when we get rid of df_dict type
-                if  metadata_list is None:
+                if metadata_list is None and subtype is None:
                     raise ValueError(
                         f' Variable {key} cannot be converted since no metadata is available')
                 new_data = {}
@@ -245,11 +246,11 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                         subtype = None
 
                 if subtype is not None:
-                    if metadata_list is None and subtype['list'] not in ['int', 'string', 'float']:
+                    if metadata_list is None and subtype['list'] not in ['int', 'string', 'float'] and check_subtype(key, subtype, 'list') not in BASE_TYPE_EXCLUDED:
                         raise ValueError(
                             f' Variable {key} cannot be converted since no metadata is available')
 
-                    check_subtype(key, subtype, 'list')
+                    #check_subtype(key, subtype, 'list')
                     local_data_updt[key] = convert_array_into_list(
                         to_convert, deepcopy(metadata_list), subtype)
                 else:
@@ -277,7 +278,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
             #         local_data_updt[key].append(
             #             next((strg for strg, int_to_convert in metadata['known_values'].items(
             #             ) if int_to_convert == val), None))
-            #elif _type in ['float', 'int']:
+            # elif _type in ['float', 'int']:
             elif _type == 'float':
                 if isinstance(to_convert, ndarray):
                     # Check if metadata has been created
@@ -395,11 +396,14 @@ def convert_dict_into_array(var_dict, subtype):
     useful to build the dictionary afterwards
     '''
 
+    if check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED:
+        return var_dict, None
     if type(subtype['dict']).__name__ != 'dict':
         type_inside_the_dict = subtype['dict']
         if type_inside_the_dict in ['int', 'string']:
-            raise ValueError(
-                f'conversion of dict  of int or string is not supported')
+            # raise ValueError(
+            #     f'conversion of dict  of int or string is not supported')
+            return var_dict, None
 
         elif type_inside_the_dict == 'float':
             return array(list(var_dict.values())), {'length': len(var_dict.keys()), 'size': len(var_dict.keys()),
@@ -458,11 +462,15 @@ def convert_dict_into_array(var_dict, subtype):
 def convert_array_into_dict(to_convert, metadata, subtype):
     """ convert an array into initial dict
     """
+    if check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED:
+        return to_convert
     # Here we deal with a dict of only one level eg {'dict':'array'}, {'dict':'float'} , {'dict':'dataframe'}
     if type(subtype['dict']).__name__ != 'dict':
         type_inside_the_dict = subtype['dict']
-        if type_inside_the_dict in ['float', 'int', 'string']:
+        if type_inside_the_dict in ['float']:
             return {key: value for (key, value) in zip(metadata['value'], to_convert.tolist())}
+        elif type_inside_the_dict in ['int', 'string']:
+            return to_convert
 
 
         elif type_inside_the_dict == 'array':
@@ -620,6 +628,7 @@ def convert_new_type_into_array(
                                     var, values_list, metadata, prev_key, deepcopy(prev_metadata))
                             else:
 
+
                                 check_subtype(key, subtype, 'dict')
                                 values_list, metadata = convert_dict_into_array(
                                     var, subtype)
@@ -694,7 +703,7 @@ def convert_new_type_into_array(
                     #                 metadata, check_value=False)
                     dict_to_update_dm[key] = metadata
 
-        else :
+        else:
             var_dict[key] = var
             dict_to_update_dm[key] = None
     return var_dict, dict_to_update_dm
@@ -718,6 +727,8 @@ def convert_list_into_array(var, subtype):
     """This function converts a list into an array
     It also creates the metadata needed to reconvert the array into the initial list
     """
+    if check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED:
+        return var, None
     # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
     if type(subtype['list']).__name__ != 'dict':
         type_inside_the_list = subtype['list']
@@ -785,6 +796,8 @@ def convert_list_into_array(var, subtype):
 def convert_array_into_list(to_convert, metadata, subtype):
     """ convert an array into initial list
     """
+    if check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED:
+        return to_convert
     # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
     if type(subtype['list']).__name__ != 'dict':
         type_inside_the_list = subtype['list']
@@ -854,7 +867,7 @@ def check_subtype(var_full_name, subtype, type_to_check):
             raise ValueError(
                 f' subtype of variable {var_full_name} should indicate the type inside the {type_to_check}')
         else:
-            pass
+            return subtype[type_to_check]
     else:
 
-        check_subtype(var_full_name, subtype[type_to_check], list(subtype[type_to_check].keys())[0])
+        return check_subtype(var_full_name, subtype[type_to_check], list(subtype[type_to_check].keys())[0])

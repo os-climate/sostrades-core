@@ -57,7 +57,7 @@ class TestExtendString(unittest.TestCase):
                 rmtree(dir_to_del)
         sleep(0.5)
 
-    def _test_01_sosdiscipline_simple_dict(self):
+    def test_01_sosdiscipline_simple_dict(self):
         print("\n Test 01 : SoSDiscipline with simple dict")
         exec_eng = ExecutionEngine(self.name)
 
@@ -109,7 +109,7 @@ class TestExtendString(unittest.TestCase):
             elif target[key] is np.array:
                 self.assertListEqual(list(target[key]), list(res[key]))
 
-    def _test_02_sosdiscipline_string_dict_dump_load(self):
+    def test_02_sosdiscipline_string_dict_dump_load(self):
         print("\n Test 01 : SoSDiscipline with simple dict")
         exec_eng = ExecutionEngine(self.name)
 
@@ -125,17 +125,18 @@ class TestExtendString(unittest.TestCase):
             'type': 'list', 'subtype_descriptor': {'list': 'string'}}
         # dict of string
         disc5_builder.cls.DESC_IN['an_input_3'] = {
-            'type': 'dict'}
+            'type': 'dict', 'subtype_descriptor': {'dict': 'string'}}
         # dict of dict of string
         disc5_builder.cls.DESC_IN['an_input_4'] = {
-            'type': 'dict'}
+            'type': 'dict', 'subtype_descriptor': {'dict': {'dict': {'dict': 'string'}}}}
         # dict of string list
         disc5_builder.cls.DESC_IN['an_input_5'] = {
-            'type': 'dict'}
+            'type': 'dict', 'subtype_descriptor': {'dict': {'list': 'string'}}}
         # dict of dict of string list
         disc5_builder.cls.DESC_IN['an_input_6'] = {
-            'type': 'dict'}
-        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'list', 'subtype_descriptor': {'list': {'dict': {'dict': {'list': 'string'}}}}}
+            'type': 'dict', 'subtype_descriptor': {'dict': {'dict': {'list': 'string'}}}}
+        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'list', 'subtype_descriptor': {
+            'list': {'dict': {'dict': {'list': 'string'}}}}}
         exec_eng.factory.set_builders_to_coupling_builder(disc5_builder)
 
         exec_eng.configure()
@@ -146,20 +147,22 @@ class TestExtendString(unittest.TestCase):
         values_dict['EE.Disc5.an_input_1'] = 'STEPS-HEvbzeovbeo(-+=___________f roylgf'
         values_dict['EE.Disc5.an_input_2'] = ['STEPS-HE', 'eee']
         values_dict['EE.Disc5.an_input_3'] = {
-            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
+            'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=',
+            'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'}
         values_dict['EE.Disc5.an_input_4'] = {'value1': {
-            'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'}, 'value2': {'subkey': 'STEPS-HE'}}
+            'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'},
+            'value2': {'subkey': 'STEPS-HE'}}
         values_dict['EE.Disc5.an_input_5'] = {
             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 4.0]}
         values_dict['EE.Disc5.an_input_6'] = {'key_1': {
             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_2': {
-            'scenario1': ['AC1', 'AC2']}}
+                'scenario1': ['AC1', 'AC2']}}
         values_dict['EE.Disc5.an_input_7'] = [{'key_1': {
             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_2': {
-            'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                'scenario1': ['AC1', 'AC2']}}, {'key_11': {
+            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_22': {
                 'scenario1': ['AC1', 'AC2']}}]
         exec_eng.dm.set_values_from_dict(values_dict)
@@ -193,7 +196,8 @@ class TestExtendString(unittest.TestCase):
         # dict of dict of string list
         disc5_builder.cls.DESC_IN['an_input_6'] = {
             'type': 'dict'}
-        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'list', 'subtype_descriptor': {'list': {'dict': {'dict': {'list': 'string'}}}}}
+        disc5_builder.cls.DESC_IN['an_input_7'] = {'type': 'list', 'subtype_descriptor': {
+            'list': {'dict': {'dict': {'list': 'string'}}}}}
 
         ee2.factory.set_builders_to_coupling_builder(disc5_builder)
         ee2.configure()
@@ -206,21 +210,25 @@ class TestExtendString(unittest.TestCase):
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
                          'an_input_2': ['STEPS-HE', 'eee'],
-                         'an_input_3': {'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'},
-                         'an_input_4': {'value1': {'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'}, 'value2': {'subkey': 'STEPS-HE'}},
+                         'an_input_3': {'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=',
+                                        'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'},
+                         'an_input_4': {
+                             'value1': {'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'},
+                             'value2': {'subkey': 'STEPS-HE'}},
                          'an_input_5': {
-            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 4.0]},
-            'an_input_6': {'key_1': {
-                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
-            'key_2': {
-                'scenario1': ['AC1', 'AC2']}},
-            'an_input_7': [{'key_1': {
-                'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
-                'key_2': {
-                'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                    'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
-                'key_22': {
-                    'scenario1': ['AC1', 'AC2']}}]}
+                             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'],
+                             'scenario3': ['string', 1.0, 4.0]},
+                         'an_input_6': {'key_1': {
+                             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                             'key_2': {
+                                 'scenario1': ['AC1', 'AC2']}},
+                         'an_input_7': [{'key_1': {
+                             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                             'key_2': {
+                                 'scenario1': ['AC1', 'AC2']}}, {'key_11': {
+                             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                             'key_22': {
+                                 'scenario1': ['AC1', 'AC2']}}]}
         disc5 = ee2.dm.get_disciplines_with_name('EE.Disc5')[0]
         outputs = disc5.get_sosdisc_inputs()
         self.maxDiff = None
@@ -234,13 +242,17 @@ class TestExtendString(unittest.TestCase):
                 0.75, 0.75],
             'EE.Disc5.an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
             'EE.Disc5.an_input_2': ['STEPS-HE', 'eee'],
-            'EE.Disc5.an_input_3': {'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=', 'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'},
-            'EE.Disc5.an_input_4': {'value1': {'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'}, 'value2': {'subkey': 'STEPS-HE'}},
-            'EE.Disc5.an_input_5': {'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 4.0]},
+            'EE.Disc5.an_input_3': {'value1': 'STEPS_bzefivbzei))(((__)----+!!!:;=',
+                                    'value2': 'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva'},
+            'EE.Disc5.an_input_4': {
+                'value1': {'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'},
+                'value2': {'subkey': 'STEPS-HE'}},
+            'EE.Disc5.an_input_5': {'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'],
+                                    'scenario3': ['string', 1.0, 4.0]},
             'EE.Disc5.an_input_6': {'key_1': {
                 'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                 'key_2': {
-                'scenario1': ['AC1', 'AC2']}}}
+                    'scenario1': ['AC1', 'AC2']}}}
         ee2.execute()
         res = {}
         for key in target:
@@ -257,7 +269,7 @@ class TestExtendString(unittest.TestCase):
         # Clean the dump folder at the end of the test
         self.dirs_to_del.append(self.dump_dir)
 
-    def _test_03_couple_strings_withany_types(self):
+    def test_03_couple_strings_withany_types(self):
 
         exec_eng = ExecutionEngine(self.name)
 
@@ -293,26 +305,30 @@ class TestExtendString(unittest.TestCase):
 
         outputs_ref = {'string': 'x is > 0',
                        'string_list': ['&1234(-_)=+6789$%!ABCabc', f'{x0}{x0}{x0}{x0}{x0}{x0}{x0}', 'STEPS-HE'],
-                       'string_dict': {'key0': 'STEPS-HE', 'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
-                       'string_dict_of_dict': {'dict1': {'key1': 'STEPS-HE', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
-                                               'dict2': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
+                       'string_dict': {'key0': 'STEPS-HE', 'key1': 'positive',
+                                       'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
+                       'string_dict_of_dict': {
+                           'dict1': {'key1': 'STEPS-HE', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'},
+                           'dict2': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
                        'dict_mix_types': {'AC1': {'string': 'NA', 'float': 8.0, 'integer': 1, 'list': [2.0, 4.0],
-                                                  'dict': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
+                                                  'dict': {'key1': 'positive',
+                                                           'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}},
                                           'AC2': {'string': 'NA', 'float': 16.0, 'integer': 2, 'list': [2.0, 6.0],
-                                                  'dict': {'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}}},
+                                                  'dict': {'key1': 'positive',
+                                                           'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'}}},
                        'dict_list': [{'key_1': {
                            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                            'key_2': {
-                           'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                               'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                               'scenario1': ['AC1', 'AC2']}}, {'key_11': {
+                           'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                            'key_22': {
                                'scenario1': ['AC1', 'AC2']}}],
-                           'dict_dict_dict_list_string': {'s1': {'key_1': {
-                               'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
-                               'key_2': {
+                       'dict_dict_dict_list_string': {'s1': {'key_1': {
+                           'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                           'key_2': {
                                'scenario1': ['AC1', 'AC2']}},
-                               's2': {'key_11': {
-                                   'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                           's2': {'key_11': {
+                               'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                                'key_22': {
                                    'scenario1': ['AC1', 'AC2']}}}}
         self.maxDiff = None
@@ -340,7 +356,7 @@ class TestExtendString(unittest.TestCase):
                 else:
                     self.assertEqual(value, ref_value)
 
-    def _test_04_check_adding_newstring_in_dict(self):
+    def test_04_check_adding_newstring_in_dict(self):
 
         exec_eng = ExecutionEngine(self.name)
 
@@ -368,4 +384,4 @@ class TestExtendString(unittest.TestCase):
         exec_eng.execute()
 
         self.assertDictEqual(exec_eng.dm.get_value(f'{self.name}.string_dict'), {
-                             'key0': 'STEPS-HE', 'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'})
+            'key0': 'STEPS-HE', 'key1': 'positive', 'key2': 'vvrnevqa81344U890aHDPI-----++++)))))____'})
