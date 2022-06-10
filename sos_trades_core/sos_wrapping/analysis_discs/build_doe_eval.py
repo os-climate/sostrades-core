@@ -132,21 +132,6 @@ class BuildDoeEval(SoSEval):
                                            'default': 'None',
                                            'editable': True
                                            },
-               'sampling_algo': {'type': 'string',
-                                 'structuring': True},
-               'eval_inputs': {'type': 'dataframe',
-                               'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                        'full_name': ('string', None, False)},
-                               'dataframe_edition_locked': False,
-                               'structuring': True,
-                               'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                               'namespace': 'ns_doe_eval'},
-               'eval_outputs': {'type': 'dataframe',
-                                'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                         'full_name': ('string', None, False)},
-                                'dataframe_edition_locked': False,
-                                'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                'namespace': 'ns_doe_eval'},
                'n_processes': {'type': 'int',
                                'numerical': True,
                                'default': 1},
@@ -257,7 +242,9 @@ class BuildDoeEval(SoSEval):
         Get and build builder from sub_process of doe_eval driver 
         '''
         sub_process_folder_name_has_changed = False
-        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+        # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
+        # 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
+        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             sub_process = self.get_sosdisc_inputs(
                 'sub_process_folder_name')
@@ -322,7 +309,8 @@ class BuildDoeEval(SoSEval):
 
         # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
         # 'sub_process_folder_name' in self._data_in:
-        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
+        if 'repo_of_sub_processes' in self._data_in:
+            # and 'sub_process_folder_name' in self._data_in:
             repo = self.get_sosdisc_inputs('repo_of_sub_processes')
             if repo == 'None':
                 self._data_in['sub_process_folder_name']['editable'] = True
@@ -350,12 +338,11 @@ class BuildDoeEval(SoSEval):
                 sub_process_folder_name += filtered_process_list
                 # dynamic_inputs.update(
                 #    {'sub_process_folder_name': {'type': 'string', 'default': 'None', 'possible_values': sub_process_folder_name, 'structuring': True
-                #                                 }})
+                #                                }})
                 # if 'sub_process_folder_name' in self._data_in and
                 # repo_of_sub_processes_has_changed:
                 if 'sub_process_folder_name' in self._data_in:
                     self._data_in['sub_process_folder_name']['possible_values'] = sub_process_folder_name
-                    #self._data_in['sub_process_folder_name']['value'] = 'None'
 
         # configure the usecase_of_sub_process list
         # if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and
@@ -369,8 +356,34 @@ class BuildDoeEval(SoSEval):
                     repo, sub_process)
                 process_usecase_list += usecase_list
                 dynamic_inputs.update(
-                    {'usecase_of_sub_process': {'type': 'string', 'default': 'Empty', 'possible_values': process_usecase_list, 'structuring': True}})
+                    {'usecase_of_sub_process': {'type': 'string',
+                                                'default': 'Empty',
+                                                'possible_values': process_usecase_list,
+                                                'structuring': True}})
 
+        if 'repo_of_sub_processes' in self._data_in and 'sub_process_folder_name' in self._data_in:
+            repo = self.get_sosdisc_inputs('repo_of_sub_processes')
+            sub_process = self.get_sosdisc_inputs('sub_process_folder_name')
+            if repo != 'None' and sub_process != 'None':
+                dynamic_inputs.update({'sampling_algo': {'type': 'string',
+                                                         'structuring': True}
+                                       })
+                dynamic_inputs.update({'eval_inputs': {'type': 'dataframe',
+                                                       'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                                                'full_name': ('string', None, False)},
+                                                       'dataframe_edition_locked': False,
+                                                       'structuring': True,
+                                                       'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                       'namespace': 'ns_doe_eval'}
+                                       })
+                dynamic_inputs.update({'eval_outputs': {'type': 'dataframe',
+                                                        'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                                                 'full_name': ('string', None, False)},
+                                                        'dataframe_edition_locked': False,
+                                                        'structuring': True,
+                                                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                        'namespace': 'ns_doe_eval'}
+                                       })
         if self.ALGO in self._data_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             if self.previous_algo_name != algo_name:

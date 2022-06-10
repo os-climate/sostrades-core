@@ -143,8 +143,9 @@ class DataSerializer:
 
         cache_dict_f = self.get_dm_file(study_to_load=study_to_load,
                                          file_type=self.cache_filename)
-
-        return rw_strategy.load(cache_dict_f)
+        
+        if cache_dict_f is not None:
+            return rw_strategy.load(cache_dict_f)
 
     def load_disc_status_dict(self, study_to_load, rw_strategy):
         ''' load disciplines status from binary file (containing disc/status info into dictionary) '''
@@ -243,8 +244,12 @@ class DataSerializer:
         if len(dm_files) != 1:
             f_t = 'values csv' if file_type == self.val_filename else 'pickle'
             if len(dm_files) == 0:
-                raise IOError(
-                    f'There is no DM {f_t} file from {study_to_load}')
+                # instead of of data.pkl and disciplines_status.pkl, cache.pkl file is optional
+                if file_type == self.cache_filename:
+                    return None
+                else:
+                    raise IOError(
+                        f'There is no DM {f_t} file from {study_to_load}')
             else:
                 _d = dirname(dm_files[0])
                 _f = ', '.join([basename(f) for f in dm_files])

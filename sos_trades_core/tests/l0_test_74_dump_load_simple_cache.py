@@ -122,8 +122,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         for disc_id in study_dump.ee.dm.gemseo_disciplines_id_map.keys():
             disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id]
             disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id]
-            if disc_dump.name in ['Disc1', 'Disc2']:
-                self.assertEqual(disc_load.n_calls, disc_dump.n_calls - 1)
+            self.assertEqual(disc_load.n_calls, disc_dump.n_calls - 1)
                 
         # remove pkl dumped
         rmtree(self.dump_dir)
@@ -258,7 +257,7 @@ if '__main__' == __name__:
     cls = TestLoadSimpleCache()
     cls.setUp()
 #     cls.test_01_cache_map()
-#     cls.test_02_dump_and_load_cache_on_disc1_process()
+    cls.test_02_dump_and_load_cache_on_disc1_process()
 #     cls.test_03_dump_and_load_cache_None()
-    cls.test_04_dump_and_load_disc1_cache()
+#     cls.test_04_dump_and_load_disc1_cache()
 #     cls.test_05_load_cache_on_sellar()
