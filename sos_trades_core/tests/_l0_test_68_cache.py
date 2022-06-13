@@ -331,7 +331,7 @@ class TestCache(unittest.TestCase):
         disc1_builder.cls.DESC_IN['an_input_1'] = {
             'type': 'string'}  # add new string variable
         disc1_builder.cls.DESC_IN['an_input_2'] = {
-            'type': 'string_list'}  # add new string variable
+            'type': 'list', 'subtype_descriptor': {'list': 'string'}}  # add new string variable
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
 
@@ -401,7 +401,7 @@ class TestCache(unittest.TestCase):
         disc1_builder.cls.DESC_IN['an_input_1'] = {
             'type': 'string'}  # add new string variable
         disc1_builder.cls.DESC_IN['an_input_2'] = {
-            'type': 'string_list'}  # add new string variable
+            'type': 'list', 'subtype_descriptor': {'list': 'string'},}  # add new string variable
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
         disc2_builder.cls.DESC_IN['an_input_3'] = {
@@ -621,7 +621,7 @@ class TestCache(unittest.TestCase):
         disc1_builder.cls.DESC_IN['an_input_1'] = {
             'type': 'string'}  # add new string variable
         disc1_builder.cls.DESC_IN['an_input_2'] = {
-            'type': 'string_list'}  # add new string variable
+            'type': 'list', 'subtype_descriptor': {'list': 'string'},}  # add new string variable
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
         self.factory.set_builders_to_coupling_builder(

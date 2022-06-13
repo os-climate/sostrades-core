@@ -766,7 +766,7 @@ class DataManager:
                             if value not in possible_values:
                                 errors_in_dm_msg = f'Variable: {var_f_name} : {value} not in *possible values* {possible_values}'
                                 self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
                             for sub_value in value:
                                 if sub_value not in possible_values:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {sub_value} in list {value} not in *possible values* {possible_values}'
