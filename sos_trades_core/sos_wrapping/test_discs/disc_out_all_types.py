@@ -39,7 +39,7 @@ class DiscOutAllTypes(SoSDiscipline):
     DESC_IN = {
         'z': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'y': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'AC_list': {'type': 'string_list', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'year_start': {'type': 'int', 'default': 2050, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'year_end': {'type': 'int', 'default': 2050, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
     }

@@ -16,7 +16,7 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
-from logging import getLogger
+from logging import getLogger, INFO
 from os.path import join, dirname
 from pathlib import Path
 from shutil import rmtree
@@ -24,7 +24,7 @@ from time import sleep
 import unittest
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.tools.sos_logger import SoSLogging
+from sos_trades_core.api import get_sos_logger
 from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
 
@@ -85,10 +85,8 @@ class TestExecutionEngine(unittest.TestCase):
 
     def test_02_execution_engine_soscoupling(self):
         process = 'test_disc1_disc2_coupling'
-        master_logger = SoSLogging('SoS', master=True,
-                                   level=SoSLogging.INFO
-                                   # ,filename='test_02_execution_engine_soscoupling'
-                                   ).logger
+        master_logger = get_sos_logger('SoS')
+        master_logger.setLevel(INFO)
         master_logger.info(
             f'Master Logger {master_logger} is ready to gather all the loggers of subprocesses')
         exec_eng = ExecutionEngine(self.name)

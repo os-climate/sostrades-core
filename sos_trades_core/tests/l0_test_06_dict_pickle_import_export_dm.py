@@ -136,7 +136,7 @@ class TestSerializeDF(unittest.TestCase):
                           [2., 4., 8., 16.], [4., 8., 16., 32.]])
         origin_dict = {'x': {'type': 'float', 'unit': 'meters', 'value': 1.23},
                        'arr': {'type': 'array', 'unit': 'modes', 'value': arr_array},
-                       'list': {'type': 'string_list', 'unit': '#names', 'value': list_val},
+                       'list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': '#names', 'value': list_val},
                        'df': {'type': 'dataframe', 'unit': None, 'value': DataFrame(df_array, columns=df_col)}}
         test_extract_DF = join(self.out_dir, 'test_extract_DF')
         if not Path(test_extract_DF).is_dir():

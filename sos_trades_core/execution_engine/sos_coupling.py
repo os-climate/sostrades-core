@@ -117,7 +117,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
                          SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
                          SoSDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT:-1, SoSDiscipline.NUMERICAL: True,
                                  SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
@@ -191,6 +191,48 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         self.is_sos_coupling = True
         SoSDiscipline._reload(self, sos_name, ee)
+        
+    def _set_dm_cache_map(self):
+        '''
+        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
+        '''
+        if self.cache is not None:
+            # set disc infos string list with full name, class name and anonimaed i/o for hashed uid generation
+            disc_info_list = [self.get_disc_full_name(), self.__class__.__name__, self.get_anonimated_data_io(self)]
+            hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
+            # store cache and hashed uid in data manager maps
+            self.dm.cache_map[hashed_uid] = self.cache
+            self.dm.gemseo_disciplines_id_map[hashed_uid] = self
+            
+            # set mdo_chain infos string list
+            mdo_chain_info_list = [self.get_disc_full_name(), self.mdo_chain.__class__.__name__, self.get_anonimated_data_io(self.mdo_chain)]
+            hashed_uid_mdo_chain = self.dm.generate_hashed_uid(mdo_chain_info_list)
+            # store cache and hashed uid in data manager maps
+            self.dm.cache_map[hashed_uid_mdo_chain] = self.mdo_chain.cache
+            self.dm.gemseo_disciplines_id_map[hashed_uid_mdo_chain] = self.mdo_chain
+        
+            # store sub mdas cache recursively
+            for mda in self.sub_mda_list:
+                self._set_sub_mda_dm_cache_map(mda)
+            
+        # store children cache recursively
+        for disc in self.sos_disciplines:
+            disc._set_dm_cache_map() 
+            
+    def _set_sub_mda_dm_cache_map(self, mda):
+        '''
+        Update cache_map disc in DM with mda cache and its sub_mdas recursively        
+        '''
+        # set mdo_chain infos string list
+        mda_info_list = [self.get_disc_full_name(), mda.__class__.__name__, self.get_anonimated_data_io(mda)]
+        hashed_uid_mda = self.dm.generate_hashed_uid(mda_info_list)
+        # store cache and hashed uid in data manager maps
+        self.dm.cache_map[hashed_uid_mda] = mda.cache
+        self.dm.gemseo_disciplines_id_map[hashed_uid_mda] = mda
+        # store sub mda cache recursively
+        if isinstance(mda, MDASequential):
+            for sub_mda in mda.mda_sequence:
+                self._set_sub_mda_dm_cache_map(sub_mda)   
 
     def build(self):
 
