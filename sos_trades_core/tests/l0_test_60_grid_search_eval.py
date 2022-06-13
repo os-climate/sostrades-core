@@ -37,6 +37,7 @@ class TestGridSearchEval(unittest.TestCase):
         '''
         Initialize third data needed for testing
         '''
+        pd.set_option('display.max_columns', 10)
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
         self.repo = 'sos_trades_core.sos_processes.test'
@@ -430,10 +431,14 @@ class TestGridSearchEval(unittest.TestCase):
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
-        grid_search = exec_eng.dm.get_disciplines_with_name('MyCase.GridSearch')[0]
-        sellar_2 = exec_eng.dm.get_disciplines_with_name('MyCase.GridSearch.Sellar_2')[0]
-        sellar_1 = exec_eng.dm.get_disciplines_with_name('MyCase.GridSearch.Sellar_1')[0]
-        sellar_problem = exec_eng.dm.get_disciplines_with_name('MyCase.GridSearch.Sellar_Problem')[0]
+        grid_search = exec_eng.dm.get_disciplines_with_name('MyCase.GridSearch')[
+            0]
+        sellar_2 = exec_eng.dm.get_disciplines_with_name(
+            'MyCase.GridSearch.Sellar_2')[0]
+        sellar_1 = exec_eng.dm.get_disciplines_with_name(
+            'MyCase.GridSearch.Sellar_1')[0]
+        sellar_problem = exec_eng.dm.get_disciplines_with_name(
+            'MyCase.GridSearch.Sellar_Problem')[0]
 
         # check that all the grid search disciplines has run successfully
         self.assertEqual(grid_search.status, 'DONE')
@@ -442,7 +447,8 @@ class TestGridSearchEval(unittest.TestCase):
         self.assertEqual(sellar_problem.status, 'DONE')
 
         # We trigger an exception during the execute and we check that
-        # the failed discipline and grid search status are set to failed while the other are PENDING
+        # the failed discipline and grid search status are set to failed while
+        # the other are PENDING
         values_dict[f'{self.ns}.debug_mode_sellar'] = True
         exec_eng.load_study_from_input_dict(values_dict)
         try:
@@ -454,6 +460,287 @@ class TestGridSearchEval(unittest.TestCase):
             self.assertEqual(sellar_problem.status, 'PENDING')
 
         print("done")
+
+    def test_05_grid_search_multipliers_inputs_for_2_columns(self):
+        sa_builder = self.exec_eng.factory.get_builder_from_process(
+            self.repo, self.proc_name)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
+
+        print('Study first configure!')
+
+        dict_values = {
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
+        }
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
+        #     'possible_values']
+
+        # dict_values = {}
+        # self.exec_eng.load_study_from_input_dict(dict_values)
+
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.dd_df_values2_multiplier', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.dd_df_values1_multiplier', ['selected_input']] = True
+
+        eval_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] ==
+                         f'{self.grid_search}.Disc1.val_sum_dict', ['selected_output']] = True
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        ds['nb_points'] = 3
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.design_space': ds,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.execute()
+
+        grid_search_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+
+        dd_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.Disc1.dd_df')
+        grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
+        samples_inputs_df = grid_search_disc_output['samples_inputs_df']
+        samples_outputs_df = grid_search_disc_output['samples_outputs_df']
+        val_sum_dict_dict = grid_search_disc_output['GridSearch.Disc1.val_sum_dict_dict']
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Study executed from the design_space: \n {ds}')
+        print(f'Study executed with the samples: \n {samples_inputs_df}')
+        print(f'Outputs used for graphs: \n {samples_outputs_df}')
+        print(f'Study generated the output: y_dict \n {val_sum_dict_dict}')
+
+        print(f'Check scenario {samples_inputs_df.loc[10][0]}')
+        val2_multi = samples_inputs_df.loc[10][2]
+        val1_multi = samples_inputs_df.loc[10][3]
+        result_val1 = samples_outputs_df.loc[10][1]
+        result_val2 = samples_outputs_df.loc[10][2]
+
+        dd_df['values1'] = dd_df['values1'] * (val1_multi / 100)
+        dd_df['values2'] = dd_df['values2'] * (val2_multi / 100)
+
+        result__computed_val1 = dd_df['values1'].cumsum().values[-1]
+        result__computed_val2 = dd_df['values2'].cumsum().values[-1]
+
+        self.assertEqual(result_val1, result__computed_val1)
+        self.assertEqual(result_val2, result__computed_val2)
+
+    def test_06_grid_search_multipliers_inputs_for_all_columns(self):
+        sa_builder = self.exec_eng.factory.get_builder_from_process(
+            self.repo, self.proc_name)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
+
+        print('Study first configure!')
+
+        dict_values = {
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
+        }
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
+        #     'possible_values']
+
+        # dict_values = {}
+        # self.exec_eng.load_study_from_input_dict(dict_values)
+
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.dd_df_multiplier', ['selected_input']] = True
+
+        eval_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] ==
+                         f'{self.grid_search}.Disc1.val_sum_dict', ['selected_output']] = True
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        ds['nb_points'] = 3
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.design_space': ds,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.execute()
+
+        grid_search_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+
+        dd_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.Disc1.dd_df')
+        grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
+        samples_inputs_df = grid_search_disc_output['samples_inputs_df']
+        samples_outputs_df = grid_search_disc_output['samples_outputs_df']
+        val_sum_dict_dict = grid_search_disc_output['GridSearch.Disc1.val_sum_dict_dict']
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Study executed from the design_space: \n {ds}')
+        print(f'Study executed with the samples: \n {samples_inputs_df}')
+        print(f'Outputs used for graphs: \n {samples_outputs_df}')
+        print(f'Study generated the output: y_dict \n {val_sum_dict_dict}')
+
+        print(f'Check scenario {samples_inputs_df.loc[4][0]}')
+        val_multi = samples_inputs_df.loc[4][2]
+        result_val1 = samples_outputs_df.loc[4][1]
+        result_val2 = samples_outputs_df.loc[4][2]
+
+        dd_df['values1'] = dd_df['values1'] * (val_multi / 100)
+        dd_df['values2'] = dd_df['values2'] * (val_multi / 100)
+
+        result__computed_val1 = dd_df['values1'].cumsum().values[-1]
+        result__computed_val2 = dd_df['values2'].cumsum().values[-1]
+
+        self.assertEqual(result_val1, result__computed_val1)
+        self.assertEqual(result_val2, result__computed_val2)
+
+    def test_07_grid_search_multipliers_inputs_for_dict(self):
+        sa_builder = self.exec_eng.factory.get_builder_from_process(
+            self.repo, self.proc_name)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
+
+        print('Study first configure!')
+
+        dict_values = {
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.di_dict': {'values1': 100., 'values2': 50.}
+
+        }
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
+        #     'possible_values']
+
+        # dict_values = {}
+        # self.exec_eng.load_study_from_input_dict(dict_values)
+
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.di_dict_multiplier', ['selected_input']] = True
+
+        eval_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] ==
+                         f'{self.grid_search}.Disc1.val_sum_dict2', ['selected_output']] = True
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        ds['nb_points'] = 3
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.design_space': ds,
+        }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.execute()
+
+        grid_search_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+
+        di_dict = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.Disc1.di_dict')
+        grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
+        samples_inputs_df = grid_search_disc_output['samples_inputs_df']
+        samples_outputs_df = grid_search_disc_output['samples_outputs_df']
+        val_sum_dict_dict = grid_search_disc_output['GridSearch.Disc1.val_sum_dict2_dict']
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Study executed from the design_space: \n {ds}')
+        print(f'Study executed with the samples: \n {samples_inputs_df}')
+        print(f'Outputs used for graphs: \n {samples_outputs_df}')
+        print(f'Study generated the output: y_dict \n {val_sum_dict_dict}')
+
+        print(f'Check scenario {samples_inputs_df.loc[4][0]}')
+        val_multi = samples_inputs_df.loc[4][2]
+        result_val1 = samples_outputs_df.loc[4][1]
+        result_val2 = samples_outputs_df.loc[4][2]
+
+        result__computed_val1 = di_dict['values1'] * (val_multi / 100)
+        result__computed_val2 = di_dict['values2'] * (val_multi / 100)
+
+        self.assertEqual(result_val1, result__computed_val1)
+        self.assertEqual(result_val2, result__computed_val2)
 
 
 if '__main__' == __name__:
