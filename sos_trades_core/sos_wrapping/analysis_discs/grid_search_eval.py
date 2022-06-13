@@ -1331,7 +1331,7 @@ class GridSearchEval(DoeEval):
                             )
                             instanciated_charts.append(new_chart)
 
-            return instanciated_charts
+        return instanciated_charts
 
     def get_postprocessing_table(self, ref_scen_dict, eval_in_list):
 

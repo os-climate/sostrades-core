@@ -34,9 +34,6 @@ from scipy.stats import norm
 import chaospy as cp
 
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart, \
-    InstanciatedSeries
-from sos_trades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 import plotly.graph_objects as go
 from sos_trades_core.tools.post_processing.post_processing_tools import format_currency_legend
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import \

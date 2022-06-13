@@ -519,6 +519,7 @@ class SoSDiscipline(MDODiscipline):
         '''
         Configure the SoSDiscipline
         '''
+
         self.set_numerical_parameters()
 
         if self.check_structuring_variables_changes():
@@ -567,7 +568,6 @@ class SoSDiscipline(MDODiscipline):
                 self.check_min_max_couplings = True
             if debug_mode != "":
                 if debug_mode == "all":
-
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
                             self.logger.info(
@@ -1134,11 +1134,7 @@ class SoSDiscipline(MDODiscipline):
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            try:
-                metadata = data_io[self.TYPE_METADATA][0]
-            except :
-                print('ici')
-
+            metadata = data_io[self.TYPE_METADATA][0]
             lines_nb = metadata['shape'][0]
             # delete the + 1 if we delete the index column
             index_column = metadata['columns'].to_list().index(column)
@@ -1160,7 +1156,7 @@ class SoSDiscipline(MDODiscipline):
         Get input_data for linearize sosdiscipline
         '''
         input_data = {}
-        input_data_names = self._filter_variables_to_convert(self.input_grammar.get_data_names())
+        input_data_names = self.input_grammar.get_data_names()
         if len(input_data_names) > 0:
 
             for data_name in input_data_names:
@@ -1691,6 +1687,7 @@ class SoSDiscipline(MDODiscipline):
         """
         Overload check jacobian to execute the init_execution
         """
+
         # The init execution allows to check jacobian without an execute before the check
         # however if an execute was done, we do not want to restart the model
         # and potentially loose informations to compute gradients (some
