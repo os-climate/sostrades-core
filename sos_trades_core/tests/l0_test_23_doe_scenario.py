@@ -325,7 +325,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             X_pd = XY_pd['design_parameters']
             self.assertEqual(len(X_pd), n_samples)
 
-    def test_4_test_options_full_fact(self):
+    def _test_4_test_options_full_fact(self):
         print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -756,7 +756,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                     n_samples=100, dimension=5)
                 # print(samples)
 
-    def test_10_execute_all_algos(self):
+    def _test_10_execute_all_algos(self):
         print("\n Test 04: Sellar doe solution check with DisciplinaryOpt formulation/ fullfact algo")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
