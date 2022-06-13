@@ -116,10 +116,15 @@ class BaseStudyManager():
 
     @property
     def study_data_file_path(self):
-        serializer = DataSerializer()
-        serializer.set_dm_pkl_files(study_to_load=self.dump_directory)
+        return DataSerializer.study_data_manager_file_path(study_to_load=self.dump_directory)
 
-        return serializer.dm_pkl_file
+    @property
+    def study_discipline_file_path(self):
+        return DataSerializer.study_disciplines_status_file_path(study_to_load=self.dump_directory)
+
+    @property
+    def study_cache_file_path(self):
+        return DataSerializer.study_cache_file_path(study_to_load=self.dump_directory)
 
     def _init_exec_engine(self):
         """ Create an isntance of the execution engine
