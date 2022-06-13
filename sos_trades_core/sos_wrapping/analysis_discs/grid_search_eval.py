@@ -75,6 +75,7 @@ class GridSearchEval(DoeEval):
         'version': '',
     }
     INPUT_TYPE = ['float']
+    INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe']
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
@@ -139,6 +140,7 @@ class GridSearchEval(DoeEval):
             eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
+            ''' SELECTED INPUTS/OUTPUTS CONFIGURATION'''
             # we fetch the inputs and outputs selected by the user
             selected_outputs = eval_outputs[eval_outputs['selected_output'] == True][
                 'full_name'
@@ -146,17 +148,6 @@ class GridSearchEval(DoeEval):
             selected_inputs = eval_inputs[eval_inputs['selected_input'] == True][
                 'full_name'
             ]
-
-            if set(selected_inputs.tolist()) != set(self.selected_inputs):
-                selected_inputs_has_changed = True
-                # self.selected_inputs = selected_inputs.tolist()
-                # self.dm.set_data(
-                #     f'{self.get_disc_full_name()}.eval_inputs',
-                #     'value',
-                #     eval_inputs.sort_values(
-                #         by=['selected_input', 'full_name'], ascending=False).reset_index(drop=True),
-                #     check_value=False,
-                # )
             if set(selected_outputs.tolist()) != set(self.selected_outputs):
                 self.dm.set_data(
                     f'{self.get_disc_full_name()}.eval_outputs',
@@ -168,6 +159,8 @@ class GridSearchEval(DoeEval):
                 )
             self.selected_outputs = selected_outputs.tolist()
 
+            if set(selected_inputs.tolist()) != set(self.selected_inputs):
+                selected_inputs_has_changed = True
             self.selected_inputs = selected_inputs.tolist()
             self.dm.set_data(
                 f'{self.get_disc_full_name()}.eval_inputs',
@@ -181,12 +174,12 @@ class GridSearchEval(DoeEval):
             selected_inputs_short = eval_inputs[eval_inputs['selected_input'] == True][
                 'shortest_name'
             ]
-
             self.selected_inputs = self.selected_inputs[: self.max_inputs_nb]
             selected_inputs_short = selected_inputs_short[: self.max_inputs_nb]
             self.set_eval_in_out_lists(
                 self.selected_inputs, self.selected_outputs)
 
+            ''' OUTPUT DICTS CREATION '''
             # grid_search can be done only for selected inputs and outputs
             if len(self.eval_in_list) > 0:
                 # setting dynamic outputs. One output of type dict per selected
@@ -203,7 +196,31 @@ class GridSearchEval(DoeEval):
                                 }
                             }
                         )
+                ''' INPUTS MULTIPLIERS CREATION '''
+                # if multipliers in eval_in
+                if (len(self.selected_inputs) > 0) and (any([val in self.multipliers_dict for val in self.selected_inputs])):
+                    for selected_in in self.selected_inputs:
+                        if selected_in in self.multipliers_dict:
+                            multiplier_name = selected_in.split('.')[-1]
+                            fullname_origin = self.multipliers_dict[selected_in]['fullname_origin']
+                            fullname_origin_namespace = self.ee.dm.get_data(
+                                fullname_origin, 'namespace')
+                            dynamic_inputs.update(
+                                {
+                                    f'{multiplier_name}': {
+                                        'type': 'float',
+                                        'visibility': 'Shared',
+                                        'namespace': fullname_origin_namespace,
+                                        'unit': self.ee.dm.get_data(fullname_origin).get('unit', '-'),
+                                        'default': 100
+                                    }
+                                }
+                            )
+                            # store the base value in the multipliers dict
+                            self.multipliers_dict[selected_in]['origin_value'] = self.ee.dm.get_value(
+                                fullname_origin)
 
+                ''' DESIGN SPACE CREATION '''
                 # setting dynamic design space with default value if not
                 # specified
                 default_design_space = pd.DataFrame(
@@ -272,6 +289,7 @@ class GridSearchEval(DoeEval):
         self.max_inputs_nb = 3
         self.conversion_full_short = {}
         self.chart_dict = {}
+        self.multipliers_dict = {}
 
     def generate_shortest_name(self, var_list):
         list_shortest_name = [[] for i in range(len(var_list))]
@@ -404,6 +422,11 @@ class GridSearchEval(DoeEval):
                            for val in possible_in_values_full]
         outputs_val_list = [val.split('.')[-1]
                             for val in possible_out_values_full]
+        for val in possible_in_values_full:
+            if val in self.multipliers_dict:
+                inputs_val_list.append(
+                    self.multipliers_dict[val]['name_origin'])
+
         args = inputs_val_list + outputs_val_list
         ontology_connector.set_connector_request(
             data_connection, OntologyDataConnector.PARAMETER_REQUEST, args
@@ -411,10 +434,14 @@ class GridSearchEval(DoeEval):
         conversion_full_ontology = ontology_connector.load_data(
             data_connection)
 
+        # possible_in_values_short = [
+        #     f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
+        #     for val in possible_in_values_full
+        # ]
+        # replace ontology val for column df/dict var
         possible_in_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
-            for val in possible_in_values_full
-        ]
+            f'{conversion_full_ontology[self.multipliers_dict[val]["name_origin"]][0]} - {self.multipliers_dict[val]["column_name"]} Column' if val in self.multipliers_dict else f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+
         # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = [
             f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
