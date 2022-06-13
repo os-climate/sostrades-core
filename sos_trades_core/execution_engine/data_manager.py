@@ -108,8 +108,9 @@ class DataManager:
         '''
         # update cache of all gemseo disciplines with loaded cache_map
         for disc_id, disc_cache in cache_map.items():
-            self.gemseo_disciplines_id_map[disc_id].cache = disc_cache
-            self.cache_map[disc_id] = disc_cache
+            if disc_id in self.gemseo_disciplines_id_map:
+                self.gemseo_disciplines_id_map[disc_id].cache = disc_cache
+                self.cache_map[disc_id] = disc_cache
 
     def reset(self):
         self.data_dict = {}
@@ -766,7 +767,7 @@ class DataManager:
                             if value not in possible_values:
                                 errors_in_dm_msg = f'Variable: {var_f_name} : {value} not in *possible values* {possible_values}'
                                 self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list', 'list']:
                             for sub_value in value:
                                 if sub_value not in possible_values:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {sub_value} in list {value} not in *possible values* {possible_values}'
@@ -805,6 +806,7 @@ class DataManager:
         '''
 
         if self.logger.level <= logging.DEBUG:
+
             def compare_data(data_name):
 
                 if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:

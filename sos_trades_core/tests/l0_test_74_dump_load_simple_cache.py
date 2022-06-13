@@ -252,12 +252,38 @@ class TestLoadSimpleCache(unittest.TestCase):
         # remove directory of dumped pickles
         self.dir_to_del.append(self.dump_dir)
 
+    def test_06_set_recursive_cache_coupling(self):
+
+        study = study_disc1_disc2()
+        study.load_data()
+        
+        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache'}
+        study.load_data(from_input_dict=values_dict)
+        study.load_cache(self.dump_dir)
+        study.dump_cache(self.dump_dir)
+        
+        self.assertEqual(len(study.ee.dm.cache_map), 4)
+        
+        values_dict = {f'{study.study_name}.cache_type': 'None'}
+        study.load_data(from_input_dict=values_dict)
+        study.load_cache(self.dump_dir)
+        study.dump_cache(self.dump_dir)
+        
+        self.assertEqual(len(study.ee.dm.cache_map), 0)
+        
+        study.run()
+        self.assertEqual(len(study.ee.dm.cache_map), 0)
+        
+        # remove directory of dumped pickles
+        self.dir_to_del.append(self.dump_dir)
+
         
 if '__main__' == __name__:
     cls = TestLoadSimpleCache()
     cls.setUp()
 #     cls.test_01_cache_map()
-    cls.test_02_dump_and_load_cache_on_disc1_process()
+#     cls.test_02_dump_and_load_cache_on_disc1_process()
 #     cls.test_03_dump_and_load_cache_None()
 #     cls.test_04_dump_and_load_disc1_cache()
 #     cls.test_05_load_cache_on_sellar()
+    cls.test_06_set_recursive_cache_coupling()
