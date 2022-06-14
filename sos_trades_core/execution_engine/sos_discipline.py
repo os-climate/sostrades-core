@@ -68,6 +68,7 @@ class SoSDiscipline(MDODiscipline):
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
     TYPE = 'type'
+    SUBTYPE = 'subtype_descriptor'
     COUPLING = 'coupling'
     VISIBILITY = 'visibility'
     LOCAL_VISIBILITY = 'Local'
@@ -518,6 +519,7 @@ class SoSDiscipline(MDODiscipline):
         '''
         Configure the SoSDiscipline
         '''
+
         self.set_numerical_parameters()
 
         if self.check_structuring_variables_changes():
@@ -566,7 +568,6 @@ class SoSDiscipline(MDODiscipline):
                 self.check_min_max_couplings = True
             if debug_mode != "":
                 if debug_mode == "all":
-
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
                             self.logger.info(
@@ -1133,11 +1134,7 @@ class SoSDiscipline(MDODiscipline):
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            try:
-                metadata = data_io[self.TYPE_METADATA][0]
-            except :
-                print('ici')
-
+            metadata = data_io[self.TYPE_METADATA][0]
             lines_nb = metadata['shape'][0]
             # delete the + 1 if we delete the index column
             index_column = metadata['columns'].to_list().index(column)
@@ -1159,7 +1156,7 @@ class SoSDiscipline(MDODiscipline):
         Get input_data for linearize sosdiscipline
         '''
         input_data = {}
-        input_data_names = self._filter_variables_to_convert(self.input_grammar.get_data_names())
+        input_data_names = self.input_grammar.get_data_names()
         if len(input_data_names) > 0:
 
             for data_name in input_data_names:
@@ -1326,6 +1323,21 @@ class SoSDiscipline(MDODiscipline):
             self)
         self.disc_id = self.dm.update_disciplines_dict(
             self.disc_id, disc_dict_info, disc_ns_name)
+        
+    def _set_dm_cache_map(self):
+        '''
+        Update cache_map dict in DM with cache and its children recursively
+        '''
+        if self.cache is not None:
+            # set disc infos string list with full name, class name and anonimaed i/o for hashed uid generation
+            disc_info_list = [self.get_disc_full_name().split(self.ee.study_name)[-1], self.__class__.__name__, self.get_anonimated_data_io(self)]
+            hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
+            # store cache and hashed uid in data manager maps
+            self.dm.cache_map[hashed_uid] = self.cache
+            self.dm.gemseo_disciplines_id_map[hashed_uid] = self
+        # store children cache recursively
+        for disc in self.sos_disciplines:
+            disc._set_dm_cache_map() 
 
     def get_var_full_name(self, var_name, disc_dict):
         ''' Get namespaced variable from namespace and var_name in disc_dict
@@ -1369,6 +1381,20 @@ class SoSDiscipline(MDODiscipline):
     def get_disc_id_from_namespace(self):
 
         return self.ee.dm.get_discipline_ids_list(self.get_disc_full_name())
+    
+    def get_anonimated_data_io(self, disc):
+        '''
+        return list of anonimated input and output keys for serialisation purpose
+        '''
+        anonimated_data_io = ''
+
+        for key in disc.get_input_data_names():
+            anonimated_data_io += key.split(self.ee.study_name)[-1]
+            
+        for key in disc.get_output_data_names():
+            anonimated_data_io += key.split(self.ee.study_name)[-1]
+
+        return anonimated_data_io
 
     def _convert_list_of_keys_to_namespace_name(self, keys, io_type):
 
@@ -1661,6 +1687,7 @@ class SoSDiscipline(MDODiscipline):
         """
         Overload check jacobian to execute the init_execution
         """
+
         # The init execution allows to check jacobian without an execute before the check
         # however if an execute was done, we do not want to restart the model
         # and potentially loose informations to compute gradients (some

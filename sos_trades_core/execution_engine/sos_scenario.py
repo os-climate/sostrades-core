@@ -50,16 +50,12 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         'icon': '',
         'version': '',
     }
-
-    default_algo_options = {"ftol_rel": 1e-08,
-                            'ftol_abs': 1e-14,
-                            'xtol_rel': 1e-08,
-                            'xtol_abs': 1e-14,
+    default_algo_options = {"ftol_rel": 3e-16,
                             "normalize_design_space": True,
                             "maxls": 100,
                             "maxcor": 50,
                             "pg_tol": 1.e-8,
-                            "max_iter": 999,
+                            "max_iter": 500,
                             "disp": 30}
     default_parallel_options = {'parallel': False,
                                 'n_processes': cpu_count(),
@@ -223,12 +219,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     values_dict = deepcopy(default_dict)
 
                     for k in algo_options.keys():
-
-                        if k not in values_dict.keys():
-                            self.logger.warning(
-                                f'option {k} is not in option list of the algorithm')
-
-                        else:
+                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)):
                             values_dict.update({k: algo_options[k]})
 
                     self._data_in[self.ALGO_OPTIONS][self.VALUE] = values_dict
@@ -331,13 +322,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         if len(found_algo_names) == 1:
             key = found_algo_names[0]
             for algo_option in algo_options_keys:
-                default_val = self.algo_dict[key][algo_option]
+                default_val = self.algo_dict[key].get(algo_option)
                 if default_val is not None:
                     default_dict[algo_option] = default_val
         else:
             for algo_option in algo_options_keys:
                 if algo_option in self.default_algo_options:
-                    algo_default_val = self.default_algo_options[algo_option]
+                    algo_default_val = self.default_algo_options.get(algo_option)
                     if algo_default_val is not None:
                         default_dict[algo_option] = algo_default_val
 

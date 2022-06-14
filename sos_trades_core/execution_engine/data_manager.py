@@ -19,6 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import logging
 from copy import copy
 from uuid import uuid4
+from hashlib import sha256
 
 from numpy import can_cast
 
@@ -77,6 +78,8 @@ class DataManager:
         self.data_id_map = None
         self.disciplines_dict = None
         self.disciplines_id_map = None
+        self.gemseo_disciplines_id_map = None
+        self.cache_map = None
         self.treeview = None
         self.reset()
 
@@ -89,11 +92,28 @@ class DataManager:
     def get_an_uuid():
         ''' generate a random UUID to make data_dict keys unique '''
         return str(uuid4())
+    
+    def generate_hashed_uid(self, string_list):
+        '''
+        Generate a hashed uid based on string list containing disc infos (full disc name, class name and full data i/o)
+        '''
+        h = sha256()
+        for string in string_list:
+            h.update(string.encode())
+        return h.digest()
+    
+    def load_gemseo_disciplines_cache(self, cache_map):
+        '''
+        Store gemseo disciplines cache from cache_map using gemseo_disciplines_id_map
+        '''
+        # update cache of all gemseo disciplines with loaded cache_map
+        for disc_id, disc_cache in cache_map.items():
+            self.gemseo_disciplines_id_map[disc_id].cache = disc_cache
+            self.cache_map[disc_id] = disc_cache
 
     def reset(self):
         self.data_dict = {}
         self.data_id_map = {}
-        self.data_cache = {}
         self.disciplines_dict = {}
         self.disciplines_id_map = {}
         self.no_check_default_variables = []
@@ -722,7 +742,7 @@ class DataManager:
                                 else:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {value} is not in range {prange}'
                                     self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
                             for sub_value in value:
                                 if not can_cast(type(sub_value), type(prange[0])):
                                     errors_in_dm_msg = f'Variable: {var_f_name}: {sub_value} ({type(sub_value)}) in list {value} not the same as {prange[0]} ({type(prange[0])})'
@@ -746,7 +766,7 @@ class DataManager:
                             if value not in possible_values:
                                 errors_in_dm_msg = f'Variable: {var_f_name} : {value} not in *possible values* {possible_values}'
                                 self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
                             for sub_value in value:
                                 if sub_value not in possible_values:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {sub_value} in list {value} not in *possible values* {possible_values}'

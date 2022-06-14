@@ -34,7 +34,7 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
         # add disciplines Sellar
-        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sellar.'
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.sellar_status.'
         mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1'}

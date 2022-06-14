@@ -20,6 +20,7 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
+from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
 from os.path import dirname
 from os import listdir
@@ -32,11 +33,49 @@ from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_eval import SoSEval
 import pandas as pd
+from collections import ChainMap
 
 
 class BuildDoeEval(SoSEval):
     '''
     Generic DOE evaluation class
+
+    Strucrure of Desc_in/Desc_out:
+        |_ DESC_IN
+            |_ REPO_OF_SUB_PROCESSES (structuring)
+                        |_ SUB_PROCESS_NAME (structuring)
+                                    |_ USECASE_OF_SUB_PROCESS (structuring,dynamic: SUB_PROCESS_NAME!='None')
+                                    |_ EVAL_INPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None')
+                                    |_ EVAL_OUTPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None')
+                                    |_ SAMPLING_ALGO (structuring,dynamic : SUB_PROCESS_NAME!='None')
+                                            |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE")
+                                            |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS
+                                            |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO!='None' and EVAL_INPUTS not empty and EVAL_OUTPUTS not empty)
+            |_ N_PROCESSES
+            |_ WAIT_TIME_BETWEEN_FORK
+        |_ DESC_OUT
+            |_ SAMPLES_INPUTS_DF
+            |_ ALL_NS_DICT
+            |_ <var>_dict (dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
+
+    Description of DESC parameters:
+        REPO_OF_SUB_PROCESSES:    folder root of the sub processes to be nested inside the DoE.
+                                    If 'None' then it uses the sos_processes python for doe creation.
+        SUB_PROCESS_NAME:  selected process folder name to be nested inside the DoE.
+                                    If 'None' then it uses the sos_processes python for doe creation.
+        EVAL_INPUTS:              selection of input variables to be used for the DoE
+        EVAL_OUTPUTS:             selection of output variables to be used for the DoE (the selected observables)
+        SAMPLING_ALGO:            method of defining the sampling input dataset for the variable chosen in self.EVAL_INPUTS
+        N_PROCESSES:
+        WAIT_TIME_BETWEEN_FORK:
+        SAMPLES_INPUTS_DF :       copy of the generated or provided input sample
+        ALL_NS_DICT :             a map of ns keys: values
+        USECASE_OF_SUB_PROCESS :  either empty or an available usecase of the sub_process
+        CUSTOM_SAMPLES_DF:        provided input sample
+        DESIGN_SPACE:             provided design space
+        ALGO_OPTIONS:             options depending of the choice of self.SAMPLING_ALGO
+        <var observable name>_dict':for each selected output observable doe result
+                                    associated to sample and the selected observable
     '''
 
     # ontology information
@@ -49,9 +88,25 @@ class BuildDoeEval(SoSEval):
         'last_modification_date': '',
         'category': '',
         'definition': 'DoE driver discipline that implements a Design of Experiment on a nested system (Implementation based on SoSEval driver discipline). Remark: the optimization "formulation" capability is not covered',
-        'icon': '',
+        'icon': 'fas fa-screwdriver-wrench fa-grid-4 fa-fw',
         'version': '',
     }
+
+    # -- Disciplinary attributes
+    REPO_OF_SUB_PROCESSES = 'repo_of_sub_processes'
+    SUB_PROCESS_NAME = 'sub_process_folder_name'
+    USECASE_OF_SUB_PROCESS = 'usecase_of_sub_process'
+
+    EVAL_INPUTS = 'eval_inputs'  # should be in SOS_EVAL
+    EVAL_OUTPUTS = 'eval_outputs'  # should be in SOS_EVAL
+    N_PROCESSES = 'n_processes'  # should be in SOS_EVAL
+    WAIT_TIME_BETWEEN_FORK = 'wait_time_between_fork'  # should be defined in SOS_EVAL
+
+    SAMPLING_ALGO = 'sampling_algo'
+    SAMPLES_INPUTS_DF = 'samples_inputs_df'
+    CUSTOM_SAMPLES_DF = 'custom_samples_df'
+    ALL_NS_DICT = 'all_ns_dict'
+
     default_algo_options = {}
 
     DEFAULT = 'default'
@@ -83,69 +138,45 @@ class BuildDoeEval(SoSEval):
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
     NS_SEP = '.'
-    INPUT_TYPE = ['float', 'array', 'int']
+    INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    DESC_IN = {'repo_of_sub_processes': {'type': 'string', 'structuring': True, 'default': 'None', 'possible_values': ['None', 'sos_trades_core.sos_processes.test']
-                                         },
-               'sub_process_folder_name': {'type': 'string', 'structuring': True, 'default': 'None'
-                                           #,'possible_values': ['None', 'test_disc_hessian']
-                                           },
-               'sampling_algo': {'type': 'string', 'structuring': True},
-               'eval_inputs': {'type': 'dataframe',
-                               'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                        'full_name': ('string', None, False)},
-                               'dataframe_edition_locked': False,
-                               'structuring': True,
-                               'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                               'namespace': 'ns_doe_eval'},
-               'eval_outputs': {'type': 'dataframe',
-                                'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                         'full_name': ('string', None, False)},
-                                'dataframe_edition_locked': False,
-                                'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                'namespace': 'ns_doe_eval'},
-               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
-               'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
+    DESC_IN = {REPO_OF_SUB_PROCESSES: {'type': 'string',
+                                       'structuring': True,  # should we use SoSDiscipline.STRUCTURING?
+                                       #'default': 'None',
+                                       'possible_values': ['None', 'sos_trades_core.sos_processes.test'],
+                                       'user_level': 1,
+                                       'optional': False
+                                       },
+               SUB_PROCESS_NAME: {'type': 'string',
+                                  'structuring': True,
+                                  #'default': 'None',
+                                  'editable': True,
+                                  'user_level': 1,
+                                  'optional': False
+                                  },
+               N_PROCESSES: {'type': 'int',
+                             'numerical': True,
+                             'default': 1},
+               WAIT_TIME_BETWEEN_FORK: {'type': 'float',
+                                        'numerical': True,
+                                        'default': 0.0},
                }
 
     DESC_OUT = {
-        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                              'namespace': 'ns_doe_eval'},
-        'all_ns_dict': {'type': 'dataframe', 'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                        'namespace': 'ns_doe_eval'}
+        SAMPLES_INPUTS_DF: {'type': 'dataframe',
+                            'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                            'namespace': 'ns_doe_eval'},
+        ALL_NS_DICT: {'type': 'dataframe',
+                      'unit': None, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                      'namespace': 'ns_doe_eval'}
     }
-    # DESC_IN static parameters
-    #   'repo_of_sub_processes': folder root of the sub processes to be nested inside the DoE.
-    #                        If 'None' then it uses the sos_processes python for doe creation.
-    #   'sub_process_folder_name': selected process folder name to be nested inside the DoE.
-    #                        If 'None' then it uses the sos_processes python for doe creation.
-    #   'eval_inputs': selection of input variables to be used for the DoE
-    #   'eval_outputs': selection of output variables to be used for the DoE (the selected observables)
-    #   'sampling_algo': method of defining the sampling input dataset for the variable chosen in 'eval_inputs'
-    #   'n_processes':
-    #   'wait_time_between_fork':
-    # DESC_OUT static parameters
-    #   'samples_inputs_df' : copy of the generated or provided input sample
-    #   'all_ns_dict' : a map of ns keys: values
-    # DESC_IN dynamic parameters
-    #   if subprocess is not Empty:
-    #                    'usecase_of_sub_process' : either empty or an available usecase of the sub_process
-    #   if 'sampling_algo' == 'CustomDOE':
-    #                        'custom_samples_df': provided input sample
-    #   else:
-    #                        'design_space': provided design space
-    #                        'algo_options': options (if any) depending of the choice of 'sampling_algo'
-    # DESC_OUT dynamic parameters
-    #   <var observable name>_dict': for each selected output observable doe result
-    #                                associated to sample and the selected observable
-    #
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
     # options using directly the DoeFactory
 
     # Default values of algorithms
     default_algo_options = {
-        'n_samples': 'default',
+        'n_samples': 1,
         'alpha': 'orthogonal',
         'eval_jac': False,
         'face': 'faced',
@@ -159,7 +190,7 @@ class BuildDoeEval(SoSEval):
     }
 
     default_algo_options_lhs = {
-        'n_samples': 'default',
+        'n_samples': 1,
         'alpha': 'orthogonal',
         'eval_jac': False,
         'face': 'faced',
@@ -173,7 +204,7 @@ class BuildDoeEval(SoSEval):
     }
 
     default_algo_options_fullfact = {
-        'n_samples': 'default',
+        'n_samples': 1,
         'alpha': 'orthogonal',
         'eval_jac': False,
         'face': 'faced',
@@ -189,7 +220,7 @@ class BuildDoeEval(SoSEval):
     X_pd = pd.DataFrame(data=d)
 
     default_algo_options_CustomDOE = {
-        'n_processes': 1,
+        'n_processes': 1,  # same name as N_PROCESSES ! Redundant ?
         'wait_time_between_samples': 0.0
     }
 
@@ -208,20 +239,67 @@ class BuildDoeEval(SoSEval):
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
 
+    def __init__(self, sos_name, ee, cls_builder):
+        '''
+        Constructor
+        '''
+        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
+            ee.ns_manager.add_ns('ns_doe', ee.study_name)
+        super(BuildDoeEval, self).__init__(sos_name, ee, cls_builder)
+        self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
+        self.doe_factory = DOEFactory()
+        self.design_space = None
+        self.samples = None
+        self.customed_samples = None
+        self.dict_desactivated_elem = {}
+        self.selected_outputs = []
+        self.selected_inputs = []
+        self.previous_repo_of_sub_processes = ""
+        self.previous_sub_process_folder_name = ""
+        self.previous_usecase_of_sub_process = ""
+        self.previous_algo_name = ""
+
     def build(self):
         '''
         Get and build builder from sub_process of doe_eval driver 
         '''
-        if len(self.cls_builder) == 0:
-            if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
-                repo = self.get_sosdisc_inputs('repo_of_sub_processes')
-                sub_process = self.get_sosdisc_inputs(
-                    'sub_process_folder_name')
-                if repo != 'None' and sub_process != 'None':
+        sub_process_folder_name_has_changed = False
+        if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
+            repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
+            sub_process = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_NAME)
+            # We come from outside driver process
+            if sub_process != self.previous_sub_process_folder_name:
+                sub_process_folder_name_has_changed = True
+                self.previous_sub_process_folder_name = sub_process
+            # if repo != 'None' and sub_process != 'None':  # We come from
+            # driver process with provided sub process
+            if repo != None and sub_process != None:
+                if len(self.cls_builder) == 0 or sub_process_folder_name_has_changed:
                     cls_builder = self.get_nested_builders_from_sub_process(
                         repo, sub_process)
+                    if not isinstance(cls_builder, list):
+                        cls_builder = [cls_builder]
                     self.set_nested_builders(cls_builder)
+                    self.update_namespace_list_with_extra_ns_except_driver(
+                        'DoE_Eval', after_name=self.ee.study_name)
+                    # Here we not shift doe_eval that is already in the namespace dictionary.
+                    # In a more general frame we would need to compare previous
+                    # namspace dict and only shift new created namespace keys
         SoSEval.build(self)
+
+    def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, after_name=None, namespace_list=None):
+        '''
+        Update the value of a list of namespaces with an extra namespace placed behind after_name
+        In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
+        '''
+        if namespace_list is None:
+            namespace_list = self.ee.ns_manager.ns_list
+            namespace_list = [
+                elem for elem in namespace_list if f'{self.ee.study_name}.DoE_Eval' not in elem.get_value()]
+        for ns in namespace_list:
+            self.ee.ns_manager.update_namespace_with_extra_ns(
+                ns, extra_ns, after_name)
 
     def get_nested_builders_from_sub_process(self, repo, sub_process):
         """
@@ -252,35 +330,88 @@ class BuildDoeEval(SoSEval):
         algo_name_has_changed = False
         selected_inputs_has_changed = False
 
-        # The setup of the discipline can begin once the algorithm we want to use to generate
-        # the samples has been set
+        # The setup of the discipline is started with the definition of the
+        # self.REPO_OF_SUB_PROCESSES
 
-        if 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
-            repo = self.get_sosdisc_inputs('repo_of_sub_processes')
-            sub_process = self.get_sosdisc_inputs('sub_process_folder_name')
-            process = sub_process
-            if repo != 'None' and sub_process != 'None':
+        if self.REPO_OF_SUB_PROCESSES in self._data_in:
+            # and self.SUB_PROCESS_NAME in self._data_in:
+            repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
+            # if repo == 'None':
+            if repo == None:
+                self._data_in[self.SUB_PROCESS_NAME]['editable'] = True
+            else:
+                self._data_in[self.SUB_PROCESS_NAME]['editable'] = True
+
+        # configure the sub_process_folder_name list
+        repo_of_sub_processes_has_changed = False
+        if self.REPO_OF_SUB_PROCESSES in self._data_in:
+            repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
+            if repo != self.previous_repo_of_sub_processes:
+                repo_of_sub_processes_has_changed = True
+                self.previous_repo_of_sub_processes = repo
+            # if repo != 'None':  # and repo_of_sub_processes_has_changed to be
+            # added ?
+            if repo != None:
+                sub_process_folder_name = ['test_disc_hessian']
+                sub_process_folder_name += [
+                    'test_disc1_disc2_coupling', 'test_sellar_coupling']
+                process_factory = SoSProcessFactory(additional_repository_list=[
+                    repo], search_python_path=False)
+                process_list_dict = process_factory.get_processes_dict()
+                filtered_process_list = [
+                    proc_name for proc_name in process_list_dict[repo] if 'test_proc_build_' in proc_name]
+                sub_process_folder_name += filtered_process_list
+                if self.SUB_PROCESS_NAME in self._data_in:
+                    self._data_in[self.SUB_PROCESS_NAME]['possible_values'] = sub_process_folder_name
+
+        # configure the usecase_of_sub_process list
+        if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
+            repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
+            sub_process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
+            # if repo != 'None' and sub_process != 'None':
+            if repo != None and sub_process != None:
                 process_usecase_list = ['Empty']
-                usecase_list = []
-                imported_module = import_module(
-                    '.'.join([repo, sub_process]))
-                process_directory = dirname(imported_module.__file__)
-                for usecase_py in listdir(process_directory):
-                    if usecase_py.startswith('usecase'):
-                        usecase = usecase_py.replace('.py', '')
-                        usecase_list.append(
-                            '.'.join([usecase]))
+                usecase_list = self.get_usecase_possible_values(
+                    repo, sub_process)
                 process_usecase_list += usecase_list
                 dynamic_inputs.update(
-                    {'usecase_of_sub_process': {'type': 'string', 'default': 'Empty', 'possible_values': process_usecase_list, 'structuring': True}})
+                    {self.USECASE_OF_SUB_PROCESS: {'type': 'string',
+                                                   'default': 'Empty',
+                                                   'possible_values': process_usecase_list,
+                                                   'structuring': True,
+                                                   'description': 'usecase set of data inputs'}})
 
+        if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
+            repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
+            sub_process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
+            # if repo != 'None' and sub_process != 'None':
+            if repo != None and sub_process != None:
+                dynamic_inputs.update({self.SAMPLING_ALGO: {'type': 'string',
+                                                            'structuring': True}
+                                       })
+                dynamic_inputs.update({self.EVAL_INPUTS: {'type': 'dataframe',
+                                                          'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                                                   'full_name': ('string', None, False)},
+                                                          'dataframe_edition_locked': False,
+                                                          'structuring': True,
+                                                          'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                          'namespace': 'ns_doe_eval'}
+                                       })
+                dynamic_inputs.update({self.EVAL_OUTPUTS: {'type': 'dataframe',
+                                                           'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                                                    'full_name': ('string', None, False)},
+                                                           'dataframe_edition_locked': False,
+                                                           'structuring': True,
+                                                           'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                           'namespace': 'ns_doe_eval'}
+                                       })
         if self.ALGO in self._data_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             if self.previous_algo_name != algo_name:
                 algo_name_has_changed = True
                 self.previous_algo_name = algo_name
-            eval_outputs = self.get_sosdisc_inputs('eval_outputs')
-            eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+            eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
             # we fetch the inputs and outputs selected by the user
             if not eval_outputs is None:
@@ -318,12 +449,12 @@ class BuildDoeEval(SoSEval):
                         dataframe_descriptor[cle] = var
 
                     dynamic_inputs.update(
-                        {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                               'dataframe_descriptor': dataframe_descriptor,
-                                               'dataframe_edition_locked': False}})
-                    if 'custom_samples_df' in self._data_in and selected_inputs_has_changed:
-                        self._data_in['custom_samples_df']['value'] = default_custom_dataframe
-                        self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                        {self.CUSTOM_SAMPLES_DF: {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                                  'dataframe_descriptor': dataframe_descriptor,
+                                                  'dataframe_edition_locked': False}})
+                    if self.CUSTOM_SAMPLES_DF in self._data_in and selected_inputs_has_changed:
+                        self._data_in[self.CUSTOM_SAMPLES_DF]['value'] = default_custom_dataframe
+                        self._data_in[self.CUSTOM_SAMPLES_DF]['dataframe_descriptor'] = dataframe_descriptor
 
                 else:
 
@@ -338,34 +469,58 @@ class BuildDoeEval(SoSEval):
                                                          })
 
                     dynamic_inputs.update(
-                        {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                          }})
-                    if 'design_space' in self._data_in and selected_inputs_has_changed:
-                        self._data_in['design_space']['value'] = default_design_space
+                        {self.DESIGN_SPACE: {'type': 'dataframe', self.DEFAULT: default_design_space
+                                             }})
+                    if self.DESIGN_SPACE in self._data_in and selected_inputs_has_changed:
+                        self._data_in[self.DESIGN_SPACE]['value'] = default_design_space
 
                 default_dict = self.get_algo_default_options(algo_name)
-                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
-                                                        'dataframe_edition_locked': False,
+                dynamic_inputs.update({self.ALGO_OPTIONS: {'type': 'dict', self.DEFAULT: default_dict,
+                                                           'dataframe_edition_locked': False,
+                                                           'structuring': True,
 
-                                                        'dataframe_descriptor': {
-                                                            self.VARIABLES: ('string', None, False),
-                                                            self.VALUES: ('string', None, True)}}})
-                if 'algo_options' in self._data_in and algo_name_has_changed:
-                    self._data_in['algo_options']['value'] = default_dict
+                                                           'dataframe_descriptor': {
+                                                               self.VARIABLES: ('string', None, False),
+                                                               self.VALUES: ('string', None, True)}}})
+                all_options = list(default_dict.keys())
+                if self.ALGO_OPTIONS in self._data_in and algo_name_has_changed:
+                    self._data_in[self.ALGO_OPTIONS]['value'] = default_dict
+                if self.ALGO_OPTIONS in self._data_in and self._data_in[self.ALGO_OPTIONS]['value'] is not None and list(
+                        self._data_in[self.ALGO_OPTIONS]['value'].keys()) != all_options:
+                    options_map = ChainMap(
+                        self._data_in[self.ALGO_OPTIONS]['value'], default_dict)
+                    self._data_in[self.ALGO_OPTIONS]['value'] = {
+                        key: options_map[key] for key in all_options}
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         self.load_data_from_usecase_of_subprocess()
+
+    def get_usecase_possible_values(self, repo, sub_process):
+        '''
+            Once subprocess has been selected,
+            get the possible values for usecases if any
+        '''
+        usecase_list = []
+        imported_module = import_module(
+            '.'.join([repo, sub_process]))
+        process_directory = dirname(imported_module.__file__)
+        for usecase_py in listdir(process_directory):
+            if usecase_py.startswith('usecase'):
+                usecase = usecase_py.replace('.py', '')
+                usecase_list.append(
+                    '.'.join([usecase]))
+        return usecase_list
 
     def load_data_from_usecase_of_subprocess(self):
         """
         load data of the selected sub process usecase and put them as a child of doe eval
         """
         usecase_has_changed = False
-        if 'usecase_of_sub_process' in self._data_in and 'repo_of_sub_processes' in self.get_data_io_dict_keys('in') and 'sub_process_folder_name' in self.get_data_io_dict_keys('in'):
-            usecase = self.get_sosdisc_inputs('usecase_of_sub_process')
-            repository = self.get_sosdisc_inputs('repo_of_sub_processes')
-            process = self.get_sosdisc_inputs('sub_process_folder_name')
+        if self.USECASE_OF_SUB_PROCESS in self._data_in and self.REPO_OF_SUB_PROCESSES in self.get_data_io_dict_keys('in') and self.SUB_PROCESS_NAME in self.get_data_io_dict_keys('in'):
+            usecase = self.get_sosdisc_inputs(self.USECASE_OF_SUB_PROCESS)
+            repository = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
+            process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
             if self.previous_usecase_of_sub_process != usecase:
                 usecase_has_changed = True
                 self.previous_usecase_of_sub_process = usecase
@@ -384,23 +539,6 @@ class BuildDoeEval(SoSEval):
                     input_dict_to_load.update(uc_d)
                 self.ee.dm.set_values_from_dict(
                     input_dict_to_load)
-
-    def __init__(self, sos_name, ee, cls_builder):
-        '''
-        Constructor
-        '''
-        ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super(BuildDoeEval, self).__init__(sos_name, ee, cls_builder)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
-        self.doe_factory = DOEFactory()
-        self.design_space = None
-        self.samples = None
-        self.customed_samples = None
-        self.dict_desactivated_elem = {}
-        self.selected_outputs = []
-        self.selected_inputs = []
-        self.previous_algo_name = ""
-        self.previous_usecase_of_sub_process = ""
 
     def create_design_space(self):
         """
@@ -525,11 +663,11 @@ class BuildDoeEval(SoSEval):
             filled_options[self.DIMENSION] = self.design_space.dimension
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-            # filled_options['n_processes'] = int(filled_options['n_processes'])
-            filled_options['n_processes'] = self.get_sosdisc_inputs(
-                'n_processes')
+            # filled_options[self.N_PROCESSES] = int(filled_options[self.N_PROCESSES])
+            filled_options[self.N_PROCESSES] = self.get_sosdisc_inputs(
+                self.N_PROCESSES)
             filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs(
-                'wait_time_between_fork')
+                self.WAIT_TIME_BETWEEN_FORK)
             algo = self.doe_factory.create(algo_name)
 
             self.samples = algo._generate_samples(**filled_options)
@@ -560,7 +698,7 @@ class BuildDoeEval(SoSEval):
     def create_samples_from_custom_df(self):
         """Generation of the samples in case of a customed DOE
         """
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df')
+        self.customed_samples = self.get_sosdisc_inputs(self.CUSTOM_SAMPLES_DF)
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():
@@ -641,17 +779,8 @@ class BuildDoeEval(SoSEval):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.status = 'RUNNING'
-        my_keys = [key for key in self.ee.ns_manager.all_ns_dict]
-        my_dict = {}
-        for item in my_keys:
-            my_dict[item] = self.ee.ns_manager.all_ns_dict[item].to_dict()
-        my_all_ns_dict = pd.DataFrame.from_dict(my_dict, orient='index')
-        del my_all_ns_dict['dependency_disc_list']
         self.store_sos_outputs_values(
-            {'samples_inputs_df': samples_dataframe,
-             'all_ns_dict': my_all_ns_dict
-             })
+            {self.SAMPLES_INPUTS_DF: samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
@@ -696,13 +825,15 @@ class BuildDoeEval(SoSEval):
 
         for data_in_key in disc._data_in.keys():
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
+            is_structuring = disc._data_in[data_in_key].get(
+                self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
                                            ]['io_type'] == 'in'
-            if is_input_type and is_in_type and not in_coupling_numerical:
+            if is_input_type and is_in_type and not in_coupling_numerical and not is_structuring:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 # we remove the study name from the variable full  name for a
@@ -753,14 +884,16 @@ class BuildDoeEval(SoSEval):
         default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
                                               'full_name': possible_out_values_full})
 
-        eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
-        eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
+        eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+        eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
         if eval_input_new_dm is None:
             self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                               is_eval_input=True)
             default_dataframe = copy.deepcopy(default_in_dataframe)
             already_set_names = eval_input_new_dm['full_name'].tolist()
             already_set_values = eval_input_new_dm['selected_input'].tolist()
@@ -776,6 +909,8 @@ class BuildDoeEval(SoSEval):
             # check if the eval_inputs need to be updtated after a subprocess
             # configure
         elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                               is_eval_input=False)
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
             already_set_values = eval_output_new_dm['selected_output'].tolist()
@@ -817,3 +952,24 @@ class BuildDoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+
+    def check_eval_io(self, given_list, default_list, is_eval_input):
+        """
+        Set the evaluation variable list (in and out) present in the DM
+        which fits with the eval_in_base_list filled in the usecase or by the user
+        """
+
+        for given_io in given_list:
+            if given_io not in default_list:
+                if is_eval_input:
+                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+                                f'input of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
+                                f'be created. '
+
+                else:
+                    error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+                                f'output of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning). Dynamic inputs might  not be created. '
+
+                self.logger.warning(error_msg)

@@ -49,7 +49,7 @@ class FORMAnalysis(SoSGradients):
     }
     DESC_IN = {
         'grad_method': {'type': 'string', 'unit': None, 'possible_values': ['Complex Step', '1st order FD', '2nd order FD']},
-        'variation_list': {'default': ['+/-10%'], 'type': 'string_list', 'unit': None, 'possible_values': ['+/-5%', '+/-10%', '+/-20%', '+/-50%']},
+        'variation_list': {'default': ['+/-10%'], 'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'possible_values': ['+/-5%', '+/-10%', '+/-20%', '+/-50%']},
     }
     DESC_IN.update(SoSEval.DESC_IN)
 

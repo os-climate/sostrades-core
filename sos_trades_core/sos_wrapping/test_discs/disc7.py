@@ -41,7 +41,7 @@ class Disc7(SoSDiscipline):
 
     DESC_OUT = {
         'df': {'type': 'dataframe', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
-        'dict_df': {'type': 'df_dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'dict_df': {'type': 'dict','subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):
