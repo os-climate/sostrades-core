@@ -45,12 +45,12 @@ class BuildDoeEval(SoSEval):
             |_ REPO_OF_SUB_PROCESSES (structuring)
                         |_ SUB_PROCESS_NAME (structuring)
                                     |_ USECASE_OF_SUB_PROCESS (structuring,dynamic: SUB_PROCESS_NAME!='None')
-                                    |_ EVAL_INPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None')
-                                    |_ EVAL_OUTPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None')
+                                    |_ EVAL_INPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None') NB: Mandatory not to be empty (If not then warning)
+                                    |_ EVAL_OUTPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None') NB: Mandatory not to be empty (If not then warning)
                                     |_ SAMPLING_ALGO (structuring,dynamic : SUB_PROCESS_NAME!='None')
-                                            |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE")
-                                            |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS
-                                            |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO!='None' and EVAL_INPUTS not empty and EVAL_OUTPUTS not empty)
+                                            |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
+                                            |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
+                                            |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
         |_ DESC_OUT
@@ -88,8 +88,9 @@ class BuildDoeEval(SoSEval):
         'last_modification_date': '',
         'category': '',
         'definition': 'DoE driver discipline that implements a Design of Experiment on a nested system (Implementation based on SoSEval driver discipline). Remark: the optimization "formulation" capability is not covered',
-        'icon': 'fas fa-screwdriver-wrench fa-grid-4 fa-fw',
-        'version': '',
+        #'icon': 'fas fa-grid-4 fa-fw',  # icon for doe driver
+        'icon': 'fas fa-screwdriver-wrench fa-fw',  # icon for proc builder
+        'version': ''
     }
 
     # -- Disciplinary attributes
@@ -405,7 +406,10 @@ class BuildDoeEval(SoSEval):
                                                            'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                                            'namespace': 'ns_doe_eval'}
                                        })
-        if self.ALGO in self._data_in:
+
+        # Dealing with eval_inpouts and eval_outputs
+
+        if self.ALGO in self._data_in:  # we know that SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS keys are set at the same time
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             if self.previous_algo_name != algo_name:
                 algo_name_has_changed = True
@@ -425,11 +429,39 @@ class BuildDoeEval(SoSEval):
                     selected_inputs_has_changed = True
                     self.selected_inputs = selected_inputs.tolist()
             # doe can be done only for selected inputs and outputs
-            if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
-                # we set the lists which will be used by the evaluation
-                # function of sosEval
-                self.set_eval_in_out_lists(selected_inputs, selected_outputs)
 
+            if algo_name is not None:  # self.ALGO_OPTIONS has to be set whatever selected_inputs/selected_outputs values
+                default_dict = self.get_algo_default_options(algo_name)
+                dynamic_inputs.update({self.ALGO_OPTIONS: {'type': 'dict', self.DEFAULT: default_dict,
+                                                           'dataframe_edition_locked': False,
+                                                           'structuring': True,
+
+                                                           'dataframe_descriptor': {
+                                                               self.VARIABLES: ('string', None, False),
+                                                               self.VALUES: ('string', None, True)}}})
+                all_options = list(default_dict.keys())
+                if self.ALGO_OPTIONS in self._data_in and algo_name_has_changed:
+                    self._data_in[self.ALGO_OPTIONS]['value'] = default_dict
+                if self.ALGO_OPTIONS in self._data_in and self._data_in[self.ALGO_OPTIONS]['value'] is not None and list(
+                        self._data_in[self.ALGO_OPTIONS]['value'].keys()) != all_options:
+                    options_map = ChainMap(
+                        self._data_in[self.ALGO_OPTIONS]['value'], default_dict)
+                    self._data_in[self.ALGO_OPTIONS]['value'] = {
+                        key: options_map[key] for key in all_options}
+
+            if algo_name is not None and len(selected_inputs) == 0:
+                # Warning: selected_inputs cannot be empty
+                # Problem: it is not None but it is an "empty dataframe" so has
+                # the meaning of None (i.e. Mandatory field)
+                self.logger.warning('Selected_inputs cannot be empty!')
+            if algo_name is not None and len(selected_outputs) == 0:
+                self.logger.warning('Selected_outputs cannot be empty!')
+
+            # we set the lists which will be used by the evaluation
+            # function of sosEval
+            self.set_eval_in_out_lists(selected_inputs, selected_outputs)
+
+            if len(selected_outputs) > 0:
                 # setting dynamic outputs. One output of type dict per selected
                 # output
 
@@ -438,6 +470,7 @@ class BuildDoeEval(SoSEval):
                         {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
                                                                                 'namespace': 'ns_doe'}})
 
+            if algo_name is not None and len(selected_inputs) > 0:
                 if algo_name == "CustomDOE":
                     default_custom_dataframe = pd.DataFrame(
                         [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
@@ -474,24 +507,6 @@ class BuildDoeEval(SoSEval):
                     if self.DESIGN_SPACE in self._data_in and selected_inputs_has_changed:
                         self._data_in[self.DESIGN_SPACE]['value'] = default_design_space
 
-                default_dict = self.get_algo_default_options(algo_name)
-                dynamic_inputs.update({self.ALGO_OPTIONS: {'type': 'dict', self.DEFAULT: default_dict,
-                                                           'dataframe_edition_locked': False,
-                                                           'structuring': True,
-
-                                                           'dataframe_descriptor': {
-                                                               self.VARIABLES: ('string', None, False),
-                                                               self.VALUES: ('string', None, True)}}})
-                all_options = list(default_dict.keys())
-                if self.ALGO_OPTIONS in self._data_in and algo_name_has_changed:
-                    self._data_in[self.ALGO_OPTIONS]['value'] = default_dict
-                if self.ALGO_OPTIONS in self._data_in and self._data_in[self.ALGO_OPTIONS]['value'] is not None and list(
-                        self._data_in[self.ALGO_OPTIONS]['value'].keys()) != all_options:
-                    options_map = ChainMap(
-                        self._data_in[self.ALGO_OPTIONS]['value'], default_dict)
-                    self._data_in[self.ALGO_OPTIONS]['value'] = {
-                        key: options_map[key] for key in all_options}
-
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         self.load_data_from_usecase_of_subprocess()
@@ -521,6 +536,12 @@ class BuildDoeEval(SoSEval):
             usecase = self.get_sosdisc_inputs(self.USECASE_OF_SUB_PROCESS)
             repository = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
             process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
+            possible_values = self.get_data_io_from_key('in', self.USECASE_OF_SUB_PROCESS)[
+                self.POSSIBLE_VALUES]
+            if usecase not in possible_values:
+                usecase = self.previous_usecase_of_sub_process
+                self.logger.error(
+                    'Selected use_case is not in the possible_values!')
             if self.previous_usecase_of_sub_process != usecase:
                 usecase_has_changed = True
                 self.previous_usecase_of_sub_process = usecase
