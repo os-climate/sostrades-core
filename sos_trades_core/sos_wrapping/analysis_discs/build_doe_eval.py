@@ -88,9 +88,9 @@ class BuildDoeEval(SoSEval):
         'last_modification_date': '',
         'category': '',
         'definition': 'DoE driver discipline that implements a Design of Experiment on a nested system (Implementation based on SoSEval driver discipline). Remark: the optimization "formulation" capability is not covered',
-        'icon': 'fas fa-grid-4 fa-fw',  # icon for doe driver
-        #'icon': 'fas fa-screwdriver-wrench fa-fw', #icon for proc builder
-        'version': '',
+        #'icon': 'fas fa-grid-4 fa-fw',  # icon for doe driver
+        'icon': 'fas fa-screwdriver-wrench fa-fw',  # icon for proc builder
+        'version': ''
     }
 
     # -- Disciplinary attributes
