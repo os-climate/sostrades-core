@@ -354,7 +354,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
     def check_discipline_outputs_list(self, my_disc, target_outputs_list):
         outputs_list_disc = [
             elem for elem in my_disc.get_data_io_dict_keys('out')]
-        self.assertListEqual(target_outputs_list, outputs_list_disc)
+        self.assertCountEqual(target_outputs_list, outputs_list_disc)
 
     def check_discipline_value(self, my_disc, my_data_name, target_value, print_flag=True, ioType='in'):
         my_data = my_disc.get_data_io_from_key(
@@ -498,7 +498,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
     def test_02_build_doe_eval_with_nested_proc_selection(self):
         '''
@@ -580,7 +580,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 1: provide a process (with disciplines) to the set doe
         print('Step 1: provide a process (with disciplines) to the set doe')
@@ -621,9 +621,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -690,7 +690,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = ['sampling_algo',
                                     'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 2: provide inputs to the set doe with disciplines
         print('Step 2: provide inputs to the set doe with disciplines')
@@ -721,9 +721,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = ['algo_options', 'design_space']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -780,7 +780,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = []
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 3: run
         skip_run = False
@@ -892,7 +892,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 1: provide a process (with disciplines) to the set doe
         print('Step 1: provide a process (with disciplines) to the set doe')
@@ -933,9 +933,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -992,7 +992,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = ['sampling_algo',
                                     'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 2: provide inputs to the set doe with disciplines
         print('Step 2: provide inputs to the set doe with disciplines')
@@ -1023,9 +1023,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = ['algo_options', 'design_space']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -1091,7 +1091,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = []
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 3: run
         skip_run = False
@@ -1203,7 +1203,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 1: Provide subprocess and provide data input
         print('Step 1: provide a process (with disciplines) to the set doe')
@@ -1240,9 +1240,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -1311,7 +1311,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = []
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         # Step 2: run
         skip_run = False
@@ -1432,7 +1432,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
         ################ End checks ##########################
 
         # Step 1: Provide subprocess and provide data input
@@ -1471,9 +1471,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -1532,7 +1532,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = []
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
         # Step 2: run
@@ -1731,7 +1731,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
         ################ End checks ##########################
 
         # Step 1: Provide subprocess
@@ -1802,9 +1802,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -1861,7 +1861,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'sampling_algo', 'z', 'x', 'local_dv', 'x', 'z', 'local_dv', 'z', 'x', 'z']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
@@ -1908,9 +1908,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = ['algo_options', 'design_space']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -1976,7 +1976,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = []
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
         ################ End checks ##########################
         # Step 3: run
         skip_run = False
@@ -2154,7 +2154,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = [
             'repo_of_sub_processes', 'sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
@@ -2230,9 +2230,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         full_inputs_list_last = full_inputs_list_new
 
         target_added_inputs_list = []
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -2267,7 +2267,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print('possible_values is None instead of :')
             print(target_possible_values)
         else:
-            self.assertListEqual(target_possible_values, possible_values_list)
+            self.assertCountEqual(target_possible_values, possible_values_list)
         print('\n')
 
         # check input values_types (and print) of DoE_Eval discipline
@@ -2283,7 +2283,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = ['sub_process_folder_name']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
@@ -2323,9 +2323,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -2364,7 +2364,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print('possible_values is None instead of :')
             print(target_possible_values)
         else:
-            self.assertListEqual(target_possible_values, possible_values_list)
+            self.assertCountEqual(target_possible_values, possible_values_list)
         print('\n')
         # check possible values for 'usecase_of_sub_process'
         my_data_name = 'usecase_of_sub_process'
@@ -2381,7 +2381,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print('possible_values is None instead of :')
             print(target_possible_values)
         else:
-            self.assertListEqual(target_possible_values, possible_values_list)
+            self.assertCountEqual(target_possible_values, possible_values_list)
         print('\n')
         # check input values_types (and print) of DoE_Eval discipline
         target_values_dict = {}
@@ -2401,7 +2401,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = ['sampling_algo',
                                     'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
@@ -2433,9 +2433,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = []
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -2490,7 +2490,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = ['sampling_algo']
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
@@ -2518,9 +2518,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
         target_added_inputs_list = ['algo_options']
-        self.assertListEqual(target_added_inputs_list, added_inputs_list)
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
-        self.assertListEqual(target_removed_inputs_list, removed_inputs_list)
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
 
         # print(doe_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(doe_disc, inputs_list)
@@ -2581,7 +2581,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         #target_missing_variables = ['sampling_algo']
         target_missing_variables = []
-        self.assertListEqual(target_missing_variables, missing_variables)
+        self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
@@ -2796,7 +2796,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 9
+    test_selector = 10
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()

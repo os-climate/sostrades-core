@@ -75,6 +75,7 @@ class GridSearchEval(DoeEval):
     }
     INPUT_TYPE = ['float']
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe']
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
@@ -139,7 +140,6 @@ class GridSearchEval(DoeEval):
             eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
-            ''' SELECTED INPUTS/OUTPUTS CONFIGURATION'''
             # we fetch the inputs and outputs selected by the user
             selected_outputs = eval_outputs[eval_outputs['selected_output'] == True][
                 'full_name'
@@ -178,7 +178,6 @@ class GridSearchEval(DoeEval):
             self.set_eval_in_out_lists(
                 self.selected_inputs, self.selected_outputs)
 
-            ''' OUTPUT DICTS CREATION '''
             # grid_search can be done only for selected inputs and outputs
             if len(self.eval_in_list) > 0:
                 # setting dynamic outputs. One output of type dict per selected
@@ -195,65 +194,17 @@ class GridSearchEval(DoeEval):
                                 }
                             }
                         )
-                ''' INPUTS MULTIPLIERS CREATION '''
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([val in self.multipliers_dict for val in self.selected_inputs])):
-                    for selected_in in self.selected_inputs:
-                        if selected_in in self.multipliers_dict:
-                            multiplier_name = selected_in.split('.')[-1]
-                            fullname_origin = self.multipliers_dict[selected_in]['fullname_origin']
-                            fullname_origin_namespace = self.ee.dm.get_data(
-                                fullname_origin, 'namespace')
-                            dynamic_inputs.update(
-                                {
-                                    f'{multiplier_name}': {
-                                        'type': 'float',
-                                        'visibility': 'Shared',
-                                        'namespace': fullname_origin_namespace,
-                                        'unit': self.ee.dm.get_data(fullname_origin).get('unit', '-'),
-                                        'default': 100
-                                    }
-                                }
-                            )
-                            # store the base value in the multipliers dict
-                            self.multipliers_dict[selected_in]['origin_value'] = self.ee.dm.get_value(
-                                fullname_origin)
+                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                    genreic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
+                    for generic_multiplier_dynamic_input in genreic_multipliers_dynamic_inputs_list:
+                        dynamic_inputs.update(generic_multiplier_dynamic_input)
 
-                ''' DESIGN SPACE CREATION '''
                 # setting dynamic design space with default value if not
                 # specified
-                default_design_space = pd.DataFrame(
-                    {
-                        'shortest_name': selected_inputs_short.tolist(),
-                        # self.VARIABLES:
-                        # self.selected_inputs,
-                        self.LOWER_BOUND: 0.0,
-                        self.UPPER_BOUND: 100.0,
-                        self.NB_POINTS: 2,
-                        'full_name': self.selected_inputs,
-                    }
-                )
-                dynamic_inputs.update(
-                    {
-                        'design_space': {
-                            'type': 'dataframe',
-                            self.DEFAULT: default_design_space,
-                            'dataframe_descriptor': {
-                                'shortest_name': ('string', None, False),
-                                self.LOWER_BOUND: ('float', None, True),
-                                self.UPPER_BOUND: ('float', None, True),
-                                self.NB_POINTS: ('int', None, True),
-                                'full_name': ('string', None, False),
-                            },
-                        }
-                    }
-                )
-
-                if 'design_space' in self._data_in and self._data_in['design_space']['value'] is None:
-                    self._data_in['design_space']['value'] = default_design_space
-
-                if 'design_space' in self._data_in and selected_inputs_has_changed:
-                    self._data_in['design_space']['value'] = default_design_space
+                design_space_dynamic_input = self.create_design_space_input(
+                    selected_inputs_short, selected_inputs_has_changed)
+                dynamic_inputs.update(design_space_dynamic_input)
 
                 # algo_options to match with doe and specify processes nb
                 default_dict = {'n_processes': 1,
@@ -288,7 +239,68 @@ class GridSearchEval(DoeEval):
         self.max_inputs_nb = 3
         self.conversion_full_short = {}
         self.chart_dict = {}
-        self.multipliers_dict = {}
+
+    def create_design_space_input(self, selected_inputs_short, selected_inputs_has_changed):
+        dynamic_input = {}
+        default_design_space = pd.DataFrame(
+            {
+                'shortest_name': selected_inputs_short.tolist(),
+                # self.VARIABLES:
+                # self.selected_inputs,
+                self.LOWER_BOUND: 0.0,
+                self.UPPER_BOUND: 100.0,
+                self.NB_POINTS: 2,
+                'full_name': self.selected_inputs,
+            }
+        )
+        dynamic_input = {
+            'design_space': {
+                'type': 'dataframe',
+                self.DEFAULT: default_design_space,
+                'dataframe_descriptor': {
+                        'shortest_name': ('string', None, False),
+                        self.LOWER_BOUND: ('float', None, True),
+                        self.UPPER_BOUND: ('float', None, True),
+                        self.NB_POINTS: ('int', None, True),
+                        'full_name': ('string', None, False),
+                },
+            }
+        }
+
+        if 'design_space' in self._data_in and self._data_in['design_space']['value'] is None:
+            self._data_in['design_space']['value'] = default_design_space
+
+        if 'design_space' in self._data_in and selected_inputs_has_changed:
+            self._data_in['design_space']['value'] = default_design_space
+
+        return dynamic_input
+
+    def create_generic_multipliers_dynamic_input(self):
+        dynamic_inputs_list = []
+        for selected_in in self.selected_inputs:
+            if self.MULTIPLIER_PARTICULE in selected_in:
+                multiplier_name = selected_in.split('.')[-1]
+                origin_var_name = multiplier_name.split('.')[0].split('@')[0]
+                # if
+                if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
+                    self.logger.exception(
+                        'Multiplier name selected already exists!')
+                origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
+                    0]
+                origin_var_ns = self.ee.dm.get_data(
+                    origin_var_fullname, 'namespace')
+                dynamic_inputs_list.append(
+                    {
+                        f'{multiplier_name}': {
+                            'type': 'float',
+                            'visibility': 'Shared',
+                            'namespace': origin_var_ns,
+                            'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
+                            'default': 100
+                        }
+                    }
+                )
+        return dynamic_inputs_list
 
     def generate_shortest_name(self, var_list):
         list_shortest_name = [[] for i in range(len(var_list))]
@@ -401,8 +413,12 @@ class GridSearchEval(DoeEval):
         possible_in_values_full.sort()
         possible_out_values_full.sort()
 
+        inputs_with_multipliers_col_list = np.unique([val.split(self.MULTIPLIER_PARTICULE)[0].split(
+            '@')[0] for val in possible_in_values_full if self.MULTIPLIER_PARTICULE in val]).tolist()
+
         # shortest name
-        self.generate_shortest_name(list(set(possible_in_values_full)))
+        self.generate_shortest_name(
+            list(set(possible_in_values_full)) + inputs_with_multipliers_col_list)
         self.generate_shortest_name(list(set(possible_out_values_full)))
 
         # possible_in_values_short = [
@@ -422,9 +438,10 @@ class GridSearchEval(DoeEval):
         outputs_val_list = [val.split('.')[-1]
                             for val in possible_out_values_full]
         for val in possible_in_values_full:
-            if val in self.multipliers_dict:
-                inputs_val_list.append(
-                    self.multipliers_dict[val]['name_origin'])
+            if self.MULTIPLIER_PARTICULE in val:
+                origin_full_name = val.split(self.MULTIPLIER_PARTICULE)[
+                    0].split('@')[0]
+                inputs_val_list.append(origin_full_name.split('.')[-1])
 
         args = inputs_val_list + outputs_val_list
         ontology_connector.set_connector_request(
@@ -433,19 +450,37 @@ class GridSearchEval(DoeEval):
         conversion_full_ontology = ontology_connector.load_data(
             data_connection)
 
-        # possible_in_values_short = [
-        #     f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
-        #     for val in possible_in_values_full
-        # ]
         # replace ontology val for column df/dict var
-        possible_in_values_short = [
-            f'{conversion_full_ontology[self.multipliers_dict[val]["name_origin"]][0]} - {self.multipliers_dict[val]["column_name"]} Column' if val in self.multipliers_dict else f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+        possible_in_values_short = []
+        for val in possible_in_values_full:
+            col_name = ''
+            if self.MULTIPLIER_PARTICULE in val:
+                var_f_name = '.'.join(
+                    [self.ee.study_name, val.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]])
+                col_index = val.split(self.MULTIPLIER_PARTICULE)[
+                    0].split('@')[1]
+                if any(char.isdigit() for char in col_index):
+                    cols_list = list(self.ee.dm.get_data(
+                        var_f_name)['value'].keys())
+                    col_index = re.findall(r'\d+', col_index)[0]
+                    col_name = f' - {cols_list[int(col_index)]} Column'
+                else:
+                    col_name = ' - All Float Columns'
+                val = val.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
+            var_name_origin = "-".join(
+                self.conversion_full_short[val].split(".")[:-1])
+            possible_in_values_short.append(
+                f'{var_name}{var_name_origin}{col_name}')
 
         # [conversion_full_ontology[val] for val in inputs_val_list]
-        possible_out_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
-            for val in possible_out_values_full
-        ]
+        possible_out_values_short = []
+        for val in possible_out_values_full:
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
+            var_name_origin = "-".join(
+                self.conversion_full_short[val].split(".")[:-1])
+            possible_out_values_short.append(
+                f'{var_name} {var_name_origin}')
         # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(

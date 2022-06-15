@@ -83,6 +83,7 @@ class DoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
     INPUT_MULTIPLIER_TYPE = []
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
@@ -193,7 +194,6 @@ class DoeEval(SoSEval):
         self.selected_outputs = []
         self.selected_inputs = []
         self.previous_algo_name = ""
-        self.multipliers_dict = {}
 
     def setup_sos_disciplines(self):
         """
@@ -594,6 +594,7 @@ class DoeEval(SoSEval):
                                            ]['io_type'] == 'in'
             is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc._data_in[data_in_key]['editable']
+            is_None = disc._data_in[data_in_key]['value'] is None
             if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -602,53 +603,12 @@ class DoeEval(SoSEval):
                 if is_input_type:
                     poss_in_values_full.append(
                         full_id.split(self.ee.study_name + ".")[1])
-                elif is_input_multiplier_type & (disc._data_in[data_in_key]['value'] is not None):
-                    df_var = disc._data_in[data_in_key]['value']
-                    # if dict, transform dict to df
-                    if disc._data_in[data_in_key][self.TYPE] == 'dict':
-                        dict_var = disc._data_in[data_in_key]['value']
-                        df_var = pd.DataFrame(
-                            dict_var, index=list(dict_var.keys()))
-                    # check & add float columns
-                    float_cols_ids_list = [col_name for col_name in df_var.keys(
-                    ) if df_var[col_name].dtype == 'float']
 
-                    # add new full id multiplier and column id multiplier to
-                    # possible in values
-                    if len(float_cols_ids_list) > 0:
-                        particule = '_multiplier'
-                        i = 1
-                        multiplier_name = f'{data_in_key}{particule}'
-                        # if multiplier namespace already exist
-                        if len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                            while len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                                particule = f'_multiplier{i+1}'
-                                multiplier_name = f'{data_in_key}{particule}'
-                        multiplier_fullname = f'{full_id}{particule}'.split(
-                            self.ee.study_name + ".")[1]
-
-                        # add the new all columns input multiplier in the
-                        # multipliers_dict
-                        self.multipliers_dict[multiplier_fullname] = {
-                            'name_origin': data_in_key, 'fullname_origin': self.ee.dm.get_all_namespaces_from_var_name(data_in_key)[0], 'column_name': 'All'}
-                        poss_in_values_full.append(multiplier_fullname)
-                        for col_id in float_cols_ids_list:
-                            particule = '_multiplier'
-                            i = 1
-                            multiplier_name = f'{data_in_key}_{col_id}{particule}'
-                            if len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                                while len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                                    particule = f'_multiplier{i+1}'
-                                    multiplier_name = f'{data_in_key}_{col_id}{particule}'
-                            multiplier_fullname = f'{full_id}_{col_id}{particule}'.split(
-                                self.ee.study_name + ".")[1]
-
-                            # add the new input multiplier in the
-                            # multipliers_dict
-                            self.multipliers_dict[multiplier_fullname] = {
-                                'name_origin': data_in_key, 'fullname_origin': self.ee.dm.get_all_namespaces_from_var_name(data_in_key)[0], 'column_name': col_id}
-                            poss_in_values_full.append(
-                                multiplier_fullname)
+                elif is_input_multiplier_type and not is_None:
+                    poss_in_values_list = self.set_multipliers_values(
+                        disc, full_id, data_in_key)
+                    for val in poss_in_values_list:
+                        poss_in_values_full.append(val)
 
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
@@ -664,6 +624,32 @@ class DoeEval(SoSEval):
                     full_id.split(self.ee.study_name + ".")[1])
 
         return poss_in_values_full, poss_out_values_full
+
+    def set_multipliers_values(self, disc, full_id, var_name):
+        poss_in_values_list = []
+        df_var = disc._data_in[var_name]['value']
+        # if df_var is dict : transform dict to df
+        if disc._data_in[var_name][self.TYPE] == 'dict':
+            dict_var = disc._data_in[var_name]['value']
+            df_var = pd.DataFrame(
+                dict_var, index=list(dict_var.keys()))
+        # check & create float columns list from df
+        columns = df_var.columns
+        float_cols_indexs_list = [columns.get_loc(col_name) for col_name in columns if (
+            df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+        # if df with float columns
+        if len(float_cols_indexs_list) > 0:
+            for col_index in float_cols_indexs_list:
+                multiplier_fullname = f'{full_id}@column{col_index}{self.MULTIPLIER_PARTICULE}'.split(
+                    self.ee.study_name + ".")[1]
+                poss_in_values_list.append(multiplier_fullname)
+            # if df with more than one float column, create multiplier for all
+            # columns also
+            if len(float_cols_indexs_list) > 1:
+                multiplier_fullname = f'{full_id}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+                    self.ee.study_name + ".")[1]
+                poss_in_values_list.append(multiplier_fullname)
+        return poss_in_values_list
 
     def set_eval_possible_values(self):
         '''

@@ -137,3 +137,15 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
                         f'No input values are present to sum the variable {input_to_sum} in discipline {self.sos_name} '
                     )
         self.store_sos_outputs_values(output_dict)
+                
+    def modify_df(self, df_to_modify,col_list,df_dict_to_merge):
+        '''Function to take some columns from the df_gather to give them to df_ac_name'''
+        
+        for key, values_df in df_dict_to_merge.items():
+            if len (key.split('.'))==1:
+                for col in col_list:
+                    if col in values_df:
+                        index=df_to_modify.keys().to_list().index(f'{col}')+1
+                        df_to_modify.insert(index-1,f'{col}_{key}', values_df[col], allow_duplicates=True)
+            
+        return  df_to_modify      
