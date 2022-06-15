@@ -83,7 +83,7 @@ class DoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
     INPUT_MULTIPLIER_TYPE = []
-    MULTIPLIER_PARTICULE = '__@MULTIPLIER@__'
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
@@ -640,13 +640,13 @@ class DoeEval(SoSEval):
         # if df with float columns
         if len(float_cols_indexs_list) > 0:
             for col_index in float_cols_indexs_list:
-                multiplier_fullname = f'{full_id}{self.MULTIPLIER_PARTICULE}{col_index}'.split(
+                multiplier_fullname = f'{full_id}@column{col_index}{self.MULTIPLIER_PARTICULE}'.split(
                     self.ee.study_name + ".")[1]
                 poss_in_values_list.append(multiplier_fullname)
             # if df with more than one float column, create multiplier for all
             # columns also
             if len(float_cols_indexs_list) > 1:
-                multiplier_fullname = f'{full_id}__@MULTIPLIER@__'.split(
+                multiplier_fullname = f'{full_id}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
                     self.ee.study_name + ".")[1]
                 poss_in_values_list.append(multiplier_fullname)
         return poss_in_values_list

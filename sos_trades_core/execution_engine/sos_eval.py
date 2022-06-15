@@ -16,6 +16,7 @@ limitations under the License.
 import platform
 import copy
 import pandas as pd
+import re
 
 from tqdm import tqdm
 import time
@@ -59,7 +60,7 @@ class SoSEval(SoSDisciplineBuilder):
         'icon': '',
         'version': '',
     }
-    MULTIPLIER_PARTICULE = '__@MULTIPLIER@__'
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
         'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
@@ -316,7 +317,7 @@ class SoSEval(SoSDisciplineBuilder):
             var_name = x_id.split(self.ee.study_name + '.')[-1]
             if self.MULTIPLIER_PARTICULE in var_name:
                 var_origin_f_name = '.'.join(
-                    [self.ee.study_name, var_name.split(self.MULTIPLIER_PARTICULE)[0]])
+                    [self.ee.study_name, var_name.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]])
                 if var_origin_f_name in vars_to_update_dict:
                     var_to_update = vars_to_update_dict[var_origin_f_name]
                 else:
@@ -431,8 +432,14 @@ class SoSEval(SoSDisciplineBuilder):
                     self.STATUS_FAILED)
 
     def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[1]
-        if col_index == '':
+        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[1]
+        if any(char.isdigit() for char in col_index):
+            col_index = re.findall(r'\d+', col_index)[0]
+            cols_list = var_to_update.columns.to_list()
+            key = cols_list[int(col_index)]
+            var_to_update[key] = multiplier_value * var_to_update[key]
+        else:
             if isinstance(var_to_update, dict):
                 float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
                     var_to_update[dict_keys], float)]
@@ -441,10 +448,6 @@ class SoSEval(SoSDisciplineBuilder):
                     df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
             for key in float_cols_ids_list:
                 var_to_update[key] = multiplier_value * var_to_update[key]
-        else:
-            cols_list = var_to_update.columns.to_list()
-            key = cols_list[int(col_index)]
-            var_to_update[key] = multiplier_value * var_to_update[key]
         return var_to_update
 
     def convert_output_results_toarray(self):
