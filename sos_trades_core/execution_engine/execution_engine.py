@@ -100,7 +100,7 @@ class ExecutionEngine:
         """
         return self.__post_processing_manager
 
-    #-- Public methods
+    # -- Public methods
     def select_root_process(self, repo, mod_id):
 
         # Method usage now ?
@@ -134,7 +134,7 @@ class ExecutionEngine:
         builder_list = builder_list_func()
 
         self.factory.set_builders_to_coupling_builder(builder_list)
-        #-- We are changing what happend in root, need to reset dm
+        # -- We are changing what happend in root, need to reset dm
         self.dm.reset()
         self.load_study_from_input_dict({})
 
@@ -194,6 +194,32 @@ class ExecutionEngine:
 
     def update_from_dm(self):
         self.root_process.update_from_dm()
+        
+    def build_cache_map(self):
+        '''
+        Build cache map with all gemseo disciplines cache
+        '''
+        self.dm.cache_map = {}
+        self.dm.gemseo_disciplines_id_map = {}
+        self.root_process._set_dm_cache_map()
+        
+    def get_cache_map_to_dump(self):
+        '''
+        Build if necessary and return data manager cache map
+        '''
+        if self.dm.cache_map is None:
+            self.build_cache_map()
+        return self.dm.cache_map
+        
+    def load_cache_from_map(self, cache_map):
+        '''
+        Load disciplines cache from cache_map
+        '''
+        # build cache map and gemseo disciplines id map in data manager
+        self.build_cache_map()
+        if len(cache_map) > 0:
+            # store cache of all gemseo disciplines
+            self.dm.load_gemseo_disciplines_cache(cache_map)
 
     def update_status_configure(self):
         '''
@@ -425,7 +451,7 @@ class ExecutionEngine:
 
         self.__configure_execution()
 
-        #-- Init execute, to fully initialize models in discipline
+        # -- Init execute, to fully initialize models in discipline
         if len(dict_to_load):
             self.update_from_dm()
             self.check_inputs(raise_exception=False)
@@ -492,7 +518,7 @@ class ExecutionEngine:
         else:
             avail_debug = ["nan", "input_change",
                            "linearize_data_change", "min_max_grad", "min_max_couplings"]
-            raise ValueError("Debug mode %s is not among %s" %
+            raise ValueError("Debug mode %s is not among %s" % 
                              (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.sos_disciplines:
@@ -509,10 +535,10 @@ class ExecutionEngine:
 
         self.check_inputs(raise_exception=True)
 
-        #-- init execute
+        # -- init execute
         self.__factory.init_execution()
 
-        #-- execution
+        # -- execution
         ex_proc = self.root_process.execute()
         self.root_process._update_status_dm(
             SoSDiscipline.STATUS_DONE)

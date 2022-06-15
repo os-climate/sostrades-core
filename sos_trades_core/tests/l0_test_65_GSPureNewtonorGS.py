@@ -69,7 +69,7 @@ class TestGSPureNewtonorGSMDA(unittest.TestCase):
         assert len(GS_sequence.residual_history) > 0
         # assert GSPureNR was executed 6 time (5 GS and one NR before raise in compute_sos_jacobian)
         GSPureNR_sequence = exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].sub_mda_list[0].mda_sequence[1]
-        assert len(GSPureNR_sequence.residual_history) == 7
+        assert len(GSPureNR_sequence.residual_history) == 6
 
 
 if '__main__' == __name__:

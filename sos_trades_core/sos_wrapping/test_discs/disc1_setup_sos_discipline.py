@@ -35,7 +35,7 @@ class Disc1(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'AC_list': {'type': 'string_list', 'default': [], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
+        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
         'x': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'int'},
         'b': {'type': 'float'}

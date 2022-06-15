@@ -1106,7 +1106,77 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert_array_equal(z_first_execution, z_nominal_execution)
 
 
+    def test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
+        print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        repo_discopt = 'sos_trades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # -- set up design space
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
+            'c_1', 'c_2']
+        disc_dict[f'{self.ns}.SellarOptimScenario.differentiation_method'] = MDOScenario.COMPLEX_STEP
+        fd_step = 1.e-15
+        disc_dict[f'{self.ns}.SellarOptimScenario.fd_step'] = fd_step
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
+                                                                    "ineq_tolerance": 1e-6,
+                                                                    "normalize_design_space": True}
+        exec_eng.dm.set_values_from_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.dm.set_values_from_dict(values_dict)
+
+        exec_eng.configure()
+
+        res = exec_eng.execute()
+        
+        # retrieve discipline to get information to check
+        opt_disc = exec_eng.dm.get_disciplines_with_name(
+            "optim." + self.sc_name)[0]
+            
+        assert opt_disc.opt_problem.fd_step == fd_step
+
+        # check optimal x and f
+        sellar_obj_opt = 3.18339 + local_dv
+        self.assertAlmostEqual(
+            sellar_obj_opt, opt_disc.optimization_result.f_opt, places=4, msg="Wrong objective value")
+        exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
+        assert_array_almost_equal(
+            exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
+
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
     cls.setUp()
-    cls.test_16_test_post_run()
+    cls.test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step()

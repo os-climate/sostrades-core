@@ -16,8 +16,10 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 from copy import copy
 from uuid import uuid4
+from hashlib import sha256
 
 from numpy import can_cast
 
@@ -35,6 +37,7 @@ OPTIONAL = SoSDiscipline.OPTIONAL
 COUPLING = SoSDiscipline.COUPLING
 EDITABLE = SoSDiscipline.EDITABLE
 IO_TYPE = SoSDiscipline.IO_TYPE
+UNIT = SoSDiscipline.UNIT
 IO_TYPE_IN = SoSDiscipline.IO_TYPE_IN
 IO_TYPE_OUT = SoSDiscipline.IO_TYPE_OUT
 COMPOSED_OF = SoSDiscipline.COMPOSED_OF
@@ -75,6 +78,8 @@ class DataManager:
         self.data_id_map = None
         self.disciplines_dict = None
         self.disciplines_id_map = None
+        self.gemseo_disciplines_id_map = None
+        self.cache_map = None
         self.treeview = None
         self.reset()
 
@@ -87,11 +92,29 @@ class DataManager:
     def get_an_uuid():
         ''' generate a random UUID to make data_dict keys unique '''
         return str(uuid4())
+    
+    def generate_hashed_uid(self, string_list):
+        '''
+        Generate a hashed uid based on string list containing disc infos (full disc name, class name and full data i/o)
+        '''
+        h = sha256()
+        for string in string_list:
+            h.update(string.encode())
+        return h.digest()
+    
+    def load_gemseo_disciplines_cache(self, cache_map):
+        '''
+        Store gemseo disciplines cache from cache_map using gemseo_disciplines_id_map
+        '''
+        # update cache of all gemseo disciplines with loaded cache_map
+        for disc_id, disc_cache in cache_map.items():
+            if disc_id in self.gemseo_disciplines_id_map:
+                self.gemseo_disciplines_id_map[disc_id].cache = disc_cache
+                self.cache_map[disc_id] = disc_cache
 
     def reset(self):
         self.data_dict = {}
         self.data_id_map = {}
-        self.data_cache = {}
         self.disciplines_dict = {}
         self.disciplines_id_map = {}
         self.no_check_default_variables = []
@@ -680,6 +703,7 @@ class DataManager:
         for var_id in self.data_dict.keys():
             var_f_name = self.get_var_full_name(var_id)
             io_type = self.data_dict[var_id][IO_TYPE]
+            unit = self.data_dict[var_id][UNIT]
             vtype = self.data_dict[var_id][TYPE]
             optional = self.data_dict[var_id][OPTIONAL]
             value = self.data_dict[var_id][VALUE]
@@ -689,6 +713,12 @@ class DataManager:
             if vtype not in SoSDiscipline.VAR_TYPE_MAP.keys():
                 errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(SoSDiscipline.VAR_TYPE_MAP.keys())}'
                 self.logger.error(errors_in_dm_msg)
+
+            # check that the variable has a unit
+            if unit is None and vtype not in SoSDiscipline.NO_UNIT_TYPES:
+                self.logger.debug(
+                    f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
+
             # check if data is and input and is not optional
             if io_type == IO_TYPE_IN and not optional:
                 if value is None:
@@ -713,7 +743,7 @@ class DataManager:
                                 else:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {value} is not in range {prange}'
                                     self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
                             for sub_value in value:
                                 if not can_cast(type(sub_value), type(prange[0])):
                                     errors_in_dm_msg = f'Variable: {var_f_name}: {sub_value} ({type(sub_value)}) in list {value} not the same as {prange[0]} ({type(prange[0])})'
@@ -737,7 +767,7 @@ class DataManager:
                             if value not in possible_values:
                                 errors_in_dm_msg = f'Variable: {var_f_name} : {value} not in *possible values* {possible_values}'
                                 self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list', 'list']:
                             for sub_value in value:
                                 if sub_value not in possible_values:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {sub_value} in list {value} not in *possible values* {possible_values}'
@@ -775,17 +805,19 @@ class DataManager:
         By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed 
         '''
 
-        def compare_data(data_name):
+        if self.logger.level <= logging.DEBUG:
 
-            if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:
-                return str(data1[data_name]) != str(
-                    data2[data_name]) or data1[data_name] is None
-            elif var_f_name in self.no_check_default_variables:
-                return False
-            else:
-                return str(data1[data_name]) != str(data2[data_name])
+            def compare_data(data_name):
 
-        for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
-            if compare_data(data_name):
-                self.logger.warning(
-                    f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_disc_full_name(data1['model_origin'])} different from {data2[data_name]} in {self.get_disc_full_name(var_id)}")
+                if data_name == SoSDiscipline.UNIT and data1[SoSDiscipline.TYPE] not in SoSDiscipline.NO_UNIT_TYPES:
+                    return str(data1[data_name]) != str(
+                        data2[data_name]) or data1[data_name] is None
+                elif var_f_name in self.no_check_default_variables:
+                    return False
+                else:
+                    return str(data1[data_name]) != str(data2[data_name])
+
+            for data_name in SoSDiscipline.DATA_TO_CHECK + [SoSDiscipline.DEFAULT]:
+                if compare_data(data_name):
+                    self.logger.debug(
+                        f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")

@@ -29,6 +29,7 @@ from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_eval import SoSEval
 import pandas as pd
+from collections import ChainMap
 
 
 class DoeEval(SoSEval):
@@ -80,7 +81,9 @@ class DoeEval(SoSEval):
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
     NS_SEP = '.'
-    INPUT_TYPE = ['float', 'array', 'int']
+    INPUT_TYPE = ['float', 'array', 'int', 'string']
+    INPUT_MULTIPLIER_TYPE = []
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
@@ -173,6 +176,25 @@ class DoeEval(SoSEval):
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
 
+    def __init__(self, sos_name, ee, cls_builder):
+        '''
+        Constructor
+        '''
+        # if 'ns_doe' does not exist in ns_manager, we create this new
+        # namespace to store output dictionaries associated to eval_outputs
+        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
+            ee.ns_manager.add_ns('ns_doe', ee.study_name)
+        super(DoeEval, self).__init__(sos_name, ee, cls_builder)
+        self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
+        self.doe_factory = DOEFactory()
+        self.design_space = None
+        self.samples = None
+        self.customed_samples = None
+        self.dict_desactivated_elem = {}
+        self.selected_outputs = []
+        self.selected_inputs = []
+        self.previous_algo_name = ""
+
     def setup_sos_disciplines(self):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
@@ -259,31 +281,23 @@ class DoeEval(SoSEval):
                 default_dict = self.get_algo_default_options(algo_name)
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                         'dataframe_edition_locked': False,
+                                                        'structuring': True,
 
                                                         'dataframe_descriptor': {
                                                             self.VARIABLES: ('string', None, False),
                                                             self.VALUES: ('string', None, True)}}})
+                all_options = list(default_dict.keys())
                 if 'algo_options' in self._data_in and algo_name_has_changed:
                     self._data_in['algo_options']['value'] = default_dict
+                if 'algo_options' in self._data_in and self._data_in['algo_options']['value'] is not None and list(
+                        self._data_in['algo_options']['value'].keys()) != all_options:
+                    options_map = ChainMap(
+                        self._data_in['algo_options']['value'], default_dict)
+                    self._data_in['algo_options']['value'] = {
+                        key: options_map[key] for key in all_options}
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
-
-    def __init__(self, sos_name, ee, cls_builder):
-        '''
-        Constructor
-        '''
-        ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super(DoeEval, self).__init__(sos_name, ee, cls_builder)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
-        self.doe_factory = DOEFactory()
-        self.design_space = None
-        self.samples = None
-        self.customed_samples = None
-        self.dict_desactivated_elem = {}
-        self.selected_outputs = []
-        self.selected_inputs = []
-        self.previous_algo_name = ""
 
     def create_design_space(self):
         """
@@ -526,7 +540,6 @@ class DoeEval(SoSEval):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # saving outputs in the dm
-        self.status = 'RUNNING'
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.eval_out_list:
@@ -573,19 +586,32 @@ class DoeEval(SoSEval):
 
         for data_in_key in disc._data_in.keys():
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
+            is_structuring = disc._data_in[data_in_key].get(
+                self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
                                            ]['io_type'] == 'in'
-            if is_input_type and is_in_type and not in_coupling_numerical:
+            is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+            is_editable = disc._data_in[data_in_key]['editable']
+            is_None = disc._data_in[data_in_key]['value'] is None
+            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
-                poss_in_values_full.append(
-                    full_id.split(self.ee.study_name + ".")[1])
+                if is_input_type:
+                    poss_in_values_full.append(
+                        full_id.split(self.ee.study_name + ".")[1])
+
+                elif is_input_multiplier_type and not is_None:
+                    poss_in_values_list = self.set_multipliers_values(
+                        disc, full_id, data_in_key)
+                    for val in poss_in_values_list:
+                        poss_in_values_full.append(val)
+
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
@@ -600,6 +626,32 @@ class DoeEval(SoSEval):
                     full_id.split(self.ee.study_name + ".")[1])
 
         return poss_in_values_full, poss_out_values_full
+
+    def set_multipliers_values(self, disc, full_id, var_name):
+        poss_in_values_list = []
+        df_var = disc._data_in[var_name]['value']
+        # if df_var is dict : transform dict to df
+        if disc._data_in[var_name][self.TYPE] == 'dict':
+            dict_var = disc._data_in[var_name]['value']
+            df_var = pd.DataFrame(
+                dict_var, index=list(dict_var.keys()))
+        # check & create float columns list from df
+        columns = df_var.columns
+        float_cols_indexs_list = [columns.get_loc(col_name) for col_name in columns if (
+            df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+        # if df with float columns
+        if len(float_cols_indexs_list) > 0:
+            for col_index in float_cols_indexs_list:
+                multiplier_fullname = f'{full_id}@column{col_index}{self.MULTIPLIER_PARTICULE}'.split(
+                    self.ee.study_name + ".")[1]
+                poss_in_values_list.append(multiplier_fullname)
+            # if df with more than one float column, create multiplier for all
+            # columns also
+            if len(float_cols_indexs_list) > 1:
+                multiplier_fullname = f'{full_id}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+                    self.ee.study_name + ".")[1]
+                poss_in_values_list.append(multiplier_fullname)
+        return poss_in_values_list
 
     def set_eval_possible_values(self):
         '''
@@ -638,6 +690,8 @@ class DoeEval(SoSEval):
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                               is_eval_input=True)
             default_dataframe = copy.deepcopy(default_in_dataframe)
             already_set_names = eval_input_new_dm['full_name'].tolist()
             already_set_values = eval_input_new_dm['selected_input'].tolist()
@@ -653,6 +707,8 @@ class DoeEval(SoSEval):
             # check if the eval_inputs need to be updtated after a subprocess
             # configure
         elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                               is_eval_input=False)
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
             already_set_values = eval_output_new_dm['selected_output'].tolist()
@@ -694,3 +750,24 @@ class DoeEval(SoSEval):
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+
+    def check_eval_io(self, given_list, default_list, is_eval_input):
+        """
+        Set the evaluation variable list (in and out) present in the DM
+        which fits with the eval_in_base_list filled in the usecase or by the user
+        """
+
+        for given_io in given_list:
+            if given_io not in default_list:
+                if is_eval_input:
+                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+                                f'input of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
+                                f'be created. '
+
+                else:
+                    error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+                                f'output of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning). Dynamic inputs might  not be created. '
+
+                self.logger.warning(error_msg)

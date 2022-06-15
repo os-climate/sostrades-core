@@ -33,7 +33,8 @@ class ProcessBuilder(BaseProcessBuilder):
 
         ns_dict = {
             'ns_grid_search': f'{self.ee.study_name}.GridSearch',
-            'ns_doe_eval': f'{self.ee.study_name}.GridSearch'}
+            'ns_doe_eval': f'{self.ee.study_name}.GridSearch',
+            'ns_test': f'{self.ee.study_name}.GridSearch.Disc1'}
         self.ee.ns_manager.add_ns_def(ns_dict)
 
         disc1_builder = self.ee.factory.get_builder_from_module(

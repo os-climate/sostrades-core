@@ -46,6 +46,7 @@ reqs_list = [
     'sympy==1.4',
     'trino',
     'cvxpy==1.1.18',
+    'black==22.3.0',
 ]
 
 if platform.system() != 'Windows':

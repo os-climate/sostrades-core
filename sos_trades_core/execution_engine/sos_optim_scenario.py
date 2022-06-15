@@ -90,6 +90,10 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                  "OPENOPT": default_algo_options_openopt,
                  "P-L-BFGS-B": default_algo_options_plbfgsb,
                  "OuterApproximation": default_algo_options_oa,
+                 "PYMOO_GA": {"normalize_design_space": False},
+                 "PYMOO_NSGA2": {"normalize_design_space": False},
+                 "PYMOO_NSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
+                 "PYMOO_UNSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
                  }
     is_constraints = True
     INEQ_CONSTRAINTS = 'ineq_constraints'
@@ -100,8 +104,8 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
 
     # DESC_I/O
     DESC_IN = {'max_iter': {'type': 'float'},
-               INEQ_CONSTRAINTS: {'type': 'string_list', 'default': [], 'structuring': True},
-               EQ_CONSTRAINTS: {'type': 'string_list', 'default': [], 'structuring': True},
+               INEQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'structuring': True},
+               EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'structuring': True},
                }
     DESC_IN.update(SoSScenario.DESC_IN)
 

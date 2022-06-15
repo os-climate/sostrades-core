@@ -77,6 +77,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     EQ_CONSTRAINTS = 'eq_constraints'
     # DESC_I/O
     PARALLEL_OPTIONS = 'parallel_options'
+    # FD step
+    FD_STEP = "fd_step"
 
     algo_dict = {}
 
@@ -96,6 +98,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
+               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6}, 
                'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
@@ -216,12 +219,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     values_dict = deepcopy(default_dict)
 
                     for k in algo_options.keys():
-
-                        if k not in values_dict.keys():
-                            self.logger.warning(
-                                f'option {k} is not in option list of the algorithm')
-
-                        else:
+                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)):
                             values_dict.update({k: algo_options[k]})
 
                     self._data_in[self.ALGO_OPTIONS][self.VALUE] = values_dict
@@ -324,13 +322,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         if len(found_algo_names) == 1:
             key = found_algo_names[0]
             for algo_option in algo_options_keys:
-                default_val = self.algo_dict[key][algo_option]
+                default_val = self.algo_dict[key].get(algo_option)
                 if default_val is not None:
                     default_dict[algo_option] = default_val
         else:
             for algo_option in algo_options_keys:
                 if algo_option in self.default_algo_options:
-                    algo_default_val = self.default_algo_options[algo_option]
+                    algo_default_val = self.default_algo_options.get(algo_option)
                     if algo_default_val is not None:
                         default_dict[algo_option] = algo_default_val
 
@@ -423,6 +421,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
         else:
+            self.set_children_cache_inputs()
             self.set_configure_status(True)
 
         for disc in disc_to_configure:
@@ -478,8 +477,9 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     self.logger.warning(
                         f'The differentiation method "{diff_method}" will overload the linearization mode "{disc.linearization_mode}" ')
 
+        fd_step = self.get_sosdisc_inputs(self.FD_STEP)
         Scenario.set_differentiation_method(
-            self, diff_method, 1e-6)
+            self, diff_method, fd_step)
 
     def set_parallel_options(self):
         """

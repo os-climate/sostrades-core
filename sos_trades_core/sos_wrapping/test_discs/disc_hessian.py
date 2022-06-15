@@ -33,16 +33,16 @@ class DiscHessian(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float'},
-        'y': {'type': 'float'},
-        'ax2': {'type': 'float'},
-        'by2': {'type': 'float'},
-        'cx': {'type': 'float'},
-        'dy': {'type': 'float'},
-        'exy': {'type': 'float'},
+        'x': {'type': 'float', 'unit': '-'},
+        'y': {'type': 'float', 'unit': '-'},
+        'ax2': {'type': 'float', 'unit': '-'},
+        'by2': {'type': 'float', 'unit': '-'},
+        'cx': {'type': 'float', 'unit': '-'},
+        'dy': {'type': 'float', 'unit': '-'},
+        'exy': {'type': 'float', 'unit': '-'},
     }
     DESC_OUT = {
-        'z': {'type': 'float'}
+        'z': {'type': 'float', 'unit': '-'}
     }
 
     def run(self):
