@@ -22,6 +22,7 @@ from shutil import rmtree
 from os.path import join, dirname, exists
 from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
 from sos_trades_core.sos_processes.test.test_sellar_opt_discopt.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
 from sos_trades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import Study as study_disc1_disc2
 
 
@@ -36,7 +37,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         self.ref_dir = join(dirname(__file__), 'data')
         self.repo_name = 'sos_trades_core.sos_processes.test'
         self.proc_name_disc1_disc2 = 'test_disc1_disc2_coupling'
-        self.proc_name_sellar = 'test_sellar_opt_discopt'
+        self.proc_name_sellar_opt = 'test_sellar_opt_discopt'
+        self.proc_name_sellar_mda = 'test_sellar_coupling'
         self.dump_dir = join(self.ref_dir, 'dump_load_cache')
         
     def test_01_cache_map(self):
@@ -206,53 +208,8 @@ class TestLoadSimpleCache(unittest.TestCase):
                 
         # remove pkl dumped
         rmtree(self.dump_dir)
-
-    def _test_05_load_cache_on_sellar(self):
         
-        # run study, then dump dm and disciplines status
-        study_dump = study_sellar_opt()
-        study_dump.set_dump_directory(
-            self.dump_dir)
-        study_dump.load_data()
-        # cache activation
-        dict_values = {f'{study_dump.study_name}.cache_type': 'SimpleCache'}
-        study_dump.load_data(from_input_dict=dict_values)
-        # run with dump dm and disciplines status
-        study_dump.run(dump_study=True)
-        
-        # check cache
-        for cache_type in study_dump.ee.dm.get_all_namespaces_from_var_name('cache_type'):
-            print(study_dump.ee.dm.get_value(cache_type))
-        
-        # load dumped dm in a new study
-        study_load = BaseStudyManager(self.repo_name, self.proc_name_sellar, study_dump.study_name)
-        study_load.load_data(from_path=self.dump_dir)
-            
-        # load disciplines status
-        study_load.load_disciplines_data(study_folder_path=self.dump_dir)
-        
-        # check status DONE after load dm and status
-        for disc in study_load.ee.factory.sos_disciplines:
-            print(disc.status)
-            
-        for cache_type in study_load.ee.dm.get_all_namespaces_from_var_name('cache_type'):
-            print(study_load.ee.dm.get_value(cache_type))
-            
-        # cache comparison after load
-        print('\nCACHE STUDY DUMPED')
-        print(study_dump.ee.root_process.cache.get_last_cached_inputs())
-        print(study_dump.ee.root_process.cache.get_last_cached_outputs())
-        print('\nLOADED CACHE')
-        print(study_load.ee.root_process.cache.get_last_cached_inputs())
-        print(study_load.ee.root_process.cache.get_last_cached_outputs())
-
-        # execute with loaded cache
-        study_load.run()
-                 
-        # remove directory of dumped pickles
-        self.dir_to_del.append(self.dump_dir)
-
-    def test_06_set_recursive_cache_coupling(self):
+    def test_05_set_recursive_cache_coupling(self):
 
         study = study_disc1_disc2()
         study.load_data()
@@ -274,8 +231,166 @@ class TestLoadSimpleCache(unittest.TestCase):
         study.run()
         self.assertEqual(len(study.ee.dm.cache_map), 0)
         
-        # remove directory of dumped pickles
-        self.dir_to_del.append(self.dump_dir)
+        # remove pkl dumped
+        rmtree(self.dump_dir)
+        
+    def test_06_load_cache_on_sellar_mda(self):
+        
+        # create study sellar MDA and load data from usecase
+        study_1 = study_sellar_mda()
+        study_1.set_dump_directory(
+            self.dump_dir)
+        study_1.load_data()
+        
+        # cache activation
+        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache'}
+        study_1.load_data(from_input_dict=dict_values)
+        study_1.load_cache(self.dump_dir)
+        
+        # check cache_map completed but each cache is empty
+        self.assertEqual(len(study_1.ee.dm.cache_map), 8)
+        for cache in study_1.ee.dm.cache_map.values():
+            self.assertEqual(cache.get_last_cached_inputs(), None)
+        
+        # run MDA
+        study_1.run()
+        
+        # check n_calls
+        for disc in study_1.ee.dm.gemseo_disciplines_id_map.values():
+            if disc.name in ['Sellar_1', 'Sellar_2']:
+                self.assertEqual(disc.n_calls, 7)
+            else:
+                self.assertEqual(disc.n_calls, 1)
+                
+        # check cache are filled with last cached inputs and outputs 
+        for cache in study_1.ee.dm.cache_map.values():
+            self.assertNotEqual(cache.get_last_cached_inputs(), None)
+            self.assertNotEqual(cache.get_last_cached_outputs(), None)
+            
+        # run study_1 with converged MDA
+        study_1.run()
+        
+        # check n_calls
+        for disc in study_1.ee.dm.gemseo_disciplines_id_map.values():
+            if disc.name in ['Sellar_1', 'Sellar_2']:
+                self.assertEqual(disc.n_calls, 8)
+            elif disc.name == 'Sellar_Problem':
+                self.assertEqual(disc.n_calls, 1)
+            else:
+                self.assertEqual(disc.n_calls, 2)
+        
+        # dump data and cache
+        study_1.dump_data(self.dump_dir)
+        study_1.dump_cache(self.dump_dir)
+        
+        # create new study from dumped data and cache of study_1 and run
+        study_2 = BaseStudyManager(self.repo_name, self.proc_name_sellar_mda, study_1.study_name)
+        study_2.load_data(from_path=self.dump_dir)
+        study_2.load_cache(self.dump_dir)
+        study_2.run()
+        
+        # check n_calls == 0
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            self.assertEqual(disc.n_calls, 0)
+        
+        # run again
+        study_2.run()
+        
+        # check n_calls == 0
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            self.assertEqual(disc.n_calls, 0)
+            
+        # remove pkl dumped
+        rmtree(self.dump_dir)
+
+    def test_07_load_cache_on_sellar_opt(self):
+        
+        # create study sellar opt and load data from usecase
+        study_1 = study_sellar_opt(run_usecase=True)
+        study_1.set_dump_directory(
+            self.dump_dir)
+        study_1.load_data()
+        
+        # cache activation
+        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache'}
+        study_1.load_data(from_input_dict=dict_values)
+        study_1.load_cache(self.dump_dir)
+        
+        # check cache_map completed but each cache is empty
+        self.assertEqual(len(study_1.ee.dm.cache_map), 9)
+        for cache in study_1.ee.dm.cache_map.values():
+            self.assertEqual(cache.get_last_cached_inputs(), None)
+        
+        # run sellar opt
+        study_1.run()
+        
+        # check n_calls
+        for disc in study_1.ee.dm.gemseo_disciplines_id_map.values():
+            # disciplines in MDA
+            if disc.name in ['Sellar_1', 'Sellar_2']:
+                self.assertEqual(disc.n_calls, 781)
+            # disciplines in optim
+            elif disc.name in ['SellarCoupling', 'MDAJacobi', 'Sellar_Problem']:
+                self.assertEqual(disc.n_calls, 109)
+            elif disc.name not in ['MDA chain']:
+                self.assertEqual(disc.n_calls, 1)
+                
+        # check cache are filled with last cached inputs and outputs 
+        for cache in study_1.ee.dm.cache_map.values():
+            self.assertNotEqual(cache.get_last_cached_inputs(), None)
+            self.assertNotEqual(cache.get_last_cached_outputs(), None)
+            
+        # run study_1 with converged opt
+        study_1.run()
+        
+        # check n_calls
+        for disc in study_1.ee.dm.gemseo_disciplines_id_map.values():
+            # disciplines in MDA
+            if disc.name in ['Sellar_1', 'Sellar_2']:
+                self.assertEqual(disc.n_calls, 785)
+            # disciplines in optim
+            elif disc.name in ['SellarCoupling', 'MDAJacobi', 'Sellar_Problem']:
+                self.assertEqual(disc.n_calls, 113)
+            elif disc.name not in ['MDA chain']:
+                self.assertEqual(disc.n_calls, 2)
+                
+        study_1.run()
+        
+        # dump data and cache
+        study_1.dump_data(self.dump_dir)
+        study_1.dump_cache(self.dump_dir)
+        
+        # create new study from dumped data and cache of study_1 and run
+        study_2 = BaseStudyManager(self.repo_name, self.proc_name_sellar_opt, study_1.study_name)
+        study_2.load_data(from_path=self.dump_dir)
+        study_2.load_cache(self.dump_dir)
+        study_2.run()
+        
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            print(disc.name, disc.n_calls)
+        
+        # check n_calls == 0
+#         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+#             self.assertEqual(disc.n_calls, 0)
+        
+        # run again
+        study_2.run()
+        
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            print(disc.name, disc.n_calls)
+        
+        # check n_calls == 0
+#         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+#             self.assertEqual(disc.n_calls, 0)
+
+        # run again
+        study_2.run()
+        
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            print(disc.name, disc.n_calls)
+            
+        # remove pkl dumped
+        rmtree(self.dump_dir)
 
         
 if '__main__' == __name__:
@@ -285,5 +400,7 @@ if '__main__' == __name__:
 #     cls.test_02_dump_and_load_cache_on_disc1_process()
 #     cls.test_03_dump_and_load_cache_None()
 #     cls.test_04_dump_and_load_disc1_cache()
-#     cls.test_05_load_cache_on_sellar()
-    cls.test_06_set_recursive_cache_coupling()
+#     cls.test_05_set_recursive_cache_coupling()
+#     cls.test_06_load_cache_on_sellar_mda()
+    cls.test_07_load_cache_on_sellar_opt()
+
