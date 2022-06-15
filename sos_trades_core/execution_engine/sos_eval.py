@@ -90,7 +90,7 @@ class SoSEval(SoSDisciplineBuilder):
         '''
         Create the eval process builder, in a coupling if necessary
         '''
-        if len(self.cls_builder) == 0:
+        if len(self.cls_builder) == 0: # added condition for proc build
             disc_builder = None
         elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
             # if eval process is a list of builders or a non executable builder,
@@ -166,7 +166,7 @@ class SoSEval(SoSDisciplineBuilder):
         # if we want to build an eval coupling containing eval process,
         # we have to remove SoSEval name in current_ns to build eval coupling
         # at the same node as SoSEval
-        if len(self.cls_builder) == 0:
+        if len(self.cls_builder) == 0: # added condition for proc build
             pass
         elif self.cls_builder[0] != self.eval_process_builder:
             current_ns = self.ee.ns_manager.current_disc_ns
@@ -212,9 +212,16 @@ class SoSEval(SoSDisciplineBuilder):
             # execute will delete output results from local_data
             # If it is a coupling the grammar is already configured
             if not disc.is_sos_coupling:
-                disc.update_gems_grammar_with_data_io()
+                    disc.update_gems_grammar_with_data_io()
 
-        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0):
+        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0:
+            # Explanation: 
+            # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
+            # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
+            # 2.1 (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
+            # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
+            # Remark: condition "(   and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
+            #
             # Call standard configure methods to set the process discipline
             # tree
             SoSDiscipline.configure(self)
@@ -233,7 +240,13 @@ class SoSEval(SoSDisciplineBuilder):
         return SoSDiscipline.is_configured(self) and (
             (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(
                 self.cls_builder) == 0)
-
+        # Explanation: 
+        # 1. SoSDiscipline.is_configured(self) : as in discipline (i.e. conf status of Eval = True and no change in structuring variables of Eval
+        # 2. Added condition compared to SoSDiscipline :
+        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) : sub_discipline exist but all configured
+        # 2.2 len(self.cls_builder) == 0 No yet provided builder and so Is configured is True
+        # Remark: condition "and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0)" added for proc build
+        
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
