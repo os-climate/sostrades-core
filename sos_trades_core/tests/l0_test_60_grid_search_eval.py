@@ -478,12 +478,6 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
             f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
             f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
-            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
-            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
-            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
-            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
-            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
             f'{self.study_name}.{self.grid_search}.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
         }
 
@@ -500,9 +494,9 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.grid_search}.Disc1.dd_df_values2_multiplier', ['selected_input']] = True
+                        f'{self.grid_search}.Disc1.dd_df__@MULTIPLIER@__2', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.grid_search}.Disc1.dd_df_values1_multiplier', ['selected_input']] = True
+                        f'{self.grid_search}.Disc1.dd_df__@MULTIPLIER@__1', ['selected_input']] = True
 
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
@@ -594,7 +588,7 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.grid_search}.Disc1.dd_df_multiplier', ['selected_input']] = True
+                        f'{self.grid_search}.Disc1.dd_df__@MULTIPLIER@__', ['selected_input']] = True
 
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
@@ -686,7 +680,7 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.grid_search}.Disc1.di_dict_multiplier', ['selected_input']] = True
+                        f'{self.grid_search}.Disc1.di_dict__@MULTIPLIER@__', ['selected_input']] = True
 
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')

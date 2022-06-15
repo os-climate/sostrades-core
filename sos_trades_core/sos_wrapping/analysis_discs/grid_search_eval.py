@@ -76,6 +76,7 @@ class GridSearchEval(DoeEval):
     }
     INPUT_TYPE = ['float']
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe']
+    MULTIPLIER_PARTICULE = '__@MULTIPLIER@__'
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     NB_POINTS = 'nb_points'
@@ -198,11 +199,16 @@ class GridSearchEval(DoeEval):
                         )
                 ''' INPUTS MULTIPLIERS CREATION '''
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([val in self.multipliers_dict for val in self.selected_inputs])):
+                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
                     for selected_in in self.selected_inputs:
-                        if selected_in in self.multipliers_dict:
+                        if self.MULTIPLIER_PARTICULE in selected_in:
                             multiplier_name = selected_in.split('.')[-1]
-                            fullname_origin = self.multipliers_dict[selected_in]['fullname_origin']
+                            fullname_origin = '.'.join(
+                                [self.ee.study_name, (selected_in.split(self.MULTIPLIER_PARTICULE)[0])])
+                            # if
+                            if len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 1:
+                                self.logger.exception(
+                                    'Multiplier name selected already exists!')
                             fullname_origin_namespace = self.ee.dm.get_data(
                                 fullname_origin, 'namespace')
                             dynamic_inputs.update(
@@ -216,9 +222,6 @@ class GridSearchEval(DoeEval):
                                     }
                                 }
                             )
-                            # store the base value in the multipliers dict
-                            self.multipliers_dict[selected_in]['origin_value'] = self.ee.dm.get_value(
-                                fullname_origin)
 
                 ''' DESIGN SPACE CREATION '''
                 # setting dynamic design space with default value if not
@@ -289,7 +292,6 @@ class GridSearchEval(DoeEval):
         self.max_inputs_nb = 3
         self.conversion_full_short = {}
         self.chart_dict = {}
-        self.multipliers_dict = {}
 
     def generate_shortest_name(self, var_list):
         list_shortest_name = [[] for i in range(len(var_list))]
@@ -402,8 +404,12 @@ class GridSearchEval(DoeEval):
         possible_in_values_full.sort()
         possible_out_values_full.sort()
 
+        inputs_with_multipliers_col_list = np.unique([val.split(self.MULTIPLIER_PARTICULE)[
+            0] for val in possible_in_values_full if self.MULTIPLIER_PARTICULE in val]).tolist()
+
         # shortest name
-        self.generate_shortest_name(list(set(possible_in_values_full)))
+        self.generate_shortest_name(
+            list(set(possible_in_values_full)) + inputs_with_multipliers_col_list)
         self.generate_shortest_name(list(set(possible_out_values_full)))
 
         # possible_in_values_short = [
@@ -423,9 +429,9 @@ class GridSearchEval(DoeEval):
         outputs_val_list = [val.split('.')[-1]
                             for val in possible_out_values_full]
         for val in possible_in_values_full:
-            if val in self.multipliers_dict:
-                inputs_val_list.append(
-                    self.multipliers_dict[val]['name_origin'])
+            if self.MULTIPLIER_PARTICULE in val:
+                origin_full_name = val.split(self.MULTIPLIER_PARTICULE)[0]
+                inputs_val_list.append(origin_full_name.split('.')[-1])
 
         args = inputs_val_list + outputs_val_list
         ontology_connector.set_connector_request(
@@ -434,19 +440,35 @@ class GridSearchEval(DoeEval):
         conversion_full_ontology = ontology_connector.load_data(
             data_connection)
 
-        # possible_in_values_short = [
-        #     f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
-        #     for val in possible_in_values_full
-        # ]
         # replace ontology val for column df/dict var
-        possible_in_values_short = [
-            f'{conversion_full_ontology[self.multipliers_dict[val]["name_origin"]][0]} - {self.multipliers_dict[val]["column_name"]} Column' if val in self.multipliers_dict else f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}' for val in possible_in_values_full]
+        possible_in_values_short = []
+        for val in possible_in_values_full:
+            col_name = ''
+            if self.MULTIPLIER_PARTICULE in val:
+                var_f_name = '.'.join(
+                    [self.ee.study_name, val.split(self.MULTIPLIER_PARTICULE)[0]])
+                col_index = val.split(self.MULTIPLIER_PARTICULE)[1]
+                if col_index == '':
+                    col_name = ' - All Float Columns'
+                else:
+                    cols_list = list(self.ee.dm.get_data(
+                        var_f_name)['value'].keys())
+                    col_name = f' - {cols_list[int(col_index)]} Column'
+                val = val.split(self.MULTIPLIER_PARTICULE)[0]
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
+            var_name_origin = "-".join(
+                self.conversion_full_short[val].split(".")[:-1])
+            possible_in_values_short.append(
+                f'{var_name}{var_name_origin}{col_name}')
 
         # [conversion_full_ontology[val] for val in inputs_val_list]
-        possible_out_values_short = [
-            f'{conversion_full_ontology[val.split(".")[-1]][0]} {"-".join(self.conversion_full_short[val].split(".")[:-1])}'
-            for val in possible_out_values_full
-        ]
+        possible_out_values_short = []
+        for val in possible_out_values_full:
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
+            var_name_origin = "-".join(
+                self.conversion_full_short[val].split(".")[:-1])
+            possible_out_values_short.append(
+                f'{var_name} {var_name_origin}')
         # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(
