@@ -82,6 +82,8 @@ class DoeEval(SoSEval):
     _VARIABLES_SIZES = "variables_sizes"
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
+    INPUT_MULTIPLIER_TYPE = []
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
@@ -173,12 +175,13 @@ class DoeEval(SoSEval):
                  "fullfact": default_algo_options_fullfact,
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
-    
+
     def __init__(self, sos_name, ee, cls_builder):
         '''
         Constructor
         '''
-        # if 'ns_doe' does not exist in ns_manager, we create this new namespace to store output dictionaries associated to eval_outputs
+        # if 'ns_doe' does not exist in ns_manager, we create this new
+        # namespace to store output dictionaries associated to eval_outputs
         if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(DoeEval, self).__init__(sos_name, ee, cls_builder)
@@ -288,8 +291,10 @@ class DoeEval(SoSEval):
                     self._data_in['algo_options']['value'] = default_dict
                 if 'algo_options' in self._data_in and self._data_in['algo_options']['value'] is not None and list(
                         self._data_in['algo_options']['value'].keys()) != all_options:
-                    options_map = ChainMap(self._data_in['algo_options']['value'], default_dict)
-                    self._data_in['algo_options']['value'] = {key: options_map[key] for key in all_options}
+                    options_map = ChainMap(
+                        self._data_in['algo_options']['value'], default_dict)
+                    self._data_in['algo_options']['value'] = {
+                        key: options_map[key] for key in all_options}
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
@@ -579,20 +584,32 @@ class DoeEval(SoSEval):
 
         for data_in_key in disc._data_in.keys():
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
-            is_structuring = disc._data_in[data_in_key].get(self.STRUCTURING, False)
+            is_structuring = disc._data_in[data_in_key].get(
+                self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
-            if is_input_type and is_in_type and not in_coupling_numerical and not is_structuring:
+                                           ]['io_type'] == 'in'
+            is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+            is_editable = disc._data_in[data_in_key]['editable']
+            is_None = disc._data_in[data_in_key]['value'] is None
+            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
-                poss_in_values_full.append(
-                    full_id.split(self.ee.study_name + ".")[1])
+                if is_input_type:
+                    poss_in_values_full.append(
+                        full_id.split(self.ee.study_name + ".")[1])
+
+                elif is_input_multiplier_type and not is_None:
+                    poss_in_values_list = self.set_multipliers_values(
+                        disc, full_id, data_in_key)
+                    for val in poss_in_values_list:
+                        poss_in_values_full.append(val)
+
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
@@ -607,6 +624,32 @@ class DoeEval(SoSEval):
                     full_id.split(self.ee.study_name + ".")[1])
 
         return poss_in_values_full, poss_out_values_full
+
+    def set_multipliers_values(self, disc, full_id, var_name):
+        poss_in_values_list = []
+        df_var = disc._data_in[var_name]['value']
+        # if df_var is dict : transform dict to df
+        if disc._data_in[var_name][self.TYPE] == 'dict':
+            dict_var = disc._data_in[var_name]['value']
+            df_var = pd.DataFrame(
+                dict_var, index=list(dict_var.keys()))
+        # check & create float columns list from df
+        columns = df_var.columns
+        float_cols_indexs_list = [columns.get_loc(col_name) for col_name in columns if (
+            df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+        # if df with float columns
+        if len(float_cols_indexs_list) > 0:
+            for col_index in float_cols_indexs_list:
+                multiplier_fullname = f'{full_id}@column{col_index}{self.MULTIPLIER_PARTICULE}'.split(
+                    self.ee.study_name + ".")[1]
+                poss_in_values_list.append(multiplier_fullname)
+            # if df with more than one float column, create multiplier for all
+            # columns also
+            if len(float_cols_indexs_list) > 1:
+                multiplier_fullname = f'{full_id}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+                    self.ee.study_name + ".")[1]
+                poss_in_values_list.append(multiplier_fullname)
+        return poss_in_values_list
 
     def set_eval_possible_values(self):
         '''

@@ -58,7 +58,12 @@ class Study(StudyManager):
             # DISC1 INPUTS
             f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
             f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 2,
             f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 2,
             f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
         }
 

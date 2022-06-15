@@ -131,6 +131,38 @@ class DataSerializer:
 #         # serialise raw tree_node.data dict with pickle
 #         self.encryption_strategy.dump(converted_dict, self.dm_pkl_file)
 
+    @staticmethod
+    def study_data_manager_file_path(study_to_load):
+        """
+        Get the file path to the dm.pkl file
+        :param study_to_load: folder to look fo study file data
+        :return: str
+        """
+
+        return join(study_to_load, DataSerializer.pkl_filename)
+
+    @staticmethod
+    def study_disciplines_status_file_path(study_to_load):
+        """
+        Get the file path to the disciplines_status.pkl file
+        :param study_to_load: folder to look fo study file data
+        :return: str
+        """
+
+        return join(study_to_load, DataSerializer.disc_status_filename)
+
+    @staticmethod
+    def study_cache_file_path(study_to_load):
+        """
+        Get the file path to the disciplines_status.pkl file
+        :param study_to_load: folder to look fo study file data
+        :return: str
+        """
+
+        return join(study_to_load, DataSerializer.cache_filename)
+
+
+
     def dump_disc_status_dict(self, study_to_load, rw_strategy, status_dict):
         ''' export disciplines status into binary file (containing disc/status info into dictionary) '''
 

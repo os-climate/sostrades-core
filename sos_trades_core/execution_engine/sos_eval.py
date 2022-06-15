@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import platform
+import copy
+import pandas as pd
+import re
 
 from tqdm import tqdm
 import time
@@ -57,6 +60,7 @@ class SoSEval(SoSDisciplineBuilder):
         'icon': '',
         'version': '',
     }
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
         'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
@@ -87,7 +91,7 @@ class SoSEval(SoSDisciplineBuilder):
         '''
         Create the eval process builder, in a coupling if necessary
         '''
-        if len(self.cls_builder) == 0:
+        if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
         elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
             # if eval process is a list of builders or a non executable builder,
@@ -133,12 +137,13 @@ class SoSEval(SoSDisciplineBuilder):
         for data_in_key in disc._data_in.keys():
             is_float = disc._data_in[data_in_key][self.TYPE] == 'float'
             # structuring variables are excluded from possible values!!!
-            is_structuring = disc._data_in[data_in_key].get(self.STRUCTURING, False)
+            is_structuring = disc._data_in[data_in_key].get(
+                self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 SoSCoupling.DESC_IN.keys())
             full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             if is_float and is_in_type and not in_coupling_numerical and not is_structuring:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -162,7 +167,7 @@ class SoSEval(SoSDisciplineBuilder):
         # if we want to build an eval coupling containing eval process,
         # we have to remove SoSEval name in current_ns to build eval coupling
         # at the same node as SoSEval
-        if len(self.cls_builder) == 0:
+        if len(self.cls_builder) == 0:  # added condition for proc build
             pass
         elif self.cls_builder[0] != self.eval_process_builder:
             current_ns = self.ee.ns_manager.current_disc_ns
@@ -210,7 +215,14 @@ class SoSEval(SoSDisciplineBuilder):
             if not disc.is_sos_coupling:
                 disc.update_gems_grammar_with_data_io()
 
-        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0):
+        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0:
+            # Explanation:
+            # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
+            # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
+            # 2.1 (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
+            # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
+            # Remark: condition "(   and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
+            #
             # Call standard configure methods to set the process discipline
             # tree
             SoSDiscipline.configure(self)
@@ -227,8 +239,15 @@ class SoSEval(SoSDisciplineBuilder):
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         '''
         return SoSDiscipline.is_configured(self) and (
-                (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(
-            self.cls_builder) == 0)
+            (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(
+                self.cls_builder) == 0)
+        # Explanation:
+        # 1. SoSDiscipline.is_configured(self) : as in discipline (i.e. conf status of Eval = True and no change in structuring variables of Eval
+        # 2. Added condition compared to SoSDiscipline :
+        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) : sub_discipline exist but all configured
+        # 2.2 len(self.cls_builder) == 0 No yet provided builder and so Is configured is True
+        # Remark: condition "and len(self.sos_disciplines) != 0) or
+        # len(self.cls_builder) == 0)" added for proc build
 
     def set_eval_possible_values(self):
         '''
@@ -291,9 +310,24 @@ class SoSEval(SoSDisciplineBuilder):
         self.clear_cache()
 
         values_dict = {}
+        vars_to_update_dict = {}
         for i, x_id in enumerate(self.eval_in_list):
             values_dict[x_id] = x[i]
+            # for grid search multipliers inputs
+            var_name = x_id.split(self.ee.study_name + '.')[-1]
+            if self.MULTIPLIER_PARTICULE in var_name:
+                var_origin_f_name = '.'.join(
+                    [self.ee.study_name, var_name.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]])
+                if var_origin_f_name in vars_to_update_dict:
+                    var_to_update = vars_to_update_dict[var_origin_f_name]
+                else:
+                    var_to_update = copy.deepcopy(
+                        self.ee.dm.get_data(var_origin_f_name)['value'])
+                vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
+                    multiplier_name=var_name, multiplier_value=x[i] / 100, var_to_update=var_to_update)
 
+        for key in vars_to_update_dict:
+            values_dict[key] = vars_to_update_dict[key]
         # Because we use set_data instead of load_data_from_inputs_dict it isn't possible
         # to run  soseval on a structuring variable. Therefore structuring variables are
         # excluded from eval possible values
@@ -309,7 +343,7 @@ class SoSEval(SoSDisciplineBuilder):
             local_data = self.sos_disciplines[0].execute()
 
         out_local_data = {key: value for key,
-                                         value in local_data.items() if key in self.eval_out_list}
+                          value in local_data.items() if key in self.eval_out_list}
 
         # needed for gradient computation
         self.update_dm_with_local_data(out_local_data)
@@ -397,6 +431,25 @@ class SoSEval(SoSDisciplineBuilder):
                 self.sos_disciplines[0]._update_status_recursive(
                     self.STATUS_FAILED)
 
+    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
+        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[1]
+        if any(char.isdigit() for char in col_index):
+            col_index = re.findall(r'\d+', col_index)[0]
+            cols_list = var_to_update.columns.to_list()
+            key = cols_list[int(col_index)]
+            var_to_update[key] = multiplier_value * var_to_update[key]
+        else:
+            if isinstance(var_to_update, dict):
+                float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
+                    var_to_update[dict_keys], float)]
+            elif isinstance(var_to_update, pd.DataFrame):
+                float_cols_ids_list = [
+                    df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
+            for key in float_cols_ids_list:
+                var_to_update[key] = multiplier_value * var_to_update[key]
+        return var_to_update
+
     def convert_output_results_toarray(self):
         '''
         COnvert toutput results into array in order to apply FDGradient on it for example
@@ -435,7 +488,7 @@ class SoSEval(SoSDisciplineBuilder):
             for i, key in enumerate(self.eval_out_list):
                 eval_out_size = len(self.eval_process_disc.local_data[key])
                 output_eval_key = outputs_eval[old_size:old_size +
-                                                        eval_out_size]
+                                               eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
                 if type_sos in ['dict', 'dataframe']:
