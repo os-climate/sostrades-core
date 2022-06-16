@@ -98,7 +98,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
-               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6}, 
+               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6},
                'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
@@ -299,8 +299,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         Update default inputs of the couplings
         '''
         for disc in self.sos_disciplines:
-            if disc.is_sos_coupling:
-                self._set_default_inputs_from_dm(disc)
+            self._set_default_inputs_from_dm(disc)
 
     def get_algo_options(self, algo_name):
         """
@@ -403,11 +402,12 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                 input_data[data_name] = val
 
         # store mdo_chain default inputs
-        disc.mdo_chain.default_inputs.update(input_data)
+        if disc.is_sos_coupling:
+            disc.mdo_chain.default_inputs.update(input_data)
+        disc.default_inputs.update(input_data)
 
         for disc in disc.sos_disciplines:
-            if disc.is_sos_coupling:
-                self._set_default_inputs_from_dm(disc)
+            self._set_default_inputs_from_dm(disc)
 
     def configure_io(self):
         """
