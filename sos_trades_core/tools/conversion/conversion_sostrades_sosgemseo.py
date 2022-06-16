@@ -396,7 +396,7 @@ def convert_dict_into_array(var_dict, subtype):
     useful to build the dictionary afterwards
     '''
 
-    if check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED:
+    if (check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED) or (len(var_dict) == 0):
         return var_dict, None
     if type(subtype['dict']).__name__ != 'dict':
         type_inside_the_dict = subtype['dict']
@@ -462,7 +462,7 @@ def convert_dict_into_array(var_dict, subtype):
 def convert_array_into_dict(to_convert, metadata, subtype):
     """ convert an array into initial dict
     """
-    if check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED:
+    if (check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED) or (len(to_convert) == 0):
         return to_convert
     # Here we deal with a dict of only one level eg {'dict':'array'}, {'dict':'float'} , {'dict':'dataframe'}
     if type(subtype['dict']).__name__ != 'dict':
@@ -723,7 +723,7 @@ def convert_list_into_array(var, subtype):
     """This function converts a list into an array
     It also creates the metadata needed to reconvert the array into the initial list
     """
-    if check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED:
+    if (check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED) or (len(var) == 0):
         return var, None
     # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
     if type(subtype['list']).__name__ != 'dict':
@@ -791,7 +791,7 @@ def convert_list_into_array(var, subtype):
 def convert_array_into_list(to_convert, metadata, subtype):
     """ convert an array into initial list
     """
-    if check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED:
+    if (check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED) or (len(to_convert)) == 0:
         return to_convert
     # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
     if type(subtype['list']).__name__ != 'dict':
