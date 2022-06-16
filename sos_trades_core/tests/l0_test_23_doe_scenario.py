@@ -1174,8 +1174,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'), algo_full_options)
-        assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
-                           dspace_x_z.reset_index(drop=True), check_dtype=False)
+        self.assertTrue(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True)['variable'].equals(
+                           dspace_x_z.reset_index(drop=True)['variable']))
 
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 100, 'face': 'faced'},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
@@ -1700,7 +1700,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
 
 if '__main__' == __name__:
-#     cls = TestSoSDOEScenario()
-#     cls.setUp()
+    cls = TestSoSDOEScenario()
+    cls.setUp()
 #     cls.test_13_doe_eval_execution_lhs_on_1_var()
-    unittest.main()
+    cls.test_14_doe_eval_options_and_design_space_after_reconfiguration()
