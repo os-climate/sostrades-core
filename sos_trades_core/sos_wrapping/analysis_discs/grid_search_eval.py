@@ -196,8 +196,8 @@ class GridSearchEval(DoeEval):
                         )
                 # if multipliers in eval_in
                 if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
-                    genreic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
-                    for generic_multiplier_dynamic_input in genreic_multipliers_dynamic_inputs_list:
+                    generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
+                    for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
 
                 # setting dynamic design space with default value if not
@@ -280,7 +280,8 @@ class GridSearchEval(DoeEval):
         for selected_in in self.selected_inputs:
             if self.MULTIPLIER_PARTICULE in selected_in:
                 multiplier_name = selected_in.split('.')[-1]
-                origin_var_name = multiplier_name.split('.')[0].split('@')[0]
+                origin_var_name = self.get_names_from_multiplier(multiplier_name)[
+                    0]
                 # if
                 if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
                     self.logger.exception(
@@ -413,8 +414,8 @@ class GridSearchEval(DoeEval):
         possible_in_values_full.sort()
         possible_out_values_full.sort()
 
-        inputs_with_multipliers_col_list = np.unique([val.split(self.MULTIPLIER_PARTICULE)[0].split(
-            '@')[0] for val in possible_in_values_full if self.MULTIPLIER_PARTICULE in val]).tolist()
+        inputs_with_multipliers_col_list = np.unique([self.get_names_from_multiplier(
+            val)[0] for val in possible_in_values_full if self.MULTIPLIER_PARTICULE in val]).tolist()
 
         # shortest name
         self.generate_shortest_name(
@@ -439,8 +440,7 @@ class GridSearchEval(DoeEval):
                             for val in possible_out_values_full]
         for val in possible_in_values_full:
             if self.MULTIPLIER_PARTICULE in val:
-                origin_full_name = val.split(self.MULTIPLIER_PARTICULE)[
-                    0].split('@')[0]
+                origin_full_name = self.get_names_from_multiplier(val)[0]
                 inputs_val_list.append(origin_full_name.split('.')[-1])
 
         args = inputs_val_list + outputs_val_list
@@ -456,17 +456,18 @@ class GridSearchEval(DoeEval):
             col_name = ''
             if self.MULTIPLIER_PARTICULE in val:
                 var_f_name = '.'.join(
-                    [self.ee.study_name, val.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]])
-                col_index = val.split(self.MULTIPLIER_PARTICULE)[
-                    0].split('@')[1]
-                if any(char.isdigit() for char in col_index):
-                    cols_list = list(self.ee.dm.get_data(
-                        var_f_name)['value'].keys())
-                    col_index = re.findall(r'\d+', col_index)[0]
+                    [self.ee.study_name, self.get_names_from_multiplier(val)[0]])
+                col_name_clean = self.get_names_from_multiplier(val)[1]
+                cols_list = list(self.ee.dm.get_data(
+                    var_f_name)['value'].keys())
+                col_list_clean = [self.clean_var_name(
+                    var) for var in cols_list]
+                if col_name_clean in col_list_clean:
+                    col_index = col_list_clean.index(col_name_clean)
                     col_name = f' - {cols_list[int(col_index)]} Column'
                 else:
                     col_name = ' - All Float Columns'
-                val = val.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]
+                val = self.get_names_from_multiplier(val)[0]
             var_name = conversion_full_ontology[val.split(".")[-1]][0]
             var_name_origin = "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
