@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
-from conda.gateways.disk.delete import rmtree
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 from os.path import join, dirname
+from pathlib import Path
+from shutil import rmtree
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,12 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee = ExecutionEngine(self.name)
         self.factory = self.ee.factory
+        self.dir_to_del = []
+        
+    def tearDown(self):
+        for dir in self.dir_to_del:
+            if Path(dir).is_dir():
+                rmtree(dir)
 
     def test_01_uncertainty_quantification(self):
         repo = 'sos_trades_core.sos_processes.test'
@@ -407,11 +414,11 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
         self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
         
-    def test_04_simple_cache_on_grid_search_uq_process(self):
+    def _test_04_simple_cache_on_grid_search_uq_process(self):
         
         self.ref_dir = join(dirname(__file__), 'data')
-        self.dump_dir = join(self.ref_dir, 'dump_load_cache')
-        study_1 = study_grid_search_uq()
+        self.dump_dir = join(self.ref_dir, 'dumped_cache_test_67')
+        study_1 = study_grid_search_uq(run_usecase=True)
         study_1.set_dump_directory(
             self.dump_dir)
         study_1.load_data()
@@ -434,12 +441,18 @@ class TestUncertaintyQuantification(unittest.TestCase):
         
         study_2.run()
         
-#         # remove pkl dumped
-#         rmtree(self.dump_dir)
+        # check cache activation by counting n_calls
+        for disc in list(study_2.ee.dm.gemseo_disciplines_id_map.values()):
+            if disc.name in ['usecase', 'UncertaintyQuantification']:
+                self.assertEqual(disc.n_calls, 1)
+            else:
+                self.assertEqual(disc.n_calls, 0)
+        
+        self.dir_to_del.append(self.dump_dir)
 
 
 if '__main__' == __name__:
     cls = TestUncertaintyQuantification()
     cls.setUp()
     cls.test_04_simple_cache_on_grid_search_uq_process()
-#     unittest.main()
+    cls.tearDown()
