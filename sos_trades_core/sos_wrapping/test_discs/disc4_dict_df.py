@@ -36,8 +36,8 @@ class Disc4(SoSDiscipline):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'mydict': {'type': 'dict'}
+        'h': {'type': 'dict','subtype_descriptor':{'dict':'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'mydict': {'type': 'dict','subtype_descriptor':{'dict':'array'}}
     }
 
     DESC_OUT = {

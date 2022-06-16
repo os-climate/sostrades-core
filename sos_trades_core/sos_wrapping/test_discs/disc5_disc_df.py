@@ -40,7 +40,7 @@ class Disc5(SoSDiscipline):
     }
 
     DESC_OUT = {
-        'h': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict','subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):

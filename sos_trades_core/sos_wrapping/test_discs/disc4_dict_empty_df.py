@@ -36,7 +36,7 @@ class Disc4EmptyDf(SoSDiscipline):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict','subtype_descriptor':{'dict':'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {
