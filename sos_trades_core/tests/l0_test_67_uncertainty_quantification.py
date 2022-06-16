@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
-from conda.gateways.disk.delete import rmtree
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -22,6 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 from os.path import join, dirname
 from pathlib import Path
+from shutil import rmtree
 
 import numpy as np
 import pandas as pd
@@ -414,7 +414,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
         self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
         
-    def test_04_simple_cache_on_grid_search_uq_process(self):
+    def _test_04_simple_cache_on_grid_search_uq_process(self):
         
         self.ref_dir = join(dirname(__file__), 'data')
         self.dump_dir = join(self.ref_dir, 'dumped_cache_test_67')
