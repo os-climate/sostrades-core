@@ -176,7 +176,7 @@ class SoSDiscipline(MDODiscipline):
                        # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                        NUMERICAL: True,
                        STRUCTURING: True},
-        CACHE_FILE_PATH: {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
+        CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                        NUMERICAL: True, 'structuring': True}
     }
