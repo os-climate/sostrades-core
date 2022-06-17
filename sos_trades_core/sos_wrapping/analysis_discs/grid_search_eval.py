@@ -573,7 +573,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_out_dataframe.sort_values(
-                    by=['selected_output', 'full_name'], ascending=False
+                    by=['selected_output'], ascending=False, kind='stable'
                 ).reset_index(drop=True),
                 check_value=False,
             )
@@ -595,7 +595,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_dataframe.sort_values(
-                    by=['selected_output'], ascending=False
+                    by=['selected_output'], ascending=False, kind='stable'
                 ).reset_index(drop=True),
                 check_value=False,
             )
