@@ -299,8 +299,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         Update default inputs of the couplings
         '''
         for disc in self.sos_disciplines:
-            if disc.is_sos_coupling:
-                self._set_default_inputs_from_dm(disc)
+            #if disc.is_sos_coupling:
+            self._set_default_inputs_from_dm(disc)
 
     def get_algo_options(self, algo_name):
         """
@@ -405,7 +405,10 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         # convert sostrades types into numpy arrays
         # no need to update DM since call by SoSTrades
         input_data = disc._convert_new_type_into_array(var_dict=input_data)
-        disc.mdo_chain.default_inputs.update(input_data)
+        if disc.is_sos_coupling:
+            disc.mdo_chain.default_inputs.update(input_data)
+        else :
+            disc.default_inputs.update(input_data)
 
         for disc in disc.sos_disciplines:
             if disc.is_sos_coupling:
