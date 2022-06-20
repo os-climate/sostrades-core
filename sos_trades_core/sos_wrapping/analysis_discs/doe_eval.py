@@ -509,12 +509,14 @@ class DoeEval(SoSEval):
         if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
             self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
-
+            
     def run(self):
         '''
             Overloaded SoSEval method
             The execution of the doe
         '''
+        # upadte default inputs of children with dm values
+        self.update_default_inputs(self.sos_disciplines[0])
 
         dict_sample = {}
         dict_output = {}
@@ -588,6 +590,26 @@ class DoeEval(SoSEval):
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
                     global_dict_output[dynamic_output]})
+            
+    def update_default_inputs(self, disc):
+        '''
+        Update default inputs of disc with dm values
+        '''
+        input_data = {}
+        input_data_names = disc.get_input_data_names()
+        for data_name in input_data_names:
+            val = self.ee.dm.get_value(data_name)
+            if val is not None:
+                input_data[data_name] = val
+
+        # store mdo_chain default inputs
+        if disc.is_sos_coupling:
+            disc.mdo_chain.default_inputs.update(input_data)
+        disc.default_inputs.update(input_data)
+
+        # recursive update default inputs of children
+        for sub_disc in disc.sos_disciplines:
+            self.update_default_inputs(sub_disc)
 
     def create_origin_vars_to_update_dict(self):
         origin_vars_to_update_dict = {}
