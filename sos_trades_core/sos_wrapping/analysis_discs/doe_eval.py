@@ -526,7 +526,7 @@ class DoeEval(SoSEval):
         self.samples.append(
             [self.ee.dm.get_value(reference_variable_full_name) for reference_variable_full_name in self.eval_in_list])
         reference_scenario_id = len(self.samples)
-
+        eval_in_with_multiplied_var = None
         if self.INPUT_MULTIPLIER_TYPE != []:
             origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
             multipliers_samples = copy.deepcopy(self.samples)
