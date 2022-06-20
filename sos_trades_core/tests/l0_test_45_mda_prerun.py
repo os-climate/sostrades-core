@@ -67,7 +67,7 @@ class TestMDAPrerun(unittest.TestCase):
         # additional test to verify that values_in are used
         values_dict = {}
         values_dict['EE.n_processes'] = 1
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         with self.assertRaises(Exception) as cm:
             exec_eng.execute()
@@ -95,14 +95,14 @@ class TestMDAPrerun(unittest.TestCase):
         values_dict = {}
         values_dict['EE.h'] = array([8., 9.])
         values_dict['EE.n_processes'] = 1
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
                   'EE.x': array([0., 0.707107, 0.707107])}
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -125,9 +125,9 @@ class TestMDAPrerun(unittest.TestCase):
         x_target = array([np.sqrt(2.) / 2., np.sqrt(2.) / 2.])
         x_out = disc7.get_sosdisc_outputs('x')
         x_dm = exec_eng.dm.get_value('EE.x')
-        self.assertAlmostEqual(x_dm[0], x_target[0], delta=tolerance)
-        self.assertAlmostEqual(x_in[0], x_target[0], delta=tolerance)
-        self.assertAlmostEqual(x_out[0], x_target[0], delta=tolerance)
+        self.assertAlmostEqual(abs(x_dm[0]), x_target[0], delta=tolerance)
+        self.assertAlmostEqual(abs(x_in[0]), x_target[0], delta=tolerance)
+        self.assertAlmostEqual(abs(x_out[0]), x_target[0], delta=tolerance)
 
     def test_03_mda_init_x(self):
 
@@ -150,14 +150,14 @@ class TestMDAPrerun(unittest.TestCase):
         values_dict = {}
         values_dict['EE.x'] = array([8., 9.])
         values_dict['EE.n_processes'] = 1
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
                   'EE.x': array([0., 0.707107, 0.707107])}
-        #-- check output keys
+        # -- check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)

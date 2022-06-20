@@ -51,8 +51,8 @@ class SoSMorphMatrixEval(SoSEval):
     ACTIVATION_DF = 'activation_morphological_matrix'
     SELECTED_SCENARIOS = 'selected_scenarios'
 
-    DEFAULT_DF_DESCRIPTOR = {'selected_scenario': ('bool',  None, True),
-                             'scenario_name':  ('string',  None, True)}
+    DEFAULT_DF_DESCRIPTOR = {'selected_scenario': ('bool', None, True),
+                             'scenario_name':  ('string', None, True)}
 
     DESC_IN = {ACTIVATION_DF: {'type': 'dataframe',
                                'dataframe_descriptor': DEFAULT_DF_DESCRIPTOR,
@@ -66,17 +66,17 @@ class SoSMorphMatrixEval(SoSEval):
                                     'user_level': 99,
                                     'editable': False},
                EVAL_INPUTS: {'type': 'dataframe',
-                             'dataframe_descriptor': {'selected_input': ('bool',  None, True),
-                                                      'name':  ('string',  None, False),
-                                                      'namespace':  ('string',  None, False),
-                                                      'input_variable_name': ('string',  None, True)},
+                             'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                      'name':  ('string', None, False),
+                                                      'namespace':  ('string', None, False),
+                                                      'input_variable_name': ('string', None, True)},
                              'dataframe_edition_locked': False,
                              'structuring': True},
                EVAL_OUTPUTS: {'type': 'dataframe',
-                              'dataframe_descriptor': {'selected_output': ('bool',  None, True),
-                                                       'name':  ('string',  None, False),
-                                                       'namespace':  ('string',  None, False),
-                                                       'output_variable_name': ('string',  None, True)},
+                              'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                       'name':  ('string', None, False),
+                                                       'namespace':  ('string', None, False),
+                                                       'output_variable_name': ('string', None, True)},
                               'dataframe_edition_locked': False,
                               'structuring': True},
                'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
@@ -235,7 +235,7 @@ class SoSMorphMatrixEval(SoSEval):
             self.ee.logger.error(
                 'Evaluated Inputs: select at least one input')
         elif '' in selected_inputs:
-            missing_input_variable_names = eval_inputs.loc[(eval_inputs['selected_input']) &
+            missing_input_variable_names = eval_inputs.loc[(eval_inputs['selected_input']) & 
                                                            (eval_inputs['input_variable_name'] == ''), 'name'].values.tolist(
             )
             self.ee.logger.error(
@@ -252,7 +252,7 @@ class SoSMorphMatrixEval(SoSEval):
             self.ee.logger.error(
                 'Evaluated Outputs: select at least one output')
         elif '' in selected_outputs:
-            missing_output_variable_names = eval_outputs.loc[(eval_outputs['selected_output']) &
+            missing_output_variable_names = eval_outputs.loc[(eval_outputs['selected_output']) & 
                                                              (eval_outputs['output_variable_name'] == ''), 'name'].values.tolist(
             )
             self.ee.logger.error(
@@ -496,7 +496,7 @@ class SoSMorphMatrixEval(SoSEval):
         scenario_name_matching = {}
         for index, row in selected_scenario_df.iterrows():
             samples_to_evaluate.append(row[list(self.eval_input_dict.keys())].values)
-            scenario_name_matching["scenario_"+str(index+1)] = row['scenario_name']
+            scenario_name_matching["scenario_" + str(index + 1)] = row['scenario_name']
 
         evaluation_outputs = self.samples_evaluation(samples_to_evaluate, convert_to_array=False)
 
@@ -523,6 +523,3 @@ class SoSMorphMatrixEval(SoSEval):
         # update status of eval process even if no run has been executed
         self._update_status_recursive(self.STATUS_DONE)
 
-        # Restore the metadata of each values in the DM
-#         self._convert_new_type_into_array(
-#             self.dm.get_data_dict_values(excepted=['numerical', 'None']))

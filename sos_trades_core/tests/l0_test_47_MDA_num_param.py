@@ -96,16 +96,15 @@ class TestMDANumericalParameters(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                                                                          1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
 
         exec_eng.load_study_from_input_dict(values_dict)
 
-        exec_eng.configure()
         with self.assertLogs('SoS.EE.Coupling', level='INFO') as cm:
             exec_eng.execute()
             nb_ite_wo_warm_start = len(cm.output)

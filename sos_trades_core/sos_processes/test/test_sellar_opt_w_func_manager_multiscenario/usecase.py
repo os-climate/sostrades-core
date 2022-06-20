@@ -19,7 +19,7 @@ from numpy import array
 # import pandas as pd
 # from sos_trades_core.execution_engine.func_manager.func_manager import FunctionManager
 # from sos_trades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-from sos_trades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study as sellar_usecase
+from sos_trades_core.sos_processes.test.test_sellar_opt_w_func_manager._usecase import Study as sellar_usecase
 from sos_trades_core.study_manager.study_manager import StudyManager
 from sos_trades_core.execution_engine.func_manager.func_manager import FunctionManager
 from sos_trades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
@@ -33,7 +33,7 @@ class Study(StudyManager):
 
     def __init__(self, run_usecase=False, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
-        #self.coupling_name = "EnergyModelEval"
+        # self.coupling_name = "EnergyModelEval"
         self.scenario_name = 'multi_scenarios'
 
     def setup_usecase(self):
@@ -87,8 +87,8 @@ class Study(StudyManager):
         values_dict.update(config_dict)
         for j in range(1, 11):
             values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.x'] = 1.
-            #values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.y_1'] = array([1.])
-            #values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.y_2'] = array([1.])
+            # values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.y_1'] = array([1.])
+            # values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.y_2'] = array([1.])
             values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.z'] = array([
                                                                                                          1., 1.])
             values_dict[f'{self.study_name}.multi_scenarios.scenario_{j}.SellarOptimScenario.max_iter'] = 500

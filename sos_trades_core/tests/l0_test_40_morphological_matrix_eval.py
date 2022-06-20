@@ -79,7 +79,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
 
         # check dynamic inputs 'a_list', 'x_list'
         self.assertListEqual(list(morph_matrix_eval_disc._data_in.keys()), [
-                             'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs', 'eval_outputs','n_processes','wait_time_between_fork', 'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode', 'a_list', 'x_list'])
+                             'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs', 'eval_outputs', 'n_processes', 'wait_time_between_fork', 'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode', 'a_list', 'x_list'])
 
         # add 'name' and 'b' as selected eval input and remove 'a'
         eval_inputs = self.exec_eng.dm.get_value(
@@ -99,7 +99,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
         # check 'name_list' dynamic inputs and 'a_list' removed
         self.assertListEqual(list(morph_matrix_eval_disc._data_in.keys()), [
             'activation_morphological_matrix', 'selected_scenarios', 'eval_inputs',
-            'eval_outputs','n_processes','wait_time_between_fork', 'linearization_mode',
+            'eval_outputs', 'n_processes', 'wait_time_between_fork', 'linearization_mode',
             'cache_type', 'cache_file_path', 'debug_mode', 'x_list', 'b_list', 'name_list'])
 
         # check type, possible_values and range of selected eval inputs
@@ -179,9 +179,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
                                       'x_list': [5.0, 5.5, 5.0, 5.5]})
 
         selected_scenarios_df = pd.DataFrame({'scenario_name': ['scenario_1', 'scenario_3'],
-                                              'b_list': [0,  2],
+                                              'b_list': [0, 2],
                                               'name_list': ['A1', 'A1'],
-                                              'x_list': [5.0,  5.0]})
+                                              'x_list': [5.0, 5.0]})
 
         # check morphological matrix after desactivating scenarios
         self.assertTrue(activation_df.equals(
@@ -345,9 +345,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
         # check output values
         self.assertDictEqual(self.exec_eng.dm.get_value(
             'MyCase.MORPH_MATRIX.y_out'), y_out)
-        # check local_data ORPH_MATRIX
-        self.assertTrue(all(list(y_out.values(
-        )) == self.exec_eng.root_process.local_data['MyCase.MORPH_MATRIX.y_out']))
+        # check local_data MORPH_MATRIX
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.MORPH_MATRIX.y_out'), self.exec_eng.root_process.local_data['MyCase.MORPH_MATRIX.y_out'])
 
     def test_03_morphological_matrix_from_process_2(self):
 
@@ -367,7 +367,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
         eval_inputs_short = pd.DataFrame({'selected_input': [True, True],
                                           'name': ['b', 'x'],
                                           'namespace': [f'{self.morph_matrix}.Disc1', f'{self.morph_matrix}.Disc1'],
-                                          'input_variable_name': ['b_list',  'x_list']})
+                                          'input_variable_name': ['b_list', 'x_list']})
 
         eval_outputs_short = pd.DataFrame({'selected_output': [True],
                                            'name': ['y'],
@@ -474,9 +474,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
             'MyCase.MORPH_MATRIX.dyn_outputs_out')
 
         dyn_output_out_ref = {'scenario_A': activation_df.loc[activation_df['scenario_name'] == 'scenario_A',
-                                                              'AC1_dyn_input_list'].values[0]**2,
+                                                              'AC1_dyn_input_list'].values[0] ** 2,
                               'scenario_D': activation_df.loc[activation_df['scenario_name'] == 'scenario_D',
-                                                              'AC1_dyn_input_list'].values[0]**2, }
+                                                              'AC1_dyn_input_list'].values[0] ** 2, }
         self.assertDictEqual(dyn_output_out, dyn_output_out_ref)
 
     def test_05_morphological_matrix_eval_usecase_with_setup_sos_discipline_direct(self):
@@ -523,9 +523,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
             'MyCase.MORPH_MATRIX.dyn_outputs_out')
 
         dyn_output_out_ref = {'scenario_A': activation_df.loc[activation_df['scenario_name'] == 'scenario_A',
-                                                              'AC1_dyn_input_list'].values[0]**2,
+                                                              'AC1_dyn_input_list'].values[0] ** 2,
                               'scenario_D': activation_df.loc[activation_df['scenario_name'] == 'scenario_D',
-                                                              'AC1_dyn_input_list'].values[0]**2, }
+                                                              'AC1_dyn_input_list'].values[0] ** 2, }
         self.assertDictEqual(dyn_output_out, dyn_output_out_ref)
 
     def test_06_multi_scenario_of_morphological_matrix_eval(self):
@@ -960,9 +960,9 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        z_result_dict = {'scenario_1': constant + (a * x1 + b)**power,
-                         'scenario_2': constant + (a * x2 + b)**power,
-                         'scenario_3': constant + (a * x3 + b)**power}
+        z_result_dict = {'scenario_1': constant + (a * x1 + b) ** power,
+                         'scenario_2': constant + (a * x2 + b) ** power,
+                         'scenario_3': constant + (a * x3 + b) ** power}
 
         self.assertDictEqual(self.exec_eng.dm.get_value(
             'MyCase.Scatter.AC1_z_results'), z_result_dict)

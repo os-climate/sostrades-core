@@ -98,7 +98,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
-               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6}, 
+               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6},
                'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
@@ -151,12 +151,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.OPTIMAL_OBJNAME_SUFFIX = "opt"
         self.dict_desactivated_elem = {}
         self.activated_variables = []
-
-    def _reload(self, sos_name, ee):
-        """
-        reload object
-        """
-        SoSDisciplineBuilder._reload(self, sos_name, ee)
 
     def build(self):
         """
@@ -299,7 +293,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         Update default inputs of the couplings
         '''
         for disc in self.sos_disciplines:
-            #if disc.is_sos_coupling:
             self._set_default_inputs_from_dm(disc)
 
     def get_algo_options(self, algo_name):
@@ -402,17 +395,13 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
             if val is not None:
                 input_data[data_name] = val
 
-        # convert sostrades types into numpy arrays
-        # no need to update DM since call by SoSTrades
-        input_data = disc._convert_new_type_into_array(var_dict=input_data)
+        # store mdo_chain default inputs
         if disc.is_sos_coupling:
             disc.mdo_chain.default_inputs.update(input_data)
-        else :
-            disc.default_inputs.update(input_data)
+        disc.default_inputs.update(input_data)
 
         for disc in disc.sos_disciplines:
-            if disc.is_sos_coupling:
-                self._set_default_inputs_from_dm(disc)
+            self._set_default_inputs_from_dm(disc)
 
     def configure_io(self):
         """

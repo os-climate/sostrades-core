@@ -16,7 +16,6 @@ limitations under the License.
 # pylint: skip-file
 """A Gauss Seidel algorithm for solving MDAs."""
 
-
 from typing import Optional, Sequence
 
 from gemseo.core.chain import MDOChain
@@ -82,16 +81,15 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             self._couplings_warm_start()
         # sostrades modif to support array.size for normalization
         current_couplings = array([0.0])
-        #
 
         relax = self.over_relax_factor
         use_relax = relax != 1.0
 
-        #-- SoSTrades modif
+        # -- SoSTrades modif
         # stores cache history if residual_start filled
         if self.warm_start_threshold != -1:
             self.store_state_for_warm_start()
-        #-- end of SoSTrades modif
+        # -- end of SoSTrades modif
 
         # store initial residual
         current_iter = 0
@@ -117,7 +115,9 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 else:
                     self.local_data.update(outs)
 
+            # build new_couplings: concatenated strong couplings, converted into arrays
             new_couplings = self._current_strong_couplings()
+            
             self._compute_residual(
                 current_couplings,
                 new_couplings,
@@ -125,15 +125,16 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 first=current_iter == 0,
                 log_normed_residual=self.log_convergence,
             )
+            
             # store current residuals
             current_iter += 1
             current_couplings = new_couplings
 
-            #-- SoSTrades modif
+            # -- SoSTrades modif
             # stores cache history if residual_start filled
             if self.warm_start_threshold != -1:
                 self.store_state_for_warm_start()
-            #-- end of SoSTrades modif
+            # -- end of SoSTrades modif
 
         for discipline in self.disciplines:  # Update all outputs without relax
             self.local_data.update(discipline.get_output_data())

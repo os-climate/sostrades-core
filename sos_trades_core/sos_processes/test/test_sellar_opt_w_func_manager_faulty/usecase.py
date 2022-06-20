@@ -64,7 +64,7 @@ class Study(StudyManager):
                                                                "normalize_design_space": False}
 
         # Sellar inputs
-        disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.x'] = 1.
+        disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.x'] = array([1.])
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.z'] = array([1., 1.])
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.{self.coupling_name}.local_dv'] = 10.
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.sub_mda_class'] = 'PureNewtonRaphson'
@@ -80,7 +80,7 @@ class Study(StudyManager):
 
         prefix = self.study_name + f'.{self.optim_name}.' + f'{self.subcoupling_name}.' + func_mng_name + '.'
         values_dict = {}
-        values_dict[prefix +
+        values_dict[prefix + 
                     FunctionManagerDisc.FUNC_DF] = func_df
 
         disc_dict.update(values_dict)
