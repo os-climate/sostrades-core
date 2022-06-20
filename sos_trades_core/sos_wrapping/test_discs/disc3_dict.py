@@ -41,7 +41,7 @@ class Disc3(SoSDiscipline):
     }
 
     DESC_OUT = {
-        'o_dict': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_scenario'}
+        'o_dict': {'type': 'dict','subtype_descriptor': {'dict': 'float'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_scenario'}
     }
 
     def run(self):

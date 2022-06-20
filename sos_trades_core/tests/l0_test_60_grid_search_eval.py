@@ -494,9 +494,9 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.grid_search}.Disc1.dd_df@column2__MULTIPLIER__', ['selected_input']] = True
+                        f'{self.grid_search}.Disc1.dd_df@values2__MULTIPLIER__', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.grid_search}.Disc1.dd_df@column1__MULTIPLIER__', ['selected_input']] = True
+                        f'{self.grid_search}.Disc1.dd_df@values1__MULTIPLIER__', ['selected_input']] = True
 
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
@@ -735,6 +735,83 @@ class TestGridSearchEval(unittest.TestCase):
 
         self.assertEqual(result_val1, result__computed_val1)
         self.assertEqual(result_val2, result__computed_val2)
+
+    def test_08_check_gs_with_more_3_than_selected_inputs(self):
+        sa_builder = self.exec_eng.factory.get_builder_from_process(
+            self.repo, self.proc_name)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
+
+        # print('Study first configure!')
+
+        self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.b', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.x', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.d', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.f', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.g', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        f'{self.grid_search}.Disc1.h', ['selected_input']] = True
+
+        eval_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_outputs')
+        eval_outputs.loc[eval_outputs['full_name'] ==
+                         f'{self.grid_search}.Disc1.y', ['selected_output']] = True
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
+            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
+            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
+            f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
+        }
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        self.exec_eng.execute()
+
+        grid_search_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}')[0]
+
+        grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
+        doe_disc_samples = grid_search_disc_output['samples_inputs_df']
+        y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.design_space')
+
+        filter = grid_search_disc.get_chart_filter_list()
+        graph_list = grid_search_disc.get_post_processing_list(filter)
+        # for graph in graph_list:
+        #     #     pass
+        #     graph.to_plotly().show()
 
 
 if '__main__' == __name__:

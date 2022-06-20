@@ -21,7 +21,6 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class DiscAllTypes(SoSDiscipline):
-
     # ontology information
     _ontology_data = {
         'label': 'sos_trades_core.sos_wrapping.test_discs.disc_all_types',
@@ -40,12 +39,12 @@ class DiscAllTypes(SoSDiscipline):
         'z': {'type': 'float', 'default': 90., 'unit': 'kg', 'user_level': 1,
               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'h': {'type': 'array', 'unit': 'kg', 'user_level': 1},
-        'dict_in': {'type': 'dict', 'unit': 'kg', 'user_level': 1},
+        'dict_in': {'type': 'dict', SoSDiscipline.SUBTYPE: {'dict': 'float'}, 'unit': 'kg', 'user_level': 1},
         'df_in': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1},
         'weather': {'type': 'string', 'default': 'cloudy, it is Toulouse ...', 'user_level': 1,
                     'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_of_dict_in': {'type': 'dict', 'user_level': 1},
-        'dict_of_df_in': {'type': 'dict', 'user_level': 1}
+        'dict_of_dict_in': {'type': 'dict', SoSDiscipline.SUBTYPE: {'dict': {'dict': 'float'}}, 'user_level': 1},
+        'dict_of_df_in': {'type': 'dict', SoSDiscipline.SUBTYPE: {'dict': 'dataframe'}, 'user_level': 1}
     }
     DESC_OUT = {
         'df_out': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1,

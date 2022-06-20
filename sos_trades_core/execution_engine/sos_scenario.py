@@ -152,12 +152,6 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.dict_desactivated_elem = {}
         self.activated_variables = []
 
-    def _reload(self, sos_name, ee):
-        """
-        reload object
-        """
-        SoSDisciplineBuilder._reload(self, sos_name, ee)
-
     def build(self):
         """
         build of subdisciplines

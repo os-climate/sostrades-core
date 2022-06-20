@@ -36,12 +36,12 @@ class Disc4(SoSDiscipline):
 
     DESC_IN = {
         'h': {'type': 'array', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'mydict': {'type': 'dict'},
+        'mydict': {'type': 'dict','subtype_descriptor': {'dict': 'array'}},
     }
 
     DESC_OUT = {
         'z': {'type': 'array', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'dict_out': {'type': 'dict','subtype_descriptor': {'dict': 'float'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):

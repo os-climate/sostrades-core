@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import platform
-import copy
 import pandas as pd
 import re
 
@@ -301,7 +300,7 @@ class SoSEval(SoSDisciplineBuilder):
             x0.append(x_val)
         return np.array(x0)
 
-    def evaluation(self, x, scenario_name=None, convert_to_array=True):
+    def evaluation(self, x, scenario_name=None, convert_to_array=True, completed_eval_in_list=None):
         '''
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays. 
@@ -310,24 +309,12 @@ class SoSEval(SoSDisciplineBuilder):
         self.clear_cache()
 
         values_dict = {}
-        vars_to_update_dict = {}
-        for i, x_id in enumerate(self.eval_in_list):
+        eval_in = self.eval_in_list
+        if completed_eval_in_list is not None:
+            eval_in = completed_eval_in_list
+        for i, x_id in enumerate(eval_in):
             values_dict[x_id] = x[i]
-            # for grid search multipliers inputs
-            var_name = x_id.split(self.ee.study_name + '.')[-1]
-            if self.MULTIPLIER_PARTICULE in var_name:
-                var_origin_f_name = '.'.join(
-                    [self.ee.study_name, var_name.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]])
-                if var_origin_f_name in vars_to_update_dict:
-                    var_to_update = vars_to_update_dict[var_origin_f_name]
-                else:
-                    var_to_update = copy.deepcopy(
-                        self.ee.dm.get_data(var_origin_f_name)['value'])
-                vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
-                    multiplier_name=var_name, multiplier_value=x[i] / 100, var_to_update=var_to_update)
 
-        for key in vars_to_update_dict:
-            values_dict[key] = vars_to_update_dict[key]
         # Because we use set_data instead of load_data_from_inputs_dict it isn't possible
         # to run  soseval on a structuring variable. Therefore structuring variables are
         # excluded from eval possible values
@@ -361,7 +348,7 @@ class SoSEval(SoSDisciplineBuilder):
 
         return out_values
 
-    def samples_evaluation(self, samples, convert_to_array=True):
+    def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
         '''This function executes a parallel execution of the function sample_evaluation
         over a list a samples. Depending on the numerical parameter n_processes it loops
         on a sequential or parallel way over the list of samples to evaluate
@@ -383,7 +370,7 @@ class SoSEval(SoSDisciplineBuilder):
                 x = samples[i]
                 scenario_name = "scenario_" + str(i + 1)
                 evaluation_output[scenario_name] = x, self.evaluation(
-                    x, scenario_name, convert_to_array)
+                    x, scenario_name, convert_to_array, completed_eval_in_list)
             return evaluation_output
 
         if n_processes > 1:
