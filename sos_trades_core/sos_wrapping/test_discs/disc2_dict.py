@@ -39,7 +39,7 @@ class Disc2(SoSDiscipline):
         'power': {'type': 'int'},
     }
     DESC_OUT = {
-        'z_dict': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'z_dict': {'type': 'dict', 'subtype_descriptor':{'dict':'float'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self):

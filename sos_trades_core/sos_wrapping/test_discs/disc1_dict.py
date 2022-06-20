@@ -40,8 +40,8 @@ class Disc1(SoSDiscipline):
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y_dict': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        't_dict': {'type': 'dict', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y_dict': {'type': 'dict','subtype_descriptor':{'dict':'float'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        't_dict': {'type': 'dict','subtype_descriptor':{'dict':'float'}, 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self):
