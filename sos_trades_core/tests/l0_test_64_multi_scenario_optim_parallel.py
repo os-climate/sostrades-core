@@ -20,10 +20,9 @@ unit test for optimization scenario
 
 import unittest
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_ms._usecase import Study as study_sellar_opt
 import platform
 from gemseo.utils.compare_data_manager_tooling import compare_dict
-
 
 
 class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
@@ -62,7 +61,6 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
             exec_eng.execute()
             dm_sequential = exec_eng.dm.get_data_dict_values()
 
-
             # parallel execution
 
             values_dict[f'{self.study_name}.n_subcouplings_parallel'] = 2
@@ -74,12 +72,11 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
             # compare dicts
             keys_parallel = [s for s in dm_sequential.keys() if 'n_subcouplings_parallel' in s]
             keys_residual = [s for s in dm_sequential.keys() if 'residuals_history' in s]
-            [dm_sequential.pop(key) for key in keys_parallel+keys_residual]
-            [dm_parallel.pop(key) for key in keys_parallel+keys_residual]
+            [dm_sequential.pop(key) for key in keys_parallel + keys_residual]
+            [dm_parallel.pop(key) for key in keys_parallel + keys_residual]
             compare_dict(dm_sequential,
                          dm_parallel, '', dict_error)
             assert dict_error == {}
-
 
 
 if '__main__' == __name__:

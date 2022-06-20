@@ -203,13 +203,24 @@ class UncertaintyQuantification(SoSDiscipline):
 
                             data_details_default = pd.DataFrame()
                             for input in list(set(in_param)):
-                                [name, unit] = conversion_full_ontology[input.split(
-                                    '.')[-1]]
+                                try:
+                                    [name, unit] = conversion_full_ontology[input.split(
+                                        '.')[-1]]
+                                except Exception as ex:
+                                    print(
+                                        'The following exception occurs when trying to reach Ontology server', ex)
+                                    [name, unit] = [input, None]
                                 data_details_default = data_details_default.append(
                                     {'type': 'input', 'variable': input, 'name': name, 'unit': unit}, ignore_index=True)
                             for output in list(set(out_param)):
-                                [name, unit] = conversion_full_ontology[output.split(
-                                    '.')[-1]]
+                                try:
+                                    [name, unit] = conversion_full_ontology[output.split(
+                                        '.')[-1]]
+                                except Exception as ex:
+                                    print(
+                                        'The following exception occurs when trying to reach Ontology server', ex)
+                                    [name, unit] = [output, None]
+
                                 data_details_default = data_details_default.append(
                                     {'type': 'output', 'variable': output, 'name': name, 'unit': unit}, ignore_index=True)
 

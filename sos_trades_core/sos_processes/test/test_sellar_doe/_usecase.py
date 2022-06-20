@@ -53,7 +53,7 @@ class Study(StudyManager):
                                                              "normalize_design_space": False}
 
         # Sellar inputs
-        disc_dict[f'{ns}.{sc_name}.x'] = 1.  # array([1.])
+        disc_dict[f'{ns}.{sc_name}.x'] = array([1.])
         disc_dict[f'{ns}.{sc_name}.y_1'] = array([1.])
         disc_dict[f'{ns}.{sc_name}.y_2'] = array([1.])
         disc_dict[f'{ns}.{sc_name}.z'] = array([1., 1.])
