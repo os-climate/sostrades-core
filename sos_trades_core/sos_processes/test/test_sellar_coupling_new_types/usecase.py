@@ -38,6 +38,8 @@ class Study(StudyManager):
         disc_dict[f'{ns}.{coupling_name}.y_2'] = df
         disc_dict[f'{ns}.{coupling_name}.z'] = np.array([1., 1.])
         disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{ns}.{coupling_name}.max_mda_iter'] = 100
+        disc_dict[f'{ns}.{coupling_name}.tolerance'] = 1e-12 
 
         return [disc_dict]
 

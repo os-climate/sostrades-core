@@ -83,7 +83,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         dspace_dict_xy = {'variable': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y'],
                           'lower_bnd': [-5., -5.],
                           'upper_bnd': [+5., +5.],
-                          #'enable_variable': [True, True],
+                          # 'enable_variable': [True, True],
                           # 'activated_elem': [[True], [True]]
                           }
         my_doe_algo = "lhs"
@@ -141,7 +141,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         dspace_dict_xy = {'variable': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y'],
                           'lower_bnd': [-5., -5.],
                           'upper_bnd': [+5., +5.],
-                          #'enable_variable': [True, True],
+                          # 'enable_variable': [True, True],
                           # 'activated_elem': [[True], [True]]
                           }
         my_doe_algo = "lhs"
@@ -333,9 +333,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         for disc in self.exec_eng.dm.disciplines_dict.keys():
             my_disc = self.exec_eng.dm.get_discipline(disc)
             print(my_disc.get_disc_full_name())
-            print('no need to be configured : ' +
+            print('no need to be configured : ' + 
                   str(my_disc.is_configured()))
-            print('has been configured: ' +
+            print('has been configured: ' + 
                   str(my_disc.get_configure_status()))
             print('Calculation status: ' + str(my_disc.status))
             print('\n')
@@ -615,9 +615,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
@@ -716,9 +716,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = ['algo_options', 'design_space']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
@@ -788,7 +788,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print('Step 3: run')
             my_result = self.exec_eng.execute()
             # print('Data')
-            #print (my_result)
+            # print (my_result)
             # print(self.exec_eng.dm.get_data_dict_values())
 
             # print configuration state:
@@ -927,9 +927,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
@@ -1018,9 +1018,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = ['algo_options', 'design_space']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
@@ -1099,7 +1099,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print('Step 3: run')
             my_result = self.exec_eng.execute()
             # print('Data')
-            #print (my_result)
+            # print (my_result)
             # print(self.exec_eng.dm.get_data_dict_values())
 
             # print configuration state:
@@ -1234,9 +1234,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space']
@@ -1319,7 +1319,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print('Step 2: run')
             my_result = self.exec_eng.execute()
             # print('Data')
-            #print (my_result)
+            # print (my_result)
             # print(self.exec_eng.dm.get_data_dict_values())
 
             # print configuration state:
@@ -1465,9 +1465,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space']
@@ -1594,7 +1594,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         study_dump.load_data()
 
         print_flag = True
-        #dict_values = self.setup_usecase(restricted=False)
+        # dict_values = self.setup_usecase(restricted=False)
         dict_values = self.setup_Hessian_usecase_from_sub_usecase(
             restricted=False, my_usecase='usecase')
         print('load usecase file')
@@ -1796,9 +1796,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
@@ -1877,9 +1877,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             'n_samples': n_samples}
 
         from numpy import array
-        dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = 1.
-        dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = 1.
-        dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = 1.
+        dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = array([1.])
+        dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = array([1.])
+        dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = array([1.])
         dict_values[f'{ns}.DoE_Eval.{coupling_name}.z'] = array([1., 1.])
         dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
@@ -1903,9 +1903,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = ['algo_options', 'design_space']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
@@ -2184,7 +2184,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         dspace_dict_xy = {'variable': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y'],
                           'lower_bnd': [-5., -5.],
                           'upper_bnd': [+5., +5.],
-                          #'enable_variable': [True, True],
+                          # 'enable_variable': [True, True],
                           # 'activated_elem': [[True], [True]]
                           }
         my_doe_algo = "lhs"
@@ -2292,7 +2292,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
         study_dump.load_data(from_input_dict=dict_values)
-        ##
+        # #
         ################ Start checks ##########################
         # check created tree structure
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
@@ -2317,9 +2317,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
             'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs']
@@ -2428,9 +2428,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        #print("Added Inputs_list:")
+        # print("Added Inputs_list:")
         # print(added_inputs_list)
-        #print("Removed Inputs_list:")
+        # print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = []
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
@@ -2579,7 +2579,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
-        #target_missing_variables = ['sampling_algo']
+        # target_missing_variables = ['sampling_algo']
         target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
 
@@ -2657,7 +2657,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         print(study_dump.ee.dm.get_data_dict_values())
         # Check that repo_of_sub_processes and sub_process_folder_name are set
         value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
-        print('repo_of_sub_processes: ' +
+        print('repo_of_sub_processes: ' + 
               str(study_dump.ee.dm.get_data(value_2_print)['value']))
         value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
 
@@ -2720,10 +2720,10 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             # Check that repo_of_sub_processes and sub_process_folder_name are
             # set
             value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
-            print('repo_of_sub_processes: ' +
+            print('repo_of_sub_processes: ' + 
                   study_dump.ee.dm.get_data(value_2_print)['value'])
             value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
-            print('sub_process_folder_name: ' +
+            print('sub_process_folder_name: ' + 
                   study_dump.ee.dm.get_data(value_2_print)['value'])
             value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
         print(
@@ -2742,10 +2742,10 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             # Check that repo_of_sub_processes and sub_process_folder_name are
             # set
             value_2_print = f'{self.study_name}.DoE_Eval.repo_of_sub_processes'
-            print('repo_of_sub_processes: ' +
+            print('repo_of_sub_processes: ' + 
                   study_dump.ee.dm.get_data(value_2_print)['value'])
             value_2_print = f'{self.study_name}.DoE_Eval.sub_process_folder_name'
-            print('sub_process_folder_name: ' +
+            print('sub_process_folder_name: ' + 
                   study_dump.ee.dm.get_data(value_2_print)['value'])
             value_2_print = f'{self.study_name}.DoE_Eval.usecase_of_sub_process'
             print('usecase_of_sub_process: ')
@@ -2757,7 +2757,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             'STEP_4.3: update subprocess selection by replacing by disc1_all_types')
         #
         mod_id = 'test_proc_build_disc1_all_types'
-        #mod_id = 'test_sellar_coupling'
+        # mod_id = 'test_sellar_coupling'
         my_usecase = 'usecase1'
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id

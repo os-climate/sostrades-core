@@ -414,7 +414,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
         self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
         
-    def _test_04_simple_cache_on_grid_search_uq_process(self):
+    def test_04_simple_cache_on_grid_search_uq_process(self):
         
         self.ref_dir = join(dirname(__file__), 'data')
         self.dump_dir = join(self.ref_dir, 'dumped_cache_test_67')

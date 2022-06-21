@@ -152,7 +152,7 @@ class GridSearchEval(DoeEval):
                     f'{self.get_disc_full_name()}.eval_outputs',
                     'value',
                     eval_outputs.sort_values(
-                        by=['selected_output'], ascending=False
+                        by=['selected_output'], ascending=False, kind='stable'
                     ).reset_index(drop=True),
                     check_value=False,
                 )
@@ -165,7 +165,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_inputs',
                 'value',
                 eval_inputs.sort_values(
-                    by=['selected_input', 'full_name'], ascending=False
+                    by=['selected_input'], ascending=False, kind='stable'
                 ).reset_index(drop=True),
                 check_value=False,
             )
@@ -573,7 +573,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_out_dataframe.sort_values(
-                    by=['selected_output', 'full_name'], ascending=False
+                    by=['selected_output'], ascending=False, kind='stable'
                 ).reset_index(drop=True),
                 check_value=False,
             )
@@ -595,7 +595,7 @@ class GridSearchEval(DoeEval):
                 f'{self.get_disc_full_name()}.eval_outputs',
                 'value',
                 default_dataframe.sort_values(
-                    by=['selected_output'], ascending=False
+                    by=['selected_output'], ascending=False, kind='stable'
                 ).reset_index(drop=True),
                 check_value=False,
             )
@@ -800,8 +800,8 @@ class GridSearchEval(DoeEval):
 
             chart_list = [
                 list(chart_tuple)
-                + [output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
-                + [output_info_dict[chart_tuple[1].split('.')[-1]]['unit']] for chart_tuple in chart_tuples]
+                +[output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
+                +[output_info_dict[chart_tuple[1].split('.')[-1]]['unit']] for chart_tuple in chart_tuples]
 
             full_chart_list += chart_list
             # if output_df= None --> full_chart_list = []
@@ -1026,7 +1026,7 @@ class GridSearchEval(DoeEval):
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
-                                        labelfont=dict(  # label font properties
+                                        labelfont=dict(# label font properties
                                             size=10,
                                             # color = 'white',
                                         ),
@@ -1044,12 +1044,12 @@ class GridSearchEval(DoeEval):
                                     connectgaps=False,
                                     hovertemplate='{}'.format(
                                         chart_info["x_short"])
-                                    + ': %{x}'
-                                    + '<br>{}'.format(chart_info["y_short"])
-                                    + ': %{y}'
-                                    + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                    + ': <b> %{z}<b>'
-                                    + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                    +': %{x}'
+                                    +'<br>{}'.format(chart_info["y_short"])
+                                    +': %{y}'
+                                    +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
+                                    +': <b> %{z}<b>'
+                                    +'<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name="",
                                 )
                             )
@@ -1109,15 +1109,15 @@ class GridSearchEval(DoeEval):
                                         showlegend=False,
                                         hovertemplate='{}'.format(
                                             chart_info["x_short"])
-                                        + ': %{x}'
-                                        + '<br>{}'.format(chart_info["y_short"])
-                                        + ': %{y}'
-                                        + '<br>{} '.format(chart_info["z"].split(".")[-1])
-                                        + ': <b> {} {}<b>'.format(
+                                        +': %{x}'
+                                        +'<br>{}'.format(chart_info["y_short"])
+                                        +': %{y}'
+                                        +'<br>{} '.format(chart_info["z"].split(".")[-1])
+                                        +': <b> {} {}<b>'.format(
                                             round(z_ref_hover,
                                                   5), legend_letter
                                         )
-                                        + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        +'<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1204,7 +1204,7 @@ class GridSearchEval(DoeEval):
                                         contours=dict(
                                             coloring='heatmap',
                                             showlabels=True,  # show labels on contours
-                                            labelfont=dict(  # label font properties
+                                            labelfont=dict(# label font properties
                                                 size=10,
                                                 # color = 'white',
                                             ),
@@ -1226,14 +1226,14 @@ class GridSearchEval(DoeEval):
                                         connectgaps=False,
                                         hovertemplate='{}'.format(
                                             chart_info["x_short"])
-                                        + ': %{x}'
-                                        + '<br>{}'.format(chart_info["y_short"])
-                                        + ': %{y}'
-                                        + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                        + ': <b> %{z}<b>'
-                                        + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        +': %{x}'
+                                        +'<br>{}'.format(chart_info["y_short"])
+                                        +': %{y}'
+                                        +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
+                                        +': <b> %{z}<b>'
+                                        +'<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='{} '.format(slider_short_name)
-                                        + ': {} {}'.format(
+                                        +': {} {}'.format(
                                             round(slide_value, 2), slider_unit
                                         ),
                                     )
@@ -1305,24 +1305,24 @@ class GridSearchEval(DoeEval):
                                             showlegend=False,
                                             hovertemplate='{}'.format(
                                                 chart_info["x_short"])
-                                            + ': %{x}'
-                                            + '<br>{}'.format(chart_info["y_short"])
-                                            + ': %{y}'
-                                            + '<br>{} '.format(slider_short_name)
-                                            + ': {}'.format(
+                                            +': %{x}'
+                                            +'<br>{}'.format(chart_info["y_short"])
+                                            +': %{y}'
+                                            +'<br>{} '.format(slider_short_name)
+                                            +': {}'.format(
                                                 float(
                                                     chart_info['reference_scenario'][
                                                         col_slider
                                                     ]
                                                 )
                                             )
-                                            + f'{slider_unit}'
-                                            + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                            + ': <b> {} {}<b>'.format(
+                                            +f'{slider_unit}'
+                                            +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
+                                            +': <b> {} {}<b>'.format(
                                                 round(z_ref_hover,
                                                       5), legend_letter
                                             )
-                                            + '<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                            +'<b> {}<b><br>'.format(chart_info["z_unit"]),
                                             name='Reference Scenario',
                                         )
                                     )
@@ -1445,8 +1445,8 @@ class GridSearchEval(DoeEval):
         ]
         df['pretty_value'] = df['table_value'].apply(
             lambda x: str(round(get_order_of_magnitude(x)[-1], 5))
-            + ' '
-            + get_order_of_magnitude(x)[0]
+            +' '
+            +get_order_of_magnitude(x)[0]
         )
         df['unit'] = 'None'
         df['unit'].where(

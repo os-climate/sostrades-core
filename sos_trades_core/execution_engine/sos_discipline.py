@@ -37,7 +37,7 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.compare_data_manager_tooling import compare_dict
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sos_trades_core.api import get_sos_logger
 from gemseo.core.chain import MDOChain
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
@@ -176,7 +176,7 @@ class SoSDiscipline(MDODiscipline):
                        # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                        NUMERICAL: True,
                        STRUCTURING: True},
-        CACHE_FILE_PATH: {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
+        CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                        NUMERICAL: True, 'structuring': True}
     }
@@ -695,9 +695,7 @@ class SoSDiscipline(MDODiscipline):
             self.dm.set_values_from_dict(to_update_local_data)
         else:
             # update local_data after run
-            to_update_local_data_array = self._convert_new_type_into_array(
-                to_update_local_data)
-            self.local_data.update(to_update_local_data_array)
+            self.local_data.update(to_update_local_data)
 
         # need to update outputs that will disappear after filtering the
         # local_data with supported types
@@ -886,8 +884,7 @@ class SoSDiscipline(MDODiscipline):
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
-                values_dict[new_key] = list(self._convert_array_into_new_type(
-                    {namespaced_key: self.local_data[namespaced_key]}).values())[0]
+                values_dict[new_key] = self.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
                 values_dict[new_key] = self.dm.get_value(namespaced_key)
@@ -1128,24 +1125,18 @@ class SoSDiscipline(MDODiscipline):
     def get_boundary_jac_for_columns(self, key, column, io_type):
         data_io_disc = self.get_data_io_dict(io_type)
         var_full_name = self.get_var_full_name(key, data_io_disc)
-        data_io = self.dm.get_data(var_full_name)
-        index_column = None
-        key_type = data_io[self.TYPE]
-
+        key_type = self.dm.get_data(var_full_name, self.TYPE)
+        value = self._get_sosdisc_io(key, io_type)[key]
+        
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
-            metadata = data_io[self.TYPE_METADATA][0]
-            lines_nb = metadata['shape'][0]
-            # delete the + 1 if we delete the index column
-            index_column = metadata['columns'].to_list().index(column)
+            lines_nb = len(value)
+            index_column = [column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
         elif key_type == 'dict':
-            value = data_io[self.VALUE]
-            metadata = data_io[self.TYPE_METADATA]
-            #dict_keys = [meta['key'][0] for meta in metadata]
-            dict_keys = list(metadata['value'].keys())
+            dict_keys = list(value.keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
 
@@ -1161,10 +1152,6 @@ class SoSDiscipline(MDODiscipline):
 
             for data_name in input_data_names:
                 input_data[data_name] = self.ee.dm.get_value(data_name)
-            # convert sostrades types into numpy arrays
-            # no need to update DM since call by SoSTrades
-            input_data = self._convert_new_type_into_array(
-                var_dict=input_data)
 
         return input_data
 
@@ -1240,15 +1227,10 @@ class SoSDiscipline(MDODiscipline):
     def update_dm_with_local_data(self, local_data=None):
         '''
         Update the DM with local data from GEMSEO
-        First convert data into SoSTrades format then set values in the DM
         '''
-
         if local_data is None:
             local_data = self.local_data
-
-        local_data_sos = self._convert_array_into_new_type(local_data)
-
-        self.dm.set_values_from_dict(local_data_sos)
+        self.dm.set_values_from_dict(local_data)
 
     def run(self):
         ''' To be overloaded by sublcasses
@@ -1434,19 +1416,6 @@ class SoSDiscipline(MDODiscipline):
 
         return result
 
-    def _convert_coupling_outputs_into_gems_format(self):
-        ''' convert discipline outputs, that could include data not
-            handled by GEMS, into data handled by GEMS
-        '''
-        out_keys = self.get_output_data_names()
-        # check out_keys types and convert NEW TYPE into GEMS TYPE
-        out_dict = {}
-        for var_f_name in out_keys:
-            var_name = self.dm.get_data(var_f_name, self.VAR_NAME)
-            out_dict[var_f_name] = self._data_out[var_name][self.VALUE]
-        return self._convert_new_type_into_array(
-            out_dict)
-
     # -- status handling section
     def _update_status_dm(self, status):
 
@@ -1519,7 +1488,7 @@ class SoSDiscipline(MDODiscipline):
         pass
 
     def _convert_new_type_into_array(
-            self, var_dict):
+            self, var_dict, update_dm=True):
         '''
         Check element type in var_dict, convert new type into numpy array
             and stores metadata into DM for afterwards reconversion
@@ -1530,9 +1499,10 @@ class SoSDiscipline(MDODiscipline):
             var_dict, self.dm)
 
         # update dm
-        for key in dict_to_update_dm.keys():
-            self.dm.set_data(key, self.TYPE_METADATA,
-                             dict_to_update_dm[key], check_value=False)
+        if update_dm:
+            for key in dict_to_update_dm.keys():
+                self.dm.set_data(key, self.TYPE_METADATA,
+                                 dict_to_update_dm[key], check_value=False)
 
         return var_dict_converted
 
@@ -1595,10 +1565,8 @@ class SoSDiscipline(MDODiscipline):
         try:
             return dict_values_dm != self._structuring_variables
         except:
-            diff_dict = {}
-            compare_dict(dict_values_dm,
-                         self._structuring_variables, '', diff_dict, df_equals=True)
-            return diff_dict != {}
+            return not dict_are_equal(dict_values_dm,
+                         self._structuring_variables)
 
     def set_structuring_variables_values(self):
         '''
@@ -1720,7 +1688,6 @@ class SoSDiscipline(MDODiscipline):
             inputs = self.get_input_data_names(filtered_inputs=True)
         if outputs is None:
             outputs = self.get_output_data_names(filtered_outputs=True)
-
 
         if auto_set_step:
             approx.auto_set_step(outputs, inputs, print_errors=True)

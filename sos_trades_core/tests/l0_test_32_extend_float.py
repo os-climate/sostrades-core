@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 
 import unittest
-from numpy import int32 as np_int32, float64 as np_float64,  int64 as np_int64, ndarray
+from numpy import int32 as np_int32, float64 as np_float64, int64 as np_int64, ndarray
 import os
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
@@ -75,11 +75,11 @@ class TestExtendFloat(unittest.TestCase):
             self.ee.dm.get_value('study.Disc1.b'), type(b)))
         self.assertEqual(self.ee.dm.get_value('study.Disc1.y'), a * x + b)
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc0.r'], ndarray))
+            self.ee.root_process.local_data['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.x'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.x'], type(x)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.y'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.y'], float))
 
         b = np_int32(5)
         values_dict['study.Disc1.b'] = b
@@ -95,11 +95,11 @@ class TestExtendFloat(unittest.TestCase):
             self.ee.dm.get_value('study.Disc1.b'), type(b)))
         self.assertEqual(self.ee.dm.get_value('study.Disc1.y'), a * x + b)
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc0.r'], ndarray))
+            self.ee.root_process.local_data['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.x'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.x'], type(x)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.y'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.y'], float))
 
         # np_int64
         b = np_int64(5)
@@ -117,11 +117,11 @@ class TestExtendFloat(unittest.TestCase):
             self.ee.dm.get_value('study.Disc1.b'), type(b)))
         self.assertEqual(self.ee.dm.get_value('study.Disc1.y'), a * x + b)
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc0.r'], ndarray))
+            self.ee.root_process.local_data['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.x'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.x'], type(x)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.y'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.y'], float))
 
         # np_float64
         r = np_float64(3.22222222222222222222222)
@@ -140,8 +140,8 @@ class TestExtendFloat(unittest.TestCase):
             self.ee.dm.get_value('study.Disc0.r'), type(r)))
         self.assertEqual(self.ee.dm.get_value('study.Disc1.y'), a * x + b)
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc0.r'], ndarray))
+            self.ee.root_process.local_data['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.x'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.x'], type(x)))
         self.assertTrue(isinstance(
-            self.ee.root_process.local_data['study.Disc1.y'], ndarray))
+            self.ee.root_process.local_data['study.Disc1.y'], float))

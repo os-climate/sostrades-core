@@ -72,7 +72,7 @@ class DiscAllTypes(SoSDiscipline):
                        'dict_out': dict_out}
         df_in = DataFrame(array([[(h[0] + h[1]) / 2, (h[0] + h[1]) / 2]]),
                           columns=['c1', 'c2'])
-        df_in['z'] = 2 * z
+        df_in['z'] = [2 * z] * len(df_in)
         dict_values.update({'df_out': df_in})
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)

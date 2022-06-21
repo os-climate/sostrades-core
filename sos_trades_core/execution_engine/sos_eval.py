@@ -21,7 +21,7 @@ from tqdm import tqdm
 import time
 
 from gemseo.core.parallel_execution import ParallelExecution
-from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
+from sos_trades_core.tools.base_functions.compute_len import compute_len
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -336,7 +336,8 @@ class SoSEval(SoSDisciplineBuilder):
         self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
-            out_values = np.concatenate(list(out_local_data.values())).ravel()
+            out_local_data_converted = self._convert_new_type_into_array(out_local_data)
+            out_values = np.concatenate(list(out_local_data_converted.values())).ravel()
         else:
             out_values = []
             # get back out_local_data is not enough because some variables
@@ -473,8 +474,8 @@ class SoSEval(SoSDisciplineBuilder):
             outeval_dict = {}
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
-                eval_out_size = len(self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size +
+                eval_out_size = compute_len(self.eval_process_disc.local_data[key])
+                output_eval_key = outputs_eval[old_size:old_size + 
                                                eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
