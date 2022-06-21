@@ -160,6 +160,7 @@ class UncertaintyQuantification(SoSDiscipline):
                     ontology_connector = OntologyDataConnector()
                     data_connection = {
                         'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+                        # 'endpoint': 'http://127.0.0.1:5555/api/ontology'
                     }
                     args = in_param + out_param
                     args = [val.split('.')[-1]
@@ -281,7 +282,8 @@ class UncertaintyQuantification(SoSDiscipline):
         sample_size = inputs_dict['sample_size']
         input_parameters_names = list(samples_df.columns)[1:]
         output_names = list(data_df.columns)[1:]
-        input_distribution_parameters_df = deepcopy(inputs_dict['input_distribution_parameters_df'])
+        input_distribution_parameters_df = deepcopy(
+            inputs_dict['input_distribution_parameters_df'])
         input_distribution_parameters_df['values'] = [sorted(
             list(samples_df[input_name].unique())) for input_name in input_parameters_names]
 
