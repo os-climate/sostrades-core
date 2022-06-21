@@ -133,6 +133,7 @@ if __name__ == '__main__':
 
     data_connection = {
         'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+        # 'endpoint': 'http://127.0.0.1:5555/api/ontology'
     }
 
     args = ["CCS_price", "CO2_damage_price", "CO2_emissions_df", "CO2_emitted_forest_df", "CO2_objective", "CO2_taxes", "acceleration", "alpha", "authorize_self_coupled_disciplines", "beta", "cache_file_path",

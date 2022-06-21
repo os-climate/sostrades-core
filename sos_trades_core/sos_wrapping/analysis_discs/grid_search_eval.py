@@ -74,7 +74,7 @@ class GridSearchEval(DoeEval):
         'version': '',
     }
     INPUT_TYPE = ['float']
-    INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe']
+    INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
@@ -279,23 +279,19 @@ class GridSearchEval(DoeEval):
         dynamic_inputs_list = []
         for selected_in in self.selected_inputs:
             if self.MULTIPLIER_PARTICULE in selected_in:
-                multiplier_name = selected_in.split('.')[-1]
-                origin_var_name = self.get_names_from_multiplier(multiplier_name)[
-                    0]
+                origin_var_fullname = '.'.join(
+                    [self.ee.study_name, self.get_names_from_multiplier(selected_in)[0]])
                 # if
-                if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
+                if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_fullname)) > 1:
                     self.logger.exception(
                         'Multiplier name selected already exists!')
-                origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
-                    0]
-                origin_var_ns = self.ee.dm.get_data(
-                    origin_var_fullname, 'namespace')
+                # selected input multiplier at the same place as the origin var
                 dynamic_inputs_list.append(
                     {
-                        f'{multiplier_name}': {
+                        f'{selected_in}': {
                             'type': 'float',
                             'visibility': 'Shared',
-                            'namespace': origin_var_ns,
+                            'namespace': 'ns_doe',
                             'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
                             'default': 100
                         }
@@ -419,7 +415,7 @@ class GridSearchEval(DoeEval):
 
         # shortest name
         self.generate_shortest_name(
-            list(set(possible_in_values_full)) + inputs_with_multipliers_col_list)
+            list(set(possible_in_values_full + inputs_with_multipliers_col_list)))
         self.generate_shortest_name(list(set(possible_out_values_full)))
 
         # possible_in_values_short = [
@@ -433,6 +429,7 @@ class GridSearchEval(DoeEval):
         ontology_connector = OntologyDataConnector()
         data_connection = {
             'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+            # 'endpoint': 'http://127.0.0.1:5555/api/ontology'
         }
         inputs_val_list = [val.split('.')[-1]
                            for val in possible_in_values_full]
@@ -454,7 +451,7 @@ class GridSearchEval(DoeEval):
         possible_in_values_short = []
         for val in possible_in_values_full:
             col_name = ''
-            if self.MULTIPLIER_PARTICULE in val:
+            if (self.MULTIPLIER_PARTICULE in val) and ('@' in val):
                 var_f_name = '.'.join(
                     [self.ee.study_name, self.get_names_from_multiplier(val)[0]])
                 col_name_clean = self.get_names_from_multiplier(val)[1]
@@ -467,7 +464,7 @@ class GridSearchEval(DoeEval):
                     col_name = f' - {cols_list[int(col_index)]} Column'
                 else:
                     col_name = ' - All Float Columns'
-                val = self.get_names_from_multiplier(val)[0]
+            val = self.get_names_from_multiplier(val)[0]
             var_name = conversion_full_ontology[val.split(".")[-1]][0]
             var_name_origin = "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
@@ -800,8 +797,8 @@ class GridSearchEval(DoeEval):
 
             chart_list = [
                 list(chart_tuple)
-                +[output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
-                +[output_info_dict[chart_tuple[1].split('.')[-1]]['unit']] for chart_tuple in chart_tuples]
+                + [output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
+                + [output_info_dict[chart_tuple[1].split('.')[-1]]['unit']] for chart_tuple in chart_tuples]
 
             full_chart_list += chart_list
             # if output_df= None --> full_chart_list = []
@@ -1026,7 +1023,7 @@ class GridSearchEval(DoeEval):
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
-                                        labelfont=dict(# label font properties
+                                        labelfont=dict(  # label font properties
                                             size=10,
                                             # color = 'white',
                                         ),
@@ -1044,12 +1041,12 @@ class GridSearchEval(DoeEval):
                                     connectgaps=False,
                                     hovertemplate='{}'.format(
                                         chart_info["x_short"])
-                                    +': %{x}'
-                                    +'<br>{}'.format(chart_info["y_short"])
-                                    +': %{y}'
-                                    +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                    +': <b> %{z}<b>'
-                                    +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                    + ': %{x}'
+                                    + '<br>{}'.format(chart_info["y_short"])
+                                    + ': %{y}'
+                                    + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
+                                    + ': <b> %{z}<b>'
+                                    + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name="",
                                 )
                             )
@@ -1109,15 +1106,15 @@ class GridSearchEval(DoeEval):
                                         showlegend=False,
                                         hovertemplate='{}'.format(
                                             chart_info["x_short"])
-                                        +': %{x}'
-                                        +'<br>{}'.format(chart_info["y_short"])
-                                        +': %{y}'
-                                        +'<br>{} '.format(chart_info["z"].split(".")[-1])
-                                        +': <b> {} {}<b>'.format(
+                                        + ': %{x}'
+                                        + '<br>{}'.format(chart_info["y_short"])
+                                        + ': %{y}'
+                                        + '<br>{} '.format(chart_info["z"].split(".")[-1])
+                                        + ': <b> {} {}<b>'.format(
                                             round(z_ref_hover,
                                                   5), legend_letter
                                         )
-                                        +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1204,7 +1201,7 @@ class GridSearchEval(DoeEval):
                                         contours=dict(
                                             coloring='heatmap',
                                             showlabels=True,  # show labels on contours
-                                            labelfont=dict(# label font properties
+                                            labelfont=dict(  # label font properties
                                                 size=10,
                                                 # color = 'white',
                                             ),
@@ -1226,14 +1223,14 @@ class GridSearchEval(DoeEval):
                                         connectgaps=False,
                                         hovertemplate='{}'.format(
                                             chart_info["x_short"])
-                                        +': %{x}'
-                                        +'<br>{}'.format(chart_info["y_short"])
-                                        +': %{y}'
-                                        +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                        +': <b> %{z}<b>'
-                                        +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        + ': %{x}'
+                                        + '<br>{}'.format(chart_info["y_short"])
+                                        + ': %{y}'
+                                        + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
+                                        + ': <b> %{z}<b>'
+                                        + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='{} '.format(slider_short_name)
-                                        +': {} {}'.format(
+                                        + ': {} {}'.format(
                                             round(slide_value, 2), slider_unit
                                         ),
                                     )
@@ -1305,24 +1302,24 @@ class GridSearchEval(DoeEval):
                                             showlegend=False,
                                             hovertemplate='{}'.format(
                                                 chart_info["x_short"])
-                                            +': %{x}'
-                                            +'<br>{}'.format(chart_info["y_short"])
-                                            +': %{y}'
-                                            +'<br>{} '.format(slider_short_name)
-                                            +': {}'.format(
+                                            + ': %{x}'
+                                            + '<br>{}'.format(chart_info["y_short"])
+                                            + ': %{y}'
+                                            + '<br>{} '.format(slider_short_name)
+                                            + ': {}'.format(
                                                 float(
                                                     chart_info['reference_scenario'][
                                                         col_slider
                                                     ]
                                                 )
                                             )
-                                            +f'{slider_unit}'
-                                            +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                            +': <b> {} {}<b>'.format(
+                                            + f'{slider_unit}'
+                                            + '<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
+                                            + ': <b> {} {}<b>'.format(
                                                 round(z_ref_hover,
                                                       5), legend_letter
                                             )
-                                            +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                            + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                             name='Reference Scenario',
                                         )
                                     )
@@ -1445,8 +1442,8 @@ class GridSearchEval(DoeEval):
         ]
         df['pretty_value'] = df['table_value'].apply(
             lambda x: str(round(get_order_of_magnitude(x)[-1], 5))
-            +' '
-            +get_order_of_magnitude(x)[0]
+            + ' '
+            + get_order_of_magnitude(x)[0]
         )
         df['unit'] = 'None'
         df['unit'].where(
