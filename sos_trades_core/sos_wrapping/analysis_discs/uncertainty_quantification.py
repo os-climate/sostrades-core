@@ -182,7 +182,7 @@ class UncertaintyQuantification(SoSDiscipline):
                                                 # possible_distrib])
                                                 p=[0, 1, 0, 0])
 
-                    #distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
+                    # distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
                     distrib = ['PERT' for input in selected_inputs.tolist()]
 
                     if (('design_space' in self._data_in) & (len(in_param) > 0)):
@@ -281,7 +281,7 @@ class UncertaintyQuantification(SoSDiscipline):
         sample_size = inputs_dict['sample_size']
         input_parameters_names = list(samples_df.columns)[1:]
         output_names = list(data_df.columns)[1:]
-        input_distribution_parameters_df = inputs_dict['input_distribution_parameters_df']
+        input_distribution_parameters_df = deepcopy(inputs_dict['input_distribution_parameters_df'])
         input_distribution_parameters_df['values'] = [sorted(
             list(samples_df[input_name].unique())) for input_name in input_parameters_names]
 
@@ -574,19 +574,19 @@ class UncertaintyQuantification(SoSDiscipline):
                          x0=y_left_boundary,
                          x1=y_left_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot", ))
+                         line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_right_boundary,
                          x1=y_right_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot", ))
+                         line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_mean,
                          x1=y_mean,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot", ))
+                         line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_annotation(
             x=y_left_boundary,
@@ -689,18 +689,18 @@ class UncertaintyQuantification(SoSDiscipline):
                          x0=y_left_boundary,
                          x1=y_left_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot", ))
+                         line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_right_boundary,
                          x1=y_right_boundary,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot", ))
+                         line=dict(color="black", width=2, dash="dot",))
         hist_y.add_shape(type='line', xref='x', yref='paper',
                          x0=y_mean,
                          x1=y_mean,
                          y0=0, y1=1,
-                         line=dict(color="black", width=2, dash="dot", ))
+                         line=dict(color="black", width=2, dash="dot",))
 
         hist_y.add_shape(type='rect', xref='x', yref='paper',
                          x0=y_left_boundary,

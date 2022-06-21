@@ -958,7 +958,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         res = exec_eng.execute()
 
-    def test_14_optim_sellar_idf_process(self):
+    def _test_14_optim_sellar_idf_process(self):
 
         exec_eng = ExecutionEngine(self.study_name)
         builder_process = exec_eng.factory.get_builder_from_process(
