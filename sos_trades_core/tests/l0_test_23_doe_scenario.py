@@ -214,9 +214,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -440,9 +440,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict = {}
         # array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.sub_mda_class'] = 'MDANewtonRaphson'
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
 
@@ -1703,4 +1703,4 @@ if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
 #     cls.test_13_doe_eval_execution_lhs_on_1_var()
-    cls.test_14_doe_eval_options_and_design_space_after_reconfiguration()
+    cls.test_5_doe_scenario_eval_mode()
