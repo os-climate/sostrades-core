@@ -1,0 +1,178 @@
+@startuml classes
+set namespaceSeparator none
+class "ABC" as abc.ABC {
+}
+class "AbstractDataConnector" as sos_trades_core.execution_engine.data_connector.abstract_data_connector.AbstractDataConnector {
+}
+class "ArchiBuilder" as sos_trades_core.execution_engine.archi_builder.ArchiBuilder {
+}
+class "<color:red>ArchiBuilderException</color>" as sos_trades_core.execution_engine.archi_builder.ArchiBuilderException {
+}
+class "CMAESOpt" as sos_trades_core.execution_engine.gemseo_addon.opt.lib_cmaes.CMAESOpt {
+}
+class "ConnectorFactory" as sos_trades_core.execution_engine.data_connector.data_connector_factory.ConnectorFactory {
+}
+class "DataManager" as sos_trades_core.execution_engine.data_manager.DataManager {
+}
+class "DesignVar" as sos_trades_core.execution_engine.design_var.design_var.DesignVar {
+}
+class "DesignVarDiscipline" as sos_trades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline {
+}
+class "DremioDataConnector" as sos_trades_core.execution_engine.data_connector.dremio_data_connector.DremioDataConnector {
+}
+class "ExecutionEngine" as sos_trades_core.execution_engine.execution_engine.ExecutionEngine {
+}
+class "<color:red>ExecutionEngineException</color>" as sos_trades_core.execution_engine.execution_engine.ExecutionEngineException {
+}
+class "FunctionManager" as sos_trades_core.execution_engine.func_manager.func_manager.FunctionManager {
+}
+class "FunctionManagerDisc" as sos_trades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc {
+}
+class "GSPureNewtonMDA" as sos_trades_core.execution_engine.gemseo_addon.mda.gs_purenewton_mda.GSPureNewtonMDA {
+}
+class "GSPureNewtonorGSMDA" as sos_trades_core.execution_engine.gemseo_addon.mda.purenewton_or_gs.GSPureNewtonorGSMDA {
+}
+class "GSorNewtonMDA" as sos_trades_core.execution_engine.gemseo_addon.mda.gs_or_newton.GSorNewtonMDA {
+}
+class "MockConnector" as sos_trades_core.execution_engine.data_connector.mock_connector.MockConnector {
+}
+class "Namespace" as sos_trades_core.execution_engine.namespace.Namespace {
+}
+class "NamespaceManager" as sos_trades_core.execution_engine.ns_manager.NamespaceManager {
+}
+class "<color:red>NamespaceManagerException</color>" as sos_trades_core.execution_engine.ns_manager.NamespaceManagerException {
+}
+class "OntologyDataConnector" as sos_trades_core.execution_engine.data_connector.ontology_data_connector.OntologyDataConnector {
+}
+class "PetscKSPAlgos" as sos_trades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib.PetscKSPAlgos {
+}
+class "PostProcessing" as sos_trades_core.execution_engine.post_processing_manager.PostProcessing {
+}
+class "PostProcessingManager" as sos_trades_core.execution_engine.post_processing_manager.PostProcessingManager {
+}
+class "PureNewtonRaphson" as sos_trades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson.PureNewtonRaphson {
+}
+class "<color:red>ScatterDataException</color>" as sos_trades_core.execution_engine.scatter_data.ScatterDataException {
+}
+class "ScatterMap" as sos_trades_core.execution_engine.scatter_map.ScatterMap {
+}
+class "ScatterMapsManager" as sos_trades_core.execution_engine.scattermaps_manager.ScatterMapsManager {
+}
+class "<color:red>ScatterMapsManagerException</color>" as sos_trades_core.execution_engine.scattermaps_manager.ScatterMapsManagerException {
+}
+class "SoSBuilder" as sos_trades_core.execution_engine.sos_builder.SoSBuilder {
+}
+class "SoSCoupling" as sos_trades_core.execution_engine.sos_coupling.SoSCoupling {
+}
+class "SoSDOEScenario" as sos_trades_core.execution_engine.sos_doe_scenario.SoSDOEScenario {
+}
+class "SoSDiscParallelExecution" as sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelExecution {
+}
+class "SoSDiscParallelLinearization" as sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelLinearization {
+}
+class "SoSDiscipline" as sos_trades_core.execution_engine.sos_discipline.SoSDiscipline {
+}
+class "SoSDisciplineBuilder" as sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder {
+}
+class "<color:red>SoSDisciplineBuilderException</color>" as sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilderException {
+}
+class "<color:red>SoSDisciplineException</color>" as sos_trades_core.execution_engine.sos_discipline.SoSDisciplineException {
+}
+class "<color:red>SoSDisciplineException</color>" as sos_trades_core.execution_engine.sos_discipline_gather.SoSDisciplineException {
+}
+class "SoSDisciplineGather" as sos_trades_core.execution_engine.sos_discipline_gather.SoSDisciplineGather {
+}
+class "SoSDisciplineScatter" as sos_trades_core.execution_engine.sos_discipline_scatter.SoSDisciplineScatter {
+}
+class "<color:red>SoSDisciplineScatterException</color>" as sos_trades_core.execution_engine.sos_discipline_scatter.SoSDisciplineScatterException {
+}
+class "SoSEval" as sos_trades_core.execution_engine.sos_eval.SoSEval {
+}
+class "<color:red>SoSEvalException</color>" as sos_trades_core.execution_engine.sos_eval.SoSEvalException {
+}
+class "SoSGatherData" as sos_trades_core.execution_engine.gather_data.SoSGatherData {
+}
+class "SoSGradients" as sos_trades_core.execution_engine.sos_gradients.SoSGradients {
+}
+class "SoSJacobianAssembly" as sos_trades_core.execution_engine.sos_jacobian_assembly.SoSJacobianAssembly {
+}
+class "SoSMDAGaussSeidel" as sos_trades_core.execution_engine.gemseo_addon.mda.gauss_seidel.SoSMDAGaussSeidel {
+}
+class "SoSMorphMatrixEval" as sos_trades_core.execution_engine.sos_morph_matrix_eval.SoSMorphMatrixEval {
+}
+class "SoSMultiScatterBuilder" as sos_trades_core.execution_engine.sos_multi_scatter_builder.SoSMultiScatterBuilder {
+}
+class "<color:red>SoSMultiScatterBuilderException</color>" as sos_trades_core.execution_engine.sos_multi_scatter_builder.SoSMultiScatterBuilderException {
+}
+class "SoSMultiScenario" as sos_trades_core.execution_engine.sos_multi_scenario.SoSMultiScenario {
+}
+class "<color:red>SoSMultiScenarioException</color>" as sos_trades_core.execution_engine.sos_multi_scenario.SoSMultiScenarioException {
+}
+class "SoSOptimScenario" as sos_trades_core.execution_engine.sos_optim_scenario.SoSOptimScenario {
+}
+class "SoSParallelChain" as sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain.SoSParallelChain {
+}
+class "SoSScatterData" as sos_trades_core.execution_engine.scatter_data.SoSScatterData {
+}
+class "SoSScenario" as sos_trades_core.execution_engine.sos_scenario.SoSScenario {
+}
+class "SoSSensitivity" as sos_trades_core.execution_engine.sos_sensitivity.SoSSensitivity {
+}
+class "SoSSimpleGrammar" as sos_trades_core.execution_engine.gemseo_addon.grammars.sos_simple_grammar.SoSSimpleGrammar {
+}
+class "SoSSimpleMultiScenario" as sos_trades_core.execution_engine.sos_simple_multi_scenario.SoSSimpleMultiScenario {
+}
+class "<color:red>SoSSimpleMultiScenarioException</color>" as sos_trades_core.execution_engine.sos_very_simple_multi_scenario.SoSSimpleMultiScenarioException {
+}
+class "<color:red>SoSSimpleMultiScenarioException</color>" as sos_trades_core.execution_engine.sos_simple_multi_scenario.SoSSimpleMultiScenarioException {
+}
+class "SoSVerySimpleMultiScenario" as sos_trades_core.execution_engine.sos_very_simple_multi_scenario.SoSVerySimpleMultiScenario {
+}
+class "SosFactory" as sos_trades_core.execution_engine.sos_factory.SosFactory {
+}
+class "<color:red>SosFactoryException</color>" as sos_trades_core.execution_engine.sos_factory.SosFactoryException {
+}
+class "TrinoDataConnector" as sos_trades_core.execution_engine.data_connector.trino_data_connector.TrinoDataConnector {
+}
+sos_trades_core.execution_engine.archi_builder.ArchiBuilder --|> sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder
+sos_trades_core.execution_engine.data_connector.abstract_data_connector.AbstractDataConnector --|> abc.ABC
+sos_trades_core.execution_engine.data_connector.dremio_data_connector.DremioDataConnector --|> sos_trades_core.execution_engine.data_connector.abstract_data_connector.AbstractDataConnector
+sos_trades_core.execution_engine.data_connector.mock_connector.MockConnector --|> sos_trades_core.execution_engine.data_connector.abstract_data_connector.AbstractDataConnector
+sos_trades_core.execution_engine.data_connector.ontology_data_connector.OntologyDataConnector --|> sos_trades_core.execution_engine.data_connector.abstract_data_connector.AbstractDataConnector
+sos_trades_core.execution_engine.data_connector.trino_data_connector.TrinoDataConnector --|> sos_trades_core.execution_engine.data_connector.abstract_data_connector.AbstractDataConnector
+sos_trades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline --|> sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+sos_trades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc --|> sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+sos_trades_core.execution_engine.gather_data.SoSGatherData --|> sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+sos_trades_core.execution_engine.scatter_data.SoSScatterData --|> sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+sos_trades_core.execution_engine.sos_coupling.SoSCoupling --|> sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder
+sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder --|> sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+sos_trades_core.execution_engine.sos_discipline_gather.SoSDisciplineGather --|> sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+sos_trades_core.execution_engine.sos_discipline_scatter.SoSDisciplineScatter --|> sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder
+sos_trades_core.execution_engine.sos_doe_scenario.SoSDOEScenario --|> sos_trades_core.execution_engine.sos_scenario.SoSScenario
+sos_trades_core.execution_engine.sos_eval.SoSEval --|> sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder
+sos_trades_core.execution_engine.sos_gradients.SoSGradients --|> sos_trades_core.execution_engine.sos_eval.SoSEval
+sos_trades_core.execution_engine.sos_morph_matrix_eval.SoSMorphMatrixEval --|> sos_trades_core.execution_engine.sos_eval.SoSEval
+sos_trades_core.execution_engine.sos_multi_scatter_builder.SoSMultiScatterBuilder --|> sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder
+sos_trades_core.execution_engine.sos_multi_scenario.SoSMultiScenario --|> sos_trades_core.execution_engine.sos_simple_multi_scenario.SoSSimpleMultiScenario
+sos_trades_core.execution_engine.sos_optim_scenario.SoSOptimScenario --|> sos_trades_core.execution_engine.sos_scenario.SoSScenario
+sos_trades_core.execution_engine.sos_scenario.SoSScenario --|> sos_trades_core.execution_engine.sos_discipline_builder.SoSDisciplineBuilder
+sos_trades_core.execution_engine.sos_sensitivity.SoSSensitivity --|> sos_trades_core.execution_engine.sos_eval.SoSEval
+sos_trades_core.execution_engine.sos_simple_multi_scenario.SoSSimpleMultiScenario --|> sos_trades_core.execution_engine.sos_very_simple_multi_scenario.SoSVerySimpleMultiScenario
+sos_trades_core.execution_engine.sos_very_simple_multi_scenario.SoSVerySimpleMultiScenario --|> sos_trades_core.execution_engine.sos_discipline_scatter.SoSDisciplineScatter
+sos_trades_core.execution_engine.data_manager.DataManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : dm
+sos_trades_core.execution_engine.design_var.design_var.DesignVar --* sos_trades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline : design
+sos_trades_core.execution_engine.func_manager.func_manager.FunctionManager --* sos_trades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc : func_manager
+sos_trades_core.execution_engine.ns_manager.NamespaceManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : ns_manager
+sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelExecution --* sos_trades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson.PureNewtonRaphson : parallel_execution
+sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelExecution --* sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain.SoSParallelChain : parallel_execution
+sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelLinearization --* sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain.SoSParallelChain : parallel_lin
+sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelLinearization --* sos_trades_core.execution_engine.sos_jacobian_assembly.SoSJacobianAssembly : parallel_linearize
+sos_trades_core.execution_engine.post_processing_manager.PostProcessingManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : __post_processing_manager
+sos_trades_core.execution_engine.scattermaps_manager.ScatterMapsManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : smaps_manager
+sos_trades_core.execution_engine.sos_builder.SoSBuilder --* sos_trades_core.execution_engine.sos_factory.SosFactory : coupling_builder
+sos_trades_core.execution_engine.sos_factory.SosFactory --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : __factory
+
+MDAChain <|- sos_trades_core.execution_engine.sos_coupling.SoSCoupling
+MDODiscipline <|- sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+MDODiscipline  <|- MDAChain
+@enduml

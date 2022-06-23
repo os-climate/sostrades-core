@@ -17,3 +17,11 @@ This package is divided into 6 parts:
 - study_manager: contains generic class to implement studies
 - tests: contains tests on execution_engine functionalities, based on sos_processes and sos_wrapping
 - tools: contains generic tools of execution_engine
+
+## License
+The sostrades-core source code is distributed under the Apache License Version 2.0.
+A copy of it can be found in the LICENSE file.
+
+The sostrades-core product depends on other software which have various licenses.
+The list of dependencies with their licenses is given in the CREDITS.rst file.
+
