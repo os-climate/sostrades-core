@@ -2043,9 +2043,9 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             coupling_name = "SellarCoupling"
             ns = f'{self.study_name}'
             from numpy import array
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = 1.
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = 1.
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = 1.
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = array([1.])
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = array([1.])
+            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = array([1.])
             dict_values[f'{ns}.DoE_Eval.{coupling_name}.z'] = array([1., 1.])
             dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
