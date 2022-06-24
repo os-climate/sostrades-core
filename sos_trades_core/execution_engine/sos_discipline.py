@@ -823,8 +823,8 @@ class SoSDiscipline(MDODiscipline):
             # output format as dict
             keys = list(self.get_data_in().keys())
             in_dict = True
-        inputs = self._get_sosdisc_io(
-            keys, io_type=self.IO_TYPE_IN, full_name=full_name)
+        inputs = deepcopy(self._get_sosdisc_io(
+            keys, io_type=self.IO_TYPE_IN, full_name=full_name))
         if in_dict:
             # return inputs in an dictionary
             return inputs
