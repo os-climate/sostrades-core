@@ -138,6 +138,16 @@ class OntologyDataConnector(AbstractDataConnector):
         connector_info[OntologyDataConnector.REQUEST_ARGS] = request_args
         return connector_info
 
+    def get_ontology_list(self, parameter_list):
+        data_request = {
+            OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
+            OntologyDataConnector.REQUEST_ARGS: parameter_list,
+        }
+
+        conversion_full_ontology = ontology_connector.load_data(
+            data_request)
+        return conversion_full_ontology
+
 
 if __name__ == '__main__':
 
