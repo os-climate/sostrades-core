@@ -21,6 +21,7 @@ import unittest
 from shutil import rmtree
 from os.path import join, dirname, exists
 from pathlib import Path
+from time import sleep
 from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
 from sos_trades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
 from sos_trades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
@@ -47,6 +48,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         for dir in self.dir_to_del:
             if Path(dir).is_dir():
                 rmtree(dir)
+                sleep(2)
         
     def test_01_cache_map(self):
         
