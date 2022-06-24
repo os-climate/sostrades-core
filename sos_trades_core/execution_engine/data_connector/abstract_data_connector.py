@@ -29,17 +29,26 @@ class AbstractDataConnector(abc.ABC):
     CONNECTOR_MODE_READ = 'read'
     CONNECTOR_MODE_WRITE = 'write'
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
-        genereic constructor for data connector
+        generic constructor for data connector
 
-        :params: data_connection_dict, contains necessary data for connection
-        :type: dict
-
-        :params: data_connection_list, contains the list of necessary data for connection
-        :type: list[string]
-
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
+
+        if data_connection_info is not None:
+            self._extract_connection_info(data_connection_info)
+
+    @abc.abstractmethod
+    def _extract_connection_info(self, data_connection_info):
+        """
+        Convert structure with data connection info given as parameter into member variable
+
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
+        """
+
     @abc.abstractmethod
     def load_data(self, connector_info):
         """

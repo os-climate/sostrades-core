@@ -30,21 +30,30 @@ class MockConnector(AbstractDataConnector):
     CONNECTOR_DATA = 'connector_data'
     CONNECTOR_REQUEST = 'connector_request'
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
         Constructor for Mock data connector
 
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
-        super()
 
         self.hostname = None
         self.port = None
         self.username = None
         self.password = None
 
-    def __extract_connection_info(self, connection_data):
+        super().__init__(data_connection_info=data_connection_info)
 
-        self.hostname = connection_data['hostname']
+    def _extract_connection_info(self, data_connection_info):
+        """
+        Convert structure with data connection info given as parameter into member variable
+
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
+        """
+
+        self.hostname = data_connection_info['hostname']
 
     def load_data(self, connection_data):
         """
@@ -57,7 +66,7 @@ class MockConnector(AbstractDataConnector):
         :type: string
         """
 
-        self.__extract_connection_info(connection_data)
+        self._extract_connection_info(connection_data)
         test_data = None
 
         if self.hostname is not None:
@@ -75,7 +84,7 @@ class MockConnector(AbstractDataConnector):
         :param: dremio_path, identification of the data in dremio
         :type: string
         """
-        self.__extract_connection_info(connection_data)
+        self._extract_connection_info(connection_data)
         test_data = None
         if self.hostname is not None:
             test_data = 42.0

@@ -9,12 +9,9 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.validators.scatter.marker import SymbolValidator
 from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
-    ConnectorFactory,
-)
+
 from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
-    OntologyDataConnector,
-)
+    GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER, OntologyDataConnector)
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -455,16 +452,22 @@ class GridSearchEval(DoeEval):
                 origin_full_name = self.get_names_from_multiplier(val)[0]
                 inputs_val_list.append(origin_full_name.split('.')[-1])
 
+        conversion_full_ontology = {}
+        ontology_connector = self.ee.connector_container.get_persistent_connector(
+            GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
         parameter_list = inputs_val_list + outputs_val_list
-        # ontology name
-        data_connection = {
-            ConnectorFactory.CONNECTOR_TYPE: OntologyDataConnector.NAME,
-            OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
-            OntologyDataConnector.REQUEST_ARGS: parameter_list,
-        }
-        conversion_full_ontology = ConnectorFactory.use_data_connector(
-            connector_info=data_connection, logger=self.logger
-        )
+
+        if ontology_connector is not None:
+
+            data_request = {
+                OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
+                OntologyDataConnector.REQUEST_ARGS: parameter_list,
+            }
+
+            conversion_full_ontology = ontology_connector.load_data(data_request)
+        else:
+            # Cannot make a call to ontology so set default data
+            conversion_full_ontology = {parameter: parameter for parameter in parameter_list}
 
         # replace ontology val for column df/dict var
         possible_in_values_short = []

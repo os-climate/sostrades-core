@@ -20,6 +20,8 @@ from sos_trades_core.execution_engine.data_connector.abstract_data_connector imp
 )
 import requests
 
+GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER = 'GLOBAL_EXECUTION_ENGINE_ONTOLOGY'
+
 
 class OntologyDataConnector(AbstractDataConnector):
     """
@@ -37,27 +39,28 @@ class OntologyDataConnector(AbstractDataConnector):
     REQUEST_ARGS = 'REQUEST_ARGS'
     PARAMETER_REQUEST = 'parameter'
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
         Constructor for Ontology data connector
 
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
-        super()
-
         self.endpoint = None
         self.route = None
         self.args = None
 
-    def __extract_connection_info(self, connection_data):
-        """
-        Convert structure with connection data given as parameter into member variable
+        super().__init__(data_connection_info=data_connection_info)
 
-        :param connection_data: dictionary regarding connection information, must map OntologyDataConnector.data_connection_list
+    def _extract_connection_info(self, data_connection_info):
         """
-        if 'endpoint' in connection_data:
-            self.endpoint = connection_data['endpoint']
-        else:
-            self.endpoint = ''
+        Convert structure with data connection info given as parameter into member variable
+
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
+        """
+        if 'endpoint' in data_connection_info:
+            self.endpoint = data_connection_info['endpoint']
 
     def load_data(self, connection_data):
         """
@@ -68,7 +71,7 @@ class OntologyDataConnector(AbstractDataConnector):
 
         """
 
-        self.__extract_connection_info(connection_data)
+        self._extract_connection_info(connection_data)
 
         result = {}
 
