@@ -452,22 +452,16 @@ class GridSearchEval(DoeEval):
                 origin_full_name = self.get_names_from_multiplier(val)[0]
                 inputs_val_list.append(origin_full_name.split('.')[-1])
 
-        conversion_full_ontology = {}
         ontology_connector = self.ee.connector_container.get_persistent_connector(
             GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
         parameter_list = inputs_val_list + outputs_val_list
+        # Cannot make a call to ontology so set default data
+        conversion_full_ontology = {parameter: [
+            parameter, None] for parameter in parameter_list}
 
         if ontology_connector is not None:
-
-            data_request = {
-                OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
-                OntologyDataConnector.REQUEST_ARGS: parameter_list,
-            }
-
-            conversion_full_ontology = ontology_connector.load_data(data_request)
-        else:
-            # Cannot make a call to ontology so set default data
-            conversion_full_ontology = {parameter: parameter for parameter in parameter_list}
+            conversion_full_ontology = OntologyDataConnector.get_ontology_list(
+                ontology_connector, parameter_list)
 
         # replace ontology val for column df/dict var
         possible_in_values_short = []
@@ -492,10 +486,7 @@ class GridSearchEval(DoeEval):
                 else:
                     col_name = ' Multiplier'
             val = self.get_names_from_multiplier(val)[0]
-            if type(val.split(".")[-1]) == list:
-                var_name = conversion_full_ontology[val.split(".")[-1]][0]
-            else:
-                var_name = conversion_full_ontology[val.split(".")[-1]]
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
             var_name_origin = " " + "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
             possible_in_values_short.append(
@@ -504,10 +495,7 @@ class GridSearchEval(DoeEval):
         # [conversion_full_ontology[val] for val in inputs_val_list]
         possible_out_values_short = []
         for val in possible_out_values_full:
-            if type(val.split(".")[-1]) == list:
-                var_name = conversion_full_ontology[val.split(".")[-1]][0]
-            else:
-                var_name = conversion_full_ontology[val.split(".")[-1]]
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
             var_name_origin = "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
             possible_out_values_short.append(f'{var_name} {var_name_origin}')
