@@ -105,7 +105,7 @@ class TestFuncManager(unittest.TestCase):
         self.func_manager.update_function_value('eqcst2', eqcst2)
 
         self.func_manager.configure_smooth_log(True, 1e4)
-
+        self.func_manager.set_aggregation_mods('sum', 'sum')
         self.func_manager.build_aggregated_functions(eps=1e-3)
 
         self.assertAlmostEqual(
