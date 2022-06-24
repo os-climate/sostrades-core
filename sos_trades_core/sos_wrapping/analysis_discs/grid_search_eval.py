@@ -470,27 +470,30 @@ class GridSearchEval(DoeEval):
         possible_in_values_short = []
         for val in possible_in_values_full:
             col_name = ''
-            if (self.MULTIPLIER_PARTICULE in val) and ('@' in val):
-                var_f_name = '.'.join(
-                    [self.ee.study_name, self.get_names_from_multiplier(val)[
-                        0]]
-                )
-                col_name_clean = self.get_names_from_multiplier(val)[1]
-                cols_list = list(self.ee.dm.get_data(
-                    var_f_name)['value'].keys())
-                col_list_clean = [self.clean_var_name(
-                    var) for var in cols_list]
-                if col_name_clean in col_list_clean:
-                    col_index = col_list_clean.index(col_name_clean)
-                    col_name = f' - {cols_list[int(col_index)]} Column'
+            if (self.MULTIPLIER_PARTICULE in val):
+                if ('@' in val):
+                    var_f_name = '.'.join(
+                        [self.ee.study_name, self.get_names_from_multiplier(val)[
+                            0]]
+                    )
+                    col_name_clean = self.get_names_from_multiplier(val)[1]
+                    cols_list = list(self.ee.dm.get_data(
+                        var_f_name)['value'].keys())
+                    col_list_clean = [self.clean_var_name(
+                        var) for var in cols_list]
+                    if col_name_clean in col_list_clean:
+                        col_index = col_list_clean.index(col_name_clean)
+                        col_name = f' - {cols_list[int(col_index)]} Column'
+                    else:
+                        col_name = ' - All Float Columns'
                 else:
-                    col_name = ' - All Float Columns'
+                    col_name = ' Multiplier'
             val = self.get_names_from_multiplier(val)[0]
             if type(val.split(".")[-1]) == list:
                 var_name = conversion_full_ontology[val.split(".")[-1]][0]
             else:
                 var_name = conversion_full_ontology[val.split(".")[-1]]
-            var_name_origin = "-".join(
+            var_name_origin = " " + "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
             possible_in_values_short.append(
                 f'{var_name}{var_name_origin}{col_name}')
