@@ -27,12 +27,9 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy.interpolate import RegularGridInterpolator
 from scipy.stats import norm
-from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
-    ConnectorFactory,
-)
+
 from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
-    OntologyDataConnector,
-)
+    GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER, OntologyDataConnector)
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
@@ -191,18 +188,24 @@ class UncertaintyQuantification(SoSDiscipline):
                     out_param = selected_outputs.tolist()
                     out_param.sort()
 
-                    # ontology name
+                    conversion_full_ontology = {}
+                    ontology_connector = self.ee.connector_container.get_persistent_connector(
+                        GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
+
                     parameter_list = in_param + out_param
                     parameter_list = [val.split('.')[-1] for val in parameter_list]
 
-                    data_connection = {
-                        ConnectorFactory.CONNECTOR_TYPE: OntologyDataConnector.NAME,
-                        OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
-                        OntologyDataConnector.REQUEST_ARGS: parameter_list,
-                    }
-                    conversion_full_ontology = ConnectorFactory.use_data_connector(
-                        connector_info=data_connection, logger=self.logger
-                    )
+                    if ontology_connector is not None:
+
+                        data_request = {
+                            OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
+                            OntologyDataConnector.REQUEST_ARGS: parameter_list,
+                        }
+
+                        conversion_full_ontology = ontology_connector.load_data(data_request)
+                    else:
+                        # Cannot make a call to ontology so set default data
+                        conversion_full_ontology = {parameter: parameter for parameter in parameter_list}
 
                     possible_distrib = ['Normal', 'PERT', 'LogNormal', 'Triangular']
 
