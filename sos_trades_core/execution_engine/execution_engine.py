@@ -26,7 +26,8 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sos_trades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.execution_engine.data_connector.data_connector_factory import PersistentConnectorContainer
+from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
+    PersistentConnectorContainer, ConnectorFactory)
 
 
 DEFAULT_FACTORY_NAME = 'default_factory'
