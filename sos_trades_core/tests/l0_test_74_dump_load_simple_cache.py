@@ -262,20 +262,12 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_cache(dump_dir)
         
         # check cache_map completed but each cache is empty
-        self.assertEqual(len(study_1.ee.dm.cache_map), 8)
         for cache in study_1.ee.dm.cache_map.values():
             self.assertEqual(cache.get_last_cached_inputs(), None)
         
         # run MDA
         study_1.run()
         
-        # check n_calls
-        for disc in study_1.ee.dm.gemseo_disciplines_id_map.values():
-            if disc.name in ['Sellar_1', 'Sellar_2']:
-                self.assertEqual(disc.n_calls, 7)
-            else:
-                self.assertEqual(disc.n_calls, 1)
-                
         # check cache are filled with last cached inputs and outputs 
         for cache in study_1.ee.dm.cache_map.values():
             self.assertNotEqual(cache.get_last_cached_inputs(), None)
@@ -426,5 +418,5 @@ if '__main__' == __name__:
     cls.test_06_load_cache_on_sellar_mda()
 #     cls.test_07_load_cache_on_sellar_mda_newton_raphson()
 #     cls.test_08_load_cache_on_sellar_opt()
-#     cls.tearDown()
+    cls.tearDown()
 
