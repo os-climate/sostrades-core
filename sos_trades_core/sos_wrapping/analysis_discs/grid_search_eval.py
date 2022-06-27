@@ -452,16 +452,20 @@ class GridSearchEval(DoeEval):
                 origin_full_name = self.get_names_from_multiplier(val)[0]
                 inputs_val_list.append(origin_full_name.split('.')[-1])
 
+        parameter_list = inputs_val_list + outputs_val_list
         ontology_connector = self.ee.connector_container.get_persistent_connector(
             GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
-        parameter_list = inputs_val_list + outputs_val_list
-        # Cannot make a call to ontology so set default data
-        conversion_full_ontology = {parameter: [
-            parameter, None] for parameter in parameter_list}
-
         if ontology_connector is not None:
-            conversion_full_ontology = OntologyDataConnector.get_ontology_list(
-                ontology_connector, parameter_list)
+            data_request = {
+                OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
+                OntologyDataConnector.REQUEST_ARGS: parameter_list,
+            }
+            conversion_full_ontology = ontology_connector.load_data(
+                data_request)
+        else:
+            # Cannot make a call to ontology so set default data
+            conversion_full_ontology = {
+                parameter: parameter for parameter in parameter_list}
 
         # replace ontology val for column df/dict var
         possible_in_values_short = []
