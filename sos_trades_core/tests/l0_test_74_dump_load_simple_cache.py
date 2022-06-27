@@ -257,8 +257,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_data()
         
         # cache activation
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
-                       f'{study_1.study_name}.SellarCoupling.sub_mda_class': 'MDANewtonRaphson'}
+        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache'}
         study_1.load_data(from_input_dict=dict_values)
         study_1.load_cache(dump_dir)
         
@@ -424,8 +423,8 @@ if '__main__' == __name__:
 #     cls.test_03_dump_and_load_cache_None()
 #     cls.test_04_dump_and_load_disc1_cache()
 #     cls.test_05_set_recursive_cache_coupling()
-#     cls.test_06_load_cache_on_sellar_mda()
+    cls.test_06_load_cache_on_sellar_mda()
 #     cls.test_07_load_cache_on_sellar_mda_newton_raphson()
-    cls.test_08_load_cache_on_sellar_opt()
-    cls.tearDown()
+#     cls.test_08_load_cache_on_sellar_opt()
+#     cls.tearDown()
 
