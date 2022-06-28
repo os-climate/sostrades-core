@@ -20,7 +20,7 @@ unit test for optimization scenario
 
 import unittest
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.sos_processes.test.test_sellar_opt_ms._usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
 import platform
 from gemseo.utils.compare_data_manager_tooling import compare_dict
 
@@ -37,7 +37,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
 
     def test_01_ms_sellar_sequential_and_parallel(self):
 
-        if platform.system() != 'Windows':
+        if True:  # platform.system() != 'Windows':
             print("\n Test 1 : check configure and treeview")
             exec_eng = ExecutionEngine(self.study_name)
             factory = exec_eng.factory
@@ -51,9 +51,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
 
             usecase = study_sellar_opt(execution_engine=exec_eng)
             usecase.study_name = self.study_name
-            values_dict = {}
-            for dict_item in usecase.setup_usecase():
-                values_dict.update(dict_item)
+            values_dict = usecase.setup_usecase()
             exec_eng.load_study_from_input_dict(values_dict)
             exec_eng.configure()
             exec_eng.display_treeview_nodes()
@@ -63,7 +61,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
 
             # parallel execution
 
-            values_dict[f'{self.study_name}.n_subcouplings_parallel'] = 2
+            values_dict[f'{self.study_name}.n_subcouplings_parallel'] = 1
             exec_eng.load_study_from_input_dict(values_dict)
             exec_eng.configure()
             exec_eng.execute()
