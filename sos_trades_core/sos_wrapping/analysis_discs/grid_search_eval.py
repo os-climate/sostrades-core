@@ -302,9 +302,7 @@ class GridSearchEval(DoeEval):
                             'type': 'float',
                             'visibility': 'Shared',
                             'namespace': 'ns_doe',
-                            'unit': self.ee.dm.get_data(origin_var_fullname).get(
-                                'unit', '-'
-                            ),
+                            'unit': '%',
                             'default': 100,
                         }
                     }

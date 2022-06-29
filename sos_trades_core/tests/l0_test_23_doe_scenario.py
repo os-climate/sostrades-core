@@ -290,9 +290,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             local_dv = 10.
             values_dict = {}
             # array([1.])
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                 1., 1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
