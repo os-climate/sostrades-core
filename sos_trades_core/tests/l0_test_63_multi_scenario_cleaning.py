@@ -23,7 +23,7 @@ from numpy import array, set_printoptions
 import pandas as pd
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sos_trades_core.sos_processes.test.test_sellar_opt_ms._usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
 import os
 from gemseo.core.mdo_scenario import MDOScenario
 from copy import deepcopy
