@@ -35,7 +35,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
         self.repo = 'sos_trades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_ms'
 
-    def test_01_ms_sellar_sequential_and_parallel(self):
+    def _test_01_ms_sellar_sequential_and_parallel(self):
 
         if True:  # platform.system() != 'Windows':
             print("\n Test 1 : check configure and treeview")
@@ -61,7 +61,7 @@ class TestMultiScenarioSoSOptimScenario(unittest.TestCase):
 
             # parallel execution
 
-            values_dict[f'{self.study_name}.n_subcouplings_parallel'] = 1
+            values_dict[f'{self.study_name}.n_subcouplings_parallel'] = 2
             exec_eng.load_study_from_input_dict(values_dict)
             exec_eng.configure()
             exec_eng.execute()
