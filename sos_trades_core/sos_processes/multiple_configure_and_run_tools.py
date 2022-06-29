@@ -218,8 +218,9 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
                 for key, value in dm_data_dict_1.items():
                     if 'residuals_history' in key:
                         unwanted_keys += [key]
-                    if 'type_metadata' in value.keys():
-                        keys_to_none[key]='type_metadata'
+                    if type(value) == dict:
+                        if 'type_metadata' in value.keys():
+                            keys_to_none[key]='type_metadata'
                 for key, value in keys_to_none.items():
                     dm_data_dict_1[key][value]=None
                 [dm_data_dict_1.pop(key) for key in unwanted_keys]
