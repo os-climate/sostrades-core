@@ -13,6 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from os.path import join
+
+from pathlib import Path
+from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+from sos_trades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
+from sos_trades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import \
+    Study as study_disc1_disc2
+
 from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 '''
@@ -401,7 +410,7 @@ class TestCache(unittest.TestCase):
         disc1_builder.cls.DESC_IN['an_input_1'] = {
             'type': 'string'}  # add new string variable
         disc1_builder.cls.DESC_IN['an_input_2'] = {
-            'type': 'list', 'subtype_descriptor': {'list': 'string'},}  # add new string variable
+            'type': 'list', 'subtype_descriptor': {'list': 'string'}, }  # add new string variable
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
         disc2_builder.cls.DESC_IN['an_input_3'] = {
@@ -485,12 +494,6 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_1')[
-            SoSDiscipline.TYPE_METADATA]
-        metadata_ref = [
-            {'known_values': {'value_1': 1, 'value_new': 2, 'value_new2': 3}}]
-        self.assertListEqual(metadata, metadata_ref)
-
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
         # reexecuted
@@ -505,11 +508,6 @@ class TestCache(unittest.TestCase):
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_1')[
-            SoSDiscipline.TYPE_METADATA]
-        metadata_ref = [
-            {'known_values': {'value_1': 1, 'value_new': 2, 'value_new2': 3}}]
-        self.assertListEqual(metadata, metadata_ref)
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
         '''
@@ -594,18 +592,6 @@ class TestCache(unittest.TestCase):
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-
-        metadata_ref_known_values1 = {
-            'STEPS_bzefivbzei))(((__)----+!!!:;=': 1, 'valuenew1': 2}
-        metadata_ref_known_values2 = {
-            'ghzoiegfhzeoifbskcoevgzepgfzocfbuifgupzaihvjsbviupaegviuzabcubvepzgfbazuipbcva': 1, 'value_new2': 2}
-
-        self.assertDictEqual(
-            metadata[0]['known_values'], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1]['known_values'], metadata_ref_known_values2)
 
     def _test_8_test_cache_coupling_with_string_list_change(self):
         '''
@@ -621,7 +607,7 @@ class TestCache(unittest.TestCase):
         disc1_builder.cls.DESC_IN['an_input_1'] = {
             'type': 'string'}  # add new string variable
         disc1_builder.cls.DESC_IN['an_input_2'] = {
-            'type': 'list', 'subtype_descriptor': {'list': 'string'},}  # add new string variable
+            'type': 'list', 'subtype_descriptor': {'list': 'string'}, }  # add new string variable
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
         self.factory.set_builders_to_coupling_builder(
@@ -671,18 +657,6 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.n_calls, n_calls_disc1)
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
-        metadata_ref_known_values1 = {'known_values': {'AC1': 1}}
-        metadata_ref_known_values2 = {'known_values': {'AC2': 1}}
-        metadata_ref_known_values3 = {'known_values': {'AC_new': 1}}
-
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-        self.assertDictEqual(
-            metadata[0], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1], metadata_ref_known_values2)
-        self.assertDictEqual(
-            metadata[2], metadata_ref_known_values3)
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
         # reexecuted
@@ -705,17 +679,6 @@ class TestCache(unittest.TestCase):
         n_calls_sosc += 1
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
-
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-
-        metadata_ref_known_values1 = {'known_values': {'AC1': 1}}
-        metadata_ref_known_values2 = {'known_values': {'AC2': 1, 'AC3': 2}}
-
-        self.assertDictEqual(
-            metadata[0], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1], metadata_ref_known_values2)
 
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
@@ -806,23 +769,6 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         # n_calls_disc2 += 1
 
-        metadata = self.ee.dm.get_data(f'{self.name}.Disc1.an_input_2')[
-            SoSDiscipline.TYPE_METADATA]
-        print(metadata)
-        metadata_ref_known_values1 = {0: {'known_values': {
-            'AC1': 1, 'ACnew': 2}}, 1: {'known_values': {'AC2': 1}}}
-        metadata_ref_known_values2 = {
-            0: {'known_values': {'AC3': 1}}, 1: {'known_values': {'AC4': 1}}}
-        metadata_ref_known_values3 = {0: {'known_values': {
-            'string': 1}}, 2: {'known_values': {'string2': 1}}}
-        self.maxDiff = None
-        self.assertDictEqual(
-            metadata[0]['known_values'], metadata_ref_known_values1)
-        self.assertDictEqual(
-            metadata[1]['known_values'], metadata_ref_known_values2)
-        self.assertDictEqual(
-            metadata[2]['known_values'], metadata_ref_known_values3)
-
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.n_calls, n_calls_disc1)
@@ -835,6 +781,10 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc2.n_calls, n_calls_disc2)
 
     def _test_10_cache_on_sellar_optim_gemseo_scenario(self):
+        '''
+        Test commented because it builds the process with MDODiscipline objects without using Execution Engine,
+        so that can't call SoSDiscipline method (_convert_new_type_into_array in MDA)
+        '''
 
         disciplines = [Sellar1(residual_form=False),
                        Sellar2(residual_form=False),
@@ -869,7 +819,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) + 
+            print("\t | n_calls: " + str(disc.n_calls) +
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -883,7 +833,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) + 
+            print("\t | n_calls: " + str(disc.n_calls) +
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -897,7 +847,7 @@ class TestCache(unittest.TestCase):
 
         for disc in scenario.formulation.disciplines:
             print("\n \t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) + 
+            print("\t | n_calls: " + str(disc.n_calls) +
                   ", n_calls_linearize: " + str(disc.n_calls))
             for k, v in disc.local_data.items():
                 print("\t | " + str(k) + " " + str(v))
@@ -1010,9 +960,9 @@ class TestCache(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
                                                                     "ineq_tolerance": 1e-6,
                                                                     "normalize_design_space": True}
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = np.array([1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = np.array([1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = np.array([1.])
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = np.array([
             1., 1.])
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = 10.
@@ -1084,14 +1034,14 @@ class TestCache(unittest.TestCase):
         self.study_name = 'SoSDisc'
 
         eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
-        eval_inputs.loc[eval_inputs['full_name'] == 
+        eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-        eval_inputs.loc[eval_inputs['full_name'] == 
+        eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.j', ['selected_input']] = True
 
         eval_outputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] == 
+        eval_outputs.loc[eval_outputs['full_name'] ==
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dspace = pd.DataFrame({
@@ -1243,14 +1193,14 @@ class TestCache(unittest.TestCase):
         self.study_name = 'SoSDisc'
 
         eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
-        eval_inputs.loc[eval_inputs['full_name'] == 
+        eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-        eval_inputs.loc[eval_inputs['full_name'] == 
+        eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.j', ['selected_input']] = True
 
         eval_outputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] == 
+        eval_outputs.loc[eval_outputs['full_name'] ==
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dspace = pd.DataFrame({
@@ -1346,8 +1296,8 @@ class TestCache(unittest.TestCase):
         n_call_grid_search_3 = grid_search_disc.n_calls
 
         # check that grid search has run since the subprocess has changed
-        #self.assertEqual(n_call_grid_search_3, n_call_grid_search_2 + 1)
-        
+        # self.assertEqual(n_call_grid_search_3, n_call_grid_search_2 + 1)
+
     def test_15_set_recursive_cache_scatter(self):
 
         ns_dict = {'ns_ac': self.name}
@@ -1369,7 +1319,7 @@ class TestCache(unittest.TestCase):
             'scatter', 'name_list', builder_list)
 
         self.ee.factory.set_builders_to_coupling_builder(scatter_builder)
-        
+
         self.ee.configure()
         self.ee.display_treeview_nodes()
 
@@ -1382,34 +1332,49 @@ class TestCache(unittest.TestCase):
                        self.name + '.scatter.name_2.b': 5,
                        self.name + '.cache_type': 'SimpleCache'}
         self.ee.load_study_from_input_dict(dict_values)
-        
+
         for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
             self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
-            
+
         for disc in self.ee.factory.sos_disciplines:
             self.assertTrue(disc.cache.__class__.__name__, 'SimpleCache')
-            
+
         dict_values = {self.name + '.cache_type': 'None'}
         self.ee.load_study_from_input_dict(dict_values)
-        
+
         for disc in self.ee.factory.sos_disciplines:
             self.assertTrue(disc.cache.__class__.__name__, None)
-            
+
         dict_values = {self.name + '.scatter.name_1.cache_type': 'SimpleCache'}
         self.ee.load_study_from_input_dict(dict_values)
-        
+
         for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
             if 'name_1' in cache_input:
                 self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
             else:
                 self.assertTrue(self.ee.dm.get_value(cache_input), 'None')
-                
+
         dict_values = {self.name + '.cache_type': 'SimpleCache',
                        self.name + '.scatter.name_1.cache_type': 'None'}
         self.ee.load_study_from_input_dict(dict_values)
-        
+
         for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
             self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
+
+    def test_16_set_cache_recursively_on_sos_optim(self):
+        """In this test we prove the ability of sosscenario discipline to recursively
+        set its children cache
+        """
+        # create study sellar opt and load data from usecase
+        study_1 = study_sellar_opt()
+        study_1.load_data()
+        # cache activation at the level of optim scenario
+        dict_values = {f'{study_1.study_name}.SellarOptimScenario.cache_type': 'SimpleCache'}
+        study_1.load_data(from_input_dict=dict_values)
+
+        # check that the cache type is set for all optim scenario sub disciplines
+        for discipline in study_1.execution_engine.factory.sos_disciplines:
+            self.assertEqual(discipline.get_sosdisc_inputs('cache_type'), 'SimpleCache')
 
 
 if __name__ == "__main__":

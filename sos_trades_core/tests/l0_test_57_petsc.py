@@ -247,7 +247,7 @@ class TestPetsc(unittest.TestCase):
             comm = PETSc.COMM_WORLD
             size = comm.getSize()
             rank = comm.getRank()
-            #rnorm < MAX (rtol * rnorm_0, abstol)
+            # rnorm < MAX (rtol * rnorm_0, abstol)
             options = {'solver_type': 'gmres', 'tol': 1.0e-50,
                        'atol': 1.0e-10, 'dtol': 1.0e5, 'max_iter': 100000}
             ksp = PETSc.KSP().create()
@@ -294,9 +294,9 @@ class TestPetsc(unittest.TestCase):
             values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
             values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA'] = "GMRES_PETSC"
             values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA_preconditioner'] = "gasm"
-            values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-            values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-            values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+            values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+            values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+            values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
             values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
             values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
             exec_eng.load_study_from_input_dict(values_dict)
@@ -353,9 +353,9 @@ class TestPetsc(unittest.TestCase):
                     values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
                     values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA'] = linear_solver_MDA
                     values_dict[f'{self.ns}.{self.c_name}.linear_solver_MDA_preconditioner'] = preconditioner
-                    values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-                    values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-                    values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+                    values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+                    values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+                    values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
                     values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([
                                                                          1., 1.])
                     values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv

@@ -250,7 +250,7 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                         raise ValueError(
                             f' Variable {key} cannot be converted since no metadata is available')
 
-                    #check_subtype(key, subtype, 'list')
+                    # check_subtype(key, subtype, 'list')
                     local_data_updt[key] = convert_array_into_list(
                         to_convert, deepcopy(metadata_list), subtype)
                 else:
@@ -472,7 +472,6 @@ def convert_array_into_dict(to_convert, metadata, subtype):
         elif type_inside_the_dict in ['int', 'string']:
             return to_convert
 
-
         elif type_inside_the_dict == 'array':
 
             dict_keys = list(metadata['value'].keys())
@@ -483,7 +482,6 @@ def convert_array_into_dict(to_convert, metadata, subtype):
                 idx += metadata['value'][key]
 
             return converted_dict
-
 
         elif type_inside_the_dict == 'dataframe':
 
@@ -496,7 +494,6 @@ def convert_array_into_dict(to_convert, metadata, subtype):
                 idx += metadata['value'][key][0]
 
             return converted_dict
-
 
         else:
             raise ValueError(
@@ -531,8 +528,7 @@ def convert_df_into_array(var_df, values_list, metadata, keys, excluded_columns=
     val_data = {column: list(var_df[column].values)
                 for column in excluded_columns if column in var_df}
 
-    new_var_df = var_df.drop(
-        columns=[column for column in excluded_columns if column in var_df])
+    new_var_df = var_df[[column for column in var_df.columns if column not in excluded_columns]]
 
     data = new_var_df.to_numpy()
 
@@ -575,9 +571,9 @@ def convert_new_type_into_array(
     Check element type in var_dict, convert new type into numpy array
         and stores metadata into DM for after reconversion
     '''
-
+    var_dict_converted = deepcopy(var_dict)
     dict_to_update_dm = {}
-    for key, var in var_dict.items():
+    for key, var in var_dict_converted.items():
         if not isinstance(dm_reduced_to_type_and_metadata, dict):
             var_type = dm_reduced_to_type_and_metadata.get_data(
                 key, VAR_TYPE_ID)
@@ -592,7 +588,7 @@ def convert_new_type_into_array(
                 raise ValueError(msg)
             else:
                 if var is None:
-                    var_dict[key] = None
+                    var_dict_converted[key] = None
                 else:
                     values_list = []
                     metadata = []
@@ -627,7 +623,6 @@ def convert_new_type_into_array(
                                 values_list, metadata = convert_dict_into_array_old_version(
                                     var, values_list, metadata, prev_key, deepcopy(prev_metadata))
                             else:
-
 
                                 check_subtype(key, subtype, 'dict')
                                 values_list, metadata = convert_dict_into_array(
@@ -697,16 +692,17 @@ def convert_new_type_into_array(
                         values_list, metadata = var, None
 
                         # update current dictionary value
-                    var_dict[key] = values_list
+                    var_dict_converted[key] = values_list
                     # Update metadata
                     # self.dm.set_data(key, self.TYPE_METADATA,
                     #                 metadata, check_value=False)
                     dict_to_update_dm[key] = metadata
 
         else:
-            var_dict[key] = var
+            var_dict_converted[key] = var
             dict_to_update_dm[key] = None
-    return var_dict, dict_to_update_dm
+            
+    return var_dict_converted, dict_to_update_dm
 
 
 def convert_string_to_int(val, val_data):
@@ -736,7 +732,6 @@ def convert_list_into_array(var, subtype):
             # raise ValueError(
             #     f'conversion of list of ints or string is not supported')
             return var, "no_metadata"
-
 
         elif type_inside_the_list == 'float':
             return array(var), {'length': len(var), 'value': None, 'size': len(var)}

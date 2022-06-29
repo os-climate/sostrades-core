@@ -22,6 +22,7 @@ import unittest
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.sos_processes.test.test_sellar_opt_w_func_manager_faulty.usecase import Study as study_sellar_opt_faulty
 
+
 class TestDebugModes(unittest.TestCase):
     """
     Debug mode test class
@@ -237,7 +238,8 @@ class TestDebugModes(unittest.TestCase):
         except:
             raise Exception('Execution failed, and not for the good reason')
 
+
 if '__main__' == __name__:
     cls = TestDebugModes()
     cls.setUp()
-    cls.test_02_debug_mode_input_change()
+    cls.test_00_debug_mode_null()

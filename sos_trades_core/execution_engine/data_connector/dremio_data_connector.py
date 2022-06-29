@@ -32,24 +32,33 @@ class DremioDataConnector(AbstractDataConnector):
     CONNECTOR_DATA = 'connector_data'
     CONNECTOR_REQUEST = 'connector_request'
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
         Constructor for Dremio data connector
 
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
-        super()
 
         self.hostname = None
         self.port = None
         self.username = None
         self.password = None
 
-    def __extract_connection_info(self, connection_data):
+        super().__init__(data_connection_info=data_connection_info)
 
-        self.hostname = connection_data['hostname']
-        self.port = connection_data['port']
-        self.username = connection_data['username']
-        self.password = connection_data['password']
+    def _extract_connection_info(self, data_connection_info):
+        """
+        Convert structure with data connection info given as parameter into member variable
+
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
+        """
+
+        self.hostname = data_connection_info['hostname']
+        self.port = data_connection_info['port']
+        self.username = data_connection_info['username']
+        self.password = data_connection_info['password']
 
     def load_data(self, connection_data):
         """
@@ -60,7 +69,7 @@ class DremioDataConnector(AbstractDataConnector):
 
         """
 
-        self.__extract_connection_info(connection_data)
+        self._extract_connection_info(connection_data)
 
         # connect to dremio_client.flight
 

@@ -72,9 +72,9 @@ class TestAnalyticGradients(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -131,7 +131,8 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.root_process.sos_disciplines[0].check_jacobian(
             threshold=1.0e-7, linearization_mode='adjoint')
 
-    def test_3_optim_scenario_execution_mdf_with_user_mode(self):
+    def _test_3_optim_scenario_execution_mdf_with_user_mode(self):
+        # TEST COMMENTED BECAUSE MDF FORMULATION BUILD A MDACHAIN INSTEAD OF SOSCOUPLING
         print("\n Test 3 : Sellar optim solution check with MDF formulation between user and finite diff \n \
                     compare user option with theory and compare with finite differences")
         exec_eng = ExecutionEngine(self.study_name)
@@ -164,9 +165,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -216,9 +217,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -271,9 +272,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -333,9 +334,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -397,9 +398,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -408,7 +409,11 @@ class TestAnalyticGradients(unittest.TestCase):
 
         opt_disc = exec_eng.dm.get_disciplines_with_name(
             "optim." + self.sc_name)[0]
-
+            
+        '''
+        TEST COMMENTED BECAUSE MDF FORMULATION BUILD A MDACHAIN INSTEAD OF SOSCOUPLING
+        
+        
         exec_eng_mdf = ExecutionEngine(self.study_name)
         factory = exec_eng_mdf.factory
 
@@ -439,9 +444,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
 
@@ -459,6 +464,7 @@ class TestAnalyticGradients(unittest.TestCase):
         for x, x_fd in zip(opt_disc.optimization_result.x_opt, opt_disc_mdf.optimization_result.x_opt):
             self.assertAlmostEqual(x, x_fd, delta=1.0e-4,
                                    msg="Wrong optimal x solution")
+        '''                           
 
     def _test_6_optim_scenario_execution_mdf_with_different_linearization_mode(self):
         # optim test with MDF formulation is not running anymore
@@ -502,9 +508,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -581,9 +587,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -632,9 +638,9 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDAQuasiNewton"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -669,9 +675,9 @@ class TestAnalyticGradients(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -780,9 +786,9 @@ class TestAnalyticGradients(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -835,9 +841,9 @@ class TestAnalyticGradients(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = True
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 2.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 2.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = array([2.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
@@ -1043,4 +1049,4 @@ class TestAnalyticGradients(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestAnalyticGradients()
     cls.setUp()
-    cls.test_1_check_analytic_gradients_simple_sellar()
+    cls.test_10_check_analytic_gradients_sellar_new_types_with_mdanewtonraphson()

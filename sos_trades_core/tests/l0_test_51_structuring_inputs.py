@@ -401,7 +401,7 @@ class TestStructuringInputs(unittest.TestCase):
                                                                   'default': False},
                            'linearization_mode': {'type': 'string', 'default': 'auto', 'possible_values': ['auto', 'direct', 'adjoint', 'reverse', 'finite_differences', 'complex_step']},
                            'cache_type': {'type': 'string', 'default': 'None', 'possible_values': ['None', 'SimpleCache']},
-                           'cache_file_path': {'type': 'string', 'default': None, 'possible_values': None},
+                           'cache_file_path': {'type': 'string', 'default': '', 'possible_values': None},
                            'debug_mode': {'type': 'string', 'default': '',
                                           'possible_values': ["", "nan", "input_change", "linearize_data_change", "min_max_grad", "min_max_couplings", "all"], }
                            }

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from copy import deepcopy
-from gemseo.utils.compare_data_manager_tooling import compare_dict,\
+from gemseo.utils.compare_data_manager_tooling import compare_dict, \
     delete_keys_from_dict
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -69,9 +69,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -101,9 +101,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -148,9 +148,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -179,9 +179,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -226,9 +226,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -258,9 +258,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -305,9 +305,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -336,9 +336,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "PureNewtonRaphson"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -383,9 +383,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "GSPureNewtonMDA"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc
@@ -415,9 +415,9 @@ class TestParallelExecution(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "GSPureNewtonMDA"
-        values_dict[f'{self.ns}.{self.c_name}.x'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_1'] = 1.
-        values_dict[f'{self.ns}.{self.c_name}.y_2'] = 1.
+        values_dict[f'{self.ns}.{self.c_name}.x'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_1'] = np.array([1.])
+        values_dict[f'{self.ns}.{self.c_name}.y_2'] = np.array([1.])
         values_dict[f'{self.ns}.{self.c_name}.z'] = np.array([1., 1.])
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         values_dict[f'{self.ns}.{self.c_name}.n_processes'] = n_proc

@@ -19,6 +19,7 @@ Generate an optimization scenario
 """
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
@@ -28,6 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         '''
         default initialisation test
@@ -35,11 +37,13 @@ class ProcessBuilder(BaseProcessBuilder):
     
         mda_builder = self.ee.factory.get_builder_from_process(
             'sos_trades_core.sos_processes.test', 'test_mda_div_copy_func_manager')
+        coupling_builders = self.ee.factory.create_builder_coupling('SellarEval')
+        coupling_builders.set_builder_info('cls_builder', mda_builder)
     
-        ns_dict = {'ns_OptimSellar': self.ee.study_name +
-                   '.SellarOptimScenario.SellarCoupling', 'ns_functions': self.ee.study_name + '.SellarOptimScenario.SellarCoupling', 'ns_optim': self.ee.study_name + '.SellarOptimScenario.SellarCoupling'}
+        ns_dict = {'ns_OptimSellar': self.ee.study_name + 
+                   '.SellarOptimScenario.SellarEval.SellarCoupling', 'ns_functions': self.ee.study_name + '.SellarOptimScenario.SellarEval.SellarCoupling', 'ns_optim': self.ee.study_name + '.SellarOptimScenario.SellarEval.SellarCoupling'}
         self.ee.ns_manager.add_ns_def(ns_dict)
         opt_builder = self.ee.factory.create_optim_builder(
-            'SellarOptimScenario', mda_builder)
+            'SellarOptimScenario', [coupling_builders])
     
         return opt_builder
