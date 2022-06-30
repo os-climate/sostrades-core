@@ -205,16 +205,12 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
             if _type == 'dict':
 
                 if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                    try:
-                        subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
-                    except:
-                        subtype = None
+                    subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
+
 
                 else:
-                    try:
-                        subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                    except:
-                        subtype = None
+
+                    subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
 
                 # TODO : remove this when we get rid of df_dict type
                 if metadata_list is None and subtype is None:
@@ -234,16 +230,10 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
             elif _type == 'list':
 
                 if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                    try:
-                        subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
-                    except:
-                        subtype = None
+                    subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
 
                 else:
-                    try:
-                        subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                    except:
-                        subtype = None
+                    subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
 
                 if subtype is not None:
                     if metadata_list is None and subtype['list'] not in ['int', 'string', 'float'] and check_subtype(key, subtype, 'list') not in BASE_TYPE_EXCLUDED:
@@ -608,17 +598,12 @@ def convert_new_type_into_array(
                             # convert if all values are handled by
                             # SoSTrades
                             if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                                try:
-                                    subtype = dm_reduced_to_type_and_metadata.get_data(
-                                        key, VAR_SUBTYPE_ID)
-                                except:
-                                    subtype = None
+                                subtype = dm_reduced_to_type_and_metadata.get_data(
+                                    key, VAR_SUBTYPE_ID)
+
                             else:
-                                try:
-                                    subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                                    # check_subtype(key, subtype, 'dict')
-                                except:
-                                    subtype = None
+                                subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
+
                             if subtype is None:
                                 values_list, metadata = convert_dict_into_array_old_version(
                                     var, values_list, metadata, prev_key, deepcopy(prev_metadata))
@@ -675,16 +660,12 @@ def convert_new_type_into_array(
                         values_list = array([var])
                     elif var_type == 'list':
                         if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                            try:
-                                subtype = dm_reduced_to_type_and_metadata.get_data(
-                                    key, VAR_SUBTYPE_ID)
-                            except:
-                                subtype = None
+                            subtype = dm_reduced_to_type_and_metadata.get_data(
+                                key, VAR_SUBTYPE_ID)
+
                         else:
-                            try:
-                                subtype = dm_reduced_to_type_and_metadata[key][VAR_SUBTYPE_ID]
-                            except:
-                                subtype = None
+                            subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
+
                         if subtype is not None:
                             check_subtype(key, subtype, 'list')
                             values_list, metadata = convert_list_into_array(var, subtype)
@@ -701,7 +682,7 @@ def convert_new_type_into_array(
         else:
             var_dict_converted[key] = var
             dict_to_update_dm[key] = None
-            
+
     return var_dict_converted, dict_to_update_dm
 
 

@@ -92,7 +92,7 @@ class DataManager:
     def get_an_uuid():
         ''' generate a random UUID to make data_dict keys unique '''
         return str(uuid4())
-    
+
     def generate_hashed_uid(self, string_list):
         '''
         Generate a hashed uid based on string list containing disc infos (full disc name, class name and full data i/o)
@@ -101,7 +101,7 @@ class DataManager:
         for string in string_list:
             h.update(string.encode())
         return h.digest()
-    
+
     def load_gemseo_disciplines_cache(self, cache_map):
         '''
         Store gemseo disciplines cache from cache_map using gemseo_disciplines_id_map
@@ -125,7 +125,7 @@ class DataManager:
         if attr is None:
             return self.data_dict[self.get_data_id(var_f_name)]
         else:
-            return self.data_dict[self.get_data_id(var_f_name)][attr]
+            return self.data_dict[self.get_data_id(var_f_name)].get(attr)
 
     def delete_complex_in_df_and_arrays(self):
 
@@ -393,6 +393,9 @@ class DataManager:
                         converted_dict[val] = dict_to_convert[key]
 
         return converted_dict
+
+    def variable_exists_in_dm(self, var_f_name):
+        return var_f_name in self.data_id_map.keys()
 
     def update_with_discipline_dict(self, disc_id, disc_dict):
         ''' Store and update the discipline data into the DM dictionary
