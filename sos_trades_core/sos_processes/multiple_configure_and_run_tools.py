@@ -169,7 +169,7 @@ def configure_twice_all_usecases_and_compare_dm(processes_repo):
 
     """
 
-    if platform.system() == 'Windows':
+    if platform.system() != 'Windows':
         raise OSError(
             'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
 
@@ -284,14 +284,18 @@ def get_all_usecases(processes_repo):
     usecase_list = []
     for repository in process_list:
         for process in process_list[repository]:
-            imported_module = import_module('.'.join([repository, process]))
-            process_directory = dirname(imported_module.__file__)
-            # Run all usecases
-            for usecase_py in listdir(process_directory):
-                if usecase_py.startswith('usecase'):
-                    usecase = usecase_py.replace('.py', '')
-                    usecase_list.append(
-                        '.'.join([repository, process, usecase]))
+            try:
+                process_module = '.'.join([repository, process])
+                imported_module = import_module(process_module)
+                if imported_module is not None and imported_module.__file__ is not None:
+                    process_directory = dirname(imported_module.__file__)
+                    # Run all usecases
+                    for usecase_py in listdir(process_directory):
+                        if usecase_py.startswith('usecase'):
+                            usecase = usecase_py.replace('.py', '')
+                            usecase_list.append('.'.join([repository, process, usecase]))
+            except Exception as error:
+                print(f'An error occurs when trying to load {process_module}\n{error}')
     return usecase_list
 
 
