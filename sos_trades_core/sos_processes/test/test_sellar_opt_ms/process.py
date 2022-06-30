@@ -19,6 +19,7 @@ Generate an optimization scenario
 """
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
@@ -28,6 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         '''
         default initialisation test
@@ -40,14 +42,13 @@ class ProcessBuilder(BaseProcessBuilder):
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
                         'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_OptimSellar'
-                                         ]}
+                        'ns_to_update': ['ns_OptimSellar', 'ns_optim', 'ns_functions']}
 
         self.ee.smaps_manager.add_build_map(
             'scenario_list', scenario_map)
 
         builder_cdf_list = self.ee.factory.get_builder_from_process(
-            'sos_trades_core.sos_processes.test', 'test_sellar_opt_discopt')
+            'sos_trades_core.sos_processes.test', 'test_sellar_opt_w_design_var')
 
         scatter_scenario_name = 'optimization scenarios'
         # modify namespaces defined in the child process
@@ -55,16 +56,12 @@ class ProcessBuilder(BaseProcessBuilder):
             self.ee.ns_manager.update_namespace_with_extra_ns(
                 ns, scatter_scenario_name, after_name=self.ee.study_name)
 
-
         ns_dict = {'ns_scatter_scenario': f'{self.ee.study_name}.{scatter_scenario_name}',
                    }
 
         self.ee.ns_manager.add_ns_def(ns_dict)
 
-
         multi_scenario = self.ee.factory.create_very_simple_multi_scenario_builder(
             scatter_scenario_name, 'scenario_list', [builder_cdf_list], autogather=True)
-
-
 
         return multi_scenario

@@ -105,7 +105,7 @@ class TestFuncManager(unittest.TestCase):
         self.func_manager.update_function_value('eqcst2', eqcst2)
 
         self.func_manager.configure_smooth_log(True, 1e4)
-
+        self.func_manager.set_aggregation_mods('sum', 'sum')
         self.func_manager.build_aggregated_functions(eps=1e-3)
 
         self.assertAlmostEqual(
@@ -576,13 +576,13 @@ class TestFuncManager(unittest.TestCase):
         obj2 = base_df.copy()
         obj2['obj2_values'] = 1.
         ineq_cst = base_df.copy()
-        ineq_cst['ineq_cst_values'] = np.array([10., 200., -30.])
-        ineq_cst_array = np.array([10., 200., -30.])
+        ineq_cst['ineq_cst_values'] = np.array([10., -2000., -30.])
+        ineq_cst_array = np.array([10., 2000., -30.])
         eqcst_delta = base_df.copy()
-        eqcst_delta['eqcst_delta_values'] = np.array([40., 1., -10.])
+        eqcst_delta['eqcst_delta_values'] = np.array([400., 1., -10.])
         eqcst_delta2 = base_df.copy()
         eqcst_delta2['eqcst_delta2_values'] = np.array([0.0001, 1., -0.00003])
-        eqcst_delta_array = np.array([-10., 0.2, -5.])
+        eqcst_delta_array = np.array([-10., -200000., -5.])
         eqcst_lintoquad = base_df.copy()
         eqcst_lintoquad['eqcst_lintoquad_values'] = np.array([-1., 2., 0.03])
         eqcst_lintoquad_array = np.array([-0.2, -50., 100.])
@@ -596,8 +596,8 @@ class TestFuncManager(unittest.TestCase):
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
                             EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT,
                             OBJECTIVE, OBJECTIVE]
-        func_df['weight'] = [0.5, 1., -0.2, 0.2, 1.2, -1.0, 0.01, 0.8, 0.2]
-        func_df['aggr'] = ['sum', 'sum', 'delta', 'delta', 'delta', 'lin_to_quad', 'lin_to_quad', 'smax', 'sum']
+        func_df['weight'] = [0.5, -1., -0.2, 0.2, 1.2, -1.0, 0.01, 0.8, 0.2]
+        func_df['aggr'] = ['sum', 'sum', 'sum', 'sum', 'delta', 'lin_to_quad', 'lin_to_quad', 'smax', 'sum']
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
@@ -611,6 +611,8 @@ class TestFuncManager(unittest.TestCase):
         values_dict[prefix + 'eqcst_lintoquad_array'] = eqcst_lintoquad_array
         values_dict[prefix + 'obj1'] = obj1
         values_dict[prefix + 'obj2'] = obj2
+        values_dict[prefix+ 'aggr_mod_eq'] = 'sum'
+        values_dict[prefix+ 'aggr_mod_ineq'] = 'smooth_max'
 
         ee.load_study_from_input_dict(values_dict)
 
@@ -637,7 +639,7 @@ class TestFuncManager(unittest.TestCase):
 
         disc_techno = ee.root_process.sos_disciplines[0]
 
-        assert disc_techno.check_jacobian(threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.ineq_cst',
+        assert disc_techno.check_jacobian(threshold=1e-8, inputs=['FuncManagerTest.FunctionManager.ineq_cst',
                                                            'FuncManagerTest.FunctionManager.ineq_cst_array',
                                                            'FuncManagerTest.FunctionManager.eqcst_delta',
                                                            'FuncManagerTest.FunctionManager.eqcst_delta2',
@@ -648,4 +650,6 @@ class TestFuncManager(unittest.TestCase):
                                                            'FuncManagerTest.FunctionManager.obj2'],
                                    outputs=['FuncManagerTest.FunctionManager.objective_lagrangian',
                                             'FuncManagerTest.FunctionManager.eq_constraint',
-                                            ], derr_approx='complex_step')
+                                            'FuncManagerTest.FunctionManager.ineq_constraint',
+                                            ],step = 1e-15, derr_approx='complex_step')
+

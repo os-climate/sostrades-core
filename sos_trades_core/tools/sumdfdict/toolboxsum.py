@@ -60,7 +60,8 @@ class toolboxsum(object):
         sum_df = reduce(lambda x, y: x.add(
             y, fill_value=0), list_df_wo_columns)
         if not_sum is not None:
-            sum_df = sum_df.join(restored_df)
+            # sum_df = sum_df.join(restored_df)
+            sum_df = restored_df.join(sum_df)
 
         sum_abs_df = reduce(lambda x, y: abs(x).add(
             abs(y), fill_value=0), list_df_wo_columns)

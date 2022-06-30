@@ -509,7 +509,7 @@ class DoeEval(SoSEval):
         if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
             self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
-            
+
     def run(self):
         '''
             Overloaded SoSEval method
@@ -590,7 +590,7 @@ class DoeEval(SoSEval):
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
                     global_dict_output[dynamic_output]})
-            
+
     def update_default_inputs(self, disc):
         '''
         Update default inputs of disc with dm values
@@ -638,28 +638,35 @@ class DoeEval(SoSEval):
                         var_to_update = copy.deepcopy(
                             origin_vars_to_update_dict[var_origin_f_name])
                     vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
-                        multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100, var_to_update=var_to_update)
+                        multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100.0, var_to_update=var_to_update)
             for multiplied_var in vars_to_update_dict:
                 self.samples[sample_i].append(
                     vars_to_update_dict[multiplied_var])
 
     def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
-            0].split('@')[1]
-        if any(char.isdigit() for char in col_index):
-            col_index = re.findall(r'\d+', col_index)[0]
-            cols_list = var_to_update.columns.to_list()
-            key = cols_list[int(col_index)]
-            var_to_update[key] = multiplier_value * var_to_update[key]
+        # if dict or dataframe to be multiplied
+        if '@' in multiplier_name:
+            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
+            if col_name_clean == 'allcolumns':
+                if isinstance(var_to_update, dict):
+                    float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
+                        var_to_update[dict_keys], float)]
+                elif isinstance(var_to_update, pd.DataFrame):
+                    float_cols_ids_list = [
+                        df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
+                for key in float_cols_ids_list:
+                    var_to_update[key] = multiplier_value * var_to_update[key]
+            else:
+                keys_clean = [self.clean_var_name(var)
+                              for var in var_to_update.keys()]
+                col_index = keys_clean.index(col_name_clean)
+                col_name = var_to_update.keys()[col_index]
+                var_to_update[col_name] = multiplier_value * \
+                    var_to_update[col_name]
+        # if float to be multiplied
         else:
-            if isinstance(var_to_update, dict):
-                float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
-                    var_to_update[dict_keys], float)]
-            elif isinstance(var_to_update, pd.DataFrame):
-                float_cols_ids_list = [
-                    df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
-            for key in float_cols_ids_list:
-                var_to_update[key] = multiplier_value * var_to_update[key]
+            var_to_update = multiplier_value * var_to_update
         return var_to_update
 
     def get_algo_default_options(self, algo_name):
@@ -721,7 +728,7 @@ class DoeEval(SoSEval):
                     poss_in_values_full.append(
                         full_id.split(self.ee.study_name + ".")[1])
 
-                elif is_input_multiplier_type and not is_None:
+                if is_input_multiplier_type and not is_None:
                     poss_in_values_list = self.set_multipliers_values(
                         disc, full_id, data_in_key)
                     for val in poss_in_values_list:
@@ -744,39 +751,61 @@ class DoeEval(SoSEval):
 
     def set_multipliers_values(self, disc, full_id, var_name):
         poss_in_values_list = []
-        df_var = disc._data_in[var_name]['value']
-        # if df_var is dict : transform dict to df
-        if disc._data_in[var_name][self.TYPE] == 'dict':
-            dict_var = disc._data_in[var_name]['value']
-            df_var = pd.DataFrame(
-                dict_var, index=list(dict_var.keys()))
-        # check & create float columns list from df
-        columns = df_var.columns
-        float_cols_list = [col_name for col_name in columns if (
-            df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
-        # if df with float columns
-        if len(float_cols_list) > 0:
-            for col_name in float_cols_list:
-                col_name_clean = self.clean_var_name(col_name)
-                multiplier_fullname = f'{full_id}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
-                    self.ee.study_name + ".")[1]
-                poss_in_values_list.append(multiplier_fullname)
-            # if df with more than one float column, create multiplier for all
-            # columns also
-            if len(float_cols_list) > 1:
-                multiplier_fullname = f'{full_id}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
-                    self.ee.study_name + ".")[1]
-                poss_in_values_list.append(multiplier_fullname)
+        # if local var
+        if 'namespace' not in disc._data_in[var_name]:
+            origin_var_ns = disc._data_in[var_name]['ns_reference'].value
+        else:
+            origin_var_ns = disc._data_in[var_name]['namespace']
+
+        disc_id = ('.').join(full_id.split('.')[:-1])
+        ns_disc_id = ('__').join([origin_var_ns, disc_id])
+        if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
+            full_id_ns = ('.').join(
+                [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name])
+        else:
+            full_id_ns = full_id
+
+        if disc._data_in[var_name][self.TYPE] == 'float':
+            multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
+                self.ee.study_name + ".")[1]
+            poss_in_values_list.append(multiplier_fullname)
+
+        else:
+            df_var = disc._data_in[var_name]['value']
+            # if df_var is dict : transform dict to df
+            if disc._data_in[var_name][self.TYPE] == 'dict':
+                dict_var = disc._data_in[var_name]['value']
+                df_var = pd.DataFrame(
+                    dict_var, index=list(dict_var.keys()))
+            # check & create float columns list from df
+            columns = df_var.columns
+            float_cols_list = [col_name for col_name in columns if (
+                df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+            # if df with float columns
+            if len(float_cols_list) > 0:
+                for col_name in float_cols_list:
+                    col_name_clean = self.clean_var_name(col_name)
+                    multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
+                        self.ee.study_name + ".")[1]
+                    poss_in_values_list.append(multiplier_fullname)
+                # if df with more than one float column, create multiplier for all
+                # columns also
+                if len(float_cols_list) > 1:
+                    multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+                        self.ee.study_name + ".")[1]
+                    poss_in_values_list.append(multiplier_fullname)
         return poss_in_values_list
 
     def clean_var_name(self, var_name):
         return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
 
     def get_names_from_multiplier(self, var_name):
+        column_name = None
         var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
             0].split('@')[0]
-        column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
-            0].split('@')[1]
+        if '@' in var_name:
+            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
 
         return [var_origin_name, column_name]
 

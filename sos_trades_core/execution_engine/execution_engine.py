@@ -18,8 +18,6 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 # Execution engine SoSTrades code
-from pprint import PrettyPrinter
-
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.data_manager import DataManager
 from sos_trades_core.execution_engine.sos_factory import SosFactory
@@ -28,8 +26,9 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sos_trades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
-from sos_trades_core.tests import data
+from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
+    PersistentConnectorContainer, ConnectorFactory)
+
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -82,6 +81,8 @@ class ExecutionEngine:
         self.root_process = None
         self.root_builder_ist = None
 
+        self.__connector_container = PersistentConnectorContainer()
+
     @property
     def factory(self):
         """ Read-only accessor to the factory object
@@ -99,6 +100,14 @@ class ExecutionEngine:
             :type: PostProcessingManager
         """
         return self.__post_processing_manager
+
+    @property
+    def connector_container(self):
+        """
+        Read-only accessor on the connector_container object
+        :return: PersistentConnectorContainer
+        """
+        return self.__connector_container
 
     # -- Public methods
     def select_root_process(self, repo, mod_id):

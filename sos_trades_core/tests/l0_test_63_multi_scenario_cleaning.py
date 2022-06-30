@@ -23,7 +23,7 @@ from numpy import array, set_printoptions
 import pandas as pd
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sos_trades_core.sos_processes.test.test_sellar_opt_ms._usecase import Study as study_sellar_opt
+from sos_trades_core.sos_processes.test.test_sellar_opt_ms.usecase import Study as study_sellar_opt
 import os
 from gemseo.core.mdo_scenario import MDOScenario
 from copy import deepcopy
@@ -56,9 +56,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         usecase = study_sellar_opt(execution_engine=exec_eng)
         usecase.study_name = self.study_name
-        values_dict = {}
-        for dict_item in usecase.setup_usecase():
-            values_dict.update(dict_item)
+        values_dict = usecase.setup_usecase()
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.configure()
         exec_eng.display_treeview_nodes()
@@ -80,7 +78,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         len_after_clean = len(list(exec_eng.dm.disciplines_id_map.keys()))
 
         # assert disciplines are not in dm
-        assert(len_after_clean == 9)
+        assert(len_after_clean == 11)
 
 
 if '__main__' == __name__:

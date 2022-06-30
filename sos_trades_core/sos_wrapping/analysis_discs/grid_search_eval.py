@@ -1,39 +1,24 @@
 from __future__ import annotations
-from weakref import ref
-import pandas as pd
-from gemseo.algos.doe.doe_factory import DOEFactory
-from numpy import array
 
-from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
-import itertools
 import copy
-import numpy as np
+import itertools
 import re
 
-import itertools
-from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
-    TwoAxesInstanciatedChart,
-    InstanciatedSeries,
-)
-from sos_trades_core.tools.post_processing.tables.instanciated_table import (
-    InstanciatedTable,
-)
+import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
-from sos_trades_core.tools.post_processing.post_processing_tools import (
-    align_two_y_axes,
-    format_currency_legend,
-)
+from plotly.validators.scatter.marker import SymbolValidator
+from sos_trades_core.api import get_sos_logger
+
+from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
+    GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER, OntologyDataConnector)
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sos_trades_core.sos_wrapping.analysis_discs.doe_eval import DoeEval
+from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
     InstantiatedPlotlyNativeChart,
 )
-from plotly.validators.scatter.marker import SymbolValidator
 
-from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
-    OntologyDataConnector,
-)
 
 '''
 Copyright 2022 Airbus SAS
@@ -74,7 +59,7 @@ class GridSearchEval(DoeEval):
         'version': '',
     }
     INPUT_TYPE = ['float']
-    INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe']
+    INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
@@ -190,20 +175,32 @@ class GridSearchEval(DoeEval):
                                     'type': 'dict',
                                     'visibility': 'Shared',
                                     'namespace': 'ns_doe',
-                                    'unit': self.ee.dm.get_data(out_var).get('unit', '-')
+                                    'unit': self.ee.dm.get_data(out_var).get(
+                                        'unit', '-'
+                                    ),
                                 }
                             }
                         )
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
-                    generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
-                    for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
+                if (len(self.selected_inputs) > 0) and (
+                    any(
+                        [
+                            self.MULTIPLIER_PARTICULE in val
+                            for val in self.selected_inputs
+                        ]
+                    )
+                ):
+                    generic_multipliers_dynamic_inputs_list = (
+                        self.create_generic_multipliers_dynamic_input()
+                    )
+                    for (
+                        generic_multiplier_dynamic_input
+                    ) in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
 
-                # setting dynamic design space with default value if not
-                # specified
                 design_space_dynamic_input = self.create_design_space_input(
-                    selected_inputs_short, selected_inputs_has_changed)
+                    selected_inputs_short, selected_inputs_has_changed
+                )
                 dynamic_inputs.update(design_space_dynamic_input)
 
                 # algo_options to match with doe and specify processes nb
@@ -240,7 +237,9 @@ class GridSearchEval(DoeEval):
         self.conversion_full_short = {}
         self.chart_dict = {}
 
-    def create_design_space_input(self, selected_inputs_short, selected_inputs_has_changed):
+    def create_design_space_input(
+        self, selected_inputs_short, selected_inputs_has_changed
+    ):
         dynamic_input = {}
         default_design_space = pd.DataFrame(
             {
@@ -258,16 +257,19 @@ class GridSearchEval(DoeEval):
                 'type': 'dataframe',
                 self.DEFAULT: default_design_space,
                 'dataframe_descriptor': {
-                        'shortest_name': ('string', None, False),
-                        self.LOWER_BOUND: ('float', None, True),
-                        self.UPPER_BOUND: ('float', None, True),
-                        self.NB_POINTS: ('int', None, True),
-                        'full_name': ('string', None, False),
+                    'shortest_name': ('string', None, False),
+                    self.LOWER_BOUND: ('float', None, True),
+                    self.UPPER_BOUND: ('float', None, True),
+                    self.NB_POINTS: ('int', None, True),
+                    'full_name': ('string', None, False),
                 },
             }
         }
 
-        if 'design_space' in self._data_in and self._data_in['design_space']['value'] is None:
+        if (
+            'design_space' in self._data_in
+            and self._data_in['design_space']['value'] is None
+        ):
             self._data_in['design_space']['value'] = default_design_space
 
         if 'design_space' in self._data_in and selected_inputs_has_changed:
@@ -279,25 +281,29 @@ class GridSearchEval(DoeEval):
         dynamic_inputs_list = []
         for selected_in in self.selected_inputs:
             if self.MULTIPLIER_PARTICULE in selected_in:
-                multiplier_name = selected_in.split('.')[-1]
-                origin_var_name = self.get_names_from_multiplier(multiplier_name)[
-                    0]
+                origin_var_fullname = '.'.join(
+                    [self.ee.study_name, self.get_names_from_multiplier(selected_in)[
+                        0]]
+                )
                 # if
-                if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
+                if (
+                    len(
+                        self.ee.dm.get_all_namespaces_from_var_name(
+                            origin_var_fullname)
+                    )
+                    > 1
+                ):
                     self.logger.exception(
                         'Multiplier name selected already exists!')
-                origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
-                    0]
-                origin_var_ns = self.ee.dm.get_data(
-                    origin_var_fullname, 'namespace')
+                # selected input multiplier at the same place as the origin var
                 dynamic_inputs_list.append(
                     {
-                        f'{multiplier_name}': {
+                        f'{selected_in}': {
                             'type': 'float',
                             'visibility': 'Shared',
-                            'namespace': origin_var_ns,
-                            'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
-                            'default': 100
+                            'namespace': 'ns_doe',
+                            'unit': '%',
+                            'default': 100,
                         }
                     }
                 )
@@ -414,12 +420,18 @@ class GridSearchEval(DoeEval):
         possible_in_values_full.sort()
         possible_out_values_full.sort()
 
-        inputs_with_multipliers_col_list = np.unique([self.get_names_from_multiplier(
-            val)[0] for val in possible_in_values_full if self.MULTIPLIER_PARTICULE in val]).tolist()
+        inputs_with_multipliers_col_list = np.unique(
+            [
+                self.get_names_from_multiplier(val)[0]
+                for val in possible_in_values_full
+                if self.MULTIPLIER_PARTICULE in val
+            ]
+        ).tolist()
 
         # shortest name
         self.generate_shortest_name(
-            list(set(possible_in_values_full)) + inputs_with_multipliers_col_list)
+            list(set(possible_in_values_full + inputs_with_multipliers_col_list))
+        )
         self.generate_shortest_name(list(set(possible_out_values_full)))
 
         # possible_in_values_short = [
@@ -429,11 +441,6 @@ class GridSearchEval(DoeEval):
         #     self.conversion_full_short[val] for val in possible_out_values_full
         # ]
 
-        # ontology name
-        ontology_connector = OntologyDataConnector()
-        data_connection = {
-            'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
-        }
         inputs_val_list = [val.split('.')[-1]
                            for val in possible_in_values_full]
         outputs_val_list = [val.split('.')[-1]
@@ -443,33 +450,46 @@ class GridSearchEval(DoeEval):
                 origin_full_name = self.get_names_from_multiplier(val)[0]
                 inputs_val_list.append(origin_full_name.split('.')[-1])
 
-        args = inputs_val_list + outputs_val_list
-        ontology_connector.set_connector_request(
-            data_connection, OntologyDataConnector.PARAMETER_REQUEST, args
-        )
-        conversion_full_ontology = ontology_connector.load_data(
-            data_connection)
+        parameter_list = inputs_val_list + outputs_val_list
+        ontology_connector = self.ee.connector_container.get_persistent_connector(
+            GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
+        if ontology_connector is not None:
+            data_request = {
+                OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
+                OntologyDataConnector.REQUEST_ARGS: parameter_list,
+            }
+            conversion_full_ontology = ontology_connector.load_data(
+                data_request)
+        else:
+            # Cannot make a call to ontology so set default data
+            conversion_full_ontology = {
+                parameter: parameter for parameter in parameter_list}
 
         # replace ontology val for column df/dict var
         possible_in_values_short = []
         for val in possible_in_values_full:
             col_name = ''
-            if self.MULTIPLIER_PARTICULE in val:
-                var_f_name = '.'.join(
-                    [self.ee.study_name, self.get_names_from_multiplier(val)[0]])
-                col_name_clean = self.get_names_from_multiplier(val)[1]
-                cols_list = list(self.ee.dm.get_data(
-                    var_f_name)['value'].keys())
-                col_list_clean = [self.clean_var_name(
-                    var) for var in cols_list]
-                if col_name_clean in col_list_clean:
-                    col_index = col_list_clean.index(col_name_clean)
-                    col_name = f' - {cols_list[int(col_index)]} Column'
+            if (self.MULTIPLIER_PARTICULE in val):
+                if ('@' in val):
+                    var_f_name = '.'.join(
+                        [self.ee.study_name, self.get_names_from_multiplier(val)[
+                            0]]
+                    )
+                    col_name_clean = self.get_names_from_multiplier(val)[1]
+                    cols_list = list(self.ee.dm.get_data(
+                        var_f_name)['value'].keys())
+                    col_list_clean = [self.clean_var_name(
+                        var) for var in cols_list]
+                    if col_name_clean in col_list_clean:
+                        col_index = col_list_clean.index(col_name_clean)
+                        col_name = f' - {cols_list[int(col_index)]} Column'
+                    else:
+                        col_name = ' - All Float Columns'
                 else:
-                    col_name = ' - All Float Columns'
-                val = self.get_names_from_multiplier(val)[0]
+                    col_name = ' Multiplier'
+            val = self.get_names_from_multiplier(val)[0]
             var_name = conversion_full_ontology[val.split(".")[-1]][0]
-            var_name_origin = "-".join(
+            var_name_origin = " " + "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
             possible_in_values_short.append(
                 f'{var_name}{var_name_origin}{col_name}')
@@ -480,8 +500,7 @@ class GridSearchEval(DoeEval):
             var_name = conversion_full_ontology[val.split(".")[-1]][0]
             var_name_origin = "-".join(
                 self.conversion_full_short[val].split(".")[:-1])
-            possible_out_values_short.append(
-                f'{var_name} {var_name_origin}')
+            possible_out_values_short.append(f'{var_name} {var_name_origin}')
         # [conversion_full_ontology[val] for val in outputs_val_list]
 
         default_in_dataframe = pd.DataFrame(
@@ -515,8 +534,11 @@ class GridSearchEval(DoeEval):
         elif set(eval_input_new_dm['shortest_name'].tolist()) != (
             set(default_in_dataframe['shortest_name'].tolist())
         ):
-            self.check_eval_io(eval_input_new_dm['shortest_name'].tolist(), default_in_dataframe['shortest_name'].tolist(),
-                               is_eval_input=True)
+            self.check_eval_io(
+                eval_input_new_dm['shortest_name'].tolist(),
+                default_in_dataframe['shortest_name'].tolist(),
+                is_eval_input=True,
+            )
             default_dataframe = copy.deepcopy(default_in_dataframe)
             if sum(eval_input_new_dm['selected_input'].to_list()) > self.max_inputs_nb:
                 self.logger.warning(
@@ -582,8 +604,11 @@ class GridSearchEval(DoeEval):
         elif set(eval_output_new_dm['shortest_name'].tolist()) != (
             set(default_out_dataframe['shortest_name'].tolist())
         ):
-            self.check_eval_io(eval_output_new_dm['shortest_name'].tolist(), default_out_dataframe['shortest_name'].tolist(),
-                               is_eval_input=False)
+            self.check_eval_io(
+                eval_output_new_dm['shortest_name'].tolist(),
+                default_out_dataframe['shortest_name'].tolist(),
+                is_eval_input=False,
+            )
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
             already_set_values = eval_output_new_dm['selected_output'].tolist()
@@ -713,8 +738,18 @@ class GridSearchEval(DoeEval):
                             # single outputs
                             for scenario, df in output_df_dict.items():
                                 filtered_df = df.copy(deep=True)
-                                filtered_df.rename(columns={old_key: re.sub(r'_dict$', '', single_output).split(
-                                    '.')[-1] + f'.{old_key}' for old_key in filtered_df.select_dtypes(include='float').columns.to_list()}, inplace=True)
+                                filtered_df.rename(
+                                    columns={
+                                        old_key: re.sub(
+                                            r'_dict$', '', single_output
+                                        ).split('.')[-1]
+                                        + f'.{old_key}'
+                                        for old_key in filtered_df.select_dtypes(
+                                            include='float'
+                                        ).columns.to_list()
+                                    },
+                                    inplace=True,
+                                )
                                 filtered_df = filtered_df.select_dtypes(
                                     include='float')
                                 filtered_df['scenario'] = f'{scenario}'
@@ -723,9 +758,18 @@ class GridSearchEval(DoeEval):
                                 for name in filtered_name:
                                     if name not in list(output_info_dict.keys()):
                                         output_info_dict[name] = {
-                                            'output_info_name': re.sub(r'_dict$', '', single_output),
-                                            'unit': self.ee.dm.get_data(self.ee.dm.get_all_namespaces_from_var_name(
-                                                re.sub(r'_dict$', '', single_output))[0])['unit']}
+                                            'output_info_name': re.sub(
+                                                r'_dict$', '', single_output
+                                            ),
+                                            'unit': self.ee.dm.get_data(
+                                                self.ee.dm.get_all_namespaces_from_var_name(
+                                                    re.sub(r'_dict$', '',
+                                                           single_output)
+                                                )[
+                                                    0
+                                                ]
+                                            )['unit'],
+                                        }
 
                                 if output_df is None:
                                     output_df = filtered_df.copy(deep=True)
@@ -756,10 +800,15 @@ class GridSearchEval(DoeEval):
                                 columns_out_df.remove('scenario')
 
                                 for col in columns_temp:
-                                    if col.split('.')[-1] not in [k.split('.')[-1] for k in columns_out_df]:
+                                    if col.split('.')[-1] not in [
+                                        k.split('.')[-1] for k in columns_out_df
+                                    ]:
                                         # if col not in [name for name  ]:
                                         output_df = output_df.merge(
-                                            output_df_temp[['scenario', col]], on='scenario', how='left')
+                                            output_df_temp[['scenario', col]],
+                                            on='scenario',
+                                            how='left',
+                                        )
                                 output_df_temp = None
 
             # Select only float type results
@@ -800,8 +849,10 @@ class GridSearchEval(DoeEval):
 
             chart_list = [
                 list(chart_tuple)
-                +[output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
-                +[output_info_dict[chart_tuple[1].split('.')[-1]]['unit']] for chart_tuple in chart_tuples]
+                + [output_info_dict[chart_tuple[1].split('.')[-1]]['output_info_name']]
+                + [output_info_dict[chart_tuple[1].split('.')[-1]]['unit']]
+                for chart_tuple in chart_tuples
+            ]
 
             full_chart_list += chart_list
             # if output_df= None --> full_chart_list = []
@@ -923,7 +974,8 @@ class GridSearchEval(DoeEval):
 
         if len(selected_inputs) < 4:
             self.chart_dict, output_df = self.prepare_chart_dict(
-                outputs_dict, inputs_dict)
+                outputs_dict, inputs_dict
+            )
             # chart_dict = self.chart_dict
 
             if filters is not None:
@@ -942,7 +994,8 @@ class GridSearchEval(DoeEval):
                     'shortest_name'
                 ].to_list()
                 ref_scen_df = self.get_postprocessing_table(
-                    first_chart_info, eval_in_list)
+                    first_chart_info, eval_in_list
+                )
                 colores = [
                     'lavender'
                     if tipo == 'input' in ref_scen_df['Type'].to_list()
@@ -1026,7 +1079,7 @@ class GridSearchEval(DoeEval):
                                     contours=dict(
                                         coloring='heatmap',
                                         showlabels=True,  # show labels on contours
-                                        labelfont=dict(# label font properties
+                                        labelfont=dict(  # label font properties
                                             size=10,
                                             # color = 'white',
                                         ),
@@ -1044,12 +1097,14 @@ class GridSearchEval(DoeEval):
                                     connectgaps=False,
                                     hovertemplate='{}'.format(
                                         chart_info["x_short"])
-                                    +': %{x}'
-                                    +'<br>{}'.format(chart_info["y_short"])
-                                    +': %{y}'
-                                    +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                    +': <b> %{z}<b>'
-                                    +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                    + ': %{x}'
+                                    + '<br>{}'.format(chart_info["y_short"])
+                                    + ': %{y}'
+                                    + '<br><b>{}<b>'.format(
+                                        chart_info["z"].split(".")[-1]
+                                    )
+                                    + ': <b> %{z}<b>'
+                                    + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                     name="",
                                 )
                             )
@@ -1086,11 +1141,15 @@ class GridSearchEval(DoeEval):
                                     chart_info['y']
                                 ].to_list()
                                 z_ref_scen = float(
-                                    chart_info['reference_scenario'][chart_info['z']].values
+                                    chart_info['reference_scenario'][
+                                        chart_info['z']
+                                    ].values
                                 )
-                                legend_letter, factor, z_ref_hover = get_order_of_magnitude(
-                                    z_ref_scen
-                                )
+                                (
+                                    legend_letter,
+                                    factor,
+                                    z_ref_hover,
+                                ) = get_order_of_magnitude(z_ref_scen)
 
                                 # if
                                 # float(chart_info['reference_scenario'][col_slider])==slide_value:
@@ -1109,15 +1168,17 @@ class GridSearchEval(DoeEval):
                                         showlegend=False,
                                         hovertemplate='{}'.format(
                                             chart_info["x_short"])
-                                        +': %{x}'
-                                        +'<br>{}'.format(chart_info["y_short"])
-                                        +': %{y}'
-                                        +'<br>{} '.format(chart_info["z"].split(".")[-1])
-                                        +': <b> {} {}<b>'.format(
+                                        + ': %{x}'
+                                        + '<br>{}'.format(chart_info["y_short"])
+                                        + ': %{y}'
+                                        + '<br>{} '.format(
+                                            chart_info["z"].split(".")[-1]
+                                        )
+                                        + ': <b> {} {}<b>'.format(
                                             round(z_ref_hover,
                                                   5), legend_letter
                                         )
-                                        +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='Reference Scenario',
                                     )
                                 )
@@ -1153,8 +1214,9 @@ class GridSearchEval(DoeEval):
                             col_slider = chart_info['slider'][0]['full_name']
                             slider_short_name = chart_info['slider'][0]['short_name']
                             slider_unit = chart_info['slider'][0]['unit']
-                            slider_values = chart_info['chart_data'][col_slider].unique(
-                            )
+                            slider_values = chart_info['chart_data'][
+                                col_slider
+                            ].unique()
                             z_max = chart_info['z_max']
                             z_min = chart_info['z_min']
 
@@ -1164,21 +1226,24 @@ class GridSearchEval(DoeEval):
                                 x_data = (
                                     chart_info['chart_data']
                                     .loc[
-                                        chart_info['chart_data'][col_slider] == slide_value
+                                        chart_info['chart_data'][col_slider]
+                                        == slide_value
                                     ][chart_info['x']]
                                     .to_list()
                                 )
                                 y_data = (
                                     chart_info['chart_data']
                                     .loc[
-                                        chart_info['chart_data'][col_slider] == slide_value
+                                        chart_info['chart_data'][col_slider]
+                                        == slide_value
                                     ][chart_info['y']]
                                     .to_list()
                                 )
                                 z_data = (
                                     chart_info['chart_data']
                                     .loc[
-                                        chart_info['chart_data'][col_slider] == slide_value
+                                        chart_info['chart_data'][col_slider]
+                                        == slide_value
                                     ][chart_info['z']]
                                     .replace(np.nan, 'None')
                                     .to_list()
@@ -1204,7 +1269,7 @@ class GridSearchEval(DoeEval):
                                         contours=dict(
                                             coloring='heatmap',
                                             showlabels=True,  # show labels on contours
-                                            labelfont=dict(# label font properties
+                                            labelfont=dict(  # label font properties
                                                 size=10,
                                                 # color = 'white',
                                             ),
@@ -1226,14 +1291,16 @@ class GridSearchEval(DoeEval):
                                         connectgaps=False,
                                         hovertemplate='{}'.format(
                                             chart_info["x_short"])
-                                        +': %{x}'
-                                        +'<br>{}'.format(chart_info["y_short"])
-                                        +': %{y}'
-                                        +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                        +': <b> %{z}<b>'
-                                        +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                        + ': %{x}'
+                                        + '<br>{}'.format(chart_info["y_short"])
+                                        + ': %{y}'
+                                        + '<br><b>{}<b>'.format(
+                                            chart_info["z"].split(".")[-1]
+                                        )
+                                        + ': <b> %{z}<b>'
+                                        + '<b> {}<b><br>'.format(chart_info["z_unit"]),
                                         name='{} '.format(slider_short_name)
-                                        +': {} {}'.format(
+                                        + ': {} {}'.format(
                                             round(slide_value, 2), slider_unit
                                         ),
                                     )
@@ -1304,25 +1371,30 @@ class GridSearchEval(DoeEval):
                                             visible=visible,
                                             showlegend=False,
                                             hovertemplate='{}'.format(
-                                                chart_info["x_short"])
-                                            +': %{x}'
-                                            +'<br>{}'.format(chart_info["y_short"])
-                                            +': %{y}'
-                                            +'<br>{} '.format(slider_short_name)
-                                            +': {}'.format(
+                                                chart_info["x_short"]
+                                            )
+                                            + ': %{x}'
+                                            + '<br>{}'.format(chart_info["y_short"])
+                                            + ': %{y}'
+                                            + '<br>{} '.format(slider_short_name)
+                                            + ': {}'.format(
                                                 float(
                                                     chart_info['reference_scenario'][
                                                         col_slider
                                                     ]
                                                 )
                                             )
-                                            +f'{slider_unit}'
-                                            +'<br><b>{}<b>'.format(chart_info["z"].split(".")[-1])
-                                            +': <b> {} {}<b>'.format(
+                                            + f'{slider_unit}'
+                                            + '<br><b>{}<b>'.format(
+                                                chart_info["z"].split(".")[-1]
+                                            )
+                                            + ': <b> {} {}<b>'.format(
                                                 round(z_ref_hover,
                                                       5), legend_letter
                                             )
-                                            +'<b> {}<b><br>'.format(chart_info["z_unit"]),
+                                            + '<b> {}<b><br>'.format(
+                                                chart_info["z_unit"]
+                                            ),
                                             name='Reference Scenario',
                                         )
                                     )
@@ -1445,8 +1517,8 @@ class GridSearchEval(DoeEval):
         ]
         df['pretty_value'] = df['table_value'].apply(
             lambda x: str(round(get_order_of_magnitude(x)[-1], 5))
-            +' '
-            +get_order_of_magnitude(x)[0]
+            + ' '
+            + get_order_of_magnitude(x)[0]
         )
         df['unit'] = 'None'
         df['unit'].where(
