@@ -1048,7 +1048,7 @@ class TestCache(unittest.TestCase):
             'shortest_name': ['x', 'j'],
             'lower_bnd': [5., 20.],
             'upper_bnd': [7., 25.],
-            'nb_points': [3, 3],
+            'nb_points': [2, 2],
             'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
         })
 
@@ -1069,9 +1069,6 @@ class TestCache(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
             f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
 
-            # UQ
-            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
-            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
         }
 
         self.ee.load_study_from_input_dict(dict_values)
@@ -1131,7 +1128,7 @@ class TestCache(unittest.TestCase):
             'shortest_name': ['x', 'j'],
             'lower_bnd': [5., 20.],
             'upper_bnd': [10., 30.],
-            'nb_points': [6, 11],
+            'nb_points': [3, 2],
             'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
         })
         dict_values[f'{self.study_name}.{self.grid_search}.design_space'] = dspace
@@ -1207,7 +1204,7 @@ class TestCache(unittest.TestCase):
             'shortest_name': ['x', 'j'],
             'lower_bnd': [5., 20.],
             'upper_bnd': [7., 25.],
-            'nb_points': [3, 3],
+            'nb_points': [2, 2],
             'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
         })
 
@@ -1228,9 +1225,6 @@ class TestCache(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
             f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
 
-            # UQ
-            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
-            # f'{self.study_name}.{self.grid_search}.samples_outputs_df': samples_outputs_df,
         }
 
         self.ee.load_study_from_input_dict(dict_values)
