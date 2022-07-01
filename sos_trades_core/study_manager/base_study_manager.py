@@ -89,7 +89,7 @@ class BaseStudyManager():
         :return: sos_trades_core.execution_engine.execution_engine.ExecutionEngine
         """
         if self.__execution_engine is None:
-            self._init_exec_engine()
+            self._build_execution_engine()
 
         return self.__execution_engine
 
@@ -127,13 +127,24 @@ class BaseStudyManager():
         return DataSerializer.study_cache_file_path(study_to_load=self.dump_directory)
 
     def _init_exec_engine(self):
-        """ Create an isntance of the execution engine
+        """
+        Create an instance of the execution engine
+        This method create only the instance and does not apply any process to build
+
+        It is intended to overload this method if some configuration has to be done between the creation of the
+        execution engine instance and the load of a process
         """
         self.__execution_engine = ExecutionEngine(
             self.study_name, root_dir=self.dump_directory, yield_method=self.__yield_method, logger=self.__logger)
 
         # set the level of ExecutioEngine logger and all others its children
         self.__execution_engine.logger.setLevel(LOG_LEVEL)
+
+    def _build_execution_engine(self):
+        """
+        Build an execution instance with the attended process to be loaded
+        """
+        self._init_exec_engine()
 
         self.ee.select_root_builder_ist(
             self.repository_name, self.process_name)
