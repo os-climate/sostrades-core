@@ -521,4 +521,4 @@ class TestSoSOptimScenario(unittest.TestCase):
 if "__main__" == __name__:
     cls = TestSoSOptimScenario()
     cls.setUp()
-    cls.test_so_nsga2_weight_constraint()
+    cls.test_so_unsga3_weight_constraint()

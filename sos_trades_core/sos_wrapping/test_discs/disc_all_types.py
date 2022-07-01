@@ -21,7 +21,6 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class DiscAllTypes(SoSDiscipline):
-
     # ontology information
     _ontology_data = {
         'label': 'sos_trades_core.sos_wrapping.test_discs.disc_all_types',
@@ -37,15 +36,15 @@ class DiscAllTypes(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'z': {'type': 'float', 'default': 90.,  'unit': 'kg', 'user_level': 1,
+        'z': {'type': 'float', 'default': 90., 'unit': 'kg', 'user_level': 1,
               'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'h': {'type': 'array', 'unit': 'kg', 'user_level': 1},
-        'dict_in': {'type': 'dict', 'unit': 'kg', 'user_level': 1},
+        'dict_in': {'type': 'dict', SoSDiscipline.SUBTYPE: {'dict': 'float'}, 'unit': 'kg', 'user_level': 1},
         'df_in': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1},
         'weather': {'type': 'string', 'default': 'cloudy, it is Toulouse ...', 'user_level': 1,
                     'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_of_dict_in': {'type': 'dict', 'user_level': 1},
-        'dict_of_df_in': {'type': 'dict', 'user_level': 1}
+        'dict_of_dict_in': {'type': 'dict', SoSDiscipline.SUBTYPE: {'dict': {'dict': 'float'}}, 'user_level': 1},
+        'dict_of_df_in': {'type': 'dict', SoSDiscipline.SUBTYPE: {'dict': 'dataframe'}, 'user_level': 1}
     }
     DESC_OUT = {
         'df_out': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1,
@@ -73,7 +72,7 @@ class DiscAllTypes(SoSDiscipline):
                        'dict_out': dict_out}
         df_in = DataFrame(array([[(h[0] + h[1]) / 2, (h[0] + h[1]) / 2]]),
                           columns=['c1', 'c2'])
-        df_in['z'] = 2 * z
+        df_in['z'] = [2 * z] * len(df_in)
         dict_values.update({'df_out': df_in})
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)

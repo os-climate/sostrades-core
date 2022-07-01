@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import platform
-import copy
 import pandas as pd
+import re
 
 from tqdm import tqdm
 import time
 
 from gemseo.core.parallel_execution import ParallelExecution
-from sos_trades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
+from sos_trades_core.tools.base_functions.compute_len import compute_len
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -59,6 +59,7 @@ class SoSEval(SoSDisciplineBuilder):
         'icon': '',
         'version': '',
     }
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
         'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
@@ -84,13 +85,12 @@ class SoSEval(SoSDisciplineBuilder):
         # Create the eval process builder associated to SoSEval
         self.eval_process_builder = self._set_eval_process_builder()
         self.eval_process_disc = None
-        self.multipliers_dict = {}
 
     def _set_eval_process_builder(self):
         '''
         Create the eval process builder, in a coupling if necessary
         '''
-        if len(self.cls_builder) == 0: # added condition for proc build
+        if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
         elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
             # if eval process is a list of builders or a non executable builder,
@@ -166,7 +166,7 @@ class SoSEval(SoSDisciplineBuilder):
         # if we want to build an eval coupling containing eval process,
         # we have to remove SoSEval name in current_ns to build eval coupling
         # at the same node as SoSEval
-        if len(self.cls_builder) == 0: # added condition for proc build
+        if len(self.cls_builder) == 0:  # added condition for proc build
             pass
         elif self.cls_builder[0] != self.eval_process_builder:
             current_ns = self.ee.ns_manager.current_disc_ns
@@ -212,10 +212,10 @@ class SoSEval(SoSDisciplineBuilder):
             # execute will delete output results from local_data
             # If it is a coupling the grammar is already configured
             if not disc.is_sos_coupling:
-                    disc.update_gems_grammar_with_data_io()
+                disc.update_gems_grammar_with_data_io()
 
         if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0:
-            # Explanation: 
+            # Explanation:
             # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
             # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
             # 2.1 (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
@@ -240,13 +240,14 @@ class SoSEval(SoSDisciplineBuilder):
         return SoSDiscipline.is_configured(self) and (
             (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) or len(
                 self.cls_builder) == 0)
-        # Explanation: 
+        # Explanation:
         # 1. SoSDiscipline.is_configured(self) : as in discipline (i.e. conf status of Eval = True and no change in structuring variables of Eval
         # 2. Added condition compared to SoSDiscipline :
         # 2.1 (self.get_disciplines_to_configure() == [] and len(self.sos_disciplines) != 0) : sub_discipline exist but all configured
         # 2.2 len(self.cls_builder) == 0 No yet provided builder and so Is configured is True
-        # Remark: condition "and len(self.sos_disciplines) != 0) or len(self.cls_builder) == 0)" added for proc build
-        
+        # Remark: condition "and len(self.sos_disciplines) != 0) or
+        # len(self.cls_builder) == 0)" added for proc build
+
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
@@ -299,7 +300,7 @@ class SoSEval(SoSDisciplineBuilder):
             x0.append(x_val)
         return np.array(x0)
 
-    def evaluation(self, x, scenario_name=None, convert_to_array=True):
+    def evaluation(self, x, scenario_name=None, convert_to_array=True, completed_eval_in_list=None):
         '''
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays. 
@@ -308,22 +309,12 @@ class SoSEval(SoSDisciplineBuilder):
         self.clear_cache()
 
         values_dict = {}
-        vars_to_update_dict = {}
-        for i, x_id in enumerate(self.eval_in_list):
+        eval_in = self.eval_in_list
+        if completed_eval_in_list is not None:
+            eval_in = completed_eval_in_list
+        for i, x_id in enumerate(eval_in):
             values_dict[x_id] = x[i]
-            # for grid search multipliers inputs
-            var_name = x_id.split(self.ee.study_name + '.')[-1]
-            if var_name in self.multipliers_dict:
-                var_origin_name = self.multipliers_dict[var_name]['fullname_origin']
-                if var_origin_name in vars_to_update_dict:
-                    var_to_update = vars_to_update_dict[var_origin_name]
-                else:
-                    var_to_update = copy.deepcopy(
-                        self.multipliers_dict[var_name]['origin_value'])
-                vars_to_update_dict[var_origin_name] = self.apply_muliplier(
-                    multiplier_name=var_name, multiplier_value=x[i] / 100, var_to_update=var_to_update)
-        for key in vars_to_update_dict:
-            values_dict[key] = vars_to_update_dict[key]
+
         # Because we use set_data instead of load_data_from_inputs_dict it isn't possible
         # to run  soseval on a structuring variable. Therefore structuring variables are
         # excluded from eval possible values
@@ -345,7 +336,8 @@ class SoSEval(SoSDisciplineBuilder):
         self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
-            out_values = np.concatenate(list(out_local_data.values())).ravel()
+            out_local_data_converted = self._convert_new_type_into_array(out_local_data)
+            out_values = np.concatenate(list(out_local_data_converted.values())).ravel()
         else:
             out_values = []
             # get back out_local_data is not enough because some variables
@@ -356,7 +348,7 @@ class SoSEval(SoSDisciplineBuilder):
 
         return out_values
 
-    def samples_evaluation(self, samples, convert_to_array=True):
+    def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
         '''This function executes a parallel execution of the function sample_evaluation
         over a list a samples. Depending on the numerical parameter n_processes it loops
         on a sequential or parallel way over the list of samples to evaluate
@@ -378,7 +370,7 @@ class SoSEval(SoSDisciplineBuilder):
                 x = samples[i]
                 scenario_name = "scenario_" + str(i + 1)
                 evaluation_output[scenario_name] = x, self.evaluation(
-                    x, scenario_name, convert_to_array)
+                    x, scenario_name, convert_to_array, completed_eval_in_list)
             return evaluation_output
 
         if n_processes > 1:
@@ -428,7 +420,14 @@ class SoSEval(SoSDisciplineBuilder):
                     self.STATUS_FAILED)
 
     def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        if self.multipliers_dict[multiplier_name]['column_name'] == 'All':
+        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[1]
+        if any(char.isdigit() for char in col_index):
+            col_index = re.findall(r'\d+', col_index)[0]
+            cols_list = var_to_update.columns.to_list()
+            key = cols_list[int(col_index)]
+            var_to_update[key] = multiplier_value * var_to_update[key]
+        else:
             if isinstance(var_to_update, dict):
                 float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
                     var_to_update[dict_keys], float)]
@@ -437,9 +436,6 @@ class SoSEval(SoSDisciplineBuilder):
                     df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
             for key in float_cols_ids_list:
                 var_to_update[key] = multiplier_value * var_to_update[key]
-        else:
-            key = self.multipliers_dict[multiplier_name]['column_name']
-            var_to_update[key] = multiplier_value * var_to_update[key]
         return var_to_update
 
     def convert_output_results_toarray(self):
@@ -478,8 +474,8 @@ class SoSEval(SoSDisciplineBuilder):
             outeval_dict = {}
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
-                eval_out_size = len(self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size +
+                eval_out_size = compute_len(self.eval_process_disc.local_data[key])
+                output_eval_key = outputs_eval[old_size:old_size + 
                                                eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')

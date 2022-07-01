@@ -44,12 +44,13 @@ class TrinoDataConnector(AbstractDataConnector):
 
     table_columns_definition = {}
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
         Constructor for Dremio data connector
 
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
-        super()
 
         self.hostname = None
         self.port = None
@@ -57,18 +58,21 @@ class TrinoDataConnector(AbstractDataConnector):
         self.catalog = None
         self.schema = None
 
-    def __extract_connection_info(self, connection_data):
-        """
-        Convert structure with connection data given as parameter into member variable
+        super().__init__(data_connection_info=data_connection_info)
 
-        :param connection_data: dictionary regarding connection information, must map TrinoDataConnector.data_connection_list
+    def _extract_connection_info(self, data_connection_info):
+        """
+        Convert structure with data connection info given as parameter into member variable
+
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
 
-        self.hostname = connection_data['hostname']
-        self.port = connection_data['port']
-        self.username = connection_data['username']
-        self.catalog = connection_data['catalog']
-        self.schema = connection_data['schema']
+        self.hostname = data_connection_info['hostname']
+        self.port = data_connection_info['port']
+        self.username = data_connection_info['username']
+        self.catalog = data_connection_info['catalog']
+        self.schema = data_connection_info['schema']
 
     def load_data(self, connection_data):
         """
@@ -79,7 +83,7 @@ class TrinoDataConnector(AbstractDataConnector):
 
         """
 
-        self.__extract_connection_info(connection_data)
+        self._extract_connection_info(connection_data)
 
         # Connect to Trino api
         trino_connection = trino.dbapi.connect(

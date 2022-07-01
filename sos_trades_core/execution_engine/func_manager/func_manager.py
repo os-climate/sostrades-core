@@ -103,6 +103,10 @@ class FunctionManager:
     def update_function_value(self, tag, value):
         self.functions[tag][self.VALUE] = self.__to_array_type(value)
 
+    def set_aggregation_mods(self, aggr_ineq, aggr_eq):
+        self.aggr_mod_ineq = aggr_ineq
+        self.aggr_mod_eq = aggr_eq
+
     def scalarize_all_functions(self, eps=1e-3, alpha=3):
         for tag in self.functions.keys():
             weight = self.functions[tag][self.WEIGHT]
@@ -165,8 +169,12 @@ class FunctionManager:
             ineq_cst_val.append(ineq_dict[self.VALUE])
         ineq_cst_val = np.array(ineq_cst_val)
         if len(ineq_cst_val) > 0:
-            self.aggregated_functions[self.INEQ_CONSTRAINT] = self.cst_func_smooth_maximum(
-                ineq_cst_val, alpha)
+            if self.aggr_mod_ineq == 'smooth_max':
+                self.aggregated_functions[self.INEQ_CONSTRAINT] = self.cst_func_smooth_maximum(
+                    ineq_cst_val, alpha)
+            else:
+                self.aggregated_functions[self.INEQ_CONSTRAINT] = ineq_cst_val.sum()
+
         else:
             self.aggregated_functions[self.INEQ_CONSTRAINT] = 0.
 
@@ -176,8 +184,11 @@ class FunctionManager:
             eq_cst_val.append(eq_dict[self.VALUE])
         eq_cst_val = np.array(eq_cst_val)
         if len(eq_cst_val) > 0:
-            self.aggregated_functions[self.EQ_CONSTRAINT] = self.cst_func_smooth_maximum(
-                eq_cst_val, alpha)
+            if self.aggr_mod_eq == 'smooth_max':
+                self.aggregated_functions[self.EQ_CONSTRAINT] = self.cst_func_smooth_maximum(
+                    eq_cst_val, alpha)
+            else:
+                self.aggregated_functions[self.EQ_CONSTRAINT] = eq_cst_val.sum()
         else:
             self.aggregated_functions[self.EQ_CONSTRAINT] = 0.
 

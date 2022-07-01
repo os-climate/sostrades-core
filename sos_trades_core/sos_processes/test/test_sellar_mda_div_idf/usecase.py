@@ -39,10 +39,10 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         disc_dict = {}
-        disc_dict[f'{ns}.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
-        disc_dict[f'{ns}.SellarOptimScenario.SellarCoupling.max_mda_iter'] = 4
+        disc_dict[f'{ns}.SellarOptimScenario.SellarEval.sub_mda_class'] = 'MDAGaussSeidel'
+        disc_dict[f'{ns}.SellarOptimScenario.SellarEval.max_mda_iter'] = 4
 
-        disc_dict[f'{ns}.SellarOptimScenario.SellarCoupling.y_1'] = [6.]
+        disc_dict[f'{ns}.SellarOptimScenario.SellarEval.SellarCoupling.y_1'] = [6.]
         # Optim inputs
         disc_dict[f'{ns}.SellarOptimScenario.max_iter'] = 500
         disc_dict[f'{ns}.SellarOptimScenario.algo'] = "SLSQP"
@@ -59,9 +59,9 @@ class Study(StudyManager):
         # f'{ns}.SellarOptimScenario.c_1', f'{ns}.SellarOptimScenario.c_2']
 
         disc_dict[f'{ns}.SellarOptimScenario.algo_options'] = {
-            #"maxls": 6,
-            #"maxcor": 3,
-            #"ftol_rel": 1e-10,
+            # "maxls": 6,
+            # "maxcor": 3,
+            # "ftol_rel": 1e-10,
         }
         """
         # Sellar inputs

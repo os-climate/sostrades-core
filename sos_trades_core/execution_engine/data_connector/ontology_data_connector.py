@@ -15,8 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from sos_trades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
+from sos_trades_core.execution_engine.data_connector.abstract_data_connector import (
+    AbstractDataConnector,
+)
 import requests
+
+GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER = 'GLOBAL_EXECUTION_ENGINE_ONTOLOGY'
 
 
 class OntologyDataConnector(AbstractDataConnector):
@@ -35,25 +39,28 @@ class OntologyDataConnector(AbstractDataConnector):
     REQUEST_ARGS = 'REQUEST_ARGS'
     PARAMETER_REQUEST = 'parameter'
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
         Constructor for Ontology data connector
 
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
-        super()
-
         self.endpoint = None
         self.route = None
         self.args = None
 
-    def __extract_connection_info(self, connection_data):
-        """
-        Convert structure with connection data given as parameter into member variable
+        super().__init__(data_connection_info=data_connection_info)
 
-        :param connection_data: dictionary regarding connection information, must map OntologyDataConnector.data_connection_list
+    def _extract_connection_info(self, data_connection_info):
         """
+        Convert structure with data connection info given as parameter into member variable
 
-        self.endpoint = connection_data['endpoint']
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
+        """
+        if 'endpoint' in data_connection_info:
+            self.endpoint = data_connection_info['endpoint']
 
     def load_data(self, connection_data):
         """
@@ -64,11 +71,14 @@ class OntologyDataConnector(AbstractDataConnector):
 
         """
 
-        self.__extract_connection_info(connection_data)
+        self._extract_connection_info(connection_data)
 
         result = {}
 
-        if connection_data[OntologyDataConnector.REQUEST_TYPE] == OntologyDataConnector.PARAMETER_REQUEST:
+        if (
+            connection_data[OntologyDataConnector.REQUEST_TYPE]
+            == OntologyDataConnector.PARAMETER_REQUEST
+        ):
 
             # Prepare default result
             for parameter_id in connection_data[OntologyDataConnector.REQUEST_ARGS]:
@@ -85,10 +95,8 @@ class OntologyDataConnector(AbstractDataConnector):
 
             try:
                 resp = requests.request(
-                    method='POST',
-                    url=complete_url,
-                    json=payload,
-                    verify=False)
+                    method='POST', url=complete_url, json=payload, verify=False
+                )
 
                 if resp.status_code == 200:
                     ontology_response_data = resp.json()
@@ -101,11 +109,15 @@ class OntologyDataConnector(AbstractDataConnector):
                                     parameters_data[parameter_id]['unit'] = ''
                                 if 'label' in parameters_data[parameter_id]:
                                     result[parameter_id] = [
-                                        parameters_data[parameter_id]['label'], parameters_data[parameter_id]['unit']]
+                                        parameters_data[parameter_id]['label'],
+                                        parameters_data[parameter_id]['unit'],
+                                    ]
 
             except Exception as ex:
                 print(
-                    'The following exception occurs when trying to reach Ontology server', ex)
+                    'The following exception occurs when trying to reach Ontology server',
+                    ex,
+                )
 
             return result
 
@@ -133,13 +145,38 @@ if __name__ == '__main__':
 
     data_connection = {
         'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+        # 'endpoint': 'http://127.0.0.1:5555/api/ontology'
     }
 
-    args = ["CCS_price", "CO2_damage_price", "CO2_emissions_df", "CO2_emitted_forest_df", "CO2_objective", "CO2_taxes", "acceleration", "alpha", "authorize_self_coupled_disciplines", "beta", "cache_file_path",
-            "cache_type", "carboncycle_df", "ccs_list", "chain_linearize", "conso_elasticity", "damage_df", "deforestation_surface", "economics_df", "energy_investment", "energy_list", "epsilon0", "forest_investment"]
+    args = [
+        "CCS_price",
+        "CO2_damage_price",
+        "CO2_emissions_df",
+        "CO2_emitted_forest_df",
+        "CO2_objective",
+        "CO2_taxes",
+        "acceleration",
+        "alpha",
+        "authorize_self_coupled_disciplines",
+        "beta",
+        "cache_file_path",
+        "cache_type",
+        "carboncycle_df",
+        "ccs_list",
+        "chain_linearize",
+        "conso_elasticity",
+        "damage_df",
+        "deforestation_surface",
+        "economics_df",
+        "energy_investment",
+        "energy_list",
+        "epsilon0",
+        "forest_investment",
+    ]
 
     ontology_connector.set_connector_request(
-        data_connection, OntologyDataConnector.PARAMETER_REQUEST, args)
+        data_connection, OntologyDataConnector.PARAMETER_REQUEST, args
+    )
 
     result = ontology_connector.load_data(data_connection)
 

@@ -47,10 +47,10 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         disc_dict = {}
-        disc_dict[f'{ns}.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
-        disc_dict[f'{ns}.SellarOptimScenario.SellarCoupling.max_mda_iter'] = 4
+        disc_dict[f'{ns}.SellarOptimScenario.SellarEval.sub_mda_class'] = 'MDAGaussSeidel'
+        disc_dict[f'{ns}.SellarOptimScenario.SellarEval.max_mda_iter'] = 4
 
-        disc_dict[f'{ns}.SellarOptimScenario.SellarCoupling.y_1'] = [6.]
+        disc_dict[f'{ns}.SellarOptimScenario.SellarEval.SellarCoupling.y_1'] = [6.]
         # Optim inputs
         disc_dict[f'{ns}.SellarOptimScenario.max_iter'] = 500
         disc_dict[f'{ns}.SellarOptimScenario.algo'] = "L-BFGS-B"
@@ -67,9 +67,9 @@ class Study(StudyManager):
         # f'{ns}.SellarOptimScenario.c_1', f'{ns}.SellarOptimScenario.c_2']
 
         disc_dict[f'{ns}.SellarOptimScenario.algo_options'] = {
-            #"maxls": 6,
-            #"maxcor": 3,
-            #"ftol_rel": 1e-10,
+            # "maxls": 6,
+            # "maxcor": 3,
+            # "ftol_rel": 1e-10,
         }
 
         # Sellar inputs
@@ -84,9 +84,9 @@ class Study(StudyManager):
         func_df[AGGR_TYPE] = [AGGR_TYPE_SUM, AGGR_TYPE_SUM, AGGR_TYPE_SUM]
         func_mng_name = 'FunctionManager'
 
-        prefix = self.study_name + '.SellarOptimScenario.' + func_mng_name + '.'
+        prefix = self.study_name + '.SellarOptimScenario.SellarEval.' + func_mng_name + '.'
         values_dict = {}
-        values_dict[prefix +
+        values_dict[prefix + 
                     FunctionManagerDisc.FUNC_DF] = func_df
 
         disc_dict.update(values_dict)

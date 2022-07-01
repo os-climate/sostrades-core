@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
+import re
 
 from numpy import array, ndarray, delete, NaN
 
@@ -83,6 +84,7 @@ class DoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
     INPUT_MULTIPLIER_TYPE = []
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
@@ -193,7 +195,6 @@ class DoeEval(SoSEval):
         self.selected_outputs = []
         self.selected_inputs = []
         self.previous_algo_name = ""
-        self.multipliers_dict = {}
 
     def setup_sos_disciplines(self):
         """
@@ -296,8 +297,41 @@ class DoeEval(SoSEval):
                     self._data_in['algo_options']['value'] = {
                         key: options_map[key] for key in all_options}
 
+                # if multipliers in eval_in
+                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                    generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
+                    for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
+                        dynamic_inputs.update(generic_multiplier_dynamic_input)
+
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
+
+    def create_generic_multipliers_dynamic_input(self):
+        dynamic_inputs_list = []
+        for selected_in in self.selected_inputs:
+            if self.MULTIPLIER_PARTICULE in selected_in:
+                multiplier_name = selected_in.split('.')[-1]
+                origin_var_name = multiplier_name.split('.')[0].split('@')[0]
+                # if
+                if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
+                    self.logger.exception(
+                        'Multiplier name selected already exists!')
+                origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
+                    0]
+                origin_var_ns = self.ee.dm.get_data(
+                    origin_var_fullname, 'namespace')
+                dynamic_inputs_list.append(
+                    {
+                        f'{multiplier_name}': {
+                            'type': 'float',
+                            'visibility': 'Shared',
+                            'namespace': origin_var_ns,
+                            'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
+                            'default': 100
+                        }
+                    }
+                )
+        return dynamic_inputs_list
 
     def create_design_space(self):
         """
@@ -447,6 +481,7 @@ class DoeEval(SoSEval):
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
+            # convert arrays in sample_dict into SoSTrades types
             sample_dict = self._convert_array_into_new_type(sample_dict)
             ordered_sample = []
             for in_variable in self.eval_in_list:
@@ -480,6 +515,8 @@ class DoeEval(SoSEval):
             Overloaded SoSEval method
             The execution of the doe
         '''
+        # upadte default inputs of children with dm values
+        self.update_default_inputs(self.sos_disciplines[0])
 
         dict_sample = {}
         dict_output = {}
@@ -492,22 +529,31 @@ class DoeEval(SoSEval):
         self.samples.append(
             [self.ee.dm.get_value(reference_variable_full_name) for reference_variable_full_name in self.eval_in_list])
         reference_scenario_id = len(self.samples)
+        eval_in_with_multiplied_var = None
+        if self.INPUT_MULTIPLIER_TYPE != []:
+            origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
+            multipliers_samples = copy.deepcopy(self.samples)
+            self.add_multiplied_var_to_samples(
+                multipliers_samples, origin_vars_to_update_dict)
+            eval_in_with_multiplied_var = self.eval_in_list + \
+                list(origin_vars_to_update_dict.keys())
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
-            self.samples, convert_to_array=False)
+            self.samples, convert_to_array=False, completed_eval_in_list=eval_in_with_multiplied_var)
 
         # we loop through the samples evaluated to build dictionnaries needed
         # for output generation
         reference_scenario = f'scenario_{reference_scenario_id}'
+
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
 
             # generation of the dictionnary of samples used
             dict_one_sample = {}
             current_sample = evaluated_samples[0]
             scenario_naming = scenario_name if scenario_name != reference_scenario else 'reference'
-            for idx, values in enumerate(current_sample):
-                dict_one_sample[self.eval_in_list[idx]] = values
+            for idx, f_name in enumerate(self.eval_in_list):
+                dict_one_sample[f_name] = current_sample[idx]
             dict_sample[scenario_naming] = dict_one_sample
 
             # generation of the dictionnary of outputs
@@ -544,6 +590,84 @@ class DoeEval(SoSEval):
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
                     global_dict_output[dynamic_output]})
+
+    def update_default_inputs(self, disc):
+        '''
+        Update default inputs of disc with dm values
+        '''
+        input_data = {}
+        input_data_names = disc.get_input_data_names()
+        for data_name in input_data_names:
+            val = self.ee.dm.get_value(data_name)
+            if val is not None:
+                input_data[data_name] = val
+
+        # store mdo_chain default inputs
+        if disc.is_sos_coupling:
+            disc.mdo_chain.default_inputs.update(input_data)
+        disc.default_inputs.update(input_data)
+
+        # recursive update default inputs of children
+        for sub_disc in disc.sos_disciplines:
+            self.update_default_inputs(sub_disc)
+
+    def create_origin_vars_to_update_dict(self):
+        origin_vars_to_update_dict = {}
+        for select_in in self.eval_in_list:
+            if self.MULTIPLIER_PARTICULE in select_in:
+                var_origin_f_name = self.get_names_from_multiplier(select_in)[
+                    0]
+                if var_origin_f_name not in origin_vars_to_update_dict:
+                    origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
+                        self.ee.dm.get_data(var_origin_f_name)['value'])
+        return origin_vars_to_update_dict
+
+    def add_multiplied_var_to_samples(self, multipliers_samples, origin_vars_to_update_dict):
+        for sample_i in range(len(multipliers_samples)):
+            x = multipliers_samples[sample_i]
+            vars_to_update_dict = {}
+            for multiplier_i, x_id in enumerate(self.eval_in_list):
+                # for grid search multipliers inputs
+                var_name = x_id.split(self.ee.study_name + '.')[-1]
+                if self.MULTIPLIER_PARTICULE in var_name:
+                    var_origin_f_name = '.'.join(
+                        [self.ee.study_name, self.get_names_from_multiplier(var_name)[0]])
+                    if var_origin_f_name in vars_to_update_dict:
+                        var_to_update = vars_to_update_dict[var_origin_f_name]
+                    else:
+                        var_to_update = copy.deepcopy(
+                            origin_vars_to_update_dict[var_origin_f_name])
+                    vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
+                        multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100.0, var_to_update=var_to_update)
+            for multiplied_var in vars_to_update_dict:
+                self.samples[sample_i].append(
+                    vars_to_update_dict[multiplied_var])
+
+    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
+        # if dict or dataframe to be multiplied
+        if '@' in multiplier_name:
+            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
+            if col_name_clean == 'allcolumns':
+                if isinstance(var_to_update, dict):
+                    float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
+                        var_to_update[dict_keys], float)]
+                elif isinstance(var_to_update, pd.DataFrame):
+                    float_cols_ids_list = [
+                        df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
+                for key in float_cols_ids_list:
+                    var_to_update[key] = multiplier_value * var_to_update[key]
+            else:
+                keys_clean = [self.clean_var_name(var)
+                              for var in var_to_update.keys()]
+                col_index = keys_clean.index(col_name_clean)
+                col_name = var_to_update.keys()[col_index]
+                var_to_update[col_name] = multiplier_value * \
+                    var_to_update[col_name]
+        # if float to be multiplied
+        else:
+            var_to_update = multiplier_value * var_to_update
+        return var_to_update
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
@@ -594,6 +718,7 @@ class DoeEval(SoSEval):
                                            ]['io_type'] == 'in'
             is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc._data_in[data_in_key]['editable']
+            is_None = disc._data_in[data_in_key]['value'] is None
             if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -602,53 +727,12 @@ class DoeEval(SoSEval):
                 if is_input_type:
                     poss_in_values_full.append(
                         full_id.split(self.ee.study_name + ".")[1])
-                elif is_input_multiplier_type & (disc._data_in[data_in_key]['value'] is not None):
-                    df_var = disc._data_in[data_in_key]['value']
-                    # if dict, transform dict to df
-                    if disc._data_in[data_in_key][self.TYPE] == 'dict':
-                        dict_var = disc._data_in[data_in_key]['value']
-                        df_var = pd.DataFrame(
-                            dict_var, index=list(dict_var.keys()))
-                    # check & add float columns
-                    float_cols_ids_list = [col_name for col_name in df_var.keys(
-                    ) if df_var[col_name].dtype == 'float']
 
-                    # add new full id multiplier and column id multiplier to
-                    # possible in values
-                    if len(float_cols_ids_list) > 0:
-                        particule = '_multiplier'
-                        i = 1
-                        multiplier_name = f'{data_in_key}{particule}'
-                        # if multiplier namespace already exist
-                        if len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                            while len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                                particule = f'_multiplier{i+1}'
-                                multiplier_name = f'{data_in_key}{particule}'
-                        multiplier_fullname = f'{full_id}{particule}'.split(
-                            self.ee.study_name + ".")[1]
-
-                        # add the new all columns input multiplier in the
-                        # multipliers_dict
-                        self.multipliers_dict[multiplier_fullname] = {
-                            'name_origin': data_in_key, 'fullname_origin': self.ee.dm.get_all_namespaces_from_var_name(data_in_key)[0], 'column_name': 'All'}
-                        poss_in_values_full.append(multiplier_fullname)
-                        for col_id in float_cols_ids_list:
-                            particule = '_multiplier'
-                            i = 1
-                            multiplier_name = f'{data_in_key}_{col_id}{particule}'
-                            if len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                                while len(self.ee.dm.get_all_namespaces_from_var_name(multiplier_name)) > 0:
-                                    particule = f'_multiplier{i+1}'
-                                    multiplier_name = f'{data_in_key}_{col_id}{particule}'
-                            multiplier_fullname = f'{full_id}_{col_id}{particule}'.split(
-                                self.ee.study_name + ".")[1]
-
-                            # add the new input multiplier in the
-                            # multipliers_dict
-                            self.multipliers_dict[multiplier_fullname] = {
-                                'name_origin': data_in_key, 'fullname_origin': self.ee.dm.get_all_namespaces_from_var_name(data_in_key)[0], 'column_name': col_id}
-                            poss_in_values_full.append(
-                                multiplier_fullname)
+                if is_input_multiplier_type and not is_None:
+                    poss_in_values_list = self.set_multipliers_values(
+                        disc, full_id, data_in_key)
+                    for val in poss_in_values_list:
+                        poss_in_values_full.append(val)
 
         for data_out_key in disc._data_out.keys():
             # Caution ! This won't work for variables with points in name
@@ -664,6 +748,66 @@ class DoeEval(SoSEval):
                     full_id.split(self.ee.study_name + ".")[1])
 
         return poss_in_values_full, poss_out_values_full
+
+    def set_multipliers_values(self, disc, full_id, var_name):
+        poss_in_values_list = []
+        # if local var
+        if 'namespace' not in disc._data_in[var_name]:
+            origin_var_ns = disc._data_in[var_name]['ns_reference'].value
+        else:
+            origin_var_ns = disc._data_in[var_name]['namespace']
+
+        disc_id = ('.').join(full_id.split('.')[:-1])
+        ns_disc_id = ('__').join([origin_var_ns, disc_id])
+        if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
+            full_id_ns = ('.').join(
+                [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name])
+        else:
+            full_id_ns = full_id
+
+        if disc._data_in[var_name][self.TYPE] == 'float':
+            multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
+                self.ee.study_name + ".")[1]
+            poss_in_values_list.append(multiplier_fullname)
+
+        else:
+            df_var = disc._data_in[var_name]['value']
+            # if df_var is dict : transform dict to df
+            if disc._data_in[var_name][self.TYPE] == 'dict':
+                dict_var = disc._data_in[var_name]['value']
+                df_var = pd.DataFrame(
+                    dict_var, index=list(dict_var.keys()))
+            # check & create float columns list from df
+            columns = df_var.columns
+            float_cols_list = [col_name for col_name in columns if (
+                df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+            # if df with float columns
+            if len(float_cols_list) > 0:
+                for col_name in float_cols_list:
+                    col_name_clean = self.clean_var_name(col_name)
+                    multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
+                        self.ee.study_name + ".")[1]
+                    poss_in_values_list.append(multiplier_fullname)
+                # if df with more than one float column, create multiplier for all
+                # columns also
+                if len(float_cols_list) > 1:
+                    multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+                        self.ee.study_name + ".")[1]
+                    poss_in_values_list.append(multiplier_fullname)
+        return poss_in_values_list
+
+    def clean_var_name(self, var_name):
+        return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
+
+    def get_names_from_multiplier(self, var_name):
+        column_name = None
+        var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[0]
+        if '@' in var_name:
+            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
+
+        return [var_origin_name, column_name]
 
     def set_eval_possible_values(self):
         '''

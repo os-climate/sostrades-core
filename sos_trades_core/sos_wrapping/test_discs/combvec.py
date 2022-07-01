@@ -43,7 +43,7 @@ class Combvec(SoSDiscipline):
     default_my_dict_of_vec['stat_C'] = [3, 4, 8]
 
     DESC_IN = {
-        'my_dict_of_vec': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'}, 'default': default_my_dict_of_vec, 'unit': '-', 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
+        'my_dict_of_vec': {'type': 'dict', 'subtype_descriptor': {'dict': {'list':'int'}}, 'default': default_my_dict_of_vec, 'unit': '-', 'visibility': SoSDiscipline.LOCAL_VISIBILITY}
     }
     DESC_OUT = {
         'custom_samples_df': {'type': 'dataframe', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY,

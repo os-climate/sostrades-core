@@ -13,17 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 from os.path import join, dirname
+from pathlib import Path
+from shutil import rmtree
 
 import numpy as np
 import pandas as pd
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+from sos_trades_core.sos_processes.test.test_coupling_doe_uq.usecase import Study as study_grid_search_uq
 
 
 class TestUncertaintyQuantification(unittest.TestCase):
@@ -43,6 +47,12 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee = ExecutionEngine(self.name)
         self.factory = self.ee.factory
+        self.dir_to_del = []
+        
+    def tearDown(self):
+        for dir in self.dir_to_del:
+            if Path(dir).is_dir():
+                rmtree(dir)
 
     def test_01_uncertainty_quantification(self):
         repo = 'sos_trades_core.sos_processes.test'
@@ -146,14 +156,14 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         eval_inputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_inputs')
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.j', ['selected_input']] = True
 
         eval_outputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        eval_outputs.loc[eval_outputs['full_name'] == 
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dspace = pd.DataFrame({
@@ -227,14 +237,14 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         eval_inputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_inputs')
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-        eval_inputs.loc[eval_inputs['full_name'] ==
+        eval_inputs.loc[eval_inputs['full_name'] == 
                         f'{self.grid_search}.Disc1.j', ['selected_input']] = True
 
         eval_outputs = self.ee.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        eval_outputs.loc[eval_outputs['full_name'] == 
                          f'{self.grid_search}.Disc1.y', ['selected_output']] = True
 
         dspace = pd.DataFrame({
@@ -337,6 +347,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # Third execute with a change of a uq parameter and no change on doe
         dict_values[f'{self.study_name}.{self.grid_search}.confidence_interval'] = 95
         self.ee.load_study_from_input_dict(dict_values)
+        
         res_3 = self.ee.execute()
 
         # get number of calls after third call
@@ -363,7 +374,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         # Fifth execute with a change of a common input
         eval_outputs_2 = self.ee.dm.get_value('Test.GridSearch.eval_outputs')
-        eval_outputs_2.loc[eval_outputs['full_name'] ==
+        eval_outputs_2.loc[eval_outputs['full_name'] == 
                            f'{self.grid_search}.Disc1.indicator', ['selected_output']] = True
 
         dict_values[f'{self.study_name}.{self.grid_search}.eval_outputs'] = eval_outputs_2
@@ -402,9 +413,46 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # cache
         self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
         self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
+        
+    def test_04_simple_cache_on_grid_search_uq_process(self):
+        
+        self.ref_dir = join(dirname(__file__), 'data')
+        self.dump_dir = join(self.ref_dir, 'dumped_cache_test_67')
+        study_1 = study_grid_search_uq(run_usecase=True)
+        study_1.set_dump_directory(
+            self.dump_dir)
+        study_1.load_data()
+        
+        dict_values = {
+            f'{study_1.study_name}.cache_type': 'SimpleCache'}
+        study_1.load_data(from_input_dict=dict_values)
+        
+        study_1.run()
+        study_1.dump_data(self.dump_dir)
+        study_1.dump_cache(self.dump_dir)
+        
+        study_2 = BaseStudyManager(self.repo, 'test_coupling_doe_uq', study_1.study_name)
+        study_2.load_data(from_path=self.dump_dir)
+        study_2.load_cache(self.dump_dir)
+        
+        dict_values = {
+            f'{study_1.study_name}.{study_1.grid_search}.confidence_interval': 95}
+        study_2.load_data(from_input_dict=dict_values)
+        
+        study_2.run()
+        
+        # check cache activation by counting n_calls
+        for disc in list(study_2.ee.dm.gemseo_disciplines_id_map.values()):
+            if disc.name in ['usecase', 'UncertaintyQuantification']:
+                self.assertEqual(disc.n_calls, 1)
+            else:
+                self.assertEqual(disc.n_calls, 0)
+        
+        self.dir_to_del.append(self.dump_dir)
 
 
 if '__main__' == __name__:
     cls = TestUncertaintyQuantification()
     cls.setUp()
-    unittest.main()
+    cls.test_04_simple_cache_on_grid_search_uq_process()
+    cls.tearDown()

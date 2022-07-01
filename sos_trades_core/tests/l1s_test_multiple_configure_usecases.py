@@ -34,7 +34,6 @@ class TestUseCases(unittest.TestCase):
         self.processes_repo = 'sos_trades_core.sos_processes'
         self.maxDiff = None
     
-    
     def test_01_configure_usecases_twice(self):     
         test_passed, output_error = configure_twice_all_usecases_and_compare_dm(self.processes_repo)                
         if not test_passed:

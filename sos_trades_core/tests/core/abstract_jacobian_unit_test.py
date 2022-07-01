@@ -48,10 +48,10 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
 
         for entry in jacobian_test_entries:
             is_in_list = False
-            if len(test_names)>0:
+            if len(test_names) > 0:
                 for test_name in test_names:
                     if test_name in str(entry):
-                        is_in_list=True
+                        is_in_list = True
             else:
                 is_in_list = True
             if not is_in_list:
@@ -72,7 +72,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         """
         raise TypeError('test_analytic_gradient must be overloaded')
 
-    def check_jacobian(self, location, filename, discipline, inputs, outputs, step=1e-15, derr_approx='complex_step',  input_column=None, output_column=None, threshold=1e-8, parallel=False,
+    def check_jacobian(self, location, filename, discipline, inputs, outputs, step=1e-15, derr_approx='complex_step', input_column=None, output_column=None, threshold=1e-8, parallel=False,
                        n_processes=5, linearization_mode='auto', directory=PICKLE_DIRECTORY):
         """ Method that encapsulate check_jacobian call in order to witch between loading and dumping mode
         """

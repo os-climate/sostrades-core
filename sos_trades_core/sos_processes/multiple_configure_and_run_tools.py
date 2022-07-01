@@ -211,9 +211,18 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
                 # dict shouldn't be equal between optim iterations
                 print(f'----- SKIPPED DICT COMPARISON FOR {usecase} -----')
             else:
-                # remove residuals_history from dm comparison
-                unwanted_keys = [
-                    s for s in dm_data_dict_1.keys() if 'residuals_history' in s]
+                # remove unwanted elements from dm comparison
+                #   - residuals_history because iterations are different
+                #   - type metadata because second run does not perform type conversion so metadata is None
+                unwanted_keys, keys_to_none = [], {}
+                for key, value in dm_data_dict_1.items():
+                    if 'residuals_history' in key:
+                        unwanted_keys += [key]
+                    if type(value) == dict:
+                        if 'type_metadata' in value.keys():
+                            keys_to_none[key]='type_metadata'
+                for key, value in keys_to_none.items():
+                    dm_data_dict_1[key][value]=None
                 [dm_data_dict_1.pop(key) for key in unwanted_keys]
                 [dm_data_dict_2.pop(key) for key in unwanted_keys]
                 compare_dict(dm_data_dict_1,
@@ -275,14 +284,18 @@ def get_all_usecases(processes_repo):
     usecase_list = []
     for repository in process_list:
         for process in process_list[repository]:
-            imported_module = import_module('.'.join([repository, process]))
-            process_directory = dirname(imported_module.__file__)
-            # Run all usecases
-            for usecase_py in listdir(process_directory):
-                if usecase_py.startswith('usecase'):
-                    usecase = usecase_py.replace('.py', '')
-                    usecase_list.append(
-                        '.'.join([repository, process, usecase]))
+            try:
+                process_module = '.'.join([repository, process])
+                imported_module = import_module(process_module)
+                if imported_module is not None and imported_module.__file__ is not None:
+                    process_directory = dirname(imported_module.__file__)
+                    # Run all usecases
+                    for usecase_py in listdir(process_directory):
+                        if usecase_py.startswith('usecase'):
+                            usecase = usecase_py.replace('.py', '')
+                            usecase_list.append('.'.join([repository, process, usecase]))
+            except Exception as error:
+                print(f'An error occurs when trying to load {process_module}\n{error}')
     return usecase_list
 
 
