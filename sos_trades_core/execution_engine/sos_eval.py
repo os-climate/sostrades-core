@@ -365,7 +365,7 @@ class SoSEval(SoSDisciplineBuilder):
             self.logger.info("running sos eval in sequential")
 
             for i in tqdm(range(len(samples)), ncols=100, position=0):
-                time.sleep(0.5)
+                time.sleep(0.1)
                 self.logger.info(f'   Scenario_{str(i + 1)} is running.')
                 x = samples[i]
                 scenario_name = "scenario_" + str(i + 1)
@@ -403,9 +403,15 @@ class SoSEval(SoSDisciplineBuilder):
                 evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
                     f'{scenario_name} has been run. computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
+                time.sleep(0.05)
 
             try:
-                parallel.execute(samples, exec_callback=store_callback)
+                # execute all the scenarios (except the reference scenario)  in parallel
+                parallel.execute(samples[0:-1], exec_callback=store_callback)
+                # execute the reference scenario in a sequential way so that sostrades objects are updated
+                scenario_name = "scenario_" + str(len(samples))
+                evaluation_output[scenario_name] = samples[-1], self.evaluation(
+                    samples[-1], scenario_name, convert_to_array, completed_eval_in_list)
                 self.sos_disciplines[0]._update_status_recursive(
                     self.STATUS_DONE)
                 dict_to_return = {}

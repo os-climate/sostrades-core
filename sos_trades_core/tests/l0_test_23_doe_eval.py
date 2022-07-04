@@ -734,69 +734,98 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_y2), 6)
 
     def _test_8_doe_eval_parallel_execution(self):
-        execution_time = 0
-        execution_time_20 = 0
-        for i in range(5):
-            start = time()
+        """ this tests evaluates the ability of the doe eval
+        to store reference scenario value in dm when running
+        in parallel
+        """
 
-            dspace_dict_x = {'variable': ['x'],
+        dspace_dict_x = {'variable': ['x'],
 
-                             'lower_bnd': [0.],
-                             'upper_bnd': [1000.],
+                         'lower_bnd': [0.],
+                         'upper_bnd': [10.],
 
-                             }
-            dspace_x = pd.DataFrame(dspace_dict_x)
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
 
-            exec_eng = ExecutionEngine(self.study_name)
-            factory = exec_eng.factory
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
 
-            proc_name = "test_sellar_doe_eval"
-            doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
-                                                                mod_id=proc_name)
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
 
-            exec_eng.factory.set_builders_to_coupling_builder(
-                doe_eval_builder)
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
 
-            exec_eng.configure()
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        n_processes = 10
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
 
-            # -- set up disciplines in Scenario
-            disc_dict = {}
-            # DoE inputs
-            n_samples = 1000
-            disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
-            disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-            disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
-            disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
-            disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
-            exec_eng.load_study_from_input_dict(disc_dict)
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
+                       f'{self.ns}.z': array([1., 1.]), f'{self.ns}.DoEEval.Sellar_Problem.local_dv': local_dv}
+        exec_eng.load_study_from_input_dict(values_dict)
 
-            # Sellar inputs
-            local_dv = 10.
-            values_dict = {}
-            # array([1.])
-            values_dict[f'{self.ns}.x'] = array([1.])
-            values_dict[f'{self.ns}.y_1'] = array([1.])
-            values_dict[f'{self.ns}.y_2'] = array([1.])
-            values_dict[f'{self.ns}.z'] = array([1., 1.])
-            values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
-            exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.execute()
 
-            exec_eng.execute()
-            stop = time()
-            # print(str(stop - start))
-            execution_time += stop - start
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
 
-            exec_eng.load_study_from_input_dict({f'{self.ns}.DoEEval.algo_options': {'n_samples': n_samples}})
-            start = time()
-            exec_eng.execute()
-            stop = time()
-            # print(str(stop - start))
-            execution_time_20 += stop - start
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
+        self.assertEqual(len(doe_disc_samples), n_samples + 1)
+        self.assertEqual(len(doe_disc_obj), n_samples + 1)
+        self.assertDictEqual(doe_disc_y1,
+                             {'scenario_1': array([10.491019856682016]), 'scenario_2': array([7.247824531594309]),
+                              'scenario_3': array([2.9753409599263483]), 'scenario_4': array([1.7522749587335193]),
+                              'scenario_5': array([9.384097972066053]), 'scenario_6': array([8.36704386923391]),
+                              'scenario_7': array([4.479056921478663]), 'scenario_8': array([5.286891081070988]),
+                              'scenario_9': array([3.240108355137796]), 'scenario_10': array([6.194561090631401]),
+                              'reference': array([2.29689011157193])})
+        self.assertDictEqual(doe_disc_y2,
+                             {'scenario_1': array([5.238984386606706]), 'scenario_2': array([4.692178398916815]),
+                              'scenario_3': array([3.7249176675790494]), 'scenario_4': array([3.3237352298452736]),
+                              'scenario_5': array([5.063347510823095]), 'scenario_6': array([4.892584289045681]),
+                              'scenario_7': array([4.116378255765888]), 'scenario_8': array([4.2993240487306235]),
+                              'scenario_9': array([3.8000300983977455]), 'scenario_10': array([4.488887520686984]),
+                              'reference': array([3.5155494421403515])})
 
-        print("parallel execution with 10 cores in " +
-              str(execution_time / 5) + " seconds")
-        print("parallel execution with 20 cores in " +
-              str(execution_time_20 / 5) + " seconds")
+        # we check that at the end of the run the dm contains the reference (or initial ) point
+        self.assertEqual(exec_eng.dm.get_value('doe.x'), array([1.0]))
+        print(' the reference value of the doe is ' + exec_eng.dm.get_value('doe.x'))
+
+        # large_dspace_dict_x = {'variable': ['x'],
+        #
+        #                        'lower_bnd': [0.],
+        #                        'upper_bnd': [10000.],
+        #
+        #                        }
+        # large_dspace_x = pd.DataFrame(large_dspace_dict_x)
+        #
+        # disc_dict = {}
+        # # DoE inputs
+        # n_samples = 10000
+        # n_processes = 10
+        # disc_dict[f'{self.ns}.DoEEval.design_space'] = large_dspace_x
+        # disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
+        # exec_eng.load_study_from_input_dict(disc_dict)
+        # exec_eng.execute()
+        # doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+        # doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
+        # self.assertEqual(len(doe_disc_obj),n_samples + 1)
+        # print(' number of samples retrieved after parallel execution ' + str(n_samples+1))
+
 
     def test_9_doe_eval_with_2_outputs_with_the_same_name(self):
         """ Here we test that the doe displays properly 2 inputs
@@ -916,4 +945,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    #cls.test_8_doe_eval_parallel_execution()
+    cls._test_8_doe_eval_parallel_execution()
