@@ -809,26 +809,25 @@ class TestSoSDOEScenario(unittest.TestCase):
         # self.assertEqual(exec_eng.dm.get_value('doe.x'), array([1.0]))
         print(' the reference value of the doe is ' + str(exec_eng.dm.get_value('doe.x')))
 
-        # large_dspace_dict_x = {'variable': ['x'],
-        #
-        #                        'lower_bnd': [0.],
-        #                        'upper_bnd': [10000.],
-        #
-        #                        }
-        # large_dspace_x = pd.DataFrame(large_dspace_dict_x)
-        #
-        # disc_dict = {}
-        # # DoE inputs
-        # n_samples = 10000
-        # n_processes = 10
-        # disc_dict[f'{self.ns}.DoEEval.design_space'] = large_dspace_x
-        # disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
-        # exec_eng.load_study_from_input_dict(disc_dict)
-        # exec_eng.execute()
-        # doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
-        # doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
-        # self.assertEqual(len(doe_disc_obj),n_samples + 1)
-        # print(' number of samples retrieved after parallel execution ' + str(n_samples+1))
+        large_dspace_dict_x = {'variable': ['x'],
+
+                               'lower_bnd': [0.],
+                               'upper_bnd': [10000.],
+
+                               }
+        large_dspace_x = pd.DataFrame(large_dspace_dict_x)
+
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10000
+        n_processes = 10
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = large_dspace_x
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
+        print(' number of samples retrieved after parallel execution ' + str(len(doe_disc_obj)))
 
     def test_9_doe_eval_with_2_outputs_with_the_same_name(self):
         """ Here we test that the doe displays properly 2 inputs
