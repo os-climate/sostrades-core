@@ -100,7 +100,7 @@ class DoeEval(SoSEval):
                                 'dataframe_edition_locked': False,
                                 'structuring': True, 'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                 'namespace': 'ns_doe_eval'},
-               'n_processes': {'type': 'int', 'numerical': True, 'default': 10},
+               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
                'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
                }
 
