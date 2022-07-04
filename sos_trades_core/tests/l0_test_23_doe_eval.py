@@ -756,6 +756,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.factory.set_builders_to_coupling_builder(
             doe_eval_builder)
+        exec_eng.configure()
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -803,7 +804,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # we check that at the end of the run the dm contains the reference (or initial ) point
         self.assertEqual(exec_eng.dm.get_value('doe.x'), array([1.0]))
-        print(' the reference value of the doe is ' + exec_eng.dm.get_value('doe.x'))
+        print(' the reference value of the doe is ' + str(exec_eng.dm.get_value('doe.x')))
 
         # large_dspace_dict_x = {'variable': ['x'],
         #
@@ -825,7 +826,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         # doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         # self.assertEqual(len(doe_disc_obj),n_samples + 1)
         # print(' number of samples retrieved after parallel execution ' + str(n_samples+1))
-
 
     def test_9_doe_eval_with_2_outputs_with_the_same_name(self):
         """ Here we test that the doe displays properly 2 inputs
