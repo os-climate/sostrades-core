@@ -355,7 +355,6 @@ class SoSEval(SoSDisciplineBuilder):
         '''
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
-        #n_processes = 10
         wait_time_between_samples = self.get_sosdisc_inputs(
             'wait_time_between_fork')
         if platform.system() == 'Windows' or n_processes == 1:

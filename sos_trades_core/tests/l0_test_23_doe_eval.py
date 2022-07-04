@@ -785,50 +785,29 @@ class TestSoSDOEScenario(unittest.TestCase):
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
 
-        for scenario,value in doe_disc_y1.items():
-            print(scenario,' : ',value)
-
-        # self.assertEqual(len(doe_disc_samples), n_samples + 1)
-        # self.assertEqual(len(doe_disc_obj), n_samples + 1)
-        # self.assertDictEqual(doe_disc_y1,
-        #                      {'scenario_1': array([10.491019856682016]), 'scenario_2': array([7.247824531594309]),
-        #                       'scenario_3': array([2.9753409599263483]), 'scenario_4': array([1.7522749587335193]),
-        #                       'scenario_5': array([9.384097972066053]), 'scenario_6': array([8.36704386923391]),
-        #                       'scenario_7': array([4.479056921478663]), 'scenario_8': array([5.286891081070988]),
-        #                       'scenario_9': array([3.240108355137796]), 'scenario_10': array([6.194561090631401]),
-        #                       'reference': array([2.29689011157193])})
-        # self.assertDictEqual(doe_disc_y2,
-        #                      {'scenario_1': array([5.238984386606706]), 'scenario_2': array([4.692178398916815]),
-        #                       'scenario_3': array([3.7249176675790494]), 'scenario_4': array([3.3237352298452736]),
-        #                       'scenario_5': array([5.063347510823095]), 'scenario_6': array([4.892584289045681]),
-        #                       'scenario_7': array([4.116378255765888]), 'scenario_8': array([4.2993240487306235]),
-        #                       'scenario_9': array([3.8000300983977455]), 'scenario_10': array([4.488887520686984]),
-        #                       'reference': array([3.5155494421403515])})
-        #
-        # # we check that at the end of the run the dm contains the reference (or initial ) point
-        # self.assertEqual(exec_eng.dm.get_value('doe.x'), array([1.0]))
+        for scenario, value in doe_disc_y1.items():
+            print(scenario, ' : ', value)
         print(' the reference value of the doe is ' + str(exec_eng.dm.get_value('doe.x')))
 
-        # large_dspace_dict_x = {'variable': ['x'],
-        #
-        #                        'lower_bnd': [0.],
-        #                        'upper_bnd': [10000.],
-        #
-        #                        }
-        # large_dspace_x = pd.DataFrame(large_dspace_dict_x)
-        #
-        # disc_dict = {}
-        # # DoE inputs
-        # n_samples = 10000
-        # n_processes = 10
-        # disc_dict[f'{self.ns}.DoEEval.design_space'] = large_dspace_x
-        # disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
-        # exec_eng.load_study_from_input_dict(disc_dict)
-        # exec_eng.execute()
-        # doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
-        # doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
-        # self.assertEqual(len(doe_disc_obj),n_samples + 1)
-        # print(' number of samples retrieved after parallel execution ' + str(n_samples+1))
+        large_dspace_dict_x = {'variable': ['x'],
+
+                               'lower_bnd': [0.],
+                               'upper_bnd': [10000.],
+
+                               }
+        large_dspace_x = pd.DataFrame(large_dspace_dict_x)
+
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10000
+        n_processes = 10
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = large_dspace_x
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
+        print(' number of samples retrieved after parallel execution ' + str(len(doe_disc_obj)))
 
     def test_9_doe_eval_with_2_outputs_with_the_same_name(self):
         """ Here we test that the doe displays properly 2 inputs
