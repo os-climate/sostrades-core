@@ -143,6 +143,10 @@ class PostProcessingFactory:
                         generated_post_processings = post_processing.resolve_post_processings(
                             execution_engine, associated_namespace.value, filters)
 
+                        if as_json:
+                            generated_post_processings = self.__convert_post_processing_into_json(
+                                generated_post_processings, logger=logger)
+
                         if generated_post_processings and len(generated_post_processings) > 0:
                             current_bundle.post_processings.extend(
                                 generated_post_processings)
