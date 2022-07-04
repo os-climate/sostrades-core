@@ -762,10 +762,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         # DoE inputs
         n_samples = 10
-        n_processes = 10
         disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples, 'n_processes': n_processes}
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
