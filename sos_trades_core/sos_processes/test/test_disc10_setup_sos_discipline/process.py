@@ -17,21 +17,24 @@ limitations under the License.
 #-- Generate test 1 process
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Process Hessian Discipline',
-        'description': 'Process to Instantiate a Hessian Discipline',
+        'label': 'Process Disc10 dynamic inputs Discipline',
+        'description': 'Process to Instantiate a Disc10 dynamic inputs Discipline',
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         mod_path = 'sos_trades_core.sos_wrapping.test_discs.disc10_setup_sos_discipline.Disc10'
         disc_name = 'Disc10'
-        disc_builder = self.ee.factory.get_builder_from_module(disc_name, mod_path)
-        builder_list =[disc_builder]
+        disc_builder = self.ee.factory.get_builder_from_module(
+            disc_name, mod_path)
+        builder_list = [disc_builder]
         ns_dict = {
-            'ns_ac': f'{self.ee.study_name}'}
+            'ns_ac': f'{self.ee.study_name}.Disc10'}
         self.ee.ns_manager.add_ns_def(ns_dict)
         return builder_list

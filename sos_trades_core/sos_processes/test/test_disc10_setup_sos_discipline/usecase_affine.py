@@ -31,9 +31,9 @@ class Study(StudyManager):
         b = 3.0
         ######### Fill the dictionary for dm   ####
         values_dict = {}
-        values_dict[f'{self.study_name}.Model_Type'] = 'Affine'
-        values_dict[f'{self.study_name}.x'] = x
-        values_dict[f'{self.study_name}.b'] = b
+        values_dict[f'{self.study_name}.Disc10.Model_Type'] = 'Affine'
+        values_dict[f'{self.study_name}.Disc10.x'] = x
+        values_dict[f'{self.study_name}.Disc10.b'] = b
         # default value a is not provided
 
         return [values_dict]
