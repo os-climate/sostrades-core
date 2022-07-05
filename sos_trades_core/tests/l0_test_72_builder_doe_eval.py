@@ -2292,7 +2292,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print(my_data['possible_values'])
             print('\n')
         target_possible_values = ['test_disc_hessian', 'test_disc1_disc2_coupling', 'test_sellar_coupling', 'test_proc_build_disc0',
-                                  'test_proc_build_disc1_all_types', 'test_proc_build_disc1_grid', 'test_proc_build_disc_self_coupled']
+                                  'test_proc_build_disc1_all_types', 'test_proc_build_disc1_grid', 'test_proc_build_disc_self_coupled', 'test_disc10_setup_sos_discipline']
         possible_values_list = my_data['possible_values']
         if isinstance(possible_values_list, type(None)):
             print('possible_values is None instead of :')
@@ -2388,7 +2388,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
             print(my_data['possible_values'])
             print('\n')
         target_possible_values = ['test_disc_hessian', 'test_disc1_disc2_coupling', 'test_sellar_coupling', 'test_proc_build_disc0',
-                                  'test_proc_build_disc1_all_types', 'test_proc_build_disc1_grid', 'test_proc_build_disc_self_coupled']
+                                  'test_proc_build_disc1_all_types', 'test_proc_build_disc1_grid', 'test_proc_build_disc_self_coupled', 'test_disc10_setup_sos_discipline']
         possible_values_list = my_data['possible_values']
         if isinstance(possible_values_list, type(None)):
             print('possible_values is None instead of :')
