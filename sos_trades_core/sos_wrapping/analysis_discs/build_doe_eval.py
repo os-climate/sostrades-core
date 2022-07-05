@@ -255,7 +255,7 @@ class BuildDoeEval(SoSEval):
         self.selected_inputs = []
         self.previous_repo_of_sub_processes = ""
         self.previous_sub_process_folder_name = None
-        self.previous_usecase_of_sub_process = ""
+        self.previous_usecase_of_sub_process = 'Empty'
         self.previous_algo_name = ""
         self.subprocess_ns_in_build = None
         self.sub_proc_build_status = 'Empty_SP'
@@ -286,7 +286,7 @@ class BuildDoeEval(SoSEval):
                         self.sub_proc_build_status = 'Replace_SP'
                         # clean all instances before rebuilt
                         self.sos_disciplines[0].clean()
-                        self.sos_disciplines = []
+                        self.sos_disciplines = []  # should it be del self.sos_disciplines[0]
                         # We "clean" also all dynamic inputs to be reloaded by
                         # the usecase
                         self.add_inputs({})
@@ -302,8 +302,8 @@ class BuildDoeEval(SoSEval):
                     my_dict = {}
                     for item in my_keys:
                         my_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value()
-                    self.subprocess_ns_in_build = pd.DataFrame.from_dict(
-                        my_dict, orient='index')
+                        self.subprocess_ns_in_build = pd.DataFrame(
+                            list(my_dict.items()), columns=['Name', 'Value'])
                     # Shift namespace due to the 'DoE_Eval' inserted
                     self.update_namespace_list_with_extra_ns_except_driver(
                         'DoE_Eval', after_name=self.ee.study_name)
@@ -369,7 +369,7 @@ class BuildDoeEval(SoSEval):
             if repo != None:
                 sub_process_folder_name = ['test_disc_hessian']
                 sub_process_folder_name += [
-                    'test_disc1_disc2_coupling', 'test_sellar_coupling']
+                    'test_disc1_disc2_coupling', 'test_sellar_coupling', 'test_disc10_setup_sos_discipline']
                 process_factory = SoSProcessFactory(additional_repository_list=[
                     repo], search_python_path=False)
                 process_list_dict = process_factory.get_processes_dict()
@@ -393,8 +393,15 @@ class BuildDoeEval(SoSEval):
                                                    'default': 'Empty',
                                                    'possible_values': process_usecase_list,
                                                    'structuring': True,
-                                                   'description': 'usecase set of data inputs'}})
-
+                                                   'description': 'usecase set of data inputs',
+                                                   #'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                   #'namespace': 'ns_sp'
+                                                   }})
+                # if 'ns_sp' not in self.ee.ns_manager.shared_ns_dict.keys():
+                #    sp_full_name = self.sos_disciplines[0].get_disc_full_name()
+                #sp_full_name = self.get_disc_full_name()
+                #    self.ee.ns_manager.add_ns(
+                #        'ns_sp', f'{sp_full_name}')
         if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
             repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
             sub_process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
@@ -569,7 +576,6 @@ class BuildDoeEval(SoSEval):
                     'Selected use_case is not in the possible_values!')
             if self.previous_usecase_of_sub_process != usecase:
                 usecase_has_changed = True
-                self.previous_usecase_of_sub_process = usecase
             if usecase != 'Empty' and usecase_has_changed:
                 imported_usecase = '.'.join([repository, process, usecase])
                 imported_module = import_module(imported_usecase)
@@ -585,6 +591,14 @@ class BuildDoeEval(SoSEval):
                     input_dict_to_load.update(uc_d)
                 self.ee.dm.set_values_from_dict(
                     input_dict_to_load)
+                # All usecase inputs of the subprocess are added or replaced in the dm
+                # In case of dynamic inputs of the subprocess, the next config will remove not coherent keys ib dm.
+                # For variables of the subprocess with default values (either static or dynamic)
+                #          - it will keep (as is) last saved values in dm: it is implemented
+                #          - if we would like (user choice to be added: provide usecase name + use_default = True) to also go back to default values for those variables:
+                # for doing this, we could either change the subprocess by
+                # itself before doing self.ee.dm.set_values_from_dict. This is
+                # not implemented.
 
     def create_design_space(self):
         """
