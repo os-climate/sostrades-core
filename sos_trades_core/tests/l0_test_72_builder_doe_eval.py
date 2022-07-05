@@ -814,7 +814,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         Test the creation of the doe without nested disciplines directly from DoE_eval class : 
         through_process_test_driver_build_doe_eval_empty.
         And then its update with with an input process for discipline selection.
-        Here : setup_usecase(restricted=True)
+        Here : setup_Hessian_usecase_from_direct_input(restricted=True)
         It is then used (fill data and execute)
         '''
         print('test_03_build_doe_eval_with_nested_proc_selection_through_process_driver')
@@ -1124,7 +1124,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         Test the creation of the doe without nested disciplines directly from DoE_eval class : 
         through_process_test_driver_build_doe_eval_empty.
         And then its update with with an input process for discipline selection.
-        Here : setup_usecase(restricted=False)
+        Here : setup_Hessian_usecase_from_direct_input(restricted=False)
         It is then used (fill data and execute)
         '''
         print('test_04_build_doe_eval_with_nested_proc_selection_through_process_driver')
@@ -1590,11 +1590,26 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         study_dump.load_data()
 
         print_flag = True
-        #dict_values = self.setup_usecase(restricted=False)
-        dict_values = self.setup_Hessian_usecase_from_sub_usecase(
-            restricted=False, my_usecase='usecase')
-        print('load usecase file')
-        study_dump.load_data(from_input_dict=dict_values)
+
+        # load usecase file : from Empty (because
+        # self.previous_usecase_of_sub_process is 'Empty' in init) to usecase
+        # without direct user inputs
+        if 1 == 1:
+            dict_values = self.setup_Hessian_usecase_from_sub_usecase(
+                restricted=False, my_usecase='usecase')
+            print('load usecase file : from Empty to usecase without direct user inputs')
+            study_dump.load_data(from_input_dict=dict_values)
+        else:  # First direct user inputs and then load usecase file : from Empty to usecase
+            dict_values = self.setup_Hessian_usecase_from_direct_input(restricted=False)[
+                0]
+            print('set subprocess inputs directly')
+            study_dump.load_data(from_input_dict=dict_values)
+            # load from usecase
+            dict_values = {}
+            dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'usecase'
+            print('load usecase file')
+            study_dump.load_data(from_input_dict=dict_values)
+
         # check input values (and print) of Hessian discipline
         hessian_disc = study_dump.ee.dm.get_disciplines_with_name(
             f'{self.study_name}.DoE_Eval.Hessian')[0]
@@ -1614,17 +1629,18 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         target_values_dict['x'] = target_x
         self.check_discipline_values(
             hessian_disc, target_values_dict, print_flag=print_flag)
-        # bad use case warning : (To be done)
-        # In python we can provide 'usecase4' :
-        dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'usecase4'
-        print('load usecase4 file: does not exist!')
-        study_dump.load_data(from_input_dict=dict_values)
-        # Go on to finish study
-        dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'usecase2'
-        print('load usecase2 file')
-        study_dump.load_data(from_input_dict=dict_values)
+        if 1 == 0:
+            # bad use case warning
+            # In python we can provide 'usecase4'
+            dict_values = {}
+            dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'usecase4'
+            print('load usecase4 file: does not exist!')
+            study_dump.load_data(from_input_dict=dict_values)
+            # Go on to finish study
+            dict_values = {}
+            dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'usecase2'
+            print('load usecase2 file')
+            study_dump.load_data(from_input_dict=dict_values)
         study_dump.dump_data(dump_dir)
         # print(study_dump.ee.dm.get_data_dict_values())
 
@@ -2896,7 +2912,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 10
+    test_selector = 6
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()
