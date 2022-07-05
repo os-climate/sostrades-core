@@ -672,6 +672,7 @@ class GridSearchEval(DoeEval):
                 filtered_name=[]
 
                 if isinstance(output_df_dict, dict):
+                    list_outputs = list(output_df_dict.values())
 
                     if isinstance(list(output_df_dict.values())[0], dict):
                         # change from a dict of dicts to a dict of df
