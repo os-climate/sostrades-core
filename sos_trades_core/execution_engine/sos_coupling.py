@@ -197,19 +197,11 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
         '''
         if self.cache is not None:
-            # set disc infos string list with full name, class name and anonimaed i/o for hashed uid generation
-            disc_info_list = [self.get_disc_full_name(), self.__class__.__name__, self.get_anonimated_data_io(self)]
-            hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
-            # store cache and hashed uid in data manager maps
-            self.dm.cache_map[hashed_uid] = self.cache
-            self.dm.gemseo_disciplines_id_map[hashed_uid] = self
+            # store SoSCoupling cache in DM
+            self._store_cache_with_hashed_uid(self)
             
-            # set mdo_chain infos string list
-            mdo_chain_info_list = [self.get_disc_full_name(), self.mdo_chain.__class__.__name__, self.get_anonimated_data_io(self.mdo_chain)]
-            hashed_uid_mdo_chain = self.dm.generate_hashed_uid(mdo_chain_info_list)
-            # store cache and hashed uid in data manager maps
-            self.dm.cache_map[hashed_uid_mdo_chain] = self.mdo_chain.cache
-            self.dm.gemseo_disciplines_id_map[hashed_uid_mdo_chain] = self.mdo_chain
+            # store mdo_chain cache in DM
+            self._store_cache_with_hashed_uid(self.mdo_chain)
         
             # store sub mdas cache recursively
             for mda in self.sub_mda_list:
@@ -223,12 +215,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         Update cache_map disc in DM with mda cache and its sub_mdas recursively        
         '''
-        # set mdo_chain infos string list
-        mda_info_list = [self.get_disc_full_name(), mda.__class__.__name__, self.get_anonimated_data_io(mda)]
-        hashed_uid_mda = self.dm.generate_hashed_uid(mda_info_list)
-        # store cache and hashed uid in data manager maps
-        self.dm.cache_map[hashed_uid_mda] = mda.cache
-        self.dm.gemseo_disciplines_id_map[hashed_uid_mda] = mda
+        # store mda cache in DM
+        self._store_cache_with_hashed_uid(mda)
         # store sub mda cache recursively
         if isinstance(mda, MDASequential):
             for sub_mda in mda.mda_sequence:
@@ -870,7 +858,6 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             inputs = self.get_input_data_names(filtered_inputs=True)
         if outputs is None:
             outputs = self.get_output_data_names(filtered_outputs=True)
-
 
         return MDAChain.check_jacobian(self,
                                        input_data=input_data,
