@@ -669,7 +669,6 @@ class GridSearchEval(DoeEval):
             outputs_names.remove('samples_inputs_df')
             for single_output in outputs_names:
                 output_df_dict = outputs_discipline_dict[single_output]
-                filtered_name=[]
 
                 if isinstance(output_df_dict, dict):
                     list_outputs = list(output_df_dict.values())
@@ -683,7 +682,7 @@ class GridSearchEval(DoeEval):
                         }
                         list_outputs = list(output_df_dict.values())
 
-                    if isinstance(list_outputs[0], float):
+                    if isinstance(list(output_df_dict.values())[0], float):
                         output_df_dict = {
                             key: pd.DataFrame(
                                 {
@@ -695,6 +694,7 @@ class GridSearchEval(DoeEval):
                             )
                             for (key, value) in output_df_dict.items()
                         }
+                        list_outputs = list(output_df_dict.values())
 
                     if (
                         isinstance(list_outputs[0], pd.DataFrame)
@@ -708,6 +708,7 @@ class GridSearchEval(DoeEval):
                         # string == 'NA' takes into account the possibility of adding a NaN as string
                         # Finally,  We select the outputs to plot at the first element
                         
+                        filtered_name=[]
                         for col in list_outputs[0].columns:
                             type_col=list_outputs[0][col]
                             
@@ -738,7 +739,7 @@ class GridSearchEval(DoeEval):
                             # and number of columns = all results for all
                             # single outputs
                             for scenario, df in output_df_dict.items():
-                                filtered_df = df.copy(deep=True)
+                                filtered_df = copy.deepcopy(df)
                                 filtered_df.rename(
                                     columns={
                                         old_key: re.sub(
