@@ -447,6 +447,12 @@ class ExecutionEngine:
                 self.logger.warn(
                     'CONFIGURE WARNING: root process is not configured after 100 iterations')
                 loop_stop = True
+                disciplines_not_configured = self.root_process.get_disciplines_to_configure()
+                if all( type(discipline).__name__ in ['SoSScatterData','SoSGatherData'] for discipline in disciplines_not_configured) :
+                    msg = "scattered variables in scatter_data or gathered variable in gather_data should be used by " \
+                          "another process. Otherwise it is useless "
+                    self.logger.error(msg)
+                    raise ValueError(msg)
 
         # Convergence is ended
         # Set all output variables (to be able to get results
