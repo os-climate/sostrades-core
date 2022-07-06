@@ -31,8 +31,8 @@ class Study(StudyManager):
 
         ######### Fill the dictionary for dm   ####
         values_dict = {}
-        values_dict[f'{self.study_name}.Model_Type'] = 'Linear'
-        values_dict[f'{self.study_name}.x'] = x
+        values_dict[f'{self.study_name}.Disc10.Model_Type'] = 'Linear'
+        values_dict[f'{self.study_name}.Disc10.x'] = x
         # default value a is not provided
 
         return [values_dict]
