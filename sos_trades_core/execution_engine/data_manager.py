@@ -109,8 +109,9 @@ class DataManager:
         # update cache of all gemseo disciplines with loaded cache_map
         for disc_id, disc_cache in cache_map.items():
             if disc_id in self.gemseo_disciplines_id_map:
-                self.gemseo_disciplines_id_map[disc_id].cache = disc_cache
                 self.cache_map[disc_id] = disc_cache
+                for disc in self.gemseo_disciplines_id_map[disc_id]:
+                    disc.cache = disc_cache
 
     def reset(self):
         self.data_dict = {}
@@ -746,7 +747,7 @@ class DataManager:
                                 else:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {value} is not in range {prange}'
                                     self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list', 'list']:
                             for sub_value in value:
                                 if not can_cast(type(sub_value), type(prange[0])):
                                     errors_in_dm_msg = f'Variable: {var_f_name}: {sub_value} ({type(sub_value)}) in list {value} not the same as {prange[0]} ({type(prange[0])})'
