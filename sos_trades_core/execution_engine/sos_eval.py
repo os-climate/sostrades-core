@@ -384,7 +384,7 @@ class SoSEval(SoSDisciplineBuilder):
             def sample_evaluator(sample_to_evaluate):
                 """Evaluate a sample
                 """
-                return self.evaluation(sample_to_evaluate, convert_to_array=False, completed_eval_in_list)
+                return self.evaluation(sample_to_evaluate, convert_to_array=False, completed_eval_in_list=completed_eval_in_list)
 
             parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
