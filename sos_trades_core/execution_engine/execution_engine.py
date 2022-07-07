@@ -28,6 +28,7 @@ from sos_trades_core.execution_engine.post_processing_manager import PostProcess
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
+from rapidfuzz import process, fuzz
 
 
 DEFAULT_FACTORY_NAME = 'default_factory'
@@ -87,7 +88,7 @@ class ExecutionEngine:
     def factory(self):
         """ Read-only accessor to the factory object
 
-            :return: current used factory 
+            :return: current used factory
             :type: SosFactory
         """
         return self.__factory
@@ -96,7 +97,7 @@ class ExecutionEngine:
     def post_processing_manager(self):
         """ Read-only accessor to the post_processing_manager object
 
-            :return: current used post_processing_manager 
+            :return: current used post_processing_manager
             :type: PostProcessingManager
         """
         return self.__post_processing_manager
@@ -203,7 +204,7 @@ class ExecutionEngine:
 
     def update_from_dm(self):
         self.root_process.update_from_dm()
-        
+
     def build_cache_map(self):
         '''
         Build cache map with all gemseo disciplines cache
@@ -211,7 +212,7 @@ class ExecutionEngine:
         self.dm.cache_map = {}
         self.dm.gemseo_disciplines_id_map = {}
         self.root_process._set_dm_cache_map()
-        
+
     def get_cache_map_to_dump(self):
         '''
         Build if necessary and return data manager cache map
@@ -219,7 +220,7 @@ class ExecutionEngine:
         if self.dm.cache_map is None:
             self.build_cache_map()
         return self.dm.cache_map
-        
+
     def load_cache_from_map(self, cache_map):
         '''
         Load disciplines cache from cache_map
@@ -246,7 +247,7 @@ class ExecutionEngine:
 
     def display_treeview_nodes(self, display_variables=None):
         '''
-        Display the treeview and create it if not 
+        Display the treeview and create it if not
         '''
         self.get_treeview()
         tv_to_display = self.dm.treeview.display_nodes(
@@ -423,7 +424,6 @@ class ExecutionEngine:
 
             self.dm.no_change = True
             for key, value in self.dm.data_dict.items():
-
                 if key in convert_data_cache:
                     # Only inject key which are set as input
                     # Discipline configuration only take care of input
@@ -455,6 +455,42 @@ class ExecutionEngine:
                     raise ValueError(msg)
 
         # Convergence is ended
+        # Check for unused input data in dict_to_load,
+        # not matching with a key in the dm
+        fullname_checked_keys=[self.dm.get_var_full_name(key) for key in convert_data_cache.keys()]
+        unchecked_keys=list(set(dict_to_load.keys()) - set(fullname_checked_keys))
+
+        if len(unchecked_keys):
+            self.logger.info('---------------------------------')
+            self.logger.info('unchecked keys: ')
+            shared_ns_dict = self.dm.ns_manager.get_shared_ns_dict()
+            data_id_map_keys = self.dm.data_id_map.keys()
+            for key in unchecked_keys:
+                #First, skip key if it is an output
+                try:
+                    if self.dm.get_data(key)['io_type'] == 'out':
+                        continue
+                except:
+                    pass
+                #Then, check for match, with a different namespace
+                local_data=[key.split('.')[-1] for key in data_id_map_keys]
+                if key.split('.')[-1] in local_data:
+                    namespace_values = [ns.value for ns in shared_ns_dict.values()]
+                    matching_key=[val+'.'+key.split('.')[-1] for val in namespace_values if val+'.'+key.split('.')[-1] in fullname_checked_keys]
+                    if len(matching_key):
+                        #If a match is found, make a suggestion
+                        self.logger.info(f'"{key}" not a possible input in dm, did you mean "{matching_key[0]}" ?')
+                        continue
+                #If no match found with all the namespaces, perform string-match search
+                result=process.extractOne(key, data_id_map_keys, scorer=fuzz.WRatio)
+                if result[1] > 90:
+                    #If a close match is found, make a suggestion
+                    self.logger.info(f'"{key}" not a possible input in dm, did you mean "{result[0]}" ?')
+                    continue
+                else:
+                    #Else, just print the key
+                    self.logger.info(f'"{key}" not a possible input in dm')
+            self.logger.info('---------------------------------')
         # Set all output variables (to be able to get results
         for key, value in self.dm.data_dict.items():
             if key in convert_data_cache:
