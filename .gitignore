@@ -9,3 +9,4 @@ xdsm.html
 build/
 dist/
 sos_trades_core.egg-info/
+pytest.ini

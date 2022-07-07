@@ -7,6 +7,7 @@ import subprocess
 import black
 import platform
 import itertools
+import importlib
 
 
 """
@@ -53,6 +54,7 @@ class UsecaseCreator:
         usecase_name: str,
         write_default_value: bool = False,
         write_outputs: bool = False,
+        inputs_from_usecase = None,
     ) -> None:
         """Class to generate usecase.py file and related input and output data from a pickle file
 
@@ -66,7 +68,17 @@ class UsecaseCreator:
         self.usecase_name = usecase_name
         self.write_default_value = write_default_value
         self.write_outputs = write_outputs
-
+        self.study_to_match=None
+        if inputs_from_usecase:
+            spec = importlib.util.spec_from_file_location("usecase", inputs_from_usecase)
+            # creates a new module based on spec
+            foo = importlib.util.module_from_spec(spec)
+            # executes the module in its own namespace
+            # when a module is imported or reloaded.
+            spec.loader.exec_module(foo)
+            self.study_to_match=foo.Study()
+            # self.study_to_match.load_data()
+            # self.study_to_match.ee.configure()
         self.dm_data_dict = pd.read_pickle(self.pkl_path)
         self.dump_dir = dirname(self.pkl_path)
         self.conversion_full_short = {}
@@ -75,30 +87,20 @@ class UsecaseCreator:
         self.ignore_list = [
             'cache_type',
             'cache_file_path',
-            'sub_mda_class',
-            'max_mda_iter',
             'n_processes',
             'chain_linearize',
-            'tolerance',
             'use_lu_fact',
             'warm_start',
             'acceleration',
-            'epsilon0',
-            'reset_history_each_run',
+            'linear_solver_MDA',
             'linear_solver_MDO',
-            'max_iter_linear_solver_MDO',
-            'max_iter_linear_solver_MDA',
+            'reset_history_each_run',
             'warm_start_threshold',
             'n_subcouplings_parallel',
-            'linear_solver_MDA',
             'linearization_mode',
-            'tolerance_linear_solver_MDO',
-            'tolerance_linear_solver_MDA',
             'residuals_history',
             'group_mda_disciplines',
-            'linear_solver_MDA_options',
             'linear_solver_MDA_preconditioner',
-            'linear_solver_MDO_options',
             'linear_solver_MDO_preconditioner',
             'max_mda_iter_gs',
             'relax_factor',
@@ -413,10 +415,34 @@ if '__main__' == __name__:
 
         # return string to load file
         if isinstance(value, pd.DataFrame):
-            return f"pd.read_csv(join(self.data_dir,'{fileName}'))"
+            str_eval=self.get_converter_string(value)
+            return f"pd.read_csv(join(self.data_dir,'{fileName}'){str_eval})"
 
         elif isinstance(value, dict):
             return f"json.load(open(join(self.data_dir,'{fileName}')))"
+
+    def get_converter_string(self, df):
+        """Method to build a string with the appropriate converter dict
+        For some dataframe with elements that are lists, the read_csv function
+        returns a string instead of a list if a converter is not specified.
+        This method checks if such a conversion is needed for a given df and
+        returns a string with the complement for 'pd.read_csv({csv}, {complement})'
+        """
+        col_to_eval = list(df.dtypes[(df.dtypes == object)].index) #list of col with object type
+        str_eval, i_eval = '', 0 # initialize return string and counter
+        if col_to_eval:
+            str_eval = ', converters={'
+            for col in col_to_eval:
+                try: # test if the eval (str -> list) is achievable
+                    assert type(eval(str(df[col].values[0]))) == list
+                    str_eval = str_eval + f"'{col}': eval, "
+                    i_eval += 1
+                except:
+                    pass
+            str_eval = str_eval + '}'
+        if i_eval == 0: # if there is no successful eval str to list, return empty string
+            str_eval = ''
+        return str_eval
 
     def filter_dm(self) -> None:
         """Method to fill out the dict self.dm_dict_to_write from the DataManager with only the input parameters values
@@ -452,6 +478,62 @@ if '__main__' == __name__:
             ):
                 self.outputs_to_write[key] = data_dict['value']
 
+    def filter_dm_from_other_usecase(self) -> None:
+        """Method to fill out the dict self.dm_dict_to_write from the DataManager using
+        a list of inputs from another process
+        """
+        merged_setup_dict = {}
+        for setup_dict in self.study_to_match.setup_usecase():
+            merged_setup_dict.update(setup_dict)
+        self.study_to_match.ee.load_study_from_input_dict(merged_setup_dict)
+        for key, value in sorted(merged_setup_dict.items()):
+            abstracted_key = key.replace(self.study_to_match.study_name, '<study_ph>')
+            try:
+                data_dict=self.study_to_match.ee.dm.get_data(key)
+            except:
+                continue
+            if data_dict['io_type']=='in' and key.split('.')[-1] not in self.ignore_list:
+                write = True
+                if not self.write_default_value:
+                    # check if value is different from default value:
+                    if 'default' in data_dict and data_dict['default'] is not None:
+                        if isinstance(data_dict['value'], pd.DataFrame) and isinstance(
+                                data_dict['default'], pd.DataFrame
+                        ):
+                            if data_dict['value'].equals(data_dict['default']):
+                                write = False
+                        else:
+                            if data_dict['value'] == data_dict['default']:
+                                write = False
+                if write:
+                    simple_matches = [pkl_key for pkl_key in self.dm_data_dict.keys() if
+                                      pkl_key.split('.')[-1] == key.split('.')[-1]]
+                    if len(simple_matches) == 1:
+                        self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[simple_matches[0]]['value']
+                    elif len(simple_matches)>1:
+                        middle_key = '.'.join(abstracted_key.split('.')[-2:])
+                        new_matches = [pkl_key for pkl_key in self.dm_data_dict.keys() if
+                                       '.'.join(pkl_key.split('.')[-2:]) == middle_key]
+                        if len(new_matches)==1:
+                            self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[new_matches[0]]['value']
+                        elif len(new_matches)==0:
+                            if type(value)==pd.DataFrame:
+                                self.dm_dict_to_write[abstracted_key] = value.applymap(str)
+                            elif type(value) in  [dict, list]:
+                                self.dm_dict_to_write[abstracted_key] = [str(val) for val in value]
+                            else:
+                                if value is not None:
+                                    self.dm_dict_to_write[abstracted_key] = value
+                                    print(
+                                        f'WARNING : input value {key} not found in pkl dm, value from usecase taken')
+                                else:
+                                    print(f'WARNING : input value {key} not added to usecase')
+                        else:
+                            raise ValueError(f'Too many matches found for {key}')
+                    else:
+                        self.dm_dict_to_write[abstracted_key] = value
+                        print(f'WARNING : Input value {key} not found in pkl dm, value from usecase taken')
+
     def write_strings_to_file(self) -> None:
         """Method to write the usecase.py from the self.same_value_dict and the self.dm_dict_to_write"""
         with open(join(self.dump_dir, f'usecase_{self.usecase_name}.py'), 'w') as file:
@@ -485,7 +567,10 @@ if '__main__' == __name__:
     def pickle_file_to_usecase(self) -> None:
         """Main method to generate the usecase.py file and the associated data"""
 
-        self.filter_dm()
+        if not self.study_to_match:
+            self.filter_dm()
+        else:
+            self.filter_dm_from_other_usecase()
         self.generate_same_values_dict()
         self.write_strings_to_file()
 
