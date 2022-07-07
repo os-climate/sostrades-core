@@ -35,18 +35,18 @@ class Disc10(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'Model_Type': {'type': 'string', 'default': [],
-                       'possible_values': ['Linear','Affine','Polynomial'],
+        'Model_Type': {'type': 'string', 'default': 'Linear',
+                       'possible_values': ['Linear', 'Affine', 'Polynomial'],
                        'visibility': SoSDiscipline.SHARED_VISIBILITY,
                        'namespace': 'ns_ac', 'structuring': True},
-        'x': {  'type': 'float',
-                'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                'namespace': 'ns_ac'},
-        'a': {  'type': 'float',
-                'default': 1.,
-                'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                'namespace': 'ns_ac'}
-            }
+        'x': {'type': 'float',
+              'visibility': SoSDiscipline.SHARED_VISIBILITY,
+              'namespace': 'ns_ac'},
+        'a': {'type': 'float',
+              'default': 1.,
+              'visibility': SoSDiscipline.SHARED_VISIBILITY,
+              'namespace': 'ns_ac'}
+    }
     DESC_OUT = {
         'y': {'type': 'float',
               'visibility': SoSDiscipline.SHARED_VISIBILITY,
@@ -62,8 +62,10 @@ class Disc10(SoSDiscipline):
                                              'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                              'namespace': 'ns_ac'}})
             elif Model_Type == 'Polynomial':
-                dynamic_inputs.update({'b': {'type': 'float','visibility': SoSDiscipline.SHARED_VISIBILITY,'namespace': 'ns_ac'}})
-                dynamic_inputs.update({'power': {'type': 'float','default': 2.,'visibility': SoSDiscipline.SHARED_VISIBILITY,'namespace': 'ns_ac'}})
+                dynamic_inputs.update(
+                    {'b': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
+                dynamic_inputs.update({'power': {'type': 'float', 'default': 2.,
+                                                 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
         self.add_inputs(dynamic_inputs)
 
     def run(self):
@@ -80,7 +82,7 @@ class Disc10(SoSDiscipline):
             b = input_dict['b']
             power = input_dict['power']
             y = a * x**power + b
-        dict_values={}
+        dict_values = {}
         dict_values['y'] = y
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
