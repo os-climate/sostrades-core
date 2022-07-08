@@ -430,10 +430,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
         
         # check cache activation by counting n_calls
         for disc in list(study_2.ee.dm.gemseo_disciplines_id_map.values()):
-            if disc.name in ['usecase', 'UncertaintyQuantification']:
-                self.assertEqual(disc.n_calls, 1)
+            if disc[0].name in ['usecase', 'UncertaintyQuantification']:
+                self.assertEqual(disc[0].n_calls, 1)
             else:
-                self.assertEqual(disc.n_calls, 0)
+                self.assertEqual(disc[0].n_calls, 0)
         
         self.dir_to_del.append(self.dump_dir)
 

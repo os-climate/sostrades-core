@@ -20,3 +20,4 @@ cvxpy==1.1.18
 cylp==0.91.4
 black==22.3.0
 pymoo==0.5.0
+rapidfuzz==2.1.1
