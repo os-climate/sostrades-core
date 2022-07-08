@@ -57,7 +57,8 @@ class SoSScatterData(SoSDiscipline):
         self.scatter_values = None
 
         # check dataframe column info
-        if 'dataframe' in self.sc_map.map[self.sc_map.INPUT_TYPE] and self.sc_map.SCATTER_COLUMN_NAME not in self.sc_map.map:
+        if 'dataframe' in self.sc_map.map[
+            self.sc_map.INPUT_TYPE] and self.sc_map.SCATTER_COLUMN_NAME not in self.sc_map.map:
             raise ScatterDataException(
                 f'At least one input type is a dataframe but the attribute "scatter_column_name" in not present in map: {self.sc_map.map}')
 
@@ -74,7 +75,7 @@ class SoSScatterData(SoSDiscipline):
             if new_scatter_value is not None and new_scatter_value != self.scatter_values:
                 # add sub_varnames to inst_desc_out
                 self.build_inst_desc_out()
-                
+
             SoSDiscipline.configure(self)
 
             store_outputs = False
@@ -123,7 +124,8 @@ class SoSScatterData(SoSDiscipline):
                 # when scatter outputs are inputs of other disciplines, outputs
                 # have to be stored during configure step for each input change
                 add_to_desc_in = {input_name: {
-                    self.TYPE: input_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: input_ns, self.STRUCTURING: True}}
+                    self.TYPE: input_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: input_ns,
+                    self.STRUCTURING: True}}
                 self.inst_desc_in.update(add_to_desc_in.copy())
 
         # add scatter_var_name to inst_desc_in using specified visibility
@@ -133,7 +135,8 @@ class SoSScatterData(SoSDiscipline):
             scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
                 scatter_var_name)
             add_to_desc_in = {f'{scatter_var_name}': {
-                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns, self.STRUCTURING: True}}
+                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
+                self.STRUCTURING: True}}
             self.inst_desc_in.update(add_to_desc_in.copy())
 
     def build_inst_desc_out(self):
@@ -161,6 +164,37 @@ class SoSScatterData(SoSDiscipline):
                         self.inst_desc_out.update(
                             {f'{build_name}.{output_name}': add_to_desc_out.copy()})
 
+    def fill_subtype_descriptor(self):
+        """ Redefinition of sos_discipline's fill_subtype_descriptor method
+        to fill the subtype_descriptors of input variables of a scatter data
+        """
+        input_name_list = self.sc_map.get_input_name()
+        input_type_list = self.sc_map.get_input_type()
+        input_ns = self.sc_map.get_input_ns()
+        scatter_var_name = self.sc_map.get_scatter_var_name()
+        new_scatter_inputs = self.get_sosdisc_inputs(scatter_var_name)
+        output_name_list = self.sc_map.get_output_name()
+        if len(new_scatter_inputs) > 0:
+            first_scatter_node = new_scatter_inputs[0]
+            i = 0
+            for input_name, input_type in zip(input_name_list, input_type_list):
+                input_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][input_ns].get_value()
+                corresponding_output = f'{input_ns_name}.{first_scatter_node}.{output_name_list[i]}'
+                type_of_output = self.ee.dm.get_data(corresponding_output, self.TYPE)
+                subtype_descriptor = None
+
+                if input_type == 'dict':
+                    if type_of_output not in ['list', 'dict']:
+                        subtype_descriptor = {'dict': type_of_output}
+                    else:
+                        subtype_descriptor = self.ee.dm.get_data(corresponding_output, self.SUBTYPE)
+                        if subtype_descriptor is not None:
+                            subtype_descriptor = {'dict': subtype_descriptor}
+
+                if subtype_descriptor is not None:
+                    self._data_in[input_name][self.SUBTYPE] = subtype_descriptor
+                i += 1
+
     def run(self):
 
         self.store_scatter_outputs()
@@ -180,7 +214,8 @@ class SoSScatterData(SoSDiscipline):
 
         dict_values = {}
         if scatter_list is not None:
-            for i, (input_name, output_name, input_type) in enumerate(zip(input_name_list, output_name_list, input_type_list)):
+            for i, (input_name, output_name, input_type) in enumerate(
+                    zip(input_name_list, output_name_list, input_type_list)):
                 to_scatter_variable = self.get_sosdisc_inputs(input_name)
                 if to_scatter_variable is not None:
                     for scatter_name in scatter_list:
@@ -194,8 +229,9 @@ class SoSScatterData(SoSDiscipline):
                             if col not in to_scatter_variable:
                                 raise ScatterDataException(
                                     f'The column: {col} does not exist in the dataframe used in the scatter data defined in map: {self.sc_map.map}')
-                            scatter_output_value = to_scatter_variable.loc[to_scatter_variable[col] == scatter_name, ].reset_index(drop=True
-                                                                                                                                   )
+                            scatter_output_value = to_scatter_variable.loc[
+                                to_scatter_variable[col] == scatter_name,].reset_index(drop=True
+                                                                                       )
                         dict_values[f'{scatter_name}.{output_name}'] = scatter_output_value
 
         self.store_sos_outputs_values(dict_values, update_dm=store_in_dm)

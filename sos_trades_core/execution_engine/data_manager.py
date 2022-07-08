@@ -49,6 +49,7 @@ VAR_NAME = SoSDiscipline.VAR_NAME
 DATAFRAME_DESCRIPTOR = SoSDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = SoSDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = SoSDiscipline.TYPE_METADATA
+SUBTYPE = SoSDiscipline.SUBTYPE
 
 
 class DataManager:
@@ -422,6 +423,10 @@ class DataManager:
                         disc_dict[var_name] = self.data_dict[var_id]
                     # else data already exist as OUTPUT and has priority!
                     # => do nothing
+                    # if subtype descriptor is in the disc_dict but not in dm we fetch it from the disc_dict
+                    if (SUBTYPE in disc_dict[var_name].keys()) and (SUBTYPE not in self.data_dict[var_id].keys()):
+                        self.data_dict[var_id][SUBTYPE] = disc_dict[var_name][SUBTYPE]
+
                 else:
                     # io_type == IO_TYPE_OUT
                     if self.data_dict[var_id][IO_TYPE] == IO_TYPE_OUT:
@@ -456,6 +461,8 @@ class DataManager:
                         # one ('techno invest level').
                         if self.data_dict[var_id][VALUE] is not None:
                             disc_dict[var_name][VALUE] = self.data_dict[var_id][VALUE]
+                        if (SUBTYPE in self.data_dict[var_id].keys()) and (SUBTYPE not in disc_dict[var_name].keys()):
+                            disc_dict[var_name][SUBTYPE] = self.data_dict[var_id][SUBTYPE]
                         self.data_dict[var_id] = disc_dict[var_name]
                 if not disc_id in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
                     self.data_dict[var_id][DISCIPLINES_DEPENDENCIES].append(
