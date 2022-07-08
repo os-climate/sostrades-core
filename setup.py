@@ -59,7 +59,7 @@ setup(
     description='Core of System of System Trades',
     long_description=readme,
     author='Airbus SAS',
-    url='https://idas661.eu.airbus.corp/sostrades/sos_trades_core.git',
+    url='https://idas661.eu.airbus.corp/sostrades/sostrades_core.git',
     license=license,
     packages=find_packages(exclude=('tests')),
     include_package_data=True,
