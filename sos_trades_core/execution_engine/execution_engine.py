@@ -262,11 +262,9 @@ class ExecutionEngine:
         if key_to_anonymize == base_namespace:
             converted_key = key_to_anonymize.replace(
                 base_namespace, ExecutionEngine.STUDY_AND_ROOT_PLACEHODER, 1)
-
         elif key_to_anonymize.startswith(f'{base_namespace}.'):
             converted_key = key_to_anonymize.replace(
                 f'{base_namespace}.', f'{ExecutionEngine.STUDY_AND_ROOT_PLACEHODER}.', 1)
-
         elif key_to_anonymize.startswith(f'{self.study_name}.'):
             converted_key = key_to_anonymize.replace(
                 f'{self.study_name}.', ExecutionEngine.STUDY_PLACEHOLDER_WITH_DOT, 1)
@@ -365,7 +363,7 @@ class ExecutionEngine:
 
     def get_anonimated_data_dict(self):
         '''
-        return execution engine data dict using anonimizin key for serialisation purpose
+        return execution engine data dict using anonimizing key for serialisation purpose
         '''
 
         converted_dict = {}
@@ -374,6 +372,21 @@ class ExecutionEngine:
         for key in dict_to_convert.keys():
             new_key = self.__anonymize_key(key)
             converted_dict[new_key] = dict_to_convert[key]
+
+        return converted_dict
+
+    def get_anonymized_shared_ns_dict(self):
+        '''
+        return dict of anonymized shared namespaces values for inputs comparison purpose
+        WARNING: the output values are NOT a namespace object but just a string
+        '''
+
+        converted_dict = {}
+        dict_to_convert = self.dm.ns_manager.get_shared_ns_dict()
+
+        for key, val in dict_to_convert.items():
+            new_val = self.__anonymize_key(val.value)
+            converted_dict[key] = new_val
 
         return converted_dict
 
@@ -457,14 +470,16 @@ class ExecutionEngine:
         # Convergence is ended
         # Check for unused input data in dict_to_load,
         # not matching with a key in the dm
-        fullname_checked_keys=[self.dm.get_var_full_name(key) for key in convert_data_cache.keys()]
-        unchecked_keys=list(set(dict_to_load.keys()) - set(fullname_checked_keys))
-
+        if anonymize_function is self.__anonymize_key:
+            data_keys = list(self.get_anonimated_data_dict().keys())
+            ns_values = list(self.get_anonymized_shared_ns_dict().values())
+        else:
+            data_keys = list(self.dm.data_id_map.keys())
+            ns_values = [ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()]
+        unchecked_keys=list(set(data_cache.keys()) - set(data_keys))
         if len(unchecked_keys):
             self.logger.info('---------------------------------')
             self.logger.info('unchecked keys: ')
-            shared_ns_dict = self.dm.ns_manager.get_shared_ns_dict()
-            data_id_map_keys = self.dm.data_id_map.keys()
             for key in unchecked_keys:
                 #First, skip key if it is an output
                 try:
@@ -473,16 +488,15 @@ class ExecutionEngine:
                 except:
                     pass
                 #Then, check for match, with a different namespace
-                local_data=[key.split('.')[-1] for key in data_id_map_keys]
+                local_data=[key.split('.')[-1] for key in data_keys]
                 if key.split('.')[-1] in local_data:
-                    namespace_values = [ns.value for ns in shared_ns_dict.values()]
-                    matching_key=[val+'.'+key.split('.')[-1] for val in namespace_values if val+'.'+key.split('.')[-1] in fullname_checked_keys]
+                    matching_key=[val+'.'+key.split('.')[-1] for val in ns_values if val+'.'+key.split('.')[-1] in data_keys]
                     if len(matching_key):
                         #If a match is found, make a suggestion
                         self.logger.info(f'"{key}" not a possible input in dm, did you mean "{matching_key[0]}" ?')
                         continue
                 #If no match found with all the namespaces, perform string-match search
-                result=process.extractOne(key, data_id_map_keys, scorer=fuzz.WRatio)
+                result=process.extractOne(key, data_keys, scorer=fuzz.WRatio)
                 if result[1] > 90:
                     #If a close match is found, make a suggestion
                     self.logger.info(f'"{key}" not a possible input in dm, did you mean "{result[0]}" ?')
