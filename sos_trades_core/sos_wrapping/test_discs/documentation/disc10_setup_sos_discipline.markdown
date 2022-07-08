@@ -12,7 +12,8 @@ elif Model_Type== 'Polynomial':
 
 	y = Disc10(a,x,b,power) =  a * x**power + b
 	
-	
+Default value of 'Model_Type' is 'Linear'.	
+
 Default value of 'a' is 1.
 
 Default value of 'power' is 2.
