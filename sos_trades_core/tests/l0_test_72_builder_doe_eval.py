@@ -2909,10 +2909,238 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         from shutil import rmtree
         rmtree(dump_dir)
 
+    def test_11_test_uscase_update_with_dynamic_subprocess(self):
+        '''
+        Test the replacemenent of the usecase in case of a dynamic subprocess 
+        '''
+        print('test_11_test_uscase_update_with_dynamic_subprocess')
+        from os.path import join, dirname
+        from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
+        self.study_name = 'MyStudy'
+
+        # create session with empty DoE
+        print(
+            '################################################################################')
+        print('STEP_1: create session with empty DoE')
+        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()  # configure
+        study_dump.dump_data(dump_dir)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_2: update with subprocess test_disc10_setup_sos_discipline')
+
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc10_setup_sos_discipline'
+        my_usecase_1 = 'usecase_linear'
+        my_usecase_2 = 'usecase_affine'
+        my_usecase_3 = 'usecase_polynomial'
+
+        a_1 = 2.3
+        b_1 = 4.2
+        power_1 = 3.3
+        x_1 = 3.4
+        Model_Type_1 = 'Linear'
+        Model_Type_2 = 'Affine'
+        Model_Type_3 = 'Polynomial'
+
+        input_selection_1 = {'selected_input': [False, True],
+                             'full_name': ['DoE_Eval.Disc10.a', 'DoE_Eval.Disc10.x']}
+        input_selection_1 = pd.DataFrame(input_selection_1)
+
+        input_selection_2 = {'selected_input': [False, False, True],
+                             'full_name': ['DoE_Eval.Disc10.a', 'DoE_Eval.Disc10.b',
+                                           'DoE_Eval.Disc10.x']}
+        input_selection_2 = pd.DataFrame(input_selection_2)
+
+        input_selection_3 = {'selected_input': [False, False, False, True],
+                             'full_name': ['DoE_Eval.Disc10.a', 'DoE_Eval.Disc10.b',
+                                           'DoE_Eval.Disc10.power', 'DoE_Eval.Disc10.x']}
+        input_selection_3 = pd.DataFrame(input_selection_3)
+
+        output_selection = {'selected_output': [True],
+                            'full_name': ['DoE_Eval.Disc10.y']}
+        output_selection = pd.DataFrame(output_selection)
+
+        dspace_dict = {'variable': ['DoE_Eval.Disc10.x'],
+                       'lower_bnd': [-5.],
+                       'upper_bnd': [+5.],
+                       }
+        my_doe_algo = "lhs"
+        n_samples = 4
+
+        dspace = pd.DataFrame(dspace_dict)
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.repo_of_sub_processes'] = repo
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_folder_name'] = mod_id
+
+        study_dump.load_data(from_input_dict=dict_values)
+        # study_dump.ee.configure()
+        study_dump.dump_data(dump_dir)
+
+        # print(study_dump.ee.dm.get_data_dict_values())
+        # Check that repo_of_sub_processes and sub_process_folder_name are set
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        print_flag = True
+        sp_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval.Disc10')[0]
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Linear'
+        target_values_dict['a'] = 1.
+        target_values_dict['x'] = None
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.1: update with with data subprocess update from usecase_linear ')
+        my_usecase = my_usecase_1
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = my_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+        # study_dump.ee.display_treeview_nodes(display_variables=True)
+
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Linear'
+        target_values_dict['a'] = 1.
+        target_values_dict['x'] = 2.0
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.2: update with with data subprocess update from usecase_affine ')
+        my_usecase = my_usecase_2
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = my_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Affine'
+        target_values_dict['a'] = 1.
+        target_values_dict['b'] = 3.
+        target_values_dict['x'] = 5.0
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.3: update with with data subprocess update from usecase_polynomial ')
+        my_usecase = my_usecase_3
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = my_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Polynomial'
+        target_values_dict['a'] = 1.
+        target_values_dict['b'] = 4.
+        target_values_dict['power'] = 2.0
+        target_values_dict['x'] = 2.0
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.4: update with with data subprocess manually ')
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.Disc10.a'] = a_1
+        dict_values[f'{self.study_name}.DoE_Eval.Disc10.b'] = b_1
+        dict_values[f'{self.study_name}.DoE_Eval.Disc10.power'] = power_1
+        dict_values[f'{self.study_name}.DoE_Eval.Disc10.x'] = x_1
+        study_dump.load_data(from_input_dict=dict_values)
+
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Polynomial'
+        target_values_dict['a'] = a_1
+        target_values_dict['b'] = b_1
+        target_values_dict['power'] = power_1
+        target_values_dict['x'] = x_1
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.5: update with with data subprocess update from usecase_linear ')
+        my_usecase = my_usecase_1
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = my_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Linear'
+        target_values_dict['a'] = a_1
+        target_values_dict['x'] = 2.0
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+        print(
+            '################################################################################')
+
+        print(
+            'STEP_3.6: update with with data subprocess update from usecase_polynomial ')
+        my_usecase = my_usecase_3
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = my_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Polynomial'
+        target_values_dict['a'] = a_1
+        target_values_dict['b'] = 4.
+        target_values_dict['power'] = 2.0
+        target_values_dict['x'] = 2.0
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+
+        print(
+            '################################################################################')
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.7: update doe inputs ')
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection_1
+        dict_values[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
+        dict_values[f'{self.study_name}.DoE_Eval.design_space'] = dspace
+        dict_values[f'{self.study_name}.DoE_Eval.sampling_algo'] = my_doe_algo
+        dict_values[f'{self.study_name}.DoE_Eval.algo_options'] = {
+            'n_samples': n_samples}
+        study_dump.load_data(from_input_dict=dict_values)
+        print(
+            '################################################################################')
+
+        flag_run = True  # Will be used in case of undo or update (cleaning)
+        flag_local = True
+        if flag_run:
+            print(
+                '################################################################################')
+            print('STEP_4: run')
+            if flag_local:
+                study_dump.run()
+            else:
+                study_load = BaseStudyManager(
+                    repo, mod_id_empty_doe, 'MyStudy')
+                study_load.load_data(from_path=dump_dir)
+                print(study_load.ee.dm.get_data_dict_values())
+                study_load.run()
+        from shutil import rmtree
+        rmtree(dump_dir)
+
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 10
+    test_selector = 11
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()
@@ -2937,3 +3165,5 @@ if '__main__' == __name__:
         my_test.test_09_build_doe_eval_test_GUI_sequence()
     elif test_selector == 10:
         my_test.test_10_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc_and_updates()
+    elif test_selector == 11:
+        my_test.test_11_test_uscase_update_with_dynamic_subprocess()

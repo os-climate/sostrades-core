@@ -257,6 +257,7 @@ class BuildDoeEval(SoSEval):
         self.previous_sub_process_folder_name = None
         self.sub_process_folder_name_has_changed = False
         self.previous_usecase_of_sub_process = 'Empty'
+        self.dyn_var_sp_from_import_dict = {}
         self.previous_algo_name = ""
         self.subprocess_ns_in_build = None
         self.sub_proc_build_status = 'Empty_SP'
@@ -541,7 +542,39 @@ class BuildDoeEval(SoSEval):
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
-        self.load_data_from_usecase_of_subprocess()
+
+        # Manage import inputs from subprocess
+        input_dict_from_usecase = self.treat_import_input_from_usecase_of_sub_process()
+        if len(input_dict_from_usecase.keys()) != 0:  # we have a
+            # Added treatment for input_dict_from_usecase with dynamic keys
+            # Find dynamic keys and redirect them in
+            # self.dyn_var_sp_from_import_dict and removing from input_dict_from_usecase
+            # self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+            dyn_key_list = self.set_only_stat_values_from_dict(
+                input_dict_from_usecase)
+            for key in dyn_key_list:
+                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
+        # there are still dynamic variable put apart
+        elif len(self.dyn_var_sp_from_import_dict) != 0:
+            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
+            # Is it also OK in case of a dynamic param of dynamic param ?
+            self.dyn_var_sp_from_import_dict = {}
+
+    def set_only_stat_values_from_dict(self, values_dict, full_ns_keys=True):
+        ''' Set values in data_dict from dict with namespaced keys 
+            if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
+        '''
+        dyn_key_list = []
+        keys_to_map = self.ee.dm.data_id_map.keys(
+        ) if full_ns_keys else self.ee.dm.data_id_map.values()
+        for key, value in values_dict.items():
+            if not key in keys_to_map:
+                dyn_key_list += [key]
+            else:
+                k = self.ee.dm.get_data_id(key) if full_ns_keys else key
+                VALUE = SoSDiscipline.VALUE
+                self.ee.dm.data_dict[k][VALUE] = value
+        return dyn_key_list
 
     def get_usecase_possible_values(self, repo, sub_process):
         '''
@@ -559,10 +592,11 @@ class BuildDoeEval(SoSEval):
                     '.'.join([usecase]))
         return usecase_list
 
-    def load_data_from_usecase_of_subprocess(self):
+    def treat_import_input_from_usecase_of_sub_process(self):
         """
         load data of the selected sub process usecase and put them as a child of doe eval
         """
+        input_dict_from_usecase = {}
         usecase_has_changed = False
         # if self.USECASE_OF_SUB_PROCESS in self._data_in and
         # self.REPO_OF_SUB_PROCESSES in self.get_data_io_dict_keys('in') and
@@ -591,23 +625,10 @@ class BuildDoeEval(SoSEval):
                 usecase_data = study_tmp.setup_usecase()
                 if not isinstance(usecase_data, list):
                     usecase_data = [usecase_data]
-                input_dict_to_load = {}
+
                 for uc_d in usecase_data:
-                    input_dict_to_load.update(uc_d)
-                self.ee.dm.set_values_from_dict(
-                    input_dict_to_load)
-                # self.ee.load_study_from_dict(input_dict_to_load)
-                #
-                # for disc in self.get_disciplines_to_configure():
-                #    disc.configure()
-                # All usecase inputs of the subprocess are added or replaced in the dm : however in case of dyn input --> error
-                # In case of dynamic inputs of the subprocess, the next config (if any) will remove not coherent keys ib dm.
-                # For variables of the subprocess with default values (either static or dynamic)
-                #          - it will keep (as is) last saved values in dm: it is implemented
-                #          - if we would like (user choice to be added: provide usecase name + use_default = True) to also go back to default values for those variables:
-                # for doing this, we could either change the subprocess by
-                # itself before doing self.ee.dm.set_values_from_dict. This is
-                # not implemented.
+                    input_dict_from_usecase.update(uc_d)
+        return input_dict_from_usecase
 
     def create_design_space(self):
         """
@@ -707,6 +728,12 @@ class BuildDoeEval(SoSEval):
         """Configuration of the BuildDoeEval and setting of the design space
         """
         SoSEval.configure(self)
+
+        # Treatment of dynamic subprocess inputs in case of import
+        if len(self.dyn_var_sp_from_import_dict) > 0:
+            self.set_configure_status(False)
+        else:
+            self.set_configure_status(True)
         # if self.DESIGN_SPACE in self._data_in:
         #     self.design_space = self.create_design_space()
 
