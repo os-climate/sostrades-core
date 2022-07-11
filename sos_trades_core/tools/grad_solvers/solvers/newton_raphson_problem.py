@@ -108,6 +108,11 @@ class NewtonRaphsonProblem():
     def set_max_iterations(self, max_iterations):
         self.__max_iterations = max_iterations
 
+    def set_res_0(self, res0):
+        self.__Res0 = res0
+
+    def set_fd_mode(self, fd_mode):
+        self.fd_mode = fd_mode
 #     def set_verbose(self, verbose):
 #         self.verbose = verbose
 
@@ -144,7 +149,6 @@ class NewtonRaphsonProblem():
         # self.__Res0     = norm(R0)
         self.__residual = 1.0
         self.__residual_hist = []
-        self.__Res0 = None
 
     def __print_residual(self):
         print("  Iteration= " + str(self.it) +

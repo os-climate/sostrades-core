@@ -25,7 +25,6 @@ class SoSGatherData(SoSDiscipline):
     Specification: GatherData discipline collects inputs and gathers them in outputs
     '''
 
-
     # ontology information
     _ontology_data = {
         'label': 'Gather Data',
@@ -39,6 +38,7 @@ class SoSGatherData(SoSDiscipline):
         'icon': 'fas fa-outdent fa-fw',
         'version': '',
     }
+
     def __init__(self, sos_name, ee, map_name, parent=None):
         '''
         CLass to gather data
@@ -60,16 +60,15 @@ class SoSGatherData(SoSDiscipline):
             # first call configure to add scatter var name in data_in
             SoSDiscipline.configure(self)
         else:
-            if self.get_sosdisc_inputs(self.sc_map.get_scatter_var_name()) is not None:
-                # add sub_varnames to inst_desc_in
-                self.build_inst_desc_in()
+            # add sub_varnames to inst_desc_in
+            self.build_inst_desc_in()
 
-                SoSDiscipline.configure(self)
+            SoSDiscipline.configure(self)
 
-                # update data_io if namespace has changed
-                self.update_data_io_with_modified_inst_desc_io()
-                # update inputs user level
-                self.update_inputs_user_level()
+            # update data_io if namespace has changed
+            self.update_data_io_with_modified_inst_desc_io()
+            # update inputs user level
+            self.update_inputs_user_level()
 
     def update_inputs_user_level(self):
         '''
