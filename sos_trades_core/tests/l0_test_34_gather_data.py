@@ -40,6 +40,8 @@ class TestGatherData(unittest.TestCase):
         base_path = 'sos_trades_core.sos_wrapping.test_discs'
         self.mod1_path = f'{base_path}.disc1.Disc1'
         self.mod2_path = f'{base_path}.disc2_dict.Disc2'
+        self.mod2_scatter_gather = f'{base_path}.disc_scatter_gather_data.Disc2'
+        self.SUBTYPE = 'subtype_descriptor'
 
     def test_01_gather_data(self):
 
@@ -403,3 +405,107 @@ class TestGatherData(unittest.TestCase):
             'name_list', 'name_1.y', 'name_1.x', 'name_2.y', 'name_2.x'])
         self.assertListEqual(
             list(gather_discipline._data_out.keys()), ['y_dict', 'x_dict'])
+
+    def test_05_gather_data_with_lists_in_map_and_subtypes(self):
+        ns_dict = {'ns_ac': self.namespace,
+                   'ns_data_out': self.namespace}
+        self.exec_eng.ns_manager.add_ns_def(ns_dict)
+
+        mydict_build = {'input_name': 'name_list',
+                        'input_type': 'string_list',
+                        'input_ns': 'ns_barrierr',
+                        'output_name': 'ac_name',
+                        'scatter_ns': 'ns_ac'}
+
+        mydict_data = {'input_name': ['y', 'dict_float', 'list_float', 'list_dict_float'],
+                       'input_type': ['float', 'dict', 'list', 'list'],
+                       'output_name': ['y_dict', 'dict_float_dict', 'list_float_dict', 'list_dict_float_dict'],
+                       'output_ns': 'ns_data_out',
+                       'output_type': ['dict', 'dict', 'dict', 'dict'],
+                       'scatter_var_name': 'name_list'}
+
+        self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
+        self.exec_eng.smaps_manager.add_build_map('name_list', mydict_build)
+        self.exec_eng.smaps_manager.add_data_map('data_map', mydict_data)
+
+        disc2_builder = self.factory.get_builder_from_module(
+            'Disc2', self.mod2_scatter_gather)
+
+        scatter_build = self.exec_eng.factory.create_scatter_builder(
+            'Disc2', 'name_list', disc2_builder)
+
+        gather_data = self.exec_eng.factory.create_gather_data_builder(
+            'gather_data', 'data_map')
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            [scatter_build, gather_data])
+
+        self.exec_eng.configure()
+        dict_values = {self.study_name + '.name_list': ['name_1', 'name_2'],
+                       self.study_name + '.name_1.y': 1.0,
+                       self.study_name + '.name_2.y': 1.0,
+                       self.study_name + '.name_1.dict_float': {'a': 1.0, 'b': 2.0},
+                       self.study_name + '.name_2.dict_float': {'a': 1.0, 'b': 2.0},
+                       self.study_name + '.name_1.list_float': [1.0, 2.0],
+                       self.study_name + '.name_2.list_float': [1.0, 2.0],
+                       self.study_name + '.name_1.list_dict_float': [{'a': 1.0, 'b': 2.0}, {'c': 3.0, 'd': 4.0}],
+                       self.study_name + '.name_2.list_dict_float': [{'a': 1.0, 'b': 2.0}, {'c': 3.0, 'd': 4.0}],
+                       }
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.execute()
+
+        # test dm.data_dict content and data_in/data_out referencing in dm
+
+        gather_data_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.gather_data')[0]
+
+        # assert that gather data discipline has correct inputs and outputs
+        self.assertListEqual(
+            [key for key in list(gather_data_disc._data_out.keys()) if key not in gather_data_disc.NUM_DESC_IN], [
+                'y_dict', 'dict_float_dict', 'list_float_dict', 'list_dict_float_dict'])
+        self.assertListEqual([key for key in list(gather_data_disc._data_in.keys()) if key not in gather_data_disc.NUM_DESC_IN],
+                             ['name_list','name_1.y', 'name_1.dict_float', 'name_1.list_float', 'name_1.list_dict_float',
+                              'name_2.y', 'name_2.dict_float', 'name_2.list_float', 'name_2.list_dict_float'])
+
+        # assert that gather data discipline collects right outputs
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.y_dict'), {'name_1': 1.0, 'name_2': 1.0})
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.dict_float_dict'), {'name_1': {'a': 1.0, 'b': 2.0}, 'name_2': {'a': 1.0, 'b': 2.0}})
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.list_float_dict'), {'name_1': [1.0, 2.0], 'name_2': [1.0, 2.0]})
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.list_dict_float_dict'), {'name_1': [{'a': 1.0, 'b': 2.0}, {'c': 3.0, 'd': 4.0}],
+                                             'name_2': [{'a': 1.0, 'b': 2.0}, {'c': 3.0, 'd': 4.0}]})
+
+        # assert that gather data discipline has correct subtype descriptors
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.y_dict', self.SUBTYPE), {'dict': 'float'})
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.dict_float_dict', self.SUBTYPE), {'dict': {'dict': 'float'}})
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.list_float_dict', self.SUBTYPE), {'dict': {'list': 'float'}})
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.list_dict_float_dict', self.SUBTYPE), {'dict': {'list': {'dict': 'float'}}})
+
+        # assert that disciplines's subtype descriptors are correct
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.name_1.dict_float', self.SUBTYPE), {'dict': 'float'})
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.name_1.list_float', self.SUBTYPE), {'list': 'float'})
+        self.assertDictEqual(self.exec_eng.dm.get_data(
+            'MyCase.name_1.list_dict_float', self.SUBTYPE), {'list': {'dict': 'float'}})
+
+        # assert that scattered discipline is fed with correct inputs values by scatter data
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.name_1.y'), 1.0)
+        self.assertDictEqual(self.exec_eng.dm.get_value(
+            'MyCase.name_1.dict_float'), {'a': 1.0, 'b': 2.0})
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.name_1.list_float'), [1.0, 2.0])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.name_1.list_dict_float'), [{'a': 1.0, 'b': 2.0}, {'c': 3.0, 'd': 4.0}])
+        self.exec_eng.load_study_from_input_dict({self.study_name + '.name_list': [],
+                                                  self.study_name + '.y_dict': {}})
+

@@ -136,7 +136,8 @@ class SoSGatherData(SoSDiscipline):
 
         if scatter_var_name not in self._data_in:
             add_to_desc_in = {scatter_var_name: {
-                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns, SoSDiscipline.STRUCTURING: True}}
+                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
+                SoSDiscipline.STRUCTURING: True}}
             self.inst_desc_in.update(add_to_desc_in.copy())
 
     def build_inst_desc_in(self):
@@ -174,8 +175,40 @@ class SoSGatherData(SoSDiscipline):
         for output_name, output_type in zip(output_name_list, output_type_list):
             if output_name not in self._data_in:
                 add_to_desc_out = {output_name: {self.TYPE: output_type,
-                                                 self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: output_ns, self.USER_LEVEL: 3}}
+                                                 self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: output_ns,
+                                                 self.USER_LEVEL: 3}}
                 self.inst_desc_out.update(add_to_desc_out.copy())
+
+    def fill_subtype_descriptor(self):
+        """ Redefinition of sos_discipline's fill_subtype_descriptor method
+        to fill the subtype_descriptors of output variables of a gather data
+        """
+        output_name_list = self.sc_map.get_output_name()
+        output_type_list = self.sc_map.get_output_type()
+        input_ns = self.sc_map.get_input_ns()
+        scatter_var_name = self.sc_map.get_scatter_var_name()
+        new_gather_inputs = self.get_sosdisc_inputs(scatter_var_name)
+        input_name_list = self.sc_map.get_input_name()
+        if len(new_gather_inputs) > 0:
+            first_gather_node = new_gather_inputs[0]
+            i = 0
+            for output_name, output_type in zip(output_name_list, output_type_list):
+                input_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][input_ns].get_value()
+                corresponding_input = f'{input_ns_name}.{first_gather_node}.{input_name_list[i]}'
+                type_of_input = self.ee.dm.get_data(corresponding_input, self.TYPE)
+                subtype_descriptor = None
+
+                if output_type == 'dict':
+                    if type_of_input not in ['list', 'dict']:
+                        subtype_descriptor = {'dict': type_of_input}
+                    else:
+                        subtype_descriptor = self.ee.dm.get_data(corresponding_input, self.SUBTYPE)
+                        if subtype_descriptor is not None:
+                            subtype_descriptor = {'dict': subtype_descriptor}
+
+                if subtype_descriptor is not None:
+                    self._data_out[output_name][self.SUBTYPE] = subtype_descriptor
+                i += 1
 
     def run(self):
         '''

@@ -420,6 +420,8 @@ class DataManager:
 
                         # reference the parameter from the data manager to the
                         # discipline
+                        if (SUBTYPE in disc_dict[var_name].keys()) and (SUBTYPE not in self.data_dict[var_id].keys()):
+                            self.data_dict[var_id][SUBTYPE] = disc_dict[var_name][SUBTYPE]
                         disc_dict[var_name] = self.data_dict[var_id]
                     # else data already exist as OUTPUT and has priority!
                     # => do nothing
