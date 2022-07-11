@@ -152,8 +152,37 @@ class TestNewtonRootSolver(unittest.TestCase):
         self.assertTrue(np.allclose(
             x_final, [0., 1.]) or np.allclose(x_final, [1., 2.]))
 
+    def test_06_execute_nr_solver_complex_step(self):
+
+        builder = self.exec_eng.factory.create_builder_newton_root_solver(
+            'NewtonSolver')
+
+        builder.set_builder_info(
+            'residual_builders', self.exec_eng.factory.get_builder_from_class_name('SolveProblem', 'Polynom', [
+                'sos_trades_core.sos_wrapping.test_discs']))
+
+        builder.set_builder_info(
+            'residual_infos', {'residual_variable': 'z',
+                               'unknown_variable': 'newton_unknowns',
+                               'residual_ns_name': 'ns_z'})
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        self.exec_eng.configure()
+
+        values_dict = {self.study_name + '.NewtonSolver.x0': np.zeros(2),
+                       self.study_name + '.NewtonSolver.NR_diff_mode': 'Complex step'}
+        self.exec_eng.load_study_from_input_dict(values_dict)
+
+        self.exec_eng.execute()
+
+        x_final = self.exec_eng.dm.get_value('MyCase.NewtonSolver.x_final')
+
+        self.assertTrue(np.allclose(
+            x_final, [0., 1.]) or np.allclose(x_final, [1., 2.]))
+
 
 if '__main__' == __name__:
     cls = TestNewtonRootSolver()
     cls.setUp()
-    cls.test_04_configure_nr_solver_with_wrong_type_for_unknown()
+    cls.test_06_execute_nr_solver_complex_step()

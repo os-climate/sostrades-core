@@ -110,6 +110,9 @@ class NewtonRaphsonProblem():
 
     def set_res_0(self, res0):
         self.__Res0 = res0
+
+    def set_fd_mode(self, fd_mode):
+        self.fd_mode = fd_mode
 #     def set_verbose(self, verbose):
 #         self.verbose = verbose
 
