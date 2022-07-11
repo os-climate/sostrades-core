@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from os.path import abspath, basename, dirname, relpath, splitext
 import sostrades_core
 from os import sep

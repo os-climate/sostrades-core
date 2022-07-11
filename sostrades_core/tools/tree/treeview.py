@@ -13,18 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sos_trades_core.execution_engine import ns_manager
+from sostrades_core.execution_engine import ns_manager
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-from sos_trades_core.tools.tree.treenode import TreeNode
-from sos_trades_core.execution_engine.ns_manager import NamespaceManager, NS_SEP
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sostrades_core.tools.tree.treenode import TreeNode
+from sostrades_core.execution_engine.ns_manager import NamespaceManager, NS_SEP
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
 
-IO_TYPE = SoSDiscipline.IO_TYPE
-TYPE_IN = SoSDiscipline.IO_TYPE_IN
-TYPE_OUT = SoSDiscipline.IO_TYPE_OUT
-VISI = SoSDiscipline.VISIBILITY
+IO_TYPE = DisciplineProxy.IO_TYPE
+TYPE_IN = DisciplineProxy.IO_TYPE_IN
+TYPE_OUT = DisciplineProxy.IO_TYPE_OUT
+VISI = DisciplineProxy.VISIBILITY
 
 
 class TreeView:
@@ -49,7 +49,7 @@ class TreeView:
         :type: DataManager
 
         :params: root process, main discipline (root discipline)
-        :type: SoSDiscipline
+        :type: DisciplineProxy
 
         :params: ns_manager, namespace manager use to store variable defined outside a discipline
         :type: NamespaceManager
@@ -102,7 +102,7 @@ class TreeView:
                 self.set_treenode_data(treenode, key, val)
 
             else:
-                try:    # Todo review this code because access on exec engine attribute is not correct
+                try:  # Todo review this code because access on exec engine attribute is not correct
                         # Also do not forget this is here to hide misplaced
                         # output variables in treeview (ns_ac related)
                     if val['io_type'] == 'in':
@@ -130,18 +130,18 @@ class TreeView:
             treenode.data[key] = {k: v for k, v in val.items()}
 
             if key in treenode.disc_data:
-                treenode.data[key][SoSDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
-                    treenode.disc_data[key][SoSDiscipline.DISCIPLINES_FULL_PATH_LIST]
+                treenode.data[key][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST] = \
+                    treenode.disc_data[key][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST]
 
             if self.read_only:
-                treenode.data[key][SoSDiscipline.EDITABLE] = False
+                treenode.data[key][DisciplineProxy.EDITABLE] = False
 
     def add_treenode(self, discipline, namespace=None):
         """ Add a new treenode to the treeview.
         Treenode position is driven using discipline attribute from the root node
 
         :params: discipline, discipline node to add
-        :type: SoSDiscipline
+        :type: DisciplineProxy
 
         :params: children_namespace, clidren namespace to navigate
         :type: string[]
@@ -172,7 +172,7 @@ class TreeView:
         :type: TreeNode
 
         :params: discipline, discipline node to add
-        :type: SoSDiscipline
+        :type: DisciplineProxy
 
         :params: children_namespace, clidren namespace to navigate
         :type: string[]
@@ -237,6 +237,7 @@ class TreeView:
         return str(self.root)
 
     def display_nodes(self, display_variables=None):
+
         def display_node(node, level=0,
                          display_variables=display_variables):
             str_nodes = '\n' + '\t' * level + '|_ ' + node.name
@@ -260,6 +261,7 @@ class TreeView:
                             # :\t{v_d["value"]}'
                             str_nodes += var.split(NS_SEP)[-1]
                     return str_nodes
+
                 str_nodes = get_variables_info(str_nodes=str_nodes,
                                                node_data=node.data,
                                                io_type=TYPE_IN,
@@ -272,6 +274,7 @@ class TreeView:
                 str_nodes += display_node(n, level,
                                           display_variables=display_variables)
             return str_nodes
+
         str_to_display = 'Nodes representation for Treeview ' + self.name + \
             display_node(self.root)
         return str_to_display

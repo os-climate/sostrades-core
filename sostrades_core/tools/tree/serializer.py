@@ -27,8 +27,8 @@ from shutil import rmtree, make_archive
 from pandas import DataFrame, read_pickle, concat
 from numpy import ndarray
 
-from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sos_trades_core.execution_engine.ns_manager import NS_SEP
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from sostrades_core.execution_engine.ns_manager import NS_SEP
 
 CSV_SEP = ','
 FILE_URL = 'file:///'
@@ -160,8 +160,6 @@ class DataSerializer:
         """
 
         return join(study_to_load, DataSerializer.cache_filename)
-
-
 
     def dump_disc_status_dict(self, study_to_load, rw_strategy, status_dict):
         ''' export disciplines status into binary file (containing disc/status info into dictionary) '''

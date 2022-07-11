@@ -22,11 +22,11 @@ from time import time
 from os.path import join, isdir
 from logging import INFO, DEBUG
 
-from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sos_trades_core.tools.tree.serializer import DataSerializer
-from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+# from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+from sostrades_core.tools.tree.serializer import DataSerializer
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
 from copy import deepcopy
 from gemseo.utils.compare_data_manager_tooling import compare_dict
 
@@ -239,8 +239,8 @@ class BaseStudyManager():
                 loaded_dict = serializer.get_dict_from_study(
                     from_path, self.__rw_strategy)
                 for key, param_data in loaded_dict.items():
-                    if SoSDiscipline.CONNECTOR_DATA in param_data.keys():
-                        connectors_dict[key] = param_data[SoSDiscipline.CONNECTOR_DATA]
+                    if DisciplineProxy.CONNECTOR_DATA in param_data.keys():
+                        connectors_dict[key] = param_data[DisciplineProxy.CONNECTOR_DATA]
 
         if len(connectors_dict) > 0:
             self.execution_engine.load_connectors_from_dict(connectors_dict)
@@ -448,9 +448,9 @@ class BaseStudyManager():
 
         logger.info(
             f'------ Check post-processing integrity ------')
-        ppf = PostProcessingFactory()
-        ppf.get_all_post_processings(
-            execution_engine=self.execution_engine, filters_only=False, for_test=True)
+#         ppf = PostProcessingFactory()
+#         ppf.get_all_post_processings(
+#             execution_engine=self.execution_engine, filters_only=False, for_test=True)
 
         logger.info(
             f'------ Check data manager integrity after post-processing calls ------')
@@ -511,7 +511,7 @@ class BaseStudyManager():
             loaded_dict = serializer.get_dict_from_study(
                 study_folder_path, self.__rw_strategy)
 
-            input_dict = {key: value[SoSDiscipline.VALUE]
+            input_dict = {key: value[DisciplineProxy.VALUE]
                           for key, value in loaded_dict.items()}
 
         result.append(input_dict)
@@ -652,7 +652,7 @@ class BaseStudyManager():
             loaded_dict = serializer.get_dict_from_study(
                 study_folder_path, DirectLoadDump())
 
-            input_dict = {key: value[SoSDiscipline.VALUE]
+            input_dict = {key: value[DisciplineProxy.VALUE]
                           for key, value in loaded_dict.items()}
 
             execution_engine.load_study_from_input_dict(input_dict)

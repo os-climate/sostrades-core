@@ -18,15 +18,15 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 # Execution engine SoSTrades code
-from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.data_manager import DataManager
-from sos_trades_core.execution_engine.sos_factory import SosFactory
-from sos_trades_core.execution_engine.ns_manager import NamespaceManager
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.execution_engine.scattermaps_manager import ScatterMapsManager
-from sos_trades_core.execution_engine.post_processing_manager import PostProcessingManager
-from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
+from sostrades_core.api import get_sos_logger
+from sostrades_core.execution_engine.data_manager import DataManager
+from sostrades_core.execution_engine.sos_factory import SosFactory
+from sostrades_core.execution_engine.ns_manager import NamespaceManager
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+# from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
+from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
+from sostrades_core.execution_engine.coupling_proxy import CouplingProxy
+from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 
 DEFAULT_FACTORY_NAME = 'default_factory'
@@ -72,8 +72,8 @@ class ExecutionEngine:
                               study_filename=self.study_filename,
                               ns_manager=self.ns_manager,
                               logger=get_sos_logger(f'{self.logger.name}.DataManager'))
-        self.smaps_manager = ScatterMapsManager(
-            name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
+#         self.smaps_manager = ScatterMapsManager(
+#             name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
         self.__factory = SosFactory(
             self, self.study_name)
 
@@ -149,11 +149,11 @@ class ExecutionEngine:
     def set_root_process(self, process_instance):
         # self.dm.reset()s
 
-        if isinstance(process_instance, SoSDiscipline):
+        if isinstance(process_instance, DisciplineProxy):
             self.root_process = process_instance
         else:
             raise ExecutionEngineException(
-                f'Execution engine root process is intended to be an instance or inherited instance of SoSDiscipline class and not {type(process_instance)}.')
+                f'Execution engine root process is intended to be an instance or inherited instance of DisciplineProxy class and not {type(process_instance)}.')
 
     def configure(self):
         self.logger.info('configuring ...')
@@ -181,18 +181,18 @@ class ExecutionEngine:
         for variable_id in dm_data_dict:
             data = None
             # if connector is needed
-            if SoSDiscipline.CONNECTOR_DATA in dm_data_dict[variable_id]:
-                if dm_data_dict[variable_id][SoSDiscipline.CONNECTOR_DATA] is not None:
-                    if dm_data_dict[variable_id][SoSDiscipline.IO_TYPE] == SoSDiscipline.IO_TYPE_IN:
+            if DisciplineProxy.CONNECTOR_DATA in dm_data_dict[variable_id]:
+                if dm_data_dict[variable_id][DisciplineProxy.CONNECTOR_DATA] is not None:
+                    if dm_data_dict[variable_id][DisciplineProxy.IO_TYPE] == DisciplineProxy.IO_TYPE_IN:
                         # if variable io_type is in --> use data_connector
                         data = ConnectorFactory.use_data_connector(
-                            dm_data_dict[variable_id][SoSDiscipline.CONNECTOR_DATA],
+                            dm_data_dict[variable_id][DisciplineProxy.CONNECTOR_DATA],
                             self.logger)
                     # else, variable is an output of a disc --> no use of data
                     # connector
 
             if data is not None:  # update variable value
-                dm_data_dict[variable_id][SoSDiscipline.VALUE] = data
+                dm_data_dict[variable_id][DisciplineProxy.VALUE] = data
 
     def __configure_io(self):
         self.logger.info('configuring ...')
@@ -239,8 +239,8 @@ class ExecutionEngine:
         '''
         Update status configure of all disciplines in factory
         '''
-        for disc in self.factory.sos_disciplines:
-            disc._update_status_dm(SoSDiscipline.STATUS_CONFIGURE)
+        for disc in self.factory.proxy_disciplines:
+            disc._update_status_dm(DisciplineProxy.STATUS_CONFIGURE)
 
     def get_treeview(self, no_data=False, read_only=False):
         ''' returns the treenode build based on datamanager '''
@@ -383,7 +383,7 @@ class ExecutionEngine:
 
     def convert_input_dict_into_dict(self, input_dict):
 
-        dm_dict = {key: {SoSDiscipline.VALUE: value}
+        dm_dict = {key: {DisciplineProxy.VALUE: value}
                    for key, value in input_dict.items()}
         return dm_dict
 
@@ -434,7 +434,7 @@ class ExecutionEngine:
                     # Discipline configuration only take care of input
                     # variables
                     # Variables are only set once
-                    if value[SoSDiscipline.IO_TYPE] == SoSDiscipline.IO_TYPE_IN and not key in checked_keys:
+                    if value[DisciplineProxy.IO_TYPE] == DisciplineProxy.IO_TYPE_IN and not key in checked_keys:
                         value['value'] = convert_data_cache[key]['value']
                         checked_keys.append(key)
 
@@ -457,13 +457,13 @@ class ExecutionEngine:
         # Set all output variables (to be able to get results
         for key, value in self.dm.data_dict.items():
             if key in convert_data_cache:
-                if value[SoSDiscipline.IO_TYPE] == SoSDiscipline.IO_TYPE_OUT:
+                if value[DisciplineProxy.IO_TYPE] == DisciplineProxy.IO_TYPE_OUT:
                     value['value'] = convert_data_cache[key]['value']
 
         if self.__yield_method is not None:
             self.__yield_method()
 
-        self.__configure_execution()
+#         self.__configure_execution()
 
         # -- Init execute, to fully initialize models in discipline
         if len(dict_to_load):
@@ -491,7 +491,7 @@ class ExecutionEngine:
         for key, value in convert_data_cache.items():
             if key in self.dm.data_dict.keys():
                 variable_to_update = self.dm.data_dict[key]
-                variable_to_update[SoSDiscipline.CONNECTOR_DATA] = value
+                variable_to_update[DisciplineProxy.CONNECTOR_DATA] = value
 
     def check_inputs(self, raise_exception=True):
         '''
@@ -500,7 +500,7 @@ class ExecutionEngine:
         self.dm.check_inputs(raise_exception)
 
     def set_debug_mode(self, mode=None, disc=None):
-        ''' set recursively <disc> debug options of in SoSDiscipline
+        ''' set recursively <disc> debug options of in DisciplineProxy
         '''
         if disc is None:
             disc = self.root_process
@@ -526,7 +526,7 @@ class ExecutionEngine:
         elif mode == "min_max_grad":
             disc.check_min_max_gradients = True
         elif mode == "min_max_couplings":
-            if isinstance(disc, SoSCoupling):
+            if isinstance(disc, CouplingProxy):
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
         else:
@@ -555,7 +555,7 @@ class ExecutionEngine:
         # -- execution
         ex_proc = self.root_process.execute()
         self.root_process._update_status_dm(
-            SoSDiscipline.STATUS_DONE)
+            DisciplineProxy.STATUS_DONE)
 
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',

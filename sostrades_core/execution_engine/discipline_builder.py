@@ -13,21 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 from abc import abstractmethod
 
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
-
-class SoSDisciplineBuilderException(Exception):
+class DisciplineBuilderException(Exception):
     pass
 
 
-class DisciplineBuilder(object):
-    '''**SoSDisciplineBuilder is a sosdiscipline which has the faculty to build sub disciplines
+class DisciplineBuilder(DisciplineProxy):
+    '''**DisciplineBuilder is a sosdiscipline which has the faculty to build sub disciplines
     '''
 
     # -- Disciplinary attributes
