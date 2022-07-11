@@ -329,17 +329,24 @@ class NamespaceManager:
         '''
         return self.get_disc_ns_info(disc)['others_ns']
 
+    def check_namespace_name_in_ns_manager(self, disc, var_ns):
+
+        return var_ns in self.get_disc_others_ns(disc)
+
     def get_shared_namespace_value(self, disc, var_ns):
         '''
         Return the value of the shared_namespace linked to var_ns for the discipline disc
         '''
+        if not self.check_namespace_name_in_ns_manager(disc, var_ns):
+            raise Exception(
+                f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns].get_value()
 
     def get_shared_namespace(self, disc, var_ns):
         '''
         Return the shared_namespace linked to var_ns for the discipline disc
         '''
-        if var_ns not in self.get_disc_others_ns(disc):
+        if not self.check_namespace_name_in_ns_manager(disc, var_ns):
             raise Exception(
                 f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns]

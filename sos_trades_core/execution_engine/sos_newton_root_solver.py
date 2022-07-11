@@ -22,8 +22,8 @@ class NewtonRootSolver(SoSEval):
     """
 
     MANDATORY_RESIDUAL_INFOS_KEYS = [
-        'residual_variable', 'residual_ns_name', 'residual_ns_value', 'unknown_variable']
-    OPTIONAL_RESIDUAL_INFOS_KEYS = ['unknown_ns_name', 'unknown_ns_value']
+        'residual_variable', 'residual_ns_name', 'unknown_variable']
+    OPTIONAL_RESIDUAL_INFOS_KEYS = ['unknown_ns_name']
     RESIDUAL_INFOS_KEYS = MANDATORY_RESIDUAL_INFOS_KEYS + OPTIONAL_RESIDUAL_INFOS_KEYS
     # ontology information
     _ontology_data = {
@@ -50,6 +50,8 @@ class NewtonRootSolver(SoSEval):
 
     def __init__(self, sos_name, ee, residual_builders, residual_infos):
 
+        if not isinstance(residual_builders, list):
+            residual_builders = [residual_builders]
         SoSEval.__init__(self, sos_name, ee, cls_builder=residual_builders)
         self.nr_solver = None
 
@@ -62,21 +64,14 @@ class NewtonRootSolver(SoSEval):
         '''
         if not isinstance(residual_infos, dict):
             raise Exception(
-                'residual_infos must be a dictionary with informations on residual variables : \n residual_variable,residual_ns_name and residual_ns_value keys are mandatory')
+                'residual_infos must be a dictionary with informations on residual variables : \n residual_variable,residual_ns_name,unknown_variable keys are mandatory')
         if not set(self.MANDATORY_RESIDUAL_INFOS_KEYS) <= set(residual_infos.keys()):
             raise Exception(
                 f'{self.MANDATORY_RESIDUAL_INFOS_KEYS} are mandatory keys for residual_infos parameters')
 
         self.residual_infos = residual_infos
 
-        # add namespace for residual variable to namespace manager
-        self.ee.ns_manager.add_ns(
-            self.residual_infos['residual_ns_name'], self.residual_infos['residual_ns_value'])
-
-        if set(residual_infos.keys()) == set(self.RESIDUAL_INFOS_KEYS):
-            self.ee.ns_manager.add_ns(
-                self.residual_infos['unknown_ns_name'], self.residual_infos['unknown_ns_value'])
-        else:
+        if not set(residual_infos.keys()) == set(self.RESIDUAL_INFOS_KEYS):
             for optional_key in self.OPTIONAL_RESIDUAL_INFOS_KEYS:
                 if optional_key not in residual_infos.keys():
                     self.residual_infos[optional_key] = residual_infos[optional_key.replace(
@@ -90,10 +85,53 @@ class NewtonRootSolver(SoSEval):
 
         SoSEval.configure(self)
 
+        self.check_input_namespaces()
+        self.check_variables_exists_and_are_arrays()
+        self.set_x0()
+
+    def set_x0(self):
+
         x0 = self.get_sosdisc_inputs('x0')
         unknown_name = self.get_unknown_namespaced_variable()
         self.dm.set_values_from_dict(
             {unknown_name: x0})
+
+    def check_variables_exists_and_are_arrays(self):
+
+        unknown_name = self.get_unknown_namespaced_variable()
+        if not self.dm.check_data_in_dm(unknown_name):
+            existing_name_list = self.dm.get_all_namespaces_from_var_name(
+                self.residual_infos['unknown_variable'])
+            raise Exception(
+                f'The unknown variable {unknown_name} does not exist in the inputs of the given residual builders \nMaybe the namespace is not coherent with existing variable names in residual builders : {existing_name_list}')
+        else:
+            unknown_type = self.dm.get_data(unknown_name)['type']
+            if unknown_type != 'array':
+                raise Exception(
+                    f'Newton Root solver only uses arrays : The unknown variable {unknown_name} must be specified as an array in residual builders for Newton Root Solver')
+
+        residual_name = self.get_residual_namespaced_variable()
+        if not self.dm.check_data_in_dm(residual_name):
+            existing_name_list = self.dm.get_all_namespaces_from_var_name(
+                self.residual_infos['residual_variable'])
+            raise Exception(
+                f'The residual variable {residual_name} does not exist in the inputs of the given residual builders \nMaybe the namespace is not coherent with existing variable names in residual builders : {existing_name_list}')
+        else:
+            residual_type = self.dm.get_data(residual_name)['type']
+            if residual_type != 'array':
+                raise Exception(
+                    f'Newton Root solver only uses arrays : The residual variable {residual_name} must be specified as an array in residual builders for Newton Root Solver')
+
+    def check_input_namespaces(self):
+        '''
+        CHeck if namespaces unknown_ns_name and residual_ns_name have been already declared in the configure of the sub builder
+        '''
+
+        for ns in ['unknown_ns_name', 'residual_ns_name']:
+            if not self.ee.ns_manager.check_namespace_name_in_ns_manager(
+                    self, self.residual_infos[ns]):
+                raise Exception(
+                    f"The namespace {self.residual_infos[ns]} has not been declared in residual builders, the {ns.split('_')[0]} variable cannot be found with the given {ns}")
 
     def get_unknown_namespaced_variable(self):
         '''
@@ -161,10 +199,10 @@ class NewtonRootSolver(SoSEval):
         self.dm.set_values_from_dict({unknown_name: x})
 
         # Compute the coupling
-        residual_process.execute()
+        local_data = residual_process.execute()
 
         residual_name = self.get_residual_namespaced_variable()
-        idf_residual = self.dm.get_value(residual_name)
+        idf_residual = local_data[residual_name]
 
         return idf_residual
 
