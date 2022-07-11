@@ -13,15 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 import pandas as pd
 import numpy as np
 
 
-class Disc1(DisciplineProxy):
+class Disc1(SoSDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_setup_sos_discipline',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_setup_sos_discipline',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -44,13 +45,13 @@ class Disc1(DisciplineProxy):
         'y': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def setup_disciplines(self):
+    def setup_sos_disciplines(self):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
 
         if 'AC_list' in self._data_in:
-            AC_list = self.get_input_('AC_list')
+            AC_list = self.get_sosdisc_inputs('AC_list')
 
             for ac in AC_list:
                 dynamic_inputs.update(
@@ -78,7 +79,7 @@ class Disc1(DisciplineProxy):
         for ac in input_dict['AC_list']:
             dyn_input_ac = input_dict[f'{ac}.dyn_input_1']
 
-            dyn_output = dyn_input_ac ** 2
+            dyn_output = dyn_input_ac**2
             dict_values[f'{ac}.dyn_output'] = dyn_output
         # put new field value in data_out
-        self.store_outputs_values(dict_values)
+        self.store_sos_outputs_values(dict_values)
