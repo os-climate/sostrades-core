@@ -25,6 +25,10 @@ class NewtonRootSolver(SoSEval):
         'residual_variable', 'residual_ns_name', 'unknown_variable']
     OPTIONAL_RESIDUAL_INFOS_KEYS = ['unknown_ns_name']
     RESIDUAL_INFOS_KEYS = MANDATORY_RESIDUAL_INFOS_KEYS + OPTIONAL_RESIDUAL_INFOS_KEYS
+
+    FD_MODE_TABLE = {'1st order FD': 1,
+                     '2nd order FD': 2,
+                     'Complex step': 1j}
     # ontology information
     _ontology_data = {
         'label': 'Newton Root Solver Model',
@@ -43,6 +47,7 @@ class NewtonRootSolver(SoSEval):
                'NR_stop_residual': {'type': 'float', 'default': 1e-7},
                'NR_relax_factor': {'type': 'float', 'default': 0.95},
                'NR_max_ite': {'type': 'float', 'default': 20},
+               'NR_diff_mode': {'type': 'float', 'default': '1st order FD', 'possible_values': ['1st order FD', '2nd order FD', 'Complex step']},
                'NR_res0': {'type': 'float', 'default': 1.0}}
 
     DESC_OUT = {'x_final': {'type': 'array'},
@@ -183,6 +188,8 @@ class NewtonRootSolver(SoSEval):
         self.nr_solver.set_stop_residual(inputs_dict['NR_stop_residual'])
         self.nr_solver.set_relax_factor(inputs_dict['NR_relax_factor'])
 
+        self.nr_solver.set_fd_mode(
+            self.FD_MODE_TABLE[inputs_dict['NR_diff_mode']])
         # if res_O is None then the residual is normalized with the first found residual
         # if res_0=1 the true residual norm is computed
         self.nr_solver.set_res_0(inputs_dict['NR_res0'])
