@@ -504,9 +504,10 @@ class ExecutionEngine:
             data_keys = list(self.dm.data_id_map.keys())
             ns_values = [ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()]
         unchecked_keys=list(set(data_cache.keys()) - set(data_keys))
+        message=''
         if len(unchecked_keys):
-            self.logger.info('---------------------------------')
-            self.logger.info('Unexpected keys found in dict to load compared to keys in dm : ')
+            message+='---------------------------------\n'
+            message+='Unexpected keys found in dict to load compared to keys in dm :\n'
             for key in unchecked_keys:
                 #First, skip key if it is an output
                 try:
@@ -520,19 +521,19 @@ class ExecutionEngine:
                     matching_key=[val+'.'+key.split('.')[-1] for val in ns_values if val+'.'+key.split('.')[-1] in data_keys]
                     if len(matching_key):
                         #If a match is found, make a suggestion
-                        self.logger.info(f'"{key}" not an expected input in dm, did you mean "{matching_key[0]}" ?')
+                        message+=f'"{key}" not an expected input in dm, did you mean "{matching_key[0]}" ?\n'
                         continue
                 #If no match found with all the namespaces, perform string-match search
                 result=process.extractOne(key, data_keys, scorer=fuzz.WRatio)
                 if result[1] > 90:
                     #If a close match is found, make a suggestion
-                    self.logger.info(f'"{key}" not an expected input in dm, did you mean "{result[0]}" ?')
+                    message+=f'"{key}" not an expected input in dm, did you mean "{result[0]}" ?\n'
                     continue
                 else:
                     #Else, just print the key
-                    self.logger.info(f'"{key}" not a expected input in dm')
-            self.logger.info('---------------------------------')
-
+                    message+=f'"{key}" not a expected input in dm\n'
+            message+='---------------------------------\n'
+            return message
 
     def load_connectors_from_dict(self, connectors_to_load):
         '''
