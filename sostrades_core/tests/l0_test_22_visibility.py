@@ -17,8 +17,8 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
 
 
 class TestVisibility(unittest.TestCase):
@@ -66,10 +66,10 @@ class TestVisibility(unittest.TestCase):
                         'power': f'{self.name}.{disc2_name}.power'}
         for key_id, dm_dict in dm.data_dict.items():
             full_name = dm.get_var_full_name(key_id)
-            var_name = dm_dict[SoSDiscipline.VAR_NAME]
-            ns_value = dm_dict[SoSDiscipline.NS_REFERENCE].get_value()
-            editable = dm_dict[SoSDiscipline.EDITABLE]
-            io_type = dm_dict[SoSDiscipline.IO_TYPE]
+            var_name = dm_dict[DisciplineProxy.VAR_NAME]
+            ns_value = dm_dict[DisciplineProxy.NS_REFERENCE].get_value()
+            editable = dm_dict[DisciplineProxy.EDITABLE]
+            io_type = dm_dict[DisciplineProxy.IO_TYPE]
             if var_name in ref_local_ns:
                 # check if the full_name is correct
                 self.assertEqual(full_name, ref_local_ns[var_name])
@@ -77,7 +77,7 @@ class TestVisibility(unittest.TestCase):
                 # correct
                 self.assertEqual(
                     ref_local_ns[var_name], f'{ns_value}.{var_name}')
-                if io_type == SoSDiscipline.IO_TYPE_IN:
+                if io_type == DisciplineProxy.IO_TYPE_IN:
                     self.assertTrue(editable)
                 else:
                     self.assertFalse(editable)
@@ -107,8 +107,8 @@ class TestVisibility(unittest.TestCase):
                          'z': f'{ns_shared_ref}.z', }
         for key_id, dm_dict in dm.data_dict.items():
             full_name = dm.get_var_full_name(key_id)
-            var_name = dm_dict[SoSDiscipline.VAR_NAME]
-            ns_value = dm_dict[SoSDiscipline.NS_REFERENCE].get_value()
+            var_name = dm_dict[DisciplineProxy.VAR_NAME]
+            ns_value = dm_dict[DisciplineProxy.NS_REFERENCE].get_value()
             if var_name in ref_shared_ns:
                 # check if the full_name is correct
                 self.assertEqual(full_name, ref_shared_ns[var_name])
@@ -140,9 +140,9 @@ class TestVisibility(unittest.TestCase):
         ref_local_ns = {'a': f'{self.name}.{disc1_name}.a'}
         for key_id, dm_dict in dm.data_dict.items():
             full_name = dm.get_var_full_name(key_id)
-            var_name = dm_dict[SoSDiscipline.VAR_NAME]
-            ns_value = dm_dict[SoSDiscipline.NS_REFERENCE].get_value()
-            editable = dm_dict[SoSDiscipline.EDITABLE]
+            var_name = dm_dict[DisciplineProxy.VAR_NAME]
+            ns_value = dm_dict[DisciplineProxy.NS_REFERENCE].get_value()
+            editable = dm_dict[DisciplineProxy.EDITABLE]
             if var_name in ref_local_ns:
                 # check if the full_name is correct
                 self.assertEqual(full_name, ref_local_ns[var_name])
@@ -178,4 +178,4 @@ class TestVisibility(unittest.TestCase):
         values_dict[f'{self.name}.x'] = 3.
 
         self.ee.dm.set_values_from_dict(values_dict)
-        self.ee.execute()
+#         self.ee.execute()
