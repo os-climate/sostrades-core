@@ -44,56 +44,56 @@ class TestTreeviewAndData(unittest.TestCase):
         self.factory = self.exec_eng.factory
         self.base_path = 'sostrades_core.sos_wrapping.test_discs'
 
-    # def test_01_treeview_scatter_gather(self):
-    #
-    #     # load process in GUI
-    #     builders = self.factory.get_builder_from_process(
-    #         repo=self.repo, mod_id='test_coupling_of_scatter')
-    #     self.exec_eng.factory.set_builders_to_coupling_builder(builders)
-    #
-    #     self.exec_eng.configure()
-    #
-    #     # User fill in the fields in the GUI
-    #     dict_values = {self.study_name +
-    #                    '.name_list': ['name_1', 'name_2']}
-    #     self.exec_eng.dm.set_values_from_dict(dict_values)
-    #     self.exec_eng.configure()
-    #     self.exec_eng.display_treeview_nodes(display_variables=True)
-    #
-    #     my_case_node = self.exec_eng.dm.treeview.root
-    #
-    #     study_name_data = [key for key in self.exec_eng.dm.data_id_map.keys() if (
-    #         len(key.split('.')) == 2 and key.split('.')[0] == self.namespace)]
-    #
-    #     self.assertListEqual(study_name_data, list(my_case_node.data.keys()))
-    #     my_case_data_io = list(self.exec_eng.root_process.apply_visibility_ns(
-    #         'in')) + list(self.exec_eng.root_process.apply_visibility_ns('out'))
-    #
-    #     self.assertListEqual(my_case_data_io, list(
-    #         my_case_node.disc_data.keys()))
-    #
-    #     for node in my_case_node.children:
-    #         data_io = []
-    #         full_node_name = f'{my_case_node.name}.{node.name}'
-    #         for disc in self.exec_eng.root_process.proxy_disciplines:
-    #
-    #             if disc.get_disc_full_name() == full_node_name:
-    #                 data_io += list(disc.apply_visibility_ns('in')) + \
-    #                     list(disc.apply_visibility_ns('out'))
-    #
-    #         self.assertListEqual(sorted(list(set(data_io))),
-    #                              sorted(list(node.disc_data.keys())))
-    #
-    #         for child_node in node.children:
-    #             full_node_name = f'{my_case_node.name}.{node.name}.{child_node.name}'
-    #             data_io = []
-    #             for disc in self.exec_eng.root_process.proxy_disciplines:
-    #
-    #                 if disc.get_disc_full_name() == full_node_name:
-    #                     data_io += list(disc.apply_visibility_ns('in')) + \
-    #                         list(disc.apply_visibility_ns('out'))
-    #             self.assertListEqual(sorted(list(set(data_io))),
-    #                                  sorted(list(child_node.disc_data.keys())))
+    def test_01_treeview_scatter_gather(self):
+
+        # load process in GUI
+        builders = self.factory.get_builder_from_process(
+            repo=self.repo, mod_id='test_coupling_of_scatter')
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+
+        self.exec_eng.configure()
+
+        # User fill in the fields in the GUI
+        dict_values = {self.study_name +
+                       '.name_list': ['name_1', 'name_2']}
+        self.exec_eng.dm.set_values_from_dict(dict_values)
+        self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes(display_variables=True)
+
+        my_case_node = self.exec_eng.dm.treeview.root
+
+        study_name_data = [key for key in self.exec_eng.dm.data_id_map.keys() if (
+            len(key.split('.')) == 2 and key.split('.')[0] == self.namespace)]
+
+        self.assertListEqual(study_name_data, list(my_case_node.data.keys()))
+        my_case_data_io = list(self.exec_eng.root_process.apply_visibility_ns(
+            'in')) + list(self.exec_eng.root_process.apply_visibility_ns('out'))
+
+        self.assertListEqual(my_case_data_io, list(
+            my_case_node.disc_data.keys()))
+
+        for node in my_case_node.children:
+            data_io = []
+            full_node_name = f'{my_case_node.name}.{node.name}'
+            for disc in self.exec_eng.root_process.proxy_disciplines:
+
+                if disc.get_disc_full_name() == full_node_name:
+                    data_io += list(disc.apply_visibility_ns('in')) + \
+                        list(disc.apply_visibility_ns('out'))
+
+            self.assertListEqual(sorted(list(set(data_io))),
+                                 sorted(list(node.disc_data.keys())))
+
+            for child_node in node.children:
+                full_node_name = f'{my_case_node.name}.{node.name}.{child_node.name}'
+                data_io = []
+                for disc in self.exec_eng.root_process.proxy_disciplines:
+
+                    if disc.get_disc_full_name() == full_node_name:
+                        data_io += list(disc.apply_visibility_ns('in')) + \
+                            list(disc.apply_visibility_ns('out'))
+                self.assertListEqual(sorted(list(set(data_io))),
+                                     sorted(list(child_node.disc_data.keys())))
     #
     # def test_02_treeview_without_data(self):
     #
