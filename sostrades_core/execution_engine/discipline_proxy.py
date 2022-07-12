@@ -647,7 +647,7 @@ class DisciplineProxy(object):
                 self.dm.set_data(ns_key, self.DEFAULT, default_value, False)
             else:
                 self.logger.info(
-                    f'Try to set a default value for the variable {short_key} in {self.name} which is not an input of this discipline ')
+                    f'Try to set a default value for the variable {short_key} in {self.sos_name} which is not an input of this discipline ')
 
     # -- cache handling
 
@@ -944,7 +944,7 @@ class DisciplineProxy(object):
 #             self._update_status_recursive(self.STATUS_DONE)
 # 
 #         self.__check_nan_in_data(result)
-# 
+# m
 #         if self.check_min_max_couplings:
 #             self.display_min_max_couplings()
 #         return result

@@ -29,7 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        mod_path = 'sostrades_core.sos_wrapping.test_discs.disc1_all_types.Disc1'
-        disc1_builder = self.ee.factory.get_builder_from_module(
-            'Disc1', mod_path)
-        return disc1_builder
+        mods_dict = {
+            'Disc1': 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'}
+        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name})
+        return builder_list

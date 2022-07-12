@@ -22,7 +22,6 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     InstanciatedSeries
 from sostrades_core.execution_engine.data_manager import DataManager
 
-
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
