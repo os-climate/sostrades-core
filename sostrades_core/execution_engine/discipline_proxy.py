@@ -944,7 +944,7 @@ class DisciplineProxy(object):
 #             self._update_status_recursive(self.STATUS_DONE)
 # 
 #         self.__check_nan_in_data(result)
-# 
+# m
 #         if self.check_min_max_couplings:
 #             self.display_min_max_couplings()
 #         return result

@@ -22,12 +22,12 @@ import inspect
 import importlib
 from os.path import join, dirname, isfile
 
-from sos_trades_core.api import get_sos_logger
-from sos_trades_core.execution_engine.sos_discipline_gather import SoSDisciplineGather
-from sos_trades_core.execution_engine.data_manager import DataManager
-from sos_trades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import \
+from sostrades_core.api import get_sos_logger
+# from sostrades_core.execution_engine.sos_discipline_gather import SoSDisciplineGather
+from sostrades_core.execution_engine.data_manager import DataManager
+from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import \
     InstantiatedParetoFrontOptimalChart
-from sos_trades_core.tools.post_processing.post_processing_bundle import PostProcessingBundle
+from sostrades_core.tools.post_processing.post_processing_bundle import PostProcessingBundle
 
 
 class PostProcessingFactory:
