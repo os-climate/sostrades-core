@@ -20,8 +20,8 @@ Class that define a 2 dimensional chart template
 """
 
 # pylint: disable=line-too-long
-from sos_trades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
-from sos_trades_core.tools.post_processing.post_processing_tools import convert_nan
+from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
+from sostrades_core.tools.post_processing.post_processing_tools import convert_nan
 
 
 class SeriesTemplateException(Exception):
