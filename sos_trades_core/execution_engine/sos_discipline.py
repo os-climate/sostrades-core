@@ -1350,7 +1350,7 @@ class SoSDiscipline(MDODiscipline):
         """
         Update all disciplines with datamanager information
         """
-
+        self.fill_subtype_descriptor()
         for var_name in self._data_in.keys():
 
             try:
@@ -1368,6 +1368,12 @@ class SoSDiscipline(MDODiscipline):
         # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
+
+    def fill_subtype_descriptor(self):
+        """This method is used to fill the subtype descriptor of scatter and gather data
+        Hence, it is an empty method here and is overriden in scatter and gather data
+        """
+        pass
 
     # -- Ids and namespace handling
     def get_disc_full_name(self):

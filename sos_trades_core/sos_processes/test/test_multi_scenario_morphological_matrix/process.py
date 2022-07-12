@@ -32,7 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
         repo = 'sos_trades_core.sos_processes.test'
 
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario'}

@@ -39,19 +39,19 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # actor, subsystem and AC_list scatter maps dict
         subsystem_map = {'input_name': 'subsystem_list',
-                         'input_type': 'string_list',
+
                          'input_ns': 'ns_subsystem',
                          'output_name': 'subsystem',
                          'scatter_ns': 'ns_subsystem_scatter'}
 
         ac_list_map = {'input_name': 'AC_list',
-                       'input_type': 'string_list',
+
                        'input_ns': 'ns_ac',
                        'output_name': 'AC_name',
                        'scatter_ns': 'ns_ac_scatter'}
 
         actors_list_map = {'input_name': 'actors_list',
-                           'input_type': 'string_list',
+
                            'input_ns': 'ns_public',
                            'output_name': 'actor_name',
                            'scatter_ns': 'ns_actors',
