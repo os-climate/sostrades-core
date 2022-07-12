@@ -132,10 +132,12 @@ class SoSScatterData(SoSDiscipline):
         if scatter_var_name not in input_name_list:
             scatter_var_ns = self.ee.smaps_manager.get_input_ns_from_build_map(
                 scatter_var_name)
-            scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
-                scatter_var_name)
+            #scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
+                #scatter_var_name)
+            scatter_var_type = 'list'
+            scatter_var_subtype = {'list':'string'}
             add_to_desc_in = {f'{scatter_var_name}': {
-                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
+                self.TYPE: scatter_var_type,self.SUBTYPE:scatter_var_subtype, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
                 self.STRUCTURING: True}}
             self.inst_desc_in.update(add_to_desc_in.copy())
 
@@ -170,7 +172,7 @@ class SoSScatterData(SoSDiscipline):
         """
         input_name_list = self.sc_map.get_input_name()
         input_type_list = self.sc_map.get_input_type()
-        input_ns = self.sc_map.get_input_ns()
+        output_ns = self.sc_map.get_output_ns()
         scatter_var_name = self.sc_map.get_scatter_var_name()
         new_scatter_inputs = self.get_sosdisc_inputs(scatter_var_name)
         output_name_list = self.sc_map.get_output_name()
@@ -178,8 +180,8 @@ class SoSScatterData(SoSDiscipline):
             first_scatter_node = new_scatter_inputs[0]
             i = 0
             for input_name, input_type in zip(input_name_list, input_type_list):
-                input_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][input_ns].get_value()
-                corresponding_output = f'{input_ns_name}.{first_scatter_node}.{output_name_list[i]}'
+                output_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][output_ns].get_value()
+                corresponding_output = f'{output_ns_name}.{first_scatter_node}.{output_name_list[i]}'
                 type_of_output = self.ee.dm.get_data(corresponding_output, self.TYPE)
                 subtype_descriptor = None
 

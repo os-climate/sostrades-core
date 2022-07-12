@@ -35,7 +35,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         # set scatter build map
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',

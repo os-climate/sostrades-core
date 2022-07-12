@@ -250,7 +250,7 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -345,14 +345,14 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
 
     def test_05_build_scatter_of_scatter(self):
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
         mydict = {'input_name': 'component_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'component_name',
                   'scatter_ns': 'ns_ac'}
@@ -459,14 +459,14 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
 
     def test_06_build_scatter_of_scatter_with_option(self):
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
         mydict = {'input_name': 'component_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'component_name',
                   'scatter_ns': 'ns_ac'}
@@ -604,7 +604,7 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -675,14 +675,14 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
         actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
+
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
@@ -757,7 +757,7 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
 
         """
         mydict = {'input_name': 'actors_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_actors',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -884,7 +884,7 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
 
         """
         mydict = {'input_name': 'actors_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_actors',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -1265,13 +1265,13 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
 
         """
         mydict = {'input_name': 'actors_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_actors',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
         dict_sub = {'input_name': 'aircrafts_list',
-                    'input_type': 'string_list',
+
                     'input_ns': 'ns_aircrafts',
                     'output_name': 'ac_name',
                     'scatter_ns': 'ns_ac'}
@@ -1397,7 +1397,7 @@ class TestAdvancedArchiBuilder(unittest.TestCase):
         For that purpose, we introduce a root_node in current nodes of architecture_df
         """
         mydict = {'input_name': 'actors_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_actors',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild

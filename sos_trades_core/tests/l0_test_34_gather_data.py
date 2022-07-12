@@ -50,7 +50,7 @@ class TestGatherData(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def(ns_dict)
 
         mydict_build = {'input_name': 'name_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_barrier',
                         'output_name': 'ac_name',
                         'scatter_ns': 'ns_ac'}
@@ -175,7 +175,7 @@ class TestGatherData(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def(ns_dict)
 
         mydict_build = {'input_name': 'name_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_barrier',
                         'output_name': 'ac_name',
                         'scatter_ns': 'ns_ac'}
@@ -218,7 +218,7 @@ class TestGatherData(unittest.TestCase):
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -238,7 +238,7 @@ class TestGatherData(unittest.TestCase):
         self.exec_eng.configure()
 
         dict_values = {f'{self.study_name}.multi_scenarios.name_list_trade': [['name_1'], ['name_1', 'name_2']],
-                       f'{self.study_name}.multi_scenarios.trade_variables': {'name_list': 'string_list'}}
+                       f'{self.study_name}.multi_scenarios.trade_variables': {'name_list': 'list'}}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -334,7 +334,7 @@ class TestGatherData(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def(ns_dict)
 
         mydict_build = {'input_name': 'name_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_barrier',
                         'output_name': 'ac_name',
                         'scatter_ns': 'ns_ac'}
@@ -412,7 +412,7 @@ class TestGatherData(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def(ns_dict)
 
         mydict_build = {'input_name': 'name_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_barrierr',
                         'output_name': 'ac_name',
                         'scatter_ns': 'ns_ac'}

@@ -42,7 +42,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
     def test_01_very_simple_multi_scenario_of_simple_architecture(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -61,7 +61,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
             vb_builder_name, architecture_df)
 
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -186,7 +186,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
     def test_02_very_simple_multi_scenario_of_architecture_scatter_of_scatter(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -194,7 +194,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         # subsystem scatter map dict
         subsystem_services_map_dict = {'input_name': 'subsystems_list',
-                                       'input_type': 'string_list',
+
                                        'input_ns': 'ns_scenario',
                                        'output_name': 'subsystem',
                                        'scatter_ns': 'ns_subsystem',
@@ -223,7 +223,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
             vb_builder_name, architecture_df)
 
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -357,7 +357,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
     def test_03_multi_scenario_of_architecture(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -376,7 +376,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
             vb_builder_name, architecture_df)
 
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -443,7 +443,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
     def test_04_very_simple_multi_scenario_with_sub_architecture(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -469,7 +469,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
             vb_builder_name, architecture_df)
 
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -558,7 +558,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
     def test_05_very_simple_multi_scenario_with_scatter_architecture(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -584,7 +584,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
             vb_builder_name, architecture_df)
 
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',

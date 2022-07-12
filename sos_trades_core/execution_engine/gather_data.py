@@ -131,12 +131,14 @@ class SoSGatherData(SoSDiscipline):
         scatter_var_name = self.sc_map.get_scatter_var_name()
         scatter_var_ns = self.ee.smaps_manager.get_input_ns_from_build_map(
             scatter_var_name)
-        scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
-            scatter_var_name)
+        #scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
+        #    scatter_var_name)
+        scatter_var_type = 'list'
+        scatter_var_subtype = {'list': 'string'}
 
         if scatter_var_name not in self._data_in:
             add_to_desc_in = {scatter_var_name: {
-                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
+                self.TYPE: scatter_var_type,self.SUBTYPE: scatter_var_subtype, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
                 SoSDiscipline.STRUCTURING: True}}
             self.inst_desc_in.update(add_to_desc_in.copy())
 

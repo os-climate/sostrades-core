@@ -63,7 +63,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scatter_scenario',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -74,7 +74,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -191,7 +191,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scatter_scenario',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -202,7 +202,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -325,7 +325,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scatter_scenario',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -336,7 +336,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -664,7 +664,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         dict_values = {}
 
         dict_values[f'{self.study_name}.multi_scenarios.trade_variables'] = {
-            'name_list': 'string_list'}
+            'name_list': 'list'}
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
 
         scenario_list = ['scenario_A', 'scenario_B',
@@ -818,7 +818,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             columns=['scenario_name', 'name_1.x', 'name_2.x'])))
 
         dict_values[f'{self.study_name}.multi_scenarios.trade_variables'] = {
-            'name_list': 'string_list'}
+            'name_list': 'list'}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         scenario_df = self.exec_eng.dm.get_value(
@@ -838,7 +838,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                              'name_1', 'name_2']}, 'scenario_2': {'name_list': ['name_3']}})
 
         dict_values[f'{self.study_name}.multi_scenarios.trade_variables'] = {
-            'name_list': 'string_list', 'name_1.x': 'float', 'name_2.x': 'float'}
+            'name_list': 'list', 'name_1.x': 'float', 'name_2.x': 'float'}
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 

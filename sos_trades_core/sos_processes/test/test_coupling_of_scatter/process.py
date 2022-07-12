@@ -30,7 +30,7 @@ class ProcessBuilder(BaseProcessBuilder):
         my_namespace = ('ns_barrierr', self.ee.study_name)
     
         my_scatter_dict = {'input_name': 'name_list',
-                           'input_type': 'string_list',
+
                            'input_ns': my_namespace[0],
                            'output_name': 'ac_name',
                            'scatter_ns': 'ns_ac',
