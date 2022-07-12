@@ -31,18 +31,11 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
-<<<<<<< HEAD
-    def get_builders(self):
-        disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
-        mods_dict = {'Disc2': disc_dir + 'disc2.Disc2',
-                     'Disc1': disc_dir + 'disc1.Disc1'}
-=======
 
     def get_builders(self):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict = {'Disc1': disc_dir + 'disc1.Disc1',
                      'Disc2': disc_dir + 'disc2.Disc2', }
->>>>>>> 0702049fd4561e1baf5d1fa4fd091da883f222e1
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name})
         self.ee.post_processing_manager.add_post_processing_functions_to_namespace(
             'ns_ac', post_processing_filters, post_processings)

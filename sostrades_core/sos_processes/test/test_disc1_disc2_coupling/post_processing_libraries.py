@@ -19,18 +19,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Example of post processing library that can be loaded throught the 'add_post_processing_module_to_namespace'
 method of the post processing manager
 """
-<<<<<<< HEAD
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
     InstanciatedSeries
 from sostrades_core.execution_engine.data_manager import DataManager
-=======
-from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart,\
-    InstanciatedSeries
-from sos_trades_core.execution_engine.data_manager import DataManager
->>>>>>> 0702049fd4561e1baf5d1fa4fd091da883f222e1
-
 
 def post_processing_filters(execution_engine, namespace):
     """ post processing function designed to build a rc vs saleprice 2D chart
