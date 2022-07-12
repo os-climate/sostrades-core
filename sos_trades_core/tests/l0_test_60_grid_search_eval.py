@@ -64,9 +64,6 @@ class TestGridSearchEval(unittest.TestCase):
         # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
         #     'possible_values']
 
-        # dict_values = {}
-        # self.exec_eng.load_study_from_input_dict(dict_values)
-
         eval_inputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -122,7 +119,7 @@ class TestGridSearchEval(unittest.TestCase):
             'shortest_name': ['x', 'j'],
             'lower_bnd': [5., 20.],
             'upper_bnd': [7., 25.],
-            'nb_points': [3, 3],
+            'nb_points': [2, 2],
             'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
         })
 

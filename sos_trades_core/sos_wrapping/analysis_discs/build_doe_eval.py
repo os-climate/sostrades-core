@@ -255,7 +255,9 @@ class BuildDoeEval(SoSEval):
         self.selected_inputs = []
         self.previous_repo_of_sub_processes = ""
         self.previous_sub_process_folder_name = None
-        self.previous_usecase_of_sub_process = ""
+        self.sub_process_folder_name_has_changed = False
+        self.previous_usecase_of_sub_process = 'Empty'
+        self.dyn_var_sp_from_import_dict = {}
         self.previous_algo_name = ""
         self.subprocess_ns_in_build = None
         self.sub_proc_build_status = 'Empty_SP'
@@ -278,6 +280,7 @@ class BuildDoeEval(SoSEval):
                 # has changed added for update
                 # "changed" to take into account delete or add process
                 if len(self.cls_builder) == 0 or sub_process_folder_name_has_changed:
+                    self.sub_process_folder_name_has_changed = True
                     if len(self.cls_builder) == 0:
                         self.sub_proc_build_status = 'Create_SP'
                     elif sub_process_folder_name_has_changed:
@@ -286,7 +289,7 @@ class BuildDoeEval(SoSEval):
                         self.sub_proc_build_status = 'Replace_SP'
                         # clean all instances before rebuilt
                         self.sos_disciplines[0].clean()
-                        self.sos_disciplines = []
+                        self.sos_disciplines = []  # should it be del self.sos_disciplines[0]
                         # We "clean" also all dynamic inputs to be reloaded by
                         # the usecase
                         self.add_inputs({})
@@ -302,8 +305,8 @@ class BuildDoeEval(SoSEval):
                     my_dict = {}
                     for item in my_keys:
                         my_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value()
-                    self.subprocess_ns_in_build = pd.DataFrame.from_dict(
-                        my_dict, orient='index')
+                        self.subprocess_ns_in_build = pd.DataFrame(
+                            list(my_dict.items()), columns=['Name', 'Value'])
                     # Shift namespace due to the 'DoE_Eval' inserted
                     self.update_namespace_list_with_extra_ns_except_driver(
                         'DoE_Eval', after_name=self.ee.study_name)
@@ -366,10 +369,10 @@ class BuildDoeEval(SoSEval):
                 self.previous_repo_of_sub_processes = repo
             # if repo != 'None':  # and repo_of_sub_processes_has_changed to be
             # added ?
-            if repo != None:
+            if repo != None and repo_of_sub_processes_has_changed == True:
                 sub_process_folder_name = ['test_disc_hessian']
                 sub_process_folder_name += [
-                    'test_disc1_disc2_coupling', 'test_sellar_coupling']
+                    'test_disc1_disc2_coupling', 'test_sellar_coupling', 'test_disc10_setup_sos_discipline']
                 process_factory = SoSProcessFactory(additional_repository_list=[
                     repo], search_python_path=False)
                 process_list_dict = process_factory.get_processes_dict()
@@ -379,10 +382,11 @@ class BuildDoeEval(SoSEval):
                 if self.SUB_PROCESS_NAME in self._data_in:
                     self._data_in[self.SUB_PROCESS_NAME]['possible_values'] = sub_process_folder_name
 
-        # configure the usecase_of_sub_process list
         if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
+            # 1. configure the usecase_of_sub_process list
             repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
             sub_process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
+            # Do it only if sub_process has changed (TBD)
             if repo != None and sub_process != None:
                 process_usecase_list = ['Empty']
                 usecase_list = self.get_usecase_possible_values(
@@ -393,11 +397,19 @@ class BuildDoeEval(SoSEval):
                                                    'default': 'Empty',
                                                    'possible_values': process_usecase_list,
                                                    'structuring': True,
-                                                   'description': 'usecase set of data inputs'}})
-
-        if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
+                                                   'description': 'usecase set of data inputs',
+                                                   #'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                   #'namespace': 'ns_sp'
+                                                   }})
+                # if 'ns_sp' not in self.ee.ns_manager.shared_ns_dict.keys():
+                #    sp_full_name = self.sos_disciplines[0].get_disc_full_name()
+                #sp_full_name = self.get_disc_full_name()
+                #    self.ee.ns_manager.add_ns(
+                #        'ns_sp', f'{sp_full_name}')
+            # 2. set doe dynamic inputs
             repo = self.get_sosdisc_inputs(self.REPO_OF_SUB_PROCESSES)
             sub_process = self.get_sosdisc_inputs(self.SUB_PROCESS_NAME)
+            # Do it only if sub_process has changed (TBD)
             if repo != None and sub_process != None:
                 dynamic_inputs.update({self.SAMPLING_ALGO: {'type': 'string',
                                                             'structuring': True}
@@ -418,7 +430,7 @@ class BuildDoeEval(SoSEval):
                                                            'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                                            'namespace': 'ns_doe_eval'}
                                        })
-
+            self.sub_process_folder_name_has_changed = False
         # Dealing with eval_inputs and eval_outputs
 
         # we know that SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS keys are set at
@@ -530,7 +542,39 @@ class BuildDoeEval(SoSEval):
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
-        self.load_data_from_usecase_of_subprocess()
+
+        # Manage import inputs from subprocess
+        input_dict_from_usecase = self.treat_import_input_from_usecase_of_sub_process()
+        if len(input_dict_from_usecase.keys()) != 0:  # we have a
+            # Added treatment for input_dict_from_usecase with dynamic keys
+            # Find dynamic keys and redirect them in
+            # self.dyn_var_sp_from_import_dict and removing from input_dict_from_usecase
+            # self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+            dyn_key_list = self.set_only_stat_values_from_dict(
+                input_dict_from_usecase)
+            for key in dyn_key_list:
+                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
+        # there are still dynamic variable put apart
+        elif len(self.dyn_var_sp_from_import_dict) != 0:
+            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
+            # Is it also OK in case of a dynamic param of dynamic param ?
+            self.dyn_var_sp_from_import_dict = {}
+
+    def set_only_stat_values_from_dict(self, values_dict, full_ns_keys=True):
+        ''' Set values in data_dict from dict with namespaced keys 
+            if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
+        '''
+        dyn_key_list = []
+        keys_to_map = self.ee.dm.data_id_map.keys(
+        ) if full_ns_keys else self.ee.dm.data_id_map.values()
+        for key, value in values_dict.items():
+            if not key in keys_to_map:
+                dyn_key_list += [key]
+            else:
+                k = self.ee.dm.get_data_id(key) if full_ns_keys else key
+                VALUE = SoSDiscipline.VALUE
+                self.ee.dm.data_dict[k][VALUE] = value
+        return dyn_key_list
 
     def get_usecase_possible_values(self, repo, sub_process):
         '''
@@ -548,10 +592,11 @@ class BuildDoeEval(SoSEval):
                     '.'.join([usecase]))
         return usecase_list
 
-    def load_data_from_usecase_of_subprocess(self):
+    def treat_import_input_from_usecase_of_sub_process(self):
         """
         load data of the selected sub process usecase and put them as a child of doe eval
         """
+        input_dict_from_usecase = {}
         usecase_has_changed = False
         # if self.USECASE_OF_SUB_PROCESS in self._data_in and
         # self.REPO_OF_SUB_PROCESSES in self.get_data_io_dict_keys('in') and
@@ -580,11 +625,10 @@ class BuildDoeEval(SoSEval):
                 usecase_data = study_tmp.setup_usecase()
                 if not isinstance(usecase_data, list):
                     usecase_data = [usecase_data]
-                input_dict_to_load = {}
+
                 for uc_d in usecase_data:
-                    input_dict_to_load.update(uc_d)
-                self.ee.dm.set_values_from_dict(
-                    input_dict_to_load)
+                    input_dict_from_usecase.update(uc_d)
+        return input_dict_from_usecase
 
     def create_design_space(self):
         """
@@ -684,6 +728,12 @@ class BuildDoeEval(SoSEval):
         """Configuration of the BuildDoeEval and setting of the design space
         """
         SoSEval.configure(self)
+
+        # Treatment of dynamic subprocess inputs in case of import
+        if len(self.dyn_var_sp_from_import_dict) > 0:
+            self.set_configure_status(False)
+        else:
+            self.set_configure_status(True)
         # if self.DESIGN_SPACE in self._data_in:
         #     self.design_space = self.create_design_space()
 

@@ -133,8 +133,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         # run study and check if cache is used
         study_load.run()
         for disc_id in study_dump.ee.dm.gemseo_disciplines_id_map.keys():
-            disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id]
-            disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id]
+            disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id][0]
+            disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id][0]
             self.assertEqual(disc_load.n_calls, disc_dump.n_calls - 1)
                 
         self.dir_to_del.append(self.dump_dir)
@@ -288,14 +288,14 @@ class TestLoadSimpleCache(unittest.TestCase):
         
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls, 0)
+            self.assertEqual(disc[0].n_calls, 0)
         
         # run again
         study_2.run()
         
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls, 0)
+            self.assertEqual(disc[0].n_calls, 0)
             
         self.dir_to_del.append(self.dump_dir)
         
@@ -356,14 +356,14 @@ class TestLoadSimpleCache(unittest.TestCase):
         
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls, 0)
+            self.assertEqual(disc[0].n_calls, 0)
         
         # run again
         study_2.run()
         
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls, 0)
+            self.assertEqual(disc[0].n_calls, 0)
             
         self.dir_to_del.append(self.dump_dir)
 
@@ -390,7 +390,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls
         n_calls_1 = {}
         for i, disc in enumerate(study_opt.ee.dm.gemseo_disciplines_id_map.values()):
-            n_calls_1[(i, disc.name)] = disc.n_calls
+            n_calls_1[(i, disc[0].name)] = disc[0].n_calls
             
         # run study_opt after convergence
         study_opt.run()
@@ -398,11 +398,11 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls
         n_calls_2 = {}
         for i, disc in enumerate(study_opt.ee.dm.gemseo_disciplines_id_map.values()):
-            n_calls_2[(i, disc.name)] = disc.n_calls
-            if disc.name == 'DesignVar':
-                self.assertEqual(n_calls_2[(i, disc.name)], n_calls_1[(i, disc.name)])
+            n_calls_2[(i, disc[0].name)] = disc[0].n_calls
+            if disc[0].name == 'DesignVar':
+                self.assertEqual(n_calls_2[(i, disc[0].name)], n_calls_1[(i, disc[0].name)])
             else:
-                self.assertEqual(n_calls_2[(i, disc.name)], n_calls_1[(i, disc.name)] + 1)
+                self.assertEqual(n_calls_2[(i, disc[0].name)], n_calls_1[(i, disc[0].name)] + 1)
                 
         self.dir_to_del.append(self.dump_dir)
 

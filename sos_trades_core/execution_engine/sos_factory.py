@@ -83,7 +83,8 @@ class SosFactory:
 
         self.coupling_disc = None
         self.is_sos_coupling = True
-        self.__logger = get_sos_logger(f'{self.__execution_engine.logger.name}.Factory')
+        self.__logger = get_sos_logger(
+            f'{self.__execution_engine.logger.name}.Factory')
 
         self.__reset()
 
@@ -133,13 +134,16 @@ class SosFactory:
         """
         multi_builder_list = []
         for builder in builder_list:
-            scatter = self.create_scatter_builder(builder.sos_name, map_name, builder)
+            scatter = self.create_scatter_builder(
+                builder.sos_name, map_name, builder)
             multi_builder_list.append(scatter)
             if autogather:
-                gather = self.create_gather_builder(builder.sos_name, map_name, builder)
+                gather = self.create_gather_builder(
+                    builder.sos_name, map_name, builder)
                 multi_builder_list.append(gather)
             if path_sum is not None:
-                child_builder = self.create_sum_builder(builder.sos_name, path_sum)
+                child_builder = self.create_sum_builder(
+                    builder.sos_name, path_sum)
                 multi_builder_list.append(child_builder)
 
         return multi_builder_list
@@ -168,7 +172,8 @@ class SosFactory:
         disc_id = disc.get_disc_id_from_namespace()
         disc.clean_dm_from_disc(disc)
         self.sos_disciplines.remove(disc)
-        self.__ns_manager.remove_dependencies_after_disc_deletion(disc, disc_id)
+        self.__ns_manager.remove_dependencies_after_disc_deletion(
+            disc, disc_id)
 
     @property
     def current_discipline(self):
@@ -357,7 +362,8 @@ class SosFactory:
         builder = SoSBuilder(builder_name, self.__execution_engine, cls)
         builder.set_builder_info('own_map_name', own_map_name)
         builder.set_builder_info('child_map_name', connected_map_name)
-        builder.set_builder_info('associated_builder_list', associated_builder_list)
+        builder.set_builder_info(
+            'associated_builder_list', associated_builder_list)
         builder.set_builder_info('autogather', autogather)
         builder.set_builder_info('builder_child_path', builder_child_path)
         return builder
@@ -378,7 +384,8 @@ class SosFactory:
         builder.set_builder_info('architecture_df', architecture_df)
         # add custom value block folder if specified
         if custom_vb_folder_list is not None:
-            builder.set_builder_info('custom_vb_folder_list', custom_vb_folder_list)
+            builder.set_builder_info(
+                'custom_vb_folder_list', custom_vb_folder_list)
 
         return builder
 
@@ -413,7 +420,8 @@ class SosFactory:
             mod_path_multi_scatter = (
                 f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             )
-            cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            cls_multi_scatter = self.get_disc_class_from_module(
+                mod_path_multi_scatter)
             for sub_builder in builder_list:
                 if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
 
@@ -460,7 +468,8 @@ class SosFactory:
             mod_path_multi_scatter = (
                 f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             )
-            cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            cls_multi_scatter = self.get_disc_class_from_module(
+                mod_path_multi_scatter)
             for sub_builder in builder_list:
                 if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
 
@@ -509,7 +518,8 @@ class SosFactory:
             mod_path_multi_scatter = (
                 f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             )
-            cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            cls_multi_scatter = self.get_disc_class_from_module(
+                mod_path_multi_scatter)
             for sub_builder in builder_list:
                 if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
 
@@ -573,6 +583,15 @@ class SosFactory:
         create a builder  defined by a coupling type SoSCoupling
         """
         mod_path = f'{self.EE_PATH}.sos_coupling.SoSCoupling'
+        cls = self.get_disc_class_from_module(mod_path)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        return builder
+
+    def create_builder_newton_root_solver(self, sos_name):
+        """
+        create a builder  defined by a coupling type SoSCoupling
+        """
+        mod_path = f'{self.EE_PATH}.sos_newton_root_solver.NewtonRootSolver'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
@@ -648,7 +667,8 @@ class SosFactory:
                 ]
                 # CHeck if the following class is in the list
                 if class_name in class_list:
-                    module_class_path = '.'.join([sub_module.__name__, class_name])
+                    module_class_path = '.'.join(
+                        [sub_module.__name__, class_name])
                     break
             else:
                 continue

@@ -115,9 +115,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
-            # f'{self.name}.{self.uncertainty_quantification}.input_distribution_parameters_df': self.input_distribution_parameters_df,
-            # f'{self.name}.{self.uncertainty_quantification}.data_details_df':
-            # self.data_details_df,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
             f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
         }
@@ -170,7 +167,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'shortest_name': ['x', 'j'],
             'lower_bnd': [5., 20.],
             'upper_bnd': [7., 25.],
-            'nb_points': [3, 3],
+            'nb_points': [2, 2],
             'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
         })
 
@@ -190,11 +187,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
             f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
             f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
-
-            # UQ
-            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
-            # f'{self.study_name}.{self.grid_search}.samples_outputs_df':
-            # samples_outputs_df,
         }
 
         self.ee.load_study_from_input_dict(dict_values)
@@ -213,7 +205,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
         uq_disc_output = uq_disc.get_sosdisc_outputs()
         samples_uq = uq_disc_output['input_parameters_samples_df']
         out_df = uq_disc_output['output_interpolated_values_df']
-        print("bonjour")
 
     def test_03_simple_cache_on_grid_search_uq_process(self):
         """In this test we prove the ability of the cache to work properly on a grid search
@@ -251,7 +242,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'shortest_name': ['x', 'j'],
             'lower_bnd': [5., 20.],
             'upper_bnd': [7., 25.],
-            'nb_points': [3, 3],
+            'nb_points': [2, 2],
             'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
         })
 
@@ -272,10 +263,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
             f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
 
-            # UQ
-            # f'{self.study_name}.{self.grid_search}.samples_inputs_df': samples_inputs_df,
-            # f'{self.study_name}.{self.grid_search}.samples_outputs_df':
-            # samples_outputs_df,
         }
 
         self.ee.load_study_from_input_dict(dict_values)
@@ -443,10 +430,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
         
         # check cache activation by counting n_calls
         for disc in list(study_2.ee.dm.gemseo_disciplines_id_map.values()):
-            if disc.name in ['usecase', 'UncertaintyQuantification']:
-                self.assertEqual(disc.n_calls, 1)
+            if disc[0].name in ['usecase', 'UncertaintyQuantification']:
+                self.assertEqual(disc[0].n_calls, 1)
             else:
-                self.assertEqual(disc.n_calls, 0)
+                self.assertEqual(disc[0].n_calls, 0)
         
         self.dir_to_del.append(self.dump_dir)
 
