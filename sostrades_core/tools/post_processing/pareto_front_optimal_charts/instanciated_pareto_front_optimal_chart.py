@@ -29,7 +29,7 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
     """ Class that define pareto front optimal chart display as post post processing
     """
 
-    def __init__(self,  abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
+    def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name=''):
         """ Create a new chart definition
 
