@@ -32,7 +32,7 @@ from sostrades_core.execution_engine.discipline_builder import DisciplineBuilder
 
 # if platform.system() != 'Windows':
 #     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-# 
+#  
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
 N_CPUS = cpu_count()
@@ -43,7 +43,7 @@ N_CPUS = cpu_count()
 #     lsf = LinearSolversFactory()
 #     algos = lsf.algorithms
 #     del lsf
-# 
+#  
 #     return algos
 
 
@@ -86,73 +86,76 @@ class CouplingProxy(DisciplineBuilder):
         'max_iter': 1000,
         'tol': 1.0e-8}
 
-    DESC_IN = {}
-#     DESC_IN = {
-#         # NUMERICAL PARAMETERS
-#         'sub_mda_class': {DisciplineProxy.TYPE: 'string',
-#                           DisciplineProxy.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
-#                                                           'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-#                                                           'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential', 'GSPureNewtonorGSMDA'],
-#                           DisciplineProxy.DEFAULT: 'MDAJacobi', DisciplineProxy.NUMERICAL: True,
-#                           DisciplineProxy.STRUCTURING: True},
-#         'max_mda_iter': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 30, DisciplineProxy.NUMERICAL: True,
-#                          DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         'n_processes': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 1, DisciplineProxy.NUMERICAL: True,
-#                         DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         'chain_linearize': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
-#                             DisciplineProxy.DEFAULT: False, DisciplineProxy.NUMERICAL: True,
-#                             DisciplineProxy.STRUCTURING: True},
-#         'tolerance': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT: 1.e-6, DisciplineProxy.NUMERICAL: True,
-#                       DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         'use_lu_fact': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
-#                         DisciplineProxy.DEFAULT: False, DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
-#         'warm_start': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
-#                        DisciplineProxy.DEFAULT: False, DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
-#         'acceleration': {DisciplineProxy.TYPE: 'string',
-#                          DisciplineProxy.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
-#                          DisciplineProxy.DEFAULT: M2D_ACCELERATION, DisciplineProxy.NUMERICAL: True,
-#                          DisciplineProxy.STRUCTURING: True},
-#         'warm_start_threshold': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT:-1, DisciplineProxy.NUMERICAL: True,
-#                                  DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         # parallel sub couplings execution
-#         'n_subcouplings_parallel': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 1, DisciplineProxy.NUMERICAL: True,
-#                                     DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         # 'max_mda_iter_gs': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 5, DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
-#         'tolerance_gs': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT: 10.0, DisciplineProxy.NUMERICAL: True,
-#                          DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         'relax_factor': {DisciplineProxy.TYPE: 'float', DisciplineProxy.RANGE: [0.0, 1.0], DisciplineProxy.DEFAULT: 0.99,
-#                          DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         # NUMERICAL PARAMETERS OUT OF INIT
-#         'epsilon0': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT: 1.0e-6, DisciplineProxy.NUMERICAL: True,
-#                      DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         # Linear solver for MD0
-#         'linear_solver_MDO': {DisciplineProxy.TYPE: 'string', DisciplineProxy.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
-#                               DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER, DisciplineProxy.NUMERICAL: True,
-#                               DisciplineProxy.STRUCTURING: True},
-#         'linear_solver_MDO_preconditioner': {DisciplineProxy.TYPE: 'string',
+    DESC_IN = {
+        # NUMERICAL PARAMETERS
+        'sub_mda_class': {DisciplineProxy.TYPE: 'string',
+                          DisciplineProxy.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
+                                                          'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
+                                                          'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential', 'GSPureNewtonorGSMDA'],
+                          DisciplineProxy.DEFAULT: 'MDAJacobi', DisciplineProxy.NUMERICAL: True,
+                          DisciplineProxy.STRUCTURING: True},
+        'max_mda_iter': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 30, DisciplineProxy.NUMERICAL: True,
+                         DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        'n_processes': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 1, DisciplineProxy.NUMERICAL: True,
+                        DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        'chain_linearize': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
+                            DisciplineProxy.DEFAULT: False, DisciplineProxy.NUMERICAL: True,
+                            DisciplineProxy.STRUCTURING: True},
+        'tolerance': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT: 1.e-6, DisciplineProxy.NUMERICAL: True,
+                      DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        'use_lu_fact': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
+                        DisciplineProxy.DEFAULT: False, DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
+        'warm_start': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
+                       DisciplineProxy.DEFAULT: False, DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
+        'acceleration': {DisciplineProxy.TYPE: 'string',
+                         DisciplineProxy.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
+                         DisciplineProxy.DEFAULT: M2D_ACCELERATION, DisciplineProxy.NUMERICAL: True,
+                         DisciplineProxy.STRUCTURING: True},
+        'warm_start_threshold': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT:-1, DisciplineProxy.NUMERICAL: True,
+                                 DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        # parallel sub couplings execution
+        'n_subcouplings_parallel': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 1, DisciplineProxy.NUMERICAL: True,
+                                    DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        # 'max_mda_iter_gs': {DisciplineProxy.TYPE: 'int', DisciplineProxy.DEFAULT: 5, DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
+        'tolerance_gs': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT: 10.0, DisciplineProxy.NUMERICAL: True,
+                         DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        'relax_factor': {DisciplineProxy.TYPE: 'float', DisciplineProxy.RANGE: [0.0, 1.0], DisciplineProxy.DEFAULT: 0.99,
+                         DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        # NUMERICAL PARAMETERS OUT OF INIT
+        'epsilon0': {DisciplineProxy.TYPE: 'float', DisciplineProxy.DEFAULT: 1.0e-6, DisciplineProxy.NUMERICAL: True,
+                     DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        # Linear solver for MD0
+        'linear_solver_MDO': {DisciplineProxy.TYPE: 'string',
+#                               DisciplineProxy.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+#                               DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER, 
+                              DisciplineProxy.NUMERICAL: True,
+                              DisciplineProxy.STRUCTURING: True},
+        'linear_solver_MDO_preconditioner': {DisciplineProxy.TYPE: 'string',
 #                                              DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
 #                                              DisciplineProxy.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
-#                                              DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
-#         'linear_solver_MDO_options': {DisciplineProxy.TYPE: 'dict', DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
-#                                       DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         # Linear solver for MDA
-#         'linear_solver_MDA': {DisciplineProxy.TYPE: 'string', DisciplineProxy.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
-#                               DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER, DisciplineProxy.NUMERICAL: True,
-#                               DisciplineProxy.STRUCTURING: True},
-#         'linear_solver_MDA_preconditioner': {DisciplineProxy.TYPE: 'string',
+                                             DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
+        'linear_solver_MDO_options': {DisciplineProxy.TYPE: 'dict', DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
+                                      DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        # Linear solver for MDA
+        'linear_solver_MDA': {DisciplineProxy.TYPE: 'string',
+#                               DisciplineProxy.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+#                               DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER, 
+                              DisciplineProxy.NUMERICAL: True,
+                              DisciplineProxy.STRUCTURING: True},
+        'linear_solver_MDA_preconditioner': {DisciplineProxy.TYPE: 'string',
 #                                              DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
 #                                              DisciplineProxy.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
-#                                              DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
-#         'linear_solver_MDA_options': {DisciplineProxy.TYPE: 'dict', DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
-#                                       DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
-#         # group all disciplines in a MDOChain
-#         'group_mda_disciplines': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
-#                                   DisciplineProxy.DEFAULT: False, DisciplineProxy.USER_LEVEL: 3,
-#                                   DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
-#         'authorize_self_coupled_disciplines': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
-#                                                DisciplineProxy.DEFAULT: False, DisciplineProxy.USER_LEVEL: 3,
-#                                                DisciplineProxy.STRUCTURING: True}
-#     }
+                                             DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
+        'linear_solver_MDA_options': {DisciplineProxy.TYPE: 'dict', DisciplineProxy.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
+                                      DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True, DisciplineProxy.UNIT: '-'},
+        # group all disciplines in a MDOChain
+        'group_mda_disciplines': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
+                                  DisciplineProxy.DEFAULT: False, DisciplineProxy.USER_LEVEL: 3,
+                                  DisciplineProxy.NUMERICAL: True, DisciplineProxy.STRUCTURING: True},
+        'authorize_self_coupled_disciplines': {DisciplineProxy.TYPE: 'bool', DisciplineProxy.POSSIBLE_VALUES: [True, False],
+                                               DisciplineProxy.DEFAULT: False, DisciplineProxy.USER_LEVEL: 3,
+                                               DisciplineProxy.STRUCTURING: True}
+    }
 
     DESC_OUT = {}
 

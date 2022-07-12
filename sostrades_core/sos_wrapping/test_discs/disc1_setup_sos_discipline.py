@@ -35,17 +35,17 @@ class Disc1(DisciplineProxy):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
-        'x': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
+        'x': {'type': 'float', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'int'},
         'b': {'type': 'float'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def setup_disciplines(self):
+    def setup_sos_disciplines(self):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
