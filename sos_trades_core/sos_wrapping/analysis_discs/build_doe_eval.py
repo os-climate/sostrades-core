@@ -293,7 +293,7 @@ class BuildDoeEval(SoSEval):
 
     def configure(self):
         """
-            Overloaded SoSEval method
+            Overloaded SoSEval method,k
             Configuration of the BuildDoeEval
             Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
             It comes after build()
@@ -317,13 +317,14 @@ class BuildDoeEval(SoSEval):
         In other cases, additional inputs are the number of samples and the design space
         """
         # 1. provide possible values of sub_processes
-        if self.sub_proc_build_status != 'Empty_SP':
+        if self.REPO_OF_SUB_PROCESSES in self._data_in:
             sub_process_repo = self.get_sosdisc_inputs(
                 self.REPO_OF_SUB_PROCESSES)
-            if sub_process_repo != self.previous_sub_process_repo:
-                self.previous_sub_process_repo = sub_process_repo
-            self.setup_sos_disciplines_possible_sub_processes_in_repo(
-                sub_process_repo)
+            #if sub_process_repo != self.previous_sub_process_repo:
+            #    self.previous_sub_process_repo = sub_process_repo # Not useful because also in build
+            if sub_process_repo is not None:
+                self.setup_sos_disciplines_possible_sub_processes_in_repo(
+                    sub_process_repo)
         dynamic_inputs = {}
         dynamic_outputs = {}
         # Remark: in cas of 'Unchanged_SP', it will do a refresh of available
