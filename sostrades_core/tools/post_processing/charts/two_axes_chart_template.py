@@ -20,8 +20,8 @@ Class that define a 2 dimensional chart template
 """
 
 # pylint: disable=line-too-long
-from sos_trades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
-from sos_trades_core.tools.post_processing.post_processing_tools import convert_nan
+from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
+from sostrades_core.tools.post_processing.post_processing_tools import convert_nan
 
 
 class SeriesTemplateException(Exception):
@@ -271,8 +271,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
     CUMULATIVE_SURFACE = 'cumulative_surface'
     SERIES = 'series'
 
-    def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[], 
-                 primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v', 
+    def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
+                 primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v',
                  cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[]):
         """
          Create a new chart definition

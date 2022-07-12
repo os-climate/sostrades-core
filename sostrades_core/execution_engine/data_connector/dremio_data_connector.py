@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from sos_trades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
+from sostrades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
 import dremio_client
 
 

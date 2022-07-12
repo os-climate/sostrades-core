@@ -908,41 +908,41 @@ class CouplingProxy(DisciplineBuilder):
 #                 del input_data[ns_key]
 # 
 #         return input_data
-# 
-#     def get_maturity(self):
-#         '''
-#         Get the maturity of the sos_coupling by adding all maturities of children disciplines
-#         '''
-#         ref_dict_maturity = deepcopy(self.dict_maturity_ref)
-#         for discipline in self.proxy_disciplines:
-#             disc_maturity = discipline.get_maturity()
-#             if isinstance(disc_maturity, dict):
-#                 for m_k in ref_dict_maturity.keys():
-#                     if m_k in disc_maturity:
-#                         ref_dict_maturity[m_k] += disc_maturity[m_k]
-#             elif disc_maturity in ref_dict_maturity:
-#                 ref_dict_maturity[disc_maturity] += 1
-#         self.set_maturity(ref_dict_maturity, maturity_dict=True)
-#         return self._maturity
-# 
-#     def remove_discipline(self, disc):
-#         ''' remove one discipline from coupling
-#         '''
-#         disc.clean_dm_from_disc()
-#         self.proxy_disciplines.remove(disc)
-#         self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-#             disc, self.disc_id)
-# 
-#     def remove_discipline_list(self, disc_list):
-#         ''' remove one discipline from coupling
-#         '''
-#         for disc in disc_list:
-#             disc.clean_dm_from_disc()
-#             self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-#                 disc, self.disc_id)
-#         self.proxy_disciplines = [
-#             disc for disc in self.proxy_disciplines if disc not in disc_list]
-# 
+ 
+    def get_maturity(self):
+        '''
+        Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines
+        '''
+        ref_dict_maturity = deepcopy(self.dict_maturity_ref)
+        for discipline in self.proxy_disciplines:
+            disc_maturity = discipline.get_maturity()
+            if isinstance(disc_maturity, dict):
+                for m_k in ref_dict_maturity.keys():
+                    if m_k in disc_maturity:
+                        ref_dict_maturity[m_k] += disc_maturity[m_k]
+            elif disc_maturity in ref_dict_maturity:
+                ref_dict_maturity[disc_maturity] += 1
+        self.set_maturity(ref_dict_maturity, maturity_dict=True)
+        return self._maturity
+ 
+    def remove_discipline(self, disc):
+        ''' remove one discipline from coupling
+        '''
+        disc.clean_dm_from_disc()
+        self.proxy_disciplines.remove(disc)
+        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+            disc, self.disc_id)
+ 
+    def remove_discipline_list(self, disc_list):
+        ''' remove one discipline from coupling
+        '''
+        for disc in disc_list:
+            disc.clean_dm_from_disc()
+            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+                disc, self.disc_id)
+        self.proxy_disciplines = [
+            disc for disc in self.proxy_disciplines if disc not in disc_list]
+ 
 #     def _set_residual_history(self):
 #         ''' set residuals history into data_out
 #         and update DM

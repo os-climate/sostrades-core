@@ -23,7 +23,7 @@ import importlib
 from os.path import join, dirname, isfile
 
 from sostrades_core.api import get_sos_logger
-from sostrades_core.execution_engine.sos_discipline_gather import SoSDisciplineGather
+# from sostrades_core.execution_engine.sos_discipline_gather import SoSDisciplineGather
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import \
     InstantiatedParetoFrontOptimalChart
