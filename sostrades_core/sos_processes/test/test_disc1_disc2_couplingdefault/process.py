@@ -27,7 +27,6 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
-
     def get_builders(self):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict = {'Disc2': disc_dir + 'disc2.Disc2',

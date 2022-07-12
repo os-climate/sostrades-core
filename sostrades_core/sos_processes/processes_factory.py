@@ -21,7 +21,7 @@ from os.path import dirname, relpath, join
 from os import environ, sep, pathsep
 import yaml
 
-from sos_trades_core.api import get_sos_logger
+from sostrades_core.api import get_sos_logger
 
 BUILDERS_MODULE_NAME = 'process'
 PROCESSES_MODULE_NAME = 'sos_processes'
