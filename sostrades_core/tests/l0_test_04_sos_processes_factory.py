@@ -57,7 +57,7 @@ class TestSoSProcessFactory(unittest.TestCase):
         SoSPF_process_list = self.SoSPF.get_processes_id_list(
             self.repository_to_check)
 
-        target_list = ['test_disc1', 'test_disc1_disc2_coupling',
+        target_list = ['test_disc1', 'test_disc1_all_types', 'test_disc1_disc2_coupling',
                        'test_disc1_disc2_couplingdefault']
 
         for target in target_list:
