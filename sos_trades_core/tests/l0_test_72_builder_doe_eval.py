@@ -51,18 +51,18 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         self.exec_eng = ExecutionEngine(self.ns)
         self.factory = self.exec_eng.factory
 
-    def setup_sub_process_from_user_selection(study,sub_process_repo,sub_process_short_name):
+    def setup_sub_process_from_user_selection(study, sub_process_repo, sub_process_short_name):
         '''
             Function to push subprocess selection in dm
             It may be used WEB/API GUI function used from modal windows for subprocess selection
         '''
-        #Provide sub_process_repo
+        # Provide sub_process_repo
         values_dict = {}
         values_dict[f'{self.study_name}.DoE_Eval.repo_of_sub_processes'] = sub_process_repo
         values_dict[f'{self.study_name}.DoE_Eval.sub_process_short_name'] = sub_process_short_name
         study.load_data(from_input_dict=values_dict)
 
-    def setup_sub_process_from_user_selection(study,sub_process_usecase_short_name):
+    def setup_sub_process_from_user_selection(study, sub_process_usecase_short_name):
         '''
             Function to push subprocess selection in dm
             It may be used WEB/API GUI function used from modal windows for sub_process usecase selection
@@ -73,8 +73,6 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 
 #################### End: Function for WEB/API GUI #####################
-
-
 
     def setup_Hessian_usecase_from_direct_input(self, restricted=True):
         """
@@ -3165,7 +3163,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 11
+    test_selector = 9
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()
