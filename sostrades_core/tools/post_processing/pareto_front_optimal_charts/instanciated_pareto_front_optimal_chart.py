@@ -20,16 +20,16 @@ Class that define a pareto front optimal chart display as post post processing
 """
 import plotly.graph_objects as go
 
-from sos_trades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     InstanciatedSeriesException
-from sos_trades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
+from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
 
 class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
     """ Class that define pareto front optimal chart display as post post processing
     """
 
-    def __init__(self,  abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
+    def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name=''):
         """ Create a new chart definition
 

@@ -19,8 +19,8 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a 2 dimensional instantiated chart 
 """
 import plotly.graph_objects as go
-from sos_trades_core.tools.post_processing.post_processing_tools import escape_str_with_comma
-from sos_trades_core.tools.post_processing.charts.two_axes_chart_template import TwoAxesChartTemplate, SeriesTemplate
+from sostrades_core.tools.post_processing.post_processing_tools import escape_str_with_comma
+from sostrades_core.tools.post_processing.charts.two_axes_chart_template import TwoAxesChartTemplate, SeriesTemplate
 
 
 class InstanciatedSeriesException(Exception):
