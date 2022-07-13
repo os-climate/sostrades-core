@@ -31,7 +31,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_disc1_data_connector_dremio.usecase import Study
 
 
-class TestMetadataDiscipline(DisciplineProxy):
+class TestMetadataDiscipline(ProxyDiscipline):
     """
     Discipline to test desc_in metadata for connector
     """
@@ -43,7 +43,7 @@ class TestMetadataDiscipline(DisciplineProxy):
 
     DESC_IN = {
         'deliveries': {'type': 'float', 'value': None, 'namespace': 'ns_market_deliveries', 'editable': False,
-                       DisciplineProxy.CONNECTOR_DATA: data_connection_dict}
+                       ProxyDiscipline.CONNECTOR_DATA: data_connection_dict}
     }
 
     def run(self):
@@ -52,7 +52,7 @@ class TestMetadataDiscipline(DisciplineProxy):
         print(self.deliveries)
 
 
-class TestWriteDataDiscipline(DisciplineProxy):
+class TestWriteDataDiscipline(ProxyDiscipline):
     """
     Discipline to test writting data with connector
     """
@@ -65,11 +65,11 @@ class TestWriteDataDiscipline(DisciplineProxy):
 
     DESC_OUT = {
         'deliveries_df': {'type': 'float', 'value': None, 'namespace': 'ns_market_deliveries', 'editable': False,
-                          DisciplineProxy.CONNECTOR_DATA: data_connection_dict}
+                          ProxyDiscipline.CONNECTOR_DATA: data_connection_dict}
     }
 
     def run(self):
-        connector_info = self.DESC_OUT['deliveries_df'][DisciplineProxy.CONNECTOR_DATA]
+        connector_info = self.DESC_OUT['deliveries_df'][ProxyDiscipline.CONNECTOR_DATA]
         # no need to call "write_data" method because it is done in
         # fill_output_with_connecotr in sos_discipline
 
