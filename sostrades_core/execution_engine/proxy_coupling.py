@@ -15,6 +15,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.discipline import _filter_variables_to_convert
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -330,7 +331,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def _build_coupling_structure(self):
         
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
-        self.strong_couplings = self._filter_variables_to_convert(self.coupling_structure.strong_couplings(), write_logs=True)
+        self.strong_couplings = _filter_variables_to_convert(self.proxy_disciplines,
+                                                             self.ee, 
+                                                             self.coupling_structure.strong_couplings(), 
+                                                             write_logs=True)
         
     def get_disciplines_to_configure(self):
         '''
@@ -350,7 +354,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._update_status_dm(self.STATUS_CONFIGURE)
         # Construct the data_in and the data_out of the coupling with the GEMS
         # grammar
-        self._set_data_io_with_gems_grammar()
+        self._set_data_io_with_gemseo_grammar()
  
         # Update coupling and editable flags in the datamanager for the GUI
         self._update_coupling_flags_in_dm()
@@ -454,7 +458,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         # Update coupling and editable flags in the datamanager for the GUI
 #         self._update_coupling_flags_in_dm()
 
-    def _set_data_io_with_gems_grammar(self):
+    def _set_data_io_with_gemseo_grammar(self):
         '''
         Construct the data_in and the data_out of the coupling with the GEMS grammar
         '''
