@@ -34,7 +34,7 @@ from copy import deepcopy
 from tempfile import gettempdir
 
 
-class TestMultiScenarioOfDoeEval(unittest.TestCase):
+class TestBuilderDoeEval(unittest.TestCase):
     """
     MultiScenario and doe_eval processes test class
     """
@@ -51,18 +51,18 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         self.exec_eng = ExecutionEngine(self.ns)
         self.factory = self.exec_eng.factory
 
-    def setup_sub_process_from_user_selection(study,sub_process_repo,sub_process_short_name):
+    def setup_sub_process_from_user_selection(self, study, sub_process_repo, sub_process_short_name):
         '''
             Function to push subprocess selection in dm
             It may be used WEB/API GUI function used from modal windows for subprocess selection
         '''
-        #Provide sub_process_repo
+        # Provide sub_process_repo
         values_dict = {}
         values_dict[f'{self.study_name}.DoE_Eval.repo_of_sub_processes'] = sub_process_repo
         values_dict[f'{self.study_name}.DoE_Eval.sub_process_short_name'] = sub_process_short_name
         study.load_data(from_input_dict=values_dict)
 
-    def setup_sub_process_from_user_selection(study,sub_process_usecase_short_name):
+    def setup_sub_process_usecase_from_user_selection(self, study, sub_process_usecase_short_name):
         '''
             Function to push subprocess selection in dm
             It may be used WEB/API GUI function used from modal windows for sub_process usecase selection
@@ -73,8 +73,6 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
 
 #################### End: Function for WEB/API GUI #####################
-
-
 
     def setup_Hessian_usecase_from_direct_input(self, restricted=True):
         """
@@ -3162,10 +3160,80 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         from shutil import rmtree
         rmtree(dump_dir)
 
+    def test_12_test_functions_setup_sub_process_and_setup_sub_process(self):
+        '''
+        Test the two functions setup_sub_process and setup_sub_process
+        '''
+        print('test_12: Test the two functions setup_sub_process and setup_sub_process')
+        from os.path import join, dirname
+        from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
+        self.study_name = 'MyStudy'
+
+        # create session with empty DoE
+        print(
+            '################################################################################')
+        print('STEP_1: create session with empty DoE')
+        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()  # configure
+        study_dump.dump_data(dump_dir)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_2: update with subprocess test_disc10_setup_sos_discipline')
+
+        sub_process_repo = 'sos_trades_core.sos_processes.test'
+        sub_process_short_name = 'test_disc10_setup_sos_discipline'
+
+        self.setup_sub_process_from_user_selection(
+            study_dump, sub_process_repo, sub_process_short_name)
+        study_dump.dump_data(dump_dir)
+
+        # print(study_dump.ee.dm.get_data_dict_values())
+        # Check that repo_of_sub_processes and sub_process_short_name are set
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        print_flag = True
+        sp_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval.Disc10')[0]
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Linear'
+        target_values_dict['a'] = 1.
+        target_values_dict['x'] = None
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_3.1: update with with data subprocess update from usecase_linear ')
+        my_usecase_1 = 'usecase_linear'
+        my_usecase_2 = 'usecase_affine'
+        my_usecase_3 = 'usecase_polynomial'
+        my_usecase = my_usecase_1
+
+        self.setup_sub_process_usecase_from_user_selection(
+            study_dump, my_usecase)
+
+        # Check
+        target_values_dict = {}
+        target_values_dict['Model_Type'] = 'Linear'
+        target_values_dict['a'] = 1.
+        target_values_dict['x'] = 2.0
+        self.check_discipline_values(
+            sp_disc, target_values_dict, print_flag=print_flag)
+        rmtree(dump_dir)
+
 
 if '__main__' == __name__:
-    my_test = TestMultiScenarioOfDoeEval()
-    test_selector = 11
+    my_test = TestBuilderDoeEval()
+    test_selector = 6
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()
@@ -3192,3 +3260,5 @@ if '__main__' == __name__:
         my_test.test_10_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc_and_updates()
     elif test_selector == 11:
         my_test.test_11_test_uscase_update_with_dynamic_subprocess()
+    elif test_selector == 12:
+        my_test.test_12_test_functions_setup_sub_process_and_setup_sub_process()

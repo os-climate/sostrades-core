@@ -293,7 +293,7 @@ class BuildDoeEval(SoSEval):
 
     def configure(self):
         """
-            Overloaded SoSEval method
+            Overloaded SoSEval method,k
             Configuration of the BuildDoeEval
             Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
             It comes after build()
@@ -317,13 +317,15 @@ class BuildDoeEval(SoSEval):
         In other cases, additional inputs are the number of samples and the design space
         """
         # 1. provide possible values of sub_processes
-        if self.sub_proc_build_status != 'Empty_SP':
+        if self.REPO_OF_SUB_PROCESSES in self._data_in:
             sub_process_repo = self.get_sosdisc_inputs(
                 self.REPO_OF_SUB_PROCESSES)
-            if sub_process_repo != self.previous_sub_process_repo:
-                self.previous_sub_process_repo = sub_process_repo
-            self.setup_sos_disciplines_possible_sub_processes_in_repo(
-                sub_process_repo)
+            # if sub_process_repo != self.previous_sub_process_repo:
+            # self.previous_sub_process_repo = sub_process_repo # Not useful
+            # because also in build
+            if sub_process_repo is not None:
+                self.setup_sos_disciplines_possible_sub_processes_in_repo(
+                    sub_process_repo)
         dynamic_inputs = {}
         dynamic_outputs = {}
         # Remark: in cas of 'Unchanged_SP', it will do a refresh of available
@@ -337,13 +339,14 @@ class BuildDoeEval(SoSEval):
             self.setup_sos_disciplines_building_inputs_sub_process_usecase(
                 sub_process_repo, sub_process_short_name, dynamic_inputs)
             # 3. provide driver inputs based on selected subprocess
-            self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(dynamic_inputs) 
+            self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
+                dynamic_inputs)
         dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(
             dynamic_inputs, dynamic_outputs)
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         # 4. import data from selected sub_process_usecase
-        self.manage_import_inputs_from_sub_process() 
+        self.manage_import_inputs_from_sub_process()
 
     def set_eval_possible_values(self):
         '''
@@ -848,7 +851,6 @@ class BuildDoeEval(SoSEval):
         else:
             return self.default_algo_options
 
-
     def set_sub_process_usecase_status(self, sub_process_usecase_short_name):
         """
             State subprocess usecase import status
@@ -885,17 +887,26 @@ class BuildDoeEval(SoSEval):
             Load data of the selected sub process usecase
             Function needed in manage_import_inputs_from_sub_process()
         """
-        input_dict_from_usecase = {}
+        new_study_placeholder = f'{self.ee.study_name}.DoE_Eval'  # good prefix in context
+        # 1. Get anonimized dict from sub_process_usecase_full_name
         imported_module = import_module(sub_process_usecase_full_name)
         study_tmp = getattr(imported_module, 'Study')(
             execution_engine=self.ee)
-        # we provide the good prefix to the loaded use_case data
-        study_tmp.study_name = f'{self.ee.study_name}.DoE_Eval'
-        # imported data are in the form of a list of (key,value)
-        usecase_data = study_tmp.setup_usecase()
-        if not isinstance(usecase_data, list):
-            usecase_data = [usecase_data]
-        for uc_d in usecase_data:  # so for each imported (key,value)
+        anonimize_input_dict_from_usecase = {}
+        # Remark: see def __anonymize_key in execution_engine
+        study_tmp.study_name = self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT
+        anonimize_usecase_data = study_tmp.setup_usecase()
+        if not isinstance(anonimize_usecase_data, list):
+            anonimize_usecase_data = [anonimize_usecase_data]
+        for uc_d in anonimize_usecase_data:
+            anonimize_input_dict_from_usecase.update(uc_d)
+        # 2. Get unanonimized dict (i.e. dict of subprocess in driver context)
+        # from anonimized dict and context
+        input_dict_from_usecase = {}
+        for key_to_unanonimize, value in anonimize_input_dict_from_usecase.items():
+            converted_key = key_to_unanonimize.replace(
+                self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)  # see def __unanonimize_key  in execution_engine
+            uc_d = {converted_key: value}
             input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
 
