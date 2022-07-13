@@ -334,7 +334,28 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def _build_data_io(self):
         ''' build data_in and data_out according to MDOCouplingStructure
         '''
-        # TODO: inspired from _set_data_io_with_gems_grammar
+
+        self._data_in = {key: value for key, value in self._data_in.items(
+        ) if
+                         key in self.DESC_IN or key in self.NUM_DESC_IN}
+        # add coupling inputs in data_in
+        for discipline in self.proxy_disciplines:
+            for var_f_name,var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
+                if self.ee.dm.get_data(var_f_name,self.IO_TYPE) == self.IO_TYPE_IN and not self.ee.dm.get_data(var_f_name,self.NUMERICAL):
+                    self._data_in[var_name] = self.dm.get_data(var_f_name)
+
+        # keep residuals_history if in data_out
+        if self.RESIDUALS_HISTORY in self._data_out:
+            self._data_out = {
+                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]}
+        else:
+            self._data_out = {}
+
+        for discipline in self.proxy_disciplines:
+            for var_f_name,var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
+                    self._data_out[var_name] = self.dm.get_data(var_f_name)
+
+
     
     def _build_coupling_structure(self):
         
@@ -466,8 +487,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._set_residual_history()
     
     def init_gemseo_discipline(self):
-        
-        self.mdo_discipline = SoSCoupling(self.sos_name) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
+        pass
+        #self.mdo_discipline = SoSCoupling(self.sos_name) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
         
 
 #     def configure_execution(self):
@@ -1059,6 +1080,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 disc, self.disc_id)
         self.proxy_disciplines = [
             disc for disc in self.proxy_disciplines if disc not in disc_list]
+
+
+
  
 #     def _set_residual_history(self):
 #         ''' set residuals history into data_out
