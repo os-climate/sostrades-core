@@ -13,12 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 
-class Disc3(DisciplineProxy):
+class Disc3(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
@@ -41,13 +41,13 @@ class Disc3(DisciplineProxy):
     dremio_path = '"test_request"'
 
     DESC_IN = {
-        'x': {'type': 'float', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'x': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'float'},
         'b': {'type': 'float'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self):

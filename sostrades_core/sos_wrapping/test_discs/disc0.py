@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.data_connector.mock_connector import MockConnector
 
 
-class Disc2_data_connector(ProxyDiscipline):
+class Disc0(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc2_data_connector',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc0',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -32,25 +31,24 @@ class Disc2_data_connector(ProxyDiscipline):
         'icon': '',
         'version': '',
     }
+
     _maturity = 'Fake'
 
-    data_connection_dict = {'connector_type': MockConnector.NAME,
-                            'hostname': 'test_hostname',
-                            'connector_request': 'test_request'}
-    dremio_path = '"test_request"'
-
     DESC_IN = {
-        'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac',
-              ProxyDiscipline.CONNECTOR_DATA: data_connection_dict},
-        'constant': {'type': 'float'},
-        'power': {'type': 'int'},
+        'r': {'type': 'float'},
+        'mod': {'type': 'int', 'default': 1}
     }
     DESC_OUT = {
-        'z': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'x': {'type': 'float', 'visibility': 'Shared', 'namespace': 'ns_disc1'},
+        'a': {'type': 'int', 'visibility': 'Shared', 'namespace': 'ns_disc1'}
     }
 
     def run(self):
-        y = self.get_sosdisc_inputs('y')
-        z = 1.0
-        dict_values = {'z': z}
+
+        r = self.get_sosdisc_inputs('r')
+        mod = self.get_sosdisc_inputs('mod')
+        a, x = divmod(r, mod)
+
+        dict_values = {'a': int(a), 'x': x}
+
         self.store_sos_outputs_values(dict_values)

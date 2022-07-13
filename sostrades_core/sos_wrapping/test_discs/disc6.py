@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.data_connector.mock_connector import MockConnector
+from numpy import array
+# Discipline with dataframe
 
 
-class Disc2_data_connector(ProxyDiscipline):
+class Disc6(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc2_data_connector',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc6',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -33,24 +34,21 @@ class Disc2_data_connector(ProxyDiscipline):
         'version': '',
     }
     _maturity = 'Fake'
-
-    data_connection_dict = {'connector_type': MockConnector.NAME,
-                            'hostname': 'test_hostname',
-                            'connector_request': 'test_request'}
-    dremio_path = '"test_request"'
-
     DESC_IN = {
-        'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac',
-              ProxyDiscipline.CONNECTOR_DATA: data_connection_dict},
-        'constant': {'type': 'float'},
-        'power': {'type': 'int'},
+        'df': {'type': 'dataframe', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
+        'dict_df': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
+
     DESC_OUT = {
-        'z': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):
-        y = self.get_sosdisc_inputs('y')
-        z = 1.0
-        dict_values = {'z': z}
+        df = self.get_sosdisc_inputs('df')
+        dict_df = self.get_sosdisc_inputs('dict_df')
+        key1 = df['c1'][0]
+        key2 = df['c2'][0]
+        h = array([0.5 * (key1 + 1. / (2 * key1)),
+                   0.5 * (key2 + 1. / (2 * key2))])
+        dict_values = {'h': h}
         self.store_sos_outputs_values(dict_values)

@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from numpy import array
 import numpy as np
 # Discipline with dataframe
 
 
-class Disc7(DisciplineProxy):
+class Disc7(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
@@ -36,11 +36,11 @@ class Disc7(DisciplineProxy):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'h': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
+        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
     }
 
     DESC_OUT = {
-        'x': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'x': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):
