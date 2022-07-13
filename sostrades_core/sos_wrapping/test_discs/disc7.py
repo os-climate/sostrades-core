@@ -14,14 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-import time
+from numpy import array
+import pandas
+# Discipline with dataframe
 
 
-class Disc8(ProxyDiscipline):
+class Disc7(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc8',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc7',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -34,21 +36,18 @@ class Disc8(ProxyDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
-        'a': {'type': 'float'},
-        'b': {'type': 'float', 'default': 2.}
+        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
     }
 
     DESC_OUT = {
-        'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'df': {'type': 'dataframe', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
+        'dict_df': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):
-        x = self.get_sosdisc_inputs('x')
-        a = self.get_sosdisc_inputs('a')
-        b = self.get_sosdisc_inputs('b')
-        dict_values = {'indicator': a * b, 'y': a * x + b}
-        # put new field value in data_out
-        time.sleep(0.2)
+        h = self.get_sosdisc_inputs('h')
+        df = pandas.DataFrame(
+            array([[(h[0] + h[1]) / 2, (h[0] + h[1]) / 2]]), columns=['c1', 'c2'])
+        dict_df = {'key_1': df, 'key_2': df}
+        dict_values = {'df': df, 'dict_df': dict_df}
         self.store_sos_outputs_values(dict_values)

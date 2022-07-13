@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 import numpy as np
 from scipy.sparse import diags
 # Discipline with dataframe
 
 
-class Disc6(DisciplineProxy):
+class Disc6(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
@@ -36,11 +36,11 @@ class Disc6(DisciplineProxy):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'x': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     DESC_OUT = {
-        'h': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):
@@ -53,6 +53,6 @@ class Disc6(DisciplineProxy):
 
     def compute_sos_jacobian(self):
         x = self.get_sosdisc_inputs('x')
-        grad = [0.5 * (1.0 - 0.5 / x[0]**2), 0.5 * (1.0 - 0.5 / x[1]**2)]
+        grad = [0.5 * (1.0 - 0.5 / x[0] ** 2), 0.5 * (1.0 - 0.5 / x[1] ** 2)]
         value = diags(grad) / 2
         self.set_partial_derivative('h', 'x', value)

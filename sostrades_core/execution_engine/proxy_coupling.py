@@ -337,7 +337,28 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def _build_data_io(self):
         ''' build data_in and data_out according to MDOCouplingStructure
         '''
-        # TODO: inspired from _set_data_io_with_gems_grammar
+
+        self._data_in = {key: value for key, value in self._data_in.items(
+        ) if
+                         key in self.DESC_IN or key in self.NUM_DESC_IN}
+        # add coupling inputs in data_in
+        for discipline in self.proxy_disciplines:
+            for var_f_name,var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
+                if self.ee.dm.get_data(var_f_name,self.IO_TYPE) == self.IO_TYPE_IN and not self.ee.dm.get_data(var_f_name,self.NUMERICAL):
+                    self._data_in[var_name] = self.dm.get_data(var_f_name)
+
+        # keep residuals_history if in data_out
+        if self.RESIDUALS_HISTORY in self._data_out:
+            self._data_out = {
+                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]}
+        else:
+            self._data_out = {}
+
+        for discipline in self.proxy_disciplines:
+            for var_f_name,var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
+                    self._data_out[var_name] = self.dm.get_data(var_f_name)
+
+
     
     def _build_coupling_structure(self):
         
@@ -472,6 +493,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._set_residual_history()
         
     def init_gemseo_discipline(self):
+<<<<<<< HEAD
         '''
         initialization of GEMSEO MDAChain
         '''
@@ -502,6 +524,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
         #- set the mdo discipline with the MDAChain
         self.mdo_discipline = mda_chain
+=======
+        pass
+        #self.mdo_discipline = SoSCoupling(self.sos_name) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
+>>>>>>> branch 'EEV4' of https://idas661.eu.airbus.corp/sostrades/sostrades-core.git
         
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
@@ -719,76 +745,46 @@ class ProxyCoupling(ProxyDisciplineBuilder):
  
         return ordered_list
 # 
-#     def export_couplings(self, in_csv=False, f_name=None):
-#         ''' 
-#             Export couplings as a csv with
-#         disc1 | disc2 | var_name
-#         '''
-#         # fill in data
-#         cs = self.coupling_structure
-#         coupl_tuples = cs.graph.get_disciplines_couplings()
-#         data = []
-#         header = ["disc_1", "disc_2", "var_name"]
-#         for disc1, disc2, c_vars in coupl_tuples:
-#             for var in c_vars:
-#                 disc1_id = disc1.get_disc_full_name()
-#                 disc2_id = disc2.get_disc_full_name()
-#                 row = [disc1_id, disc2_id, var]
-#                 data.append(row)
-#         df = DataFrame(data, columns=header)
-# 
-#         for discipline in self.sos_disciplines:
-#             if isinstance(discipline, SoSCoupling):
-#                 df_couplings = discipline.export_couplings()
-#                 df = df.append(df_couplings, ignore_index=True)
-# 
-#         if in_csv:
-#             # writing of the file
-#             if f_name is None:
-#                 f_name = f"{self.get_disc_full_name()}.csv"
-#             df.to_csv(f_name, index=False)
-#         else:
-#             return df
-# 
-#     def check_var_data_mismatch(self):
-#         '''
-#         Check if a variable data is not coherent between two coupling disciplines
-# 
-#         The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
-#         the list of data_to_check is defined in ProxyDiscipline
-#         '''
-# 
-#         if self.logger.level <= logging.DEBUG:
-#             coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
-#             for from_disc, to_disc, c_vars in coupling_vars:
-#                 for var in c_vars:
-#                     # from disc is in output
-#                     from_disc_data = from_disc.get_data_with_full_name(
-#                         self.IO_TYPE_OUT, var)
-#                     # to_disc is in input
-#                     to_disc_data = to_disc.get_data_with_full_name(
-#                         self.IO_TYPE_IN, var)
-#                     for data_name in self.DATA_TO_CHECK:
-#                         # Check if data_names are different
-#                         if from_disc_data[data_name] != to_disc_data[data_name]:
-#                             self.logger.debug(
-#                                 f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
-#                         # Check if unit is not None
-#                         elif from_disc_data[data_name] is None and data_name == self.UNIT:
-#                             # if unit is None in a dataframe check if there is a
-#                             # dataframe descriptor with unit in it
-#                             if from_disc_data[self.TYPE] == 'dataframe':
-#                                 # if no dataframe descriptor and no unit warning
-#                                 if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
-#                                     self.logger.debug(
-#                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
-#     # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
-#     #                             else :
-#     #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
-#                             else:
-#                                 self.logger.debug(
-#                                     f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
-# 
+
+    def check_var_data_mismatch(self):
+        '''
+        Check if a variable data is not coherent between two coupling disciplines
+
+        The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
+        the list of data_to_check is defined in ProxyDiscipline
+        '''
+
+        if self.logger.level <= logging.DEBUG:
+            coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
+            for from_disc, to_disc, c_vars in coupling_vars:
+                for var in c_vars:
+                    # from disc is in output
+                    from_disc_data = from_disc.get_data_with_full_name(
+                        self.IO_TYPE_OUT, var)
+                    # to_disc is in input
+                    to_disc_data = to_disc.get_data_with_full_name(
+                        self.IO_TYPE_IN, var)
+                    for data_name in self.DATA_TO_CHECK:
+                        # Check if data_names are different
+                        if from_disc_data[data_name] != to_disc_data[data_name]:
+                            self.logger.debug(
+                                f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
+                        # Check if unit is not None
+                        elif from_disc_data[data_name] is None and data_name == self.UNIT:
+                            # if unit is None in a dataframe check if there is a
+                            # dataframe descriptor with unit in it
+                            if from_disc_data[self.TYPE] == 'dataframe':
+                                # if no dataframe descriptor and no unit warning
+                                if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
+                                    self.logger.debug(
+                                        f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
+    # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value
+                            #  to the df_descriptor tuple check with WALL-E else : from_disc_data[
+                            #  self.DATAFRAME_DESCRIPTOR]
+                            else:
+                                self.logger.debug(
+                                    f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
+
 #     def run(self):
 #         '''
 #         Call the _run method of MDAChain in case of SoSCoupling.
@@ -1028,10 +1024,54 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #                 del input_data[ns_key]
 # 
 #         return input_data
+<<<<<<< HEAD
 
 #     def _update_coupling_flags_in_dm(self):
 #         ''' 
 #         Update coupling and editable flags in the datamanager for the GUI
+=======
+ 
+    def get_maturity(self):
+        '''
+        Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines
+        '''
+        ref_dict_maturity = deepcopy(self.dict_maturity_ref)
+        for discipline in self.proxy_disciplines:
+            disc_maturity = discipline.get_maturity()
+            if isinstance(disc_maturity, dict):
+                for m_k in ref_dict_maturity.keys():
+                    if m_k in disc_maturity:
+                        ref_dict_maturity[m_k] += disc_maturity[m_k]
+            elif disc_maturity in ref_dict_maturity:
+                ref_dict_maturity[disc_maturity] += 1
+        self.set_maturity(ref_dict_maturity, maturity_dict=True)
+        return self._maturity
+ 
+    def remove_discipline(self, disc):
+        ''' remove one discipline from coupling
+        '''
+        disc.clean_dm_from_disc()
+        self.proxy_disciplines.remove(disc)
+        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+            disc, self.disc_id)
+ 
+    def remove_discipline_list(self, disc_list):
+        ''' remove one discipline from coupling
+        '''
+        for disc in disc_list:
+            disc.clean_dm_from_disc()
+            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+                disc, self.disc_id)
+        self.proxy_disciplines = [
+            disc for disc in self.proxy_disciplines if disc not in disc_list]
+
+
+
+ 
+#     def _set_residual_history(self):
+#         ''' set residuals history into data_out
+#         and update DM
+>>>>>>> branch 'EEV4' of https://idas661.eu.airbus.corp/sostrades/sostrades-core.git
 #         '''
 # 
 #         def update_flags_of_disc(coupling_key, disc_name, in_or_out):

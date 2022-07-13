@@ -22,7 +22,7 @@ class Disc5(SoSDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_disc_df',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_dict_df',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -40,7 +40,7 @@ class Disc5(SoSDiscipline):
     }
 
     DESC_OUT = {
-        'h': {'type': 'dict','subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):

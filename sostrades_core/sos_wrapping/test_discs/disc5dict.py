@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-import time
+from numpy import array
 
 
-class Disc8(ProxyDiscipline):
+class Disc5(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc8',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc5dict',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -34,21 +34,26 @@ class Disc8(ProxyDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
-        'a': {'type': 'float'},
-        'b': {'type': 'float', 'default': 2.}
+        'z': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict', 'subtype_descriptor':{'dict':'float'}, 'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {
-        'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'h': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     def run(self):
-        x = self.get_sosdisc_inputs('x')
-        a = self.get_sosdisc_inputs('a')
-        b = self.get_sosdisc_inputs('b')
-        dict_values = {'indicator': a * b, 'y': a * x + b}
-        # put new field value in data_out
-        time.sleep(0.2)
+        dict_out = self.get_sosdisc_inputs('dict_out')
+        key1 = dict_out['key1']
+        if isinstance(key1, dict):
+            key1 = key1['1']
+        key2 = dict_out['key2']
+        if isinstance(key2, dict):
+            key2 = key2['1']
+        z = self.get_sosdisc_inputs('z')
+
+        h = array([0.5 * (key1 + 1. / (2 * key1)),
+                   0.5 * (key2 + 1. / (2 * key2))])
+
+        dict_values = {'h': h}
         self.store_sos_outputs_values(dict_values)
