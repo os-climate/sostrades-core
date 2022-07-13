@@ -13,11 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from numpy import array
 
 
-class Disc4(DisciplineProxy):
+class Disc4(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
@@ -35,13 +35,13 @@ class Disc4(DisciplineProxy):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'mydict': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}},
     }
 
     DESC_OUT = {
-        'z': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'}, 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'z': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):
