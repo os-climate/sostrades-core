@@ -26,7 +26,7 @@ from pathlib import Path
 
 from sostrades_core.execution_engine.data_connector.mock_connector import MockConnector
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
-from sostrades_core.execution_engine.proxy_discipline import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_disc1_data_connector_dremio.usecase import Study
 
