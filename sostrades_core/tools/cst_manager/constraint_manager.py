@@ -18,9 +18,9 @@ import re
 import numpy as np
 from matplotlib import pyplot as plt
 
-from sos_trades_core.tools.cst_manager.constraint_object import ConstraintObject
-from sos_trades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
-from sos_trades_core.execution_engine.func_manager.func_manager import FunctionManager
+from sostrades_core.tools.cst_manager.constraint_object import ConstraintObject
+from sostrades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
+from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
 
 # pylint: disable=no-value-for-parameter
 

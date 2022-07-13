@@ -16,7 +16,7 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 '''
-from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
+from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
 from os.path import dirname, isdir
 from os import listdir, makedirs

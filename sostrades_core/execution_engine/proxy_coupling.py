@@ -501,7 +501,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         mda_chain = SoSMDAChain(
                               ee=self.ee, # set the ee and dm as attribute of SoSMDAChain (used for filtering and conversions) # TODO: see if it can be removed
                               disciplines=self.sub_mdo_disciplines,
-                              name=self.sos_name,
+                              name=self.get_disc_full_name(),
                               grammar_type=self.SOS_GRAMMAR_TYPE,
                               ** num_data) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
 
@@ -720,10 +720,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
          Overwrite of sos_discipline property where the order is defined by default
          by the order of sos_disciplines
         '''
-        ordered_list = []
+#         ordered_list = []
 #         ordered_list = self.ordered_disc_list_rec(self.mdo_discipline.mdo_chain, ordered_list)
-        ordered_list = self.sub_mdo_disciplines
-        self.logger.warning("TODO: fix the order (set as the top level list of disciplines for d)")
+        ordered_list = self.proxy_disciplines
+        self.logger.warning("TODO: fix the order disc list in proxy coupling (set as the top level list of disciplines for debug purpose)")
  
         return ordered_list
  
@@ -739,7 +739,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     subdisc, ordered_list)
  
         return ordered_list
-# 
 
     def check_var_data_mismatch(self):
         '''
@@ -1023,43 +1022,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #     def _update_coupling_flags_in_dm(self):
 #         ''' 
 #         Update coupling and editable flags in the datamanager for the GUI
- 
-    def get_maturity(self):
-        '''
-        Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines
-        '''
-        ref_dict_maturity = deepcopy(self.dict_maturity_ref)
-        for discipline in self.proxy_disciplines:
-            disc_maturity = discipline.get_maturity()
-            if isinstance(disc_maturity, dict):
-                for m_k in ref_dict_maturity.keys():
-                    if m_k in disc_maturity:
-                        ref_dict_maturity[m_k] += disc_maturity[m_k]
-            elif disc_maturity in ref_dict_maturity:
-                ref_dict_maturity[disc_maturity] += 1
-        self.set_maturity(ref_dict_maturity, maturity_dict=True)
-        return self._maturity
- 
-    def remove_discipline(self, disc):
-        ''' remove one discipline from coupling
-        '''
-        disc.clean_dm_from_disc()
-        self.proxy_disciplines.remove(disc)
-        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-            disc, self.disc_id)
- 
-    def remove_discipline_list(self, disc_list):
-        ''' remove one discipline from coupling
-        '''
-        for disc in disc_list:
-            disc.clean_dm_from_disc()
-            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-                disc, self.disc_id)
-        self.proxy_disciplines = [
-            disc for disc in self.proxy_disciplines if disc not in disc_list]
-
-
-
  
 #     def _set_residual_history(self):
 #         ''' set residuals history into data_out

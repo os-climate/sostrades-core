@@ -55,6 +55,18 @@ class ProxyDisciplineException(Exception):
 NS_SEP = '.'
 
 
+def _proxy_run(cls):
+    '''
+    uses user wrapp run during execution
+    '''
+    return cls.proxy_discipline.run()
+    
+def _proxy_compute_jacobian(cls):
+    '''
+    usesuser wrapp jacobian computation during execution
+    '''
+    return cls.proxy_discipline.compute_sos_jacobian()
+
 
 class ProxyDiscipline(object):
     '''**SoSDiscipline** is the :class:`~gemseo.core.discipline.MDODiscipline`
@@ -267,12 +279,12 @@ class ProxyDiscipline(object):
         Initialization of GEMSEO MDODisciplines
         To be overloaded by subclasses
         '''
-        disc = MDODiscipline(name=self.sos_name, 
+        disc = MDODiscipline(name=self.get_disc_full_name(), 
                              grammar_type=self.SOS_GRAMMAR_TYPE,
                              cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE))
         disc.proxy_discipline = self
-        setattr(disc, '_run', self._proxy_run)
-        setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
+        setattr(disc, '_run', _proxy_run)
+        setattr(disc, 'compute_sos_jacobian', _proxy_compute_jacobian)
         self.mdo_discipline = disc
         
         disc._ATTR_TO_SERIALIZE += ("proxy_discipline",)
@@ -306,18 +318,6 @@ class ProxyDiscipline(object):
 
         return grammar
 
-    def _proxy_run(self):
-        '''
-        uses user wrapp run during execution
-        '''
-        return self.proxy_discipline.run()
-        
-    def _proxy_compute_jacobian(self):
-        '''
-        usesuser wrapp jacobian computation during execution
-        '''
-        return self.proxy_discipline.compute_sos_jacobian()
-        
     def get_shared_namespace_list(self, data_dict):
         '''
         Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared

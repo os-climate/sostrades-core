@@ -369,7 +369,7 @@ class Sellar3(SoSDiscipline):
                                 d_name, out, inp, maxi))
 
     def display_min_max_couplings(self):
-        ''' Override the display_min_max_couplings method from <sostrades-core.execution_engine.sos_discpline> with a raise for test purposes
+        ''' Override the display_min_max_couplings method from <sostrades_core.execution_engine.sos_discpline> with a raise for test purposes
             THIS METHOD MUST BE UPDATED IF THE ORIGINAL METHOD CHANGES
         '''
         coupling_dict = {}

@@ -18,7 +18,7 @@ from copy import deepcopy
 import logging
 import numpy as np
 from copy import copy
-from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
+from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
 
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially

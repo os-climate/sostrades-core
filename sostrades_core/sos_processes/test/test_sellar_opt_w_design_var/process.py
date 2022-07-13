@@ -17,7 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Generate an optimization scenario
 """
-from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
+from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from gemseo.core.chain import MDOParallelChain
-from sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization,\
+from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization,\
     SoSDiscParallelExecution
 from gemseo.core.discipline import MDODiscipline
 import multiprocessing as mp
