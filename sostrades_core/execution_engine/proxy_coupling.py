@@ -493,7 +493,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._set_residual_history()
         
     def init_gemseo_discipline(self):
-<<<<<<< HEAD
         '''
         initialization of GEMSEO MDAChain
         '''
@@ -524,10 +523,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
         #- set the mdo discipline with the MDAChain
         self.mdo_discipline = mda_chain
-=======
-        pass
-        #self.mdo_discipline = SoSCoupling(self.sos_name) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
->>>>>>> branch 'EEV4' of https://idas661.eu.airbus.corp/sostrades/sostrades-core.git
         
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
