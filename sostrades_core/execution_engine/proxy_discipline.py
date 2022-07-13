@@ -214,6 +214,7 @@ class ProxyDiscipline(object):
         ''' reload object, eventually with coupling_namespace
         '''
         self.mdo_discipline = None
+        self.sub_mdo_disciplines = []
         self.proxy_disciplines = []
         self.status = None
 
@@ -274,12 +275,11 @@ class ProxyDiscipline(object):
         setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
         self.mdo_discipline = disc
         
-        self.mdo_discipline._ATTR_TO_SERIALIZE += ("proxy_discipline",)
+        disc._ATTR_TO_SERIALIZE += ("proxy_discipline",)
         
-        self.update_gems_grammar_with_data_io()
+        self.update_gemseo_grammar_with_data_io()
         
-        
-    def update_gems_grammar_with_data_io(self):
+    def update_gemseo_grammar_with_data_io(self):
         # Remove unavailable GEMS type variables before initialize
         # input_grammar
         if not self.is_sos_coupling:
@@ -287,26 +287,20 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_IN)
             data_out = self.get_data_io_with_full_name(
                 self.IO_TYPE_OUT)
-            self.init_gemseo_grammar(data_in, self.IO_TYPE_IN)
-            self.init_gemseo_grammar(data_out, self.IO_TYPE_OUT)
-
-    def init_gemseo_grammar(self, data_keys, io_type):
-        '''
-        Init Gems grammar with keys from a data_in/out dict
-        io_type specifies 'IN' or 'OUT'
-        '''
-        self._init_grammar_with_keys(data_keys, io_type)
+            self._init_grammar_with_keys(data_in, self.IO_TYPE_IN)
+            self._init_grammar_with_keys(data_out, self.IO_TYPE_OUT)
 
     def _init_grammar_with_keys(self, names, io_type):
         ''' initialize GEMS grammar with names and type None
         '''
         names_dict = dict.fromkeys(names, None)
+        disc = self.mdo_discipline
         if io_type == self.IO_TYPE_IN:
-            grammar = self.input_grammar
+            grammar = disc.input_grammar
             grammar.clear()
 
         elif io_type == self.IO_TYPE_OUT:
-            grammar = self.output_grammar
+            grammar = disc.output_grammar
             grammar.clear()
         grammar.initialize_from_base_dict(names_dict)
 
@@ -967,6 +961,7 @@ class ProxyDiscipline(object):
             keys, self._convert_list_of_keys_to_namespace_name(keys, io_type))}
 
         values_dict = {}
+        
         for key, namespaced_key in namespaced_keys_dict.items():
             # new_key can be key or namespaced_key according to full_name value
             new_key = full_name * namespaced_key + (1 - full_name) * key

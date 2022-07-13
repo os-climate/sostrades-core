@@ -13,10 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import _filter_variables_to_convert
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.core.chain import MDOChain
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -32,6 +29,12 @@ import platform
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
+
+from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.discipline import _filter_variables_to_convert
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 
 if platform.system() != 'Windows':
     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
@@ -173,7 +176,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ''' Constructor
         '''
         if cls_builder is None:
-            cls_builder = [] = []
+            cls_builder = []
         self.cls_builder = cls_builder
         self._reload(sos_name, ee)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Coupling')
@@ -457,18 +460,64 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self.get_disciplines_to_configure() == [])
 
     def prepare_execution(self):
-        
+        '''
+        preparation of the GEMSEO process, including GEMSEO objects instanciation
+        '''
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
+            self.sub_mdo_disciplines.append(disc.mdo_discipline)
         
         self.init_gemseo_discipline()
         
         self._set_residual_history()
-    
+        
     def init_gemseo_discipline(self):
+        '''
+        initialization of GEMSEO MDAChain
+        '''
+        num_data = self._get_numerical_inputs()
+
+        mda_chain = SoSMDAChain(
+                              ee=self.ee, # set the ee and dm as attribute of SoSMDAChain (used for filtering and conversions) # TODO: see if it can be removed
+                              disciplines=self.sub_mdo_disciplines,
+                              name=self.sos_name,
+                              grammar_type=self.SOS_GRAMMAR_TYPE,
+                              ** num_data) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
+
+        # store cache to reset after MDAChain init
+        cache = mda_chain.cache
+
+        # TODO: pass cache to MDAChain init to avoid reset cache, idem for
+        # MDOChain
+        mda_chain.cache = cache
+        cache_type, cache_file_path = self.get_sosdisc_inputs(['cache_type', 'cache_file_path'])
+        self.set_cache(mda_chain.mdo_chain, cache_type, cache_file_path)
+
+        # attach sostrades logger to SoSMDAChain 
+        # TODO: to remove
+        mda_chain.logger = self.logger
+
+        # Check variables mismatch between coupling disciplines
+        mda_chain.check_var_data_mismatch()
         
-        self.mdo_discipline = SoSCoupling(self.sos_name) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
+        #- set the mdo discipline with the MDAChain
+        self.mdo_discipline = mda_chain
         
+        self.logger.info(
+            f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
+
+    def set_cache(self, disc, cache_type, cache_hdf_file):
+        '''
+        Instantiate and set cache for disc if cache_type is not 'None'
+        '''
+        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
+            raise Exception(
+                'if the cache type is set to HDF5Cache, the cache_file path must be set')
+        else:
+            disc.cache = None
+            if cache_type != 'None':
+                disc.set_cache_policy(
+                    cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
 #     def configure_execution(self):
 #         '''
@@ -520,166 +569,118 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 var_name = self.dm.get_data(
                     var_f_name, ProxyDisciplineBuilder.VAR_NAME)
                 self._data_out[var_name] = self.dm.get_data(var_f_name)
+ 
+    def _get_numerical_inputs(self):
+        '''
+        Get numerical parameters input values for MDAChain init
+        '''
+        # get input for MDAChain instantiation
+        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
+                                  'use_lu_fact', 'warm_start',
+                                  'n_processes']
+        num_data = self.get_sosdisc_inputs(
+            needed_numerical_param, in_dict=True)
+ 
+        if num_data['sub_mda_class'] == 'MDAJacobi':
+            num_data['acceleration'] = copy(
+                self.get_sosdisc_inputs('acceleration'))
+        if num_data['sub_mda_class'] == 'MDAGaussSeidel':
+            num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
+                'warm_start_threshold'))
+        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
+            #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
+            #                 'max_mda_iter_gs'))
+            num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
+                'tolerance_gs'))
+        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
+                                         'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
+            num_data['relax_factor'] = copy(
+                self.get_sosdisc_inputs('relax_factor'))
+ 
+        # linear solver options MDA
+        num_data['linear_solver'] = copy(self.get_sosdisc_inputs(
+            'linear_solver_MDA'))
+        linear_solver_options_MDA = deepcopy(self.get_sosdisc_inputs(
+            'linear_solver_MDA_options'))
+ 
+        if num_data['linear_solver'].endswith('_PETSC'):
+            # PETSc case
+            linear_solver_options_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[
+                0].lower()
+            preconditioner = copy(self.get_sosdisc_inputs(
+                'linear_solver_MDA_preconditioner'))
+            linear_solver_options_MDA['preconditioner_type'] = (
+                preconditioner != 'None') * preconditioner or None
+        else:
+            # Scipy case / gmres
+            linear_solver_options_MDA['use_ilu_precond'] = (
+                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
+ 
+        num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
+            'tol')
+        num_data['linear_solver_options'] = linear_solver_options_MDA
+ 
+        self.linear_solver_MDA = num_data['linear_solver']
+        self.linear_solver_tolerance_MDA = num_data['linear_solver_tolerance']
+        self.linear_solver_options_MDA = deepcopy(
+            num_data['linear_solver_options'])
+ 
+        # linear solver options MDO
+        self.linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
+        linear_solver_options_MDO = deepcopy(self.get_sosdisc_inputs(
+            'linear_solver_MDO_options'))
+ 
+        if self.linear_solver_MDO.endswith('_PETSC'):
+            linear_solver_options_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[
+                0].lower()
+            preconditioner = self.get_sosdisc_inputs(
+                'linear_solver_MDO_preconditioner')
+            linear_solver_options_MDO['preconditioner_type'] = (
+                preconditioner != 'None') * preconditioner or None
+        else:
+            linear_solver_options_MDO['use_ilu_precond'] = (
+                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
+ 
+        self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
+        self.linear_solver_options_MDO = linear_solver_options_MDO
+ 
+        return num_data
 
-#     def _update_coupling_flags_in_dm(self):
-#         ''' 
-#         Update coupling and editable flags in the datamanager for the GUI
-#         '''
-# 
-#         def update_flags_of_disc(coupling_key, disc_name, in_or_out):
-# 
-#             disc_list = self.dm.get_disciplines_with_name(disc_name)
-#             var_name_out = None
-#             for a_disc in disc_list:
-#                 if in_or_out == 'in':
-#                     data_io = a_disc._data_in
-#                 else:
-#                     data_io = a_disc._data_out
-# 
-#                 if var_name_k in data_io.keys():
-#                     var_name_out = var_name_k
-#                 else:
-#                     var_name_out_list = [
-#                         key for key in data_io.keys() if coupling_key.endswith(NS_SEP + key)]
-#                     # To be modified
-#                     if len(var_name_out_list) != 0:
-#                         var_name_out = var_name_out_list[0]
-#                 if var_name_out is not None and var_name_out in data_io:
-#                     data_io[var_name_out][self.COUPLING] = True
-#                     if self.get_var_full_name(var_name_out, data_io) in self.strong_couplings:
-#                         data_io[var_name_out][self.EDITABLE] = True
-#                         data_io[var_name_out][self.OPTIONAL] = True
-#                     else:
-#                         data_io[var_name_out][self.EDITABLE] = False
-# 
-#         # END update_flags_of_disc
-# 
-#         # -- update couplings flag into DataManager
-#         coupl = self.export_couplings()
-#         couplings = coupl[self.VAR_NAME]
-#         disc_1 = coupl['disc_1']
-#         disc_2 = coupl['disc_2']
-# 
-#         # loop on couplings variables and the disciplines linked
-#         for k, from_disc_name, to_disc_name in zip(
-#                 couplings, disc_1, disc_2):
-#             self.dm.set_data(k, self.COUPLING, True)
-#             # Deal with pre run of MDA to enter strong couplings if needed
-#             if k in self.strong_couplings:
-#                 self.dm.set_data(k, self.IO_TYPE, self.IO_TYPE_IN)
-#                 self.dm.set_data(k, self.EDITABLE, True)
-#                 self.dm.set_data(k, self.OPTIONAL, True)
-#             else:
-#                 self.dm.set_data(k, self.EDITABLE, False)
-#             var_name_k = self.dm.get_data(k, self.VAR_NAME)
-# 
-#             # update flags of discipline 1
-#             update_flags_of_disc(k, from_disc_name, 'out')
-#             # update flags of discipline 2
-#             update_flags_of_disc(k, to_disc_name, 'in')
-# 
-#     def configure_mda(self):
-#         ''' Configuration of SoSCoupling, call to super class MDAChain
-#         '''
-#         num_data = self._get_numerical_inputs()
-# 
-#         # store cache to reset after MDAChain init
-#         cache = self.cache
-# 
-#         MDAChain.__init__(self,
-#                           disciplines=self.sos_disciplines,
-#                           name=self.sos_name,
-#                           grammar_type=self.SOS_GRAMMAR_TYPE,
-#                           ** num_data)
-# 
-#         # TODO: pass cache to MDAChain init to avoid reset cache, idem for
-#         # MDOChain
-#         self.cache = cache
-#         self.set_cache(self.mdo_chain, self.get_sosdisc_inputs(
-#             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-# 
-#         # Check variables mismatch between coupling disciplines
-#         self.check_var_data_mismatch()
-# 
-#         self.logger.info(
-#             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
-# 
-#     def _get_numerical_inputs(self):
-#         '''
-#         Get numerical parameters input values for MDAChain init
-#         '''
-#         # get input for MDAChain instantiation
-#         needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
-#                                   'use_lu_fact', 'warm_start',
-#                                   'n_processes']
-#         num_data = self.get_sosdisc_inputs(
-#             needed_numerical_param, in_dict=True)
-# 
-#         if num_data['sub_mda_class'] == 'MDAJacobi':
-#             num_data['acceleration'] = copy(
-#                 self.get_sosdisc_inputs('acceleration'))
-#         if num_data['sub_mda_class'] == 'MDAGaussSeidel':
-#             num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
-#                 'warm_start_threshold'))
-#         if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
-#             #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
-#             #                 'max_mda_iter_gs'))
-#             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
-#                 'tolerance_gs'))
-#         if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
-#                                          'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
-#             num_data['relax_factor'] = copy(
-#                 self.get_sosdisc_inputs('relax_factor'))
-# 
-#         # linear solver options MDA
-#         num_data['linear_solver'] = copy(self.get_sosdisc_inputs(
-#             'linear_solver_MDA'))
-#         linear_solver_options_MDA = deepcopy(self.get_sosdisc_inputs(
-#             'linear_solver_MDA_options'))
-# 
-#         if num_data['linear_solver'].endswith('_PETSC'):
-#             # PETSc case
-#             linear_solver_options_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[
-#                 0].lower()
-#             preconditioner = copy(self.get_sosdisc_inputs(
-#                 'linear_solver_MDA_preconditioner'))
-#             linear_solver_options_MDA['preconditioner_type'] = (
-#                 preconditioner != 'None') * preconditioner or None
-#         else:
-#             # Scipy case / gmres
-#             linear_solver_options_MDA['use_ilu_precond'] = (
-#                 copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
-# 
-#         num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
-#             'tol')
-#         num_data['linear_solver_options'] = linear_solver_options_MDA
-# 
-#         self.linear_solver_MDA = num_data['linear_solver']
-#         self.linear_solver_tolerance_MDA = num_data['linear_solver_tolerance']
-#         self.linear_solver_options_MDA = deepcopy(
-#             num_data['linear_solver_options'])
-# 
-#         # linear solver options MDO
-#         self.linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-#         linear_solver_options_MDO = deepcopy(self.get_sosdisc_inputs(
-#             'linear_solver_MDO_options'))
-# 
-#         if self.linear_solver_MDO.endswith('_PETSC'):
-#             linear_solver_options_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[
-#                 0].lower()
-#             preconditioner = self.get_sosdisc_inputs(
-#                 'linear_solver_MDO_preconditioner')
-#             linear_solver_options_MDO['preconditioner_type'] = (
-#                 preconditioner != 'None') * preconditioner or None
-#         else:
-#             linear_solver_options_MDO['use_ilu_precond'] = (
-#                 self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
-# 
-#         self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
-#         self.linear_solver_options_MDO = linear_solver_options_MDO
-# 
-#         return num_data
-# 
+
+    def get_maturity(self):
+        '''
+        Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines
+        '''
+        ref_dict_maturity = deepcopy(self.dict_maturity_ref)
+        for discipline in self.proxy_disciplines:
+            disc_maturity = discipline.get_maturity()
+            if isinstance(disc_maturity, dict):
+                for m_k in ref_dict_maturity.keys():
+                    if m_k in disc_maturity:
+                        ref_dict_maturity[m_k] += disc_maturity[m_k]
+            elif disc_maturity in ref_dict_maturity:
+                ref_dict_maturity[disc_maturity] += 1
+        self.set_maturity(ref_dict_maturity, maturity_dict=True)
+        return self._maturity
+ 
+    def remove_discipline(self, disc):
+        ''' remove one discipline from coupling
+        '''
+        disc.clean_dm_from_disc()
+        self.proxy_disciplines.remove(disc)
+        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+            disc, self.disc_id)
+ 
+    def remove_discipline_list(self, disc_list):
+        ''' remove one discipline from coupling
+        '''
+        for disc in disc_list:
+            disc.clean_dm_from_disc()
+            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
+                disc, self.disc_id)
+        self.proxy_disciplines = [
+            disc for disc in self.proxy_disciplines if disc not in disc_list]
+
 #     def set_epsilon0_and_cache(self, mda):
 #         '''
 #         Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
@@ -691,30 +692,32 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         self.set_cache(mda, self.get_sosdisc_inputs(
 #             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 # 
-#     @property
-#     def ordered_disc_list(self):
-#         '''
-#          Property to obtain the ordered list of disciplines configured by the MDAChain
-#          Overwrite of sos_discipline property where the order is defined by default
-#          by the order of sos_disciplines
-#         '''
-#         ordered_list = []
-#         ordered_list = self.ordered_disc_list_rec(self.mdo_chain, ordered_list)
-# 
-#         return ordered_list
-# 
-#     def ordered_disc_list_rec(self, disc, ordered_list):
-#         '''
-#          Recursive function to obtain the ordered list of disciplines configured by the MDAChain
-#         '''
-#         for subdisc in disc.disciplines:
-#             if isinstance(subdisc, ProxyDiscipline):
-#                 ordered_list.append(subdisc)
-#             else:  # Means that it is a GEMS class MDAJacobi for example
-#                 ordered_list = self.ordered_disc_list_rec(
-#                     subdisc, ordered_list)
-# 
-#         return ordered_list
+    @property
+    def ordered_disc_list(self):
+        '''
+         Property to obtain the ordered list of disciplines configured by the MDAChain
+         Overwrite of sos_discipline property where the order is defined by default
+         by the order of sos_disciplines
+        '''
+        ordered_list = []
+#         ordered_list = self.ordered_disc_list_rec(self.mdo_discipline.mdo_chain, ordered_list)
+        ordered_list = self.sub_mdo_disciplines
+        self.logger.warning("TODO: fix the order (set as the top level list of disciplines for d)")
+ 
+        return ordered_list
+ 
+    def ordered_disc_list_rec(self, disc, ordered_list):
+        '''
+         Recursive function to obtain the ordered list of disciplines configured by the MDAChain
+        '''
+        for subdisc in disc.disciplines:
+            if isinstance(subdisc, ProxyDiscipline):
+                ordered_list.append(subdisc)
+            else:  # Means that it is a GEMS class MDAJacobi for example
+                ordered_list = self.ordered_disc_list_rec(
+                    subdisc, ordered_list)
+ 
+        return ordered_list
 # 
 #     def export_couplings(self, in_csv=False, f_name=None):
 #         ''' 
@@ -1025,63 +1028,113 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #                 del input_data[ns_key]
 # 
 #         return input_data
- 
-    def get_maturity(self):
-        '''
-        Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines
-        '''
-        ref_dict_maturity = deepcopy(self.dict_maturity_ref)
-        for discipline in self.proxy_disciplines:
-            disc_maturity = discipline.get_maturity()
-            if isinstance(disc_maturity, dict):
-                for m_k in ref_dict_maturity.keys():
-                    if m_k in disc_maturity:
-                        ref_dict_maturity[m_k] += disc_maturity[m_k]
-            elif disc_maturity in ref_dict_maturity:
-                ref_dict_maturity[disc_maturity] += 1
-        self.set_maturity(ref_dict_maturity, maturity_dict=True)
-        return self._maturity
- 
-    def remove_discipline(self, disc):
-        ''' remove one discipline from coupling
-        '''
-        disc.clean_dm_from_disc()
-        self.proxy_disciplines.remove(disc)
-        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-            disc, self.disc_id)
- 
-    def remove_discipline_list(self, disc_list):
-        ''' remove one discipline from coupling
-        '''
-        for disc in disc_list:
-            disc.clean_dm_from_disc()
-            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-                disc, self.disc_id)
-        self.proxy_disciplines = [
-            disc for disc in self.proxy_disciplines if disc not in disc_list]
- 
-#     def _set_residual_history(self):
-#         ''' set residuals history into data_out
-#         and update DM
+
+#     def _update_coupling_flags_in_dm(self):
+#         ''' 
+#         Update coupling and editable flags in the datamanager for the GUI
 #         '''
-#         # dataframe init
-#         residuals_history = DataFrame(
-#             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
 # 
-#         # set residual type and value
-#         rdict = {}
-#         rdict[self.RESIDUALS_HISTORY] = {}
-#         rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
-#         rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
-#         rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
-#         rdict[self.RESIDUALS_HISTORY][self.UNIT] = '-'
-#         # init other fields
-#         full_out = self._prepare_data_dict(self.IO_TYPE_OUT, rdict)
-#         self.dm.update_with_discipline_dict(
-#             disc_id=self.disc_id, disc_dict=full_out)
+#         def update_flags_of_disc(coupling_key, disc_name, in_or_out):
 # 
-#         # update in loader_out
-#         self._data_out.update(full_out)
+#             disc_list = self.dm.get_disciplines_with_name(disc_name)
+#             var_name_out = None
+#             for a_disc in disc_list:
+#                 if in_or_out == 'in':
+#                     data_io = a_disc._data_in
+#                 else:
+#                     data_io = a_disc._data_out
+# 
+#                 if var_name_k in data_io.keys():
+#                     var_name_out = var_name_k
+#                 else:
+#                     var_name_out_list = [
+#                         key for key in data_io.keys() if coupling_key.endswith(NS_SEP + key)]
+#                     # To be modified
+#                     if len(var_name_out_list) != 0:
+#                         var_name_out = var_name_out_list[0]
+#                 if var_name_out is not None and var_name_out in data_io:
+#                     data_io[var_name_out][self.COUPLING] = True
+#                     if self.get_var_full_name(var_name_out, data_io) in self.strong_couplings:
+#                         data_io[var_name_out][self.EDITABLE] = True
+#                         data_io[var_name_out][self.OPTIONAL] = True
+#                     else:
+#                         data_io[var_name_out][self.EDITABLE] = False
+# 
+#         # END update_flags_of_disc
+# 
+#         # -- update couplings flag into DataManager
+#         coupl = self.export_couplings()
+#         couplings = coupl[self.VAR_NAME]
+#         disc_1 = coupl['disc_1']
+#         disc_2 = coupl['disc_2']
+# 
+#         # loop on couplings variables and the disciplines linked
+#         for k, from_disc_name, to_disc_name in zip(
+#                 couplings, disc_1, disc_2):
+#             self.dm.set_data(k, self.COUPLING, True)
+#             # Deal with pre run of MDA to enter strong couplings if needed
+#             if k in self.strong_couplings:
+#                 self.dm.set_data(k, self.IO_TYPE, self.IO_TYPE_IN)
+#                 self.dm.set_data(k, self.EDITABLE, True)
+#                 self.dm.set_data(k, self.OPTIONAL, True)
+#             else:
+#                 self.dm.set_data(k, self.EDITABLE, False)
+#             var_name_k = self.dm.get_data(k, self.VAR_NAME)
+# 
+#             # update flags of discipline 1
+#             update_flags_of_disc(k, from_disc_name, 'out')
+#             # update flags of discipline 2
+#             update_flags_of_disc(k, to_disc_name, 'in')
+# 
+#     def configure_mda(self):
+#         ''' Configuration of SoSCoupling, call to super class MDAChain
+#         '''
+#         num_data = self._get_numerical_inputs()
+# 
+#         # store cache to reset after MDAChain init
+#         cache = self.cache
+# 
+#         MDAChain.__init__(self,
+#                           disciplines=self.sos_disciplines,
+#                           name=self.sos_name,
+#                           grammar_type=self.SOS_GRAMMAR_TYPE,
+#                           ** num_data)
+# 
+#         # TODO: pass cache to MDAChain init to avoid reset cache, idem for
+#         # MDOChain
+#         self.cache = cache
+#         self.set_cache(self.mdo_chain, self.get_sosdisc_inputs(
+#             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+# 
+#         # Check variables mismatch between coupling disciplines
+#         self.check_var_data_mismatch()
+# 
+#         self.logger.info(
+#             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
+
+ 
+    def _set_residual_history(self):
+        ''' set residuals history into data_out
+        and update DM
+        '''
+        # dataframe init
+        residuals_history = DataFrame(
+            {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline.sub_mda_list})
+ 
+        # set residual type and value
+        rdict = {}
+        rdict[self.RESIDUALS_HISTORY] = {}
+        rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
+        rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
+        rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
+        rdict[self.RESIDUALS_HISTORY][self.UNIT] = '-'
+        # init other fields
+        full_out = self._prepare_data_dict(self.IO_TYPE_OUT, rdict)
+        self.dm.update_with_discipline_dict(
+            disc_id=self.disc_id, disc_dict=full_out)
+ 
+        # update in loader_out
+        self._data_out.update(full_out)
 # 
 #     def _create_mdo_chain(
 #             self,
