@@ -16,6 +16,7 @@ limitations under the License.
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import _filter_variables_to_convert
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -32,21 +33,21 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
-# if platform.system() != 'Windows':
-#     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-#  
+if platform.system() != 'Windows':
+    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+  
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
 N_CPUS = cpu_count()
 
-# def get_available_linear_solvers():
-#     '''Get available linear solvers list
-#     '''
-#     lsf = LinearSolversFactory()
-#     algos = lsf.algorithms
-#     del lsf
-#  
-#     return algos
+def get_available_linear_solvers():
+    '''Get available linear solvers list
+    '''
+    lsf = LinearSolversFactory()
+    algos = lsf.algorithms
+    del lsf
+  
+    return algos
 
 
 class ProxyCoupling(ProxyDisciplineBuilder):
@@ -71,9 +72,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     RESIDUALS_HISTORY = "residuals_history"
 
     # get list of available linear solvers from LinearSolversFactory
-#     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
+    AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
 
-    # set default value of linear solver according to the operatinh system
+    # set default value of linear solver according to the operating system
 #     if platform.system() == 'Windows':
 #         DEFAULT_LINEAR_SOLVER = 'GMRES'
 #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'

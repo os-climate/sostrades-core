@@ -551,6 +551,9 @@ class ExecutionEngine:
 
         # -- init execute
         self.__factory.init_execution()
+        
+        # -- prepare execution
+        self.prepare_execution()
 
         # -- execution
         ex_proc = self.root_process.execute()

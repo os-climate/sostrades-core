@@ -26,7 +26,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 # from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
-from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from copy import deepcopy
 from gemseo.utils.compare_data_manager_tooling import compare_dict
 

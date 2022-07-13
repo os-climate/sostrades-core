@@ -266,12 +266,14 @@ class ProxyDiscipline(object):
         Initialization of GEMSEO MDODisciplines
         To be overloaded by subclasses
         '''
-        self.mdo_discipline = MDODiscipline(name=self.sos_name, 
-                                            grammar_type=self.SOS_GRAMMAR_TYPE,
-                                            cache_type=self.get_input_data(self.CACHE_TYPE))
-        self.mdo_discipline.proxy_discipline = self
-        setattr(self.mdo_discipline, '_run', self._proxy_run)
-        setattr(self.mdo_discipline, 'compute_sos_jacobian', self.__proxy_compute_jacobian)
+        disc = MDODiscipline(name=self.sos_name, 
+                             grammar_type=self.SOS_GRAMMAR_TYPE,
+                             cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE))
+        disc.proxy_discipline = self
+        setattr(disc, '_run', self._proxy_run)
+        setattr(disc, 'compute_sos_jacobian', self.__proxy_compute_jacobian)
+        self.mdo_discipline = disc
+        
         self.mdo_discipline._ATTR_TO_SERIALIZE += "proxy_discipline"
         
         self.update_gems_grammar_with_data_io()
@@ -781,7 +783,7 @@ class ProxyDiscipline(object):
             self.dm.set_values_from_dict(to_update_local_data)
         else:
             # update local_data after run
-            self.local_data.update(to_update_local_data)
+            self.mdo_discipline.local_data.update(to_update_local_data)
 
         # need to update outputs that will disappear after filtering the
         # local_data with supported types
@@ -969,8 +971,8 @@ class ProxyDiscipline(object):
                 raise Exception(
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
-            elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
-                values_dict[new_key] = self.local_data[namespaced_key]
+            elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.mdo_discipline.local_data:
+                values_dict[new_key] = self.mdo_discipline.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
                 values_dict[new_key] = self.dm.get_value(namespaced_key)
@@ -1814,7 +1816,7 @@ class ProxyDiscipline(object):
 
         '''
         min_coupling_dict, max_coupling_dict = {}, {}
-        for key, value in self.local_data.items():
+        for key, value in self.mdo_discipline.local_data.items():
             is_coupling = self.dm.get_data(key, 'coupling')
             if is_coupling:
                 min_coupling_dict[key] = min(abs(value))
