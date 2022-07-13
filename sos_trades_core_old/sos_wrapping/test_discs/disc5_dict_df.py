@@ -18,11 +18,11 @@ from numpy import array
 from pandas import DataFrame
 
 
-class Disc5EmptyDf(SoSDiscipline):
+class Disc5(SoSDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_dict_empty_df',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_dict_df',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -36,15 +36,11 @@ class Disc5EmptyDf(SoSDiscipline):
     _maturity = 'Fake'
     DESC_IN = {
         'z': {'type': 'array', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_empty_df': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_empty_list': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'empty_df': {'type': 'dataframe', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}}
+        'dict_out': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+    }
 
     DESC_OUT = {
-        'is_df_empty': {'type': 'bool'},
-        'is_dict_empty_df_empty': {'type': 'bool'},
-        'is_dict_empty_list_empty': {'type': 'bool'}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):
@@ -56,18 +52,8 @@ class Disc5EmptyDf(SoSDiscipline):
         val = df['col2'][1]
         z = self.get_sosdisc_inputs('z')
 
-        dict_empty_df = self.get_sosdisc_inputs('dict_empty_df')
-        dict_empty_list = self.get_sosdisc_inputs('dict_empty_list')
-        empty_df = self.get_sosdisc_inputs('empty_df')
-
-        dict_empty_df_th = {'key1': {'key11': empty_df, 'key12': empty_df, 'key14': {'key141': empty_df}},
-                            'key2': empty_df}
-
-        empty_list = []
-        dict_empty_list_th = {'key1': {'key11': empty_list, 'key12': empty_list, 'key14': {'key141': empty_list}},
-                              'key2': empty_list}
-
-        dict_values = {'is_df_empty': empty_df.empty,
-                       'is_dict_empty_df_empty': dict_empty_df_th.keys() == dict_empty_df.keys(),
-                       'is_dict_empty_list_empty': dict_empty_list_th == dict_empty_list}
+        h_data = array([0.5 * (key11 + 1. / (2 * key11)),
+                        0.5 * (val + 1. / (2 * val))])
+        h = {'dataframe': DataFrame(data={'col1': h_data})}
+        dict_values = {'h': h}
         self.store_sos_outputs_values(dict_values)

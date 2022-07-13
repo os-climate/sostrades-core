@@ -13,16 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
 from numpy import array
 from pandas import DataFrame
 
 
-class Disc5(SoSDiscipline):
+class Disc5(DisciplineProxy):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_disc_df',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_dict_df',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -35,12 +35,12 @@ class Disc5(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'z': {'type': 'array', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'z': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {
-        'h': {'type': 'dict','subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):

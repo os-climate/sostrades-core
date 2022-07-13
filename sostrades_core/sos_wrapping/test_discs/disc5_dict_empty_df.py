@@ -13,16 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from numpy import array
-from pandas import DataFrame
+from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
 
 
-class Disc5EmptyDf(SoSDiscipline):
+class Disc5EmptyDf(DisciplineProxy):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_dict_empty_df',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc5_disc_empty_df',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -35,11 +33,11 @@ class Disc5EmptyDf(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'z': {'type': 'array', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_empty_df': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_empty_list': {'type': 'dict', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'empty_df': {'type': 'dataframe', 'visibility':  SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}}
+        'z': {'type': 'array', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'dict_empty_df': {'type': 'dict', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'dict_empty_list': {'type': 'dict', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'empty_df': {'type': 'dataframe', 'visibility':  DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'}}
 
     DESC_OUT = {
         'is_df_empty': {'type': 'bool'},

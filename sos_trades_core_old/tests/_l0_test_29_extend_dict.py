@@ -175,7 +175,7 @@ class TestExtendDict(unittest.TestCase):
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.ns_manager.add_ns('ns_test', self.name)
-        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc5_disc_df.Disc5'
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc5_dict_df.Disc5'
         disc5_builder = exec_eng.factory.get_builder_from_module(
             'Disc5', mod_list)
 
@@ -230,7 +230,7 @@ class TestExtendDict(unittest.TestCase):
         disc4_builder = exec_eng.factory.get_builder_from_module(
             'Disc4', mod_list)
 
-        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc5_disc_df.Disc5'
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc5_dict_df.Disc5'
         disc5_builder = exec_eng.factory.get_builder_from_module(
             'Disc5', mod_list)
 
