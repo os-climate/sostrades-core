@@ -643,7 +643,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
-            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df']
+            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df', 'sub_processes_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -954,7 +954,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
-            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df']
+            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df', 'sub_processes_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -1260,7 +1260,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
-            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space', 'ns_in_df']
+            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space', 'ns_in_df', 'sub_processes_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -1490,7 +1490,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
-            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space', 'ns_in_df']
+            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'algo_options', 'design_space', 'ns_in_df', 'sub_processes_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -1837,7 +1837,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
-            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df']
+            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df', 'sub_processes_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -2376,7 +2376,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
         target_added_inputs_list = [
-            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df']
+            'usecase_of_sub_process', 'sampling_algo', 'eval_inputs', 'eval_outputs', 'ns_in_df', 'sub_processes_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -2569,7 +2569,8 @@ class TestBuilderDoeEval(unittest.TestCase):
         removed_inputs_list = [
             elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
         full_inputs_list_last = full_inputs_list_new
-        target_added_inputs_list = ['algo_options']
+        target_added_inputs_list = [
+            'algo_options', 'usecase_of_sub_process_web']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
