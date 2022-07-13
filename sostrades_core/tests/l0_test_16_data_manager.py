@@ -27,7 +27,7 @@ from pathlib import Path
 from pickle import dump as pkl_dump
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tests.l0_test_06_dict_pickle_import_export_dm import init_dict
 from sostrades_core.tools.rw.load_dump_dm_data import CryptedLoadDump, DirectLoadDump
