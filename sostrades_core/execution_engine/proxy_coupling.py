@@ -416,6 +416,37 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # update flags of discipline 2
             update_flags_of_disc(k, to_disc_name, 'in')
 
+    def export_couplings(self, in_csv=False, f_name=None):
+        ''' 
+            Export couplings as a csv with
+        disc1 | disc2 | var_name
+        '''
+        # fill in data
+        cs = self.coupling_structure
+        coupl_tuples = cs.graph.get_disciplines_couplings()
+        data = []
+        header = ["disc_1", "disc_2", "var_name"]
+        for disc1, disc2, c_vars in coupl_tuples:
+            for var in c_vars:
+                disc1_id = disc1.get_disc_full_name()
+                disc2_id = disc2.get_disc_full_name()
+                row = [disc1_id, disc2_id, var]
+                data.append(row)
+        df = DataFrame(data, columns=header)
+
+        for discipline in self.proxy_disciplines:
+            if isinstance(discipline, ProxyCoupling):
+                df_couplings = discipline.export_couplings()
+                df = df.append(df_couplings, ignore_index=True)
+
+        if in_csv:
+            # writing of the file
+            if f_name is None:
+                f_name = f"{self.get_disc_full_name()}.csv"
+            df.to_csv(f_name, index=False)
+        else:
+            return df
+
     def is_configured(self):
         '''
         Return False if at least one sub discipline needs to be configured, True if not
