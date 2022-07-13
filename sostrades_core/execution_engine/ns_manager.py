@@ -18,15 +18,15 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 from copy import copy
 
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.namespace import Namespace
 from sostrades_core.api import get_sos_logger
 
-IO_TYPE_IN = DisciplineProxy.IO_TYPE_IN
-IO_TYPE_OUT = DisciplineProxy.IO_TYPE_OUT
-SHARED_VISIBILITY = DisciplineProxy.SHARED_VISIBILITY
-LOCAL_VISIBILITY = DisciplineProxy.LOCAL_VISIBILITY
-INTERNAL_VISIBILITY = DisciplineProxy.INTERNAL_VISIBILITY
+IO_TYPE_IN = ProxyDiscipline.IO_TYPE_IN
+IO_TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
+SHARED_VISIBILITY = ProxyDiscipline.SHARED_VISIBILITY
+LOCAL_VISIBILITY = ProxyDiscipline.LOCAL_VISIBILITY
+INTERNAL_VISIBILITY = ProxyDiscipline.INTERNAL_VISIBILITY
 NS_SEP = '.'
 
 
@@ -362,9 +362,9 @@ class NamespaceManager:
         '''
         data_io_var = disc.get_data_io_from_key(
             io_type, var_name)
-        complete_var_name = data_io_var[DisciplineProxy.VAR_NAME]
+        complete_var_name = data_io_var[ProxyDiscipline.VAR_NAME]
 
-        ns_value = data_io_var[DisciplineProxy.NS_REFERENCE].get_value()
+        ns_value = data_io_var[ProxyDiscipline.NS_REFERENCE].get_value()
         result = self.compose_ns([ns_value, complete_var_name])
 
         return result

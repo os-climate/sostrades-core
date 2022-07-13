@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
-class Disc2(DisciplineProxy):
+class Disc2(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
@@ -33,12 +33,12 @@ class Disc2(DisciplineProxy):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'y': {'type': 'float', 'unit': '-', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'y': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'constant': {'type': 'float', 'unit': '-'},
         'power': {'type': 'int', 'unit': '-'},
     }
     DESC_OUT = {
-        'z': {'type': 'float', 'unit': '-', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'z': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self):

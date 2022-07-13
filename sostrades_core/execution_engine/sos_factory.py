@@ -24,8 +24,8 @@ from pandas.core.common import flatten
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
-from sostrades_core.execution_engine.coupling_proxy import CouplingProxy
-from sostrades_core.execution_engine.discipline_builder import DisciplineBuilder
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
 
 
@@ -572,7 +572,7 @@ class SosFactory:
         """
         create a builder  defined by a coupling type SoSCoupling
         """
-        mod_path = f'{self.EE_PATH}.coupling_proxy.CouplingProxy'
+        mod_path = f'{self.EE_PATH}.proxy_coupling.ProxyCoupling'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
@@ -680,12 +680,12 @@ class SosFactory:
             # If it's the case, then we have to clean all its children as well
             # Furthermore, we have to check the specific class from whom the
             # discipline to clean is an instance.
-            # TODO : We have to streamline the clean method so that the check for the specific sosDisciplineBuilder
+            # TODO : We have to streamline the clean method so that the check for the specific ProxyDisciplineBuilder
             # won't be needed anymore
 
-            if isinstance(disc, DisciplineBuilder):
+            if isinstance(disc, ProxyDisciplineBuilder):
                 # case of the sosCoupling
-                if isinstance(disc, CouplingProxy):
+                if isinstance(disc, ProxyCoupling):
                     self.clean_discipline_list(
                         disc.proxy_disciplines, current_discipline=disc
                     )

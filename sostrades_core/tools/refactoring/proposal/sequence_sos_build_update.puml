@@ -1,0 +1,29 @@
+@startuml
+User -> ExecEngine: configure
+ExecEngine -> DataManager: load_values(data)
+ExecEngine -> ExecEngine: configure_io
+ExecEngine -> Factory: build
+Factory -> Builder: build
+Builder -> DisciplineProxy: build
+DisciplineProxy -> DisciplineProxy: build
+DisciplineProxy -> Factory: add_(proxy)_discipline
+/' Configuration -> MultiScenarioBuilder: init '/
+/' MultiScenarioBuilder -> Builder: configure '/
+/' Builder -> MDOCouplingStructure: compute_reduced_graph '/
+/' Builder -> DisciplineProxy: configure '/
+
+ExecEngine -> CouplingProxy: configure_io
+CouplingProxy -> ProxyDiscipline: configure (recursive)
+
+User -> ExecEngine: prepare_exec
+Builder -> CouplingProxy: prepare_exec
+Builder -> MDOCouplingStructure: compute_reduced_graph
+CouplingProxy -> DisciplineProxy: prepare_exec
+DisciplineProxy -> MDODisciplineWrapp : prepare_exec
+DisciplineProxy -> MDODiscipline : init
+
+User -> ExecEngine: execute(data)
+ExecEngine -> DataManager: load_values(data)
+ExecEngine -> MDAChain: execute
+MDAChain -> MDODiscipline : execute
+@enduml

@@ -27,7 +27,7 @@ from pathlib import Path
 from pickle import dump as pkl_dump
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tests.l0_test_06_dict_pickle_import_export_dm import init_dict
 from sostrades_core.tools.rw.load_dump_dm_data import CryptedLoadDump, DirectLoadDump
@@ -106,7 +106,7 @@ class TestDataManagerGenerator(unittest.TestCase):
         return dict_to_pop
 
     def test_01_load_DM(self):
-        IO_TYPE = DisciplineProxy.IO_TYPE
+        IO_TYPE = ProxyDiscipline.IO_TYPE
         namespace = 'NPS.CH19_Kero'
         # empty DM to pass to discipline
         ee = init_execution_engine_disc1(namespace)
@@ -189,7 +189,7 @@ class TestDataManagerGenerator(unittest.TestCase):
         dm_data_dict_2 = self.ignore_fields(dm_data_dict_2)
 
         for key in ref_dict:
-            if ref_dict[key][DisciplineProxy.TYPE] != "dataframe":
+            if ref_dict[key][ProxyDiscipline.TYPE] != "dataframe":
                 self.assertDictEqual(
                     ref_dict[key], dm_data_dict_2[key], msg=f'{key}')
         self.dirs_to_del.append(disc_dir_to_load_2)
@@ -254,11 +254,11 @@ class TestDataManagerGenerator(unittest.TestCase):
 #         # check status with data manager method
 #         status_dict_from_dm = exec_engine.dm.build_disc_status_dict()
 #         for disc in status_dict_from_dm.values():
-#             self.assertEqual(list(disc.values())[0], DisciplineProxy.STATUS_DONE)
+#             self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
 #         # check status with execution engine method
 #         status_dict_from_ee = exec_engine.get_anonimated_disciplines_status_dict()
 #         for disc in status_dict_from_ee.values():
-#             self.assertEqual(list(disc.values())[0], DisciplineProxy.STATUS_DONE)
+#             self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
 
 ''' HOW TO UPDATE dm.pkl file (reference dm.data_dict):
 go to ref dir (sostrades_core\tests\data\ref_output\<STUDY_DIR>)

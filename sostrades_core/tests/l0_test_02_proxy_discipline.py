@@ -19,8 +19,8 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 
 from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1
-from sostrades_core.execution_engine.coupling_proxy import CouplingProxy
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.coupling_proxy import ProxyCoupling
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
@@ -47,8 +47,8 @@ class TestProxyDiscipline(unittest.TestCase):
         default initialisation test
         '''
         sosdisc_instance = Disc1(self.name, self.ee)
-        self.assertIsInstance(sosdisc_instance, DisciplineProxy,
-                              "'{}' is not a DisciplineProxy".format(sosdisc_instance))
+        self.assertIsInstance(sosdisc_instance, ProxyDiscipline,
+                              "'{}' is not a ProxyDiscipline".format(sosdisc_instance))
 
     def test_02_check_io_data(self):
         '''
@@ -288,8 +288,8 @@ class TestProxyDiscipline(unittest.TestCase):
  
 #         self.ee.execute()
   
-        self.assertIsInstance(self.ee.root_process, DisciplineProxy,
-                              'The root of the factory must be a DisciplineProxy because only one disc has been added')
+        self.assertIsInstance(self.ee.root_process, ProxyDiscipline,
+                              'The root of the factory must be a ProxyDiscipline because only one disc has been added')
  
         # Now we try with two disciplines
         ee2 = ExecutionEngine('Test2')
@@ -315,7 +315,7 @@ class TestProxyDiscipline(unittest.TestCase):
  
 #         ee2.execute()
   
-        self.assertIsInstance(ee2.root_process, CouplingProxy,
+        self.assertIsInstance(ee2.root_process, ProxyCoupling,
                               'The root of the factory must be a SoSDiscipline because only one disc has been added')
  
     def test_10_check_overwrite_of_default_values(self):

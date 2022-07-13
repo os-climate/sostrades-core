@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 
 
-class Disc1(DisciplineProxy):
+class Disc1(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -21,12 +21,12 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from abc import abstractmethod
 
 
-class DisciplineBuilderException(Exception):
+class ProxyDisciplineBuilderException(Exception):
     pass
 
 
-class DisciplineBuilder(DisciplineProxy):
-    '''**DisciplineBuilder is a sosdiscipline which has the faculty to build sub disciplines
+class ProxyDisciplineBuilder(ProxyDiscipline):
+    '''**ProxyDisciplineBuilder is a sosdiscipline which has the faculty to build sub disciplines
     '''
 
     # -- Disciplinary attributes

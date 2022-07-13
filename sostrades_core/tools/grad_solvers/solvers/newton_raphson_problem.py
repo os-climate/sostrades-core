@@ -20,8 +20,8 @@ import numpy
 from numpy.linalg import norm, solve
 from scipy.optimize import fsolve
 
-from sos_trades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
-from sos_trades_core.tools.grad_solvers.validgrad.FDGradient import FDGradient
+from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
+from sostrades_core.tools.grad_solvers.validgrad.FDGradient import FDGradient
 
 
 class NewtonRaphsonProblem():

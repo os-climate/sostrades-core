@@ -17,7 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
 from json import dumps
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from os.path import dirname, isdir, isfile, join
 import inspect
 import os
@@ -34,8 +34,8 @@ class TreeNode:
     MARKDOWN_NAME_KEY = 'name'
     MARKDOWN_DOCUMENTATION_KEY = 'documentation'
 
-    needed_variables = [DisciplineProxy.TYPE, DisciplineProxy.USER_LEVEL, DisciplineProxy.EDITABLE,
-                        DisciplineProxy.COUPLING, DisciplineProxy.VALUE, DisciplineProxy.NUMERICAL, DisciplineProxy.OPTIONAL]
+    needed_variables = [ProxyDiscipline.TYPE, ProxyDiscipline.USER_LEVEL, ProxyDiscipline.EDITABLE,
+                        ProxyDiscipline.COUPLING, ProxyDiscipline.VALUE, ProxyDiscipline.NUMERICAL, ProxyDiscipline.OPTIONAL]
 
     def __init__(self, name):
         """ class constructor
@@ -133,7 +133,7 @@ class TreeNode:
         """ Inject discipline data into the current treenode
 
         :params: discipline to set into the treenode
-        :type: DisciplineProxy
+        :type: ProxyDiscipline
         """
         self.full_namespace = discipline.get_disc_full_name()
         self.identifier = discipline.disc_id
@@ -154,9 +154,9 @@ class TreeNode:
                     key, data_in)
                 new_disc_data = {
                     needed_key: data_key[needed_key] for needed_key in self.needed_variables}
-                new_disc_data[DisciplineProxy.IO_TYPE] = DisciplineProxy.IO_TYPE_IN
+                new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 if read_only:
-                    new_disc_data[DisciplineProxy.EDITABLE] = False
+                    new_disc_data[ProxyDiscipline.EDITABLE] = False
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -167,9 +167,9 @@ class TreeNode:
                     key, data_out)
                 new_disc_data = {
                     needed_key: data_key[needed_key] for needed_key in self.needed_variables}
-                new_disc_data[DisciplineProxy.IO_TYPE] = DisciplineProxy.IO_TYPE_OUT
+                new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT
                 if read_only:
-                    new_disc_data[DisciplineProxy.EDITABLE] = False
+                    new_disc_data[ProxyDiscipline.EDITABLE] = False
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -207,23 +207,23 @@ class TreeNode:
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
         :params: new_disc_data, variable data
-        :type: DisciplineProxy variable data_dict
+        :type: ProxyDiscipline variable data_dict
 
         :params: namespace, namespace of the variable
         :type: string
 
         :params: discipline to set into the treenode
-        :type: DisciplineProxy
+        :type: ProxyDiscipline
         """
         if namespace not in self.disc_data:
             self.disc_data[namespace] = new_disc_data
-            self.disc_data[namespace][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST] = [
+            self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [
                 discipline.__module__]
         else:
             for key, value in new_disc_data.items():
                 self.disc_data[namespace][key] = value
-            if discipline.__module__ not in self.disc_data[namespace][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST]:
-                self.disc_data[namespace][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST].append(
+            if discipline.__module__ not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
+                self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(
                     discipline.__module__)
 
     def add_markdown_documentation(self, markdown_data, key):
@@ -332,15 +332,15 @@ class TreeNode:
 
         if status == TreeNode.STATUS_INPUT_DATA:
             return -1
-        elif status == DisciplineProxy.STATUS_VIRTUAL:
+        elif status == ProxyDiscipline.STATUS_VIRTUAL:
             return 0
-        elif status == DisciplineProxy.STATUS_CONFIGURE:
+        elif status == ProxyDiscipline.STATUS_CONFIGURE:
             return 10
-        elif status == DisciplineProxy.STATUS_DONE:
+        elif status == ProxyDiscipline.STATUS_DONE:
             return 20
-        elif status == DisciplineProxy.STATUS_PENDING:
+        elif status == ProxyDiscipline.STATUS_PENDING:
             return 30
-        elif status == DisciplineProxy.STATUS_RUNNING:
+        elif status == ProxyDiscipline.STATUS_RUNNING:
             return 40
-        else:  # status = DisciplineProxy.STATUS_FAILED
+        else:  # status = ProxyDiscipline.STATUS_FAILED
             return 50
