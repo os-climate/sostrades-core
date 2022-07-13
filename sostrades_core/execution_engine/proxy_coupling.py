@@ -1019,12 +1019,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #                 del input_data[ns_key]
 # 
 #         return input_data
-<<<<<<< HEAD
 
 #     def _update_coupling_flags_in_dm(self):
 #         ''' 
 #         Update coupling and editable flags in the datamanager for the GUI
-=======
  
     def get_maturity(self):
         '''
@@ -1066,7 +1064,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #     def _set_residual_history(self):
 #         ''' set residuals history into data_out
 #         and update DM
->>>>>>> branch 'EEV4' of https://idas661.eu.airbus.corp/sostrades/sostrades-core.git
 #         '''
 # 
 #         def update_flags_of_disc(coupling_key, disc_name, in_or_out):
