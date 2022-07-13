@@ -77,17 +77,17 @@ class TestCouplingVariables(unittest.TestCase):
         ee.configure()
         rp = ee.root_process
         
-#         # gather couplings data
-#         df = rp.export_couplings()
-#         # compare df of couplings to ref
-#         data = [['MyCase.Disc1', 'MyCase.Disc2', 'MyCase.y']]
-#         header = ["disc_1", "disc_2", "var_name"]
-#         df_ref = DataFrame(data, columns=header)
-#         assert_frame_equal(df, df_ref, "wrong dataframe of couplings")
-# 
-#         # "test_13_export_couplings",
-#         f_name = join(LOC_DIRNAME, f"{rp.get_disc_full_name()}.csv")
-#         rp.export_couplings(in_csv=True, f_name=f_name)
+        # gather couplings data
+        df = rp.export_couplings()
+        # compare df of couplings to ref
+        data = [['MyCase.Disc1', 'MyCase.Disc2', 'MyCase.y']]
+        header = ["disc_1", "disc_2", "var_name"]
+        df_ref = DataFrame(data, columns=header)
+        assert_frame_equal(df, df_ref, "wrong dataframe of couplings")
+
+        # "test_13_export_couplings",
+        f_name = join(LOC_DIRNAME, f"{rp.get_disc_full_name()}.csv")
+        rp.export_couplings(in_csv=True, f_name=f_name)
 
     def test_02_checktype_unit_mismatch(self):
         '''
@@ -119,8 +119,8 @@ class TestCouplingVariables(unittest.TestCase):
         ee.configure()
         rp = ee.root_process
         
-#         # gather couplings data
-#         rp.check_var_data_mismatch()
+        # gather couplings data
+        rp.check_var_data_mismatch()
 
 
 if '__main__' == __name__:
