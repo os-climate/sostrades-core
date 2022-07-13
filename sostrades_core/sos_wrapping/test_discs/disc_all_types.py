@@ -17,7 +17,7 @@ limitations under the License.
 from numpy import array
 from pandas import DataFrame
 
-from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class DiscAllTypes(ProxyDiscipline):

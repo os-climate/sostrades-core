@@ -16,7 +16,7 @@ limitations under the License.
 import pandas as pd
 import numpy as np
 
-from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class Disc(ProxyDiscipline):

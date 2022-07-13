@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class TestVisibility(unittest.TestCase):
