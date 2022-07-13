@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 
 
 class TestDataManagerStorage(unittest.TestCase):
@@ -68,7 +68,7 @@ class TestDataManagerStorage(unittest.TestCase):
         self.assertIn('Test.Disc1.a', self.ee.dm.data_id_map.keys())
         self.assertIn('Test.y', self.ee.dm.data_id_map.keys())
         y_dependencies_id = self.ee.dm.get_data(
-            'Test.y', DisciplineProxy.DISCIPLINES_DEPENDENCIES)
+            'Test.y', ProxyDiscipline.DISCIPLINES_DEPENDENCIES)
         y_dependencies_names = [self.ee.dm.get_disc_full_name(disc_id)
                                 for disc_id in y_dependencies_id]
         self.assertListEqual(y_dependencies_names, [
@@ -82,7 +82,7 @@ class TestDataManagerStorage(unittest.TestCase):
         self.assertNotIn('Test.Disc1.a', self.ee.dm.data_id_map.keys())
         self.assertIn('Test.y', self.ee.dm.data_id_map.keys())
         y_dependencies_id = self.ee.dm.get_data(
-            'Test.y', DisciplineProxy.DISCIPLINES_DEPENDENCIES)
+            'Test.y', ProxyDiscipline.DISCIPLINES_DEPENDENCIES)
         y_dependencies_names = [self.ee.dm.get_disc_full_name(disc_id)
                                 for disc_id in y_dependencies_id]
         self.assertListEqual(y_dependencies_names, [
@@ -135,7 +135,7 @@ class TestDataManagerStorage(unittest.TestCase):
         self.assertNotIn('Test.z', self.ee.dm.data_id_map)
 
         y_dependencies_id = self.ee.dm.get_data(
-            'Test.y', DisciplineProxy.DISCIPLINES_DEPENDENCIES)
+            'Test.y', ProxyDiscipline.DISCIPLINES_DEPENDENCIES)
         y_dependencies_names = [self.ee.dm.get_disc_full_name(disc_id)
                                 for disc_id in y_dependencies_id]
         self.assertListEqual(y_dependencies_names, [
@@ -163,7 +163,7 @@ class TestDataManagerStorage(unittest.TestCase):
         self.ee.display_treeview_nodes()
 
         self.assertEqual(self.ee.dm.get_value('Test.x'), None)
-        self.ee.dm.set_data('Test.x', DisciplineProxy.VALUE, 50.0)
+        self.ee.dm.set_data('Test.x', ProxyDiscipline.VALUE, 50.0)
         self.assertEqual(self.ee.dm.get_value('Test.x'), 50.0)
 
         a = 1.0

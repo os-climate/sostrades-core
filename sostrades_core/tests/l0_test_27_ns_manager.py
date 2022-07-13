@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 
 
 class TestNSManager(unittest.TestCase):
@@ -68,7 +68,7 @@ class TestNSManager(unittest.TestCase):
         nsm.set_current_disc_ns('T.E')
         ns1 = {'ns_ac': 'AC'}
         nsm.add_ns_def(ns1)
-        disc = DisciplineProxy('toto', self.exec_eng)
+        disc = ProxyDiscipline('toto', self.exec_eng)
         nsm.create_disc_ns_info(disc)
 
         self.assertEqual(nsm.shared_ns_dict['ns_ac'].get_value(), 'AC')

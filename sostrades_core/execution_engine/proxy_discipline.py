@@ -16,6 +16,7 @@ limitations under the License.
 from scipy.sparse.lil import lil_matrix
  
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.core.discipline import MDODiscipline
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -46,7 +47,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import conve
     convert_new_type_into_array
 
 
-class DisciplineProxyException(Exception):
+class ProxyDisciplineException(Exception):
     pass
 
 
@@ -54,7 +55,8 @@ class DisciplineProxyException(Exception):
 NS_SEP = '.'
 
 
-class DisciplineProxy(object):
+
+class ProxyDiscipline(object):
     '''**SoSDiscipline** is the :class:`~gemseo.core.discipline.MDODiscipline`
     interfacing Model disciplines and Gemseo generic discipline
 
@@ -253,6 +255,70 @@ class DisciplineProxy(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
+
+    def prepare_execution(self):
+            
+        self.init_gemseo_discipline()
+#         self.set_cache() -> TODO: be able to comment this line, by passing the cache_type option directly as MDODiscipline input
+    
+    def init_gemseo_discipline(self):
+        '''
+        Initialization of GEMSEO MDODisciplines
+        To be overloaded by subclasses
+        '''
+        self.mdo_discipline = MDODiscipline(name=self.sos_name, 
+                                            grammar_type=self.SOS_GRAMMAR_TYPE,
+                                            cache_type=self.get_input_data(self.CACHE_TYPE))
+        self.mdo_discipline.proxy_discipline = self
+        setattr(self.mdo_discipline, '_run', self._proxy_run)
+        setattr(self.mdo_discipline, 'compute_sos_jacobian', self.__proxy_compute_jacobian)
+        self.mdo_discipline._ATTR_TO_SERIALIZE += "proxy_discipline"
+        
+        self.update_gems_grammar_with_data_io()
+        
+        
+    def update_gems_grammar_with_data_io(self):
+        # Remove unavailable GEMS type variables before initialize
+        # input_grammar
+        if not self.is_sos_coupling:
+            data_in = self.get_data_io_with_full_name(
+                self.IO_TYPE_IN)
+            data_out = self.get_data_io_with_full_name(
+                self.IO_TYPE_OUT)
+            self.init_gemseo_grammar(data_in, self.IO_TYPE_IN)
+            self.init_gemseo_grammar(data_out, self.IO_TYPE_OUT)
+
+    def init_gemseo_grammar(self, data_keys, io_type):
+        '''
+        Init Gems grammar with keys from a data_in/out dict
+        io_type specifies 'IN' or 'OUT'
+        '''
+        self._init_grammar_with_keys(data_keys, io_type)
+
+    def _init_grammar_with_keys(self, names, io_type):
+        ''' initialize GEMS grammar with names and type None
+        '''
+        names_dict = dict.fromkeys(names, None)
+        if io_type == self.IO_TYPE_IN:
+            grammar = self.input_grammar
+            grammar.clear()
+
+        elif io_type == self.IO_TYPE_OUT:
+            grammar = self.output_grammar
+            grammar.clear()
+        grammar.initialize_from_base_dict(names_dict)
+
+        return grammar
+
+    def _proxy_run(self):
+        '''
+        uses proxy discipline run during execution
+        '''
+        return self.proxy_discipline.run()
+        
+    def _proxy_compute_jacobian(self):
+        return self.proxy_discipline.compute_sos_jacobian()
+        
     def get_shared_namespace_list(self, data_dict):
         '''
         Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared
@@ -614,15 +680,15 @@ class DisciplineProxy(object):
         Set cache_type and cache_file_path input values to children, if cache inputs have changed
         '''
         if self._set_children_cache_inputs:
-            cache_type = self.get_sosdisc_inputs(DisciplineProxy.CACHE_TYPE)
-            cache_file_path = self.get_sosdisc_inputs(DisciplineProxy.CACHE_FILE_PATH)
+            cache_type = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
+            cache_file_path = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_FILE_PATH)
             for disc in self.proxy_disciplines:
-                if DisciplineProxy.CACHE_TYPE in disc._data_in:
+                if ProxyDiscipline.CACHE_TYPE in disc._data_in:
                     self.dm.set_data(disc.get_var_full_name(
-                        DisciplineProxy.CACHE_TYPE, disc._data_in), self.VALUE, cache_type, check_value=False)
+                        ProxyDiscipline.CACHE_TYPE, disc._data_in), self.VALUE, cache_type, check_value=False)
                     if cache_file_path is not None:
                         self.dm.set_data(disc.get_var_full_name(
-                            DisciplineProxy.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path, check_value=False)
+                            ProxyDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path, check_value=False)
             self._set_children_cache_inputs = False
 
     def setup_sos_disciplines(self):
@@ -940,7 +1006,7 @@ class DisciplineProxy(object):
 #         # When execution is done, is the status is again to 'pending' then we have to check if execution has been used
 #         # If execution cache is used, then the discipline is not run and its
 #         # status is not changed
-#         if (self.status == DisciplineProxy.STATUS_PENDING and self._cache_was_loaded is True):
+#         if (self.status == ProxyDiscipline.STATUS_PENDING and self._cache_was_loaded is True):
 #             self._update_status_recursive(self.STATUS_DONE)
 # 
 #         self.__check_nan_in_data(result)
@@ -1164,7 +1230,7 @@ class DisciplineProxy(object):
 
     def get_input_data_for_gems(self):
         '''
-        Get input_data for linearize DisciplineProxy
+        Get input_data for linearize ProxyDiscipline
         '''
         input_data = {}
         input_data_names = self.input_grammar.get_data_names()
@@ -1464,7 +1530,7 @@ class DisciplineProxy(object):
 
     def get_maturity(self):
         '''
-        Get the maturity of the DisciplineProxy, a discipline does not have any subdisciplines, only a coupling has
+        Get the maturity of the ProxyDiscipline, a discipline does not have any subdisciplines, only a coupling has
         '''
         if hasattr(self, '_maturity'):
             return self._maturity

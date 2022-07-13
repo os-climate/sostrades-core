@@ -16,7 +16,7 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from sostrades_core.execution_engine.discipline_builder import DisciplineBuilder
+from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
 
 class SoSBuilder(object):
@@ -79,7 +79,7 @@ class SoSBuilder(object):
         else:
             self.disc = self.discipline_dict[future_new_ns_disc_name]
 
-        if issubclass(self.cls, DisciplineBuilder):
+        if issubclass(self.cls, ProxyDisciplineBuilder):
             self.build_sub_discs(current_ns, future_new_ns_disc_name)
 
         return self.disc

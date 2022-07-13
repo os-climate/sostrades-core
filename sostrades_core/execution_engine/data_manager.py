@@ -24,31 +24,31 @@ from hashlib import sha256
 from numpy import can_cast
 
 from sostrades_core.api import get_sos_logger
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
 
-TYPE = DisciplineProxy.TYPE
-VALUE = DisciplineProxy.VALUE
-RANGE = DisciplineProxy.RANGE
-ORIGIN = DisciplineProxy.ORIGIN
-DEFAULT = DisciplineProxy.DEFAULT
-OPTIONAL = DisciplineProxy.OPTIONAL
-COUPLING = DisciplineProxy.COUPLING
-EDITABLE = DisciplineProxy.EDITABLE
-IO_TYPE = DisciplineProxy.IO_TYPE
-UNIT = DisciplineProxy.UNIT
-IO_TYPE_IN = DisciplineProxy.IO_TYPE_IN
-IO_TYPE_OUT = DisciplineProxy.IO_TYPE_OUT
-COMPOSED_OF = DisciplineProxy.COMPOSED_OF
-NS_REFERENCE = DisciplineProxy.NS_REFERENCE
-POSSIBLE_VALUES = DisciplineProxy.POSSIBLE_VALUES
-INTERNAL_VISIBILITY = DisciplineProxy.INTERNAL_VISIBILITY
-DISCIPLINES_DEPENDENCIES = DisciplineProxy.DISCIPLINES_DEPENDENCIES
-VAR_NAME = DisciplineProxy.VAR_NAME
-DATAFRAME_DESCRIPTOR = DisciplineProxy.DATAFRAME_DESCRIPTOR
-DATAFRAME_EDITION_LOCKED = DisciplineProxy.DATAFRAME_EDITION_LOCKED
-TYPE_METADATA = DisciplineProxy.TYPE_METADATA
+TYPE = ProxyDiscipline.TYPE
+VALUE = ProxyDiscipline.VALUE
+RANGE = ProxyDiscipline.RANGE
+ORIGIN = ProxyDiscipline.ORIGIN
+DEFAULT = ProxyDiscipline.DEFAULT
+OPTIONAL = ProxyDiscipline.OPTIONAL
+COUPLING = ProxyDiscipline.COUPLING
+EDITABLE = ProxyDiscipline.EDITABLE
+IO_TYPE = ProxyDiscipline.IO_TYPE
+UNIT = ProxyDiscipline.UNIT
+IO_TYPE_IN = ProxyDiscipline.IO_TYPE_IN
+IO_TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
+COMPOSED_OF = ProxyDiscipline.COMPOSED_OF
+NS_REFERENCE = ProxyDiscipline.NS_REFERENCE
+POSSIBLE_VALUES = ProxyDiscipline.POSSIBLE_VALUES
+INTERNAL_VISIBILITY = ProxyDiscipline.INTERNAL_VISIBILITY
+DISCIPLINES_DEPENDENCIES = ProxyDiscipline.DISCIPLINES_DEPENDENCIES
+VAR_NAME = ProxyDiscipline.VAR_NAME
+DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
+DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
+TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 
 
 class DataManager:
@@ -201,7 +201,7 @@ class DataManager:
     def get_value(self, var_f_name):
         ''' Get value of var_f_name from data_dict 
         '''
-        return self.get_data(var_f_name, DisciplineProxy.VALUE)
+        return self.get_data(var_f_name, ProxyDiscipline.VALUE)
 
     def get_discipline(self, disc_id):
         ''' Get discipline with disc_id from disciplines_dict 
@@ -292,7 +292,7 @@ class DataManager:
             if not key in keys_to_map:
                 raise ValueError(f'{key} does not exist in data manager')
             k = self.get_data_id(key) if full_ns_keys else key
-            # if self.data_dict[k][DisciplineProxy.VISIBILITY] == INTERNAL_VISIBILITY:
+            # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
 
@@ -314,7 +314,7 @@ class DataManager:
         data_dict = self.convert_data_dict_with_full_name()
         exception_list = []
         if 'numerical' in excepted:
-            exception_list = list(DisciplineProxy.NUM_DESC_IN.keys())
+            exception_list = list(ProxyDiscipline.NUM_DESC_IN.keys())
 
         if 'None' in excepted:
             data_dict_values = {key: value.get(attr, None)
@@ -565,12 +565,12 @@ class DataManager:
                 # -- the dependencies and it removed from the the list.
                 # -- once the list is empty the variables is removed from the data manager.
 
-                if disc_id in self.data_dict[var_id][DisciplineProxy.DISCIPLINES_DEPENDENCIES]:
+                if disc_id in self.data_dict[var_id][ProxyDiscipline.DISCIPLINES_DEPENDENCIES]:
                     self.no_change = False
-                    self.data_dict[var_id][DisciplineProxy.DISCIPLINES_DEPENDENCIES].remove(
+                    self.data_dict[var_id][ProxyDiscipline.DISCIPLINES_DEPENDENCIES].remove(
                         disc_id)
 
-                    if len(self.data_dict[var_id][DisciplineProxy.DISCIPLINES_DEPENDENCIES]) == 0:
+                    if len(self.data_dict[var_id][ProxyDiscipline.DISCIPLINES_DEPENDENCIES]) == 0:
                         # remove data in data_dict and data_id_map if no other
                         # discipline dependency
                         del self.data_dict[var_id]
@@ -615,10 +615,10 @@ class DataManager:
         disc_ref = self.get_discipline(disc_id)
         # clean input keys from dm
         self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
-            DisciplineProxy.IO_TYPE_IN)))
+            ProxyDiscipline.IO_TYPE_IN)))
         # clean output keys from dm
         self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
-            DisciplineProxy.IO_TYPE_OUT)))
+            ProxyDiscipline.IO_TYPE_OUT)))
 
     def export_couplings(self, in_csv=False, f_name=None):
         ''' Export couplings of all disciplines registered in the DM
@@ -669,7 +669,7 @@ class DataManager:
         self.logger.debug(f'get BytesIO of data {parameter_key}')
         # use cache to get parameter data value
         param_data = self.convert_data_dict_with_full_name()[parameter_key]
-        param_value = param_data[DisciplineProxy.VALUE]
+        param_value = param_data[ProxyDiscipline.VALUE]
         if param_value is None:
             return None
         else:
@@ -680,13 +680,13 @@ class DataManager:
     def get_var_name_from_uid(self, var_id):
         ''' Get namespace and var_name and return namespaced variable
         '''
-        return self.data_dict[var_id][DisciplineProxy.VAR_NAME]
+        return self.data_dict[var_id][ProxyDiscipline.VAR_NAME]
 
     def get_var_full_name(self, var_id):
         ''' Get namespace and var_name and return namespaced variable
         '''
         var_name = self.get_var_name_from_uid(var_id)
-        ns_reference = self.data_dict[var_id][DisciplineProxy.NS_REFERENCE]
+        ns_reference = self.data_dict[var_id][ProxyDiscipline.NS_REFERENCE]
         var_f_name = self.ns_manager.compose_ns([ns_reference.value, var_name])
         return var_f_name
 
@@ -694,7 +694,7 @@ class DataManager:
         ''' Get full discipline name
         '''
         if disc_id in self.disciplines_dict:
-            return self.disciplines_dict[disc_id][DisciplineProxy.NS_REFERENCE].value
+            return self.disciplines_dict[disc_id][ProxyDiscipline.NS_REFERENCE].value
         else:
             return None
 
@@ -714,12 +714,12 @@ class DataManager:
             prange = self.data_dict[var_id][RANGE]
             possible_values = self.data_dict[var_id][POSSIBLE_VALUES]
             coupling = self.data_dict[var_id][COUPLING]
-            if vtype not in DisciplineProxy.VAR_TYPE_MAP.keys():
-                errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(DisciplineProxy.VAR_TYPE_MAP.keys())}'
+            if vtype not in ProxyDiscipline.VAR_TYPE_MAP.keys():
+                errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(ProxyDiscipline.VAR_TYPE_MAP.keys())}'
                 self.logger.error(errors_in_dm_msg)
 
             # check that the variable has a unit
-            if unit is None and vtype not in DisciplineProxy.NO_UNIT_TYPES:
+            if unit is None and vtype not in ProxyDiscipline.NO_UNIT_TYPES:
                 self.logger.debug(
                     f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
 
@@ -793,9 +793,9 @@ class DataManager:
                                     errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} has a partial dataframe descriptor set up'
                                     self.logger.error(errors_in_dm_msg)
                                 # Check column type authorised
-                                if dataframe_descriptor[key][0] not in DisciplineProxy.VAR_TYPE_MAP.keys():
+                                if dataframe_descriptor[key][0] not in ProxyDiscipline.VAR_TYPE_MAP.keys():
                                     errors_in_dm_msg = f'Variable: {var_f_name}, with dataframe descriptor has a column type ' \
-                                                       f'{dataframe_descriptor[key][0]} not in allowed type {list(DisciplineProxy.VAR_TYPE_MAP.keys())}'
+                                                       f'{dataframe_descriptor[key][0]} not in allowed type {list(ProxyDiscipline.VAR_TYPE_MAP.keys())}'
                                     self.logger.error(errors_in_dm_msg)
         has_errors_in_dm = errors_in_dm_msg is not None
         if has_errors_in_dm and raise_exeption:
@@ -813,7 +813,7 @@ class DataManager:
 
             def compare_data(data_name):
 
-                if data_name == DisciplineProxy.UNIT and data1[DisciplineProxy.TYPE] not in DisciplineProxy.NO_UNIT_TYPES:
+                if data_name == ProxyDiscipline.UNIT and data1[ProxyDiscipline.TYPE] not in ProxyDiscipline.NO_UNIT_TYPES:
                     return str(data1[data_name]) != str(
                         data2[data_name]) or data1[data_name] is None
                 elif var_f_name in self.no_check_default_variables:
@@ -821,7 +821,7 @@ class DataManager:
                 else:
                     return str(data1[data_name]) != str(data2[data_name])
 
-            for data_name in DisciplineProxy.DATA_TO_CHECK + [DisciplineProxy.DEFAULT]:
+            for data_name in ProxyDiscipline.DATA_TO_CHECK + [ProxyDiscipline.DEFAULT]:
                 if compare_data(data_name):
                     self.logger.debug(
                         f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")

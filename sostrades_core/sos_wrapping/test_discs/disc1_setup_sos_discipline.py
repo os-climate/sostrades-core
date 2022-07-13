@@ -15,10 +15,10 @@ limitations under the License.
 '''
 import pandas as pd
 import numpy as np
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 
 
-class Disc1(DisciplineProxy):
+class Disc1(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
@@ -35,14 +35,14 @@ class Disc1(DisciplineProxy):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
-        'x': {'type': 'float', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
+        'x': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'int'},
         'b': {'type': 'float'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def setup_sos_disciplines(self):

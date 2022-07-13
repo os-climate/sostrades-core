@@ -19,12 +19,12 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
 from sostrades_core.tools.tree.treenode import TreeNode
 from sostrades_core.execution_engine.ns_manager import NamespaceManager, NS_SEP
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
-IO_TYPE = DisciplineProxy.IO_TYPE
-TYPE_IN = DisciplineProxy.IO_TYPE_IN
-TYPE_OUT = DisciplineProxy.IO_TYPE_OUT
-VISI = DisciplineProxy.VISIBILITY
+IO_TYPE = ProxyDiscipline.IO_TYPE
+TYPE_IN = ProxyDiscipline.IO_TYPE_IN
+TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
+VISI = ProxyDiscipline.VISIBILITY
 
 
 class TreeView:
@@ -49,7 +49,7 @@ class TreeView:
         :type: DataManager
 
         :params: root process, main discipline (root discipline)
-        :type: DisciplineProxy
+        :type: ProxyDiscipline
 
         :params: ns_manager, namespace manager use to store variable defined outside a discipline
         :type: NamespaceManager
@@ -130,18 +130,18 @@ class TreeView:
             treenode.data[key] = {k: v for k, v in val.items()}
 
             if key in treenode.disc_data:
-                treenode.data[key][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST] = \
-                    treenode.disc_data[key][DisciplineProxy.DISCIPLINES_FULL_PATH_LIST]
+                treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
+                    treenode.disc_data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]
 
             if self.read_only:
-                treenode.data[key][DisciplineProxy.EDITABLE] = False
+                treenode.data[key][ProxyDiscipline.EDITABLE] = False
 
     def add_treenode(self, discipline, namespace=None):
         """ Add a new treenode to the treeview.
         Treenode position is driven using discipline attribute from the root node
 
         :params: discipline, discipline node to add
-        :type: DisciplineProxy
+        :type: ProxyDiscipline
 
         :params: children_namespace, clidren namespace to navigate
         :type: string[]
@@ -172,7 +172,7 @@ class TreeView:
         :type: TreeNode
 
         :params: discipline, discipline node to add
-        :type: DisciplineProxy
+        :type: ProxyDiscipline
 
         :params: children_namespace, clidren namespace to navigate
         :type: string[]

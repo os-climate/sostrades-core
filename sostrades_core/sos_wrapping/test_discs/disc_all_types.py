@@ -17,10 +17,10 @@ limitations under the License.
 from numpy import array
 from pandas import DataFrame
 
-from sostrades_core.execution_engine.discipline_proxy import DisciplineProxy
+from sostrades_core.execution_engine.discipline_proxy import ProxyDiscipline
 
 
-class DiscAllTypes(DisciplineProxy):
+class DiscAllTypes(ProxyDiscipline):
     # ontology information
     _ontology_data = {
         'label': 'sostrades_core.sos_wrapping.test_discs.disc_all_types',
@@ -37,22 +37,22 @@ class DiscAllTypes(DisciplineProxy):
     _maturity = 'Fake'
     DESC_IN = {
         'z': {'type': 'float', 'default': 90., 'unit': 'kg', 'user_level': 1,
-              'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+              'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'h': {'type': 'array', 'unit': 'kg', 'user_level': 1},
-        'dict_in': {'type': 'dict', DisciplineProxy.SUBTYPE: {'dict': 'float'}, 'unit': 'kg', 'user_level': 1},
+        'dict_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': 'float'}, 'unit': 'kg', 'user_level': 1},
         'df_in': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1},
         'weather': {'type': 'string', 'default': 'cloudy, it is Toulouse ...', 'user_level': 1,
-                    'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_of_dict_in': {'type': 'dict', DisciplineProxy.SUBTYPE: {'dict': {'dict': 'float'}}, 'user_level': 1},
-        'dict_of_df_in': {'type': 'dict', DisciplineProxy.SUBTYPE: {'dict': 'dataframe'}, 'user_level': 1}
+                    'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'dict_of_dict_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': {'dict': 'float'}}, 'user_level': 1},
+        'dict_of_df_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': 'dataframe'}, 'user_level': 1}
     }
     DESC_OUT = {
         'df_out': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1,
-                   'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+                   'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'o': {'type': 'array', 'unit': 'kg', 'user_level': 1,
-              'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+              'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
         'dict_out': {'type': 'dict', 'unit': 'kg', 'user_level': 1,
-                     'visibility': DisciplineProxy.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+                     'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     def run(self):
