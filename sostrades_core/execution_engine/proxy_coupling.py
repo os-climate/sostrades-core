@@ -307,7 +307,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         '''
         if self._data_in != {}:
-            if self._structuring_variables[ProxyDiscipline.CACHE_TYPE] != self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE) or self._structuring_variables[ProxyDiscipline.CACHE_FILE_PATH] != self.get_sosdisc_inputs(ProxyDiscipline.CACHE_FILE_PATH):
+            cache_type_change = self._structuring_variables[ProxyDiscipline.CACHE_TYPE] != self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
+            cache_path_change = self._structuring_variables[ProxyDiscipline.CACHE_FILE_PATH] != self.get_sosdisc_inputs(ProxyDiscipline.CACHE_FILE_PATH)
+            if cache_type_change or cache_path_change:
                 self._cache_inputs_have_changed = True
 
         ProxyDiscipline.configure(self)
@@ -320,9 +322,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 disc.configure()
         else:
             self.set_children_cache_inputs()
+            #- all chidren are configured thus proxyCoupling can be configured
             self.set_configure_status(True)
+            #- build the coupling structure
             self._build_coupling_structure()
+            #- builds data_in/out according to the coupling structure
             self._build_data_io()
+            #- Update coupling and editable flags in the datamanager for the GUI
+            self._update_coupling_flags_in_dm()
             
     def _build_data_io(self):
         ''' build data_in and data_out according to MDOCouplingStructure
@@ -353,12 +360,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # configure GEMSEO objects (execution sequence)
 #         self.configure_execution()
         self._update_status_dm(self.STATUS_CONFIGURE)
-        # Construct the data_in and the data_out of the coupling with the GEMS
-        # grammar
-        self._set_data_io_with_gemseo_grammar()
- 
-        # Update coupling and editable flags in the datamanager for the GUI
-        self._update_coupling_flags_in_dm()
 
     def _update_coupling_flags_in_dm(self):
         ''' 
