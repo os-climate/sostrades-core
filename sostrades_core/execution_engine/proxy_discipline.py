@@ -271,10 +271,10 @@ class ProxyDiscipline(object):
                              cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE))
         disc.proxy_discipline = self
         setattr(disc, '_run', self._proxy_run)
-        setattr(disc, 'compute_sos_jacobian', self.__proxy_compute_jacobian)
+        setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
         self.mdo_discipline = disc
         
-        self.mdo_discipline._ATTR_TO_SERIALIZE += "proxy_discipline"
+        self.mdo_discipline._ATTR_TO_SERIALIZE += ("proxy_discipline",)
         
         self.update_gems_grammar_with_data_io()
         
@@ -314,11 +314,14 @@ class ProxyDiscipline(object):
 
     def _proxy_run(self):
         '''
-        uses proxy discipline run during execution
+        uses user wrapp run during execution
         '''
         return self.proxy_discipline.run()
         
     def _proxy_compute_jacobian(self):
+        '''
+        usesuser wrapp jacobian computation during execution
+        '''
         return self.proxy_discipline.compute_sos_jacobian()
         
     def get_shared_namespace_list(self, data_dict):
