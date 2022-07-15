@@ -215,50 +215,50 @@ class TestDataManagerGenerator(unittest.TestCase):
         self.assertIn(x_in, exec_engine.dm.get_data_dict_values())
 
         exec_engine.dm.set_values_from_dict({x_in: 3.})
-#         exec_engine.execute()
-#         res = exec_engine.dm.data_dict
-#         # ref data
-#         ns_pv_disc1 = ns + '.Disc1'
-#         ns_pv_disc2 = ns + '.Disc2'
-#         z = 2490.
-#         res_target = {
-#             x_in: 3.,
-#             ns + '.y': 50.,
-#             ns + '.z': z,
-#             ns_pv_disc1 + '.a': 10.,
-#             ns_pv_disc1 + '.b': 20.,
-#             ns_pv_disc1 + '.indicator': 200.,
-#             ns_pv_disc2 + '.constant':-10.,
-#             ns_pv_disc2 + '.power': 2}
-# 
-#         # check outputs
-#         for key in res_target:
-#             key_id = exec_engine.dm.get_data_id(key)
-#             self.assertEqual(res[key_id]['value'], res_target[key])
-# 
-#         # check data with data manager methods
-#         self.assertEqual(
-#             exec_engine.dm.get_data_dict_attr('value')[ns + '.z'], z)
-#         self.assertListEqual(exec_engine.dm.export_couplings()[
-#                              'var_name'].values.tolist(), [ns + '.y'])
-#         y_id = exec_engine.dm.get_data_id(ns + '.y')
-#         self.assertTrue(exec_engine.dm.get_var_name_from_uid(y_id), 'y')
-#         self.assertTrue(exec_engine.dm.get_var_full_name(y_id), ns + '.y')
-# 
-#         # check disciplines with data manager methods
-#         self.assertListEqual(list(exec_engine.dm.get_io_data_of_disciplines(
-#             exec_engine.root_process.sos_disciplines).keys()), ['value', 'type_metadata', 'local_data'])
-#         self.assertListEqual(list(exec_engine.dm.convert_disciplines_dict_with_full_name(
-#         ).keys()), ['EETests', 'EETests.Disc2', 'EETests.Disc1'])
-# 
-#         # check status with data manager method
-#         status_dict_from_dm = exec_engine.dm.build_disc_status_dict()
-#         for disc in status_dict_from_dm.values():
-#             self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
-#         # check status with execution engine method
-#         status_dict_from_ee = exec_engine.get_anonimated_disciplines_status_dict()
-#         for disc in status_dict_from_ee.values():
-#             self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
+        exec_engine.execute()
+        res = exec_engine.dm.data_dict
+        # ref data
+        ns_pv_disc1 = ns + '.Disc1'
+        ns_pv_disc2 = ns + '.Disc2'
+        z = 2490.
+        res_target = {
+            x_in: 3.,
+            ns + '.y': 50.,
+            ns + '.z': z,
+            ns_pv_disc1 + '.a': 10.,
+            ns_pv_disc1 + '.b': 20.,
+            ns_pv_disc1 + '.indicator': 200.,
+            ns_pv_disc2 + '.constant':-10.,
+            ns_pv_disc2 + '.power': 2}
+
+        # check outputs
+        for key in res_target:
+            key_id = exec_engine.dm.get_data_id(key)
+            self.assertEqual(res[key_id]['value'], res_target[key])
+
+        # check data with data manager methods
+        self.assertEqual(
+            exec_engine.dm.get_data_dict_attr('value')[ns + '.z'], z)
+        self.assertListEqual(exec_engine.dm.export_couplings()[
+                             'var_name'].values.tolist(), [ns + '.y'])
+        y_id = exec_engine.dm.get_data_id(ns + '.y')
+        self.assertTrue(exec_engine.dm.get_var_name_from_uid(y_id), 'y')
+        self.assertTrue(exec_engine.dm.get_var_full_name(y_id), ns + '.y')
+
+        # check disciplines with data manager methods
+        self.assertListEqual(list(exec_engine.dm.get_io_data_of_disciplines(
+            exec_engine.root_process.proxy_disciplines).keys()), ['value', 'type_metadata', 'local_data'])
+        self.assertListEqual(list(exec_engine.dm.convert_disciplines_dict_with_full_name(
+        ).keys()), ['EETests', 'EETests.Disc1', 'EETests.Disc2'])
+
+        # check status with data manager method
+        status_dict_from_dm = exec_engine.dm.build_disc_status_dict()
+        for disc in status_dict_from_dm.values():
+            self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
+        # check status with execution engine method
+        status_dict_from_ee = exec_engine.get_anonimated_disciplines_status_dict()
+        for disc in status_dict_from_ee.values():
+            self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
 
 ''' HOW TO UPDATE dm.pkl file (reference dm.data_dict):
 go to ref dir (sostrades_core\tests\data\ref_output\<STUDY_DIR>)

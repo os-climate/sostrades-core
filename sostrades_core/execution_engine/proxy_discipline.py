@@ -505,6 +505,18 @@ class ProxyDiscipline(object):
 #         '''
 #         self._init_grammar_with_keys(data_keys, io_type)
 
+    def local_data(self):
+        '''
+         Property to obtain the local data of the mdo_discipline
+        '''
+        return self.mdo_discipline.local_data
+
+    def set_local_data(self, local_data_value):
+        '''
+         Property to set the local data of the proxy discipline
+        '''
+        self.local_data = local_data_value
+
     def get_built_disciplines_ids(self):
         return [disc.name for disc in self.proxy_disciplines]
 
@@ -1287,7 +1299,7 @@ class ProxyDiscipline(object):
         '''
         Set proxy discipline status with mdo discipline status
         '''
-        self.status = self.mdo_discipline.status
+        self._update_status_dm(self.mdo_discipline.status)
         for proxy_disc in self.proxy_disciplines:
             proxy_disc.set_proxy_status()
 

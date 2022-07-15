@@ -195,7 +195,7 @@ class DataManager:
                 data[TYPE_METADATA][fname] = self.get_data(
                     fname, TYPE_METADATA)
             # local data update
-            data["local_data"].update(d.local_data)
+            data["local_data"].update(d.local_data())
         return data
 
     def get_value(self, var_f_name):
