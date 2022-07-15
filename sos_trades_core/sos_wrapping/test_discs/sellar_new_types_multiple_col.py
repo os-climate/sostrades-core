@@ -271,6 +271,7 @@ class Sellar2Df(SoSDiscipline):
         for year in out['years']:
             out.loc[out['years'] == year, 'value'] = z[0] + z[1] + sqrt(y_1.loc[y_1['years'] == year,
                                                                                 'value_a'].values[0])
+        out['value']=out['value'].astype(y_1['value_a'].dtype)
         return out
 
     def compute_sos_jacobian(self):
