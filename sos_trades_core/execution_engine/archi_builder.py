@@ -322,15 +322,10 @@ class ArchiBuilder(SoSDisciplineBuilder):
                     # then the discipline will be built just below architecture
                     builder_name = ns
 
-                if isinstance(row[self.TYPE], tuple):
-                    disc_builder = self.ee.factory.get_builder_from_class_name(
-                        builder_name, row[self.TYPE][1], [row[self.TYPE][0]]
-                    )
-                else:
-
-                    disc_builder = self.ee.factory.get_builder_from_class_name(
-                        builder_name, row[self.TYPE], self.vb_folder_list
-                    )
+                # get the builder from factory even if row[self.TYPE] is a
+                # tuple (folder,class_name)
+                disc_builder = self.get_builder_from_factory(
+                    builder_name, row[self.TYPE])
 
                 if ns in builder_dict:
                     builder_dict[ns].append(disc_builder)
@@ -338,6 +333,23 @@ class ArchiBuilder(SoSDisciplineBuilder):
                     builder_dict[ns] = [disc_builder]
 
         return builder_dict, activation_dict
+
+    def get_builder_from_factory(self, builder_name, builder_def):
+        '''
+        Get a builder from the ee factory, two ways of working : 
+            - builder_def is a string : find the builder_def class in each folder of the folder_list
+            - builder_def is a tuple : find builder_def[1] class name in the folder given as first element of the tuple builder_def[0] 
+        '''
+        if isinstance(builder_def, tuple):
+            disc_builder = self.ee.factory.get_builder_from_class_name(
+                builder_name, builder_def[1], [builder_def[0]]
+            )
+        else:
+
+            disc_builder = self.ee.factory.get_builder_from_class_name(
+                builder_name, builder_def, self.vb_folder_list
+            )
+        return disc_builder
 
     def get_children_list_by_vb(self, builder_dict):
         """
@@ -559,9 +571,8 @@ class ArchiBuilder(SoSDisciplineBuilder):
                                 # build first_scatter_builder on first scatter
                                 # node
                                 first_scatter_builder = (
-                                    self.ee.factory.get_builder_from_class_name(
-                                        builder.sos_name, args[2], self.vb_folder_list
-                                    )
+                                    self.get_builder_from_factory(
+                                        builder.sos_name, args[2])
                                 )
                                 activ_builders = self.build_scatter_of_scatter(
                                     namespace, args, builder_name, first_scatter_builder
@@ -573,9 +584,8 @@ class ArchiBuilder(SoSDisciplineBuilder):
                                 )
                         else:
                             # get builder of scatter
-                            scatter_builder = self.ee.factory.get_builder_from_class_name(
-                                namespace, args[1], self.vb_folder_list
-                            )
+                            scatter_builder = self.get_builder_from_factory(
+                                namespace, args[1])
                             activ_builders = self.build_action_scatter(
                                 namespace, args[0], scatter_builder, builder_name
                             )
@@ -630,15 +640,25 @@ class ArchiBuilder(SoSDisciplineBuilder):
                             )
 
                         # get builders of scatter_architecture
-                        scatter_builder_cls = self.ee.factory.get_builder_from_class_name(
-                            namespace, args[1], self.vb_folder_list
-                        )
+                        # possibility to instantiate several builder at scatter node
+                        # builders are stored in a list even if there is only
+                        # one
+                        if isinstance(args[1], list):
+                            scatter_builder_cls_list = [self.get_builder_from_factory(
+                                namespace, builder_def) for builder_def in args[1]]
+
+                        else:
+                            scatter_builder_cls_list = [self.get_builder_from_factory(
+                                namespace, args[1])]
+
+                        # we send a  list of scatter_builder_cls_list to
+                        # prevent from multiple builders at scatter node
                         activ_builders = self.get_scatter_builder(
                             namespace,
                             scatter_map,
                             archi_builder_list,
                             builder_name,
-                            scatter_builder_cls,
+                            scatter_node_cls_list=scatter_builder_cls_list,
                         )
 
                         # add scatter_architecture builders in
@@ -675,9 +695,8 @@ class ArchiBuilder(SoSDisciplineBuilder):
         TODO  : make this action recursive !
         """
         if args[1][0] == 'scatter':
-            subscatter_builder = self.ee.factory.get_builder_from_class_name(
-                namespace, args[1][2], self.vb_folder_list
-            )
+            subscatter_builder = self.get_builder_from_factory(
+                namespace, args[1][2])
             scatter_builder = self.build_action_scatter(
                 namespace, args[1][1], subscatter_builder, builder_name
             )
@@ -811,11 +830,15 @@ class ArchiBuilder(SoSDisciplineBuilder):
             # scatter that are not a scater itself
             # Be careful at the name of the discipline to append only children
             # of itself
+            # check if the add_disc_list_to_children_list function
+            # is in each discipline (only here if the disc heritates from
+            # valueblockdiscipline)
             if scatter_in_node:
                 for disc in disc_list:
                     if (
                         not isinstance(disc, SoSDisciplineScatter)
                         and disc.get_disc_full_name() in scattered_disciplines
+                        and hasattr(disc, 'add_disc_list_to_children_list')
                     ):
                         disc.add_disc_list_to_children_list(
                             scattered_disciplines[disc.get_disc_full_name()]
@@ -889,7 +912,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
         map,
         builder,
         builder_name,
-        scatter_node_cls=None,
+        scatter_node_cls_list=None,
         sub_scatter_builder_map_name=None,
         builder_on_first_scatter=None,
     ):
@@ -977,16 +1000,19 @@ class ArchiBuilder(SoSDisciplineBuilder):
                     builder_scatter = self.ee.factory.create_scatter_builder(
                         builder_name, full_input_name, builder
                     )
-                    scatter_node = (
-                        self.ee.factory.create_multi_scatter_builder_from_list(
-                            full_input_name, [scatter_node_cls], False
+                    # create a scatter for each builder you want at the scatter node
+                    # if only one no modifications
+                    for scatter_node_cls in scatter_node_cls_list:
+                        scatter_node = (
+                            self.ee.factory.create_multi_scatter_builder_from_list(
+                                full_input_name, [scatter_node_cls], False
+                            )
                         )
-                    )
-                    scatter_node[0].set_disc_name(
-                        namespace.replace(f'{self.name}.', '')
-                    )
-                    scatter_node.append(builder_scatter)
-                    result_builder_list.extend(scatter_node)
+                        scatter_node[0].set_disc_name(
+                            namespace.replace(f'{self.name}.', '')
+                        )
+                        scatter_node.append(builder_scatter)
+                        result_builder_list.extend(scatter_node)
                 else:
                     builder_scatter = (
                         self.ee.factory.create_multi_scatter_builder_from_list(
