@@ -28,7 +28,6 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
-
 LOC_DIRNAME = dirname(__file__)
 
 
@@ -44,7 +43,7 @@ class TestExecutionEngine(unittest.TestCase):
         self.name = 'EETests'
         self.repo = 'sostrades_core.sos_processes.test'
 
-    def test_01_execution_engine_sosdiscipline(self):
+    def _test_01_execution_engine_sosdiscipline(self):
         exec_eng = ExecutionEngine(self.name)
     
         ns_dict = {'ns_ac': 'EETests'}
@@ -83,7 +82,7 @@ class TestExecutionEngine(unittest.TestCase):
             self.assertEqual(res[exec_eng.dm.data_id_map[key]]
                              ['value'], res_reference[key])
 
-    def test_02_execution_engine_soscoupling(self):
+    def _test_02_execution_engine_soscoupling(self):
         process = 'test_disc1_disc2_coupling'
         master_logger = get_sos_logger('SoS')
         master_logger.setLevel(INFO)
@@ -122,7 +121,7 @@ class TestExecutionEngine(unittest.TestCase):
             'EETests.x': 3.0,
             'EETests.Disc1.a': 10.0,
             'EETests.Disc1.b': 20.0,
-            'EETests.Disc2.constant': -10.0,
+            'EETests.Disc2.constant':-10.0,
             'EETests.Disc2.power': 2,
             'EETests.Disc1.indicator': 200.0,
             'EETests.y': 50.0,
@@ -144,7 +143,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         a_value = 12
         values = {
-            study_name +
+            study_name + 
             '.Disc1.a': a_value}
 
         exec_engine.dm.set_values_from_dict(values)
