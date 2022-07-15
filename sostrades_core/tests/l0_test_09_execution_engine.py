@@ -43,7 +43,7 @@ class TestExecutionEngine(unittest.TestCase):
         self.name = 'EETests'
         self.repo = 'sostrades_core.sos_processes.test'
 
-    def _test_01_execution_engine_sosdiscipline(self):
+    def test_01_execution_engine_sosdiscipline(self):
         exec_eng = ExecutionEngine(self.name)
     
         ns_dict = {'ns_ac': 'EETests'}
@@ -82,7 +82,7 @@ class TestExecutionEngine(unittest.TestCase):
             self.assertEqual(res[exec_eng.dm.data_id_map[key]]
                              ['value'], res_reference[key])
 
-    def _test_02_execution_engine_soscoupling(self):
+    def test_02_execution_engine_soscoupling(self):
         process = 'test_disc1_disc2_coupling'
         master_logger = get_sos_logger('SoS')
         master_logger.setLevel(INFO)

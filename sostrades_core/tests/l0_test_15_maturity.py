@@ -50,7 +50,7 @@ class TestMaturity(unittest.TestCase):
         values_dict['EETests.Disc2.constant'] = -10.
         values_dict['EETests.x'] = 3.
         self.exec_eng.dm.set_values_from_dict(values_dict)
-        #self.exec_eng.execute()
+        self.exec_eng.execute()
 
     def test_01_discipline_maturity(self):
 
@@ -60,7 +60,7 @@ class TestMaturity(unittest.TestCase):
         self.assertEqual(maturity_to_test, ref_maturity,
                          "Maturities are not equal, expected {} maturity, got {}".format(ref_maturity, maturity_to_test))
 
-    def _test_02_coupling_maturity(self):
+    def test_02_coupling_maturity(self):
 
         maturity_to_test = self.exec_eng.root_process.get_maturity()
         ref_maturity = dict(zip(self.maturity_list, [2, 0, 0, 0]))

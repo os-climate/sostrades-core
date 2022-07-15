@@ -59,34 +59,34 @@ class TestStatusCoupling(unittest.TestCase):
         self.process = self.exec_eng.root_process
 
         # First process status check before configure
-        if self.process._status in self.dic_status.keys():
-            self.dic_status[self.process._status] = True
+        if self.process.status in self.dic_status.keys():
+            self.dic_status[self.process.status] = True
 
     def tearDown(self):
         pass
 
-    # def test_01_execute(self):
-    #
-    #     # modify DM
-    #     values_dict = {}
-    #     values_dict['EETests.Disc1.a'] = 10.
-    #     values_dict['EETests.Disc1.b'] = 5.
-    #     values_dict['EETests.x'] = 2.
-    #     values_dict['EETests.Disc2.constant'] = 4.
-    #     values_dict['EETests.Disc2.power'] = 2
-    #
-    #     self.exec_eng.load_study_from_input_dict(values_dict)
-    #     self.exec_eng.execute()
-    #
-    # def test_02_check_status(self):
-    #
-    #     t0 = time.time()
-    #
-    #     _thread.start_new_thread(self.test_01_execute, ())
-    #
-    #     while(time.time() - t0 < 3):
-    #         if self.process._status in self.dic_status.keys():
-    #             self.dic_status[self.process._status] = True
-    #
-    #     self.assertTrue(np.all(list(self.dic_status.values())),
-    #                     'Missing status')
+    def test_01_execute(self):
+
+        # modify DM
+        values_dict = {}
+        values_dict['EETests.Disc1.a'] = 10.
+        values_dict['EETests.Disc1.b'] = 5.
+        values_dict['EETests.x'] = 2.
+        values_dict['EETests.Disc2.constant'] = 4.
+        values_dict['EETests.Disc2.power'] = 2
+
+        self.exec_eng.load_study_from_input_dict(values_dict)
+        self.exec_eng.execute()
+
+    def test_02_check_status(self):
+
+        t0 = time.time()
+
+        _thread.start_new_thread(self.test_01_execute, ())
+
+        while(time.time() - t0 < 3):
+            if self.process.status in self.dic_status.keys():
+                self.dic_status[self.process.status] = True
+
+        self.assertTrue(np.all(list(self.dic_status.values())),
+                        'Missing status')

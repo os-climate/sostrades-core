@@ -558,6 +558,8 @@ class ExecutionEngine:
 
         # -- execution
         ex_proc = self.root_mdo_discipline
+        self.root_process.update_status_running()
+
         ex_proc.execute()
         
         self.root_process._update_status_dm(
