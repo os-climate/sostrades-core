@@ -454,12 +454,12 @@ class ExecutionEngine:
                 loop_stop = True
 
         # Convergence is ended
-        # Set all output variables (to be able to get results
+        # Set all output variables and strong couplings
         for key, value in self.dm.data_dict.items():
             if key in convert_data_cache:
-                if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT:
+                if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT or (value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]):
                     value['value'] = convert_data_cache[key]['value']
-
+                    
         if self.__yield_method is not None:
             self.__yield_method()
 
@@ -556,7 +556,7 @@ class ExecutionEngine:
         self.prepare_execution()
 
         # -- execution
-        ex_proc = self.root_process.mdo_discipline #TODO: change root_process attribute by root_proxy so that root_process can be used for the GEMSEO object
+        ex_proc = self.root_process.mdo_discipline  # TODO: change root_process attribute by root_proxy so that root_process can be used for the GEMSEO object
         self.root_process._update_status_dm(
             ProxyDiscipline.STATUS_DONE)
 
