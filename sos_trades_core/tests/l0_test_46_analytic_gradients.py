@@ -1045,6 +1045,66 @@ class TestAnalyticGradients(unittest.TestCase):
 
         print('done')
 
+    def test_17_check_analytic_gradients_sellar_dataframe_by_column(self):
+
+        print("\n Test 17 : Check analytic gradients on single column (with Sellar new types) ")
+        def setup_exec_engine(self):
+            exec_eng = ExecutionEngine(self.study_name)
+            factory = exec_eng.factory
+
+            builder = factory.get_builder_from_process(repo=self.repo,
+                                                       mod_id='test_sellar_coupling_new_types_multiple_col')
+
+            exec_eng.factory.set_builders_to_coupling_builder(builder)
+            exec_eng.configure()
+
+            y_1 = pd.DataFrame({'years': arange(1, 5), 'value_a': 1.0, 'value_b': 0.2})
+            y_2 = pd.DataFrame({'years': arange(1, 5), 'value': 1.0})
+
+            dict_x = {'years': arange(1, 5), 'value': 2 * ones(4)}
+
+            # Sellar inputs
+            local_dv = 10.
+            values_dict = {}
+            values_dict[f'{self.ns}.{self.c_name}.chain_linearize'] = False
+            values_dict[f'{self.ns}.{self.c_name}.tolerance'] = 1e-10
+            values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = "MDANewtonRaphson"
+            values_dict[f'{self.ns}.{self.c_name}.x'] = dict_x
+            values_dict[f'{self.ns}.{self.c_name}.y_1'] = y_1
+            values_dict[f'{self.ns}.{self.c_name}.y_2'] = y_2
+            values_dict[f'{self.ns}.{self.c_name}.z'] = array([2., 2.])
+            values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+            exec_eng.load_study_from_input_dict(values_dict)
+            return exec_eng
+
+        # 1 - Test check grad with output_column selection
+        exec_eng=setup_exec_engine(self)
+        exec_eng.root_process.sos_disciplines[0].sos_disciplines[2].check_jacobian(
+            threshold=1.0e-7, linearization_mode='auto',
+            derr_approx='complex_step', step=1e-15,
+            inputs=['optim.SellarCoupling.x'], outputs=['optim.SellarCoupling.y_1'],
+            output_column='value_b'
+        )
+
+        # 2 - Test check grad with input_column selection
+        exec_eng = setup_exec_engine(self)
+        exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].check_jacobian(
+             threshold=1.0e-7, linearization_mode='auto',
+             derr_approx='complex_step', step=1e-15,
+             inputs=['optim.SellarCoupling.y_1'], outputs=['optim.SellarCoupling.c_1'],
+             input_column='value_a',
+        )
+
+        # 3 - Test check grad with input_column AND output_column selection
+        exec_eng = setup_exec_engine(self)
+        exec_eng.root_process.sos_disciplines[0].sos_disciplines[0].check_jacobian(
+            threshold=1.0e-7, linearization_mode='auto',
+            derr_approx='complex_step', step=1e-15,
+            inputs=['optim.SellarCoupling.y_1'], outputs=['optim.SellarCoupling.c_2'],
+            input_column='value_a', output_column='value_a',
+        )
+
+
 
 if '__main__' == __name__:
     cls = TestAnalyticGradients()

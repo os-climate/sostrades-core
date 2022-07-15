@@ -793,7 +793,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
     def test_08_morphological_matrix_eval_of_archi_builder(self):
 
         ac_map = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -876,7 +876,7 @@ class TestMorphologicalMatrixEval(unittest.TestCase):
         scatter_name = 'Scatter'
         # set scatter build map
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barriere',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',

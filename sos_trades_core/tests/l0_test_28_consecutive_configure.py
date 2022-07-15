@@ -48,7 +48,7 @@ class TestConsecutiveConfigure(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def(ns_dict)
 
         mydict_build = {'input_name': 'name_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_barrierr',
                         'output_name': 'ac_name',
                         'scatter_ns': 'ns_ac'}
@@ -129,7 +129,7 @@ class TestConsecutiveConfigure(unittest.TestCase):
 
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',

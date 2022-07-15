@@ -154,7 +154,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
         '''
         # scatter build map
         ac_map = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_scatter_scenario',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -165,7 +165,7 @@ class TestMultiScenarioOfDoeEval(unittest.TestCase):
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',

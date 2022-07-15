@@ -468,43 +468,8 @@ class ExecutionEngine:
                     raise ValueError(msg)
 
         # Convergence is ended
-        # Check for unused input data in dict_to_load,
-        # not matching with a key in the dm
-        if anonymize_function is self.__anonymize_key:
-            data_keys = list(self.get_anonimated_data_dict().keys())
-            ns_values = list(self.get_anonymized_shared_ns_dict().values())
-        else:
-            data_keys = list(self.dm.data_id_map.keys())
-            ns_values = [ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()]
-        unchecked_keys=list(set(data_cache.keys()) - set(data_keys))
-        if len(unchecked_keys):
-            self.logger.info('---------------------------------')
-            self.logger.info('unchecked keys: ')
-            for key in unchecked_keys:
-                #First, skip key if it is an output
-                try:
-                    if self.dm.get_data(key)['io_type'] == 'out':
-                        continue
-                except:
-                    pass
-                #Then, check for match, with a different namespace
-                local_data=[key.split('.')[-1] for key in data_keys]
-                if key.split('.')[-1] in local_data:
-                    matching_key=[val+'.'+key.split('.')[-1] for val in ns_values if val+'.'+key.split('.')[-1] in data_keys]
-                    if len(matching_key):
-                        #If a match is found, make a suggestion
-                        self.logger.info(f'"{key}" not a possible input in dm, did you mean "{matching_key[0]}" ?')
-                        continue
-                #If no match found with all the namespaces, perform string-match search
-                result=process.extractOne(key, data_keys, scorer=fuzz.WRatio)
-                if result[1] > 90:
-                    #If a close match is found, make a suggestion
-                    self.logger.info(f'"{key}" not a possible input in dm, did you mean "{result[0]}" ?')
-                    continue
-                else:
-                    #Else, just print the key
-                    self.logger.info(f'"{key}" not a possible input in dm')
-            self.logger.info('---------------------------------')
+        message = self.check_for_unutilized_inputs(data_cache, anonymize_function)
+        self.logger.info(message)
         # Set all output variables (to be able to get results
         for key, value in self.dm.data_dict.items():
             if key in convert_data_cache:
@@ -525,6 +490,50 @@ class ExecutionEngine:
                 self.update_status_configure()
 
         self.dm.treeview = None
+
+    def check_for_unutilized_inputs(self, data_cache, anonymize_function):
+        ''' Method used in "load_study_from_dict" function
+        Check for unused input data in dict_to_load, not matching with a key in the dm.
+        Return a suggestion if there is either a match with a shared namespace, or
+        a similar key in the dm (string comparison algo rapidfuzz)
+        '''
+        if anonymize_function is self.__anonymize_key:
+            data_keys = list(self.get_anonimated_data_dict().keys())
+            ns_values = list(self.get_anonymized_shared_ns_dict().values())
+        else:
+            data_keys = list(self.dm.data_id_map.keys())
+            ns_values = [ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()]
+        unchecked_keys=list(set(data_cache.keys()) - set(data_keys))
+        message=''
+        if len(unchecked_keys):
+            message+='---------------------------------\n'
+            message+='Unexpected keys found in dict to load compared to keys in dm :\n'
+            for key in unchecked_keys:
+                #First, skip key if it is an output
+                try:
+                    if self.dm.get_data(key)['io_type'] == 'out':
+                        continue
+                except:
+                    pass
+                #Then, check for match, with a different namespace
+                local_data=[key.split('.')[-1] for key in data_keys]
+                if key.split('.')[-1] in local_data:
+                    matching_key=[val+'.'+key.split('.')[-1] for val in ns_values if val+'.'+key.split('.')[-1] in data_keys]
+                    if len(matching_key):
+                        #If a match is found, make a suggestion
+                        message+=f'"{key}" not an expected input in dm, did you mean "{matching_key[0]}" ?\n'
+                        continue
+                #If no match found with all the namespaces, perform string-match search
+                result=process.extractOne(key, data_keys, scorer=fuzz.WRatio)
+                if result[1] > 90:
+                    #If a close match is found, make a suggestion
+                    message+=f'"{key}" not an expected input in dm, did you mean "{result[0]}" ?\n'
+                    continue
+                else:
+                    #Else, just print the key
+                    message+=f'"{key}" not a expected input in dm\n'
+            message+='---------------------------------\n'
+            return message
 
     def load_connectors_from_dict(self, connectors_to_load):
         '''
