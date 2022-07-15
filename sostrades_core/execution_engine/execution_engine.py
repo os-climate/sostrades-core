@@ -79,6 +79,7 @@ class ExecutionEngine:
 
         self.root_process = None
         self.root_builder_ist = None
+        self.root_mdo_discipline = None
 
         self.__connector_container = PersistentConnectorContainer()
 
@@ -167,7 +168,7 @@ class ExecutionEngine:
         '''
         loop on proxy disciplines and execute prepare execution
         '''
-        self.root_process.prepare_execution()
+        self.root_mdo_discipline = self.root_process.prepare_execution()
 
     def fill_data_in_with_connector(self):
         """
@@ -556,10 +557,14 @@ class ExecutionEngine:
         self.prepare_execution()
 
         # -- execution
-        ex_proc = self.root_process.mdo_discipline  # TODO: change root_process attribute by root_proxy so that root_process can be used for the GEMSEO object
+        ex_proc = self.root_mdo_discipline
+        ex_proc.execute()
+        
         self.root_process._update_status_dm(
             ProxyDiscipline.STATUS_DONE)
 
+        # -- set proxy disciplines status recursively
+        self.root_process.set_proxy_status()
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())

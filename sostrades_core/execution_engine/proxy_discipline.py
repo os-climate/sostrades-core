@@ -54,18 +54,18 @@ class ProxyDisciplineException(Exception):
 # to avoid circular redundancy with nsmanager
 NS_SEP = '.'
 
-
-def _proxy_run(cls):
-    '''
-    uses user wrapp run during execution
-    '''
-    return cls.proxy_discipline.run()
-    
-def _proxy_compute_jacobian(cls):
-    '''
-    usesuser wrapp jacobian computation during execution
-    '''
-    return cls.proxy_discipline.compute_sos_jacobian()
+# def _proxy_run(cls):
+#     '''
+#     uses user wrapp run during execution
+#     '''
+#     return cls.proxy_discipline.run()
+# 
+#     
+# def _proxy_compute_jacobian(cls):
+#     '''
+#     uses user wrapp jacobian computation during execution
+#     '''
+#     return cls.proxy_discipline.compute_sos_jacobian()
 
 
 class ProxyDiscipline(object):
@@ -267,7 +267,18 @@ class ProxyDiscipline(object):
 
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
-
+        
+    def _proxy_run(self):
+        '''
+        uses user wrapp run during execution
+        '''
+        return self.run()
+        
+    def _proxy_compute_jacobian(self):
+        '''
+        uses user wrapp jacobian computation during execution
+        '''
+        return self.compute_sos_jacobian()
 
     def prepare_execution(self):
             
@@ -279,12 +290,12 @@ class ProxyDiscipline(object):
         Initialization of GEMSEO MDODisciplines
         To be overloaded by subclasses
         '''
-        disc = MDODiscipline(name=self.get_disc_full_name(), 
+        disc = MDODiscipline(name=self.get_disc_full_name(),
                              grammar_type=self.SOS_GRAMMAR_TYPE,
                              cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE))
         disc.proxy_discipline = self
-        setattr(disc, '_run', _proxy_run)
-        setattr(disc, 'compute_sos_jacobian', _proxy_compute_jacobian)
+        setattr(disc, '_run', self._proxy_run)
+        setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
         self.mdo_discipline = disc
         
         disc._ATTR_TO_SERIALIZE += ("proxy_discipline",)
@@ -1261,18 +1272,24 @@ class ProxyDiscipline(object):
                     self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
-#     def update_dm_with_local_data(self, local_data=None):
-#         '''
-#         Update the DM with local data from GEMSEO
-#         '''
-#         if local_data is None:
-#             local_data = self.local_data
-#         self.dm.set_values_from_dict(local_data)
+    def update_dm_with_local_data(self, local_data):
+        '''
+        Update the DM with local data from GEMSEO
+        '''
+        self.dm.set_values_from_dict(local_data)
 
     def run(self):
         ''' To be overloaded by sublcasses
         '''
         raise NotImplementedError()
+    
+    def set_proxy_status(self):
+        '''
+        Set proxy discipline status with mdo discipline status
+        '''
+        self.status = self.mdo_discipline.status
+        for proxy_disc in self.proxy_disciplines:
+            proxy_disc.set_proxy_status()
 
     def _update_study_ns_in_varname(self, names):
         ''' updates the study name in the variable input names

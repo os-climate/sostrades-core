@@ -24,11 +24,17 @@ class Study(StudyManager):
 
     def setup_usecase(self):
 
-        dict_values = {}
+        dict_values = {
+            'usecase.Disc1.x': 3,
+            'usecase.Disc1.a': 1,
+            'usecase.Disc1.b': 5,
+            'usecase.Disc1.name': 'A1'
+            }
         return dict_values
 
 
 if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
-#     uc_cls.run(for_test=True)
+    uc_cls.run(for_test=True)
+    

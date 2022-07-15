@@ -73,7 +73,7 @@ class SoSMDAChain(MDAChain):
             log_convergence=False,  # type: bool
             linear_solver="DEFAULT",  # type: str
             linear_solver_options=None,  # type: Mapping[str,Any]
-            **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
+            ** sub_mda_options  # type: Optional[Union[float, int, bool, str]]
             ):
         ''' Constructor
         '''
@@ -97,7 +97,7 @@ class SoSMDAChain(MDAChain):
             log_convergence=log_convergence,  # type: bool
             linear_solver=linear_solver,  # type: str
             linear_solver_options=linear_solver_options,  # type: Mapping[str,Any]
-            **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
+            ** sub_mda_options  # type: Optional[Union[float, int, bool, str]]
         )
 
     def _set_dm_cache_map(self):
@@ -225,7 +225,7 @@ class SoSMDAChain(MDAChain):
         the list of data_to_check is defined in SoSDiscipline
         '''
         
-        #TODO: probably better if moved into proxy discipline
+        # TODO: probably better if moved into proxy discipline
         
         if self.logger.level <= logging.DEBUG:
             coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
@@ -285,13 +285,11 @@ class SoSMDAChain(MDAChain):
         # store local data in datamanager
         self.update_dm_with_local_data()
 
-    def update_dm_with_local_data(self, local_data=None):
+    def update_dm_with_local_data(self, local_data, dm):
         '''
         Update the DM with local data from GEMSEO
         '''
-        if local_data is None:
-            local_data = self.local_data
-        self.dm.set_values_from_dict(local_data)
+        dm.set_values_from_dict(local_data)
 
     def pre_run_mda(self):
         '''
@@ -401,8 +399,9 @@ class SoSMDAChain(MDAChain):
             In SoSCoupling, self.local_data is updated through MDAChain
             and self._data_out is updated through self.local_data.
         '''
-        self._old_sos_discipline_run()
-
+        MDAChain._run(self)
+        self.proxy_discipline.update_dm_with_local_data(self.local_data)
+ 
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
         # self.logger.info(f'{self.get_disc_full_name()} MDA history')
@@ -468,8 +467,8 @@ class SoSMDAChain(MDAChain):
         self.logger.info(
             f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
 
-        return self._old_discipline_linearize(input_data=input_data, 
-                                              force_all=force_all, 
+        return self._old_discipline_linearize(input_data=input_data,
+                                              force_all=force_all,
                                               force_no_exec=force_no_exec)
         
     def _old_discipline_linearize(self, input_data=None, force_all=False, force_no_exec=False, exec_before_linearize=True):

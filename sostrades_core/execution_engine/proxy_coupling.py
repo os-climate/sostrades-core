@@ -43,6 +43,7 @@ if platform.system() != 'Windows':
 
 N_CPUS = cpu_count()
 
+
 def get_available_linear_solvers():
     '''Get available linear solvers list
     '''
@@ -325,13 +326,13 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 disc.configure()
         else:
             self.set_children_cache_inputs()
-            #- all chidren are configured thus proxyCoupling can be configured
+            # - all chidren are configured thus proxyCoupling can be configured
             self.set_configure_status(True)
-            #- build the coupling structure
+            # - build the coupling structure
             self._build_coupling_structure()
-            #- builds data_in/out according to the coupling structure
+            # - builds data_in/out according to the coupling structure
             self._build_data_io()
-            #- Update coupling and editable flags in the datamanager for the GUI
+            # - Update coupling and editable flags in the datamanager for the GUI
             self._update_coupling_flags_in_dm()
             
     def _build_data_io(self):
@@ -343,8 +344,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                          key in self.DESC_IN or key in self.NUM_DESC_IN}
         # add coupling inputs in data_in
         for discipline in self.proxy_disciplines:
-            for var_f_name,var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
-                if self.ee.dm.get_data(var_f_name,self.IO_TYPE) == self.IO_TYPE_IN and not self.ee.dm.get_data(var_f_name,self.NUMERICAL):
+            for var_f_name, var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
+                if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_IN and not self.ee.dm.get_data(var_f_name, self.NUMERICAL):
                     self._data_in[var_name] = self.dm.get_data(var_f_name)
 
         # keep residuals_history if in data_out
@@ -355,17 +356,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self._data_out = {}
 
         for discipline in self.proxy_disciplines:
-            for var_f_name,var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
+            for var_f_name, var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
                     self._data_out[var_name] = self.dm.get_data(var_f_name)
-
-
     
     def _build_coupling_structure(self):
         
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
         self.strong_couplings = _filter_variables_to_convert(self.proxy_disciplines,
-                                                             self.ee, 
-                                                             self.coupling_structure.strong_couplings(), 
+                                                             self.ee,
+                                                             self.coupling_structure.strong_couplings(),
                                                              write_logs=True)
         
     def get_disciplines_to_configure(self):
@@ -492,6 +491,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
         self._set_residual_history()
         
+        return self.mdo_discipline
+        
     def init_gemseo_discipline(self):
         '''
         initialization of GEMSEO MDAChain
@@ -499,11 +500,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         num_data = self._get_numerical_inputs()
 
         mda_chain = SoSMDAChain(
-                              ee=self.ee, # set the ee and dm as attribute of SoSMDAChain (used for filtering and conversions) # TODO: see if it can be removed
+                              ee=self.ee,  # set the ee and dm as attribute of SoSMDAChain (used for filtering and conversions) # TODO: see if it can be removed
                               disciplines=self.sub_mdo_disciplines,
                               name=self.get_disc_full_name(),
                               grammar_type=self.SOS_GRAMMAR_TYPE,
-                              ** num_data) # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
+                              ** num_data)  # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
 
         # store cache to reset after MDAChain init
         cache = mda_chain.cache
@@ -521,8 +522,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # Check variables mismatch between coupling disciplines
         mda_chain.check_var_data_mismatch()
         
-        #- set the mdo discipline with the MDAChain
+        # - set the mdo discipline with the MDAChain
         self.mdo_discipline = mda_chain
+        mda_chain.proxy_discipline = self
         
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
@@ -666,7 +668,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.linear_solver_options_MDO = linear_solver_options_MDO
  
         return num_data
-
 
     def get_maturity(self):
         '''
@@ -1105,7 +1106,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 # 
 #         self.logger.info(
 #             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
-
  
     def _set_residual_history(self):
         ''' set residuals history into data_out
