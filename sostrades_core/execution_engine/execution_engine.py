@@ -556,7 +556,7 @@ class ExecutionEngine:
         self.prepare_execution()
 
         # -- execution
-        ex_proc = self.root_process.execute()
+        ex_proc = self.root_process.mdo_discipline #TODO: change root_process attribute by root_proxy so that root_process can be used for the GEMSEO object
         self.root_process._update_status_dm(
             ProxyDiscipline.STATUS_DONE)
 

@@ -26,16 +26,16 @@ from pandas import DataFrame
 from itertools import repeat
 import platform
 
-from sos_trades_core_old.api import get_sos_logger
-from sos_trades_core_old.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
-from sos_trades_core_old.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core_old.execution_engine.ns_manager import NS_SEP
+from sos_trades_core.api import get_sos_logger
+from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sos_trades_core.execution_engine.ns_manager import NS_SEP
 
 if platform.system() != 'Windows':
-    from sos_trades_core_old.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+    from sos_trades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 from gemseo.core.chain import MDOChain
-from sos_trades_core_old.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
+from sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda

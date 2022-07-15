@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a pareto front optimal chart display as post post processing
 """
 import pandas as pd
-from sos_trades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
+from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
 
 class InstantiatedPlotlyNativeChartException(Exception):

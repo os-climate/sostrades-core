@@ -20,4 +20,4 @@ def update_os_climate(repos_list, branches_list):
 
 if '__main__' == __name__:
     #pass
-    update_os_climate([r'C:\Users\SP005188\eclipse-workspace\SoSTrades\sostrades-core'], ['develop'])
+    update_os_climate([r'C:\Users\SP005188\eclipse-workspace\SoSTrades\sostrades_core'], ['develop'])

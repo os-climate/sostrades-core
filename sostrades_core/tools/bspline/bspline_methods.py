@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import numpy as np
-from sos_trades_core.tools.bspline.bspline import BSpline
+from sostrades_core.tools.bspline.bspline import BSpline
 
 
 def bspline_method(ctrl_pts, length):

@@ -22,7 +22,7 @@ class Disc1(ProxyDiscipline):
 
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_setup_sos_discipline',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_setup_sos_discipline',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',

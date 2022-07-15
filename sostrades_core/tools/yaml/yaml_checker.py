@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 from os.path import basename, splitext
 import yaml
-from sos_trades_core.tools.yaml import Rx
+from sostrades_core.tools.yaml import Rx
 
 
 class YamlModelcheckerException(Exception):

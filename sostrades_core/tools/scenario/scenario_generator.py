@@ -18,7 +18,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
 
-from sos_trades_core.tools.scenario.scenario_manager import ScenarioManager
+from sostrades_core.tools.scenario.scenario_manager import ScenarioManager
 from copy import deepcopy
 from itertools import product
 from pandas.core.common import flatten

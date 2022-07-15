@@ -23,7 +23,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
 
-from sos_trades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 from gemseo.api import create_mda
 
 from gemseo.core.discipline import MDODiscipline

@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a spider chart display as post post processing
 """
 import plotly.graph_objects as go
-from sos_trades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
+from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
 
 class SpiderChartTrace:
