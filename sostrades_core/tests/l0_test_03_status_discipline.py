@@ -65,20 +65,20 @@ class TestStatusDiscipline(unittest.TestCase):
     def tearDown(self):
         pass
 
-    # def test_01_execute(self):
-    #
-    #     time.sleep(0.2)
-    #     self.ee.execute()
-    #
-    # def test_02_check_status(self):
-    #
-    #     t0 = time.time()
-    #
-    #     _thread.start_new_thread(self.test_01_execute, ())
-    #
-    #     while(time.time() - t0 < 3):
-    #         if self.process._status in self.dic_status.keys():
-    #             self.dic_status[self.process._status] = True
-    #
-    #     self.assertTrue(np.all(list(self.dic_status.values())),
-    #                     'Missing status')
+    def test_01_execute(self):
+
+        time.sleep(0.2)
+        self.ee.execute()
+
+    def test_02_check_status(self):
+
+        t0 = time.time()
+
+        _thread.start_new_thread(self.test_01_execute, ())
+
+        while(time.time() - t0 < 3):
+            if self.process.status in self.dic_status.keys():
+                self.dic_status[self.process.status] = True
+
+        self.assertTrue(np.all(list(self.dic_status.values())),
+                        'Missing status')
