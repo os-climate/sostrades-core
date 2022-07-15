@@ -290,15 +290,16 @@ class ProxyDiscipline(object):
         Initialization of GEMSEO MDODisciplines
         To be overloaded by subclasses
         '''
-        disc = MDODiscipline(name=self.get_disc_full_name(),
+        if self.mdo_discipline is None:
+            disc = MDODiscipline(name=self.get_disc_full_name(),
                              grammar_type=self.SOS_GRAMMAR_TYPE,
                              cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE))
-        disc.proxy_discipline = self
-        setattr(disc, '_run', self._proxy_run)
-        setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
-        self.mdo_discipline = disc
+            disc.proxy_discipline = self
+            setattr(disc, '_run', self._proxy_run)
+            setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
+            self.mdo_discipline = disc
         
-        disc._ATTR_TO_SERIALIZE += ("proxy_discipline",)
+            disc._ATTR_TO_SERIALIZE += ("proxy_discipline",)
         
         self.update_gemseo_grammar_with_data_io()
         

@@ -88,75 +88,75 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertEqual(self.ee.root_process.status, 'CONFIGURE')
         self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, 'CONFIGURE')
 
-#     def test_04_execution_success(self):
-#         '''
-#         check discipline execution
-#         '''
-#         self.name = 'Test'
-#         self.ee = ExecutionEngine(self.name)
-# 
-#         disc1_builder = self.ee.factory.get_builder_from_module(
-#             'Disc1', self.mod1_path)
-#         self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
-# 
-#         self.ee.ns_manager.add_ns('ns_ac', self.name)
-#         self.ee.configure()
-#         a = 1.0
-#         b = 2.0
-#         x = 1.0
-#         values_dict = {self.name + '.x': x,
-#                        self.name + '.Disc1.a': a,
-#                        self.name + '.Disc1.b': b}
-# 
-#         self.ee.load_study_from_input_dict(values_dict)
-# 
-#         self.ee.display_treeview_nodes()
-#         self.ee.execute()
-# 
-#         # check status DONE after execution
-#         for disc_id in self.ee.dm.disciplines_dict.keys():
-#             self.assertEqual(self.ee.dm.get_discipline(
-#                 disc_id).status, 'DONE')
-# 
-#         self.ee.execute()
-# 
-#         # check status DONE after execution
-#         for disc_id in self.ee.dm.disciplines_dict.keys():
-#             self.assertEqual(self.ee.dm.get_discipline(
-#                 disc_id).status, 'DONE')
-# 
-#         # get post-processing of disc1
-#         disc1 = self.ee.dm.get_disciplines_with_name('Test.Disc1')[0]
-#         filter = disc1.get_chart_filter_list()
-#         graph_list = disc1.get_post_processing_list(filter)
-#         # graph_list[0].to_plotly().show()
-# 
-#         y = self.ee.dm.get_value(self.name + '.y')
-# 
-#         self.assertEqual(y, a * x + b)
-# 
-#     def test_05_execution_failure(self):
-#         '''
-#         check discipline execution failure when no coupling values
-#         '''
-#         ns_dict = {'ns_ac': self.ns_test}
-#         self.ee.ns_manager.add_ns_def(ns_dict)
-# 
-#         disc1_builder = self.ee.factory.get_builder_from_module(
-#             'Disc1', self.mod1_path)
-#         self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
-# 
-#         self.ee.configure()
-#         self.ee.display_treeview_nodes()
-# 
-#         values_dict = {self.ns_test + '.Disc1.a': 1.,
-#                        self.ns_test + '.Disc1.b': 3.}
-# 
-#         self.ee.load_study_from_input_dict(values_dict)
-# 
-#         # exception raised by check_inputs function: Test.x is not set
-#         self.assertRaises(ValueError, self.ee.execute)
-# 
+    def test_04_execution_success(self):
+        '''
+        check discipline execution
+        '''
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', self.mod1_ns_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        a = 1.0
+        b = 2.0
+        x = 1.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
+
+        # check status DONE after execution
+        for disc_id in self.ee.dm.disciplines_dict.keys():
+            self.assertEqual(self.ee.dm.get_discipline(
+                disc_id).status, 'DONE')
+
+        self.ee.execute()
+
+        # check status DONE after execution
+        for disc_id in self.ee.dm.disciplines_dict.keys():
+            self.assertEqual(self.ee.dm.get_discipline(
+                disc_id).status, 'DONE')
+
+        # get post-processing of disc1
+        disc1 = self.ee.dm.get_disciplines_with_name('Test.Disc1')[0]
+        filter = disc1.get_chart_filter_list()
+        graph_list = disc1.get_post_processing_list(filter)
+        # graph_list[0].to_plotly().show()
+
+        y = self.ee.dm.get_value(self.name + '.y')
+
+        self.assertEqual(y, a * x + b)
+
+    def test_05_execution_failure(self):
+        '''
+        check discipline execution failure when no coupling values
+        '''
+        ns_dict = {'ns_ac': self.ns_test}
+        self.ee.ns_manager.add_ns_def(ns_dict)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', self.mod1_ns_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.configure()
+        self.ee.display_treeview_nodes()
+
+        values_dict = {self.ns_test + '.Disc1.a': 1.,
+                       self.ns_test + '.Disc1.b': 3.}
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        # exception raised by check_inputs function: Test.x is not set
+        self.assertRaises(ValueError, self.ee.execute)
+
     def test_06_namespace_appliance(self):
         '''
         check namespace appliance

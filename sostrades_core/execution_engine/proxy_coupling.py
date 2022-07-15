@@ -483,6 +483,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
+        self.sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
             self.sub_mdo_disciplines.append(disc.mdo_discipline)
