@@ -814,7 +814,9 @@ class ArchiBuilder(SoSDisciplineBuilder):
             if scatter_map.INPUT_NS in scatter_map.get_map():
                 dict_input = {
                     input_name: {
-                        SoSDisciplineBuilder.TYPE: scatter_map.get_input_type(),
+                        #SoSDisciplineBuilder.TYPE: scatter_map.get_input_type(),
+                        SoSDisciplineBuilder.TYPE: 'list',
+                        SoSDisciplineBuilder.SUBTYPE: {'list':'string'},
                         SoSDisciplineBuilder.VISIBILITY: self.SHARED_VISIBILITY,
                         SoSDisciplineBuilder.NAMESPACE: scatter_map.get_input_ns(),
                         SoSDisciplineBuilder.EDITABLE: False,
@@ -824,7 +826,9 @@ class ArchiBuilder(SoSDisciplineBuilder):
             else:
                 dict_input = {
                     input_name: {
-                        SoSDisciplineBuilder.TYPE: scatter_map.get_input_type(),
+                        #SoSDisciplineBuilder.TYPE: scatter_map.get_input_type(),
+                        SoSDisciplineBuilder.TYPE: 'list',
+                        SoSDisciplineBuilder.SUBTYPE: {'list': 'string'},
                         SoSDisciplineBuilder.VISIBILITY: self.LOCAL_VISIBILITY,
                         SoSDisciplineBuilder.EDITABLE: False,
                         SoSDisciplineBuilder.STRUCTURING: True,

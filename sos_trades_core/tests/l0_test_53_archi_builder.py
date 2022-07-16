@@ -270,7 +270,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_04_check_architecture_df(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -342,7 +342,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_05_build_architecture_scatter(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -421,7 +421,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_06_build_architecture_scatter_with_multiple_configure(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -540,7 +540,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_07_architecture_multi_level(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -754,14 +754,14 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
         actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
+
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
@@ -818,7 +818,7 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
+
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
@@ -899,13 +899,13 @@ class TestArchiBuilder(unittest.TestCase):
 
         # actor, subsystem and AC_list scatter maps dict
         subsystem_map = {'input_name': 'subsystem_list',
-                         'input_type': 'string_list',
+
                          'input_ns': 'ns_subsystem',
                          'output_name': 'subsystem',
                          'scatter_ns': 'ns_subsystem_scatter'}
 
         ac_list_map = {'input_name': 'AC_list',
-                       'input_type': 'string_list',
+
                        'input_ns': 'ns_ac',
                        'output_name': 'AC_name',
                        'scatter_ns': 'ns_ac_scatter',

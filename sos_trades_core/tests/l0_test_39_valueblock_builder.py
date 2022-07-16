@@ -45,7 +45,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -168,7 +168,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -181,7 +181,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
 
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -288,7 +288,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -427,7 +427,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
+
                         'input_ns': 'ns_scatter_scenario',
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
@@ -440,7 +440,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
 
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -611,7 +611,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -708,7 +708,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_name',
@@ -719,7 +719,7 @@ class TestMultiScatterBuilder(unittest.TestCase):
 
         # load process in GUI
         mydict = {'input_name': 'sub_name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_actor',
                   'output_name': 'sub_name',
                   'scatter_ns': 'ns_sub_name',
