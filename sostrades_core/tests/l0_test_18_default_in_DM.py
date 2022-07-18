@@ -69,7 +69,7 @@ class TestDefaultInDM(unittest.TestCase):
         values_dict['EETests.Disc2.constant'] = -10.
         values_dict['EETests.x'] = 3.
         self.exec_eng.load_study_from_input_dict(values_dict)
-#         res = self.exec_eng.execute()
+        res = self.exec_eng.execute()
 
         values_dict2 = {}
         values_dict2['EETests.Disc2.power'] = 2
@@ -83,11 +83,12 @@ class TestDefaultInDM(unittest.TestCase):
         # Check if the function set_dynamic_default_values is working
         self.assertEqual(default_b, 4 * a)
         self.assertEqual(value_b, 4 * a)
-#         msg_log_error = 'Try to set a default value for the variable c in Disc1 which is not an input of this discipline '
-#         msg = f'{msg_log_error} not in {self.my_handler.msg_list}'
-#         self.assertTrue(msg_log_error in self.my_handler.msg_list, msg)
-#         res2 = self.exec_eng2.execute()
+        msg_log_error = 'Try to set a default value for the variable c in Disc1 which is not an input of this discipline '
+        msg = f'{msg_log_error} not in {self.my_handler.msg_list}'
+        self.assertTrue(msg_log_error in self.my_handler.msg_list, msg)
+        res2 = self.exec_eng2.execute()
 
-        # Check that res2 equals res1 : Disc1.a was loaded from default value
+        #Check that res2 equals res1 : Disc1.a was loaded from default value
         # in DESC_IN
-#         self.assertEqual(res, res2, "results are not equal")
+        self.assertDictEqual(res.local_data,res2.local_data, "results are not equal")
+

@@ -180,7 +180,7 @@ class TestDataManagerStorage(unittest.TestCase):
         self.assertEqual(self.ee.dm.get_data('Test.x', 'value'), 99.0)
         self.assertEqual(self.ee.dm.get_value('Test.x'), 99.0)
 
-        #self.ee.execute()
+        self.ee.execute()
 
     def test_04_namespace_change(self):
 
