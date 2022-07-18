@@ -13,8 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
-    convert_new_type_into_array, convert_array_into_df
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_df
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -63,21 +62,20 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.dm.set_values_from_dict(values_dict)
 
         exec_eng.display_treeview_nodes()
-#         exec_eng.execute()
-# 
-#         target = {'EE.df': [0.0, 0.5, 0.5], 'EE.dict_df':
-#                   [0., 5., 3., 0., 5., 3.], 'EE.h': [0.75, 0.75]}
-# 
-#         data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
-#         converted_data_dm = exec_eng.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-#            
-#         # check new_types conversion into array
-#         self.assertTrue(dict_are_equal(converted_data_dm, target))
-#                
-#         reconverted_data_dm = exec_eng.root_process._convert_array_into_new_type(converted_data_dm)
-#            
-#         # check array conversion into new_types
-#         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
+        exec_eng.execute()
+ 
+        target = {'EE.df': array([0.5, 0.5]), 'EE.dict_df': array([5., 3., 5., 3.]), 'EE.h': array([0.75, 0.75])}
+ 
+        data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
+        converted_data_dm = exec_eng.root_process._convert_new_type_into_array(data_dm, update_dm=True)
+            
+        # check new_types conversion into array
+        self.assertTrue(dict_are_equal(converted_data_dm, target))
+                
+        reconverted_data_dm = exec_eng.root_process._convert_array_into_new_type(converted_data_dm)
+            
+        # check array conversion into new_types
+        self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 
     def test_02_extend_df_soscoupling(self):
 
@@ -105,35 +103,35 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.dm.set_values_from_dict(values_dict)
 
 #         exec_eng.execute()
-# 
+#  
 #         target = {'EE.h': array([0.70710678,
 #                                  0.70710678]),
 #                   'EE.dict_df': array([0., 0.70710678, 0.70710678, 0., 0.70710678, 0.70710678]),
 #                   'EE.df': array([0., 0.707107, 0.707107])}
-#         
+#          
 #         data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
 #         converted_data_dm = exec_eng.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-#            
+#             
 #         # check new_types conversion into array
 #         self.assertTrue(dict_are_equal(converted_data_dm, target))
-#                
+#                 
 #         reconverted_data_dm = exec_eng.root_process._convert_array_into_new_type(converted_data_dm)
-#            
+#             
 #         # check array conversion into new_types
 #         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
-# 
+#  
 #         disc7 = exec_eng.root_process.proxy_disciplines[1]
-# 
+#  
 #         tolerance = exec_eng.dm.get_value('EE.tolerance')
-# 
+#  
 #         df = disc7.get_sosdisc_outputs('df')
 #         df_target = pd.DataFrame(
 #             array([[np.sqrt(2.0) / 2.0, np.sqrt(2.0) / 2.0]]), columns=['c1', 'c2'])
 #         assert_frame_equal(df, df_target, check_exact=False, rtol=1e-5)
-# 
+#  
 #         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
 #         residual_history = exec_eng.root_process.sub_mda_list[0].residual_history
-# 
+#  
 #         # Check residual history
 #         self.assertLessEqual(len(residual_history), max_mda_iter)
 #         self.assertLessEqual(residual_history[-1][0], tolerance)
@@ -161,26 +159,26 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.dm.set_values_from_dict(values_dict)
 
         exec_eng.display_treeview_nodes()
-#         exec_eng.execute()
-# 
-#         # -- check dataframe as SoSTrades output
-#         disc6 = exec_eng.root_process.proxy_disciplines[0]
-# 
-#         # convert dataframe into array and check data converted and metadata
-#         data_dict_converted = disc6._convert_new_type_into_array({'EE.df': exec_eng.dm.get_value('EE.df')})
-#         self.assertListEqual(list(data_dict_converted['EE.df']), [0.5, 0.5])
-#         metadata = exec_eng.dm.get_data('EE.df', 'type_metadata')[0]
-#         self.assertListEqual(metadata['years'], [2020.0])
-#         self.assertListEqual(metadata['year'], [2020.0])
-#         self.assertListEqual(metadata['columns'].values.tolist(), ['c1', 'c2'])
-# 
-#         # Check that in SoSTrades we have the columns back and at the right
-#         # order
-#         df = disc6.get_sosdisc_inputs('df')
-#         df_target = pd.DataFrame(
-#             array([[2020, 2020, 0.5, 0.5]]), columns=['years', 'year', 'c1', 'c2'], index=[0.])
-#         self.assertTrue(df.equals(df_target),
-#                         f'expected and output DF are different:\n{df_target}\n VS\n{df}')
+        exec_eng.execute()
+ 
+        # -- check dataframe as SoSTrades output
+        disc6 = exec_eng.root_process.proxy_disciplines[0]
+ 
+        # convert dataframe into array and check data converted and metadata
+        data_dict_converted = disc6._convert_new_type_into_array({'EE.df': exec_eng.dm.get_value('EE.df')})
+        self.assertListEqual(list(data_dict_converted['EE.df']), [0.5, 0.5])
+        metadata = exec_eng.dm.get_data('EE.df', 'type_metadata')[0]
+        self.assertListEqual(metadata['years'], [2020.0])
+        self.assertListEqual(metadata['year'], [2020.0])
+        self.assertListEqual(metadata['columns'].values.tolist(), ['c1', 'c2'])
+ 
+        # Check that in SoSTrades we have the columns back and at the right
+        # order
+        df = disc6.get_sosdisc_inputs('df')
+        df_target = pd.DataFrame(
+            array([[2020, 2020, 0.5, 0.5]]), columns=['years', 'year', 'c1', 'c2'], index=[0.])
+        self.assertTrue(df.equals(df_target),
+                        f'expected and output DF are different:\n{df_target}\n VS\n{df}')
 
     def test_04_check_empty_df(self):
 
@@ -207,13 +205,13 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.dm.set_values_from_dict(values_dict)
 
         exec_eng.display_treeview_nodes()
-#         exec_eng.execute()
-# 
-#         self.assertTrue(exec_eng.dm.get_value('EE.Disc5.is_df_empty'))
-#         self.assertTrue(exec_eng.dm.get_value(
-#             'EE.Disc5.is_dict_empty_df_empty'))
-#         self.assertTrue(exec_eng.dm.get_value(
-#             'EE.Disc5.is_dict_empty_list_empty'))
+        exec_eng.execute()
+ 
+        self.assertTrue(exec_eng.dm.get_value('EE.Disc5.is_df_empty'))
+        self.assertTrue(exec_eng.dm.get_value(
+            'EE.Disc5.is_dict_empty_df_empty'))
+        self.assertTrue(exec_eng.dm.get_value(
+            'EE.Disc5.is_dict_empty_list_empty'))
 
     def test_05_multi_index_column_df(self):
 
@@ -262,7 +260,7 @@ class TestExtendDataframe(unittest.TestCase):
             'EE.df', 'type_metadata')[0]['columns'].equals(col))
 
 #         exec_eng.execute()
-# 
+#  
 #         target = [0.7071067811865475, 0.7071067811865475]
 #         self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
 
@@ -311,7 +309,7 @@ class TestExtendDataframe(unittest.TestCase):
             'EE.df', 'type_metadata')[0]['indices'].equals(mux))
 
 #         exec_eng.execute()
-# 
+#  
 #         target = [0.7071067811865475, 0.7071067811865475]
 #         self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
 
