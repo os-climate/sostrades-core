@@ -980,7 +980,7 @@ class ProxyDiscipline(object):
                 raise Exception(
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
-            elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.mdo_discipline.local_data:
+            elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 values_dict[new_key] = self.mdo_discipline.local_data[namespaced_key]
             # get data in data manager during configure step
             else:

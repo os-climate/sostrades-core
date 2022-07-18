@@ -558,8 +558,8 @@ class ExecutionEngine:
 
         # -- execution
         ex_proc = self.root_mdo_discipline
-
-        ex_proc.execute()
+        input_data = self.root_mdo_discipline.get_input_data_for_gems()
+        ex_proc.execute(input_data=input_data)
         
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',

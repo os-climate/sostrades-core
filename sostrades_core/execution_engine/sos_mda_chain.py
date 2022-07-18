@@ -407,13 +407,6 @@ class SoSMDAChain(MDAChain):
 
     # -- Protected methods
     
-    def execute(self, input_data=None):
-        
-        if input_data is None:
-            # if no input_data, i.e. not called by GEMS
-            input_data = self.get_input_data_for_gems()
-        MDAChain.execute(self, input_data=input_data)
-
     def _run(self):
         ''' Overloads SoSDiscipline run method.
             In SoSCoupling, self.local_data is updated through MDAChain
