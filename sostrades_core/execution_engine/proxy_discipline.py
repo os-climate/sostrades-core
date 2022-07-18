@@ -54,19 +54,6 @@ class ProxyDisciplineException(Exception):
 # to avoid circular redundancy with nsmanager
 NS_SEP = '.'
 
-# def _proxy_run(cls):
-#     '''
-#     uses user wrapp run during execution
-#     '''
-#     return cls.proxy_discipline.run()
-# 
-#     
-# def _proxy_compute_jacobian(cls):
-#     '''
-#     uses user wrapp jacobian computation during execution
-#     '''
-#     return cls.proxy_discipline.compute_sos_jacobian()
-
 
 class ProxyDiscipline(object):
     '''**SoSDiscipline** is the :class:`~gemseo.core.discipline.MDODiscipline`
@@ -1252,18 +1239,18 @@ class ProxyDiscipline(object):
 # 
 #         return lines_nb, index_column
 
-    def get_input_data_for_gems(self):
-        '''
-        Get input_data for linearize ProxyDiscipline
-        '''
-        input_data = {}
-        input_data_names = self.input_grammar.get_data_names()
-        if len(input_data_names) > 0:
-
-            for data_name in input_data_names:
-                input_data[data_name] = self.ee.dm.get_value(data_name)
-
-        return input_data
+#     def get_input_data_for_gems(self):
+#         '''
+#         Get input_data for linearize ProxyDiscipline
+#         '''
+#         input_data = {}
+#         input_data_names = self.input_grammar.get_data_names()
+#         if len(input_data_names) > 0:
+# 
+#             for data_name in input_data_names:
+#                 input_data[data_name] = self.ee.dm.get_value(data_name)
+# 
+#         return input_data
 
     def _update_type_metadata(self):
         ''' update metadata of values not supported by GEMS
@@ -1295,14 +1282,6 @@ class ProxyDiscipline(object):
         ''' To be overloaded by sublcasses
         '''
         raise NotImplementedError()
-    
-    def set_proxy_status(self):
-        '''
-        Set proxy discipline status with mdo discipline status
-        '''
-        self._update_status_dm(self.mdo_discipline.status)
-        for proxy_disc in self.proxy_disciplines:
-            proxy_disc.set_proxy_status()
 
     def _update_study_ns_in_varname(self, names):
         ''' updates the study name in the variable input names

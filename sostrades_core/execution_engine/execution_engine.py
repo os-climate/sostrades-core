@@ -558,15 +558,9 @@ class ExecutionEngine:
 
         # -- execution
         ex_proc = self.root_mdo_discipline
-        self.root_process.update_status_running()
 
         ex_proc.execute()
         
-        self.root_process._update_status_dm(
-            ProxyDiscipline.STATUS_DONE)
-
-        # -- set proxy disciplines status recursively
-        self.root_process.set_proxy_status()
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())

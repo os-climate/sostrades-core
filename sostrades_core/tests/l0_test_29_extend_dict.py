@@ -173,20 +173,20 @@ class TestExtendDict(unittest.TestCase):
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(values_dict, reconverted_inputs))
 
-#         exec_eng.execute()
-#  
-#         target = {f'{self.name}.dict_out': {'key1': 0.7071119843035847, 'key2': 0.7071119843035847},
-#                   f'{self.name}.z': array([0.707111984, 1.41422397]),
-#                   f'{self.name}.h': array([0.7071067811865475, 0.7071067811865475]),
-#                   f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}}
-#  
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng.dm.get_value(key)
-#             if target[key] is dict:
-#                 self.assertDictEqual(res[key], target[key])
-#             elif target[key] is array:
-#                 self.assertListEqual(list(target[key]), list(res[key]))
+        exec_eng.execute()
+  
+        target = {f'{self.name}.dict_out': {'key1': 0.7071119843035847, 'key2': 0.7071119843035847},
+                  f'{self.name}.z': array([0.707111984, 1.41422397]),
+                  f'{self.name}.h': array([0.7071067811865475, 0.7071067811865475]),
+                  f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}}
+  
+        res = {}
+        for key in target:
+            res[key] = exec_eng.dm.get_value(key)
+            if target[key] is dict:
+                self.assertDictEqual(res[key], target[key])
+            elif target[key] is array:
+                self.assertListEqual(list(target[key]), list(res[key]))
 
     def test_04_sosdiscipline_nested_dict(self):
 

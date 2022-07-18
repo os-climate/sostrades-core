@@ -391,8 +391,28 @@ class SoSMDAChain(MDAChain):
                 f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
         else:
             return ready_disciplines
+        
+    def get_input_data_for_gems(self):
+        '''
+        Get input_data for linearize ProxyDiscipline
+        '''
+        input_data = {}
+        input_data_names = self.input_grammar.get_data_names()
+        if len(input_data_names) > 0:
+
+            for data_name in input_data_names:
+                input_data[data_name] = self.ee.dm.get_value(data_name)
+
+        return input_data
 
     # -- Protected methods
+    
+    def execute(self, input_data=None):
+        
+        if input_data is None:
+            # if no input_data, i.e. not called by GEMS
+            input_data = self.get_input_data_for_gems()
+        MDAChain.execute(self, input_data=input_data)
 
     def _run(self):
         ''' Overloads SoSDiscipline run method.
@@ -679,9 +699,9 @@ class SoSMDAChain(MDAChain):
 
                     # if activated, all coupled disciplines involved in the MDA
                     # are grouped into a MDOChain (self coupled discipline)
-                    if self.get_inputs_by_name("group_mda_disciplines"):
-                        sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
-                                                        grammar_type=self.grammar_type)]
+#                     if self.get_inputs_by_name("group_mda_disciplines"):
+#                         sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
+#                                                         grammar_type=self.grammar_type)]
                     # create a sub-MDA
                     sub_mda_options["use_lu_fact"] = self.use_lu_fact
                     sub_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
@@ -699,7 +719,7 @@ class SoSMDAChain(MDAChain):
                             sub_coupling_structures_iterator),
                         **sub_mda_options
                     )
-                    self.set_epsilon0_and_cache(sub_mda)
+#                     self.set_epsilon0_and_cache(sub_mda)
 
                     chained_disciplines.append(sub_mda)
                     self.sub_mda_list.append(sub_mda)

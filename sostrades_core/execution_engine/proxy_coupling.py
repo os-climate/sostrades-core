@@ -362,8 +362,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def _build_coupling_structure(self):
         
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
-        self.strong_couplings = _filter_variables_to_convert(self.proxy_disciplines,
-                                                             self.ee,
+        self.strong_couplings = _filter_variables_to_convert(self.ee,
                                                              self.coupling_structure.strong_couplings(),
                                                              write_logs=True)
         
