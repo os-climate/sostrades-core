@@ -57,10 +57,10 @@ class TestStatusDM(unittest.TestCase):
         values_dict['EETests.x'] = 3.
 
         self.exec_eng.dm.set_values_from_dict(values_dict)
-        # res = self.exec_eng.execute()
-        # print(res)
-        # to_test = [self.exec_eng.dm.disciplines_dict[x]['status']
-        #            for x in list(self.exec_eng.dm.disciplines_dict.keys())]
-        # target = [self.DONE] * 3
-        # self.assertListEqual(
-        #     to_test, target, "wrong status in disciplines_dict")
+        res = self.exec_eng.execute()
+        print(res)
+        to_test = [self.exec_eng.dm.disciplines_dict[x]['status']
+                   for x in list(self.exec_eng.dm.disciplines_dict.keys())]
+        target = [self.DONE] * 3
+        self.assertListEqual(
+            to_test, target, "wrong status in disciplines_dict")

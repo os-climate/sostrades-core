@@ -178,4 +178,4 @@ class TestVisibility(unittest.TestCase):
         values_dict[f'{self.name}.x'] = 3.
 
         self.ee.dm.set_values_from_dict(values_dict)
-#         self.ee.execute()
+        self.ee.execute()
