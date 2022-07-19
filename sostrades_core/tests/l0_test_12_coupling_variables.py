@@ -114,9 +114,8 @@ class TestCouplingVariables(unittest.TestCase):
         values_dict[f'{namespace}.Disc1.indicator'] = 10.
         values_dict[f'{namespace}.x'] = 3.
 
-        dm.set_values_from_dict(values_dict)
+        ee.load_study_from_input_dict(values_dict)
 
-        ee.configure()
         rp = ee.root_process
         
         # gather couplings data

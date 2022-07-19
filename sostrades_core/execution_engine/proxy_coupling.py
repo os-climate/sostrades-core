@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from gemseo.core.chain import MDOChain
+from gemseo.mda.sequential_mda import MDASequential
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -528,8 +529,23 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.mdo_discipline = mda_chain
         mda_chain.proxy_discipline = self
         
+        # set epsilon0 and cache of sub_mda_list
+        for sub_mda in self.mdo_discipline.sub_mda_list:
+            self.set_epsilon0_and_cache(sub_mda)
+        
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
+        
+    def set_epsilon0_and_cache(self, mda):
+        '''
+        Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
+        '''
+        if isinstance(mda, MDASequential):
+            for sub_mda in mda.mda_sequence:
+                self.set_epsilon0_and_cache(sub_mda)
+        mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
+        self.set_cache(mda, self.get_sosdisc_inputs(
+            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''

@@ -101,13 +101,8 @@ class TestExtendDataframe(unittest.TestCase):
         values_dict['EE.dict_df'] = {'key_1': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2']),
                                      'key_2': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2'])}
         exec_eng.load_study_from_input_dict(values_dict)
-
-        exec_eng.execute()
-
-        target = {'EE.h': array([0.70710678,
-                                 0.70710678]),
-                  'EE.dict_df': array([0., 0.70710678, 0.70710678, 0., 0.70710678, 0.70710678]),
-                  'EE.df': array([0., 0.707107, 0.707107])}
+        
+        target = {'EE.h': array([8., 9.]), 'EE.dict_df': array([5., 3., 5., 3.]), 'EE.df': array([5., 3.])}
 
         data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
         converted_data_dm = exec_eng.root_process._convert_new_type_into_array(data_dm, update_dm=True)
@@ -120,6 +115,8 @@ class TestExtendDataframe(unittest.TestCase):
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 
+        exec_eng.execute()
+
         disc7 = exec_eng.root_process.proxy_disciplines[1]
 
         tolerance = exec_eng.dm.get_value('EE.tolerance')
@@ -130,7 +127,7 @@ class TestExtendDataframe(unittest.TestCase):
         assert_frame_equal(df, df_target, check_exact=False, rtol=1e-5)
 
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_process.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_mdo_discipline.sub_mda_list[0].residual_history
 
         # Check residual history
         self.assertLessEqual(len(residual_history), max_mda_iter)

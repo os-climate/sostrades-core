@@ -206,16 +206,16 @@ class SoSMDAChain(MDAChain):
 
         return num_data
 
-    def set_epsilon0_and_cache(self, mda):
-        '''
-        Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
-        '''
-        if isinstance(mda, MDASequential):
-            for sub_mda in mda.mda_sequence:
-                self.set_epsilon0_and_cache(sub_mda)
-        mda.epsilon0 = copy(self.get_inputs_by_name('epsilon0'))
-        self.set_cache(mda, self.get_inputs_by_name(
-            'cache_type'), self.get_inputs_by_name('cache_file_path'))
+#     def set_epsilon0_and_cache(self, mda):
+#         '''
+#         Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
+#         '''
+#         if isinstance(mda, MDASequential):
+#             for sub_mda in mda.mda_sequence:
+#                 self.set_epsilon0_and_cache(sub_mda)
+#         mda.epsilon0 = copy(self.proxy_discipline.get_sosdisc_inputs('epsilon0'))
+#         self.set_cache(mda, self.proxy_discipline.get_sosdisc_inputs(
+#             'cache_type'), self.proxy_discipline.get_sosdisc_inputs('cache_file_path'))
 
     def check_var_data_mismatch(self):
         '''
@@ -258,32 +258,32 @@ class SoSMDAChain(MDAChain):
                                 self.logger.debug(
                                     f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
 
-    def run(self):
+    def _run(self):
         '''
         Call the _run method of MDAChain in case of SoSCoupling.
         '''
         # set linear solver options for MDA
-        self.linear_solver = self.linear_solver_MDA
-        self.linear_solver_options = self.linear_solver_options_MDA
-        self.linear_solver_tolerance = self.linear_solver_tolerance_MDA
+        self.linear_solver = self.proxy_discipline.linear_solver_MDA
+        self.linear_solver_options = self.proxy_discipline.linear_solver_options_MDA
+        self.linear_solver_tolerance = self.proxy_discipline.linear_solver_tolerance_MDA
 
         self.pre_run_mda()
 
         if len(self.sub_mda_list) > 0:
-            self.logger.info(f'{self.get_disc_full_name()} MDA history')
+            self.logger.info(f'{self.proxy_discipline.get_disc_full_name()} MDA history')
             self.logger.info('\tIt.\tRes. norm')
 
-        self._run()
+        MDAChain._run(self)
 
         # save residual history
         dict_out = {}
         residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
-        dict_out[self.RESIDUALS_HISTORY] = residuals_history
-        self.store_sos_outputs_values(dict_out, update_dm=True)
+        dict_out[self.proxy_discipline.RESIDUALS_HISTORY] = residuals_history
+        self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
 
         # store local data in datamanager
-        self.update_dm_with_local_data()
+        self.proxy_discipline.update_dm_with_local_data(self.local_data)
 
     def update_dm_with_local_data(self, local_data, dm):
         '''
@@ -296,14 +296,13 @@ class SoSMDAChain(MDAChain):
         Pre run needed if one of the strong coupling variables is None in a MDA 
         No need of prerun otherwise 
         '''
-        strong_couplings_values = [self.dm.get_value(
-            key) for key in self.strong_couplings]
-        if any(elem is None for elem in strong_couplings_values):
+        strong_couplings_values = [self.local_data[key] for key in self.strong_couplings if key in self.local_data]
+        if len(strong_couplings_values) < len(self.strong_couplings):
             self.logger.info(
-                f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
+                f'Execute a pre-run for the coupling ' + self.proxy_discipline.get_disc_full_name())
             self.recreate_order_for_first_execution()
             self.logger.info(
-                f'End of pre-run execution for the coupling ' + self.get_disc_full_name())
+                f'End of pre-run execution for the coupling ' + self.proxy_discipline.get_disc_full_name())
 
     def recreate_order_for_first_execution(self):
         '''
@@ -343,7 +342,7 @@ class SoSMDAChain(MDAChain):
 
                         for discipline in ready_disciplines:
                             # Execute ready disciplines and update local_data
-                            if discipline.is_sos_coupling:
+                            if discipline.proxy_discipline.is_sos_coupling:
                                 # recursive call if subdisc is a SoSCoupling
                                 # TODO: check if it will work for cases like
                                 # Coupling1 > Driver > Coupling2
@@ -373,10 +372,11 @@ class SoSMDAChain(MDAChain):
         ready_disciplines = []
         disc_vs_keys_none = {}
         for disc in disciplines:
-            # get inputs values of disc with full_name
-            inputs_values = disc.get_inputs_by_name(
-                in_dict=True, full_name=True)
+#             # get inputs values of disc with full_name
+#             inputs_values = disc.get_inputs_by_name(
+#                 in_dict=True, full_name=True)
             # update inputs values with SoSCoupling local_data
+            inputs_values = {}
             inputs_values.update(disc._filter_inputs(self.local_data))
             keys_none = [key for key, value in inputs_values.items()
                          if value is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
@@ -407,13 +407,13 @@ class SoSMDAChain(MDAChain):
 
     # -- Protected methods
     
-    def _run(self):
-        ''' Overloads SoSDiscipline run method.
-            In SoSCoupling, self.local_data is updated through MDAChain
-            and self._data_out is updated through self.local_data.
-        '''
-        MDAChain._run(self)
-        self.proxy_discipline.update_dm_with_local_data(self.local_data)
+#     def _run(self):
+#         ''' Overloads SoSDiscipline run method.
+#             In SoSCoupling, self.local_data is updated through MDAChain
+#             and self._data_out is updated through self.local_data.
+#         '''
+#         MDAChain._run(self)
+#         self.proxy_discipline.update_dm_with_local_data(self.local_data)
  
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
@@ -678,7 +678,7 @@ class SoSMDAChain(MDAChain):
                 if len(coupled_disciplines) > 1 or (
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
-                        and not coupled_disciplines[0].is_sos_coupling
+                        and not coupled_disciplines[0].proxy_discipline.is_sos_coupling
                         and self.get_inputs_by_name('authorize_self_coupled_disciplines')
                 ):
                     # several disciplines coupled
