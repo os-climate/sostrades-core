@@ -358,6 +358,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         for discipline in self.proxy_disciplines:
             for var_f_name, var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
+                if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_OUT:
                     self._data_out[var_name] = self.dm.get_data(var_f_name)
     
     def _build_coupling_structure(self):
