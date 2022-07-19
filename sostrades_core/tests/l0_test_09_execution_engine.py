@@ -63,7 +63,7 @@ class TestExecutionEngine(unittest.TestCase):
         values_dict[ns + '.x'] = 3.
         values_dict[ns + '.Disc1.a'] = 10.
         values_dict[ns + '.Disc1.b'] = 20.
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
     
         exec_eng.execute()
         print('\ntest_01_execution_engine_sosdiscipline::root_process execution result:')

@@ -124,7 +124,7 @@ class TestSerializeDF(unittest.TestCase):
                     '.dict_of_dict_in'] = self.dict_of_dict_in_data
         values_dict[st_name + '.' + proc_n + 
                     '.dict_of_df_in'] = self.dict_of_df_in_data
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
         return exec_eng
 
     def test_01_extract_only_dataframe(self):

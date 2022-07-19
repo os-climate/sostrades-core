@@ -19,10 +19,6 @@ from gemseo.core.discipline import MDODiscipline
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-import numpy as np
-import time
-import _thread
-
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
