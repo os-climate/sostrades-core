@@ -458,7 +458,11 @@ class ExecutionEngine:
         # Set all output variables and strong couplings
         for key, value in self.dm.data_dict.items():
             if key in convert_data_cache:
-                if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT or (value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]):
+                # check if the key is an output variable
+                is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
+                # check if this is a strongly coupled input necessary to initialize a MDA
+                is_init_coupling_var = (value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING])
+                if is_output_var or is_init_coupling_var:
                     value['value'] = convert_data_cache[key]['value']
                     
         if self.__yield_method is not None:
