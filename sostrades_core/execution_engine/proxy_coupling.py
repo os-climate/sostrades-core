@@ -330,10 +330,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self.set_configure_status(True)
             # - build the coupling structure
             self._build_coupling_structure()
-            # - builds data_in/out according to the coupling structure
-            self._build_data_io()
             # - Update coupling and editable flags in the datamanager for the GUI
             self._update_coupling_flags_in_dm()
+            # - builds data_in/out according to the coupling structure
+            self._build_data_io()
             
     def _build_data_io(self):
         ''' build data_in and data_out according to MDOCouplingStructure
