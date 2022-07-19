@@ -59,7 +59,7 @@ class TestExtendDataframe(unittest.TestCase):
             array([[0.5, 0.5]]), columns=['c1', 'c2'])
         values_dict['EE.dict_df'] = {'key_1': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2']),
                                      'key_2': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2'])}
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
@@ -100,41 +100,41 @@ class TestExtendDataframe(unittest.TestCase):
             array([[5., 3.]]), columns=['c1', 'c2'])
         values_dict['EE.dict_df'] = {'key_1': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2']),
                                      'key_2': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2'])}
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
-#         exec_eng.execute()
-#  
-#         target = {'EE.h': array([0.70710678,
-#                                  0.70710678]),
-#                   'EE.dict_df': array([0., 0.70710678, 0.70710678, 0., 0.70710678, 0.70710678]),
-#                   'EE.df': array([0., 0.707107, 0.707107])}
-#          
-#         data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
-#         converted_data_dm = exec_eng.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-#             
-#         # check new_types conversion into array
-#         self.assertTrue(dict_are_equal(converted_data_dm, target))
-#                 
-#         reconverted_data_dm = exec_eng.root_process._convert_array_into_new_type(converted_data_dm)
-#             
-#         # check array conversion into new_types
-#         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
-#  
-#         disc7 = exec_eng.root_process.proxy_disciplines[1]
-#  
-#         tolerance = exec_eng.dm.get_value('EE.tolerance')
-#  
-#         df = disc7.get_sosdisc_outputs('df')
-#         df_target = pd.DataFrame(
-#             array([[np.sqrt(2.0) / 2.0, np.sqrt(2.0) / 2.0]]), columns=['c1', 'c2'])
-#         assert_frame_equal(df, df_target, check_exact=False, rtol=1e-5)
-#  
-#         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-#         residual_history = exec_eng.root_process.sub_mda_list[0].residual_history
-#  
-#         # Check residual history
-#         self.assertLessEqual(len(residual_history), max_mda_iter)
-#         self.assertLessEqual(residual_history[-1][0], tolerance)
+        exec_eng.execute()
+
+        target = {'EE.h': array([0.70710678,
+                                 0.70710678]),
+                  'EE.dict_df': array([0., 0.70710678, 0.70710678, 0., 0.70710678, 0.70710678]),
+                  'EE.df': array([0., 0.707107, 0.707107])}
+
+        data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
+        converted_data_dm = exec_eng.root_process._convert_new_type_into_array(data_dm, update_dm=True)
+
+        # check new_types conversion into array
+        self.assertTrue(dict_are_equal(converted_data_dm, target))
+
+        reconverted_data_dm = exec_eng.root_process._convert_array_into_new_type(converted_data_dm)
+
+        # check array conversion into new_types
+        self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
+
+        disc7 = exec_eng.root_process.proxy_disciplines[1]
+
+        tolerance = exec_eng.dm.get_value('EE.tolerance')
+
+        df = disc7.get_sosdisc_outputs('df')
+        df_target = pd.DataFrame(
+            array([[np.sqrt(2.0) / 2.0, np.sqrt(2.0) / 2.0]]), columns=['c1', 'c2'])
+        assert_frame_equal(df, df_target, check_exact=False, rtol=1e-5)
+
+        max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
+        residual_history = exec_eng.root_process.sub_mda_list[0].residual_history
+
+        # Check residual history
+        self.assertLessEqual(len(residual_history), max_mda_iter)
+        self.assertLessEqual(residual_history[-1][0], tolerance)
 
     def test_03_check_df_excluded_columns(self):
 
@@ -156,7 +156,7 @@ class TestExtendDataframe(unittest.TestCase):
             array([[2020, 2020, 0.5, 0.5]]), columns=['years', 'year', 'c1', 'c2'])
         values_dict['EE.dict_df'] = {'key_1': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2']),
                                      'key_2': pd.DataFrame(array([[5., 3.]]), columns=['c1', 'c2'])}
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
@@ -202,7 +202,7 @@ class TestExtendDataframe(unittest.TestCase):
         values_dict = {}
         values_dict['EE.h'] = {'dataframe': pd.DataFrame(data={'col1': array([0.5,
                                                                               0.5])})}
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
@@ -259,10 +259,10 @@ class TestExtendDataframe(unittest.TestCase):
         self.assertTrue(exec_eng.dm.get_data(
             'EE.df', 'type_metadata')[0]['columns'].equals(col))
 
-#         exec_eng.execute()
-#  
-#         target = [0.7071067811865475, 0.7071067811865475]
-#         self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
+        exec_eng.execute()
+
+        target = [0.7071067811865475, 0.7071067811865475]
+        self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
 
     def test_06_multi_index_rows_df(self):
 
@@ -308,10 +308,10 @@ class TestExtendDataframe(unittest.TestCase):
         self.assertTrue(exec_eng.dm.get_data(
             'EE.df', 'type_metadata')[0]['indices'].equals(mux))
 
-#         exec_eng.execute()
-#  
-#         target = [0.7071067811865475, 0.7071067811865475]
-#         self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
+        exec_eng.execute()
+
+        target = [0.7071067811865475, 0.7071067811865475]
+        self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
 
     def test_07_convert_array_into_df(self):
 
@@ -380,7 +380,7 @@ class TestExtendDataframe(unittest.TestCase):
 
         df = convert_array_into_df(
             np.array(arr_to_convert), metadata)
-        exec_eng.dm.set_values_from_dict({'EE.dict_df': df})
+        exec_eng.load_study_from_input_dict({'EE.dict_df': df})
         old_value = exec_eng.dm.get_value('EE.dict_df')
 
         profil = cProfile.Profile()
@@ -432,7 +432,7 @@ class TestExtendDataframe(unittest.TestCase):
                           339.79999999999995, 344.4, 349.0]
         df = convert_array_into_df(
             np.array(arr_to_convert), metadata)
-        exec_eng.dm.set_values_from_dict({'EE.dict_df': df})
+        exec_eng.load_study_from_input_dict({'EE.dict_df': df})
         old_value = exec_eng.dm.get_value('EE.dict_df')
 
         profil = cProfile.Profile()
