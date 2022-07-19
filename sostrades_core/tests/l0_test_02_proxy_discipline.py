@@ -188,10 +188,10 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertEqual(self.ee.dm.get_value('Test.Disc1.b'), b)
         self.assertEqual(self.ee.dm.get_value('Test.x'), x)
  
-#         self.ee.execute()
-#  
-#         self.assertEqual(self.ee.dm.get_value(
-#             self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+        self.ee.execute()
+  
+        self.assertEqual(self.ee.dm.get_value(
+            self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
     def test_07_get_sos_io_asdict(self):
         '''
@@ -220,13 +220,13 @@ class TestProxyDiscipline(unittest.TestCase):
             ['a', 'b'], in_dict=True)
         ref_inp = {'a': 10.0, 'b': 20.0}
         self.assertDictEqual(ref_inp, inp_dict, 'error in input dict')
-#         ee.execute()
-#  
-#         # get outputs and compare to reference
-#         out_dict = disc1.get_sosdisc_outputs(
-#             ['indicator', 'y'], in_dict=True)
-#         ref_out = {'indicator': 200.0, 'y': 120.0}
-#         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
+        ee.execute()
+  
+        # get outputs and compare to reference
+        out_dict = disc1.get_sosdisc_outputs(
+            ['indicator', 'y'], in_dict=True)
+        ref_out = {'indicator': 200.0, 'y': 120.0}
+        self.assertDictEqual(ref_out, out_dict, 'error in input dict')
  
     def test_08_get_sos_io_no_inputs(self):
         '''
@@ -260,12 +260,12 @@ class TestProxyDiscipline(unittest.TestCase):
         for key in ref_inp:
             self.assertEqual(ref_inp[key], inp_dict[key],
                              'error in input dict')
-#         ee.execute()
-#  
-#         # get outputs and compare to reference
-#         out_dict = disc1.get_sosdisc_outputs()
-#         ref_out = {'indicator': 200.0, 'y': 120.0}
-#         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
+        ee.execute()
+  
+        # get outputs and compare to reference
+        out_dict = disc1.get_sosdisc_outputs()
+        ref_out = {'indicator': 200.0, 'y': 120.0}
+        self.assertDictEqual(ref_out, out_dict, 'error in input dict')
   
     def test_09_check_factory_with_1_added_disc(self):
         '''
@@ -286,7 +286,7 @@ class TestProxyDiscipline(unittest.TestCase):
  
         self.ee.load_study_from_input_dict(priv_in_values)
  
-#         self.ee.execute()
+        self.ee.execute()
   
         self.assertIsInstance(self.ee.root_process, ProxyDiscipline,
                               'The root of the factory must be a ProxyDiscipline because only one disc has been added')
@@ -305,15 +305,16 @@ class TestProxyDiscipline(unittest.TestCase):
             [disc1_builder, disc2_builder])
         ee2.configure()
  
-        priv_in_values = {'Test2.x': 99.,
+        priv_in_values = {'Test2.Disc1.x': 9.,
                           'Test2.Disc1.a': 1.,
-                          'Test2.Disc1.b': 3.,
+                          'Test2.Disc1.b': 2.,
                           'Test2.y': 10.,
                           'Test2.Disc2.constant': 4.,
-                          'Test2.Disc2.power': 2}
+                          'Test2.Disc2.power': 2,
+                          'Test2.Disc1.name': 'A1'}
         ee2.load_study_from_input_dict(priv_in_values)
  
-#         ee2.execute()
+        ee2.execute()
   
         self.assertIsInstance(ee2.root_process, ProxyCoupling,
                               'The root of the factory must be a SoSDiscipline because only one disc has been added')
@@ -353,9 +354,9 @@ class TestProxyDiscipline(unittest.TestCase):
         for key in ref_inp:
             self.assertEqual(ref_inp[key], inp_dict[key],
                              'error in input dict')
-#         ee.execute()
-# 
-#         # get outputs and compare to reference
-#         out_dict = disc8.get_sosdisc_outputs()
-#         ref_out = {'indicator': 200.0, 'y': 120.0}
-#         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
+        ee.execute()
+ 
+        # get outputs and compare to reference
+        out_dict = disc8.get_sosdisc_outputs()
+        ref_out = {'indicator': 200.0, 'y': 120.0}
+        self.assertDictEqual(ref_out, out_dict, 'error in input dict')

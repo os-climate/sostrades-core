@@ -55,8 +55,8 @@ class TestStatusDiscipline(unittest.TestCase):
         values_dict['Test.Disc1.a'] = 10.
         values_dict['Test.Disc1.b'] = 5.
         values_dict['Test.x'] = 2.
-        self.ee.dm.set_values_from_dict(values_dict)
-
+        self.ee.load_study_from_input_dict(values_dict)
+        
         self.process = self.ee.root_process
 
         if self.process.status in self.dic_status.keys():
