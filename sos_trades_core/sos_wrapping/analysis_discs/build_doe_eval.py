@@ -1099,7 +1099,7 @@ class BuildDoeEval(SoSEval):
             Function needed in create_samples_from_custom_df()
         """
         if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
-            self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
+            self.logger.error("the customed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
 
     def create_design_space(self):
