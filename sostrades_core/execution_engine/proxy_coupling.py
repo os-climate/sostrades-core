@@ -487,6 +487,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc.prepare_execution()
             self.sub_mdo_disciplines.append(disc.mdo_discipline)
         
+        self.update_gemseo_grammar_with_data_io()
+        
         self.init_gemseo_discipline()
         
         self._set_residual_history()

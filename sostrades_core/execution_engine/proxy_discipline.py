@@ -291,15 +291,13 @@ class ProxyDiscipline(object):
         self.update_gemseo_grammar_with_data_io()
         
     def update_gemseo_grammar_with_data_io(self):
-        # Remove unavailable GEMS type variables before initialize
-        # input_grammar
-        if not self.is_sos_coupling:
-            data_in = self.get_data_io_with_full_name(
-                self.IO_TYPE_IN)
-            data_out = self.get_data_io_with_full_name(
-                self.IO_TYPE_OUT)
-            self._init_grammar_with_keys(data_in, self.IO_TYPE_IN)
-            self._init_grammar_with_keys(data_out, self.IO_TYPE_OUT)
+
+        data_in = self.get_data_io_with_full_name(
+            self.IO_TYPE_IN)
+        data_out = self.get_data_io_with_full_name(
+            self.IO_TYPE_OUT)
+        self._init_grammar_with_keys(data_in, self.IO_TYPE_IN)
+        self._init_grammar_with_keys(data_out, self.IO_TYPE_OUT)
 
     def _init_grammar_with_keys(self, names, io_type):
         ''' initialize GEMS grammar with names and type None
