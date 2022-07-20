@@ -177,5 +177,5 @@ class TestVisibility(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()

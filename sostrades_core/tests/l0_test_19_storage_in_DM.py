@@ -175,7 +175,7 @@ class TestDataManagerStorage(unittest.TestCase):
                        self.ns_test + '.Disc2.constant': 1.5,
                        self.ns_test + '.Disc2.power': 2}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         self.assertEqual(self.ee.dm.get_data('Test.x', 'value'), 99.0)
         self.assertEqual(self.ee.dm.get_value('Test.x'), 99.0)
