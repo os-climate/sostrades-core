@@ -158,117 +158,117 @@ class TestDataConnector(unittest.TestCase):
 
         self.assertEqual(data, 42.0)
 
-    # def test_02_meta_data_desc_in(self):
-    #     """
-    #     Case where variable with data_connector is an input and does not come from another model.
-    #     Data connector is needed
-    #     """
-    #     ns_dict = {'ns_market_deliveries': self.name}
-    #     self.ee.ns_manager.add_ns_def(ns_dict)
-    #     mod_path = 'sostrades_core.tests.l0_test_56_data_connector.TestMetadataDiscipline'
-    #     builder = self.ee.factory.get_builder_from_module(
-    #         self.model_name, mod_path)
-    #     self.ee.factory.set_builders_to_coupling_builder(builder)
-    #
-    #     self.ee.configure()
-    #     self.ee.display_treeview_nodes()
-    #     self.ee.execute()
-    #     disc = self.ee.dm.get_disciplines_with_name(
-    #         f'{self.name}.{self.model_name}')[0]
-    #
-    #     self.assertEqual(disc.deliveries['deliveries'], 42.0)
-    #
-    # def test_03_input_data_connector_with_coupling(self):
-    #     """
-    #     Case where variable with data connector comes from the output of an other model
-    #     Data connector should not be used
-    #     """
-    #
-    #     # modify DM
-    #     values_dict = {}
-    #     values_dict['EETests.Disc3.a'] = 10.
-    #     values_dict['EETests.Disc3.b'] = 5.
-    #     values_dict['EETests.x'] = 2.
-    #     values_dict['EETests.Disc2_data_connector.constant'] = 4.
-    #     values_dict['EETests.Disc2_data_connector.power'] = 2
-    #
-    #     self.exec_eng.load_study_from_input_dict(values_dict)
-    #     res = self.exec_eng.execute()
-    #     y = self.exec_eng.dm.get_value('EETests.y')
-    #     self.assertEqual(y, 25.0)
-    #
-    # def test_04_output_data_connector(self):
-    #     """
-    #     Case where variable with data connector is an output.
-    #     Data connector need to be used +read if the meta_data data_connector is saved in pickles
-    #     """
-    #
-    #     # modify DM
-    #     values_dict = {}
-    #     values_dict['EETests.Disc1.a'] = 10.
-    #     values_dict['EETests.Disc1.b'] = 5.
-    #     values_dict['EETests.x'] = 2.
-    #
-    #     self.exec_eng2.dm.set_values_from_dict(values_dict)
-    #     res = self.exec_eng2.execute()
-    #
-    #     y = self.exec_eng2.dm.get_value('EETests.y')
-    #     self.assertEqual(y, 42.0)
-    #
-    #     folder_path = join(dirname(__file__), 'data')
-    #     serializer = DataSerializer()
-    #     serializer.put_dict_from_study(
-    #         folder_path, DirectLoadDump(), self.exec_eng2.dm.convert_data_dict_with_full_name())
-    #     sleep(0.1)
-    #     ref_dm_df = serializer.get_dict_from_study(
-    #         folder_path, DirectLoadDump())
-    #     self.assertTrue('EETests.y' in ref_dm_df.keys(), 'no y in file')
-    #     if 'EETests.y' in ref_dm_df.keys():
-    #         data_to_read = ref_dm_df['EETests.y']
-    #         print(data_to_read)
-    #         self.assertTrue(
-    #             SoSDiscipline.CONNECTOR_DATA in data_to_read.keys(), 'no metadata in file')
-    #
-    # def test_05_write_data(self):
-    #     """
-    #     Test to write data with connector
-    #     """
-    #     ns_dict = {'ns_market_deliveries': self.name}
-    #     self.ee.ns_manager.add_ns_def(ns_dict)
-    #     mod_path = 'sostrades_core.tests.l0_test_56_data_connector.TestWriteDataDiscipline'
-    #     builder = self.ee.factory.get_builder_from_module(
-    #         self.model_name, mod_path)
-    #     self.ee.factory.set_builders_to_coupling_builder(builder)
-    #
-    #     self.ee.configure()
-    #     self.ee.display_treeview_nodes()
-    #     self.ee.execute()
-    #     disc = self.ee.dm.get_disciplines_with_name(
-    #         f'{self.name}.{self.model_name}')[0]
-    #     deliveries_df = disc.get_sosdisc_outputs('deliveries_df')
-    #
-    #     self.assertTrue(deliveries_df is not None)
-    #
-    # def test_06_process_data_connector_dremio(self):
-    #     """
-    #     Test data connector dremio process
-    #     """
-    #     exec_eng = ExecutionEngine(self.name)
-    #     builder_process = exec_eng.factory.get_builder_from_process(
-    #         'sostrades_core.sos_processes.test', 'test_disc1_data_connector_dremio')
-    #
-    #     exec_eng.factory.set_builders_to_coupling_builder(builder_process)
-    #
-    #     exec_eng.configure()
-    #
-    #     study_dremio = Study()
-    #     study_dremio.study_name = self.name
-    #     dict_values_list = study_dremio.setup_usecase()
-    #
-    #     dict_values = {}
-    #     for dict_val in dict_values_list:
-    #         dict_values.update(dict_val)
-    #
-    #     exec_eng.load_study_from_input_dict(dict_values)
-    #
-    #     exec_eng.execute()
+    def test_02_meta_data_desc_in(self):
+        """
+        Case where variable with data_connector is an input and does not come from another model.
+        Data connector is needed
+        """
+        ns_dict = {'ns_market_deliveries': self.name}
+        self.ee.ns_manager.add_ns_def(ns_dict)
+        mod_path = 'sostrades_core.tests.l0_test_56_data_connector.TestMetadataDiscipline'
+        builder = self.ee.factory.get_builder_from_module(
+            self.model_name, mod_path)
+        self.ee.factory.set_builders_to_coupling_builder(builder)
+    
+        self.ee.load_study_from_input_dict({})
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
+        disc = self.ee.dm.get_disciplines_with_name(
+            f'{self.name}.{self.model_name}')[0]
+    
+        self.assertEqual(disc.deliveries['deliveries'], 42.0)
+    
+    def test_03_input_data_connector_with_coupling(self):
+        """
+        Case where variable with data connector comes from the output of an other model
+        Data connector should not be used
+        """
+    
+        # modify DM
+        values_dict = {}
+        values_dict['EETests.Disc3.a'] = 10.
+        values_dict['EETests.Disc3.b'] = 5.
+        values_dict['EETests.x'] = 2.
+        values_dict['EETests.Disc2_data_connector.constant'] = 4.
+        values_dict['EETests.Disc2_data_connector.power'] = 2
+    
+        self.exec_eng.load_study_from_input_dict(values_dict)
+        res = self.exec_eng.execute()
+        y = self.exec_eng.dm.get_value('EETests.y')
+        self.assertEqual(y, 25.0)
+    
+    def test_04_output_data_connector(self):
+        """
+        Case where variable with data connector is an output.
+        Data connector need to be used +read if the meta_data data_connector is saved in pickles
+        """
+    
+        # modify DM
+        values_dict = {}
+        values_dict['EETests.Disc1.a'] = 10.
+        values_dict['EETests.Disc1.b'] = 5.
+        values_dict['EETests.x'] = 2.
+    
+        self.exec_eng2.load_study_from_input_dict(values_dict)
+        res = self.exec_eng2.execute()
+    
+        y = self.exec_eng2.dm.get_value('EETests.y')
+        self.assertEqual(y, 42.0)
+    
+        folder_path = join(dirname(__file__), 'data')
+        serializer = DataSerializer()
+        serializer.put_dict_from_study(
+            folder_path, DirectLoadDump(), self.exec_eng2.dm.convert_data_dict_with_full_name())
+        sleep(0.1)
+        ref_dm_df = serializer.get_dict_from_study(
+            folder_path, DirectLoadDump())
+        self.assertTrue('EETests.y' in ref_dm_df.keys(), 'no y in file')
+        if 'EETests.y' in ref_dm_df.keys():
+            data_to_read = ref_dm_df['EETests.y']
+            print(data_to_read)
+            self.assertTrue(
+                ProxyDiscipline.CONNECTOR_DATA in data_to_read.keys(), 'no metadata in file')
+    
+    def test_05_write_data(self):
+        """
+        Test to write data with connector
+        """
+        ns_dict = {'ns_market_deliveries': self.name}
+        self.ee.ns_manager.add_ns_def(ns_dict)
+        mod_path = 'sostrades_core.tests.l0_test_56_data_connector.TestWriteDataDiscipline'
+        builder = self.ee.factory.get_builder_from_module(
+            self.model_name, mod_path)
+        self.ee.factory.set_builders_to_coupling_builder(builder)
+    
+        self.ee.load_study_from_input_dict({})
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
+        disc = self.ee.dm.get_disciplines_with_name(
+            f'{self.name}.{self.model_name}')[0]
+        deliveries_df = disc.get_sosdisc_outputs('deliveries_df')
+    
+        self.assertTrue(deliveries_df is not None)
+    
+    def test_06_process_data_connector_dremio(self):
+        """
+        Test data connector dremio process
+        """
+        exec_eng = ExecutionEngine(self.name)
+        builder_process = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_disc1_data_connector_dremio')
+    
+        exec_eng.factory.set_builders_to_coupling_builder(builder_process)
+    
+        exec_eng.configure()
+    
+        study_dremio = Study()
+        study_dremio.study_name = self.name
+        dict_values_list = study_dremio.setup_usecase()
+    
+        dict_values = {}
+        for dict_val in dict_values_list:
+            dict_values.update(dict_val)
+    
+        exec_eng.load_study_from_input_dict(dict_values)
+    
+        exec_eng.execute()
