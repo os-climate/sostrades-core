@@ -480,7 +480,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
         # Check variables mismatch between coupling disciplines
-        self.check_var_data_mismatch()
+        #self.check_var_data_mismatch()
 
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")

@@ -499,10 +499,10 @@ class ExecutionEngine:
         '''
         if anonymize_function is self.__anonymize_key:
             data_keys = list(self.get_anonimated_data_dict().keys())
-            ns_values = list(self.get_anonymized_shared_ns_dict().values())
+            ns_dict = {ns.name: ns.value for ns in self.get_anonymized_shared_ns_dict().values()}
         else:
             data_keys = list(self.dm.data_id_map.keys())
-            ns_values = [ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()]
+            ns_dict = {ns.name: ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()}
         unchecked_keys=list(set(data_cache.keys()) - set(data_keys))
         message=''
         if len(unchecked_keys):
@@ -518,20 +518,25 @@ class ExecutionEngine:
                 #Then, check for match, with a different namespace
                 local_data=[key.split('.')[-1] for key in data_keys]
                 if key.split('.')[-1] in local_data:
-                    matching_key=[val+'.'+key.split('.')[-1] for val in ns_values if val+'.'+key.split('.')[-1] in data_keys]
+                    matching_key={name: val+'.'+key.split('.')[-1] for name, val in ns_dict.items() if val+'.'+key.split('.')[-1] in data_keys}
                     if len(matching_key):
-                        #If a match is found, make a suggestion
-                        message+=f'"{key}" not an expected input in dm, did you mean "{matching_key[0]}" ?\n'
+                        # If a match is found, return suggestions
+                        grouped_matching_keys = {}
+                        for i, v in sorted(matching_key.items()):
+                            grouped_matching_keys[v] = [i] if v not in grouped_matching_keys.keys() else grouped_matching_keys[v] + [i]
+                        message += f'"{key}" not an expected input in dm, matches found:\n'
+                        for suggestion, ns_names in grouped_matching_keys.items():
+                            message+=f'  - "{suggestion}" with namespaces "{ns_names}"\n'
                         continue
                 #If no match found with all the namespaces, perform string-match search
                 result=process.extractOne(key, data_keys, scorer=fuzz.WRatio)
                 if result[1] > 90:
                     #If a close match is found, make a suggestion
-                    message+=f'"{key}" not an expected input in dm, did you mean "{result[0]}" ?\n'
+                    message+=f'"{key}" not an expected input in dm, close match found:\n  - "{result[0]}" \n'
                     continue
                 else:
                     #Else, just print the key
-                    message+=f'"{key}" not a expected input in dm\n'
+                    message+=f'"{key}" not an expected input in dm\n'
             message+='---------------------------------\n'
             return message
 

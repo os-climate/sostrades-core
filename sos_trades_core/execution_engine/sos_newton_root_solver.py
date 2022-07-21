@@ -47,7 +47,7 @@ class NewtonRootSolver(SoSEval):
                'NR_stop_residual': {'type': 'float', 'default': 1e-7},
                'NR_relax_factor': {'type': 'float', 'default': 0.95},
                'NR_max_ite': {'type': 'float', 'default': 20},
-               'NR_diff_mode': {'type': 'float', 'default': '1st order FD', 'possible_values': ['1st order FD', '2nd order FD', 'Complex step']},
+               'NR_diff_mode': {'type': 'string', 'default': '1st order FD', 'possible_values': ['1st order FD', '2nd order FD', 'Complex step']},
                'NR_res0': {'type': 'float', 'default': 1.0}}
 
     DESC_OUT = {'x_final': {'type': 'array'},
