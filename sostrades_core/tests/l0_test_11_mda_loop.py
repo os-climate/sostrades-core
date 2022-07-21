@@ -604,7 +604,7 @@ class TestMDALoop(unittest.TestCase):
         # we check that in the root coupling, the subcoupling is NOT a (selfcoupled) MDA with an SoSCoupling inside
         # but a SoSCoupling directly
         sub_coupling = exec_eng.root_mdo_discipline.mdo_chain.disciplines[0]
-        assert sub_coupling.__class__.__name__ == "SoSMDAChain"
+        assert sub_coupling.__class__.__name__ == "MDAChain"
 
     def test_08_mda_numerical_options_NR(self):
 
