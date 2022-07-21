@@ -117,6 +117,7 @@ class TestCouplingVariables(unittest.TestCase):
         ee.load_study_from_input_dict(values_dict)
 
         rp = ee.root_process
+        rp.prepare_execution()
         
         # gather couplings data
         rp.check_var_data_mismatch()
