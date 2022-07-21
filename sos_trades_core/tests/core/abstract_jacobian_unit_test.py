@@ -153,8 +153,8 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                     entry.join()
             local_logger.info(
                 f'----------------- Git commit and push ------------------------')
-            os.system('git config user.name "Jacobian pickle dumper"')
-            #os.system('git config --global user.email "julien.souchard.external@airbus.com"')
+            os.system('git config --global user.email "julien.souchard.external@airbus.com"')
+            os.system('git config --global user.name "Jacobian pickle dumper"')
             for directory in directories:
                 os.system(f'git add ./{directory}/*.pkl')
             os.system(f'git commit -m "regeneration of jacobian pickles for {file_regex}"')
