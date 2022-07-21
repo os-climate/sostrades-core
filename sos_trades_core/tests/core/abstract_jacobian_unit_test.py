@@ -151,7 +151,8 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
 
                 for entry in candidate_process:
                     entry.join()
-
+            local_logger.info(
+                f'----------------- Git commit and push ------------------------')
             for directory in directories:
                 os.system(f'git add ./{directory}/*.pkl')
             os.system('git config user.name "Jacobian pickle dumper"')
