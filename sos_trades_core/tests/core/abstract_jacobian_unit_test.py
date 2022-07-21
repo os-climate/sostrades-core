@@ -154,6 +154,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
 
             for directory in directories:
                 os.system(f'git add ./{directory}/*.pkl')
+            os.system('git config user.name "Jacobian pickle dumper"')
             os.system(f'git commit -m "regeneration of jacobian pickles for {file_regex}"')
             os.system('git pull')
             os.system('git push')
