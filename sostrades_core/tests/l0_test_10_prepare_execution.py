@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 from gemseo.core.discipline import MDODiscipline
+from gemseo.mda.mda_chain import MDAChain
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -60,7 +60,7 @@ class TestPrepareExecution(unittest.TestCase):
         
         ee.prepare_execution()
         
-        self.assertTrue(isinstance(ee.root_process.mdo_discipline, SoSMDAChain))
+        self.assertTrue(isinstance(ee.root_process.mdo_discipline, MDAChain))
         
         for proxy_disc in ee.root_process.proxy_disciplines:
             self.assertTrue(isinstance(proxy_disc.mdo_discipline, MDODiscipline))

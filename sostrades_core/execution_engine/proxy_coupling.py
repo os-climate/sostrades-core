@@ -31,7 +31,6 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import _filter_variables_to_convert
@@ -498,6 +497,135 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._set_residual_history()
         
         return self.mdo_discipline
+    
+    def _proxy_run(self):
+        '''
+        uses user wrapp run during execution
+        '''
+#         # set linear solver options for MDA
+#         self.linear_solver = self.proxy_discipline.linear_solver_MDA
+#         self.linear_solver_options = self.proxy_discipline.linear_solver_options_MDA
+#         self.linear_solver_tolerance = self.proxy_discipline.linear_solver_tolerance_MDA
+
+        self.pre_run_mda()
+
+#         if len(self.sub_mda_list) > 0:
+#             self.logger.info(f'{self.proxy_discipline.get_disc_full_name()} MDA history')
+#             self.logger.info('\tIt.\tRes. norm')
+
+        MDAChain._run(self.mdo_discipline)
+
+#         # save residual history
+#         dict_out = {}
+#         residuals_history = DataFrame(
+#             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
+#         dict_out[self.proxy_discipline.RESIDUALS_HISTORY] = residuals_history
+#         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
+
+        # store local data in datamanager
+        self.update_dm_with_local_data(self.local_data())
+        
+    def pre_run_mda(self):
+        '''
+        Pre run needed if one of the strong coupling variables is None in a MDA 
+        No need of prerun otherwise 
+        '''
+        strong_couplings_values = [self.mdo_discipline.local_data[key] for key in self.strong_couplings if key in self.local_data()]
+        if len(strong_couplings_values) < len(self.strong_couplings):
+            self.logger.info(
+                f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
+            self.recreate_order_for_first_execution()
+            self.logger.info(
+                f'End of pre-run execution for the coupling ' + self.get_disc_full_name())
+            
+    def recreate_order_for_first_execution(self):
+        '''
+        For each sub mda defined in the GEMS execution sequence, 
+        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
+        until all disciplines have been run. 
+        While loop cannot be an infinite loop because raise an exception
+        if no disciplines are ready while some disciplines are missing in the list 
+        '''
+        for parallel_tasks in self.coupling_structure.sequence:
+            # to parallelize, check if 1 < len(parallel_tasks)
+            # for now, parallel tasks are run sequentially
+            for coupled_proxy_disciplines in parallel_tasks:
+                # several disciplines coupled
+                coupled_mdo_disciplines = [discipline.mdo_discipline for discipline in coupled_proxy_disciplines]
+                first_disc = coupled_proxy_disciplines[0]
+                if len(coupled_proxy_disciplines) > 1 or (
+                        len(coupled_proxy_disciplines) == 1
+                        and self.coupling_structure.is_self_coupled(first_disc)
+                        and not coupled_proxy_disciplines[0].is_sos_coupling
+                ):
+                    # several disciplines coupled
+
+                    # get the disciplines from self.disciplines
+                    # order the MDA disciplines the same way as the
+                    # original disciplines
+                    sub_mda_disciplines = []
+                    for disc in self.mdo_discipline.disciplines:
+                        if disc in coupled_mdo_disciplines:
+                            sub_mda_disciplines.append(disc)
+                    # submda disciplines are not ordered in a correct exec
+                    # sequence...
+                    # Need to execute ready disciplines one by one until all
+                    # sub disciplines have been run
+                    while sub_mda_disciplines != []:
+                        ready_disciplines = self.get_first_discs_to_execute(
+                            sub_mda_disciplines)
+
+                        for discipline in ready_disciplines:
+                            # Execute ready disciplines and update local_data
+                            if discipline.proxy_discipline.is_sos_coupling:
+                                # recursive call if subdisc is a SoSCoupling
+                                # TODO: check if it will work for cases like
+                                # Coupling1 > Driver > Coupling2
+                                discipline.pre_run_mda()
+                                self.mdo_discipline.local_data.update(discipline.local_data)
+                            else:
+                                temp_local_data = discipline.execute(
+                                    self.mdo_discipline.local_data)
+                                self.mdo_discipline.local_data.update(temp_local_data)
+
+                        sub_mda_disciplines = [
+                            disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
+                else:
+                    discipline = coupled_mdo_disciplines[0]
+                    if discipline.proxy_discipline.is_sos_coupling:
+                        # recursive call if subdisc is a SoSCoupling
+                        discipline.pre_run_mda()
+                        self.mdo_discipline.local_data.update(discipline.local_data)
+                    else:
+                        temp_local_data = discipline.execute(self.mdo_discipline.local_data)
+                        self.mdo_discipline.local_data.update(temp_local_data)
+
+        self.mdo_discipline.default_inputs.update(self.mdo_discipline.local_data)
+        
+    def get_first_discs_to_execute(self, disciplines):
+
+        ready_disciplines = []
+        disc_vs_keys_none = {}
+        for disc in disciplines:
+#             # get inputs values of disc with full_name
+#             inputs_values = disc.get_inputs_by_name(
+#                 in_dict=True, full_name=True)
+            # update inputs values with SoSCoupling local_data
+            inputs_values = {}
+            inputs_values.update(disc._filter_inputs(self.local_data()))
+            keys_none = [key for key, value in inputs_values.items()
+                         if value is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
+            if keys_none == []:
+                ready_disciplines.append(disc)
+            else:
+                disc_vs_keys_none[disc.sos_name] = keys_none
+        if ready_disciplines == []:
+            message = '\n'.join(' : '.join([disc, str(keys_none)])
+                                for disc, keys_none in disc_vs_keys_none.items())
+            raise Exception(
+                f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
+        else:
+            return ready_disciplines
         
     def init_gemseo_discipline(self):
         '''
@@ -505,12 +633,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         num_data = self._get_numerical_inputs()
 
-        mda_chain = SoSMDAChain(
-                              ee=self.ee,  # set the ee and dm as attribute of SoSMDAChain (used for filtering and conversions) # TODO: see if it can be removed
+        mda_chain = MDAChain(
+                              # ee=self.ee,  # set the ee and dm as attribute of MDAChain (used for filtering and conversions) # TODO: see if it can be removed
                               disciplines=self.sub_mdo_disciplines,
                               name=self.get_disc_full_name(),
                               grammar_type=self.SOS_GRAMMAR_TYPE,
                               ** num_data)  # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
+        
+        # settattr of mda_chain
+        setattr(mda_chain, '_run', self._proxy_run)
 
         # store cache to reset after MDAChain init
         cache = mda_chain.cache
@@ -521,16 +652,16 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         cache_type, cache_file_path = self.get_sosdisc_inputs(['cache_type', 'cache_file_path'])
         self.set_cache(mda_chain.mdo_chain, cache_type, cache_file_path)
 
-        # attach sostrades logger to SoSMDAChain 
+        # attach sostrades logger to MDAChain 
         # TODO: to remove
         mda_chain.logger = self.logger
 
-        # Check variables mismatch between coupling disciplines
-        mda_chain.check_var_data_mismatch()
-        
         # - set the mdo discipline with the MDAChain
         self.mdo_discipline = mda_chain
         mda_chain.proxy_discipline = self
+        
+        # Check variables mismatch between coupling disciplines
+        self.check_var_data_mismatch()
         
         # set epsilon0 and cache of sub_mda_list
         for sub_mda in self.mdo_discipline.sub_mda_list:
@@ -538,6 +669,47 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
+        
+    def check_var_data_mismatch(self):
+        '''
+        Check if a variable data is not coherent between two coupling disciplines
+
+        The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
+        the list of data_to_check is defined in SoSDiscipline
+        '''
+        
+        # TODO: probably better if moved into proxy discipline
+        
+        if self.logger.level <= logging.DEBUG:
+            coupling_vars = self.mdo_discipline.coupling_structure.graph.get_disciplines_couplings()
+            for from_disc, to_disc, c_vars in coupling_vars:
+                for var in c_vars:
+                    # from disc is in output
+                    from_disc_data = from_disc.proxy_discipline.get_data_with_full_name(
+                        from_disc.proxy_discipline.IO_TYPE_OUT, var)
+                    # to_disc is in input
+                    to_disc_data = to_disc.proxy_discipline.get_data_with_full_name(
+                        to_disc.proxy_discipline.IO_TYPE_IN, var)
+                    for data_name in to_disc.proxy_discipline.DATA_TO_CHECK:
+                        # Check if data_names are different
+                        if from_disc_data[data_name] != to_disc_data[data_name]:
+                            self.logger.debug(
+                                f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
+                        # Check if unit is not None
+                        elif from_disc_data[data_name] is None and data_name == to_disc.proxy_discipline.UNIT:
+                            # if unit is None in a dataframe check if there is a
+                            # dataframe descriptor with unit in it
+                            if from_disc_data[to_disc.proxy_discipline.TYPE] == 'dataframe':
+                                # if no dataframe descriptor and no unit warning
+                                if from_disc_data[to_disc.proxy_discipline.DATAFRAME_DESCRIPTOR] is None:
+                                    self.logger.debug(
+                                        f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
+    # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
+    #                             else :
+    #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
+                            else:
+                                self.logger.debug(
+                                    f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
         
     def set_epsilon0_and_cache(self, mda):
         '''
@@ -724,17 +896,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.proxy_disciplines = [
             disc for disc in self.proxy_disciplines if disc not in disc_list]
 
-#     def set_epsilon0_and_cache(self, mda):
-#         '''
-#         Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
-#         '''
-#         if isinstance(mda, MDASequential):
-#             for sub_mda in mda.mda_sequence:
-#                 self.set_epsilon0_and_cache(sub_mda)
-#         mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
-#         self.set_cache(mda, self.get_sosdisc_inputs(
-#             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-# 
     @property
     def ordered_disc_list(self):
         '''
@@ -761,45 +922,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     subdisc, ordered_list)
  
         return ordered_list
-
-    def check_var_data_mismatch(self):
-        '''
-        Check if a variable data is not coherent between two coupling disciplines
-
-        The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
-        the list of data_to_check is defined in ProxyDiscipline
-        '''
-
-        if self.logger.level <= logging.DEBUG:
-            coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
-            for from_disc, to_disc, c_vars in coupling_vars:
-                for var in c_vars:
-                    # from disc is in output
-                    from_disc_data = from_disc.get_data_with_full_name(
-                        self.IO_TYPE_OUT, var)
-                    # to_disc is in input
-                    to_disc_data = to_disc.get_data_with_full_name(
-                        self.IO_TYPE_IN, var)
-                    for data_name in self.DATA_TO_CHECK:
-                        # Check if data_names are different
-                        if from_disc_data[data_name] != to_disc_data[data_name]:
-                            self.logger.debug(
-                                f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
-                        # Check if unit is not None
-                        elif from_disc_data[data_name] is None and data_name == self.UNIT:
-                            # if unit is None in a dataframe check if there is a
-                            # dataframe descriptor with unit in it
-                            if from_disc_data[self.TYPE] == 'dataframe':
-                                # if no dataframe descriptor and no unit warning
-                                if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
-                                    self.logger.debug(
-                                        f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
-    # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value
-                            #  to the df_descriptor tuple check with WALL-E else : from_disc_data[
-                            #  self.DATAFRAME_DESCRIPTOR]
-                            else:
-                                self.logger.debug(
-                                    f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
 
 #     def run(self):
 #         '''
@@ -828,107 +950,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         # store local data in datamanager
 #         self.update_dm_with_local_data()
 # 
-#     def pre_run_mda(self):
-#         '''
-#         Pre run needed if one of the strong coupling variables is None in a MDA 
-#         No need of prerun otherwise 
-#         '''
-#         strong_couplings_values = [self.dm.get_value(
-#             key) for key in self.strong_couplings]
-#         if any(elem is None for elem in strong_couplings_values):
-#             self.logger.info(
-#                 f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
-#             self.recreate_order_for_first_execution()
-#             self.logger.info(
-#                 f'End of pre-run execution for the coupling ' + self.get_disc_full_name())
-# 
-#     def recreate_order_for_first_execution(self):
-#         '''
-#         For each sub mda defined in the GEMS execution sequence, 
-#         we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
-#         until all disciplines have been run. 
-#         While loop cannot be an infinite loop because raise an exception
-#         if no disciplines are ready while some disciplines are missing in the list 
-#         '''
-#         for parallel_tasks in self.coupling_structure.sequence:
-#             # to parallelize, check if 1 < len(parallel_tasks)
-#             # for now, parallel tasks are run sequentially
-#             for coupled_disciplines in parallel_tasks:
-#                 # several disciplines coupled
-#                 first_disc = coupled_disciplines[0]
-#                 if len(coupled_disciplines) > 1 or (
-#                         len(coupled_disciplines) == 1
-#                         and self.coupling_structure.is_self_coupled(first_disc)
-#                         and not coupled_disciplines[0].is_sos_coupling
-#                 ):
-#                     # several disciplines coupled
-# 
-#                     # get the disciplines from self.disciplines
-#                     # order the MDA disciplines the same way as the
-#                     # original disciplines
-#                     sub_mda_disciplines = []
-#                     for disc in self.disciplines:
-#                         if disc in coupled_disciplines:
-#                             sub_mda_disciplines.append(disc)
-#                     # submda disciplines are not ordered in a correct exec
-#                     # sequence...
-#                     # Need to execute ready disciplines one by one until all
-#                     # sub disciplines have been run
-#                     while sub_mda_disciplines != []:
-#                         ready_disciplines = self.get_first_discs_to_execute(
-#                             sub_mda_disciplines)
-# 
-#                         for discipline in ready_disciplines:
-#                             # Execute ready disciplines and update local_data
-#                             if discipline.is_sos_coupling:
-#                                 # recursive call if subdisc is a SoSCoupling
-#                                 # TODO: check if it will work for cases like
-#                                 # Coupling1 > Driver > Coupling2
-#                                 discipline.pre_run_mda()
-#                                 self.local_data.update(discipline.local_data)
-#                             else:
-#                                 temp_local_data = discipline.execute(
-#                                     self.local_data)
-#                                 self.local_data.update(temp_local_data)
-# 
-#                         sub_mda_disciplines = [
-#                             disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
-#                 else:
-#                     discipline = coupled_disciplines[0]
-#                     if discipline.is_sos_coupling:
-#                         # recursive call if subdisc is a SoSCoupling
-#                         discipline.pre_run_mda()
-#                         self.local_data.update(discipline.local_data)
-#                     else:
-#                         temp_local_data = discipline.execute(self.local_data)
-#                         self.local_data.update(temp_local_data)
-# 
-#         self.default_inputs.update(self.local_data)
-# 
-#     def get_first_discs_to_execute(self, disciplines):
-# 
-#         ready_disciplines = []
-#         disc_vs_keys_none = {}
-#         for disc in disciplines:
-#             # get inputs values of disc with full_name
-#             inputs_values = disc.get_sosdisc_inputs(
-#                 in_dict=True, full_name=True)
-#             # update inputs values with SoSCoupling local_data
-#             inputs_values.update(disc._filter_inputs(self.local_data))
-#             keys_none = [key for key, value in inputs_values.items()
-#                          if value is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
-#             if keys_none == []:
-#                 ready_disciplines.append(disc)
-#             else:
-#                 disc_vs_keys_none[disc.sos_name] = keys_none
-#         if ready_disciplines == []:
-#             message = '\n'.join(' : '.join([disc, str(keys_none)])
-#                                 for disc, keys_none in disc_vs_keys_none.items())
-#             raise Exception(
-#                 f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
-#         else:
-#             return ready_disciplines
-# 
+
 #     # -- Protected methods
 # 
 #     def _run(self):
@@ -1028,22 +1050,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         if self.check_min_max_gradients:
 #             print("IN CHECK of soscoupling")
 #             ProxyDiscipline._check_min_max_gradients(self, self.jac)
-# 
-#     def get_input_data_for_gems(self):
-# 
-#         input_data = ProxyDisciplineBuilder.get_input_data_for_gems(self)
-# 
-#         # filter numerical inputs
-#         for key in list(self.DESC_IN.keys()):
-#             ns_key = self.get_var_full_name(key, self._data_in)
-#             if ns_key in input_data:
-#                 del input_data[ns_key]
-# 
-#         return input_data
-
-#     def _update_coupling_flags_in_dm(self):
-#         ''' 
-#         Update coupling and editable flags in the datamanager for the GUI
  
 #     def _set_residual_history(self):
 #         ''' set residuals history into data_out
@@ -1150,100 +1156,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
  
         # update in loader_out
         self._data_out.update(full_out)
-# 
-#     def _create_mdo_chain(
-#             self,
-#             disciplines,
-#             sub_mda_class="MDAJacobi",
-#             sub_coupling_structures=None,
-#             **sub_mda_options
-#     ):
-#         """
-#         ** Adapted from MDAChain Class in GEMSEO (overload)**
-# 
-#         Create an MDO chain from the execution sequence of the disciplines.
-# 
-#         Args:
-#             sub_mda_class: The name of the class of the sub-MDAs.
-#             disciplines: The disciplines.
-#             sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
-#                 If None, they are created from the sub-disciplines.
-#             **sub_mda_options: The options to be used to initialize the sub-MDAs.
-# 
-#         disciplines,  # type: Sequence[MDODiscipline]
-#         sub_mda_class="MDAJacobi",  # type: str
-#         # type: Optional[Iterable[MDOCouplingStructure]]
-#         sub_coupling_structures=None,
-#         **sub_mda_options  # type: Optional[Union[float,int,bool,str]]
-#         """
-#         chained_disciplines = []
-#         self.sub_mda_list = []
-# 
-#         if sub_coupling_structures is None:
-#             sub_coupling_structures = repeat(None)
-# 
-#         sub_coupling_structures_iterator = iter(sub_coupling_structures)
-# 
-#         for parallel_tasks in self.coupling_structure.sequence:
-#             # to parallelize, check if 1 < len(parallel_tasks)
-#             # for now, parallel tasks are run sequentially
-#             for coupled_disciplines in parallel_tasks:
-#                 first_disc = coupled_disciplines[0]
-#                 if len(coupled_disciplines) > 1 or (
-#                         len(coupled_disciplines) == 1
-#                         and self.coupling_structure.is_self_coupled(first_disc)
-#                         and not coupled_disciplines[0].is_sos_coupling
-#                         and self.get_sosdisc_inputs('authorize_self_coupled_disciplines')
-#                 ):
-#                     # several disciplines coupled
-# 
-#                     # order the MDA disciplines the same way as the
-#                     # original disciplines
-#                     sub_mda_disciplines = []
-#                     for disc in disciplines:
-#                         if disc in coupled_disciplines:
-#                             sub_mda_disciplines.append(disc)
-# 
-#                     # if activated, all coupled disciplines involved in the MDA
-#                     # are grouped into a MDOChain (self coupled discipline)
-#                     if self.get_sosdisc_inputs("group_mda_disciplines"):
-#                         sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
-#                                                         grammar_type=self.grammar_type)]
-#                     # create a sub-MDA
-#                     sub_mda_options["use_lu_fact"] = self.use_lu_fact
-#                     sub_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
-#                     sub_mda_options["linear_solver"] = self.linear_solver
-#                     sub_mda_options["linear_solver_options"] = self.linear_solver_options
-#                     if sub_mda_class not in ['MDAGaussSeidel', 'MDAQuasiNewton']:
-#                         sub_mda_options["n_processes"] = self.n_processes
-#                     sub_mda = create_mda(
-#                         sub_mda_class,
-#                         sub_mda_disciplines,
-#                         max_mda_iter=self.max_mda_iter,
-#                         tolerance=self.tolerance,
-#                         grammar_type=self.grammar_type,
-#                         coupling_structure=next(
-#                             sub_coupling_structures_iterator),
-#                         **sub_mda_options
-#                     )
-#                     self.set_epsilon0_and_cache(sub_mda)
-# 
-#                     chained_disciplines.append(sub_mda)
-#                     self.sub_mda_list.append(sub_mda)
-#                 else:
-#                     # single discipline
-#                     chained_disciplines.append(first_disc)
-# 
-#         if self.get_sosdisc_inputs("n_subcouplings_parallel") > 1:
-#             chained_disciplines = self._parallelize_chained_disciplines(
-#                 chained_disciplines, self.grammar_type)
-# 
-#         # create the MDO chain that sequentially evaluates the sub-MDAs and the
-#         # single disciplines
-#         self.mdo_chain = MDOChain(
-#             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
-#         )
-# 
+        
 #     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
 #         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain
 #         with all the scenarios inside

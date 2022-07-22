@@ -270,7 +270,6 @@ class ProxyDiscipline(object):
         '''
         uses user wrapp run during execution
         '''
-
         try:
             return self.run()
         except Exception as exc:
@@ -1538,12 +1537,12 @@ class ProxyDiscipline(object):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" +
+            raise ValueError("Unknown re_exec_policy :" + 
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
+            raise ValueError("Trying to run a discipline " + str(type(self)) + 
+                             " with status: " + str(self.status) + 
+                             " while re_exec_policy is : " + 
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1867,6 +1866,17 @@ class ProxyDiscipline(object):
         self.ee.factory.remove_sos_discipline(self)
 
     def post_execute(self, local_data):
+        
+        self.fill_output_value_connector()
+        
+        if self.check_if_input_change_after_run and not self.is_sos_coupling:
+            disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
+                self.local_data).items() if key in self.input_grammar.data_names}
+            is_output_error = True
+            output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
+                                                                disc_inputs_after_execution,
+                                                                'Discipline inputs integrity through run',
+                                                                is_output_error=is_output_error)
 
         if self.status == MDODiscipline.STATUS_PENDING and self.mdo_discipline._cache_was_loaded is True:
             self._update_status_recursive(self.STATUS_DONE)

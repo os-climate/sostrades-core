@@ -63,15 +63,15 @@ class TestNamespaceManagement(unittest.TestCase):
                        self.ns_test + '.Disc2.constant': 1.5,
                        self.ns_test + '.Disc2.power': 2}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
-#         self.ee.execute()
-# 
-#         res = self.ee.dm.get_value(self.ns_test + '.y')
-# 
-#         self.assertEqual(res, a * x + b)
-#         self.assertEqual(self.ee.dm.get_value(
-#             self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+        self.ee.execute()
+ 
+        res = self.ee.dm.get_value(self.ns_test + '.y')
+ 
+        self.assertEqual(res, a * x + b)
+        self.assertEqual(self.ee.dm.get_value(
+            self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
     def test_02_change_order_disciplines(self):
 
@@ -98,15 +98,15 @@ class TestNamespaceManagement(unittest.TestCase):
                        self.ns_test + '.Disc2.constant': 1.5,
                        self.ns_test + '.Disc2.power': 2}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
-#         self.ee.execute()
-# 
-#         res = self.ee.dm.get_value(self.ns_test + '.y')
-# 
-#         self.assertEqual(res, a * x + b)
-#         self.assertEqual(self.ee.dm.get_value(
-#             self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+        self.ee.execute()
+ 
+        res = self.ee.dm.get_value(self.ns_test + '.y')
+ 
+        self.assertEqual(res, a * x + b)
+        self.assertEqual(self.ee.dm.get_value(
+            self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
     def test_03_add_discipline_with_process(self):
 
@@ -133,15 +133,15 @@ class TestNamespaceManagement(unittest.TestCase):
         for disc in self.ee.dm.disciplines_dict:
             print(disc)
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
-#         self.ee.execute()
-# 
-#         res = self.ee.dm.get_value(self.ns_test + '.y')
-# 
-#         self.assertEqual(res, a * x + b)
-#         self.assertEqual(self.ee.dm.get_value(
-#             self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+        self.ee.execute()
+ 
+        res = self.ee.dm.get_value(self.ns_test + '.y')
+ 
+        self.assertEqual(res, a * x + b)
+        self.assertEqual(self.ee.dm.get_value(
+            self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
     def test_04_check_dependency_list(self):
 
@@ -213,19 +213,19 @@ class TestNamespaceManagement(unittest.TestCase):
         # Now that the complete use case is set we change the local namespace
         self.ee.ns_manager.update_all_shared_namespaces_by_name(
             'extraNS', 'ns_ac')
-        self.ee.configure()
+        self.ee.load_study_from_input_dict({})
         self.ee.display_treeview_nodes()
 
         self.assertListEqual(['Test', 'Test.Disc1', 'Test.Disc2'], list(
             self.ee.dm.disciplines_id_map.keys()))
 
-#         self.ee.execute()
-# 
-#         res = self.ee.dm.get_value('extraNS.' + self.ns_test + '.y')
-# 
-#         self.assertEqual(res, a * x + b)
-#         self.assertEqual(self.ee.dm.get_value('extraNS.' + 
-#                                               self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+        self.ee.execute()
+ 
+        res = self.ee.dm.get_value('extraNS.' + self.ns_test + '.y')
+ 
+        self.assertEqual(res, a * x + b)
+        self.assertEqual(self.ee.dm.get_value('extraNS.' + 
+                                              self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
     def test_06_update_shared_namespaces_and_builders_with_extra_name(self):
 
@@ -270,4 +270,4 @@ class TestNamespaceManagement(unittest.TestCase):
 
         self.ee.load_study_from_input_dict(values_dict)
 
-#         self.ee.execute()
+        self.ee.execute()
