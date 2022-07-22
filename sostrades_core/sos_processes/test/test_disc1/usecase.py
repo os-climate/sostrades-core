@@ -36,5 +36,5 @@ class Study(StudyManager):
 if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
-#     uc_cls.run(for_test=True)
+    uc_cls.run(for_test=True)
     

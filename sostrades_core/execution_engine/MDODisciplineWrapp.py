@@ -97,7 +97,7 @@ class MDODisciplineWrapp(object):
 
         """
         if self.wrapping_mode == 'SoSTrades':
-            self.mdo_discipline = SoSMDODiscipline(self.sos_name, self.wrapper)
+            self.mdo_discipline = SoSMDODiscipline(self.name, self.wrapper)
         else:
             # self.mdo_discipline = create_discipline(self.sos_name)
             pass
