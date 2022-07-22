@@ -61,14 +61,13 @@ class MDODisciplineWrapp(object):
 
     '''
 
-    def __init__(self, sos_name, wrapping_mode, wrapper=None, gemseo_discipline=None):
+    def __init__(self, name, wrapper, wrapping_mode='SoSTrades'):
         '''
         Constructor
         '''
-        self.sos_name = sos_name
+        self.name = name
         self.wrapping_mode = wrapping_mode
-        self.wrapper = wrapper
-        self.mdo_discipline = gemseo_discipline
+        self.wrapper = wrapper(name)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """Return the names of the input variables.

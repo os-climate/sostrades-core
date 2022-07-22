@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -33,7 +34,7 @@ class SoSBuilder(object):
         self.__disc_name = disc_name
         self.disc = None
         self.__ee = ee
-        self.__args = {'sos_name': self.__disc_name, 'ee': self.__ee}
+        self.__args = {'sos_name': self.__disc_name, 'ee': self.__ee, 'cls_builder': cls}
         self.cls = cls
         # A builder can build several disciplines (ex: scatter)
         self.discipline_dict = {}
@@ -85,7 +86,11 @@ class SoSBuilder(object):
         return self.disc
 
     def create_disc(self, future_new_ns_disc_name):
-        self.disc = self.cls(**self.__args)
+        if self.cls.__name__ == 'ProxyCoupling':
+            self.disc = self.cls(**self.__args)
+        else:
+            self.disc = ProxyDiscipline(**self.__args)
+            
         self.disc.father_builder = self
         self.discipline_dict[future_new_ns_disc_name] = self.disc
 

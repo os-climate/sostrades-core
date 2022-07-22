@@ -17,6 +17,7 @@ from scipy.sparse.lil import lil_matrix
 
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.core.discipline import MDODiscipline
+from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -194,7 +195,7 @@ class ProxyDiscipline(object):
     STATUS_CONFIGURE = 'CONFIGURE'
     STATUS_LINEARIZE = 'LINEARIZE'
 
-    def __init__(self, sos_name, ee):
+    def __init__(self, sos_name, ee, cls_builder=None):
         '''
         Constructor
         '''
@@ -205,6 +206,8 @@ class ProxyDiscipline(object):
         self.model = None
         self.father_builder = None
         self.father_executor = None
+        self.cls = cls_builder
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
 
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
