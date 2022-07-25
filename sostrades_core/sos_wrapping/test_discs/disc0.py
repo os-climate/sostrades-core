@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
-class Disc0(ProxyDiscipline):
+class Disc0(SoSWrapp):
 
     # ontology information
     _ontology_data = {

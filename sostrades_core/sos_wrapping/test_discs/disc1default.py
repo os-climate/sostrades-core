@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
-class Disc1(ProxyDiscipline):
+class Disc1(SoSWrapp):
 
     # ontology information
     _ontology_data = {
@@ -42,11 +43,11 @@ class Disc1(ProxyDiscipline):
         'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def setup_sos_disciplines(self):
+    def setup_sos_disciplines(self,proxy):
 
-        if 'a' in self._data_in:
-            a = self.get_sosdisc_inputs('a')
-            self.set_dynamic_default_values({'b': 4 * a,
+        if 'a' in proxy._data_in:
+            a = proxy.get_sosdisc_inputs('a')
+            proxy.set_dynamic_default_values({'b': 4 * a,
                                              'c': 4 * a})
 
     def run(self):

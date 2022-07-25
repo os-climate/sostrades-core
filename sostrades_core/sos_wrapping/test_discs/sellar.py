@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+
 '''
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
@@ -24,7 +26,7 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
-class SellarProblem(ProxyDiscipline):
+class SellarProblem(SoSWrapp):
     """ Sellar Optimization Problem functions
     """
     _maturity = 'Fake'

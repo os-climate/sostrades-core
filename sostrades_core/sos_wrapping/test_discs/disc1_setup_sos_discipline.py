@@ -15,10 +15,12 @@ limitations under the License.
 '''
 import pandas as pd
 import numpy as np
+
+from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
-class Disc1(ProxyDiscipline):
+class Disc1(SoSWrapp):
 
     # ontology information
     _ontology_data = {
@@ -45,13 +47,13 @@ class Disc1(ProxyDiscipline):
         'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def setup_sos_disciplines(self):
+    def setup_sos_disciplines(self,proxy):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        if 'AC_list' in self._data_in:
-            AC_list = self.get_input_('AC_list')
+        if 'AC_list' in proxy._data_in:
+            AC_list = proxy.get_input_('AC_list')
 
             for ac in AC_list:
                 dynamic_inputs.update(
@@ -62,12 +64,12 @@ class Disc1(ProxyDiscipline):
             dynamic_inputs.update(
                 {'dyn_input_2': {'type': 'dataframe', 'default': default_df, 'structuring': True}})
 
-            if 'dyn_input_2' in self._data_in and self.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
-                self.update_default_value(
-                    'dyn_input_2', self.IO_TYPE_IN, default_df)
+            if 'dyn_input_2' in proxy._data_in and proxy.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
+                proxy.update_default_value(
+                    'dyn_input_2', proxy.IO_TYPE_IN, default_df)
 
-        self.add_inputs(dynamic_inputs)
-        self.add_outputs(dynamic_outputs)
+        proxy.add_inputs(dynamic_inputs)
+        proxy.add_outputs(dynamic_outputs)
 
     def run(self):
         input_dict = self.get_sosdisc_inputs()
