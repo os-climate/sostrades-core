@@ -59,12 +59,14 @@ class SoSMDODiscipline(MDODiscipline):
     The _run method is overloaded and new methods ( formerly from SoSDiscipline) are added
 
    """
-    def __init__(self, sos_name,sos_wrapp):
+    def __init__(self, full_name, grammar_type, cache_type, sos_wrapp):
         '''
         Constructor
         '''
-        self.sos_name = sos_name
         self.sos_wrapp = sos_wrapp
+        MDODiscipline.__init__(self, name=full_name,
+                               grammar_type=grammar_type,
+                               cache_type=cache_type)
 
     def _run(self):
         self.sos_wrapp.run()

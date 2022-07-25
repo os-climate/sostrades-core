@@ -372,6 +372,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                              self.coupling_structure.strong_couplings(),
                                                              write_logs=True)
         
+        
     def get_disciplines_to_configure(self):
         '''
         Get sub disciplines list to configure
@@ -488,18 +489,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
-        self.sub_mdo_disciplines = []
+        sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-            self.sub_mdo_disciplines.append(disc.mdo_discipline)
+            sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
         
-        self.init_gemseo_discipline()
+        self.mda_chain_wrapp.create_gemseo_discipline(sub_mdo_disciplines, self)
         
-        self.update_gemseo_grammar_with_data_io()
+#         self._set_residual_history()
         
-        self._set_residual_history()
-        
-        return self.mdo_discipline
     
     def _proxy_run(self):
         '''
