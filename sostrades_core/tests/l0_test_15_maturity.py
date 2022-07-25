@@ -50,7 +50,7 @@ class TestMaturity(unittest.TestCase):
         values_dict['EETests.Disc2.constant'] = -10.
         values_dict['EETests.x'] = 3.
         self.exec_eng.dm.set_values_from_dict(values_dict)
-        self.exec_eng.execute()
+        #self.exec_eng.execute()
 
     def test_01_discipline_maturity(self):
 

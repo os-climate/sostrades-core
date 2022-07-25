@@ -201,13 +201,14 @@ class ProxyDiscipline(object):
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
         self._reload(sos_name, ee)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.father_builder = None
         self.father_executor = None
         self.cls = cls_builder
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
+
 
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
@@ -432,7 +433,10 @@ class ProxyDiscipline(object):
         Create data_in and data_out from DESC_IN and DESC_OUT if empty
         '''
         if self._data_in == {}:
-            self._data_in = deepcopy(self.DESC_IN) or {}
+            if self.is_sos_coupling:
+                self._data_in = deepcopy(self.DESC_IN) or {}
+            else :
+                self._data_in = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
             self.set_shared_namespaces_dependencies(self._data_in)
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
             self.update_dm_with_data_dict(self._data_in)
@@ -441,7 +445,10 @@ class ProxyDiscipline(object):
             self.add_numerical_param_to_data_in()
 
         if self._data_out == {}:
-            self._data_out = deepcopy(self.DESC_OUT) or {}
+            if self.is_sos_coupling:
+                self._data_out = deepcopy(self.DESC_IN) or {}
+            else :
+                self._data_out = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
             self.set_shared_namespaces_dependencies(self._data_out)
             self._data_out = self._prepare_data_dict(self.IO_TYPE_OUT)
             self.update_dm_with_data_dict(self._data_out)
@@ -1559,8 +1566,12 @@ class ProxyDiscipline(object):
         '''
         if hasattr(self, '_maturity'):
             return self._maturity
-        else:
-            return ''
+        elif hasattr(self.mdo_discipline_wrapp,'wrapper'):
+            if hasattr(self.mdo_discipline_wrapp.wrapper, '_maturity'):
+                return self.mdo_discipline_wrapp.wrapper._maturity
+            else:
+                return ''
+        return ''
 
     def _build_dynamic_DESC_IN(self):
         pass

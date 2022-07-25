@@ -25,10 +25,9 @@ class Study(StudyManager):
     def setup_usecase(self):
 
         dict_values = {
-#             'usecase.Disc1.x': 3,
-#             'usecase.Disc1.a': 1,
-#             'usecase.Disc1.b': 5,
-#             'usecase.Disc1.name': 'A1'
+            'usecase.x': 3,
+            'usecase.Disc1.a': 1,
+            'usecase.Disc1.b': 5,
             }
         return dict_values
 
