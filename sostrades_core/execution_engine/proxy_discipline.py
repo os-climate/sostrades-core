@@ -285,37 +285,9 @@ class ProxyDiscipline(object):
 
     def prepare_execution(self):
 
-        self.init_gemseo_discipline()
+        self.mdo_discipline_wrapp.create_gemseo_discipline(self)
 
     #         self.set_cache() -> TODO: be able to comment this line, by passing the cache_type option directly as MDODiscipline input
-
-    def init_gemseo_discipline(self):
-        '''
-        Initialization of GEMSEO MDODisciplines
-        To be overloaded by subclasses
-        '''
-        if self.mdo_discipline is None:
-            disc = MDODiscipline(name=self.get_disc_full_name(),
-                                 grammar_type=self.SOS_GRAMMAR_TYPE,
-                                 cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE))
-            disc.proxy_discipline = self
-            setattr(disc, '_run', self._proxy_run)
-            setattr(disc, 'compute_sos_jacobian', self._proxy_compute_jacobian)
-            setattr(disc, 'post_execute', self.post_execute)
-            self.mdo_discipline = disc
-
-            disc._ATTR_TO_SERIALIZE += ("proxy_discipline",)
-
-        self.update_gemseo_grammar_with_data_io()
-
-    def update_gemseo_grammar_with_data_io(self):
-
-        data_in = self.get_data_io_with_full_name(
-            self.IO_TYPE_IN)
-        data_out = self.get_data_io_with_full_name(
-            self.IO_TYPE_OUT)
-        self._init_grammar_with_keys(data_in, self.IO_TYPE_IN)
-        self._init_grammar_with_keys(data_out, self.IO_TYPE_OUT)
 
     def _init_grammar_with_keys(self, names, io_type):
         ''' initialize GEMS grammar with names and type None

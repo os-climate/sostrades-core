@@ -45,7 +45,7 @@ class Disc1(SoSWrapp):
         'y': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def run(self,proxy):
+    def run(self, proxy):
         x = proxy.get_sosdisc_inputs('x')
         a = proxy.get_sosdisc_inputs('a')
         b = proxy.get_sosdisc_inputs('b')

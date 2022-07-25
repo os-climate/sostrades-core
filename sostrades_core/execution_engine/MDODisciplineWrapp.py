@@ -92,15 +92,34 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
-    def create_gemseo_discipline(self):  # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None):  # type: (...) -> None
         """ MDODiscipline instanciation
 
         """
         if self.wrapping_mode == 'SoSTrades':
-            self.mdo_discipline = SoSMDODiscipline(self.name, self.wrapper)
-        else:
-            # self.mdo_discipline = create_discipline(self.sos_name)
+            self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
+                                                   grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                                   cache_type=proxy.get_sosdisc_inputs(proxy.CACHE_TYPE),
+                                                   sos_wrapp = self.wrapper)
+            self._init_grammar_with_keys(proxy)
+            
+        elif self.wrapping_mode == 'GEMSEO':
             pass
+#             self.mdo_discipline = self.wrapper
+
+    def _init_grammar_with_keys(self, proxy):
+        ''' initialize GEMS grammar with names and type None
+        '''
+        input_names = proxy.get_input_data_names()
+        grammar = self.mdo_discipline.input_grammar
+        grammar.clear()
+        grammar.initialize_from_base_dict({input:None for input in input_names})
+
+        output_names = proxy.get_output_data_names()
+        grammar = self.mdo_discipline.output_grammar
+        grammar.clear()
+        grammar.initialize_from_base_dict({output:None for output in output_names})
+        
 
     def create_wrapp(self):  # type: (...) -> None
         """ SoSWrapp instanciation

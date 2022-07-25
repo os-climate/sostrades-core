@@ -40,9 +40,29 @@ class MDAChainWrapp(MDODisciplineWrapp):
         '''
         self.name = name
 
-    def create_gemseo_discipline(self):  # type: (...) -> None
+    def create_gemseo_discipline(self, sub_mdo_disciplines, proxy=None):  # type: (...) -> None
         """ MDAChain instanciation
 
         """
-        self.mdo_discipline = MDAChain(self.name, self.wrapper)
+        self.mdo_discipline = MDAChain(
+                                      disciplines=sub_mdo_disciplines,
+                                      name=proxy.get_disc_full_name(),
+                                      grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                      ** proxy._get_numerical_inputs())
+        
+        self._init_grammar_with_keys(proxy)
+                
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
