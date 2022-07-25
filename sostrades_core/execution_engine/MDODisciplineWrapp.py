@@ -85,12 +85,12 @@ class MDODisciplineWrapp(object):
         """
         return self.mdo_discipline.get_output_data_names(filtered_outputs)
 
-    def set_up_sos_discipline(self, proxy):  # type: (...) -> None
+    def setup_sos_disciplines(self, proxy):  # type: (...) -> None
         """Define setup
 
         """
         if self.wrapper is not None:
-            self.wrapper.set_up_sos_discipline(proxy)
+            self.wrapper.setup_sos_disciplines(proxy)
 
     def create_gemseo_discipline(self):  # type: (...) -> None
         """ MDODiscipline instanciation

@@ -198,12 +198,12 @@ class SoSWrapp(object):
         '''
         self.sos_name = sos_name
 
-    def set_up_sos_discipline(self,proxy):  # type: (...) -> None
+    def setup_sos_disciplines(self,proxy):  # type: (...) -> None
         """Define the set_up_sos_discipline of its proxy
 
         To be overloaded by subclasses.
         """
-        raise NotImplementedError()
+        pass
 
     def run(self,proxy):  # type: (...) -> None
         """Define the run of the discipline

@@ -69,7 +69,7 @@ class TestDefaultInDM(unittest.TestCase):
         values_dict['EETests.Disc2.constant'] = -10.
         values_dict['EETests.x'] = 3.
         self.exec_eng.load_study_from_input_dict(values_dict)
-        res = self.exec_eng.execute()
+        #res = self.exec_eng.execute()
 
         values_dict2 = {}
         values_dict2['EETests.Disc2.power'] = 2

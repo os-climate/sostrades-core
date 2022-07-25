@@ -730,7 +730,8 @@ class ProxyDiscipline(object):
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
         DESC_IN = {'X': {'structuring':True}}
         '''
-        pass
+
+        self.mdo_discipline_wrapp.setup_sos_disciplines(self)
 
     def set_dynamic_default_values(self, default_values_dict):
         '''

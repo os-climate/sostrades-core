@@ -252,6 +252,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     #         ProxyDisciplineBuilder.clear_cache(self)
 
     # -- Public methods
+
+    def setup_sos_disciplines(self):
+        pass
 #     def setup_sos_disciplines(self):
 #         '''
 #         Set possible values of preconditioner in data manager, according to liner solver MDA/MDO value
