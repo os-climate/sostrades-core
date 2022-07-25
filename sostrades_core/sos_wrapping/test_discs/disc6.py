@@ -18,7 +18,7 @@ from numpy import array
 # Discipline with dataframe
 
 
-class Disc6(ProxyDiscipline):
+class Disc6(SoSWrapp):
 
     # ontology information
     _ontology_data = {

@@ -16,10 +16,11 @@ limitations under the License.
 import pandas as pd
 import numpy as np
 
+from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
-class Disc(ProxyDiscipline):
+class Disc(SoSWrapp):
     # ontology information
     _ontology_data = {
         'label': 'sostrades_core.sos_wrapping.test_discs.disc_list_conversion',
