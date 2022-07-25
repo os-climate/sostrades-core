@@ -15,8 +15,7 @@ limitations under the License.
 '''
 from gemseo.core.chain import MDOChain
 from gemseo.mda.sequential_mda import MDASequential
-from gemseo.mda.mda_chain import MDAChain
-from gemseo.api import create_mda
+from sostrades_core.execution_engine.MDAChainWrapp import MDAChainWrapp
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -26,7 +25,6 @@ from copy import deepcopy, copy
 from multiprocessing import cpu_count
 
 from pandas import DataFrame
-from itertools import repeat
 import platform
 
 from sostrades_core.api import get_sos_logger
@@ -196,6 +194,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.linear_solver_tolerance_MDO = None
 
         self._set_dm_disc_info()
+        
+        self.mda_chain_wrapp = MDAChainWrapp(name=sos_name)
 
     def _reload(self, sos_name, ee):
         ''' reload object
@@ -238,9 +238,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         old_current_discipline = self.ee.factory.current_discipline
         self.ee.factory.current_discipline = self
         for builder in self.cls_builder:
-            disc = builder.build()
-            if disc not in self.proxy_disciplines:
-                self.ee.factory.add_discipline(disc)
+            proxy_disc = builder.build()
+            if proxy_disc not in self.proxy_disciplines:
+                self.ee.factory.add_discipline(proxy_disc)
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
         # high level coupling and we do not have to restore the
         # current_discipline
