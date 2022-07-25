@@ -446,9 +446,9 @@ class ProxyDiscipline(object):
 
         if self._data_out == {}:
             if self.is_sos_coupling:
-                self._data_out = deepcopy(self.DESC_IN) or {}
+                self._data_out = deepcopy(self.DESC_OUT) or {}
             else :
-                self._data_out = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
+                self._data_out = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
             self.set_shared_namespaces_dependencies(self._data_out)
             self._data_out = self._prepare_data_dict(self.IO_TYPE_OUT)
             self.update_dm_with_data_dict(self._data_out)
