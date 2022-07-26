@@ -28,7 +28,7 @@ from multiprocessing import cpu_count
 
 from pandas import DataFrame
 import platform
-
+import logging
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
@@ -43,7 +43,7 @@ if platform.system() != 'Windows':
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
 N_CPUS = cpu_count()
-
+LOGGER = logging.getLogger(__name__)
 
 def get_available_linear_solvers():
     '''Get available linear solvers list
@@ -371,7 +371,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
                                                              self.coupling_structure.strong_couplings(),
-                                                             write_logs=True)
+                                                             write_logs=True,logger=LOGGER)
         
         
     def get_disciplines_to_configure(self):
