@@ -285,7 +285,7 @@ class ProxyDiscipline(object):
 
     def prepare_execution(self):
 
-        self.mdo_discipline_wrapp.create_gemseo_discipline(self)
+        self.mdo_discipline_wrapp.create_gemseo_discipline(self, self.ee.dm.reduced_dm)
 
     #         self.set_cache() -> TODO: be able to comment this line, by passing the cache_type option directly as MDODiscipline input
 

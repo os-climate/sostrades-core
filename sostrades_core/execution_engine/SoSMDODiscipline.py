@@ -125,7 +125,7 @@ class SoSMDODiscipline(MDODiscipline):
                             will_be_converted = True
 
             if not will_be_converted and write_logs:
-                MDODiscipline.LOGGER.info(
+                self.LOGGER.info(
                     f'variable {variable} in strong couplings wont be taken into consideration in residual computation')
         return filtered_keys
 

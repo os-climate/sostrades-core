@@ -472,6 +472,7 @@ class ExecutionEngine:
         # -- Init execute, to fully initialize models in discipline
         if len(dict_to_load):
             self.update_from_dm()
+            self.dm.create_reduced_dm()
             self.check_inputs(raise_exception=False)
             self.__factory.init_execution()
             if update_status_configure:

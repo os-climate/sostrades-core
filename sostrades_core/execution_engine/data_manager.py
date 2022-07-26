@@ -81,6 +81,7 @@ class DataManager:
         self.gemseo_disciplines_id_map = None
         self.cache_map = None
         self.treeview = None
+        self.reduced_dm = None
         self.reset()
 
         if logger is None:
@@ -366,6 +367,10 @@ class DataManager:
                 if val in self.disciplines_dict:
                     converted_dict[key].append(self.disciplines_dict[val])
         return converted_dict
+    
+    def create_reduced_dm(self):
+        
+        self.reduced_dm = self.get_data_dict_list_attr([ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):
         ''' Convert dict keys with ids to full_names or full_names to ids
