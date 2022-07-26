@@ -133,8 +133,8 @@ class MDODisciplineWrapp(object):
             # self.mdo_discipline = create_discipline(self.sos_name)
             pass
 
-    def execute(self):
+    def execute(self, input_data):
         """ Discipline Execution
 	    """
 
-        return self.mdo_discipline.execute()
+        return self.mdo_discipline.execute(input_data)

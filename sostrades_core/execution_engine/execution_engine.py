@@ -548,7 +548,7 @@ class ExecutionEngine:
         Get values of mdo_discipline input_grammar from data manager
         '''
         input_data = {}
-        input_data_names = proxy_coupling.mda_chain_wrapp.mdo_discipline.input_grammar.get_data_names()
+        input_data_names = proxy_coupling.mdo_discipline_wrapp.mdo_discipline.input_grammar.get_data_names()
         if len(input_data_names) > 0:
             for data_name in input_data_names:
                 input_data[data_name] = self.dm.get_value(data_name)

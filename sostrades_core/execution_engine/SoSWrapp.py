@@ -101,7 +101,7 @@ class SoSWrapp(object):
         """
         pass
 
-    def run(self, proxy):  # type: (...) -> None
+    def run(self):  # type: (...) -> None
         """Define the run of the discipline
 
         To be overloaded by subclasses.

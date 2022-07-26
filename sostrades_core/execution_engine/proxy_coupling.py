@@ -17,6 +17,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.mda.sequential_mda import MDASequential
 from sostrades_core.execution_engine.MDAChainWrapp import MDAChainWrapp
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
+from gemseo.mda.mda_chain import MDAChain
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -196,7 +197,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         self._set_dm_disc_info()
         
-        self.mda_chain_wrapp = MDAChainWrapp(name=sos_name)
+        self.mdo_discipline_wrapp = MDAChainWrapp(name=sos_name)
 
     def _reload(self, sos_name, ee):
         ''' reload object
@@ -495,13 +496,113 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc.prepare_execution()
             sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
         
-        self.mda_chain_wrapp.create_gemseo_discipline(sub_mdo_disciplines, self)
+        self.mdo_discipline_wrapp.create_gemseo_discipline(sub_mdo_disciplines, self)
         
 #         self._set_residual_history()
 
+    def pre_run_mda(self, input_data):
+        '''
+        Pre run needed if one of the strong coupling variables is None in a MDA 
+        No need of prerun otherwise 
+        '''
+        strong_couplings_values = [input_data[key] for key in self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()]
+        if any(elem is None for elem in strong_couplings_values):
+            self.logger.info(
+                f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
+            self.recreate_order_for_first_execution(input_data)
+            self.logger.info(
+                f'End of pre-run execution for the coupling ' + self.get_disc_full_name())
+            
+    def recreate_order_for_first_execution(self, input_data):
+        '''
+        For each sub mda defined in the GEMS execution sequence, 
+        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
+        until all disciplines have been run. 
+        While loop cannot be an infinite loop because raise an exception
+        if no disciplines are ready while some disciplines are missing in the list 
+        '''
+        for parallel_tasks in self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.sequence:
+            # to parallelize, check if 1 < len(parallel_tasks)
+            # for now, parallel tasks are run sequentially
+            for coupled_mdo_disciplines in parallel_tasks:
+                # several disciplines coupled
+                first_disc = coupled_mdo_disciplines[0]
+                if len(coupled_mdo_disciplines) > 1 or (
+                        len(coupled_mdo_disciplines) == 1
+                        and self.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
+                        and not isinstance(coupled_mdo_disciplines[0], MDAChain)
+                ):
+                    # several disciplines coupled
+
+                    # get the disciplines from self.disciplines
+                    # order the MDA disciplines the same way as the
+                    # original disciplines
+                    sub_mda_disciplines = []
+                    for disc in self.mdo_discipline_wrapp.mdo_discipline.disciplines:
+                        if disc in coupled_mdo_disciplines:
+                            sub_mda_disciplines.append(disc)
+                    # submda disciplines are not ordered in a correct exec
+                    # sequence...
+                    # Need to execute ready disciplines one by one until all
+                    # sub disciplines have been run
+                    while sub_mda_disciplines != []:
+                        ready_disciplines = self.get_first_discs_to_execute(
+                            sub_mda_disciplines, input_data)
+
+                        for discipline in ready_disciplines:
+                            # Execute ready disciplines and update local_data
+                            if isinstance(discipline, MDAChain):
+                                # recursive call if subdisc is a SoSCoupling
+                                # TODO: check if it will work for cases like
+                                # Coupling1 > Driver > Coupling2
+                                discipline.pre_run_mda()
+                                self.mdo_discipline_wrapp.mdo_discipline.local_data.update(discipline.local_data)
+                            else:
+                                temp_local_data = discipline.execute(
+                                    self.mdo_discipline_wrapp.mdo_discipline.local_data)
+                                self.mdo_discipline_wrapp.mdo_discipline.local_data.update(temp_local_data)
+
+                        sub_mda_disciplines = [
+                            disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
+                else:
+                    discipline = coupled_mdo_disciplines[0]
+                    if discipline.proxy_discipline.is_sos_coupling:
+                        # recursive call if subdisc is a SoSCoupling
+                        discipline.pre_run_mda()
+                        self.mdo_discipline_wrapp.mdo_discipline.local_data.update(discipline.local_data)
+                    else:
+                        temp_local_data = discipline.execute(self.mdo_discipline.local_data)
+                        self.mdo_discipline_wrapp.mdo_discipline.local_data.update(temp_local_data)
+
+        self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(self.mdo_discipline_wrapp.mdo_discipline.local_data)
+        
+    def get_first_discs_to_execute(self, disciplines, input_data):
+
+        ready_disciplines = []
+        disc_vs_keys_none = {}
+        for disc in disciplines:
+#             # get inputs values of disc with full_name
+#             inputs_values = disc.get_inputs_by_name(
+#                 in_dict=True, full_name=True)
+            # update inputs values with SoSCoupling local_data
+            keys_none = [key for key in disc.input_grammar.get_data_names() if key.split(NS_SEP)[-1] not in self.NUM_DESC_IN and input_data.get(key) is None]
+            if keys_none == []:
+                ready_disciplines.append(disc)
+            else:
+                disc_vs_keys_none[disc.name] = keys_none
+        if ready_disciplines == []:
+            message = '\n'.join(' : '.join([disc, str(keys_none)])
+                                for disc, keys_none in disc_vs_keys_none.items())
+            raise Exception(
+                f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
+        else:
+            return ready_disciplines
+
     def execute(self, input_data):
         
-        self.mda_chain_wrapp.execute()
+        self.pre_run_mda(input_data)
+        
+        self.mdo_discipline_wrapp.execute(input_data)
         
     
     def _proxy_run(self):
