@@ -79,7 +79,6 @@ class ExecutionEngine:
 
         self.root_process = None
         self.root_builder_ist = None
-        self.root_mdo_discipline = None
 
         self.__connector_container = PersistentConnectorContainer()
 
@@ -543,12 +542,12 @@ class ExecutionEngine:
         for disc in disc.sos_disciplines:
             self.set_debug_mode(mode, disc)
             
-    def get_input_data_for_gemseo(self, mdo_discipline):
+    def get_input_data_for_gemseo(self, proxy_coupling):
         '''
         Get values of mdo_discipline input_grammar from data manager
         '''
         input_data = {}
-        input_data_names = mdo_discipline.input_grammar.get_data_names()
+        input_data_names = proxy_coupling.mda_chain_wrapp.mdo_discipline.input_grammar.get_data_names()
         if len(input_data_names) > 0:
             for data_name in input_data_names:
                 input_data[data_name] = self.dm.get_value(data_name)
@@ -573,9 +572,8 @@ class ExecutionEngine:
         self.prepare_execution()
 
         # -- execution with input data from DM
-        ex_proc = self.root_mdo_discipline
-        input_data = self.get_input_data_for_gemseo(ex_proc)
-        ex_proc.execute(input_data=input_data)
+        input_data = self.get_input_data_for_gemseo(self.root_process)
+        self.root_process.execute(input_data=input_data)
         
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
