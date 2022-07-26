@@ -1106,7 +1106,7 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Business.Boeing.Disc2')[1].__class__, Disc6)
 
-    def test_14_build_architecture_with_specific_folder(self):
+    def _test_14_build_architecture_with_specific_folder(self):
 
         vb_builder_name = 'Business'
         test_disc_folder = 'sos_trades_core.sos_wrapping.test_discs'
