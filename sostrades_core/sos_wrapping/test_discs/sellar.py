@@ -22,7 +22,6 @@ Adapted from GEMSEO examples
 '''
 from cmath import exp, sqrt
 from numpy import array, atleast_2d, NaN
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
@@ -30,15 +29,15 @@ class SellarProblem(SoSWrapp):
     """ Sellar Optimization Problem functions
     """
     _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_1': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+    DESC_IN = {'x': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'y_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'local_dv': {'type': 'float'}}
 
-    DESC_OUT = {'c_1': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'c_2': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'obj': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+                'c_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+                'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ computes
@@ -126,16 +125,16 @@ class SellarProblem(SoSWrapp):
             [1.0])))
 
 
-class Sellar1(ProxyDiscipline):
+class Sellar1(SoSWrapp):
     """ Discipline 1
     """
     _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {'x': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'y_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'array',
-                        'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ Discipline 1 execution
@@ -182,7 +181,7 @@ class Sellar1(ProxyDiscipline):
         self.set_partial_derivative('y_1', 'y_2', atleast_2d(array([-0.2])))
 
 
-class Sellar2(ProxyDiscipline):
+class Sellar2(SoSWrapp):
     """ Discipline 2
     """
 
@@ -200,12 +199,12 @@ class Sellar2(ProxyDiscipline):
         'version': '',
     }
     _maturity = 'Fake'
-    DESC_IN = {'y_1': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default':False, 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'debug_mode_sellar': {'type': 'bool', 'default':False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'array',
-                        'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ solves Discipline1
@@ -253,7 +252,7 @@ class Sellar2(ProxyDiscipline):
             raise Exception("debug mode activated to trigger except")
 
 
-class Sellar3(ProxyDiscipline):
+class Sellar3(SoSWrapp):
     """ Discipline 2 but with NaN in calculation on purpose for test
     """
 
@@ -271,13 +270,13 @@ class Sellar3(ProxyDiscipline):
         'version': '',
     }
     _maturity = 'Fake'
-    DESC_IN = {'y_1': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+    DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'error_string': {'type': 'string', 'default': '', 'possible_values': ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]}}
 
     DESC_OUT = {'y_2': {'type': 'array',
-                        'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """ computes Discipline3
