@@ -16,6 +16,8 @@ limitations under the License.
 from gemseo.core.chain import MDOChain
 from gemseo.mda.sequential_mda import MDASequential
 from sostrades_core.execution_engine.MDAChainWrapp import MDAChainWrapp
+from sostrades_core.tools.filter.filter import filter_variables_to_convert
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -33,7 +35,6 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import _filter_variables_to_convert
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 
 if platform.system() != 'Windows':
@@ -368,7 +369,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def _build_coupling_structure(self):
         
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
-        self.strong_couplings = _filter_variables_to_convert(self.ee,
+        self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
                                                              self.coupling_structure.strong_couplings(),
                                                              write_logs=True)
         
