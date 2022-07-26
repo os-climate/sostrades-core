@@ -36,13 +36,13 @@ class Disc1(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'float', 'unit': '-'},
         'b': {'type': 'float', 'unit': '-'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self, proxy):
