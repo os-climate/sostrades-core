@@ -138,18 +138,8 @@ class PureNewtonRaphson(MDARoot):
             # Compute all discipline gradients df(x)/dx with x
             self.assembly.linearize_all_disciplines(self.local_data, force_no_exec=True)
 
-            # Save a copy of sos_jacobian_assembly's coupling structure to avoid
-            # loss of jac during multithread execute
-            if self.n_processes > 1:
-                cplg_strct = deepcopy(self.assembly.coupling_structure)
-
             # compute coupling_variables(x+k) for the residuals
             self.execute_all_disciplines(self.local_data)
-
-            # In case of multithread run, load back sos_jacobian_assembly's coupling structure
-            # to avoid errors due to disciplines jacobian reset to None
-            if self.n_processes>1:
-                self.assembly.coupling_structure = cplg_strct
 
             # build new_couplings after execution: concatenated strong couplings, converted into arrays
             new_couplings = self._current_strong_couplings(update_dm=True)
