@@ -80,11 +80,12 @@ class MDODisciplineWrapp(object):
                                                        sos_wrapp=self.wrapper,
                                                        reduced_dm=reduced_dm)
                 self._init_grammar_with_keys(proxy)
+
     
             elif self.wrapping_mode == 'GEMSEO':
                 pass
 
-    #             self.mdo_discipline = self.wrapper
+        proxy.status = self.mdo_discipline.status
 
     def _init_grammar_with_keys(self, proxy):
         ''' initialize GEMS grammar with names and type None
@@ -110,6 +111,7 @@ class MDODisciplineWrapp(object):
                                       ** proxy._get_numerical_inputs())
         
         self._init_grammar_with_keys(proxy)
+        proxy.status = self.mdo_discipline.status
 
     def create_wrapp(self):  # type: (...) -> None
         """ SoSWrapp instanciation

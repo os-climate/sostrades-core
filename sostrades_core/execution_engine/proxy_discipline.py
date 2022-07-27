@@ -206,7 +206,6 @@ class ProxyDiscipline(object):
         self.father_executor = None
         self.cls = cls_builder
 
-
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
 
@@ -216,7 +215,7 @@ class ProxyDiscipline(object):
         self.mdo_discipline = None
         self.sub_mdo_disciplines = []
         self.proxy_disciplines = []
-        self.status = None
+        self._status = None
 
         # ------------DEBUG VARIABLES----------------------------------------
         self.nan_check = False
@@ -264,6 +263,26 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
+    @property
+    def status(self):  # type: (...) -> str
+        """The status of the discipline."""
+        if self._status != self.STATUS_CONFIGURE:
+            return self.mdo_discipline_wrapp.mdo_discipline.status
+        return self.STATUS_CONFIGURE
+
+    @status.setter
+    def status(
+            self,
+            status,  # type: str
+    ):  # type: (...) -> None
+        self._update_status_dm(status)
+
+    # @proxy_status.setter
+    # def proxy_status(
+    #         self,
+    #         status,  # type: str
+    # ):  # type: (...) -> None
+    #     self.status =
     def _proxy_run(self):
         '''
         uses user wrapp run during execution
@@ -404,7 +423,7 @@ class ProxyDiscipline(object):
         if self._data_in == {}:
             if self.is_sos_coupling:
                 self._data_in = deepcopy(self.DESC_IN) or {}
-            else :
+            else:
                 self._data_in = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
             self.set_shared_namespaces_dependencies(self._data_in)
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
@@ -416,7 +435,7 @@ class ProxyDiscipline(object):
         if self._data_out == {}:
             if self.is_sos_coupling:
                 self._data_out = deepcopy(self.DESC_OUT) or {}
-            else :
+            else:
                 self._data_out = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
             self.set_shared_namespaces_dependencies(self._data_out)
             self._data_out = self._prepare_data_dict(self.IO_TYPE_OUT)
@@ -1476,8 +1495,8 @@ class ProxyDiscipline(object):
 
         # Avoid unnecessary call to status property (which can trigger event in
         # case of change)
-        if self.status != status:
-            self.status = status
+        if self._status != status:
+            self._status = status
 
         # Force update into discipline_dict (GEMS can change status but cannot update the
         # discipline_dict
@@ -1498,6 +1517,13 @@ class ProxyDiscipline(object):
         for disc in self.proxy_disciplines:
             disc._update_status_recursive(status)
 
+    def set_status_from_mdo_discipline(self):
+        """update status
+        """
+        for proxy_discipline in self.proxy_disciplines:
+            proxy_discipline.status = proxy_discipline.mdo_discipline_wrapp.mdo_discipline.status
+        self.status = self.mdo_discipline_wrapp.mdo_discipline.status
+
     def _check_status_before_run(self):
 
         status_ok = True
@@ -1514,12 +1540,12 @@ class ProxyDiscipline(object):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" + 
+            raise ValueError("Unknown re_exec_policy :" +
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) + 
-                             " with status: " + str(self.status) + 
-                             " while re_exec_policy is : " + 
+            raise ValueError("Trying to run a discipline " + str(type(self)) +
+                             " with status: " + str(self.status) +
+                             " while re_exec_policy is : " +
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1536,7 +1562,7 @@ class ProxyDiscipline(object):
         '''
         if hasattr(self, '_maturity'):
             return self._maturity
-        elif hasattr(self.mdo_discipline_wrapp,'wrapper'):
+        elif hasattr(self.mdo_discipline_wrapp, 'wrapper'):
             if hasattr(self.mdo_discipline_wrapp.wrapper, '_maturity'):
                 return self.mdo_discipline_wrapp.wrapper._maturity
             else:
@@ -1847,9 +1873,9 @@ class ProxyDiscipline(object):
         self.ee.factory.remove_sos_discipline(self)
 
     def post_execute(self, local_data):
-        
+
         self.fill_output_value_connector()
-        
+
         if self.check_if_input_change_after_run and not self.is_sos_coupling:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}

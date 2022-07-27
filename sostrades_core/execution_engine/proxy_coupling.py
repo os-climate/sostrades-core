@@ -606,8 +606,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
         # store local data in datamanager
         self.update_dm_with_local_data(self.mdo_discipline_wrapp.mdo_discipline.local_data)
-        
-    
+
+        self.set_status_from_mdo_discipline()
+
+
+
     def _proxy_run(self):
         '''
         uses user wrapp run during execution
