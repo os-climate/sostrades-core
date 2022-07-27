@@ -25,7 +25,6 @@ class SoSGatherData(SoSDiscipline):
     Specification: GatherData discipline collects inputs and gathers them in outputs
     '''
 
-
     # ontology information
     _ontology_data = {
         'label': 'Gather Data',
@@ -39,6 +38,7 @@ class SoSGatherData(SoSDiscipline):
         'icon': 'fas fa-outdent fa-fw',
         'version': '',
     }
+
     def __init__(self, sos_name, ee, map_name, parent=None):
         '''
         CLass to gather data
@@ -60,16 +60,15 @@ class SoSGatherData(SoSDiscipline):
             # first call configure to add scatter var name in data_in
             SoSDiscipline.configure(self)
         else:
-            if self.get_sosdisc_inputs(self.sc_map.get_scatter_var_name()) is not None:
-                # add sub_varnames to inst_desc_in
-                self.build_inst_desc_in()
+            # add sub_varnames to inst_desc_in
+            self.build_inst_desc_in()
 
-                SoSDiscipline.configure(self)
+            SoSDiscipline.configure(self)
 
-                # update data_io if namespace has changed
-                self.update_data_io_with_modified_inst_desc_io()
-                # update inputs user level
-                self.update_inputs_user_level()
+            # update data_io if namespace has changed
+            self.update_data_io_with_modified_inst_desc_io()
+            # update inputs user level
+            self.update_inputs_user_level()
 
     def update_inputs_user_level(self):
         '''
@@ -132,12 +131,15 @@ class SoSGatherData(SoSDiscipline):
         scatter_var_name = self.sc_map.get_scatter_var_name()
         scatter_var_ns = self.ee.smaps_manager.get_input_ns_from_build_map(
             scatter_var_name)
-        scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
-            scatter_var_name)
+        #scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
+        #    scatter_var_name)
+        scatter_var_type = 'list'
+        scatter_var_subtype = {'list': 'string'}
 
         if scatter_var_name not in self._data_in:
             add_to_desc_in = {scatter_var_name: {
-                self.TYPE: scatter_var_type, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns, SoSDiscipline.STRUCTURING: True}}
+                self.TYPE: scatter_var_type,self.SUBTYPE: scatter_var_subtype, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
+                SoSDiscipline.STRUCTURING: True}}
             self.inst_desc_in.update(add_to_desc_in.copy())
 
     def build_inst_desc_in(self):
@@ -175,8 +177,40 @@ class SoSGatherData(SoSDiscipline):
         for output_name, output_type in zip(output_name_list, output_type_list):
             if output_name not in self._data_in:
                 add_to_desc_out = {output_name: {self.TYPE: output_type,
-                                                 self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: output_ns, self.USER_LEVEL: 3}}
+                                                 self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: output_ns,
+                                                 self.USER_LEVEL: 3}}
                 self.inst_desc_out.update(add_to_desc_out.copy())
+
+    def fill_subtype_descriptor(self):
+        """ Redefinition of sos_discipline's fill_subtype_descriptor method
+        to fill the subtype_descriptors of output variables of a gather data
+        """
+        output_name_list = self.sc_map.get_output_name()
+        output_type_list = self.sc_map.get_output_type()
+        input_ns = self.sc_map.get_input_ns()
+        scatter_var_name = self.sc_map.get_scatter_var_name()
+        new_gather_inputs = self.get_sosdisc_inputs(scatter_var_name)
+        input_name_list = self.sc_map.get_input_name()
+        if len(new_gather_inputs) > 0:
+            first_gather_node = new_gather_inputs[0]
+            i = 0
+            for output_name, output_type in zip(output_name_list, output_type_list):
+                input_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][input_ns].get_value()
+                corresponding_input = f'{input_ns_name}.{first_gather_node}.{input_name_list[i]}'
+                type_of_input = self.ee.dm.get_data(corresponding_input, self.TYPE)
+                subtype_descriptor = None
+
+                if output_type == 'dict':
+                    if type_of_input not in ['list', 'dict']:
+                        subtype_descriptor = {'dict': type_of_input}
+                    else:
+                        subtype_descriptor = self.ee.dm.get_data(corresponding_input, self.SUBTYPE)
+                        if subtype_descriptor is not None:
+                            subtype_descriptor = {'dict': subtype_descriptor}
+
+                if subtype_descriptor is not None:
+                    self._data_out[output_name][self.SUBTYPE] = subtype_descriptor
+                i += 1
 
     def run(self):
         '''

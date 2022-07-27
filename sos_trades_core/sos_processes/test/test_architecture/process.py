@@ -32,7 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}

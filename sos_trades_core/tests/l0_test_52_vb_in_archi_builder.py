@@ -42,7 +42,7 @@ class TestVBArchiBuilder(unittest.TestCase):
     def test_01_configure_data_io_for_vb_discipline(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -172,7 +172,7 @@ class TestVBArchiBuilder(unittest.TestCase):
     def test_03_run_sum_vb_disciplines(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}

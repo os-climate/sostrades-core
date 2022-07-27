@@ -157,6 +157,7 @@ class TreeNode:
                 new_disc_data[SoSDiscipline.IO_TYPE] = SoSDiscipline.IO_TYPE_IN
                 if read_only:
                     new_disc_data[SoSDiscipline.EDITABLE] = False
+                new_disc_data["variable_key"] = self.create_data_key(self.model_name_full_path, SoSDiscipline.IO_TYPE_IN, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -170,6 +171,7 @@ class TreeNode:
                 new_disc_data[SoSDiscipline.IO_TYPE] = SoSDiscipline.IO_TYPE_OUT
                 if read_only:
                     new_disc_data[SoSDiscipline.EDITABLE] = False
+                new_disc_data["variable_key"] = self.create_data_key(self.model_name_full_path, SoSDiscipline.IO_TYPE_OUT, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -203,6 +205,10 @@ class TreeNode:
         filepath = inspect.getfile(discipline.__class__)
         markdown_data = TreeNode.get_markdown_documentation(filepath)
         self.add_markdown_documentation(markdown_data, discipline.__module__)
+
+    def create_data_key(self, disc_name, io_type, variable_name):
+        io_type = io_type.lower()
+        return f'{disc_name}_{io_type}put_{variable_name}'
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data

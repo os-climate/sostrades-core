@@ -139,7 +139,10 @@ class ScatterMap:
         '''
         Get the output_ns in the map
         '''
-        return self.map[self.OUTPUT_NS]
+        if self.OUTPUT_NS in self.map:
+            return self.map[self.OUTPUT_NS]
+        else:
+            return self.map[self.INPUT_NS]
 
     def get_scatter_var_name(self):
         '''

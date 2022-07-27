@@ -49,6 +49,7 @@ VAR_NAME = SoSDiscipline.VAR_NAME
 DATAFRAME_DESCRIPTOR = SoSDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = SoSDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = SoSDiscipline.TYPE_METADATA
+SUBTYPE = SoSDiscipline.SUBTYPE
 
 
 class DataManager:
@@ -109,8 +110,9 @@ class DataManager:
         # update cache of all gemseo disciplines with loaded cache_map
         for disc_id, disc_cache in cache_map.items():
             if disc_id in self.gemseo_disciplines_id_map:
-                self.gemseo_disciplines_id_map[disc_id].cache = disc_cache
                 self.cache_map[disc_id] = disc_cache
+                for disc in self.gemseo_disciplines_id_map[disc_id]:
+                    disc.cache = disc_cache
 
     def reset(self):
         self.data_dict = {}
@@ -418,9 +420,15 @@ class DataManager:
 
                         # reference the parameter from the data manager to the
                         # discipline
+                        if (SUBTYPE in disc_dict[var_name].keys()) and (SUBTYPE not in self.data_dict[var_id].keys()):
+                            self.data_dict[var_id][SUBTYPE] = disc_dict[var_name][SUBTYPE]
                         disc_dict[var_name] = self.data_dict[var_id]
                     # else data already exist as OUTPUT and has priority!
                     # => do nothing
+                    # if subtype descriptor is in the disc_dict but not in dm we fetch it from the disc_dict
+                    if (SUBTYPE in disc_dict[var_name].keys()) and (SUBTYPE not in self.data_dict[var_id].keys()):
+                        self.data_dict[var_id][SUBTYPE] = disc_dict[var_name][SUBTYPE]
+
                 else:
                     # io_type == IO_TYPE_OUT
                     if self.data_dict[var_id][IO_TYPE] == IO_TYPE_OUT:
@@ -455,6 +463,8 @@ class DataManager:
                         # one ('techno invest level').
                         if self.data_dict[var_id][VALUE] is not None:
                             disc_dict[var_name][VALUE] = self.data_dict[var_id][VALUE]
+                        if (SUBTYPE in self.data_dict[var_id].keys()) and (SUBTYPE not in disc_dict[var_name].keys()):
+                            disc_dict[var_name][SUBTYPE] = self.data_dict[var_id][SUBTYPE]
                         self.data_dict[var_id] = disc_dict[var_name]
                 if not disc_id in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
                     self.data_dict[var_id][DISCIPLINES_DEPENDENCIES].append(
@@ -746,7 +756,7 @@ class DataManager:
                                 else:
                                     errors_in_dm_msg = f'Variable: {var_f_name} : {value} is not in range {prange}'
                                     self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list','list']:
+                        elif vtype in ['string_list', 'float_list', 'int_list', 'list']:
                             for sub_value in value:
                                 if not can_cast(type(sub_value), type(prange[0])):
                                     errors_in_dm_msg = f'Variable: {var_f_name}: {sub_value} ({type(sub_value)}) in list {value} not the same as {prange[0]} ({type(prange[0])})'

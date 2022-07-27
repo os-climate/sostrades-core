@@ -1311,16 +1311,32 @@ class SoSDiscipline(MDODiscipline):
         Update cache_map dict in DM with cache and its children recursively
         '''
         if self.cache is not None:
-            # set disc infos string list with full name, class name and anonimaed i/o for hashed uid generation
-            disc_info_list = [self.get_disc_full_name().split(self.ee.study_name)[-1], self.__class__.__name__, self.get_anonimated_data_io(self)]
-            hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
-            # store cache and hashed uid in data manager maps
-            self.dm.cache_map[hashed_uid] = self.cache
-            self.dm.gemseo_disciplines_id_map[hashed_uid] = self
+            self._store_cache_with_hashed_uid(self)
         # store children cache recursively
         for disc in self.sos_disciplines:
             disc._set_dm_cache_map() 
-
+            
+    def _store_cache_with_hashed_uid(self, disc):
+        '''
+        Generate hashed uid and store cache in DM
+        '''
+        full_name = self.get_disc_full_name().split(self.ee.study_name)[-1]
+        class_name = disc.__class__.__name__
+        anoninmated_data_io = self.get_anonimated_data_io(disc)
+        
+        # set disc infos string list with full name, class name and anonimated i/o for hashed uid generation
+        disc_info_list = [full_name, class_name, anoninmated_data_io]
+        hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
+        
+        # store cache in DM map
+        self.dm.cache_map[hashed_uid] = disc.cache
+        
+        # store disc in DM map
+        if hashed_uid in self.dm.gemseo_disciplines_id_map:
+            self.dm.gemseo_disciplines_id_map[hashed_uid].append(disc)
+        else:
+            self.dm.gemseo_disciplines_id_map[hashed_uid] = [disc]
+            
     def get_var_full_name(self, var_name, disc_dict):
         ''' Get namespaced variable from namespace and var_name in disc_dict
         '''
@@ -1334,7 +1350,7 @@ class SoSDiscipline(MDODiscipline):
         """
         Update all disciplines with datamanager information
         """
-
+        self.fill_subtype_descriptor()
         for var_name in self._data_in.keys():
 
             try:
@@ -1352,6 +1368,12 @@ class SoSDiscipline(MDODiscipline):
         # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
+
+    def fill_subtype_descriptor(self):
+        """This method is used to fill the subtype descriptor of scatter and gather data
+        Hence, it is an empty method here and is overriden in scatter and gather data
+        """
+        pass
 
     # -- Ids and namespace handling
     def get_disc_full_name(self):

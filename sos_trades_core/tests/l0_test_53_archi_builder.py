@@ -23,6 +23,9 @@ from logging import Handler
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from sos_trades_core.sos_processes.test.test_architecture.usecase_simple_architecture import Study
 from tempfile import gettempdir
+from sos_trades_core.sos_wrapping.test_discs.disc1 import Disc1
+from sos_trades_core.sos_wrapping.test_discs.disc2 import Disc2
+from sos_trades_core.sos_wrapping.test_discs.disc6 import Disc6
 
 
 class UnitTestHandler(Handler):
@@ -270,7 +273,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_04_check_architecture_df(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -342,7 +345,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_05_build_architecture_scatter(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -421,7 +424,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_06_build_architecture_scatter_with_multiple_configure(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -540,7 +543,7 @@ class TestArchiBuilder(unittest.TestCase):
     def test_07_architecture_multi_level(self):
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
@@ -754,14 +757,14 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
         actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
+
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
@@ -818,7 +821,7 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
+
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
@@ -899,13 +902,13 @@ class TestArchiBuilder(unittest.TestCase):
 
         # actor, subsystem and AC_list scatter maps dict
         subsystem_map = {'input_name': 'subsystem_list',
-                         'input_type': 'string_list',
+
                          'input_ns': 'ns_subsystem',
                          'output_name': 'subsystem',
                          'scatter_ns': 'ns_subsystem_scatter'}
 
         ac_list_map = {'input_name': 'AC_list',
-                       'input_type': 'string_list',
+
                        'input_ns': 'ns_ac',
                        'output_name': 'AC_name',
                        'scatter_ns': 'ns_ac_scatter',
@@ -1056,8 +1059,94 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+    def test_13_archi_multiple_builder_same_namespace(self):
+
+        vb_builder_name = 'Business'
+        test_disc_folder = 'sos_trades_core.sos_wrapping.test_discs'
+        architecture_df = pd.DataFrame(
+            {'Parent': [None, None,
+                        'Business', 'Airbus',
+                        'Boeing', 'Boeing'],
+             'Current': ['Business', 'Business',
+                         'Boeing', 'Disc1',
+                         'Disc2', 'Disc2'],
+             'Type': [(test_disc_folder, 'Disc9in'), (test_disc_folder, 'Disc1'),
+                      'ValueBlockDiscipline', 'ValueBlockDiscipline',
+                      (test_disc_folder, 'Disc2'), (test_disc_folder, 'Disc6')],
+             'Action': [('standard')] * 6,
+             'Activation': [False] * 6, })
+
+        builder = self.factory.create_architecture_builder(
+            vb_builder_name, architecture_df)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            builder)
+        self.exec_eng.ns_manager.add_ns_def({'ns_ac': self.exec_eng.study_name,
+                                             'ns_test': f'{self.exec_eng.study_name}.Business',
+                                             'ns_grad1': f'{self.exec_eng.study_name}.Business',
+                                             'ns_protected': f'{self.exec_eng.study_name}.Business.Airbus'})
+        self.exec_eng.configure()
+        self.exec_eng.load_study_from_input_dict({})
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Boeing',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ Airbus',
+                       '\t\t\t|_ Disc1', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        self.assertEqual(len(self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Boeing.Disc2')), 2)
+        self.assertEqual(len(self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business')), 3)
+        self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Boeing.Disc2')[0].__class__, Disc2)
+        self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Boeing.Disc2')[1].__class__, Disc6)
+
+    def _test_14_build_architecture_with_specific_folder(self):
+
+        vb_builder_name = 'Business'
+        test_disc_folder = 'sos_trades_core.sos_wrapping.test_discs'
+        architecture_df = pd.DataFrame(
+            {'Parent': ['Business', 'Business', 'Airbus', 'Boeing'],
+             'Current': ['Airbus', 'Boeing', 'Disc1', 'Disc2'],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      (test_disc_folder, 'Disc1'), (test_disc_folder, 'Disc2')],
+             'Action': [('standard'), ('standard'), ('standard'), ('standard')],
+             'Activation': [False] * 4, })
+
+        builder = self.factory.create_architecture_builder(
+            vb_builder_name, architecture_df)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            builder)
+        self.exec_eng.ns_manager.add_ns('ns_ac', self.exec_eng.study_name)
+        self.exec_eng.configure()
+        self.exec_eng.load_study_from_input_dict({})
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Airbus',
+                       '\t\t\t|_ Disc1',
+                       '\t\t|_ Boeing',
+                       '\t\t\t|_ Disc2', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        # Check builders and activation_dict
+        disc_archi = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.namespace}.Business')[0]
+        self.assertEqual(list(disc_archi.activated_builders.keys()), [
+                         'Business.Airbus', 'Business.Boeing', 'Business.Airbus.Disc1', 'Business.Boeing.Disc2'])
+
+        self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Airbus.Disc1')[0].__class__, Disc1)
+
 
 if '__main__' == __name__:
     cls = TestArchiBuilder()
     cls.setUp()
-    cls.test_12_architecture_without_archi_name_in_architecture_df()
+    cls.test_13_archi_multiple_builder_same_namespace()

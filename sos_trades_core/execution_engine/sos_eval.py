@@ -336,8 +336,10 @@ class SoSEval(SoSDisciplineBuilder):
         self.update_dm_with_local_data(out_local_data)
 
         if convert_to_array:
-            out_local_data_converted = self._convert_new_type_into_array(out_local_data)
-            out_values = np.concatenate(list(out_local_data_converted.values())).ravel()
+            out_local_data_converted = self._convert_new_type_into_array(
+                out_local_data)
+            out_values = np.concatenate(
+                list(out_local_data_converted.values())).ravel()
         else:
             out_values = []
             # get back out_local_data is not enough because some variables
@@ -365,7 +367,7 @@ class SoSEval(SoSDisciplineBuilder):
             self.logger.info("running sos eval in sequential")
 
             for i in tqdm(range(len(samples)), ncols=100, position=0):
-                time.sleep(0.5)
+                time.sleep(0.1)
                 self.logger.info(f'   Scenario_{str(i + 1)} is running.')
                 x = samples[i]
                 scenario_name = "scenario_" + str(i + 1)
@@ -382,7 +384,7 @@ class SoSEval(SoSDisciplineBuilder):
             def sample_evaluator(sample_to_evaluate):
                 """Evaluate a sample
                 """
-                return self.evaluation(sample_to_evaluate, convert_to_array=False)
+                return self.evaluation(sample_to_evaluate, convert_to_array=False, completed_eval_in_list=completed_eval_in_list)
 
             parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
@@ -403,9 +405,17 @@ class SoSEval(SoSDisciplineBuilder):
                 evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
                     f'{scenario_name} has been run. computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
+                time.sleep(0.05)
 
             try:
-                parallel.execute(samples, exec_callback=store_callback)
+                # execute all the scenarios (except the reference scenario)  in
+                # parallel
+                parallel.execute(samples[0:-1], exec_callback=store_callback)
+                # execute the reference scenario in a sequential way so that
+                # sostrades objects are updated
+                scenario_name = "scenario_" + str(len(samples))
+                evaluation_output[scenario_name] = samples[-1], self.evaluation(
+                    samples[-1], scenario_name, convert_to_array, completed_eval_in_list)
                 self.sos_disciplines[0]._update_status_recursive(
                     self.STATUS_DONE)
                 dict_to_return = {}
@@ -474,8 +484,9 @@ class SoSEval(SoSDisciplineBuilder):
             outeval_dict = {}
             old_size = 0
             for i, key in enumerate(self.eval_out_list):
-                eval_out_size = compute_len(self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size + 
+                eval_out_size = compute_len(
+                    self.eval_process_disc.local_data[key])
+                output_eval_key = outputs_eval[old_size:old_size +
                                                eval_out_size]
                 old_size = eval_out_size
                 type_sos = self.dm.get_data(key, 'type')
