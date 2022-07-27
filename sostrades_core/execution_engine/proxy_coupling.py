@@ -15,9 +15,9 @@ limitations under the License.
 '''
 from gemseo.core.chain import MDOChain
 from gemseo.mda.sequential_mda import MDASequential
-from sostrades_core.execution_engine.MDAChainWrapp import MDAChainWrapp
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from gemseo.mda.mda_chain import MDAChain
+from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -197,7 +197,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         self._set_dm_disc_info()
         
-        self.mdo_discipline_wrapp = MDAChainWrapp(name=sos_name)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
 
     def _reload(self, sos_name, ee):
         ''' reload object
@@ -496,7 +496,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc.prepare_execution()
             sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
         
-        self.mdo_discipline_wrapp.create_gemseo_discipline(sub_mdo_disciplines, self)
+        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self)
         
 #         self._set_residual_history()
 

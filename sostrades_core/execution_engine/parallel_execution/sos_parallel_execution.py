@@ -17,11 +17,10 @@ from gemseo.core.parallel_execution import DiscParallelExecution,\
     DiscParallelLinearization
 import multiprocessing as mp
 from sostrades_core.api import get_sos_logger
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
-VAR_NAME = ProxyDiscipline.VAR_NAME
-VALUE = ProxyDiscipline.VALUE
-TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
+VALUE = 'value'
+VAR_NAME = 'var_name'
+TYPE_METADATA = "type_metadata"
 
 
 class SoSDiscParallelExecution(DiscParallelExecution):
@@ -224,7 +223,7 @@ def get_data_from_worker(worker):
 def update_dm_with_worker_results(dm_data, local_data, disc):
     sub_disc = disc.get_sub_sos_disciplines()
     all_discs = sub_disc + [disc]
-    dm_values = dm_data[ProxyDiscipline.VALUE]
+    dm_values = dm_data[VALUE]
     for d in all_discs:
         dm = d.ee.dm
         get_data = dm.get_data
