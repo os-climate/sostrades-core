@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from gemseo.core.discipline import MDODiscipline
+from sostrades_core.execution_engine.SoSMDODiscipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -60,11 +60,11 @@ class TestPrepareExecution(unittest.TestCase):
         
         ee.prepare_execution()
         
-        self.assertTrue(isinstance(ee.root_process.mdo_discipline, MDAChain))
-        
+        self.assertTrue(isinstance(ee.root_process.mdo_discipline_wrapp.mdo_discipline, MDAChain))
+
         for proxy_disc in ee.root_process.proxy_disciplines:
-            self.assertTrue(isinstance(proxy_disc.mdo_discipline, MDODiscipline))
-            self.assertIn(proxy_disc.mdo_discipline, ee.root_process.sub_mdo_disciplines)
-            self.assertTrue(proxy_disc.mdo_discipline.proxy_discipline is proxy_disc)
-            self.assertListEqual(ee.root_process.proxy_disciplines[0].get_input_data_names(), ee.root_process.proxy_disciplines[0].mdo_discipline.input_grammar.get_data_names())
-            self.assertListEqual(ee.root_process.proxy_disciplines[0].get_output_data_names(), ee.root_process.proxy_disciplines[0].mdo_discipline.output_grammar.get_data_names())
+            self.assertTrue(isinstance(proxy_disc.mdo_discipline_wrapp.mdo_discipline, SoSMDODiscipline))
+            self.assertIn(proxy_disc.mdo_discipline_wrapp.mdo_discipline, ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines)
+            self.assertIn(proxy_disc, ee.root_process.proxy_disciplines)
+            self.assertListEqual(proxy_disc.get_input_data_names(), proxy_disc.mdo_discipline_wrapp.mdo_discipline.input_grammar.get_data_names())
+            self.assertListEqual(proxy_disc.get_output_data_names(), proxy_disc.mdo_discipline_wrapp.mdo_discipline.output_grammar.get_data_names())
