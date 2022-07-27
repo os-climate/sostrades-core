@@ -16,6 +16,8 @@ limitations under the License.
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
+from copy import deepcopy
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -50,10 +52,15 @@ class SoSMDODiscipline(MDODiscipline):
                                cache_type=cache_type)
 
     def _run(self):
+        
+        # SoSWrapp run
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
         run_output = self.sos_wrapp._run()
         self.update_local_data(run_output)
-        # post_execute ? status ?
+        
+        # get output from data connector
+        self.fill_output_value_connector()
+        
     
     def create_local_data_short_name(self):
         
@@ -72,6 +79,21 @@ class SoSMDODiscipline(MDODiscipline):
         
         for key, value in run_output.items():
             self.local_data[self.output_full_name_map[key]] = value
+
+
+    def fill_output_value_connector(self):
+        """
+        get value of output variable with data connector
+        """
+        updated_values = {}
+        for key in self.get_output_data_names():
+            # if data connector is needed, use it
+            if self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA] is not None:
+                    updated_values[key] = ConnectorFactory.use_data_connector(
+                        self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
+                        self.ee.logger)
+
+        self.local_data.update(updated_values)
             
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]

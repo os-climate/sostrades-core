@@ -1892,3 +1892,20 @@ class ProxyDiscipline(object):
 
         if self.check_min_max_couplings:
             self.display_min_max_couplings()
+            
+    def check_discipline_data_integrity(self, left_dict, right_dict, test_subject, is_output_error=False):
+        from gemseo.utils.compare_data_manager_tooling import compare_dict
+
+        dict_error = {}
+        compare_dict(left_dict, right_dict, '', dict_error)
+        output_error = ''
+        if dict_error != {}:
+            for error in dict_error:
+                output_error = '\n'
+                output_error += f'Error while test {test_subject} on sos discipline {self.name} :\n'
+                output_error += f'Mismatch in {error}: {dict_error.get(error)}'
+                output_error += '\n---------------------------------------------------------'
+                print(output_error)
+
+        if is_output_error:
+            return output_error
