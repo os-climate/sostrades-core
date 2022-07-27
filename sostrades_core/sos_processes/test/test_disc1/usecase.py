@@ -15,6 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.study_manager import StudyManager
+import time
 
 
 class Study(StudyManager):
@@ -33,7 +34,9 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
+    start = time.time()
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run(for_test=True)
-    print('')
+    stop = time.time()
+    print(stop - start)
