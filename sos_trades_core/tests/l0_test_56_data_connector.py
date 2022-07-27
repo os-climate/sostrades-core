@@ -248,27 +248,3 @@ class TestDataConnector(unittest.TestCase):
         deliveries_df = disc.get_sosdisc_outputs('deliveries_df')
 
         self.assertTrue(deliveries_df is not None)
-
-    def test_06_process_data_connector_dremio(self):
-        """
-        Test data connector dremio process
-        """
-        exec_eng = ExecutionEngine(self.name)
-        builder_process = exec_eng.factory.get_builder_from_process(
-            'sos_trades_core.sos_processes.test', 'test_disc1_data_connector_dremio')
-
-        exec_eng.factory.set_builders_to_coupling_builder(builder_process)
-
-        exec_eng.configure()
-
-        study_dremio = Study()
-        study_dremio.study_name = self.name
-        dict_values_list = study_dremio.setup_usecase()
-
-        dict_values = {}
-        for dict_val in dict_values_list:
-            dict_values.update(dict_val)
-
-        exec_eng.load_study_from_input_dict(dict_values)
-
-        exec_eng.execute()
