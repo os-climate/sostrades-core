@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 
 class Disc1(SoSWrapp):
@@ -45,13 +42,13 @@ class Disc1(SoSWrapp):
         'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def run(self, proxy):
-        x = proxy.get_sosdisc_inputs('x')
-        a = proxy.get_sosdisc_inputs('a')
-        b = proxy.get_sosdisc_inputs('b')
+    def run(self):
+        x = self.get_sosdisc_inputs('x')
+        a = self.get_sosdisc_inputs('a')
+        b = self.get_sosdisc_inputs('b')
         dict_values = {'indicator': a * b, 'y': a * x + b}
         # put new field value in data_out
-        proxy.store_sos_outputs_values(dict_values)
+        self.store_sos_outputs_values(dict_values)
 
     # def get_chart_filter_list(self):
     #

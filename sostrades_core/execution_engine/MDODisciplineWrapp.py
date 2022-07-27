@@ -41,6 +41,7 @@ class MDODisciplineWrapp(object):
         '''
         self.name = name
         self.wrapping_mode = wrapping_mode
+        self.mdo_discipline = None
         if wrapper is not None:
             self.wrapper = wrapper(name)
 
@@ -71,16 +72,17 @@ class MDODisciplineWrapp(object):
         """ MDODiscipline instanciation
 
         """
-        if self.wrapping_mode == 'SoSTrades':
-            self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
-                                                   grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                                   cache_type=proxy.get_sosdisc_inputs(proxy.CACHE_TYPE),
-                                                   sos_wrapp=self.wrapper,
-                                                   reduced_dm=reduced_dm)
-            self._init_grammar_with_keys(proxy)
-
-        elif self.wrapping_mode == 'GEMSEO':
-            pass
+        if self.mdo_discipline is None:
+            if self.wrapping_mode == 'SoSTrades':
+                self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
+                                                       grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                                       cache_type=proxy.get_sosdisc_inputs(proxy.CACHE_TYPE),
+                                                       sos_wrapp=self.wrapper,
+                                                       reduced_dm=reduced_dm)
+                self._init_grammar_with_keys(proxy)
+    
+            elif self.wrapping_mode == 'GEMSEO':
+                pass
 
     #             self.mdo_discipline = self.wrapper
 

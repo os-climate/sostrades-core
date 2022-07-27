@@ -573,8 +573,9 @@ class ExecutionEngine:
         self.prepare_execution()
 
         # -- execution with input data from DM
-        input_data = self.get_input_data_for_gemseo(self.root_process)
-        self.root_process.execute(input_data=input_data)
+        ex_proc = self.root_process
+        input_data = self.get_input_data_for_gemseo(ex_proc)
+        ex_proc.execute(input_data=input_data)
         
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
