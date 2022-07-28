@@ -89,7 +89,7 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertEqual(self.ee.root_process.status, 'CONFIGURE')
         self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, 'CONFIGURE')
 
-    def _test_04_execution_success(self):
+    def test_04_execution_success(self):
         '''
         check discipline execution
         '''
@@ -189,12 +189,12 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertEqual(self.ee.dm.get_value('Test.Disc1.b'), b)
         self.assertEqual(self.ee.dm.get_value('Test.x'), x)
  
-        # self.ee.execute()
+        self.ee.execute()
   
         self.assertEqual(self.ee.dm.get_value(
             self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
-    def _test_07_get_sos_io_asdict(self):
+    def test_07_get_sos_io_asdict(self):
         '''
         check discipline namespace update
         '''
@@ -229,7 +229,7 @@ class TestProxyDiscipline(unittest.TestCase):
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
  
-    def _test_08_get_sos_io_no_inputs(self):
+    def test_08_get_sos_io_no_inputs(self):
         '''
         check discipline namespace update
         '''
@@ -268,7 +268,7 @@ class TestProxyDiscipline(unittest.TestCase):
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
   
-    def _test_09_check_factory_with_1_added_disc(self):
+    def test_09_check_factory_with_1_added_disc(self):
         '''
         check if the root of the factory is the discipline if only 1 disc is added
         and a coupling if two are added
@@ -320,7 +320,7 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertIsInstance(ee2.root_process, ProxyCoupling,
                               'The root of the factory must be a SoSDiscipline because only one disc has been added')
  
-    def _test_10_check_overwrite_of_default_values(self):
+    def test_10_check_overwrite_of_default_values(self):
         '''
         check defaults for public
         '''
