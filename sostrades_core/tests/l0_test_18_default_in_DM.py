@@ -90,5 +90,5 @@ class TestDefaultInDM(unittest.TestCase):
 
         #Check that res2 equals res1 : Disc1.a was loaded from default value
         # in DESC_IN
-        self.assertDictEqual(res.local_data,res2.local_data, "results are not equal")
+        self.assertDictEqual(res.mdo_discipline_wrapp.mdo_discipline.local_data, res2.mdo_discipline_wrapp.mdo_discipline.local_data, "results are not equal")
 
