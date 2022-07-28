@@ -477,6 +477,8 @@ class ExecutionEngine:
             self.__factory.init_execution()
             if update_status_configure:
                 self.update_status_configure()
+        elif self.dm.reduced_dm is None:
+            self.dm.create_reduced_dm()
 
         self.dm.treeview = None
 
