@@ -133,7 +133,7 @@ class TestExtendDict(unittest.TestCase):
             dict_out_target['key1']['key14']['key141'],
             dict_out['key1']['key14']['key141'])
 
-    def test_03_soscoupling_simple_dict(self):
+    def _test_03_soscoupling_simple_dict(self):
 
         exec_eng = ExecutionEngine(self.name)
 

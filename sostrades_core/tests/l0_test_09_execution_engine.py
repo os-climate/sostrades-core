@@ -102,7 +102,7 @@ class TestExecutionEngine(unittest.TestCase):
         values_dict['EETests.Disc2.constant'] = -10.
         values_dict['EETests.x'] = 3.
     
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.execute()
         print('\ntest_02_execution_engine_soscoupling::root_process execution result:')
         res = exec_eng.dm.data_dict
