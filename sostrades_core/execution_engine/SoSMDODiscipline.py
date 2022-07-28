@@ -17,7 +17,6 @@ from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
-from copy import deepcopy
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -66,7 +65,10 @@ class SoSMDODiscipline(MDODiscipline):
         
         local_data_short_name = {}
         for key in self.get_input_data_names():
-            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
+            try:
+                local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
+            except:
+                pass
             
         if self.output_full_name_map is None:
             self.output_full_name_map = {}

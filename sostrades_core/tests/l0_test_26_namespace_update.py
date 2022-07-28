@@ -208,12 +208,12 @@ class TestNamespaceManagement(unittest.TestCase):
                        self.ns_test + '.Disc2.constant': 1.5,
                        self.ns_test + '.Disc2.power': 2}
 
-        self.ee.dm.set_values_from_dict(values_dict)
+        self.ee.load_study_from_input_dict(values_dict)
 
         # Now that the complete use case is set we change the local namespace
         self.ee.ns_manager.update_all_shared_namespaces_by_name(
             'extraNS', 'ns_ac')
-        self.ee.load_study_from_input_dict({})
+        self.ee.load_study_from_input_dict(values_dict)
         self.ee.display_treeview_nodes()
 
         self.assertListEqual(['Test', 'Test.Disc1', 'Test.Disc2'], list(
