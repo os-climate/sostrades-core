@@ -1059,7 +1059,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def test_13_archi_multiple_builder_same_namespace(self):
+    def _test_13_archi_multiple_builder_same_namespace(self):
 
         vb_builder_name = 'Business'
         test_disc_folder = 'sos_trades_core.sos_wrapping.test_discs'
