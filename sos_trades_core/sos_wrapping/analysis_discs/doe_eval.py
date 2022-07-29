@@ -507,7 +507,7 @@ class DoeEval(SoSEval):
         We also check that they are of the same type
         """
         if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
-            self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
+            self.logger.error("the customed dataframe columns must be the same and in the same order than the eval in "
                               "list ")
 
     def run(self):

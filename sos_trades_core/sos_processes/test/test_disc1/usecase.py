@@ -19,20 +19,19 @@ from sos_trades_core.study_manager.study_manager import StudyManager
 
 class Study(StudyManager):
 
-    def __init__(self, execution_engine=None, run_usecase=False):
-        super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
+    def __init__(self, execution_engine=None):
+        super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
 
-        dict_values = {}
-        dict_values[self.study_name + '.Disc1_data_connector_dremio.a'] = 3
-        dict_values[self.study_name + '.Disc1_data_connector_dremio.b'] = 2
-        dict_values[self.study_name + '.x'] = 4
-
-        return [dict_values]
+        dict_values= {'usecase.Disc1.a' : 1,
+                      'usecase.Disc1.b': 2,
+                      'usecase.x': 10
+                      }
+        return dict_values
 
 
 if '__main__' == __name__:
-    uc_cls = Study(run_usecase=True)
+    uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run(for_test=True)
