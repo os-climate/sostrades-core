@@ -88,7 +88,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_mdo_discipline.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 
         # check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
@@ -142,7 +142,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         self.assertEqual(values_dict['EE.use_lu_fact'], mda.use_lu_fact)
         self.assertEqual(values_dict['EE.tolerance'], mda.tolerance)
@@ -171,7 +171,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
                 self.assertListEqual(
-                    exec_eng.root_mdo_discipline.local_data[key], target[key])
+                    exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.local_data[key], target[key])
 
 #     def test_03_mda_loop_after_dump_load(self):
 # 
@@ -204,12 +204,12 @@ class TestMDALoop(unittest.TestCase):
 #             res[key] = exec_eng.dm.get_value(key)
 #             print('exec_1 before exe', key, res[key])
 #         exec_eng.execute()
-#         norm0 = exec_eng.root_mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng.root_mdo_discipline.sub_mda_list[0].normed_residual
+#         norm0 = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+#         normed_residual = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
 #         print('norm0 and norm_residual after first exe', norm0, normed_residual)
 #         exec_eng.execute()
-#         norm0 = exec_eng.root_mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng.root_mdo_discipline.sub_mda_list[0].normed_residual
+#         norm0 = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+#         normed_residual = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
 #         print('norm0 and norm_residualafter second exe', norm0, normed_residual)
 # 
 #         # check output keys
@@ -223,9 +223,9 @@ class TestMDALoop(unittest.TestCase):
 #                 self.assertListEqual(
 #                     list(target[key]), list(res[key]))
 # 
-#         residual_history = exec_eng.root_mdo_discipline.sub_mda_list[0].residual_history
+#         residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 #         residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng.root_mdo_discipline.sub_mda_list[0].name].values.tolist()
+#             'residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
 #         self.assertEqual(residual_history, residual_history_output)
 # 
 #         dump_dir = join(self.root_dir, self.name)
@@ -255,12 +255,12 @@ class TestMDALoop(unittest.TestCase):
 #         for key in target:
 #             res[key] = exec_eng2.dm.get_value(key)
 #             print('exec_2 before exe', key, res[key])
-#         norm0 = exec_eng2.root_mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng2.root_mdo_discipline.sub_mda_list[0].normed_residual
+#         norm0 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+#         normed_residual = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
 #         print('norm0 and norm_residual before third exe', norm0, normed_residual)
 #         exec_eng2.execute()
-#         norm0 = exec_eng2.root_mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng2.root_mdo_discipline.sub_mda_list[0].normed_residual
+#         norm0 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+#         normed_residual = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
 #         print('norm0 and norm_residual after third exe', norm0, normed_residual)
 #         res = {}
 #         for key in target:
@@ -271,9 +271,9 @@ class TestMDALoop(unittest.TestCase):
 #             elif target[key] is array:
 #                 self.assertListEqual(
 #                     list(target[key]), list(res[key]))
-#         residual_history_2 = exec_eng2.root_mdo_discipline.sub_mda_list[0].residual_history
+#         residual_history_2 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 #         residual_history_output_2 = exec_eng2.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng2.root_mdo_discipline.sub_mda_list[0].name].values.tolist()
+#             'residuals_history')[exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
 #         self.assertEqual(residual_history_2, residual_history_output_2)
 # 
 #         BaseStudyManager.static_dump_data(
@@ -301,12 +301,12 @@ class TestMDALoop(unittest.TestCase):
 #         for key in target:
 #             res[key] = exec_eng3.dm.get_value(key)
 #             print('exec_3 before exe', key, res[key])
-#         norm0 = exec_eng3.root_mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng3.root_mdo_discipline.sub_mda_list[0].normed_residual
+#         norm0 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+#         normed_residual = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
 #         print('norm0 and norm_residual before exe 4', norm0, normed_residual)
 #         exec_eng3.execute()
-#         norm0 = exec_eng3.root_mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng3.root_mdo_discipline.sub_mda_list[0].normed_residual
+#         norm0 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+#         normed_residual = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
 #         print('norm0 and norm_residual after exe 4', norm0, normed_residual)
 #         res = {}
 #         for key in target:
@@ -317,9 +317,9 @@ class TestMDALoop(unittest.TestCase):
 #             elif target[key] is array:
 #                 self.assertListEqual(
 #                     list(target[key]), list(res[key]))
-#         residual_history_3 = exec_eng3.root_mdo_discipline.sub_mda_list[0].residual_history
+#         residual_history_3 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 #         residual_history_output_3 = exec_eng3.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng3.root_mdo_discipline.sub_mda_list[0].name].values.tolist()
+#             'residuals_history')[exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
 #         self.assertEqual(residual_history_3, residual_history_output_3)
 # 
 #         self.assertEqual(residual_history_3[-1][0], residual_history_2[-1][0])
@@ -351,9 +351,9 @@ class TestMDALoop(unittest.TestCase):
 #             print('exec_4 before exe', key, res[key])
 # 
 #         exec_eng4.execute()
-#         residual_history_4 = exec_eng4.root_mdo_discipline.sub_mda_list[0].residual_history
+#         residual_history_4 = exec_eng4.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 #         residual_history_output_4 = exec_eng4.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng4.root_mdo_discipline.sub_mda_list[0].name].values.tolist()
+#             'residuals_history')[exec_eng4.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
 #         self.assertEqual(residual_history_4, residual_history_output_4)
 #         res = {}
 #         for key in target:
@@ -407,7 +407,7 @@ class TestMDALoop(unittest.TestCase):
             elif target[key] is array:
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
-        residual_history = exec_eng.root_mdo_discipline.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 
         exec_eng2 = ExecutionEngine(self.name)
 
@@ -439,7 +439,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
 
-        residual_history2 = exec_eng2.root_mdo_discipline.sub_mda_list[0].residual_history
+        residual_history2 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 
         self.assertListEqual(residual_history, residual_history2)
 
@@ -485,7 +485,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_mdo_discipline.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
         print('residual_history', residual_history)
         # Check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
@@ -549,7 +549,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_mdo_discipline.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
         print('residual_history', residual_history)
         # Check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
@@ -571,7 +571,7 @@ class TestMDALoop(unittest.TestCase):
 
         # we check that in the MDA into the MDOChain
         # there is the MDOChain (ie group of subdiscs) instead of 2 disciplines
-        mdo_chain = exec_eng.root_mdo_discipline.mdo_chain.disciplines[0].disciplines[0]
+        mdo_chain = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[0].disciplines[0]
         assert mdo_chain.__class__.__name__ == "MDOChain"
 
         option = exec_eng.root_process.get_sosdisc_inputs(
@@ -603,7 +603,7 @@ class TestMDALoop(unittest.TestCase):
 
         # we check that in the root coupling, the subcoupling is NOT a (selfcoupled) MDA with an SoSCoupling inside
         # but a SoSCoupling directly
-        sub_coupling = exec_eng.root_mdo_discipline.mdo_chain.disciplines[0]
+        sub_coupling = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[0]
         assert sub_coupling.__class__.__name__ == "MDAChain"
 
     def test_08_mda_numerical_options_NR(self):
@@ -638,7 +638,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
 
@@ -666,7 +666,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.use_lu_fact'],
@@ -713,7 +713,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -729,7 +729,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
 
@@ -779,7 +779,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -791,7 +791,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -858,7 +858,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -870,7 +870,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -935,7 +935,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -947,7 +947,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -1006,7 +1006,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
 
@@ -1032,7 +1032,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.use_lu_fact'],
@@ -1096,7 +1096,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
@@ -1108,7 +1108,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         sub_mda_class = mda.sub_mda_list[0]
         self.assertEqual(values_dict['EE.tolerance'],
