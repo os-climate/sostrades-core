@@ -562,7 +562,6 @@ def convert_new_type_into_array(
         and stores metadata into DM for after reconversion
     '''
     var_dict_converted = deepcopy(var_dict)
-    dict_to_update_dm = {}
     for key, var in var_dict_converted.items():
         if not isinstance(dm_reduced_to_type_and_metadata, dict):
             var_type = dm_reduced_to_type_and_metadata.get_data(
@@ -675,15 +674,20 @@ def convert_new_type_into_array(
                         # update current dictionary value
                     var_dict_converted[key] = values_list
                     # Update metadata
-                    # self.dm.set_data(key, self.TYPE_METADATA,
-                    #                 metadata, check_value=False)
-                    dict_to_update_dm[key] = metadata
-
+                    if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                        dm_reduced_to_type_and_metadata.set_data(key, TYPE_METADATA, metadata, check_value=False)
+                    else:
+                        dm_reduced_to_type_and_metadata[key][TYPE_METADATA] = metadata
+                    
         else:
             var_dict_converted[key] = var
-            dict_to_update_dm[key] = None
+            # Update metadata
+            if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                dm_reduced_to_type_and_metadata.set_data(key, TYPE_METADATA, None, check_value=False)
+            else:
+                dm_reduced_to_type_and_metadata[key][TYPE_METADATA] = None
 
-    return var_dict_converted, dict_to_update_dm
+    return var_dict_converted
 
 
 def convert_string_to_int(val, val_data):

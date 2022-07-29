@@ -31,6 +31,7 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
 
 def none_factory():
     """Returns None...
@@ -427,7 +428,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         )
         # form the residuals
         # convert into array to compute residuals
-        in_data = self.coupling_structure.disciplines[0]._convert_new_type_into_array(in_data)
+        in_data = convert_new_type_into_array(in_data, self.coupling_structure.disciplines[0].reduced_dm)
         res = self.residuals(in_data, couplings)
         # solve the linear system
         factory = LinearSolversFactory()

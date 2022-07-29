@@ -1572,32 +1572,6 @@ class ProxyDiscipline(object):
     def _build_dynamic_DESC_IN(self):
         pass
 
-    def _convert_new_type_into_array(
-            self, var_dict, update_dm=True):
-        '''
-        Check element type in var_dict, convert new type into numpy array
-            and stores metadata into DM for afterwards reconversion
-        '''
-        # dm_reduced = self.dm.convert_data_dict_with_full_name()
-        # dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
-        var_dict_converted, dict_to_update_dm = convert_new_type_into_array(
-            var_dict, self.dm)
-
-        # update dm
-        if update_dm:
-            for key in dict_to_update_dm.keys():
-                self.dm.set_data(key, self.TYPE_METADATA,
-                                 dict_to_update_dm[key], check_value=False)
-
-        return var_dict_converted
-
-    def _convert_array_into_new_type(self, local_data):
-        """ convert list in local_data into correct type in data_in
-            returns an updated copy of local_data
-        """
-
-        # dm_reduced = self.dm.get_data_dict_list_attr([self.VAR_TYPE_ID, self.DF_EXCLUDED_COLUMNS, self.TYPE_METADATA])
-        return convert_array_into_new_type(local_data, self.dm)
 
     def get_chart_filter_list(self):
         """ Return a list of ChartFilter instance base on the inherited

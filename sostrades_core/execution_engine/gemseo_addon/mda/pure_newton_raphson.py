@@ -19,6 +19,7 @@ import logging
 import numpy as np
 from copy import copy
 from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
@@ -175,8 +176,8 @@ class PureNewtonRaphson(MDARoot):
                 old_x_array[c_var] += c_step.real  # SoSTrades fix (.real)
 
             # convert old_x_array into SoSTrades types and store it into local_data for next execution
-            self.local_data.update(self.disciplines[0]._convert_array_into_new_type(
-                old_x_array))
+            self.local_data.update(convert_array_into_new_type(
+                old_x_array, self.disciplines[0].reduced_dm))
 
             # store current_couplings for residual computation of next iteration
             current_couplings = np.hstack(list(old_x_array.values()))
