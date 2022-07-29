@@ -19,13 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 import numpy as np
 import pandas as pd
-from sos_trades_core.tools.vectorization.compute_parent_path_sum import (
-    check_compute_parent_path_sum,
-)
-from sos_trades_core.tools.vectorization.get_inputs_for_path import get_inputs_for_path
-from sos_trades_core.tools.vectorization.merge_df_dict_with_path import (
-    merge_df_dict_with_path,
-)
+from sos_trades_core.tools.vectorization.vectorization_methods import *
 
 
 class TestVectorizationMethods(unittest.TestCase):
