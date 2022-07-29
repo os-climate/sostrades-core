@@ -68,7 +68,7 @@ class TestMDALoop(unittest.TestCase):
         # additional test to verify that values_in are used
         values_dict = {}
         values_dict['EE.h'] = array([8., 9.])
-#         values_dict['EE.x'] = array([5.0, 3.])
+        values_dict['EE.x'] = array([5.0, 3.])
         values_dict['EE.n_processes'] = 1
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -142,7 +142,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.prepare_execution()
-        mda = exec_eng.root_mdo_discipline
+        mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         self.assertEqual(values_dict['EE.use_lu_fact'], mda.use_lu_fact)
         self.assertEqual(values_dict['EE.tolerance'], mda.tolerance)
