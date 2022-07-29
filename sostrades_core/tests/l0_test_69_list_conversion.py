@@ -24,6 +24,7 @@ import pprint
 from os.path import join
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
 from tempfile import gettempdir
 
 
@@ -60,26 +61,26 @@ class TestExtendString(unittest.TestCase):
         list_float = self.exec_eng.dm.get_value('EE.Disc.list_float')
         var_dict = {'EE.Disc.list_float': list_float}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_float': conversion_into_array['EE.Disc.list_float']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_float': conversion_into_array['EE.Disc.list_float']}, self.exec_eng.dm)
         self.assertListEqual(conversion_back['EE.Disc.list_float'], list_float)
 
         list_df = self.exec_eng.dm.get_value('EE.Disc.list_dataframe')
         var_dict = {'EE.Disc.list_dataframe': list_df}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_dataframe': conversion_into_array['EE.Disc.list_dataframe']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_dataframe': conversion_into_array['EE.Disc.list_dataframe']}, self.exec_eng.dm)
         for i in range(5):
             assert_frame_equal(conversion_back['EE.Disc.list_dataframe'][i], list_df[i], check_dtype=False)
 
         list_array = self.exec_eng.dm.get_value('EE.Disc.list_array')
         var_dict = {'EE.Disc.list_array': list_array}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_array': conversion_into_array['EE.Disc.list_array']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_array': conversion_into_array['EE.Disc.list_array']}, self.exec_eng.dm)
         for i in range(5):
             assert_array_equal(conversion_back['EE.Disc.list_array'][i], list_array[i])
 
@@ -100,17 +101,17 @@ class TestExtendString(unittest.TestCase):
         list_list_float = self.exec_eng.dm.get_value('EE.Disc.list_list_float')
         var_dict = {'EE.Disc.list_list_float': list_list_float}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_list_float': conversion_into_array['EE.Disc.list_list_float']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_list_float': conversion_into_array['EE.Disc.list_list_float']}, self.exec_eng.dm)
         self.assertListEqual(conversion_back['EE.Disc.list_list_float'], list_list_float)
 
         list_list_list_array = self.exec_eng.dm.get_value('EE.Disc.list_list_list_array')
         var_dict = {'EE.Disc.list_list_list_array': list_list_list_array}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_list_list_array': conversion_into_array['EE.Disc.list_list_list_array']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_list_list_array': conversion_into_array['EE.Disc.list_list_list_array']}, self.exec_eng.dm)
         for i in range(5):
             for j in range(4):
                 for k in range(5):
@@ -120,9 +121,9 @@ class TestExtendString(unittest.TestCase):
         list_list_dataframe = self.exec_eng.dm.get_value('EE.Disc.list_list_dataframe')
         var_dict = {'EE.Disc.list_list_dataframe': list_list_dataframe}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_list_dataframe': conversion_into_array['EE.Disc.list_list_dataframe']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_list_dataframe': conversion_into_array['EE.Disc.list_list_dataframe']}, self.exec_eng.dm)
         for i in range(3):
             for j in range(5):
                 assert_frame_equal(conversion_back['EE.Disc.list_list_dataframe'][i][j], list_list_dataframe[i][j],
@@ -145,25 +146,25 @@ class TestExtendString(unittest.TestCase):
         list_dict_float = self.exec_eng.dm.get_value('EE.Disc.list_dict_float')
         var_dict = {'EE.Disc.list_dict_float': list_dict_float}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_dict_float': conversion_into_array['EE.Disc.list_dict_float']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_dict_float': conversion_into_array['EE.Disc.list_dict_float']}, self.exec_eng.dm)
         self.assertListEqual(conversion_back['EE.Disc.list_dict_float'], list_dict_float)
 
         list_list_dict_float = self.exec_eng.dm.get_value('EE.Disc.list_list_dict_float')
         var_dict = {'EE.Disc.list_list_dict_float': list_list_dict_float}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_list_dict_float': conversion_into_array['EE.Disc.list_list_dict_float']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_list_dict_float': conversion_into_array['EE.Disc.list_list_dict_float']}, self.exec_eng.dm)
         self.assertListEqual(conversion_back['EE.Disc.list_list_dict_float'], list_list_dict_float)
 
         list_dict_list_array = self.exec_eng.dm.get_value('EE.Disc.list_dict_list_array')
         var_dict = {'EE.Disc.list_dict_list_array': list_dict_list_array}
 
-        conversion_into_array = disc._convert_new_type_into_array(var_dict)
-        conversion_back = disc._convert_array_into_new_type(
-            {'EE.Disc.list_dict_list_array': conversion_into_array['EE.Disc.list_dict_list_array']})
+        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
+        conversion_back = convert_array_into_new_type(
+            {'EE.Disc.list_dict_list_array': conversion_into_array['EE.Disc.list_dict_list_array']}, self.exec_eng.dm)
 
         for i in range(3):
             for key1 in [f'key{i}' for i in range(1, 6)]:

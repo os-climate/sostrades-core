@@ -167,7 +167,7 @@ class ExecutionEngine:
         '''
         loop on proxy disciplines and execute prepare execution
         '''
-        self.root_mdo_discipline = self.root_process.prepare_execution()
+        self.root_process.prepare_execution()
 
     def fill_data_in_with_connector(self):
         """

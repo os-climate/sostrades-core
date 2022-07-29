@@ -22,6 +22,7 @@ import unittest
 from numpy import int32 as np_int32, float64 as np_float64, int64 as np_int64, array 
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
 
 
 class TestExtendFloat(unittest.TestCase):
@@ -69,10 +70,10 @@ class TestExtendFloat(unittest.TestCase):
         
         target = {'study.Disc0.r': array([r])}
         data_dm = {key: self.ee.dm.get_value(key) for key in target.keys()}
-        converted_data_dm = self.ee.root_process._convert_new_type_into_array(data_dm, update_dm=True)
+        converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
         # check new_types conversion into array
         self.assertTrue(dict_are_equal(converted_data_dm, target))
-        reconverted_data_dm = self.ee.root_process._convert_array_into_new_type(converted_data_dm)
+        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 
@@ -80,8 +81,8 @@ class TestExtendFloat(unittest.TestCase):
          
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
-        converted_data_dm = self.ee.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-        reconverted_data_dm = self.ee.root_process._convert_array_into_new_type(converted_data_dm)
+        converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
+        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
  
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
@@ -98,8 +99,8 @@ class TestExtendFloat(unittest.TestCase):
          
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
-        converted_data_dm = self.ee.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-        reconverted_data_dm = self.ee.root_process._convert_array_into_new_type(converted_data_dm)
+        converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
+        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
          
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
@@ -121,8 +122,8 @@ class TestExtendFloat(unittest.TestCase):
  
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
-        converted_data_dm = self.ee.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-        reconverted_data_dm = self.ee.root_process._convert_array_into_new_type(converted_data_dm)
+        converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
+        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
          
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
@@ -145,8 +146,8 @@ class TestExtendFloat(unittest.TestCase):
          
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
-        converted_data_dm = self.ee.root_process._convert_new_type_into_array(data_dm, update_dm=True)
-        reconverted_data_dm = self.ee.root_process._convert_array_into_new_type(converted_data_dm)
+        converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
+        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
          
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
