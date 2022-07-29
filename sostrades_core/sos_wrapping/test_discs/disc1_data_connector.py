@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.execution_engine.data_connector.mock_connector import MockConnector
@@ -45,15 +44,25 @@ class Disc1(SoSWrapp):
     dremio_path = '"test_request"'
 
     DESC_IN = {
-        'x': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'float'},
         'b': {'type': 'float'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac',
-              ProxyDiscipline.CONNECTOR_DATA: data_connection_dict}
+        'y': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac',
+              SoSWrapp.CONNECTOR_DATA: data_connection_dict}
     }
+    
+    # get a connector_data with all information
+    connector_data = ConnectorFactory.set_connector_request(
+        DESC_OUT['y'][SoSWrapp.CONNECTOR_DATA], dremio_path)
+    # update the meta_data with the new connection information
+    # { var_name : {meta_dat_to_update : meta_data_value}}
+#     proxy.update_meta_data_out(
+#         {'y': {self.CONNECTOR_DATA: connector_data}})
+    DESC_OUT['y'][SoSWrapp.CONNECTOR_DATA] = connector_data
+            
 
     def run(self):
         x = self.get_sosdisc_inputs('x')
@@ -61,13 +70,4 @@ class Disc1(SoSWrapp):
         b = self.get_sosdisc_inputs('b')
         # dict_values = {'indicator': a * b, 'y': a * x + b}
         dict_values = {'indicator': a * b}
-        # put new field value in data_out
-
-        # get a connector_data with all information
-        connector_data = ConnectorFactory.set_connector_request(
-            self.DESC_OUT['y'][ProxyDiscipline.CONNECTOR_DATA], self.dremio_path)
-        # update the meta_data with the new connection information
-        # { var_name : {meta_dat_to_update : meta_data_value}}
-        self.update_meta_data_out(
-            {'y': {ProxyDiscipline.CONNECTOR_DATA: connector_data}})
         self.store_sos_outputs_values(dict_values)

@@ -17,6 +17,7 @@ from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
+import logging
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -31,6 +32,7 @@ class SoSMDODisciplineException(Exception):
 
 # to avoid circular redundancy with nsmanager
 NS_SEP = '.'
+LOGGER = logging.getLogger(__name__)
 
 
 class SoSMDODiscipline(MDODiscipline):
@@ -93,7 +95,7 @@ class SoSMDODiscipline(MDODiscipline):
             if self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA] is not None:
                     updated_values[key] = ConnectorFactory.use_data_connector(
                         self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
-                        self.ee.logger)
+                        LOGGER)
 
         self.local_data.update(updated_values)
             
@@ -108,7 +110,7 @@ class SoSMDODiscipline(MDODiscipline):
             return self.input_grammar.get_data_names()
         else:
             return self.filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=self.LOGGER)
+                                                    logger=LOGGER)
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """Return the names of the output variables.
