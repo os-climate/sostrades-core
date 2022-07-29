@@ -442,8 +442,8 @@ class TestMDALoop(unittest.TestCase):
         residual_history2 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
 
         self.assertListEqual(residual_history, residual_history2)
-
-    def test_05_mda_loop_with_string_dict(self):
+        
+    def test_05_mda_loop_with_pre_run_mda(self):
 
         exec_eng = ExecutionEngine(self.name)
 
@@ -451,21 +451,18 @@ class TestMDALoop(unittest.TestCase):
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
         disc7_builder = exec_eng.factory.get_builder_from_module(
             'Disc7', mod_list)
-        disc7_builder.cls.DESC_OUT['string_dict'] = {
-            'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_protected'}
+
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
         disc6_builder = exec_eng.factory.get_builder_from_module(
             'Disc6', mod_list)
-        disc6_builder.cls.DESC_IN['string_dict'] = {
-            'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_protected'}
+
         exec_eng.factory.set_builders_to_coupling_builder(
             [disc6_builder, disc7_builder])
         exec_eng.configure()
+
         # additional test to verify that values_in are used
         values_dict = {}
         values_dict['EE.h'] = array([8., 9.])
-        values_dict['EE.x'] = array([5., 3.])
-        values_dict['EE.string_dict'] = {'key0': 'toto'}
         values_dict['EE.n_processes'] = 1
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -473,9 +470,9 @@ class TestMDALoop(unittest.TestCase):
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
-                  'EE.x': array([0., 0.707107, 0.707107]),
-                  'EE.string_dict': {'key0': 'toto'}}
-        # -- check output keys
+                  'EE.x': array([0., 0.707107, 0.707107])}
+
+        # check output keys
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -486,8 +483,8 @@ class TestMDALoop(unittest.TestCase):
                     list(target[key]), list(res[key]))
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
         residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-        print('residual_history', residual_history)
-        # Check residual history
+
+        # check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
         self.assertLessEqual(len(residual_history), max_mda_iter)
         self.assertLessEqual(residual_history[-1][0], tolerance)
@@ -502,9 +499,6 @@ class TestMDALoop(unittest.TestCase):
         self.assertAlmostEqual(x_dm[0], x_target[0], delta=tolerance)
         self.assertAlmostEqual(x_in[0], x_target[0], delta=tolerance)
         self.assertAlmostEqual(x_out[0], x_target[0], delta=tolerance)
-
-        disc6_builder.cls.DESC_IN.pop('string_dict')
-        disc7_builder.cls.DESC_OUT.pop('string_dict')
 
     def _test_06_mda_loop_with_discipline_grouping(self):
         '''
@@ -1137,4 +1131,4 @@ class TestMDALoop(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_01_mda_loop()
+    cls.test_05_mda_loop_with_pre_run_mda()

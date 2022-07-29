@@ -498,6 +498,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
         self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self)
         
+        # set epsilon0 and cache of sub_mda_list
+        for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
+            self.set_epsilon0_and_cache(sub_mda)
+        
 #         self._set_residual_history()
 
     def pre_run_mda(self, input_data):
@@ -555,12 +559,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                 # recursive call if subdisc is a SoSCoupling
                                 # TODO: check if it will work for cases like
                                 # Coupling1 > Driver > Coupling2
-                                discipline.pre_run_mda()
-                                self.mdo_discipline_wrapp.mdo_discipline.local_data.update(discipline.local_data)
+                                discipline.pre_run_mda(input_data)
                             else:
                                 temp_local_data = discipline.execute(
-                                    self.mdo_discipline_wrapp.mdo_discipline.local_data)
-                                self.mdo_discipline_wrapp.mdo_discipline.local_data.update(temp_local_data)
+                                    input_data)
+                                input_data.update(temp_local_data)
 
                         sub_mda_disciplines = [
                             disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
@@ -568,13 +571,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     discipline = coupled_mdo_disciplines[0]
                     if discipline.proxy_discipline.is_sos_coupling:
                         # recursive call if subdisc is a SoSCoupling
-                        discipline.pre_run_mda()
-                        self.mdo_discipline_wrapp.mdo_discipline.local_data.update(discipline.local_data)
+                        discipline.pre_run_mda(input_data)
                     else:
-                        temp_local_data = discipline.execute(self.mdo_discipline.local_data)
-                        self.mdo_discipline_wrapp.mdo_discipline.local_data.update(temp_local_data)
+                        temp_local_data = discipline.execute(input_data)
+                        input_data.update(temp_local_data)
 
-        self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(self.mdo_discipline_wrapp.mdo_discipline.local_data)
+        self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(input_data)
         
     def get_first_discs_to_execute(self, disciplines, input_data):
 
