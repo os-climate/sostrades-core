@@ -68,7 +68,7 @@ class TestMDALoop(unittest.TestCase):
         # additional test to verify that values_in are used
         values_dict = {}
         values_dict['EE.h'] = array([8., 9.])
-#         values_dict['EE.x'] = array([5.0, 3.])
+        values_dict['EE.x'] = array([5.0, 3.])
         values_dict['EE.n_processes'] = 1
         exec_eng.load_study_from_input_dict(values_dict)
 
