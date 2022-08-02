@@ -96,7 +96,7 @@ class SoSWrapp(object):
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
-            keys = list(self.local_data_short_name().keys())
+            keys = list(self.local_data_short_name.keys())
             in_dict = True
         inputs = self._get_sosdisc_io(
             keys, io_type=self.IO_TYPE_IN)
