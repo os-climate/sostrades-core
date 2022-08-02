@@ -277,9 +277,7 @@ class ProxyDiscipline(object):
 
     def prepare_execution(self):
 
-        self.mdo_discipline_wrapp.create_gemseo_discipline(self, self.ee.dm.reduced_dm)
-
-    #         self.set_cache() -> TODO: be able to comment this line, by passing the cache_type option directly as MDODiscipline input
+        self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, reduced_dm=self.ee.dm.reduced_dm, cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE), cache_file_path=self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
 
     def get_shared_namespace_list(self, data_dict):
         '''
@@ -600,11 +598,9 @@ class ProxyDiscipline(object):
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
-            cache_file_path = self.get_sosdisc_inputs(self.CACHE_FILE_PATH)
 
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
                 self._set_children_cache_inputs = True
-                self.set_cache(self, cache_type, cache_file_path)
 
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
@@ -634,18 +630,18 @@ class ProxyDiscipline(object):
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
-    def set_cache(self, disc, cache_type, cache_hdf_file):
-        '''
-        Instantiate and set cache for disc if cache_type is not 'None'
-        '''
-        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
-            raise Exception(
-                'if the cache type is set to HDF5Cache, the cache_file path must be set')
-        else:
-            disc.cache = None
-            if cache_type != 'None':
-                disc.set_cache_policy(
-                    cache_type=cache_type, cache_hdf_file=cache_hdf_file)
+#     def set_cache(self, disc, cache_type, cache_hdf_file):
+#         '''
+#         Instantiate and set cache for disc if cache_type is not 'None'
+#         '''
+#         if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
+#             raise Exception(
+#                 'if the cache type is set to HDF5Cache, the cache_file path must be set')
+#         else:
+#             disc.cache = None
+#             if cache_type != 'None':
+#                 disc.set_cache_policy(
+#                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def set_children_cache_inputs(self):
         '''

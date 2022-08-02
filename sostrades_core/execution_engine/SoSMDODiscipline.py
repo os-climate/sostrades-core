@@ -41,7 +41,7 @@ class SoSMDODiscipline(MDODiscipline):
 
    """
 
-    def __init__(self, full_name, grammar_type, cache_type, sos_wrapp, reduced_dm):
+    def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
         '''
         Constructor
         '''
@@ -50,7 +50,8 @@ class SoSMDODiscipline(MDODiscipline):
         self.output_full_name_map = None
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
-                               cache_type=cache_type)
+                               cache_type=cache_type,
+                               cache_file_path=cache_file_path)
 
     def _run(self):
         
