@@ -271,55 +271,14 @@ class ProxyDiscipline(object):
         return self.STATUS_CONFIGURE
 
     @status.setter
-    def status(
-            self,
-            status,  # type: str
-    ):  # type: (...) -> None
+    def status(self, status):
         self._update_status_dm(status)
-
-    # @proxy_status.setter
-    # def proxy_status(
-    #         self,
-    #         status,  # type: str
-    # ):  # type: (...) -> None
-    #     self.status =
-    def _proxy_run(self):
-        '''
-        uses user wrapp run during execution
-        '''
-        try:
-            return self.run()
-        except Exception as exc:
-            self.logger.exception(exc)
-            raise exc
-
-    def _proxy_compute_jacobian(self):
-        '''
-        uses user wrapp jacobian computation during execution
-        '''
-        return self.compute_sos_jacobian()
 
     def prepare_execution(self):
 
         self.mdo_discipline_wrapp.create_gemseo_discipline(self, self.ee.dm.reduced_dm)
 
     #         self.set_cache() -> TODO: be able to comment this line, by passing the cache_type option directly as MDODiscipline input
-
-    def _init_grammar_with_keys(self, names, io_type):
-        ''' initialize GEMS grammar with names and type None
-        '''
-        names_dict = dict.fromkeys(names, None)
-        disc = self.mdo_discipline
-        if io_type == self.IO_TYPE_IN:
-            grammar = disc.input_grammar
-            grammar.clear()
-
-        elif io_type == self.IO_TYPE_OUT:
-            grammar = disc.output_grammar
-            grammar.clear()
-        grammar.initialize_from_base_dict(names_dict)
-
-        return grammar
 
     def get_shared_namespace_list(self, data_dict):
         '''
@@ -496,13 +455,6 @@ class ProxyDiscipline(object):
     #                 self.IO_TYPE_IN, modified_inputs)
     #             self._data_in.update(completed_modified_inputs)
 
-    #     def init_gems_grammar(self, data_keys, io_type):
-    #         '''
-    #         Init Gems grammar with keys from a data_in/out dict
-    #         io_type specifies 'IN' or 'OUT'
-    #         '''
-    #         self._init_grammar_with_keys(data_keys, io_type)
-
     def local_data(self):
         '''
          Property to obtain the local data of the mdo_discipline
@@ -625,7 +577,6 @@ class ProxyDiscipline(object):
         '''
         Configure the SoSDiscipline
         '''
-
         #         self.set_numerical_parameters()
 
         if self.check_structuring_variables_changes():
@@ -738,7 +689,6 @@ class ProxyDiscipline(object):
                     f'Try to set a default value for the variable {short_key} in {self.sos_name} which is not an input of this discipline ')
 
     # -- cache handling
-
     def clear_cache(self):
         # -- Need to clear cache for gradients analysis
         if self.cache is not None:
@@ -1463,21 +1413,6 @@ class ProxyDiscipline(object):
                 keys, io_type)]
         return variables
 
-    #     def _init_grammar_with_keys(self, names, io_type):
-    #         ''' initialize GEMS grammar with names and type None
-    #         '''
-    #         names_dict = dict.fromkeys(names, None)
-    #         if io_type == self.IO_TYPE_IN:
-    #             grammar = self.input_grammar
-    #             grammar.clear()
-    #
-    #         elif io_type == self.IO_TYPE_OUT:
-    #             grammar = self.output_grammar
-    #             grammar.clear()
-    #         grammar.initialize_from_base_dict(names_dict)
-    #
-    #         return grammar
-
     def _convert_to_namespace_name(self, key, io_type):
         ''' Convert to namepsace with coupling_namespace management
             Using a key (variables name) and reference_data (yaml in or out),
@@ -1500,7 +1435,6 @@ class ProxyDiscipline(object):
 
         # Force update into discipline_dict (GEMS can change status but cannot update the
         # discipline_dict
-
         self.dm.disciplines_dict[self.disc_id]['status'] = status
 
     def update_status_pending(self):
