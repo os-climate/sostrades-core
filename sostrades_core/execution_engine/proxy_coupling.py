@@ -169,7 +169,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                ProxyDiscipline.STRUCTURING: True}
     }
 
-    DESC_OUT = {}
+    DESC_OUT = {
+        RESIDUALS_HISTORY : {ProxyDiscipline.USER_LEVEL : 3, ProxyDiscipline.TYPE : 'dataframe',
+                             ProxyDiscipline.UNIT : '-'}
+                }
 
     eps0 = 1.0e-6
     has_chart = False
@@ -501,7 +504,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
         
-        self._set_residual_history()
+        # self._set_residual_history()
 
     def pre_run_mda(self, input_data):
         '''
