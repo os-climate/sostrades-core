@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 import numpy as np
 from scipy.sparse import diags
 # Discipline with dataframe
@@ -37,11 +36,11 @@ class Disc6(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'x': {'type': 'array', 'visibility':  SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     DESC_OUT = {
-        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'h': {'type': 'array', 'visibility':  SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):

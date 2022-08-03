@@ -173,200 +173,200 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.local_data[key], target[key])
 
-#     def test_03_mda_loop_after_dump_load(self):
-# 
-#         exec_eng = ExecutionEngine(self.name)
-# 
-#         exec_eng.ns_manager.add_ns('ns_protected', self.name)
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
-#         disc7_builder = exec_eng.factory.get_builder_from_module(
-#             'Disc7', mod_list)
-# 
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
-#         disc6_builder = exec_eng.factory.get_builder_from_module(
-#             'Disc6', mod_list)
-# 
-#         exec_eng.factory.set_builders_to_coupling_builder(
-#             [disc6_builder, disc7_builder])
-#         exec_eng.configure()
-#         # additional test to verify that values_in are used
-#         values_dict = {}
-#         values_dict['EE.h'] = array([8., 9.])
-#         values_dict['EE.x'] = array([5., 3.])
-#         values_dict['EE.n_processes'] = 1
-#         exec_eng.load_study_from_input_dict(values_dict)
-# 
-#         target = {'EE.h': array([0.70710678,
-#                                  0.70710678]),
-#                   'EE.x': array([0., 0.707107, 0.707107])}
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng.dm.get_value(key)
-#             print('exec_1 before exe', key, res[key])
-#         exec_eng.execute()
-#         norm0 = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
-#         print('norm0 and norm_residual after first exe', norm0, normed_residual)
-#         exec_eng.execute()
-#         norm0 = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
-#         print('norm0 and norm_residualafter second exe', norm0, normed_residual)
-# 
-#         # check output keys
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng.dm.get_value(key)
-#             print('exec_1', key, res[key])
-#             if target[key] is dict:
-#                 self.assertDictEqual(res[key], target[key])
-#             elif target[key] is array:
-#                 self.assertListEqual(
-#                     list(target[key]), list(res[key]))
-# 
-#         residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-#         residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
-#         self.assertEqual(residual_history, residual_history_output)
-# 
-#         dump_dir = join(self.root_dir, self.name)
-# 
-#         BaseStudyManager.static_dump_data(
-#             dump_dir, exec_eng, DirectLoadDump())
-# 
-#         exec_eng2 = ExecutionEngine(self.name)
-# 
-#         exec_eng2.ns_manager.add_ns('ns_protected', self.name)
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
-#         disc7_builder = exec_eng2.factory.get_builder_from_module(
-#             'Disc7', mod_list)
-# 
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
-#         disc6_builder = exec_eng2.factory.get_builder_from_module(
-#             'Disc6', mod_list)
-# 
-#         exec_eng2.factory.set_builders_to_coupling_builder(
-#             [disc6_builder, disc7_builder])
-#         exec_eng2.configure()
-# 
-#         BaseStudyManager.static_load_data(
-#             dump_dir, exec_eng2, DirectLoadDump())
-# 
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng2.dm.get_value(key)
-#             print('exec_2 before exe', key, res[key])
-#         norm0 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
-#         print('norm0 and norm_residual before third exe', norm0, normed_residual)
-#         exec_eng2.execute()
-#         norm0 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
-#         print('norm0 and norm_residual after third exe', norm0, normed_residual)
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng2.dm.get_value(key)
-#             print('exec_2', key, res[key])
-#             if target[key] is dict:
-#                 self.assertDictEqual(res[key], target[key])
-#             elif target[key] is array:
-#                 self.assertListEqual(
-#                     list(target[key]), list(res[key]))
-#         residual_history_2 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-#         residual_history_output_2 = exec_eng2.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
-#         self.assertEqual(residual_history_2, residual_history_output_2)
-# 
-#         BaseStudyManager.static_dump_data(
-#             dump_dir, exec_eng2, DirectLoadDump())
-# 
-#         exec_eng3 = ExecutionEngine(self.name)
-# 
-#         exec_eng3.ns_manager.add_ns('ns_protected', self.name)
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
-#         disc7_builder = exec_eng3.factory.get_builder_from_module(
-#             'Disc7', mod_list)
-# 
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
-#         disc6_builder = exec_eng3.factory.get_builder_from_module(
-#             'Disc6', mod_list)
-# 
-#         exec_eng3.factory.set_builders_to_coupling_builder(
-#             [disc6_builder, disc7_builder])
-#         exec_eng3.configure()
-# 
-#         BaseStudyManager.static_load_data(
-#             dump_dir, exec_eng3, DirectLoadDump())
-# 
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng3.dm.get_value(key)
-#             print('exec_3 before exe', key, res[key])
-#         norm0 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
-#         print('norm0 and norm_residual before exe 4', norm0, normed_residual)
-#         exec_eng3.execute()
-#         norm0 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
-#         normed_residual = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
-#         print('norm0 and norm_residual after exe 4', norm0, normed_residual)
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng3.dm.get_value(key)
-#             print('exec_3', key, res[key])
-#             if target[key] is dict:
-#                 self.assertDictEqual(res[key], target[key])
-#             elif target[key] is array:
-#                 self.assertListEqual(
-#                     list(target[key]), list(res[key]))
-#         residual_history_3 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-#         residual_history_output_3 = exec_eng3.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
-#         self.assertEqual(residual_history_3, residual_history_output_3)
-# 
-#         self.assertEqual(residual_history_3[-1][0], residual_history_2[-1][0])
-# 
-#         BaseStudyManager.static_dump_data(
-#             dump_dir, exec_eng3, DirectLoadDump())
-# 
-#         exec_eng4 = ExecutionEngine(self.name)
-# 
-#         exec_eng4.ns_manager.add_ns('ns_protected', self.name)
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
-#         disc7_builder = exec_eng4.factory.get_builder_from_module(
-#             'Disc7', mod_list)
-# 
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
-#         disc6_builder = exec_eng4.factory.get_builder_from_module(
-#             'Disc6', mod_list)
-# 
-#         exec_eng4.factory.set_builders_to_coupling_builder(
-#             [disc6_builder, disc7_builder])
-#         exec_eng4.configure()
-# 
-#         BaseStudyManager.static_load_data(
-#             dump_dir, exec_eng4, DirectLoadDump())
-# 
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng4.dm.get_value(key)
-#             print('exec_4 before exe', key, res[key])
-# 
-#         exec_eng4.execute()
-#         residual_history_4 = exec_eng4.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-#         residual_history_output_4 = exec_eng4.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-#             'residuals_history')[exec_eng4.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
-#         self.assertEqual(residual_history_4, residual_history_output_4)
-#         res = {}
-#         for key in target:
-#             res[key] = exec_eng4.dm.get_value(key)
-#             print('exec_4', key, res[key])
-#             if target[key] is dict:
-#                 self.assertDictEqual(res[key], target[key])
-#             elif target[key] is array:
-#                 self.assertListEqual(
-#                     list(target[key]), list(res[key]))
-#         # Clean the dump folder at the end of the test
-#         self.dirs_to_del.append(
-#             join(self.root_dir, self.name))
+    def test_03_mda_loop_after_dump_load(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng.configure()
+        # additional test to verify that values_in are used
+        values_dict = {}
+        values_dict['EE.h'] = array([8., 9.])
+        values_dict['EE.x'] = array([5., 3.])
+        values_dict['EE.n_processes'] = 1
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        target = {'EE.h': array([0.70710678,
+                                 0.70710678]),
+                  'EE.x': array([0., 0.707107, 0.707107])}
+        res = {}
+        for key in target:
+            res[key] = exec_eng.dm.get_value(key)
+            print('exec_1 before exe', key, res[key])
+        exec_eng.execute()
+        norm0 = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+        normed_residual = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
+        print('norm0 and norm_residual after first exe', norm0, normed_residual)
+        exec_eng.execute()
+        norm0 = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+        normed_residual = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
+        print('norm0 and norm_residualafter second exe', norm0, normed_residual)
+
+        # check output keys
+        res = {}
+        for key in target:
+            res[key] = exec_eng.dm.get_value(key)
+            print('exec_1', key, res[key])
+            if target[key] is dict:
+                self.assertDictEqual(res[key], target[key])
+            elif target[key] is array:
+                self.assertListEqual(
+                    list(target[key]), list(res[key]))
+
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
+        residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
+            'residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
+        self.assertEqual(residual_history, residual_history_output)
+
+        dump_dir = join(self.root_dir, self.name)
+
+        BaseStudyManager.static_dump_data(
+            dump_dir, exec_eng, DirectLoadDump())
+
+        exec_eng2 = ExecutionEngine(self.name)
+
+        exec_eng2.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng2.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
+        disc6_builder = exec_eng2.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng2.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng2.configure()
+
+        BaseStudyManager.static_load_data(
+            dump_dir, exec_eng2, DirectLoadDump())
+
+        res = {}
+        for key in target:
+            res[key] = exec_eng2.dm.get_value(key)
+            print('exec_2 before exe', key, res[key])
+        # norm0 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+        # normed_residual = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
+        # print('norm0 and norm_residual before third exe', norm0, normed_residual)
+        exec_eng2.execute()
+        norm0 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+        normed_residual = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
+        print('norm0 and norm_residual after third exe', norm0, normed_residual)
+        res = {}
+        for key in target:
+            res[key] = exec_eng2.dm.get_value(key)
+            print('exec_2', key, res[key])
+            if target[key] is dict:
+                self.assertDictEqual(res[key], target[key])
+            elif target[key] is array:
+                self.assertListEqual(
+                    list(target[key]), list(res[key]))
+        residual_history_2 = exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
+        residual_history_output_2 = exec_eng2.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
+            'residuals_history')[exec_eng2.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
+        self.assertEqual(residual_history_2, residual_history_output_2)
+
+        BaseStudyManager.static_dump_data(
+            dump_dir, exec_eng2, DirectLoadDump())
+
+        exec_eng3 = ExecutionEngine(self.name)
+
+        exec_eng3.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng3.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
+        disc6_builder = exec_eng3.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng3.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng3.configure()
+
+        BaseStudyManager.static_load_data(
+            dump_dir, exec_eng3, DirectLoadDump())
+
+        res = {}
+        for key in target:
+            res[key] = exec_eng3.dm.get_value(key)
+            print('exec_3 before exe', key, res[key])
+        # norm0 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+        # normed_residual = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
+        # print('norm0 and norm_residual before exe 4', norm0, normed_residual)
+        exec_eng3.execute()
+        norm0 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].norm0
+        normed_residual = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].normed_residual
+        print('norm0 and norm_residual after exe 4', norm0, normed_residual)
+        res = {}
+        for key in target:
+            res[key] = exec_eng3.dm.get_value(key)
+            print('exec_3', key, res[key])
+            if target[key] is dict:
+                self.assertDictEqual(res[key], target[key])
+            elif target[key] is array:
+                self.assertListEqual(
+                    list(target[key]), list(res[key]))
+        residual_history_3 = exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
+        residual_history_output_3 = exec_eng3.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
+            'residuals_history')[exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
+        self.assertEqual(residual_history_3, residual_history_output_3)
+
+        self.assertEqual(residual_history_3[-1][0], residual_history_2[-1][0])
+
+        BaseStudyManager.static_dump_data(
+            dump_dir, exec_eng3, DirectLoadDump())
+
+        exec_eng4 = ExecutionEngine(self.name)
+
+        exec_eng4.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng4.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
+        disc6_builder = exec_eng4.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng4.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng4.configure()
+
+        BaseStudyManager.static_load_data(
+            dump_dir, exec_eng4, DirectLoadDump())
+
+        res = {}
+        for key in target:
+            res[key] = exec_eng4.dm.get_value(key)
+            print('exec_4 before exe', key, res[key])
+
+        exec_eng4.execute()
+        residual_history_4 = exec_eng4.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
+        residual_history_output_4 = exec_eng4.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
+            'residuals_history')[exec_eng4.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
+        self.assertEqual(residual_history_4, residual_history_output_4)
+        res = {}
+        for key in target:
+            res[key] = exec_eng4.dm.get_value(key)
+            print('exec_4', key, res[key])
+            if target[key] is dict:
+                self.assertDictEqual(res[key], target[key])
+            elif target[key] is array:
+                self.assertListEqual(
+                    list(target[key]), list(res[key]))
+        # Clean the dump folder at the end of the test
+        self.dirs_to_del.append(
+            join(self.root_dir, self.name))
 
     def test_04_two_mdas_loop_comparison(self):
 
