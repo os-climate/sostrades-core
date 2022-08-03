@@ -68,7 +68,7 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None):  # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """ MDODiscipline instanciation
 
         """
@@ -76,7 +76,8 @@ class MDODisciplineWrapp(object):
             if self.wrapping_mode == 'SoSTrades':
                 self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
                                                        grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                                       cache_type=proxy.get_sosdisc_inputs(proxy.CACHE_TYPE),
+                                                       cache_type=cache_type,
+                                                       cache_file_path=cache_file_path,
                                                        sos_wrapp=self.wrapper,
                                                        reduced_dm=reduced_dm)
                 self._init_grammar_with_keys(proxy)

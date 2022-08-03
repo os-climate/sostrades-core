@@ -53,7 +53,7 @@ class Disc1(SoSWrapp):
         dynamic_outputs = {}
 
         if 'AC_list' in proxy._data_in:
-            AC_list = proxy.get_input_('AC_list')
+            AC_list = proxy.get_sosdisc_inputs('AC_list')
 
             for ac in AC_list:
                 dynamic_inputs.update(
@@ -84,4 +84,4 @@ class Disc1(SoSWrapp):
             dyn_output = dyn_input_ac ** 2
             dict_values[f'{ac}.dyn_output'] = dyn_output
         # put new field value in data_out
-        self.store_outputs_values(dict_values)
+        self.store_sos_outputs_values(dict_values)

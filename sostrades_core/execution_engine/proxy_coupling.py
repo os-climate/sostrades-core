@@ -23,7 +23,6 @@ from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrap
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-import logging
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
 
@@ -618,79 +617,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.update_dm_with_local_data(self.mdo_discipline_wrapp.mdo_discipline.local_data)
 
         self.set_status_from_mdo_discipline()
-
-
-
-    def _proxy_run(self):
-        '''
-        uses user wrapp run during execution
-        '''
-#         # set linear solver options for MDA
-#         self.linear_solver = self.proxy_discipline.linear_solver_MDA
-#         self.linear_solver_options = self.proxy_discipline.linear_solver_options_MDA
-#         self.linear_solver_tolerance = self.proxy_discipline.linear_solver_tolerance_MDA
-
-        self.pre_run_mda()
-
-#         if len(self.sub_mda_list) > 0:
-#             self.logger.info(f'{self.proxy_discipline.get_disc_full_name()} MDA history')
-#             self.logger.info('\tIt.\tRes. norm')
-
-        MDAChain._run(self.mdo_discipline)
-
-#         # save residual history
-#         dict_out = {}
-#         residuals_history = DataFrame(
-#             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
-#         dict_out[self.proxy_discipline.RESIDUALS_HISTORY] = residuals_history
-#         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
-
-        # store local data in datamanager
-        self.update_dm_with_local_data(self.local_data())
         
-        
-    def init_gemseo_discipline(self):
-        '''
-        initialization of GEMSEO MDAChain
-        '''
-        num_data = self._get_numerical_inputs()
-
-        mda_chain = MDAChain(
-                              # ee=self.ee,  # set the ee and dm as attribute of MDAChain (used for filtering and conversions) # TODO: see if it can be removed
-                              disciplines=self.sub_mdo_disciplines,
-                              name=self.get_disc_full_name(),
-                              grammar_type=self.SOS_GRAMMAR_TYPE,
-                              ** num_data)  # TODO: remove all configuration / build methods from soscoupling and move it into GEMSEO?
-        
-        # settattr of mda_chain
-        setattr(mda_chain, '_run', self._proxy_run)
-
-        # store cache to reset after MDAChain init
-        cache = mda_chain.cache
-
-        # TODO: pass cache to MDAChain init to avoid reset cache, idem for
-        # MDOChain
-        mda_chain.cache = cache
-        cache_type, cache_file_path = self.get_sosdisc_inputs(['cache_type', 'cache_file_path'])
-        self.set_cache(mda_chain.mdo_chain, cache_type, cache_file_path)
-
-        # attach sostrades logger to MDAChain 
-        # TODO: to remove
-        mda_chain.logger = self.logger
-
-        # - set the mdo discipline with the MDAChain
-        self.mdo_discipline = mda_chain
-        mda_chain.proxy_discipline = self
-        
-        # Check variables mismatch between coupling disciplines
-        self.check_var_data_mismatch()
-        
-        # set epsilon0 and cache of sub_mda_list
-        for sub_mda in self.mdo_discipline.sub_mda_list:
-            self.set_epsilon0_and_cache(sub_mda)
-        
-        self.logger.info(
-            f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
         
     def check_var_data_mismatch(self):
         '''
@@ -756,27 +683,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             if cache_type != 'None':
                 disc.set_cache_policy(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
-
-#     def configure_execution(self):
-#         '''
-#         - configure the GEMSEO MDA with all children disciplines
-#         - set the data_in and data_out of the coupling with the GEMS grammar computed in configure_mda
-#         '''
-#         # update gems grammar with namespaced inputs and outputs
-#         for disc in self.sos_disciplines:
-#             disc.update_gems_grammar_with_data_io()
-# 
-#         self.configure_mda()
-# 
-#         self._update_status_dm(self.STATUS_CONFIGURE)
-#         # Construct the data_in and the data_out of the coupling with the GEMS
-#         # grammar
-#         self._set_data_io_with_gems_grammar()
-# 
-#         self._set_residual_history()
-# 
-#         # Update coupling and editable flags in the datamanager for the GUI
-#         self._update_coupling_flags_in_dm()
 
     def _set_data_io_with_gemseo_grammar(self):
         '''
