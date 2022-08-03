@@ -501,7 +501,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
         
-        self._set_residual_history()
+#         self._set_residual_history()
 
     def pre_run_mda(self, input_data):
         '''
@@ -604,15 +604,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.pre_run_mda(input_data)
         
         self.mdo_discipline_wrapp.execute(input_data)
-
-        # save residual history
-        dict_out = {}
-        residuals_history = DataFrame(
-            {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
-        dict_out[self.RESIDUALS_HISTORY] = residuals_history
-        self.store_sos_outputs_values(dict_out, update_dm=True)
-        # self.update_dm_with_local_data(residuals_history)
-
+        
         # store local data in datamanager
         self.update_dm_with_local_data(self.mdo_discipline_wrapp.mdo_discipline.local_data)
 
@@ -983,9 +975,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         ''' set residuals history into data_out
 #         and update DM
 #         '''
-#
+# 
 #         def update_flags_of_disc(coupling_key, disc_name, in_or_out):
-#
+# 
 #             disc_list = self.dm.get_disciplines_with_name(disc_name)
 #             var_name_out = None
 #             for a_disc in disc_list:
@@ -993,7 +985,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #                     data_io = a_disc._data_in
 #                 else:
 #                     data_io = a_disc._data_out
-#
+# 
 #                 if var_name_k in data_io.keys():
 #                     var_name_out = var_name_k
 #                 else:
@@ -1009,15 +1001,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #                         data_io[var_name_out][self.OPTIONAL] = True
 #                     else:
 #                         data_io[var_name_out][self.EDITABLE] = False
-#
+# 
 #         # END update_flags_of_disc
-#
+# 
 #         # -- update couplings flag into DataManager
 #         coupl = self.export_couplings()
 #         couplings = coupl[self.VAR_NAME]
 #         disc_1 = coupl['disc_1']
 #         disc_2 = coupl['disc_2']
-#
+# 
 #         # loop on couplings variables and the disciplines linked
 #         for k, from_disc_name, to_disc_name in zip(
 #                 couplings, disc_1, disc_2):
@@ -1030,7 +1022,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #             else:
 #                 self.dm.set_data(k, self.EDITABLE, False)
 #             var_name_k = self.dm.get_data(k, self.VAR_NAME)
-#
+# 
 #             # update flags of discipline 1
 #             update_flags_of_disc(k, from_disc_name, 'out')
 #             # update flags of discipline 2
@@ -1068,7 +1060,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         # dataframe init
         residuals_history = DataFrame(
-            {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
+            {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline.sub_mda_list})
  
         # set residual type and value
         rdict = {}
