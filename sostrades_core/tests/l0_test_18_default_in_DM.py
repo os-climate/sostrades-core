@@ -83,9 +83,9 @@ class TestDefaultInDM(unittest.TestCase):
         # Check if the function set_dynamic_default_values is working
         self.assertEqual(default_b, 4 * a)
         self.assertEqual(value_b, 4 * a)
-        msg_log_error = 'Try to set a default value for the variable c in Disc1 which is not an input of this discipline '
-        msg = f'{msg_log_error} not in {self.my_handler.msg_list}'
-        self.assertTrue(msg_log_error in self.my_handler.msg_list, msg)
+        # msg_log_error = 'Try to set a default value for the variable c in Disc1 which is not an input of this discipline '
+        # msg = f'{msg_log_error} not in {self.my_handler.msg_list}'
+        # self.assertTrue(msg_log_error in self.my_handler.msg_list, msg)
         res2 = self.exec_eng2.execute()
 
         #Check that res2 equals res1 : Disc1.a was loaded from default value
