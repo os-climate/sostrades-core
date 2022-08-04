@@ -577,6 +577,7 @@ class ExecutionEngine:
         # -- execution with input data from DM
         ex_proc = self.root_process
         input_data = self.get_input_data_for_gemseo(ex_proc)
+        # input_data = self.dm.get_data_dict_values()
         ex_proc.execute(input_data=input_data)
         
         self.status = self.root_process.status

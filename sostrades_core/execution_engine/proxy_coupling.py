@@ -314,14 +314,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Configure the SoSCoupling by : 
         - setting the discipline in the discipline_dict 
         - configure all children disciplines
-
         '''
-        if self._data_in != {}:
-            cache_type_change = self._structuring_variables[ProxyDiscipline.CACHE_TYPE] != self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
-            cache_path_change = self._structuring_variables[ProxyDiscipline.CACHE_FILE_PATH] != self.get_sosdisc_inputs(ProxyDiscipline.CACHE_FILE_PATH)
-            if cache_type_change or cache_path_change:
-                self._cache_inputs_have_changed = True
-
         ProxyDiscipline.configure(self)
 
         disc_to_configure = self.get_disciplines_to_configure()
@@ -494,9 +487,23 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
             sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
+            
+        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+            mda_chain_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
         
         self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self)
         
+        if self._reset_cache:
+            # TODO: pass cache to MDAChain init to avoid reset cache
+            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(
+                'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+            self._reset_cache = False
+        else:
+            self.mdo_discipline_wrapp.mdo_discipline.cache = mda_chain_cache
+            
+        # set cache of MDOChain with cache_type and cache_file_path inputs of ProxyCoupling
+        self.set_cache(self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, self.get_sosdisc_inputs(
+            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
         # set epsilon0 and cache of sub_mda_list
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
@@ -662,19 +669,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
         self.set_cache(mda, self.get_sosdisc_inputs(
             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-
-    def set_cache(self, disc, cache_type, cache_hdf_file):
-        '''
-        Instantiate and set cache for disc if cache_type is not 'None'
-        '''
-        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
-            raise Exception(
-                'if the cache type is set to HDF5Cache, the cache_file path must be set')
-        else:
-            disc.cache = None
-            if cache_type != 'None':
-                disc.set_cache_policy(
-                    cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def _set_data_io_with_gemseo_grammar(self):
         '''

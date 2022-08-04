@@ -245,7 +245,7 @@ class ProxyDiscipline(object):
         self.built_proxy_disciplines = []
         self.in_checkjac = False
         self._is_configured = False
-        self._set_children_cache_inputs = False
+        self._reset_cache = False
 
         # -- disciplinary data attributes
         self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
@@ -277,8 +277,25 @@ class ProxyDiscipline(object):
 
     def prepare_execution(self):
 
+        if self.mdo_discipline_wrapp.mdo_discipline is not None and self._reset_cache:
+            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE), self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            self._reset_cache = False
+            
         self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, reduced_dm=self.ee.dm.reduced_dm, cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE), cache_file_path=self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
 
+    def set_cache(self, disc, cache_type, cache_hdf_file):
+        '''
+        Instantiate and set cache for disc if cache_type is not 'None'
+        '''
+        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
+            raise Exception(
+                'if the cache type is set to HDF5Cache, the cache_file path must be set')
+        else:
+            disc.cache = None
+            if cache_type != 'None':
+                disc.set_cache_policy(
+                    cache_type=cache_type, cache_hdf_file=cache_hdf_file)
+    
     def get_shared_namespace_list(self, data_dict):
         '''
         Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared
@@ -600,7 +617,7 @@ class ProxyDiscipline(object):
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
 
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
-                self._set_children_cache_inputs = True
+                self._reset_cache = True
 
             # Debug mode
             debug_mode = self.get_sosdisc_inputs('debug_mode')
@@ -630,24 +647,12 @@ class ProxyDiscipline(object):
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
-#     def set_cache(self, disc, cache_type, cache_hdf_file):
-#         '''
-#         Instantiate and set cache for disc if cache_type is not 'None'
-#         '''
-#         if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
-#             raise Exception(
-#                 'if the cache type is set to HDF5Cache, the cache_file path must be set')
-#         else:
-#             disc.cache = None
-#             if cache_type != 'None':
-#                 disc.set_cache_policy(
-#                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def set_children_cache_inputs(self):
         '''
         Set cache_type and cache_file_path input values to children, if cache inputs have changed
         '''
-        if self._set_children_cache_inputs:
+        if self._reset_cache:
             cache_type = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
             cache_file_path = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_FILE_PATH)
             for disc in self.proxy_disciplines:
@@ -658,7 +663,6 @@ class ProxyDiscipline(object):
                         self.dm.set_data(disc.get_var_full_name(
                             ProxyDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path,
                             check_value=False)
-            self._set_children_cache_inputs = False
 
     def setup_sos_disciplines(self):
         '''
