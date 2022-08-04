@@ -482,36 +482,55 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
             self.get_disciplines_to_configure() == [])
 
-    def prepare_execution(self):
+    def prepare_execution(self, input_data):
         '''
         preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
+        # prepare_execution of proxy_disciplines
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
-            disc.prepare_execution()
+            disc.prepare_execution(input_data)
             sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
             
+        # store cache and n_calls before MDAChain reset, if prepare_execution has already been called
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
             mda_chain_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
+            mda_chain_n_calls = self.mdo_discipline_wrapp.mdo_discipline.n_calls
+        else:
+            mda_chain_cache = None
+            mda_chain_n_calls = None
         
-        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self)
+        # create_mda_chain from MDODisciplineWrapp
+        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self, input_data)
         
+        # set cache cache of gemseo object
+        self.set_gemseo_disciplines_caches(mda_chain_cache, mda_chain_n_calls)
+        
+        # self._set_residual_history()
+        
+    def set_gemseo_disciplines_caches(self, mda_chain_cache, mda_chain_n_calls):
+        '''
+        Set cache of MDAChain, MDOChain and sub MDAs
+        '''
+        # set MDAChain cache
         if self._reset_cache:
+            # set new cache when cache_type have changed (self._reset_cache == True)
             # TODO: pass cache to MDAChain init to avoid reset cache
             self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(
                 'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
             self._reset_cache = False
         else:
+            # reset stored cache and n_calls of MDAChain
             self.mdo_discipline_wrapp.mdo_discipline.cache = mda_chain_cache
+            self.mdo_discipline_wrapp.mdo_discipline.n_calls = mda_chain_n_calls
             
         # set cache of MDOChain with cache_type and cache_file_path inputs of ProxyCoupling
         self.set_cache(self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, self.get_sosdisc_inputs(
             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+        
         # set epsilon0 and cache of sub_mda_list
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
-        
-        # self._set_residual_history()
 
     def pre_run_mda(self, input_data):
         '''

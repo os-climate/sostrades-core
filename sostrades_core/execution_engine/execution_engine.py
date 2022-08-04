@@ -163,11 +163,11 @@ class ExecutionEngine:
         # create DM treenode to be able to populate it from GUI
         self.dm.treeview = None
         
-    def prepare_execution(self):
+    def prepare_execution(self, input_data=None):
         '''
         loop on proxy disciplines and execute prepare execution
         '''
-        self.root_process.prepare_execution()
+        self.root_process.prepare_execution(input_data)
 
     def fill_data_in_with_connector(self):
         """
@@ -572,13 +572,13 @@ class ExecutionEngine:
         self.__factory.init_execution()
         
         # -- prepare execution
-        self.prepare_execution()
+        input_data = self.dm.get_data_dict_values()
+        self.prepare_execution(input_data=input_data)
 
         # -- execution with input data from DM
         ex_proc = self.root_process
-        input_data = self.get_input_data_for_gemseo(ex_proc)
-        # input_data = self.dm.get_data_dict_values()
-        ex_proc.execute(input_data=input_data)
+        input_data_root_process = self.get_input_data_for_gemseo(ex_proc)
+        ex_proc.execute(input_data=input_data_root_process)
         
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',

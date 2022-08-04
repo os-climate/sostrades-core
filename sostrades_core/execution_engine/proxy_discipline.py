@@ -275,14 +275,19 @@ class ProxyDiscipline(object):
     def status(self, status):
         self._update_status_dm(status)
 
-    def prepare_execution(self):
-
-        if self.mdo_discipline_wrapp.mdo_discipline is not None and self._reset_cache:
+    def prepare_execution(self, input_data):
+        '''
+        GEMSEO objects instanciation
+        '''
+        if self.mdo_discipline_wrapp.mdo_discipline is None:
+            # init gemseo discipline if it has not been created yet
+            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, input_data=input_data, reduced_dm=self.ee.dm.reduced_dm, cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE), cache_file_path=self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+        elif self._reset_cache:
+            # set new cache when cache_type have changed (self._reset_cache == True)
             self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE), self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-            self._reset_cache = False
+        self._reset_cache = False
             
-        self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, reduced_dm=self.ee.dm.reduced_dm, cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE), cache_file_path=self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-
+        
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
         Instantiate and set cache for disc if cache_type is not 'None'

@@ -68,23 +68,22 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None, input_data=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """ MDODiscipline instanciation
 
         """
-        if self.mdo_discipline is None:
-            if self.wrapping_mode == 'SoSTrades':
-                self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
-                                                       grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                                       cache_type=cache_type,
-                                                       cache_file_path=cache_file_path,
-                                                       sos_wrapp=self.wrapper,
-                                                       reduced_dm=reduced_dm)
-                self._init_grammar_with_keys(proxy)
+        if self.wrapping_mode == 'SoSTrades':
+            self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
+                                                   grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                                   cache_type=cache_type,
+                                                   cache_file_path=cache_file_path,
+                                                   sos_wrapp=self.wrapper,
+                                                   reduced_dm=reduced_dm)
+            self._init_grammar_with_keys(proxy)
+            self._update_default_values(input_data)
 
-    
-            elif self.wrapping_mode == 'GEMSEO':
-                pass
+        elif self.wrapping_mode == 'GEMSEO':
+            pass
 
         proxy.status = self.mdo_discipline.status
 
@@ -101,7 +100,14 @@ class MDODisciplineWrapp(object):
         grammar.clear()
         grammar.initialize_from_base_dict({output: None for output in output_names})
         
-    def create_mda_chain(self, sub_mdo_disciplines, proxy=None):  # type: (...) -> None
+    def _update_default_values(self, input_data):
+        ''' store input_data in default_inputs of mdo_discipline
+        '''
+        if input_data is not None:
+            for key in self.mdo_discipline.input_grammar.get_data_names():
+                self.mdo_discipline._default_inputs[key] = input_data.get(key)
+        
+    def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
         """ MDAChain instanciation
 
         """
@@ -112,6 +118,7 @@ class MDODisciplineWrapp(object):
                                       ** proxy._get_numerical_inputs())
         
         self._init_grammar_with_keys(proxy)
+        self._update_default_values(input_data)
         proxy.status = self.mdo_discipline.status
 
     def create_wrapp(self):  # type: (...) -> None
