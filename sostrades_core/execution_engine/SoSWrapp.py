@@ -74,32 +74,43 @@ class SoSWrapp(object):
 
     def __init__(self, sos_name):
         '''
-        Constructor
+        Constructor.
+
+        Arguments:
+            sos_name (string): name of the discipline
         '''
         self.sos_name = sos_name
         self.local_data_short_name = {}
         self.run_output = {}
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
-        """Define the set_up_sos_discipline of its proxy
+        """
+        Define the set_up_sos_discipline of its proxy
 
         To be overloaded by subclasses.
+
+        Arguments:
+            proxy (ProxyDiscipline): the proxy discipline for dynamic i/o configuration
         """
         pass
 
     def run(self):  # type: (...) -> None
-        """Define the run of the discipline
+        """
+        Define the run of the discipline
 
         To be overloaded by subclasses.
         """
         raise NotImplementedError()
     
     def get_sosdisc_inputs(self, keys=None, in_dict=False):
-        """Accessor for the inputs values as a list or dict
+        """
+        Accessor for the inputs values as a list or dict.
 
-        :param keys: the input short names list
-        :param in_dict: if output format is dict
-        :returns: the inputs values list or dict
+        Arguments:
+            keys (List): the input short names list
+            in_dict (bool): if output format is dict
+        Returns:
+            The inputs values list or dict
         """
 
         if keys is None:
@@ -120,12 +131,15 @@ class SoSWrapp(object):
                 return list(inputs.values())[0]
 
     def _get_sosdisc_io(self, keys, io_type):
-        """ Generic method to retrieve sos inputs and outputs
+        """
+        Generic method to retrieve sos inputs and outputs
 
-        :param keys: the data names list
-        :param io_type: 'in' or 'out'
-        :param full_name: if keys in returned dict are full names
-        :returns: dict of keys values
+        Arguments:
+            keys (List[String]): the data names list
+            io_type (string): 'in' or 'out' ???
+            full_name: if keys in returned dict are full names
+        Returns:
+            dict of keys values
         """
 
         # convert local key names to namespaced ones
@@ -140,10 +154,22 @@ class SoSWrapp(object):
         return values_dict
     
     def _run(self):
-        
+        """
+        Run user-defined model.
+
+        Returns:
+            run_output (Dict): outputs of the model run
+        """
         self.run()
         return self.run_output
     
     def store_sos_outputs_values(self, dict_values):
-        
+        """"
+        Store run outputs in the run_output attribute.
+
+        NB: permits coherence with EEV3 wrapper run definition.
+
+        Arguments:
+            dict_values (Dict): variables' values to store
+        """
         self.run_output = dict_values
