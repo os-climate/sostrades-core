@@ -40,12 +40,17 @@ class MDODisciplineWrapp(object):
         name (string): name of the discipline/node
         wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         mdo_discipline (MDODiscipline): aggregated GEMSEO object used for execution eventually with model run
-        wrapper (SoSWrapp/???): wrapper used to supply the model run to the MDODiscipline when owned by a ProxyDiscipline
+        wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
     def __init__(self, name, wrapper=None, wrapping_mode='SoSTrades'):
         '''
-        Constructor
+        Constructor.
+
+        Arguments:
+            name (string): name of the discipline/node
+            wrapper (Class): class constructor of the user-defined wrapper (or None)
+            wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         '''
         self.name = name
         self.wrapping_mode = wrapping_mode
@@ -54,7 +59,11 @@ class MDODisciplineWrapp(object):
             self.wrapper = wrapper(name)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
-        """Return the names of the input variables.
+        """
+        Return the names of the input variables.
+
+        Arguments:
+            filtered_inputs (bool): flag whether to filter the input names.
 
         Returns:
             The names of the input variables.
@@ -64,21 +73,34 @@ class MDODisciplineWrapp(object):
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """Return the names of the output variables.
 
+        Arguments:
+            filtered_outputs (bool): flag whether to filter the output names.
+
         Returns:
             The names of the input variables.
         """
         return self.mdo_discipline.get_output_data_names(filtered_outputs)
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
-        """Define setup
+        """
+        Dynamic setup delegated to the wrapper using the proxy for i/o configuration.
 
+        Arguments:
+            proxy (ProxyDiscipline): corresponding proxy discipline
         """
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
     def create_gemseo_discipline(self, proxy=None, input_data=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
-        """ MDODiscipline instanciation
+        """
+        SoSMDODiscipline instanciation.
 
+        Arguments:
+            proxy (ProxyDiscipline): proxy discipline grammar initialisation
+            input_data (dict): input values to update default values of the MDODiscipline with
+            reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
+            cache_type (string): type of cache to be passed to the MDODiscipline
+            cache_file_path (string): file path of the pickle file to dump/load the cache [???]
         """
         if self.wrapping_mode == 'SoSTrades':
             self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
@@ -96,7 +118,11 @@ class MDODisciplineWrapp(object):
         proxy.status = self.mdo_discipline.status
 
     def _init_grammar_with_keys(self, proxy):
-        ''' initialize GEMS grammar with names and type None
+        '''
+        initialize GEMS grammar with names and type None
+
+        Arguments:
+            proxy (ProxyDiscipline): the proxy discipline
         '''
         input_names = proxy.get_input_data_names()
         grammar = self.mdo_discipline.input_grammar
@@ -109,15 +135,21 @@ class MDODisciplineWrapp(object):
         grammar.initialize_from_base_dict({output: None for output in output_names})
         
     def _update_default_values(self, input_data):
-        ''' store input_data in default_inputs of mdo_discipline
+        '''
+        Store input_data in default values of mdo_discipline
         '''
         if input_data is not None:
             for key in self.mdo_discipline.input_grammar.get_data_names():
                 self.mdo_discipline._default_inputs[key] = input_data.get(key)
         
     def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
-        """ MDAChain instanciation
+        """
+        MDAChain instanciation when owned by a ProxyCoupling.
 
+        Arguments:
+            sub_mdo_disciplines (List[MDODiscipline]): list of sub-MDODisciplines of the MDAChain
+            proxy (ProxyDiscipline): proxy discipline for grammar initialisation
+            input_data (dict): input data to update default values of the MDAChain with
         """
         self.mdo_discipline = MDAChain(
                                       disciplines=sub_mdo_disciplines,
@@ -129,19 +161,20 @@ class MDODisciplineWrapp(object):
         self._update_default_values(input_data)
         proxy.status = self.mdo_discipline.status
 
-    def create_wrapp(self):  # type: (...) -> None
-        """ SoSWrapp instanciation
-
-        """
-        if self.wrapping_mode == 'SoSTrades':
-            # self.wrapper = SoSMDODiscipline(self.sos_name,self.wrapper)
-            pass
-        else:
-            # self.mdo_discipline = create_discipline(self.sos_name)
-            pass
+    # def create_wrapp(self):  # type: (...) -> None
+    #     """
+    #     SoSWrapp instanciation
+    #     """
+    #     if self.wrapping_mode == 'SoSTrades':
+    #         # self.wrapper = SoSMDODiscipline(self.sos_name,self.wrapper)
+    #         pass
+    #     else:
+    #         # self.mdo_discipline = create_discipline(self.sos_name)
+    #         pass
 
     def execute(self, input_data):
-        """ Discipline Execution
+        """
+        Discipline execution delegated to the GEMSEO objects.
 	    """
 
         return self.mdo_discipline.execute(input_data)
