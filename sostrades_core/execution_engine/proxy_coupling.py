@@ -651,7 +651,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
     def get_first_discs_to_execute(self, disciplines, input_data):
         """
-
+        Gets the list of disciplines having all their inputs ready for execution. [???]
         """
         ready_disciplines = []
         disc_vs_keys_none = {}
@@ -674,7 +674,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             return ready_disciplines
 
     def execute(self, input_data):
-        
+        """
+        Pre run of the mda, execution of the MDA, update of the datamanager and status handling.
+        """
         self.pre_run_mda(input_data)
         
         self.mdo_discipline_wrapp.execute(input_data)
@@ -868,7 +870,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         return self._maturity
  
     def remove_discipline(self, disc):
-        ''' remove one discipline from coupling
+        '''
+        Remove one discipline from coupling
         '''
         disc.clean_dm_from_disc()
         self.proxy_disciplines.remove(disc)
@@ -876,7 +879,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc, self.disc_id)
  
     def remove_discipline_list(self, disc_list):
-        ''' remove one discipline from coupling
+        '''
+        Remove several disciplines from coupling #FIXME: duplicate code
         '''
         for disc in disc_list:
             disc.clean_dm_from_disc()
