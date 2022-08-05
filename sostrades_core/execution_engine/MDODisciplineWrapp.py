@@ -30,9 +30,17 @@ NS_SEP = '.'
 
 
 class MDODisciplineWrapp(object):
-    '''**MDODisciplineWrapp** is the interface to create MDODiscipline from sostrades or gemseo objects
+    '''**MDODisciplineWrapp** is the interface to create MDODiscipline from SoSTrades wrappers, GEMSEO objects, etc.
 
+    An instance of MDODisciplineWrapp is in one-to-one aggregation with an instance inheriting from MDODiscipline and
+    might or might not have a SoSWrapp to supply the user-defined model run. All GEMSEO objects are instantiated during
+    the prepare_execution phase.
 
+    Attributes:
+        name (string): name of the discipline/node
+        wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
+        mdo_discipline (MDODiscipline): aggregated GEMSEO object used for execution eventually with model run
+        wrapper (SoSWrapp/???): wrapper used to supply the model run to the MDODiscipline when owned by a ProxyDiscipline
     '''
 
     def __init__(self, name, wrapper=None, wrapping_mode='SoSTrades'):

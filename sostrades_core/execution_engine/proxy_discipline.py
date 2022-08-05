@@ -55,11 +55,61 @@ NS_SEP = '.'
 
 
 class ProxyDiscipline(object):
-    '''**SoSDiscipline** is the :class:`~gemseo.core.discipline.MDODiscipline`
-    interfacing Model disciplines and Gemseo generic discipline
+    '''
+    **ProxyDiscipline** is the class in charge of representing a generic discipline on the SoSTrades side.
 
-    Use the following MDODiscipline methods:
-        get_data_list_from_dict: to get input or output values
+    It contains the information and methonds necessary for i/o configuration (static or dynamic).
+
+    Leaves of the process tree are direct instances of ProxyDiscipline. Other nodes are instances that inherit from
+    ProxyDiscipline (e.g. ProxyCoupling).
+
+    An instance of ProxyDiscipline is in one-to-one aggregation with an instance of MDODisciplineWrapp, which allows the
+    use of different wrapping modes to provide the model run.
+
+    During the prepare_execution phase, the ProxyDiscipline coordinates the instantiation of the GEMSEO objects that
+    manage the model run.
+
+    Attributes:
+        mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references the wrapper and GEMSEO discipline
+
+        proxy_disciplines (List[ProxyDiscipline]): children in the process tree
+        status (property, string): status in the current process, provided by the GEMSEO objects after configuration
+
+        jac_boundaries (???): ???
+        disc_id (string): anonymized discipline identifier in the data manager
+        sos_name (string): name of the discipline/node
+        ee (ExecutionEngine): execution engine of the process
+        dm (DataManager): data manager of the process
+
+        nan_check (bool): debug mode flag
+        check_if_input_change_after_run (bool): debug mode flag
+        check_linearize_data_changes (bool): debug mode flag
+        check_min_max_gradients (bool): debug mode flag
+        check_min_max_couplings (bool): debug mode flag
+
+        is_sos_coupling (bool): type of node flag
+        is_optim_scenario (bool): type of node flag
+        is_parallel (bool): type of node flag
+        is_specific_driver (bool): type of node flag
+
+        built_proxy_disciplines (List[ProxyDiscipline]): children proxies already instantiated ???
+        in_checkjac (bool): ???
+        _is_configured (bool): flag for configuration relaying on children configuration and structuring vars changes
+        _reset_cache (bool): flag to reset cache
+
+        inst_desc_in (Dict[Dict]): desc_in of instance used to add dynamic inputs
+        inst_desc_out (Dict[Dict]): desc_out of instance used to add dynamic outputs
+        _data_in (Dict[Dict]): instance variable for input data handling
+        _data_out (Dict[Dict]): instance variable for output data handling
+        _structuring_variables (Dict[Any]): stored values of variables whose changes force revert of the configured status
+        _maturity (string): maturity of the user-defined model
+
+        model: ???
+        father_builder: ???
+        father_executor: ???
+
+        cls (Class): constructor of the model wrapper with user-defined run (or None)
+        TODO: RENAME THIS ATTRIBUTE? REORDER THE LIST ? SOLVE THE [???]
     '''
     # -- Disciplinary attributes
     DESC_IN = None
@@ -213,8 +263,8 @@ class ProxyDiscipline(object):
     def _reload(self, sos_name, ee):
         ''' reload object, eventually with coupling_namespace
         '''
-        self.mdo_discipline = None
-        self.sub_mdo_disciplines = []
+        # self.mdo_discipline = None
+        # self.sub_mdo_disciplines = []
         self.proxy_disciplines = []
         self._status = None
 

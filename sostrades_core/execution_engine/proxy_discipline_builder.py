@@ -26,7 +26,16 @@ class ProxyDisciplineBuilderException(Exception):
 
 
 class ProxyDisciplineBuilder(ProxyDiscipline):
-    '''**ProxyDisciplineBuilder is a sosdiscipline which has the faculty to build sub disciplines
+    '''**ProxyDisciplineBuilder** is a ProxyDiscipline which has the faculty to instantiate sub proxies. It is an
+    abstract clas that delegates the build method to the children classes.
+
+    All nodes of the SoSTrades process tree that have sub proxies are represented by proxy instances that inherit
+    from ProxyDisciplineBuilder (e.g. ProxyCoupling).
+
+    Attributes:
+        proxy_discipline(ProxyDiscipline):
+        built_sos_disciplines(List[ProxyDiscipline]):
+    TODO: COMPLETE ATTRIBUTES
     '''
 
     # -- Disciplinary attributes

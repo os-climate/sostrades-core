@@ -36,8 +36,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SoSMDODiscipline(MDODiscipline):
-    """**SoSMDODiscipline** is the class which overloads MDODiscipline
-    The _run method is overloaded and new methods ( formerly from SoSDiscipline) are added
+    """**SoSMDODiscipline** is the class that overloads MDODiscipline when using SoSTrades wrapping mode.
+
+    It is instantiated by the MDODisciplineWrapp during the prepare_execution phase, and it is in one-to-one aggregation
+    with the user-defined wrapper of the discipline (inheriting from SoSWrapp). The _run() method is overloaded by the
+    user-defined wrapper.
+
+    Attributes:
+        sos_wrapp (SoSWrapp): the user-defined wrapper of the discipline.
+        reduced_dm: reduced version of the data manager without values
+
 
    """
 

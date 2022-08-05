@@ -56,7 +56,27 @@ def get_available_linear_solvers():
 
 
 class ProxyCoupling(ProxyDisciplineBuilder):
-    ''' Class that computes a chain of ProxyDisciplines
+    '''
+    **ProxyCoupling** is a ProxyDiscipline that represents a coupling and has children sub proxies on the process tree.
+
+    An instance of ProxyCoupling is in one to one aggregation with an instance of MDODisciplineWrapp that has no wrapper,
+    but has a GEMSEO MDAChain instantiated at the prepare_execution phase.
+
+    Attributes:
+        cls_builder (List[Class]): list of the sub proxy constructors for the recursive build of the process tree [???]
+
+        with_data_io (bool): flag for _data_in and _data_out setting from GEMSEO grammar [???]
+        residuals_dict (Dict[???]): ???
+
+        linear_solver_MDA: ???
+        linear_solver_options_MDA: ???
+        linear_solver_tolerance_MDA: ???
+
+        linear_solver_MDO: ???
+        linear_solver_options_MDO: ???
+        linear_solver_tolerance_MDO: ???
+
+        mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references a GEMSEO MDAChain
     '''
 
     # ontology information

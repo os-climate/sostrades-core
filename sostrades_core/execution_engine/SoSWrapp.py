@@ -27,10 +27,19 @@ NS_SEP = '.'
 
 
 class SoSWrapp(object):
-    '''**SoSWrapp** is the class from which inherits our model Wrapper
-    It contains necessary information for the discipline configuration
-    Its methods setup_sos_disciplines, run,... are overloaded by the discipline Wrapper
+    '''**SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
 
+    It contains necessary information for the discipline configuration. It is owned by both the MDODisciplineWrapp and
+    the SoSMDODiscipline.
+
+    Its methods setup_sos_disciplines, run,... are overloaded by the user-provided Wrapper.
+
+    N.B.: setup_sos_disciplines needs take as argument the proxy and call proxy.add_inputs() and/or proxy.add_outputs().
+
+    Attributes:
+        sos_name (string): name of the discipline
+        local_data_short_name (Dict[Dict]): short name version of the local data for model input and output
+        run_output (Dict[Any]): output of the model last run
     '''
     # -- Disciplinary attributes
     DESC_IN = {}
