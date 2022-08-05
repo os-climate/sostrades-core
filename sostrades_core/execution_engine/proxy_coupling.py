@@ -198,7 +198,13 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     has_chart = False
 
     def __init__(self, sos_name, ee, cls_builder=None, with_data_io=False):
-        ''' Constructor
+        '''
+        Constructor
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
+            cls_builder (List[Class]): list of the sub proxy constructors for the recursive build of the process tree [???]
         '''
         if cls_builder is None:
             cls_builder = []
@@ -222,7 +228,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
 
     def _reload(self, sos_name, ee):
-        ''' reload object
+        '''
+        Reload ProxyCoupling with ProxyDiscipline shared attributes and set is_sos_coupling.
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
         ProxyDiscipline._reload(self, sos_name, ee)
@@ -258,7 +269,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #                 self._set_sub_mda_dm_cache_map(sub_mda)   
 
     def build(self):
-
+        """
+        Build... #TODO: complete
+        """
         old_current_discipline = self.ee.factory.current_discipline
         self.ee.factory.current_discipline = self
         for builder in self.cls_builder:
@@ -278,6 +291,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # -- Public methods
 
     def setup_sos_disciplines(self):
+        """
+        Overload the ProxyDiscipline dynamic setup with an empty method.
+        """
         pass
 #     def setup_sos_disciplines(self):
 #         '''
@@ -334,7 +350,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def configure_io(self):
         '''
-        Configure the SoSCoupling by : 
+        Configure the ProxyCoupling by :
         - setting the discipline in the discipline_dict 
         - configure all children disciplines
         '''
@@ -358,7 +374,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self._build_data_io()
             
     def _build_data_io(self):
-        ''' build data_in and data_out according to MDOCouplingStructure
+        '''
+        Build data_in and data_out according to MDOCouplingStructure
         '''
 
         self._data_in = {key: value for key, value in self._data_in.items(
@@ -383,6 +400,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     self._data_out[var_name] = self.dm.get_data(var_f_name)
     
     def _build_coupling_structure(self):
+        """
+        Build MDOCouplingStructure
+        """
         
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
@@ -392,7 +412,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
     def get_disciplines_to_configure(self):
         '''
-        Get sub disciplines list to configure
+        Get sub disciplines list to configure according to is_configured flag.
         '''
         disc_to_configure = []
         for disc in self.proxy_disciplines:
@@ -401,6 +421,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         return disc_to_configure
 
     def configure(self):
+        """
+        Configure i/o, update status, update status in dm.
+        """
         # configure SoSTrades objects
         self.configure_io()
         # configure GEMSEO objects (execution sequence)
@@ -466,7 +489,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def export_couplings(self, in_csv=False, f_name=None):
         ''' 
-            Export couplings as a csv with
+        Export couplings as a csv with
         disc1 | disc2 | var_name
         '''
         # fill in data
@@ -504,7 +527,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def prepare_execution(self, input_data):
         '''
-        preparation of the GEMSEO process, including GEMSEO objects instanciation
+        Preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
         # prepare_execution of proxy_disciplines
         sub_mdo_disciplines = []
@@ -627,7 +650,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(input_data)
         
     def get_first_discs_to_execute(self, disciplines, input_data):
+        """
 
+        """
         ready_disciplines = []
         disc_vs_keys_none = {}
         for disc in disciplines:
@@ -1098,28 +1123,28 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         self.logger.info(
 #             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
  
-    def _set_residual_history(self):
-        ''' set residuals history into data_out
-        and update DM
-        '''
-        # dataframe init
-        residuals_history = DataFrame(
-            {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
- 
-        # set residual type and value
-        rdict = {}
-        rdict[self.RESIDUALS_HISTORY] = {}
-        rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
-        rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
-        rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
-        rdict[self.RESIDUALS_HISTORY][self.UNIT] = '-'
-        # init other fields
-        full_out = self._prepare_data_dict(self.IO_TYPE_OUT, rdict)
-        self.dm.update_with_discipline_dict(
-            disc_id=self.disc_id, disc_dict=full_out)
- 
-        # update in loader_out
-        self._data_out.update(full_out)
+    # def _set_residual_history(self):
+    #     '''
+    #     Set residuals history into data_out and update DM.
+    #     '''
+    #     # dataframe init
+    #     residuals_history = DataFrame(
+    #         {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
+    #
+    #     # set residual type and value
+    #     rdict = {}
+    #     rdict[self.RESIDUALS_HISTORY] = {}
+    #     rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
+    #     rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
+    #     rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
+    #     rdict[self.RESIDUALS_HISTORY][self.UNIT] = '-'
+    #     # init other fields
+    #     full_out = self._prepare_data_dict(self.IO_TYPE_OUT, rdict)
+    #     self.dm.update_with_discipline_dict(
+    #         disc_id=self.disc_id, disc_dict=full_out)
+    #
+    #     # update in loader_out
+    #     self._data_out.update(full_out)
         
 #     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
 #         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain

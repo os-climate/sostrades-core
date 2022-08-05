@@ -137,6 +137,9 @@ class MDODisciplineWrapp(object):
     def _update_default_values(self, input_data):
         '''
         Store input_data in default values of mdo_discipline
+
+        Arguments:
+            input_data (dict): values to store
         '''
         if input_data is not None:
             for key in self.mdo_discipline.input_grammar.get_data_names():

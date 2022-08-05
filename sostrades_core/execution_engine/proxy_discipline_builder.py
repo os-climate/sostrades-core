@@ -61,13 +61,15 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     
     @abstractmethod
     def build(self):
-        ''' to be overloaded by subclasses
+        '''
+        To be overloaded by subclasses
         Builds sub processes (i.e., in case of scatters, ...)'''
         
         self.proxy_discipline.build()
 
     def clean(self):
-        """This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;
+        """
+        This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;
         We first begin by cleaning all the disciplines children, afterward we clean the discipline itself
         """
         for discipline in self.built_sos_disciplines:
@@ -82,7 +84,8 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         self.ee.factory.remove_sos_discipline(self)
         
     def clean_children(self, list_children):
-        """This method cleans the given list of children from the current discipline
+        """
+        This method cleans the given list of children from the current discipline
         """
         for discipline in list_children:
             self.built_sos_disciplines.remove(discipline)
