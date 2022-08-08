@@ -20,7 +20,10 @@ Created on 27 july 2022
 '''
 import numpy as np
 import pandas as pd
+from logging import Logger
+from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
+GRANULARITY_COLUMN = 'PATH'
 
 def get_parent_path(PATH):
     path_list = PATH.split('.')
@@ -34,7 +37,7 @@ def get_parent_path(PATH):
 def merge_df_dict_with_path(df_dict):
     df_with_path = pd.DataFrame({})
     for key, val in df_dict.items():
-        val['PATH'] = key
+        val[GRANULARITY_COLUMN] = key
         df_with_path = df_with_path.append(val, ignore_index=True)
 
     return df_with_path
@@ -43,13 +46,13 @@ def merge_df_dict_with_path(df_dict):
 def compute_parent_path_sum(df, path, based_on, columns_not_to_sum):
     all_columns = df.columns.to_list()
     col_to_sum = [val for val in all_columns if val not in columns_not_to_sum]
-    filtered_df = df.loc[df['PATH'].str.startswith(path)]
+    filtered_df = df.loc[df[GRANULARITY_COLUMN].str.startswith(path)]
     df_with_col_sum = filtered_df.groupby(based_on)[col_to_sum].sum().reset_index()
     df_with_col_not_sum = filtered_df[columns_not_to_sum]
     df_merged = pd.merge(
         df_with_col_sum, df_with_col_not_sum, on=based_on, how='left'
     ).drop_duplicates()
-    df_merged['PATH'] = path
+    df_merged[GRANULARITY_COLUMN] = path
     df_merged = df_merged[all_columns]
     df = df.append(df_merged)
     return df
@@ -57,7 +60,7 @@ def compute_parent_path_sum(df, path, based_on, columns_not_to_sum):
 
 # check compute sum of val for each possible parent paths except for columns_not_to_sum (with sum based on)
 def check_compute_parent_path_sum(df, columns_not_to_sum, based_on):
-    path_list = df['PATH'].unique().tolist()
+    path_list = df[GRANULARITY_COLUMN].unique().tolist()
     for path in path_list:
         path = get_parent_path(path)
         if path in path_list or len(path) == 0:
@@ -73,11 +76,11 @@ def check_compute_parent_path_sum(df, columns_not_to_sum, based_on):
 # if parent_path_admissible, return iput_parameter filtered on parent path if existing
 def get_inputs_for_path(input_parameter, PATH, parent_path_admissible=False):
     filtered_input_parameter = None
-    if 'PATH' in input_parameter:
+    if GRANULARITY_COLUMN in input_parameter:
         while filtered_input_parameter is None and len(PATH) > 0:
-            if PATH in input_parameter['PATH'].unique():
+            if PATH in input_parameter[GRANULARITY_COLUMN].unique():
                 filtered_input_parameter = input_parameter.loc[
-                    input_parameter['PATH'] == PATH
+                    input_parameter[GRANULARITY_COLUMN] == PATH
                 ]
             else:
                 if parent_path_admissible:
@@ -89,6 +92,22 @@ def get_inputs_for_path(input_parameter, PATH, parent_path_admissible=False):
     else:
         raise Exception("Can not find parent path")
     if filtered_input_parameter is None:
-        raise Exception("the column 'PATH' is not found as an input_parameter column")
+        raise Exception(f"The column {GRANULARITY_COLUMN} is not found as an input_parameter column")
     else:
         return filtered_input_parameter.reset_index(drop=True)
+
+
+
+def check_granularity_in_inputs(inputs_dict:dict, parameters_dict:dict, granularity_list:list,logger:Logger,sos_discipline:SoSDiscipline):
+    for param_name, conf_dict in parameters_dict.items():
+        parameter = inputs_dict.get(param_name,None)
+        if parameter is not None:
+            if GRANULARITY_COLUMN in parameter:
+                for granularity in granularity_list:
+                    if not granularity in parameter[GRANULARITY_COLUMN].values:
+                        logger.warning(f'Granularity {granularity} is missing for parameter {param_name} for discipline {sos_discipline.get_disc_full_name()}')
+            else:
+                logger.warning(f'Parameter {param_name} does not have the column {GRANULARITY_COLUMN}, impossible to check if all values are present for discipline {sos_discipline.get_disc_full_name()}')
+
+        else:
+            logger.warning(f'Parameter {param_name} is not in input dictionary for discipline {sos_discipline.get_disc_full_name()}')
