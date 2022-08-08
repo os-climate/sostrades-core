@@ -64,6 +64,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     Attributes:
         cls_builder (List[SoSBuilder]): list of the sub proxy builders
+
         mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references a GEMSEO MDAChain
     """
 
@@ -217,7 +218,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _reload(self, sos_name, ee):
         '''
-        Reload ProxyCoupling with ProxyDiscipline shared attributes and set is_sos_coupling.
+        Reload ProxyCoupling with corresponding ProxyDiscipline attributes and set is_sos_coupling.
 
         Arguments:
             sos_name (string): name of the discipline/node

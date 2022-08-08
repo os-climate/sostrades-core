@@ -246,6 +246,11 @@ class ProxyDiscipline(object):
     def __init__(self, sos_name, ee, cls_builder=None):
         '''
         Constructor
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
+            cls_builder (Class): class constructor of the user-defined wrapper (or None) [???]
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
@@ -258,10 +263,21 @@ class ProxyDiscipline(object):
         self.cls = cls_builder
 
     def set_father_executor(self, father_executor):
+        """
+        set father executor
+
+        Arguments:
+            father_executor (ProxyDiscipline): proxy that orchestrates the execution of this proxy discipline (e.g. coupling)
+        """
         self.father_executor = father_executor
 
     def _reload(self, sos_name, ee):
-        ''' reload object, eventually with coupling_namespace
+        '''
+        Reload ProxyDiscipline attributes and set is_sos_coupling.
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
         '''
         # self.mdo_discipline = None
         # self.sub_mdo_disciplines = []
@@ -316,18 +332,26 @@ class ProxyDiscipline(object):
 
     @property
     def status(self):  # type: (...) -> str
-        """The status of the discipline."""
+        """
+        The status of the discipline, to be retrieved from the GEMSEO object after configuration.
+        """
         if self._status != self.STATUS_CONFIGURE:
             return self.mdo_discipline_wrapp.mdo_discipline.status
         return self.STATUS_CONFIGURE
 
     @status.setter
     def status(self, status):
+        """
+        setter of status
+        """
         self._update_status_dm(status)
 
     def prepare_execution(self, input_data):
         '''
         GEMSEO objects instanciation
+
+        Arguments:
+            input_data (dict): input data with full names and values, to update default values of the GEMSEO object with
         '''
         if self.mdo_discipline_wrapp.mdo_discipline is None:
             # init gemseo discipline if it has not been created yet
@@ -341,6 +365,11 @@ class ProxyDiscipline(object):
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
         Instantiate and set cache for disc if cache_type is not 'None'
+
+        Arguments:
+            disc (MDODiscipline): GEMSEO object to set cache
+            cache_type (string): type of cache
+            cache_hdf_file (string): cache hdf file path
         '''
         if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
             raise Exception(
@@ -354,6 +383,9 @@ class ProxyDiscipline(object):
     def get_shared_namespace_list(self, data_dict):
         '''
         Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared
+
+        Arguments:
+            data_dict (Dict[dict]): data_in or data_out
         '''
         shared_namespace_list = []
 
@@ -365,25 +397,37 @@ class ProxyDiscipline(object):
     def __append_item_namespace(self, item, ns_list):
         '''
         Append the namespace if the visibility is shared
+
+        Arguments:
+            item (dict): element to append to the ns_list
+            ns_list (List[Namespace]): list of namespaces [???]
         '''
         if self.VISIBILITY in item and item[self.VISIBILITY] == self.SHARED_VISIBILITY:
             ns_list.append(item[self.NAMESPACE])
 
     def get_input_data_names(self):
-        ''' returns the list of input data names,
-        based on i/o and namespaces declarations in the user wrapper
+        '''
+        Returns:
+            (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
         '''
         return list(self.get_data_io_with_full_name(self.IO_TYPE_IN).keys())
 
     def get_output_data_names(self):
-        ''' returns the list of input data names,
-        based on i/o and namespaces declarations in the user wrapper
+        '''
+        Returns:
+            (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
         '''
         return list(self.get_data_io_with_full_name(self.IO_TYPE_OUT).keys())
 
     def get_data_io_dict(self, io_type):
         '''
         Get the data_in or the data_out depending on the io_type
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
+        Returns:
+            (Dict(dict)) data_in or data_out
         '''
         if io_type == self.IO_TYPE_IN:
             return self.get_data_in()
@@ -395,7 +439,13 @@ class ProxyDiscipline(object):
 
     def get_data_io_dict_keys(self, io_type):
         '''
-        Get the data_in or the data_out  keys depending on the io_type
+        Get the data_in or the data_out keys depending on the io_type
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
+        Returns:
+            (dict_keys) data_in or data_out keys
         '''
         if io_type == self.IO_TYPE_IN:
             return self.get_data_in().keys()
@@ -407,7 +457,13 @@ class ProxyDiscipline(object):
 
     def get_data_io_from_key(self, io_type, var_name):
         '''
-        Return the namespace and the data_in/data_out of the variable name
+        Return the namespace and the data_in/data_out of a single variable
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            var_name (string): short name of the variable
+        Returns:
+            (dict) data_in or data_out of the variable
         '''
         data_dict_list = [d for k, d in self.get_data_io_dict(
             io_type).items() if k == var_name]
@@ -418,6 +474,9 @@ class ProxyDiscipline(object):
         return data_dict_list[0]
 
     def get_variable_name_from_ns_key(self, io_type, ns_key):
+        """
+        UNUSED [???]
+        """
         return self.get_data_io_dict(io_type)[ns_key][self.VAR_NAME]
 
     def reload_io(self):
@@ -432,6 +491,12 @@ class ProxyDiscipline(object):
         self.update_data_io_with_inst_desc_io()
 
     def update_dm_with_data_dict(self, data_dict):
+        """
+        Update data manager for this discipline with data_dict.
+
+        Arguments:
+            data_dict (Dict[dict]): item to update data manager with
+        """
         self.dm.update_with_discipline_dict(
             self.disc_id, data_dict)
 
@@ -539,14 +604,26 @@ class ProxyDiscipline(object):
         self.local_data = local_data_value
 
     def get_built_disciplines_ids(self):
+        """
+        Returns: (List[string]) the names of the sub proxies.
+        """
         return [disc.name for disc in self.proxy_disciplines]
 
     def get_proxy_disciplines(self):
-
+        """
+        Returns: (List[ProxyDiscipline]) the list of children sub proxies
+        """
         return self.proxy_disciplines
 
     def get_sub_proxy_disciplines(self, disc_list=None):
-        ''' recursively returns all subdisciplines
+        '''
+        Recursively returns all descendancy of sub proxies
+
+        Arguments:
+            disc_list (List[ProxyDiscipline]): current list of descendancy of sub proxies
+
+        Returns:
+            (List[ProxyDiscipline]): complete descendancy of sub proxies
         '''
         if disc_list is None:
             disc_list = []
@@ -558,20 +635,28 @@ class ProxyDiscipline(object):
     @property
     def ordered_disc_list(self):
         '''
-         Property to obtain the ordered list of disciplines by default for
-         a sos_discipline it is the order of proxy_disciplines
+         Property to obtain the ordered list of disciplines by default, for a ProxyDiscipline it is the order of
+         sub proxy disciplines
         '''
         return self.proxy_disciplines
 
     def add_discipline(self, disc):
-        ''' add a discipline
+        '''
+        Add a discipline to the children sub proxies and set self as father executor.
+
+        Arguments:
+            disc (ProxyDiscipline): discipline to add
         '''
         self.proxy_disciplines.append(disc)
         disc.set_father_executor(self)
         # self._check_if_duplicated_disc_names()
 
     def add_discipline_list(self, disc_list):
-        ''' add a list of disciplines
+        '''
+        Add a list of disciplines to the children sub proxies and set self as father executor.
+
+        Arguments:
+            disc_list (List[ProxyDiscipline]): disciplines to add
         '''
         for disc in disc_list:
             self.add_discipline(disc)
@@ -579,6 +664,9 @@ class ProxyDiscipline(object):
     def set_shared_namespaces_dependencies(self, data_dict):
         '''
         Set dependencies of shared inputs and outputs in ns_manager
+
+        Arguments:
+            data_dict (Dict[dict]): data_in or data_out
         '''
         shared_namespace_list = self.get_shared_namespace_list(
             data_dict)
@@ -588,6 +676,11 @@ class ProxyDiscipline(object):
     def add_variables(self, data_dict, io_type, clean_variables=True):
         '''
         Add dynamic inputs/outputs in ins_desc_in/ints_desc_out and remove old dynamic inputs/outputs
+
+        Arguments:
+            data_dict (Dict[dict]): new dynamic inputs/outputs
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            clean_variables (bool): flag to remove old variables from data_in/data_out, inst_desc_in/inst_desc_out, datamanger
         '''
         if io_type == self.IO_TYPE_IN:
             variables_to_remove = [
@@ -604,6 +697,10 @@ class ProxyDiscipline(object):
     def add_inputs(self, data_dict, clean_inputs=True):
         '''
         Add dynamic inputs
+
+        Arguments:
+            data_dict (Dict[dict]): new dynamic inputs
+            clean_variables (bool): flag to remove old variables from data_in, inst_desc_in and datamanger
         '''
         self.add_variables(data_dict, self.IO_TYPE_IN,
                            clean_variables=clean_inputs)
@@ -611,6 +708,10 @@ class ProxyDiscipline(object):
     def add_outputs(self, data_dict, clean_outputs=True):
         '''
         Add dynamic outputs
+
+        Arguments:
+            data_dict (Dict[dict]): new dynamic outputs
+            clean_variables (bool): flag to remove old variables from data_out, inst_desc_out and datamanger
         '''
         self.add_variables(data_dict, self.IO_TYPE_OUT,
                            clean_variables=clean_outputs)
@@ -618,6 +719,10 @@ class ProxyDiscipline(object):
     def clean_variables(self, var_name_list, io_type):
         '''
         Remove variables from data_in/data_out, inst_desc_in/inst_desc_out and datamanger
+
+        Arguments:
+            var_name_list (List[string]): variable names to clean
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
         '''
         for var_name in var_name_list:
             if io_type == self.IO_TYPE_IN:
@@ -636,6 +741,11 @@ class ProxyDiscipline(object):
     def update_default_value(self, var_name, io_type, new_default_value):
         '''
         Update DEFAULT and VALUE of var_name in data_io
+
+        Arguments:
+            var_name (string): variable names to clean
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            new_default_value: value to update VALUE and DEFAULT with
         '''
         if var_name in self.get_data_io_dict(io_type):
             self.get_data_io_dict(
@@ -646,7 +756,7 @@ class ProxyDiscipline(object):
     # -- Configure handling
     def configure(self):
         '''
-        Configure the SoSDiscipline
+        Configure the ProxyDiscipline
         '''
         self.set_numerical_parameters()
 
@@ -664,7 +774,7 @@ class ProxyDiscipline(object):
 
     def set_numerical_parameters(self):
         '''
-        Set numerical parameters of the sos_discipline defined in the NUM_DESC_IN
+        Set numerical parameters of the ProxyDiscipline defined in the NUM_DESC_IN
         '''
         if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
@@ -732,7 +842,8 @@ class ProxyDiscipline(object):
         '''
         Method to set default value to a variable with short_name in a discipline when the default value varies with other input values
         i.e. a default array length depends on a number of years
-        PARAM IN : default_values_dict : dict with key is variable short name and value is the default value
+        Arguments:
+            default_values_dict (Dict[string]) : dict whose key is variable short name and value is the default value
         '''
 
         for short_key, default_value in default_values_dict.items():
@@ -746,6 +857,9 @@ class ProxyDiscipline(object):
 
     # -- cache handling
     def clear_cache(self):
+        """
+        Clear cache of self and children.
+        """
         # -- Need to clear cache for gradients analysis
         if self.cache is not None:
             self.cache.clear()
@@ -754,6 +868,9 @@ class ProxyDiscipline(object):
 
     # -- data handling section
     def reset_data(self):
+        """
+        Reset instance data attributes of the discipline to empty dicts.
+        """
         self.inst_desc_in = {}
         self.inst_desc_out = {}
         self._data_in = {}
@@ -761,12 +878,27 @@ class ProxyDiscipline(object):
         self._structuring_variables = {}
 
     def get_data_in(self):
+        """"
+        _data_in getter
+        """
         return self._data_in
 
     def get_data_out(self):
+        """
+        _data_out getter
+        """
         return self._data_out
 
     def get_data_io_with_full_name(self, io_type):
+        """
+        returns a version of the data_in/data_out of discipline with variable full names
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
+        Return:
+            data_io_full_name (Dict[dict]): data_in/data_out with variable full names
+        """
         data_io_short_name = self.get_data_io_dict(io_type)
         data_io_full_name = {self.get_var_full_name(
             var_name, data_io_short_name): value_dict for var_name, value_dict in data_io_short_name.items()}
@@ -774,7 +906,18 @@ class ProxyDiscipline(object):
         return data_io_full_name
 
     def get_data_with_full_name(self, io_type, full_name, data_name=None):
+        """
+        Returns the field data_name in the data_in/data_out of a single variable based on its full_name. If data_name
+        is None, returns the whole data dict of the variable.
 
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            full_name (string): full name of the variable
+            data_name (string): key of the data dict to get or None
+
+        Return:
+            (dict or Any) the data dict or its field [data_name]
+        """
         data_io_full_name = self.get_data_io_with_full_name(io_type)
 
         if data_name is None:
@@ -783,7 +926,13 @@ class ProxyDiscipline(object):
             return data_io_full_name[full_name][data_name]
 
     def _update_with_values(self, to_update, update_with, update_dm=False):
-        ''' update <to_update> 'value' field with <update_with>
+        '''
+        Update <to_update> 'value' field with <update_with> and eventually update datamanager.
+
+        Arguments:
+            to_update (Dict[dict]): data structure to update e.g. data_out
+            update_with (dict): key-value dictionary of new values
+            update_dm (bool): whether to update datamanager
         '''
         to_update_local_data = {}
         to_update_dm = {}
@@ -816,7 +965,12 @@ class ProxyDiscipline(object):
         self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
-        '''Get namespace reference by consulting the namespace_manager
+        '''
+        Get namespace reference by consulting the namespace_manager
+
+        Arguments:
+            visibility (string): visibility to get local or shared namespace
+            namespace (Namespace): namespace in case of shared visibility
         '''
         ns_manager = self.ee.ns_manager
 
@@ -828,8 +982,10 @@ class ProxyDiscipline(object):
 
     def apply_visibility_ns(self, io_type):
         '''
-        Consult the namespace_manager to apply the namespace
-        depending on the variable visibility
+        Consult the namespace_manager to apply the namespace depending on the variable visibility
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
         '''
         dict_in_keys = self.get_data_io_dict_keys(io_type)
         ns_manager = self.ee.ns_manager
@@ -843,6 +999,14 @@ class ProxyDiscipline(object):
         return dict_out_keys
 
     def _prepare_data_dict(self, io_type, data_dict=None):
+        """
+        Prepare the data_in/data_out with fields by default (and set _structuring_variables) for variables in data_dict.
+        If data_dict is None, will prepare the current data_in/data_out.
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            data_dict (Dict[dict]): the data dict to prepare
+        """
         if data_dict is None:
             data_dict = self.get_data_io_dict(io_type)
         for key in data_dict.keys():
@@ -924,12 +1088,15 @@ class ProxyDiscipline(object):
         return data_dict
 
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name=False):
-        """Accessor for the inputs values as a list or dict
+        """
+        Accessor for the discipline input values as a list or dict
 
-        :param keys: the input short names list
-        :param in_dict: if output format is dict
-        :param full_name: if keys in output are full names
-        :returns: the inputs values list or dict
+        Arguments:
+            keys (List[string]): the input short names list
+            in_dict (bool): True if return format is dict, False for list
+            full_name (bool): True if returned keys are full names, False for short names
+        Returns:
+            (list or dict): the inputs keys and values
         """
 
         if keys is None:
@@ -950,12 +1117,15 @@ class ProxyDiscipline(object):
                 return list(inputs.values())[0]
 
     def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name=False):
-        """Accessor for the outputs values as a list or dict
+        """
+        Accessor for the outputs values as a list or dict
 
-        :param keys: the output short names list
-        :param in_dict: if output format is dict
-        :param full_name: if keys in output are full names
-        :returns: the outputs values list or dict
+        Arguments:
+            keys (List[string]): the output short names list
+            in_dict (bool): True if return format is dict, False for list
+            full_name (bool): True if returned keys are full names, False for short names
+        Returns:
+            (list or dict): the outputs keys and values
         """
         if keys is None:
             # if no keys, get all discipline keys and force
@@ -975,12 +1145,16 @@ class ProxyDiscipline(object):
                 return list(outputs.values())[0]
 
     def _get_sosdisc_io(self, keys, io_type, full_name=False):
-        """ Generic method to retrieve sos inputs and outputs
+        """
+        Generic method to retrieve discipline inputs and outputs
 
-        :param keys: the data names list
-        :param io_type: 'in' or 'out'
-        :param full_name: if keys in returned dict are full names
-        :returns: dict of keys values
+        Arguments:
+            keys (List[string]): the output short names list
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            full_name (bool): True if returned keys are full names, False for short names
+
+        Return:
+            values_dict (dict): dict of variable keys and values
         """
 
         # convert local key names to namespaced ones
@@ -1271,8 +1445,8 @@ class ProxyDiscipline(object):
     #         return input_data
 
     def _update_type_metadata(self):
-        ''' update metadata of values not supported by GEMS
-            (for cases where the data has been converted by the coupling)
+        '''
+        Update metadata of values not supported by GEMS (for cases where the data has been converted by the coupling)
         '''
         for var_name in self._data_in.keys():
             var_f_name = self.get_var_full_name(var_name, self._data_in)
@@ -1293,16 +1467,24 @@ class ProxyDiscipline(object):
     def update_dm_with_local_data(self, local_data):
         '''
         Update the DM with local data from GEMSEO
+
+        Arguments:
+            local_data (dict): to update datamanager with
         '''
         self.dm.set_values_from_dict(local_data)
 
     def run(self):
-        ''' To be overloaded by sublcasses
+        '''
+        To be overloaded by sublcasses [???]
         '''
         raise NotImplementedError()
 
     def _update_study_ns_in_varname(self, names):
-        ''' updates the study name in the variable input names
+        '''
+        Updates the study name in the variable input names.
+
+        Arguments:
+            names (List[string]): names to update
         '''
         study = self.ee.study_name
         new_names = []
@@ -1316,7 +1498,12 @@ class ProxyDiscipline(object):
         return new_names
 
     def store_sos_outputs_values(self, dict_values, update_dm=False):
-        ''' store outputs from 'dict_values' into self._data_out
+        '''
+        Store outputs from 'dict_values' into self._data_out.
+
+        Arguments:
+            dict_values (dict): key-value dictionary of new values
+            update_dm (bool): whether to update datamanager too
         '''
         # fill data using data connector if needed
         self._update_with_values(self._data_out, dict_values, update_dm)
@@ -1343,9 +1530,9 @@ class ProxyDiscipline(object):
         """
         update meta data of _data_out and DESC_OUT
 
-        :param: new_data_dict, contains the data to be updated
-        :type: dict
-        :format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
+        Arguments:
+            new_data_dict (Dict[dict]): contains the metadata to be updated
+                                        in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
         """
         for key in new_data_dict.keys():
             for meta_data in new_data_dict[key].keys():
@@ -1354,10 +1541,15 @@ class ProxyDiscipline(object):
                     self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
 
     def clean_dm_from_disc(self):
-
+        """
+        Clean ProxyDiscipline in datamanager's disciplines_dict and data_in/data_out keys
+        """
         self.dm.clean_from_disc(self.disc_id)
 
     def _set_dm_disc_info(self):
+        """
+        Set info of the ProxyDiscipline in datamanager
+        """
         disc_ns_name = self.get_disc_full_name()
         disc_dict_info = {}
         disc_dict_info['reference'] = self
@@ -1402,7 +1594,8 @@ class ProxyDiscipline(object):
             self.dm.gemseo_disciplines_id_map[hashed_uid] = [disc]
 
     def get_var_full_name(self, var_name, disc_dict):
-        ''' Get namespaced variable from namespace and var_name in disc_dict
+        '''
+        Get namespaced variable from namespace and var_name in disc_dict
         '''
         ns_reference = disc_dict[var_name][self.NS_REFERENCE]
         complete_var_name = disc_dict[var_name][self.VAR_NAME]
@@ -1436,17 +1629,19 @@ class ProxyDiscipline(object):
     # -- Ids and namespace handling
     def get_disc_full_name(self):
         '''
-        Returns the discipline name with full namespace
+        Return: (string) the discipline name with full namespace
         '''
         return self.ee.ns_manager.get_local_namespace_value(self)
 
     def get_disc_id_from_namespace(self):
-
+        """
+        Return: (string) the discipline id
+        """
         return self.ee.dm.get_discipline_ids_list(self.get_disc_full_name())
 
     def get_anonimated_data_io(self, disc):
         '''
-        return list of anonimated input and output keys for serialisation purpose
+        Return: (List[string]) of anonimated input and output keys for serialisation purpose
         '''
         anonimated_data_io = ''
 
@@ -1459,7 +1654,16 @@ class ProxyDiscipline(object):
         return anonimated_data_io
 
     def _convert_list_of_keys_to_namespace_name(self, keys, io_type):
+        """
+        Convert a list of keys to namespace name (see _convert_to_namespace_name).
 
+        Arguments:
+            keys (List[string]): list of keys to convert
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
+        Return:
+            variables (???): the list of varaible namespace name
+        """
         # Refactor  variables keys with namespace
         if isinstance(keys, list):
             variables = [self._convert_to_namespace_name(
@@ -1470,9 +1674,15 @@ class ProxyDiscipline(object):
         return variables
 
     def _convert_to_namespace_name(self, key, io_type):
-        ''' Convert to namepsace with coupling_namespace management
+        ''' Convert to namespace with coupling_namespace management
             Using a key (variables name) and reference_data (yaml in or out),
             build the corresponding namespaced key using the visibility property
+
+            Arguments:
+                key (string): variable name
+
+            Return:
+                (???) the variable namespace name
         '''
 
         # Refactor  variables keys with namespace
@@ -1483,7 +1693,12 @@ class ProxyDiscipline(object):
 
     # -- status handling section
     def _update_status_dm(self, status):
+        """
+        Update discipline _status and status in data manager.
 
+        Arguments:
+            status (string): the status to update
+        """
         # Avoid unnecessary call to status property (which can trigger event in
         # case of change)
         if self._status != status:
@@ -1494,28 +1709,45 @@ class ProxyDiscipline(object):
         self.dm.disciplines_dict[self.disc_id]['status'] = status
 
     def update_status_pending(self):
+        """
+        Recursively update STATUS_PENDING for self and descendancy of sub proxies and in data manager.
+        """
         # keep reference branch status to 'REFERENCE'
         self._update_status_recursive(self.STATUS_PENDING)
 
     def update_status_running(self):
+        """
+        Recursively update STATUS_RUNNING for self and descendancy of sub proxies and in data manager.
+        """
         # keep reference branch status to 'REFERENCE'
         self._update_status_recursive(self.STATUS_RUNNING)
 
     def _update_status_recursive(self, status):
+        """
+        Update discipline _status and status in data manager recursively for self and descendancy of sub proxies and in
+        data manager.
+
+        Arguments:
+            status (string): the status to update
+        """
         # keep reference branch status to 'REFERENCE'
         self._update_status_dm(status)
         for disc in self.proxy_disciplines:
             disc._update_status_recursive(status)
 
     def set_status_from_mdo_discipline(self):
-        """update status
+        """
+        Update status of self and children sub proxies by retreiving the status of the GEMSEO objects.
+        #FIXME: shouldn't this method be recursive to be effective when called from root process??
         """
         for proxy_discipline in self.proxy_disciplines:
             proxy_discipline.status = proxy_discipline.mdo_discipline_wrapp.mdo_discipline.status
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
 
     def _check_status_before_run(self):
-
+        """
+        Check discipline status is ok before run and throw ValueError otherwise.
+        """
         status_ok = True
         if self.status == self.STATUS_RUNNING:
             status_ok = False
@@ -1540,6 +1772,13 @@ class ProxyDiscipline(object):
 
     # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
+        """
+        Maturity setter
+
+        Arguments:
+            maturity (string or dict or None): maturity to set
+            maturity_dict (bool): whether the maturity is a dict
+        """
         if maturity is None or maturity in self.possible_maturities or maturity_dict:
             self._maturity = maturity
         else:
@@ -1548,7 +1787,7 @@ class ProxyDiscipline(object):
 
     def get_maturity(self):
         '''
-        Get the maturity of the ProxyDiscipline, a discipline does not have any subdisciplines, only a coupling has
+        Get the maturity of the ProxyDiscipline (a discipline does not have any subdisciplines, only a coupling has)
         '''
         if hasattr(self, '_maturity'):
             return self._maturity
@@ -1562,36 +1801,40 @@ class ProxyDiscipline(object):
     def _build_dynamic_DESC_IN(self):
         pass
 
-
     def get_chart_filter_list(self):
-        """ Return a list of ChartFilter instance base on the inherited
-        class post processing filtering capabilities
+        """
+        Return a list of ChartFilter instance base on the inherited class post processing filtering capabilities
 
-        :return: ChartFilter[]
+        Returns: List[ChartFilter]
         """
         return []
 
     def get_post_processing_list(self, filters=None):
-        """ Return a list of post processing instance using the ChartFilter list given
-        as parameter
+        """
+        Return a list of post processing instance using the ChartFilter list given as parameter
 
-        :params: chart_fiters : filter to apply during post processing making
-        :type: ChartFilter[]
+        Arguments:
+            filters: filters to apply during post processing making
 
-        :return post processing instance list
+        Returns:
+            post processing instance list
         """
 
         return []
 
     def set_configure_status(self, is_configured):
-        """Set boolean is_configured which indicates if the discipline has been configured
-            to avoid several configuration in a multi-level process and save time """
+        """
+        Set boolean is_configured which indicates if the discipline has been configured
+        to avoid several configuration in a multi-level process and save time
+        """
 
         self._is_configured = is_configured
 
     def get_configure_status(self):
-        """Get boolean is_configured which indicates if the discipline has been configured
-            to avoid several configuration in a multi-level process and save time """
+        """
+        Get boolean is_configured which indicates if the discipline has been configured
+        to avoid several configuration in a multi-level process and save time
+        """
 
         if hasattr(self, '_is_configured'):
             return self._is_configured
@@ -1646,8 +1889,8 @@ class ProxyDiscipline(object):
                 raise ValueError(f'NaN values found in {self.sos_name}')
 
     def __check_nan_in_data_rec(self, data, parent_key):
-        """ Using entry data, check if nan value exist in data's as recursive
-        method
+        """
+        Using entry data, check if nan value exist in data's as recursive method
 
         :params: data
         :type: composite data
@@ -1777,13 +2020,16 @@ class ProxyDiscipline(object):
     #         return o_k
 
     def get_infos_gradient(self, output_var_list, input_var_list):
-        """ Method to linearize an sos_discipline object and get gradient of output_var_list wrt input_var_list
+        """
+        Method to linearize a discipline and get gradient of output_var_list wrt input_var_list
 
-        :params: input_var_list
-        :type: list
+        Arguments:
+            output_var_list (List[string]): list of output variables
+            input_var_list (List[string]):  list of input variables
 
-        :params: output_var_list
-        :type: list
+        Return:
+            dict_infos_values (Dict[Dict[dict]]): nested dictionary of format {'out_var_name': { 'in_var_name':
+                                                 {'min': --, 'max': --, 'mean': --} ... } ...}
         """
 
         dict_infos_values = {}
@@ -1806,8 +2052,8 @@ class ProxyDiscipline(object):
         return dict_infos_values
 
     def display_min_max_couplings(self):
-        ''' Method to display the minimum and maximum values among a discipline's couplings
-
+        '''
+        Method to display the minimum and maximum values among a discipline's couplings
         '''
         min_coupling_dict, max_coupling_dict = {}, {}
         for key, value in self.mdo_discipline.local_data.items():
@@ -1825,7 +2071,8 @@ class ProxyDiscipline(object):
                 self.sos_name, max_coupling, max_coupling_dict[max_coupling]))
 
     def clean(self):
-        """This method cleans a sos_discipline;
+        """
+        This method cleans a sos_discipline;
         In the case of a "simple" discipline, it removes the discipline from
         its father builder and from the factory sos_discipline. This is achieved
         by the method remove_sos_discipline of the factory
@@ -1837,7 +2084,9 @@ class ProxyDiscipline(object):
         self.ee.factory.remove_sos_discipline(self)
 
     def post_execute(self, local_data):
-
+        """
+        #TODO: complete or remove
+        """
         self.fill_output_value_connector()
 
         if self.check_if_input_change_after_run and not self.is_sos_coupling:
@@ -1858,6 +2107,18 @@ class ProxyDiscipline(object):
             self.display_min_max_couplings()
             
     def check_discipline_data_integrity(self, left_dict, right_dict, test_subject, is_output_error=False):
+        """
+        Compare data is equal in left_dict and right_dict and print a warning otherwise.
+
+        Arguments:
+            left_dict (dict): data dict to compare
+            right_dict (dict): data dict to compare
+            test_subject (string): to identify the executor of the check
+            is_output_error (bool): whether to return a dict of errors
+
+        Return:
+            output_error (dict): dict with mismatches spotted in comparison
+        """
         from gemseo.utils.compare_data_manager_tooling import compare_dict
 
         dict_error = {}
