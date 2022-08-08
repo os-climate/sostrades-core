@@ -122,7 +122,7 @@ class MDODisciplineWrapp(object):
         initialize GEMS grammar with names and type None
 
         Arguments:
-            proxy (ProxyDiscipline): the proxy discipline
+            proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
         '''
         input_names = proxy.get_input_data_names()
         grammar = self.mdo_discipline.input_grammar

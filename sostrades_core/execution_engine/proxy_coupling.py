@@ -63,10 +63,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     but has a GEMSEO MDAChain instantiated at the prepare_execution phase.
 
     Attributes:
-        cls_builder (List[Class]): list of the sub proxy constructors for the recursive build of the process tree [???]
+        cls_builder (List[Class]): list of the sub proxy builders for the recursive build of the process tree [???]
 
         with_data_io (bool): flag for _data_in and _data_out setting from GEMSEO grammar [???]
-        residuals_dict (Dict[???]): ???
+        residuals_dict (Dict[???]): UNUSED ???
 
         linear_solver_MDA: ???
         linear_solver_options_MDA: ???
@@ -229,7 +229,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _reload(self, sos_name, ee):
         '''
-        Reload ProxyCoupling with ProxyDiscipline shared attributes and set is_sos_coupling.
+        Reload ProxyCoupling with corresponding ProxyDiscipline attributes and set is_sos_coupling.
 
         Arguments:
             sos_name (string): name of the discipline/node
