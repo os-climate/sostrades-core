@@ -736,32 +736,32 @@ class ProxyDiscipline(object):
                 self._reset_cache = True
 
             # Debug mode
-            debug_mode = self.get_sosdisc_inputs('debug_mode')
-            if debug_mode == "nan":
-                self.nan_check = True
-            elif debug_mode == "input_change":
-                self.check_if_input_change_after_run = True
-            elif debug_mode == "linearize_data_change":
-                self.check_linearize_data_changes = True
-            elif debug_mode == "min_max_grad":
-                self.check_min_max_gradients = True
-            elif debug_mode == "min_max_couplings":
-                self.check_min_max_couplings = True
-            elif debug_mode == "all":
-                self.nan_check = True
-                self.check_if_input_change_after_run = True
-                self.check_linearize_data_changes = True
-                self.check_min_max_gradients = True
-                self.check_min_max_couplings = True
-            if debug_mode != "":
-                if debug_mode == "all":
+            self.debug_mode = self.get_sosdisc_inputs('debug_mode')
+            # if debug_mode == "nan":
+            #     self.nan_check = True
+            # elif debug_mode == "input_change":
+            #     self.check_if_input_change_after_run = True
+            # elif debug_mode == "linearize_data_change":
+            #     self.check_linearize_data_changes = True
+            # elif debug_mode == "min_max_grad":
+            #     self.check_min_max_gradients = True
+            # elif debug_mode == "min_max_couplings":
+            #     self.check_min_max_couplings = True
+            # elif debug_mode == "all":
+            #     self.nan_check = True
+            #     self.check_if_input_change_after_run = True
+            #     self.check_linearize_data_changes = True
+            #     self.check_min_max_gradients = True
+            #     self.check_min_max_couplings = True
+            if self.debug_mode != "":
+                if self.debug_mode == "all":
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
                             self.logger.info(
                                 f'Discipline {self.sos_name} set to debug mode {mode}')
                 else:
                     self.logger.info(
-                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                        f'Discipline {self.sos_name} set to debug mode {self.debug_mode}')
 
     def set_children_cache_inputs(self):
         '''
@@ -1825,66 +1825,6 @@ class ProxyDiscipline(object):
     # ----------------------------------------------------
     # ----------------------------------------------------
 
-    def __check_nan_in_data(self, data):
-        """ Using entry data, check if nan value exist in data's
-
-        :params: data
-        :type: composite data
-
-        """
-
-        if self.nan_check:
-            has_nan = self.__check_nan_in_data_rec(data, "")
-            if has_nan:
-                raise ValueError(f'NaN values found in {self.sos_name}')
-
-    def __check_nan_in_data_rec(self, data, parent_key):
-        """
-        Using entry data, check if nan value exist in data's as recursive method
-
-        :params: data
-        :type: composite data
-
-        :params: parent_key, on composite type (dict), reference parent key
-        :type: str
-
-        """
-        has_nan = False
-        import pandas as pd
-        for data_key, data_value in data.items():
-
-            nan_found = False
-            if isinstance(data_value, DataFrame):
-                if data_value.isnull().any():
-                    nan_found = True
-            elif isinstance(data_value, ndarray):
-                # None value in list throw an exception when used with isnan
-                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
-                    nan_found = True
-                elif pd.isnull(list(data_value)).any():
-                    nan_found = True
-            elif isinstance(data_value, list):
-                # None value in list throw an exception when used with isnan
-                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
-                    nan_found = True
-                elif pd.isnull(data_value).any():
-                    nan_found = True
-            elif isinstance(data_value, dict):
-                self.__check_nan_in_data_rec(
-                    data_value, f'{parent_key}/{data_key}')
-            elif isinstance(data_value, floating):
-                if pd.isnull(data_value).any():
-                    nan_found = True
-
-            if nan_found:
-                full_key = data_key
-                if len(parent_key) > 0:
-                    full_key = f'{parent_key}/{data_key}'
-                self.logger.debug(f'NaN values found in {full_key}')
-                self.logger.debug(data_value)
-                has_nan = True
-        return has_nan
-
     #     def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
     #                        step=1e-7, threshold=1e-8, linearization_mode='auto',
     #                        inputs=None, outputs=None, parallel=False,
@@ -2032,32 +1972,3 @@ class ProxyDiscipline(object):
         self.ee.ns_manager.remove_dependencies_after_disc_deletion(
             self, self.disc_id)
         self.ee.factory.remove_sos_discipline(self)
-
-    def check_discipline_data_integrity(self, left_dict, right_dict, test_subject, is_output_error=False):
-        """
-        Compare data is equal in left_dict and right_dict and print a warning otherwise.
-
-        Arguments:
-            left_dict (dict): data dict to compare
-            right_dict (dict): data dict to compare
-            test_subject (string): to identify the executor of the check
-            is_output_error (bool): whether to return a dict of errors
-
-        Return:
-            output_error (dict): dict with mismatches spotted in comparison
-        """
-        from gemseo.utils.compare_data_manager_tooling import compare_dict
-
-        dict_error = {}
-        compare_dict(left_dict, right_dict, '', dict_error)
-        output_error = ''
-        if dict_error != {}:
-            for error in dict_error:
-                output_error = '\n'
-                output_error += f'Error while test {test_subject} on sos discipline {self.name} :\n'
-                output_error += f'Mismatch in {error}: {dict_error.get(error)}'
-                output_error += '\n---------------------------------------------------------'
-                print(output_error)
-
-        if is_output_error:
-            return output_error
