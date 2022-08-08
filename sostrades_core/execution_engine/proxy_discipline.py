@@ -40,7 +40,7 @@ from sostrades_core.execution_engine.data_connector.data_connector_factory impor
 
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
     convert_new_type_into_array
-    
+
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
 from gemseo.core.chain import MDOChain
@@ -55,8 +55,8 @@ NS_SEP = '.'
 
 
 class ProxyDiscipline(object):
-    '''
-    **ProxyDiscipline** is the class in charge of representing a generic discipline on the SoSTrades side.
+    """
+    **ProxyDiscipline** is a class proxy for a  discipline on the SoSTrades side.
 
     It contains the information and methonds necessary for i/o configuration (static or dynamic).
 
@@ -66,34 +66,27 @@ class ProxyDiscipline(object):
     An instance of ProxyDiscipline is in one-to-one aggregation with an instance of MDODisciplineWrapp, which allows the
     use of different wrapping modes to provide the model run.
 
-    During the prepare_execution phase, the ProxyDiscipline coordinates the instantiation of the GEMSEO objects that
+    During the prepare_execution step, the ProxyDiscipline coordinates the instantiation of the GEMSEO objects that
     manage the model run.
 
     Attributes:
         mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references the wrapper and GEMSEO discipline
 
         proxy_disciplines (List[ProxyDiscipline]): children in the process tree
-        status (property, string): status in the current process, provided by the GEMSEO objects after configuration
+        status (property,<<associated with string _status>>): status in the current process,either CONFIGURATION or
+         provided by the GEMSEO objects during run
 
-        jac_boundaries (???): ???
         disc_id (string): anonymized discipline identifier in the data manager
         sos_name (string): name of the discipline/node
         ee (ExecutionEngine): execution engine of the process
         dm (DataManager): data manager of the process
 
-        nan_check (bool): debug mode flag
-        check_if_input_change_after_run (bool): debug mode flag
-        check_linearize_data_changes (bool): debug mode flag
-        check_min_max_gradients (bool): debug mode flag
-        check_min_max_couplings (bool): debug mode flag
 
         is_sos_coupling (bool): type of node flag
         is_optim_scenario (bool): type of node flag
         is_parallel (bool): type of node flag
         is_specific_driver (bool): type of node flag
 
-        built_proxy_disciplines (List[ProxyDiscipline]): children proxies already instantiated ???
-        in_checkjac (bool): ???
         _is_configured (bool): flag for configuration relaying on children configuration and structuring vars changes
         _reset_cache (bool): flag to reset cache
 
@@ -104,13 +97,9 @@ class ProxyDiscipline(object):
         _structuring_variables (Dict[Any]): stored values of variables whose changes force revert of the configured status
         _maturity (string): maturity of the user-defined model
 
-        model: ???
-        father_builder: ???
-        father_executor: ???
 
         cls (Class): constructor of the model wrapper with user-defined run (or None)
-        TODO: RENAME THIS ATTRIBUTE? REORDER THE LIST ? SOLVE THE [???]
-    '''
+    """
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
@@ -189,7 +178,6 @@ class ProxyDiscipline(object):
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
-    #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
     NEW_VAR_TYPE = ['dict', 'dataframe',
                     'string_list', 'string', 'float', 'int', 'list']
 
@@ -272,15 +260,13 @@ class ProxyDiscipline(object):
         self.father_executor = father_executor
 
     def _reload(self, sos_name, ee):
-        '''
+        """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
         Arguments:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
-        '''
-        # self.mdo_discipline = None
-        # self.sub_mdo_disciplines = []
+        """
         self.proxy_disciplines = []
         self._status = None
 
@@ -355,13 +341,17 @@ class ProxyDiscipline(object):
         '''
         if self.mdo_discipline_wrapp.mdo_discipline is None:
             # init gemseo discipline if it has not been created yet
-            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, input_data=input_data, reduced_dm=self.ee.dm.reduced_dm, cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE), cache_file_path=self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, input_data=input_data,
+                                                               reduced_dm=self.ee.dm.reduced_dm,
+                                                               cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
+                                                               cache_file_path=self.get_sosdisc_inputs(
+                                                                   self.CACHE_FILE_PATH))
         elif self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
-            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE), self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
+                           self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
         self._reset_cache = False
-            
-        
+
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
         Instantiate and set cache for disc if cache_type is not 'None'
@@ -379,7 +369,7 @@ class ProxyDiscipline(object):
             if cache_type != 'None':
                 disc.set_cache_policy(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
-    
+
     def get_shared_namespace_list(self, data_dict):
         '''
         Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared
@@ -500,21 +490,10 @@ class ProxyDiscipline(object):
         self.dm.update_with_discipline_dict(
             self.disc_id, data_dict)
 
-    #     def update_gems_grammar_with_data_io(self):
-    #         # Remove unavailable GEMS type variables before initialize
-    #         # input_grammar
-    #         if not self.is_sos_coupling:
-    #             data_in = self.get_data_io_with_full_name(
-    #                 self.IO_TYPE_IN)
-    #             data_out = self.get_data_io_with_full_name(
-    #                 self.IO_TYPE_OUT)
-    #             self.init_gems_grammar(data_in, self.IO_TYPE_IN)
-    #             self.init_gems_grammar(data_out, self.IO_TYPE_OUT)
-
     def create_data_io_from_desc_io(self):
-        '''
+        """
         Create data_in and data_out from DESC_IN and DESC_OUT if empty
-        '''
+        """
         if self._data_in == {}:
             if self.is_sos_coupling:
                 self._data_in = deepcopy(self.DESC_IN) or {}
@@ -537,9 +516,9 @@ class ProxyDiscipline(object):
             self.update_dm_with_data_dict(self._data_out)
 
     def add_numerical_param_to_data_in(self):
-        '''
+        """
         Add numerical parameters to the data_in
-        '''
+        """
         num_data_in = deepcopy(self.NUM_DESC_IN)
         num_data_in = self._prepare_data_dict(
             self.IO_TYPE_IN, data_dict=num_data_in)
@@ -547,28 +526,17 @@ class ProxyDiscipline(object):
         self.update_dm_with_data_dict(num_data_in)
 
     def update_data_io_with_inst_desc_io(self):
-        '''
+        """
         Update data_in and data_out with inst_desc_in and inst_desc_out
-        '''
+        """
         new_inputs = {}
         new_outputs = {}
-        #         modified_inputs = {}
-        #         modified_outputs = {}
-
         for key, value in self.inst_desc_in.items():
             if not key in self._data_in.keys():
                 new_inputs[key] = value
-        #             else:
-        #                 if self._data_in[key][self.NAMESPACE] != value[self.NAMESPACE] and hasattr(self, 'instance_list'):
-        #                     modified_inputs[key] = value
-
         for key, value in self.inst_desc_out.items():
             if not key in self._data_out.keys():
                 new_outputs[key] = value
-        #             else:
-        #                 if self._data_out[key][self.NAMESPACE] != value[self.NAMESPACE] and hasattr(self, 'instance_list'):
-        #                     modified_outputs[key] = value
-        # add new inputs from inst_desc_in to data_in
         if len(new_inputs) > 0:
             self.set_shared_namespaces_dependencies(new_inputs)
             completed_new_inputs = self._prepare_data_dict(
@@ -585,23 +553,6 @@ class ProxyDiscipline(object):
             self.update_dm_with_data_dict(
                 completed_new_outputs)
             self._data_out.update(completed_new_outputs)
-
-    #         if len(modified_inputs) > 0:
-    #             completed_modified_inputs = self._prepare_data_dict(
-    #                 self.IO_TYPE_IN, modified_inputs)
-    #             self._data_in.update(completed_modified_inputs)
-
-    def local_data(self):
-        '''
-         Property to obtain the local data of the mdo_discipline
-        '''
-        return self.mdo_discipline.local_data
-
-    def set_local_data(self, local_data_value):
-        '''
-         Property to set the local data of the proxy discipline
-        '''
-        self.local_data = local_data_value
 
     def get_built_disciplines_ids(self):
         """
@@ -812,7 +763,6 @@ class ProxyDiscipline(object):
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
-
     def set_children_cache_inputs(self):
         '''
         Set cache_type and cache_file_path input values to children, if cache inputs have changed
@@ -830,21 +780,21 @@ class ProxyDiscipline(object):
                             check_value=False)
 
     def setup_sos_disciplines(self):
-        '''
+        """
         Method to be overloaded to add dynamic inputs/outputs using add_inputs/add_outputs methods.
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
         DESC_IN = {'X': {'structuring':True}}
-        '''
+        """
 
         self.mdo_discipline_wrapp.setup_sos_disciplines(self)
 
     def set_dynamic_default_values(self, default_values_dict):
-        '''
+        """
         Method to set default value to a variable with short_name in a discipline when the default value varies with other input values
         i.e. a default array length depends on a number of years
         Arguments:
             default_values_dict (Dict[string]) : dict whose key is variable short name and value is the default value
-        '''
+        """
 
         for short_key, default_value in default_values_dict.items():
             if short_key in self._data_in:
@@ -2083,29 +2033,6 @@ class ProxyDiscipline(object):
             self, self.disc_id)
         self.ee.factory.remove_sos_discipline(self)
 
-    def post_execute(self, local_data):
-        """
-        #TODO: complete or remove
-        """
-        self.fill_output_value_connector()
-
-        if self.check_if_input_change_after_run and not self.is_sos_coupling:
-            disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
-                self.local_data).items() if key in self.input_grammar.data_names}
-            is_output_error = True
-            output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
-                                                                disc_inputs_after_execution,
-                                                                'Discipline inputs integrity through run',
-                                                                is_output_error=is_output_error)
-
-        if self.status == MDODiscipline.STATUS_PENDING and self.mdo_discipline._cache_was_loaded is True:
-            self._update_status_recursive(self.STATUS_DONE)
-
-        self.__check_nan_in_data(local_data)
-
-        if self.check_min_max_couplings:
-            self.display_min_max_couplings()
-            
     def check_discipline_data_integrity(self, left_dict, right_dict, test_subject, is_output_error=False):
         """
         Compare data is equal in left_dict and right_dict and print a warning otherwise.
