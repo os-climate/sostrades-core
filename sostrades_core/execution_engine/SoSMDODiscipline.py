@@ -78,11 +78,10 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
         run_output = self.sos_wrapp._run()
         self.update_local_data(run_output)
-        
+
         # get output from data connector
         self.fill_output_value_connector()
-        
-    
+
     def create_local_data_short_name(self):
         """
         Create a local_data_short_name (every run) and initialise the attribute output_full_name_map (the first run)
@@ -93,19 +92,15 @@ class SoSMDODiscipline(MDODiscipline):
 
         local_data_short_name = {}
         for key in self.get_input_data_names():
-            #FIXME: why there is a generic try-pass in every model run ?
-            try:
-                local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
-            except:
-                pass
+            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
 
         if self.output_full_name_map is None:
             self.output_full_name_map = {}
             for key in self.get_output_data_names():
                 self.output_full_name_map[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = key
-            
+
         return local_data_short_name
-    
+
     def update_local_data(self, run_output):
         """
         Update local_data[full_name] using the run_output[short_name].
@@ -116,7 +111,6 @@ class SoSMDODiscipline(MDODiscipline):
         for key, value in run_output.items():
             self.local_data[self.output_full_name_map[key]] = value
 
-
     def fill_output_value_connector(self):
         """
         Get value of output variables with data connectors and update local_data.
@@ -125,12 +119,11 @@ class SoSMDODiscipline(MDODiscipline):
         for key in self.get_output_data_names():
             # if data connector is needed, use it
             if self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA] is not None:
-                    updated_values[key] = ConnectorFactory.use_data_connector(
-                        self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
-                        LOGGER)
+                updated_values[key] = ConnectorFactory.use_data_connector(
+                    self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
+                    LOGGER)
 
         self.local_data.update(updated_values)
-            
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """

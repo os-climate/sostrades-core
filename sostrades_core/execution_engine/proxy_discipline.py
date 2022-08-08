@@ -1688,10 +1688,10 @@ class ProxyDiscipline(object):
     def set_status_from_mdo_discipline(self):
         """
         Update status of self and children sub proxies by retreiving the status of the GEMSEO objects.
-        #FIXME: shouldn't this method be recursive to be effective when called from root process??
+
         """
         for proxy_discipline in self.proxy_disciplines:
-            proxy_discipline.status = proxy_discipline.mdo_discipline_wrapp.mdo_discipline.status
+            proxy_discipline.set_status_from_mdo_discipline()
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
 
     def _check_status_before_run(self):
