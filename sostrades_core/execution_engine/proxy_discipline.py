@@ -735,33 +735,17 @@ class ProxyDiscipline(object):
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
                 self._reset_cache = True
 
-            # Debug mode
-            self.debug_mode = self.get_sosdisc_inputs('debug_mode')
-            # if debug_mode == "nan":
-            #     self.nan_check = True
-            # elif debug_mode == "input_change":
-            #     self.check_if_input_change_after_run = True
-            # elif debug_mode == "linearize_data_change":
-            #     self.check_linearize_data_changes = True
-            # elif debug_mode == "min_max_grad":
-            #     self.check_min_max_gradients = True
-            # elif debug_mode == "min_max_couplings":
-            #     self.check_min_max_couplings = True
-            # elif debug_mode == "all":
-            #     self.nan_check = True
-            #     self.check_if_input_change_after_run = True
-            #     self.check_linearize_data_changes = True
-            #     self.check_min_max_gradients = True
-            #     self.check_min_max_couplings = True
-            if self.debug_mode != "":
-                if self.debug_mode == "all":
+            # Debug mode logging
+            debug_mode = self.get_sosdisc_inputs('debug_mode')
+            if debug_mode != "":
+                if debug_mode == "all":
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
                             self.logger.info(
                                 f'Discipline {self.sos_name} set to debug mode {mode}')
                 else:
                     self.logger.info(
-                        f'Discipline {self.sos_name} set to debug mode {self.debug_mode}')
+                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
 
     def set_children_cache_inputs(self):
         '''
