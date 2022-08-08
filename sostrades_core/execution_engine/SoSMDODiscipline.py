@@ -39,15 +39,15 @@ class SoSMDODiscipline(MDODiscipline):
     """**SoSMDODiscipline** is the class that overloads MDODiscipline when using SoSTrades wrapping mode. It handles the
     execution of the user-provided wrapper of the discipline (on the GEMSEO side)
 
-    It is instantiated by the MDODisciplineWrapp during the prepare_execution phase, and it is in one-to-one aggregation
-    with the user-defined wrapper (inheriting from SoSWrapp). The _run() method is overloaded by the user-defined wrapper.
+    It is instantiated by the MDODisciplineWrapp during the prepare_execution step, and it is in one-to-one aggregation
+    with the user-defined wrapper (Specialization of SoSWrapp). The _run() method is overloaded by the user-defined wrapper.
 
     NB: overloading of MDODiscipline has been limited in EEV4 namely wrt EEV3's SoSDiscipline implementation
 
     Attributes:
         sos_wrapp (SoSWrapp): the user-defined wrapper of the discipline
         reduced_dm (Dict[Dict]): reduced data manager for i/o handling (NB: there is only one reduced_dm per process)
-        output_full_name_map (Dict[string]): map from short names to full names of model output variables ???
+        output_full_name_map (Dict[string]): map from short names to full names of model output variables
    """
 
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
@@ -168,7 +168,7 @@ class SoSMDODiscipline(MDODiscipline):
         """
         Define the names of the attributes to be serialized.
 
-        Shall be overloaded by disciplines.
+        overload of gemseo's method.
 
         Return:
             List[string] the names of the attributes to be serialized.
