@@ -17,7 +17,6 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-from numpy.testing import assert_array_equal
 from pandas._testing import assert_frame_equal
 import pprint
 import numpy as np
