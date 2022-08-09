@@ -79,7 +79,8 @@ class SoSMDODiscipline(MDODiscipline):
         """
         Call user-defined wrapper run.
         """
-        # SoSWrapp run
+
+        # local data with short names for the wrapper
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
 
         # debug mode: input change
@@ -87,6 +88,7 @@ class SoSMDODiscipline(MDODiscipline):
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
 
+        # SoSWrapp run
         run_output = self.sos_wrapp._run()
         self.update_local_data(run_output)
 
@@ -100,13 +102,19 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
-            is_output_error = True
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
                                                                 disc_inputs_after_execution,
                                                                 'Discipline inputs integrity through run',
-                                                                is_output_error=is_output_error)
+                                                                is_output_error=True)
             if output_error != '':
                 raise ValueError(output_error)
+
+        # TODO: check if this works for a coupling
+        if self.status == MDODiscipline.STATUS_PENDING and self._cache_was_loaded is True:
+            self.status(self.STATUS_DONE)
+
+        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['min_max_couplings','all']:
+            self.display_min_max_couplings()
 
     def create_local_data_short_name(self):
         """
@@ -286,7 +294,26 @@ class SoSMDODiscipline(MDODiscipline):
                 output_error += f'Error while test {test_subject} on sos discipline {self.name} :\n'
                 output_error += f'Mismatch in {error}: {dict_error.get(error)}'
                 output_error += '\n---------------------------------------------------------'
-                print(output_error)
+                LOGGER.warning(output_error)
 
         if is_output_error:
             return output_error
+
+    def display_min_max_couplings(self):
+        '''
+        Method to display the minimum and maximum values among a discipline's couplings
+        '''
+        min_coupling_dict, max_coupling_dict = {}, {}
+        for key, value in self.local_data.items():
+            is_coupling = self.reduced_dm[key]['coupling']
+            if is_coupling:
+                min_coupling_dict[key] = min(abs(value))
+                max_coupling_dict[key] = max(abs(value))
+        min_coupling = min(min_coupling_dict, key=min_coupling_dict.get)
+        max_coupling = max(max_coupling_dict, key=max_coupling_dict.get)
+        LOGGER.info(
+            "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
+                self.name, min_coupling, min_coupling_dict[min_coupling]))
+        LOGGER.info(
+            "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
+                self.name, max_coupling, max_coupling_dict[max_coupling]))

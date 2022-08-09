@@ -1925,25 +1925,6 @@ class ProxyDiscipline(object):
 
         return dict_infos_values
 
-    def display_min_max_couplings(self):
-        '''
-        Method to display the minimum and maximum values among a discipline's couplings
-        '''
-        min_coupling_dict, max_coupling_dict = {}, {}
-        for key, value in self.mdo_discipline.local_data.items():
-            is_coupling = self.dm.get_data(key, 'coupling')
-            if is_coupling:
-                min_coupling_dict[key] = min(abs(value))
-                max_coupling_dict[key] = max(abs(value))
-        min_coupling = min(min_coupling_dict, key=min_coupling_dict.get)
-        max_coupling = max(max_coupling_dict, key=max_coupling_dict.get)
-        self.ee.logger.info(
-            "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
-                self.sos_name, min_coupling, min_coupling_dict[min_coupling]))
-        self.ee.logger.info(
-            "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
-                self.sos_name, max_coupling, max_coupling_dict[max_coupling]))
-
     def clean(self):
         """
         This method cleans a sos_discipline;

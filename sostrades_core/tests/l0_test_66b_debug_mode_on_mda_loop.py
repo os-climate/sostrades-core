@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -31,6 +33,20 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_coupling
 
+from logging import Handler, getLogger, DEBUG
+
+class UnitTestHandler(Handler):
+    """
+    Logging handler for UnitTest
+    """
+
+    def __init__(self):
+        Handler.__init__(self)
+        self.msg_list = []
+
+    def emit(self, record):
+        self.msg_list.append(record.msg)
+
 class TestMDALoop(unittest.TestCase):
     """
     MDA test class
@@ -40,6 +56,10 @@ class TestMDALoop(unittest.TestCase):
         self.dirs_to_del = []
         self.name = 'EE'
         self.root_dir = gettempdir()
+        self.my_handler = UnitTestHandler()
+        LOGGER = getLogger('sostrades_core.execution_engine.SoSMDODiscipline')
+        LOGGER.setLevel(DEBUG)
+        LOGGER.addHandler(self.my_handler)
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
@@ -146,12 +166,11 @@ class TestMDALoop(unittest.TestCase):
             assert "Mismatch in .EE.SellarCoupling.y_1.value: 27.8 and 28.3 don't match" in ve.args[0]
         except:
             raise Exception('Execution failed, and not for the good reason')
-
         if exec_ok:
             raise Exception('Execution worked, and it should not have')
 
 
-    def _test_05_debug_mode_mda_min_max_coupling(self):
+    def test_05_debug_mode_mda_min_max_coupling(self):
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines SellarCoupling
@@ -173,15 +192,6 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'min_max_couplings'
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        exec_ok = False
-        try:
-            exec_eng.execute()
-            exec_ok = True
-        except ValueError as ve:
-            assert '<EE.SellarCoupling.y_2> has the minimum coupling value <[12.27257053+0.j]>'
-
-        except:
-            raise Exception('Execution failed, and not for the good reason')
-
-        if exec_ok:
-            raise Exception('Execution worked, and it should not have')
+        exec_eng.execute()
+        self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_1> has the minimum coupling value <1.0>', self.my_handler.msg_list)
+        self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.515922583453351>', self.my_handler.msg_list)
