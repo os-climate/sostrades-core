@@ -18,9 +18,9 @@ Created on 27 july 2022
 
 @author: NG9430A
 '''
-import numpy as np
-import pandas as pd
 from logging import Logger
+
+import pandas as pd
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 GRANULARITY_COLUMN = 'PATH'
@@ -34,11 +34,21 @@ def get_parent_path(PATH):
         return path_list
 
 
-def merge_df_dict_with_path(df_dict):
+def merge_df_dict_with_path(df_dict:dict)->pd.DataFrame:
+    """Method to merge a dictionary of dataframe into a single dataframe.
+    A new column for the granularity is created and the dictionary key is used as the value for the resulting dataframe
+
+    Args:
+        df_dict (dict): dictionary of dataframe. All dataframe must have identical columns
+
+    Returns:
+        pd.DataFrame: merged dataframe with a new column GRANULARITY_COLUMN with the dict key as value
+    """    
     df_with_path = pd.DataFrame({})
-    for key, val in df_dict.items():
-        val[GRANULARITY_COLUMN] = key
-        df_with_path = df_with_path.append(val, ignore_index=True)
+    for key, df in df_dict.items():
+        df_copy = df.copy(deep=True)
+        df_copy.insert(0,GRANULARITY_COLUMN,key)
+        df_with_path = df_with_path.append(df_copy, ignore_index=True)
 
     return df_with_path
 
@@ -74,7 +84,7 @@ def check_compute_parent_path_sum(df, columns_not_to_sum, based_on):
 
 # return input_parameter filtered on PATH parameter
 # if parent_path_admissible, return iput_parameter filtered on parent path if existing
-def get_inputs_for_path(input_parameter, PATH, parent_path_admissible=False):
+def get_inputs_for_path(input_parameter:pd.DataFrame, PATH:str, parent_path_admissible:bool=False, unique_value:bool = False):
     filtered_input_parameter = None
     if GRANULARITY_COLUMN in input_parameter:
         while filtered_input_parameter is None and len(PATH) > 0:
@@ -90,11 +100,21 @@ def get_inputs_for_path(input_parameter, PATH, parent_path_admissible=False):
                         f'the path {PATH} is not found in PATH input_parameter column'
                     )
     else:
-        raise Exception("Can not find parent path")
-    if filtered_input_parameter is None:
         raise Exception(f"The column {GRANULARITY_COLUMN} is not found as an input_parameter column")
+    if filtered_input_parameter is None:
+        raise Exception("Can not find parent path")
     else:
-        return filtered_input_parameter.reset_index(drop=True)
+        filtered_input_parameter = filtered_input_parameter.drop(columns=['PATH']).reset_index(drop=True)
+        # check if result dataframe is only one column
+        if filtered_input_parameter.shape[1] == 1:
+            # in that case, return only the column values as a list
+            values_list = filtered_input_parameter.iloc[:,0].values.tolist()
+            if unique_value:
+                return values_list[0]
+            else:
+                return values_list
+        else:
+            return filtered_input_parameter
 
 
 
