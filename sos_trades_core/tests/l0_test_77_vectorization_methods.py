@@ -70,6 +70,17 @@ class TestVectorizationMethods(unittest.TestCase):
 
         df_with_path_default = pd.DataFrame(
             {
+                'PATH': [
+                    'AC1',
+                    'AC1',
+                    'AC1',
+                    'AC2',
+                    'AC2',
+                    'AC2',
+                    'AC50',
+                    'AC50',
+                    'AC50',
+                ],
                 'EIS': 2020,
                 'year_service': [1, 2, 3, 1, 2, 3, 1, 2, 3],
                 'composite_fraction': [
@@ -85,17 +96,6 @@ class TestVectorizationMethods(unittest.TestCase):
                 ],
                 'max_npax': 66.0,
                 'load_factor': 0.0,
-                'PATH': [
-                    'AC1',
-                    'AC1',
-                    'AC1',
-                    'AC2',
-                    'AC2',
-                    'AC2',
-                    'AC50',
-                    'AC50',
-                    'AC50',
-                ],
             }
         )
         df_with_path = merge_df_dict_with_path(input_df_dict)
@@ -163,11 +163,6 @@ class TestVectorizationMethods(unittest.TestCase):
                 ],
                 'max_npax': 66.0,
                 'load_factor': 0.0,
-                'PATH': [
-                    'AC1.component1',
-                    'AC1.component1',
-                    'AC1.component1',
-                ],
             }
         )
         df_with_AC1_path = pd.DataFrame(
@@ -181,11 +176,6 @@ class TestVectorizationMethods(unittest.TestCase):
                 ],
                 'max_npax': 66.0,
                 'load_factor': 0.0,
-                'PATH': [
-                    'AC1',
-                    'AC1',
-                    'AC1',
-                ],
             }
         )
         filtered_input_parameter = get_inputs_for_path(
