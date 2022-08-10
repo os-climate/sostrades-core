@@ -109,10 +109,6 @@ class SoSMDODiscipline(MDODiscipline):
             if output_error != '':
                 raise ValueError(output_error)
 
-        # TODO: check if this works for a coupling
-        if self.status == MDODiscipline.STATUS_PENDING and self._cache_was_loaded is True:
-            self.status(self.STATUS_DONE)
-
         if self.sos_wrapp.local_data_short_name['debug_mode'] in ['min_max_couplings','all']:
             self.display_min_max_couplings()
 
@@ -294,7 +290,7 @@ class SoSMDODiscipline(MDODiscipline):
                 output_error += f'Error while test {test_subject} on sos discipline {self.name} :\n'
                 output_error += f'Mismatch in {error}: {dict_error.get(error)}'
                 output_error += '\n---------------------------------------------------------'
-                LOGGER.warning(output_error)
+                print(output_error)
 
         if is_output_error:
             return output_error

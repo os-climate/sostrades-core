@@ -156,6 +156,8 @@ class TestMDALoop(unittest.TestCase):
 
         disc_dict[f'{self.name}.{coupling_name}.Sellar_3.error_string'] = 'linearize_data_change'
         disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'linearize_data_change'
+        disc_dict[f'{self.name}.{coupling_name}.linearization_mode'] = 'adjoint'
+        disc_dict[f'{self.name}.{coupling_name}.sub_mda_class'] = 'MDANewtonRaphson'
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_ok = False
