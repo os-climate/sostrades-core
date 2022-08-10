@@ -1373,6 +1373,125 @@ class TestCache(unittest.TestCase):
         for discipline in study_1.execution_engine.factory.sos_disciplines:
             self.assertEqual(discipline.get_sosdisc_inputs('cache_type'), 'SimpleCache')
 
+    def test_17_cache_and_status(self):
+        ''' test with input type not converted by SoSTrades
+        '''
+        from gemseo.core.discipline import MDODiscipline
+
+        ns_dict = {'ns_ac': self.name}
+
+        self.ee.ns_manager.add_ns_def(ns_dict)
+
+        disc1_builder = self.factory.get_builder_from_module(
+            'Disc1', self.mod1_path)
+        disc2_builder = self.factory.get_builder_from_module(
+            'Disc2', self.mod2_path)
+
+        self.factory.set_builders_to_coupling_builder(
+            [disc1_builder, disc2_builder])
+
+        self.ee.configure()
+        self.ee.display_treeview_nodes()
+
+        for key in self.ee.dm.data_id_map:
+            print("   key", key)
+        a = 1.0
+        b = 3.0
+        x = 99.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b,
+                       self.name + '.Disc1.an_input_1': 'value_1',
+                       self.name + '.Disc1.an_input_2': ['value_2', 'value_3'],
+                       self.name + '.Disc2.constant': 1.5,
+                       self.name + '.Disc2.power': 2,
+                       self.name + '.cache_type': 'SimpleCache'}
+
+        # set input data
+        self.ee.load_study_from_input_dict(values_dict)
+
+        # get disciplines objects
+        disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
+        disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
+        sos_coupl = self.ee.root_process
+        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
+
+        # first execution
+        self.ee.execute()
+        # ref update
+        n_calls_sosc += 1
+        n_calls_disc1 += 1
+        n_calls_disc2 += 1
+
+        # check that status are DONE after the first execution both on SOSTRADES and GEMSEO side
+        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+
+        # check that status are PENDING after the second prepare execution
+        self.ee.prepare_execution()
+        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+
+        # second execution w/o change
+        self.ee.execute()
+        # ref update
+        n_calls_sosc += 0
+        n_calls_disc1 += 0
+        n_calls_disc2 += 0
+
+        # check that no discipline ran
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+
+        # check that the status are done after non-execution
+        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+
+        # third execute with change of a private parameter of the second discipline
+        values_dict[f'{self.name}.Disc2.power'] = 3.
+        self.ee.load_study_from_input_dict(values_dict)
+
+        # check that status are PENDING after the second prepare execution
+        self.ee.prepare_execution()
+        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+
+        self.ee.execute()
+
+        # ref update
+        n_calls_sosc += 1
+        n_calls_disc1 += 0
+        n_calls_disc2 += 1
+
+        # check that disc1 did not run
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+
+        # check that the status are DONE after some disciplines executed and some did not
+        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
 
 if __name__ == "__main__":
     cls = TestCache()

@@ -346,10 +346,14 @@ class ProxyDiscipline(object):
                                                                cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
-        elif self._reset_cache:
-            # set new cache when cache_type have changed (self._reset_cache == True)
-            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
-                           self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+        else:
+            if self._reset_cache:
+                # set new cache when cache_type have changed (self._reset_cache == True)
+                self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
+                               self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
+            self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
+        self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
