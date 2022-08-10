@@ -921,7 +921,7 @@ class BuildDoeEval(SoSEval):
         study_tmp = getattr(imported_module, 'Study')(
             execution_engine=self.ee)
         anonymize_input_dict_from_usecase = {}
-        # Remark: see def __anonymize_key in execution_engine
+        # Remark: see def anonymize_key in execution_engine
         study_tmp.study_name = self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT
         anonymize_usecase_data = study_tmp.setup_usecase()
         if not isinstance(anonymize_usecase_data, list):

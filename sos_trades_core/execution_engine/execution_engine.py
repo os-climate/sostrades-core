@@ -255,7 +255,7 @@ class ExecutionEngine:
         self.logger.info(tv_to_display)
         return tv_to_display
 
-    def __anonymize_key(self, key_to_anonymize):
+    def anonymize_key(self, key_to_anonymize):
         base_namespace = f'{self.study_name}.{self.root_process.sos_name}'
         converted_key = key_to_anonymize
 
@@ -322,7 +322,7 @@ class ExecutionEngine:
             # dictionary to load
             if target_key not in disciplines_status_dict:
                 # If not convert basic key to an anonimized key
-                target_key = self.__anonymize_key(target_key)
+                target_key = self.anonymize_key(target_key)
 
             if target_key in disciplines_status_dict:
                 status_to_load = disciplines_status_dict[target_key]
@@ -347,7 +347,7 @@ class ExecutionEngine:
 
         for discipline_key in dict_to_convert.keys():
 
-            converted_key = self.__anonymize_key(discipline_key)
+            converted_key = self.anonymize_key(discipline_key)
             converted_dict[converted_key] = dict_to_convert[discipline_key]
 
         return converted_dict
@@ -370,7 +370,7 @@ class ExecutionEngine:
         dict_to_convert = self.dm.convert_data_dict_with_full_name()
 
         for key in dict_to_convert.keys():
-            new_key = self.__anonymize_key(key)
+            new_key = self.anonymize_key(key)
             converted_dict[new_key] = dict_to_convert[key]
 
         return converted_dict
@@ -385,7 +385,7 @@ class ExecutionEngine:
         dict_to_convert = self.dm.ns_manager.get_shared_ns_dict()
 
         for key, val in dict_to_convert.items():
-            new_val = self.__anonymize_key(val.value)
+            new_val = self.anonymize_key(val.value)
             converted_dict[key] = new_val
 
         return converted_dict
@@ -497,7 +497,7 @@ class ExecutionEngine:
         Return a suggestion if there is either a match with a shared namespace, or
         a similar key in the dm (string comparison algo rapidfuzz)
         '''
-        if anonymize_function is self.__anonymize_key:
+        if anonymize_function is self.anonymize_key:
             data_keys = list(self.get_anonimated_data_dict().keys())
             ns_dict = {ns.name: ns.value for ns in self.get_anonymized_shared_ns_dict().values()}
         else:
