@@ -197,3 +197,82 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.execute()
         self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_1> has the minimum coupling value <1.0>', self.my_handler.msg_list)
         self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.515922583453351>', self.my_handler.msg_list)
+
+    def test_05_debug_mode_all(self):
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.logger.setLevel(DEBUG)
+        exec_eng.logger.addHandler(self.my_handler)
+
+        # add disciplines SellarCoupling
+        coupling_name = "SellarCoupling"
+        mda_builder = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_sellar_coupling13')
+        exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
+        exec_eng.configure()
+
+        # Sellar inputs
+        disc_dict = {}
+        disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_1.debug_mode'] = 'all'
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        self.assertIn('Discipline Sellar_1 set to debug mode nan', self.my_handler.msg_list)
+        self.assertIn('Discipline Sellar_1 set to debug mode input_change', self.my_handler.msg_list)
+        self.assertIn('Discipline Sellar_1 set to debug mode min_max_couplings', self.my_handler.msg_list)
+        self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
+        self.assertIn('Discipline Sellar_1 set to debug mode min_max_grad', self.my_handler.msg_list)
+
+        exec_eng.execute()
+        self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
+        self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
+
+    def test_05_debug_mode_coupling(self):
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.logger.setLevel(DEBUG)
+        exec_eng.logger.addHandler(self.my_handler)
+
+        # add disciplines SellarCoupling
+        coupling_name = "SellarCoupling"
+        mda_builder = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_sellar_coupling13')
+        exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
+        exec_eng.configure()
+
+        # Sellar inputs
+        disc_dict = {}
+        disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_1.debug_mode'] = 'nan'
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'min_max_grad'
+        disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = 'input_change'
+        disc_dict[f'{self.name}.debug_mode'] = 'linearize_data_change'
+
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        self.assertIn('Discipline Sellar_1 set to debug mode nan', self.my_handler.msg_list)
+        self.assertIn('Discipline Sellar_3 set to debug mode min_max_grad', self.my_handler.msg_list)
+        self.assertIn(f'Discipline {coupling_name} set to debug mode input_change', self.my_handler.msg_list)
+        self.assertIn(f'Discipline Sellar_1 set to debug mode nan', self.my_handler.msg_list)
+        # each discipline has their own debug modes
+        self.assertIn('nan', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
+        self.assertNotIn('nan', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
+        self.assertIn('min_max_grad', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
+        self.assertNotIn('min_max_grad', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
+
+        # and all have those transmitted by the couplings
+        self.assertIn('input_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
+        self.assertIn('input_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
+        self.assertIn('linearize_data_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
+        self.assertIn('linearize_data_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)

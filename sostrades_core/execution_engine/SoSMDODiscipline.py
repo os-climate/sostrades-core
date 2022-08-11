@@ -70,6 +70,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.output_full_name_map = None
+        self.debug_modes = [] #to be set by the proxy
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,
@@ -84,7 +85,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
 
         # debug mode: input change
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
+        if 'input_change' in self.debug_modes:
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
 
@@ -96,10 +97,10 @@ class SoSMDODiscipline(MDODiscipline):
         self.fill_output_value_connector()
 
         # debug modes
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['nan','all']:
+        if 'nan' in self.debug_modes:
             self.__check_nan_in_data(self.local_data)
 
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
+        if 'input_change' in self.debug_modes:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
@@ -109,7 +110,7 @@ class SoSMDODiscipline(MDODiscipline):
             if output_error != '':
                 raise ValueError(output_error)
 
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['min_max_couplings','all']:
+        if 'min_max_couplings' in self.debug_modes:
             self.display_min_max_couplings()
 
     def create_local_data_short_name(self):

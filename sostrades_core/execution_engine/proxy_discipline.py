@@ -271,11 +271,7 @@ class ProxyDiscipline(object):
         self._status = None
 
         # ------------DEBUG VARIABLES----------------------------------------
-        self.nan_check = False
-        self.check_if_input_change_after_run = False
-        self.check_linearize_data_changes = False
-        self.check_min_max_gradients = False
-        self.check_min_max_couplings = False
+        self.debug_modes = []
         # ----------------------------------------------------
 
         # -- Base disciplinary attributes
@@ -353,6 +349,7 @@ class ProxyDiscipline(object):
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
+        self.mdo_discipline_wrapp.mdo_discipline.debug_modes = [mode for mode in self.debug_modes]
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
 
@@ -739,7 +736,7 @@ class ProxyDiscipline(object):
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
                 self._reset_cache = True
 
-            # Debug mode logging
+            # Debug mode logging and recursive setting (priority to the parent)
             debug_mode = self.get_sosdisc_inputs('debug_mode')
             if debug_mode != "":
                 if debug_mode == "all":
@@ -750,6 +747,20 @@ class ProxyDiscipline(object):
                 else:
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+                self.set_debug_mode_rec(debug_mode)
+
+    def set_debug_mode_rec(self, debug_mode):
+        """
+        set debug mode recursively to children with priority to parent
+        """
+
+        if debug_mode == 'all':
+            self.debug_modes = [mode for mode in ProxyDiscipline.AVAILABLE_DEBUG_MODE if mode not in ['','all']]
+        elif debug_mode not in self.debug_modes:
+            self.debug_modes.append(debug_mode)
+
+        for proxy_disc in self.proxy_disciplines:
+            proxy_disc.set_debug_mode_rec(debug_mode)
 
     def set_children_cache_inputs(self):
         '''
