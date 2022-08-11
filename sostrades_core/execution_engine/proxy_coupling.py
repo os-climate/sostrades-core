@@ -564,7 +564,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Pre run needed if one of the strong coupling variables is None in a MDA 
         No need of prerun otherwise 
         '''
-        strong_couplings_values = [input_data[key] for key in self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()]
+        strong_couplings_keys = self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()
+        strong_couplings_values = [(input_data[key] if key in input_data.keys() else None) for key in strong_couplings_keys]
         if any(elem is None for elem in strong_couplings_values):
             self.logger.info(
                 f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
@@ -588,7 +589,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 first_disc = coupled_mdo_disciplines[0]
                 if len(coupled_mdo_disciplines) > 1 or (
                         len(coupled_mdo_disciplines) == 1
-                        and self.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
+                        and self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
                         and not isinstance(coupled_mdo_disciplines[0], MDAChain)
                 ):
                     # several disciplines coupled
@@ -635,7 +636,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
     def get_first_discs_to_execute(self, disciplines, input_data):
         """
-        Gets the list of disciplines having all their inputs ready for execution. [???]
+        Gets the list of disciplines having all their inputs ready for execution.
         """
         ready_disciplines = []
         disc_vs_keys_none = {}
