@@ -328,7 +328,7 @@ class SosFactory:
         """
         create a builder  defined by a scatter type SoSDisciplineScatter
         """
-        mod_path = f'{self.EE_PATH}.sos_discipline_scatter.SoSDisciplineScatter'
+        mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
         cls = self.get_disc_class_from_module(mod_path)
         # is_executable flag is False because the scatter discipline has no
         # run method
@@ -561,7 +561,7 @@ class SosFactory:
         """
         create a builder  defined by a gather type SoSDisciplineGather
         """
-        mod_path = f'{self.EE_PATH}.sos_discipline_gather.SoSDisciplineGather'
+        mod_path = f'{self.EE_PATH}.proxy_discipline_gather.ProxyDisciplineGather'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         builder.set_builder_info('map_name', map_name)

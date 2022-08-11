@@ -495,10 +495,7 @@ class ProxyDiscipline(object):
         Create data_in and data_out from DESC_IN and DESC_OUT if empty
         """
         if self._data_in == {}:
-            if self.is_sos_coupling:
-                self._data_in = deepcopy(self.DESC_IN) or {}
-            else:
-                self._data_in = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
+            self._data_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(self._data_in)
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
             self.update_dm_with_data_dict(self._data_in)
@@ -507,13 +504,26 @@ class ProxyDiscipline(object):
             self.add_numerical_param_to_data_in()
 
         if self._data_out == {}:
-            if self.is_sos_coupling:
-                self._data_out = deepcopy(self.DESC_OUT) or {}
-            else:
-                self._data_out = deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
+            self._data_out = self.get_desc_in_out(self.IO_TYPE_OUT)
             self.set_shared_namespaces_dependencies(self._data_out)
             self._data_out = self._prepare_data_dict(self.IO_TYPE_OUT)
             self.update_dm_with_data_dict(self._data_out)
+
+    def get_desc_in_out(self, io_type):
+        """
+        Retrieves information from wrapper or ProxyDiscipline DESC_IN to fill data_in
+        To be overloaded by special proxies ( coupling, scatter,...)
+
+        Argument:
+                io_type : 'string' . indicates whether we are interested in desc_in or desc_out
+        """
+        if io_type == self.IO_TYPE_IN:
+            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
+        elif io_type == self.IO_TYPE_OUT:
+            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
+        else:
+            raise Exception(
+                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
     def add_numerical_param_to_data_in(self):
         """
