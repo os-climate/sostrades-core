@@ -253,6 +253,7 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
         disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'] = 'all'
         disc_dict[f'{self.name}.{coupling_name}.Sellar_1.debug_mode'] = 'nan'
         disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'min_max_grad'
         disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = 'input_change'
@@ -264,8 +265,11 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn('Discipline Sellar_1 set to debug mode nan', self.my_handler.msg_list)
         self.assertIn('Discipline Sellar_3 set to debug mode min_max_grad', self.my_handler.msg_list)
         self.assertIn(f'Discipline {coupling_name} set to debug mode input_change', self.my_handler.msg_list)
-        self.assertIn(f'Discipline Sellar_1 set to debug mode nan', self.my_handler.msg_list)
-        # each discipline has their own debug modes
+        self.assertIn(f'Discipline {self.name} set to debug mode linearize_data_change', self.my_handler.msg_list)
+        # the Sellar_Problem has all the debug modes
+        self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
+
+        # each of the other disciplines have their own debug modes
         self.assertIn('nan', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
         self.assertNotIn('nan', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
         self.assertIn('min_max_grad', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
