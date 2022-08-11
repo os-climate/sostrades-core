@@ -564,8 +564,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Pre run needed if one of the strong coupling variables is None in a MDA 
         No need of prerun otherwise 
         '''
-        strong_couplings_keys = self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()
-        strong_couplings_values = [(input_data[key] if key in input_data.keys() else None) for key in strong_couplings_keys]
+        strong_couplings_values = [input_data[key] for key in self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()]
         if any(elem is None for elem in strong_couplings_values):
             self.logger.info(
                 f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
