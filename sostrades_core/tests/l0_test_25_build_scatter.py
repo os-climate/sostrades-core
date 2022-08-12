@@ -42,7 +42,7 @@ class TestBuildScatter(unittest.TestCase):
     def test_01_build_coupling_of_scatter(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -122,7 +122,7 @@ class TestBuildScatter(unittest.TestCase):
     def test_02_buil_scatter_of_coupling(self):
 
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -193,7 +193,7 @@ class TestBuildScatter(unittest.TestCase):
     def test_03_build_scatter_of_scatter_of_coupling(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -202,7 +202,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
@@ -305,7 +305,7 @@ class TestBuildScatter(unittest.TestCase):
     def test_04_build_scatter_of_coupling_of_scatter(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -314,7 +314,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
@@ -421,7 +421,7 @@ class TestBuildScatter(unittest.TestCase):
     def _test_05_build_coupling_of_scatter_with_auto_gather(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
@@ -540,7 +540,7 @@ class TestBuildScatter(unittest.TestCase):
     def _test_06_build_scatter_of_scatter_of_coupling_of_scatter(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -549,7 +549,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
@@ -557,7 +557,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.smaps_manager.add_build_map('scenario_list', mydict)
 
         mydict = {'input_name': 'toplevel_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'toplevel_name',
                   'scatter_ns': 'ns_toplevel'}  # or object ScatterMapBuild
@@ -565,7 +565,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.smaps_manager.add_build_map('toplevel_list', mydict)
 
         mydict = {'input_name': 'secondlevel_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'secondlevel_name',
                   'scatter_ns': 'ns_secondlevel'}  # or object ScatterMapBuild
@@ -688,7 +688,7 @@ class TestBuildScatter(unittest.TestCase):
     def _test_08_build_scatter_of_scatter_of_coupling_of_scatter_with_load_study_from_input_dict(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
@@ -697,7 +697,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
@@ -705,7 +705,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.smaps_manager.add_build_map('scenario_list', mydict)
 
         mydict = {'input_name': 'toplevel_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'toplevel_name',
                   'scatter_ns': 'ns_toplevel'}  # or object ScatterMapBuild
@@ -713,7 +713,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.smaps_manager.add_build_map('toplevel_list', mydict)
 
         mydict = {'input_name': 'secondlevel_list',
-                  'input_type': 'string_list',
+
                   'input_ns': 'ns_barrierr',
                   'output_name': 'secondlevel_name',
                   'scatter_ns': 'ns_secondlevel'}  # or object ScatterMapBuild
@@ -776,7 +776,7 @@ class TestBuildScatter(unittest.TestCase):
     def _test_09_scatter_with_local_input(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-                  'input_type': 'string_list',
+
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
