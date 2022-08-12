@@ -289,7 +289,7 @@ class Sellar3(SoSWrapp):
         if error_string == 'nan':
             y1_out['y_2'] = array([NaN])
         elif error_string == 'input_change':
-            y_1 = self.local_data[self.get_var_full_name('y_1', self._data_in)]
+            y_1 = self.local_data_short_name['y_1']
             y_1[0] += 0.5
         self.store_sos_outputs_values(y1_out)
 
@@ -366,26 +366,6 @@ class Sellar3(SoSWrapp):
                                 d_name, out, inp, maxi))
                         raise ValueError("in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
                                 d_name, out, inp, maxi))
-
-    def display_min_max_couplings(self):
-        ''' Override the display_min_max_couplings method from <sostrades_core.execution_engine.sos_discpline> with a raise for test purposes
-            THIS METHOD MUST BE UPDATED IF THE ORIGINAL METHOD CHANGES
-        '''
-        coupling_dict = {}
-        for key, value in self.local_data.items():
-            is_coupling = self.dm.get_data(key, 'coupling')
-            if is_coupling:
-                coupling_dict[key] = value
-        min_coupling = min(coupling_dict, key=coupling_dict.get)
-        max_coupling = max(coupling_dict, key=coupling_dict.get)
-        self.ee.logger.info(
-            "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
-                self.sos_name, min_coupling, coupling_dict[min_coupling]))
-        self.ee.logger.info(
-            "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
-                self.sos_name, max_coupling, coupling_dict[max_coupling]))
-        raise ValueError("in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
-                self.sos_name, min_coupling, coupling_dict[min_coupling]))
 
 
 if __name__ == '__main__':

@@ -13,11 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 import logging
+# debug mode
+from copy import deepcopy
+from pandas import DataFrame
+from numpy import ndarray, floating
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -65,6 +70,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.output_full_name_map = None
+        self.debug_modes = [] #to be set by the proxy
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,
@@ -74,13 +80,38 @@ class SoSMDODiscipline(MDODiscipline):
         """
         Call user-defined wrapper run.
         """
-        # SoSWrapp run
+
+        # local data with short names for the wrapper
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
+
+        # debug mode: input change
+        if 'input_change' in self.debug_modes:
+            disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
+                self.local_data).items() if key in self.input_grammar.data_names}
+
+        # SoSWrapp run
         run_output = self.sos_wrapp._run()
         self.update_local_data(run_output)
 
         # get output from data connector
         self.fill_output_value_connector()
+
+        # debug modes
+        if 'nan' in self.debug_modes:
+            self.__check_nan_in_data(self.local_data)
+
+        if 'input_change' in self.debug_modes:
+            disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
+                self.local_data).items() if key in self.input_grammar.data_names}
+            output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
+                                                                disc_inputs_after_execution,
+                                                                'Discipline inputs integrity through run',
+                                                                is_output_error=True)
+            if output_error != '':
+                raise ValueError(output_error)
+
+        if 'min_max_couplings' in self.debug_modes:
+            self.display_min_max_couplings()
 
     def create_local_data_short_name(self):
         """
@@ -170,3 +201,116 @@ class SoSMDODiscipline(MDODiscipline):
         # it is a function==> self is required
 
         return super().get_attributes_to_serialize() + _NEW_ATTR_TO_SERIALIZE
+
+    # ----------------------------------------------------
+    # ----------------------------------------------------
+    #  METHODS TO DEBUG DISCIPLINE
+    # ----------------------------------------------------
+    # ----------------------------------------------------
+
+    def __check_nan_in_data(self, data):
+        """ Using entry data, check if nan value exist in data's
+
+        :params: data
+        :type: composite data
+
+        """
+        has_nan = self.__check_nan_in_data_rec(data, "")
+        if has_nan:
+            raise ValueError(f'NaN values found in {self.name}')
+
+    def __check_nan_in_data_rec(self, data, parent_key):
+        """
+        Using entry data, check if nan value exist in data's as recursive method
+
+        :params: data
+        :type: composite data
+
+        :params: parent_key, on composite type (dict), reference parent key
+        :type: str
+
+        """
+        has_nan = False
+        import pandas as pd
+        for data_key, data_value in data.items():
+
+            nan_found = False
+            if isinstance(data_value, DataFrame):
+                if data_value.isnull().any():
+                    nan_found = True
+            elif isinstance(data_value, ndarray):
+                # None value in list throw an exception when used with isnan
+                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
+                    nan_found = True
+                elif pd.isnull(list(data_value)).any():
+                    nan_found = True
+            elif isinstance(data_value, list):
+                # None value in list throw an exception when used with isnan
+                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
+                    nan_found = True
+                elif pd.isnull(data_value).any():
+                    nan_found = True
+            elif isinstance(data_value, dict):
+                self.__check_nan_in_data_rec(
+                    data_value, f'{parent_key}/{data_key}')
+            elif isinstance(data_value, floating):
+                if pd.isnull(data_value).any():
+                    nan_found = True
+
+            if nan_found:
+                full_key = data_key
+                if len(parent_key) > 0:
+                    full_key = f'{parent_key}/{data_key}'
+                LOGGER.debug(f'NaN values found in {full_key}')
+                LOGGER.debug(data_value)
+                has_nan = True
+        return has_nan
+
+
+    def check_discipline_data_integrity(self, left_dict, right_dict, test_subject, is_output_error=False):
+        """
+        Compare data is equal in left_dict and right_dict and print a warning otherwise.
+
+        Arguments:
+            left_dict (dict): data dict to compare
+            right_dict (dict): data dict to compare
+            test_subject (string): to identify the executor of the check
+            is_output_error (bool): whether to return a dict of errors
+
+        Return:
+            output_error (dict): dict with mismatches spotted in comparison
+        """
+        from gemseo.utils.compare_data_manager_tooling import compare_dict
+
+        dict_error = {}
+        compare_dict(left_dict, right_dict, '', dict_error)
+        output_error = ''
+        if dict_error != {}:
+            for error in dict_error:
+                output_error = '\n'
+                output_error += f'Error while test {test_subject} on sos discipline {self.name} :\n'
+                output_error += f'Mismatch in {error}: {dict_error.get(error)}'
+                output_error += '\n---------------------------------------------------------'
+                print(output_error)
+
+        if is_output_error:
+            return output_error
+
+    def display_min_max_couplings(self):
+        '''
+        Method to display the minimum and maximum values among a discipline's couplings
+        '''
+        min_coupling_dict, max_coupling_dict = {}, {}
+        for key, value in self.local_data.items():
+            is_coupling = self.reduced_dm[key]['coupling']
+            if is_coupling:
+                min_coupling_dict[key] = min(abs(value))
+                max_coupling_dict[key] = max(abs(value))
+        min_coupling = min(min_coupling_dict, key=min_coupling_dict.get)
+        max_coupling = max(max_coupling_dict, key=max_coupling_dict.get)
+        LOGGER.info(
+            "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
+                self.name, min_coupling, min_coupling_dict[min_coupling]))
+        LOGGER.info(
+            "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
+                self.name, max_coupling, max_coupling_dict[max_coupling]))

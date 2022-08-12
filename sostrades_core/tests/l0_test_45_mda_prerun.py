@@ -112,7 +112,7 @@ class TestMDAPrerun(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_process.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
         # Check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
         self.assertLessEqual(len(residual_history), max_mda_iter)
@@ -167,7 +167,7 @@ class TestMDAPrerun(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_process.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
         # Check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
         self.assertLessEqual(len(residual_history), max_mda_iter)

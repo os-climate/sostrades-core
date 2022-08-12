@@ -115,8 +115,6 @@ class MDODisciplineWrapp(object):
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
-        proxy.status = self.mdo_discipline.status
-
     def _init_grammar_with_keys(self, proxy):
         '''
         initialize GEMS grammar with names and type None

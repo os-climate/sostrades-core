@@ -627,7 +627,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 first_disc = coupled_mdo_disciplines[0]
                 if len(coupled_mdo_disciplines) > 1 or (
                         len(coupled_mdo_disciplines) == 1
-                        and self.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
+                        and self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
                         and not isinstance(coupled_mdo_disciplines[0], MDAChain)
                 ):
                     # several disciplines coupled
@@ -674,7 +674,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def get_first_discs_to_execute(self, disciplines, input_data):
         """
-        Gets the list of disciplines having all their inputs ready for execution. [???]
+        Gets the list of disciplines having all their inputs ready for execution.
         """
         ready_disciplines = []
         disc_vs_keys_none = {}
