@@ -93,6 +93,7 @@ class NewtonRootSolver(SoSEval):
         self.check_input_namespaces()
         self.check_variables_exists_and_are_arrays()
         self.set_x0()
+        self.add_children_inputs()
 
     def set_x0(self):
 
@@ -100,6 +101,15 @@ class NewtonRootSolver(SoSEval):
         unknown_name = self.get_unknown_namespaced_variable()
         self.dm.set_values_from_dict(
             {unknown_name: x0})
+
+    def add_children_inputs(self):
+        """
+        Update input grammar
+        """
+        self.sos_disciplines[0].with_data_io = True
+        self.sos_disciplines[0].configure_execution()
+        self._data_in.update(self.sos_disciplines[0]._data_in)
+
 
     def check_variables_exists_and_are_arrays(self):
 
@@ -205,11 +215,23 @@ class NewtonRootSolver(SoSEval):
 
         self.dm.set_values_from_dict({unknown_name: x})
 
+        """
+        {'_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df'],
+                                            '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df']}
+        """
+
         # Compute the coupling
-        local_data = residual_process.execute()
+        # very dirty fix to enable execution
+        if '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df' in self.local_data and '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df' in self.local_data:
+            self.local_data = residual_process.execute({'_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df'],
+                                                '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df']})
+
+        else:
+            # nominal execution
+            self.local_data = residual_process.execute()
 
         residual_name = self.get_residual_namespaced_variable()
-        idf_residual = local_data[residual_name]
+        idf_residual = self.local_data[residual_name]
 
         return idf_residual
 
