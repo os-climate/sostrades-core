@@ -447,8 +447,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """
         # configure SoSTrades objects
         self.configure_io()
-        # configure GEMSEO objects (execution sequence)
-        #         self.configure_execution()
+
         self._update_status_dm(self.STATUS_CONFIGURE)
 
     def _update_coupling_flags_in_dm(self):
@@ -571,8 +570,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # set cache cache of gemseo object
         self.set_gemseo_disciplines_caches(mda_chain_cache, mda_chain_n_calls)
 
-        # self._set_residual_history()
-
     def set_gemseo_disciplines_caches(self, mda_chain_cache, mda_chain_n_calls):
         '''
         Set cache of MDAChain, MDOChain and sub MDAs
@@ -663,7 +660,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                             disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
                 else:
                     discipline = coupled_mdo_disciplines[0]
-                    if discipline.proxy_discipline.is_sos_coupling:
+                    if isinstance(discipline, MDAChain):
                         # recursive call if subdisc is a SoSCoupling
                         discipline.pre_run_mda(input_data)
                     else:
@@ -679,9 +676,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ready_disciplines = []
         disc_vs_keys_none = {}
         for disc in disciplines:
-            #             # get inputs values of disc with full_name
-            #             inputs_values = disc.get_inputs_by_name(
-            #                 in_dict=True, full_name=True)
+
             # update inputs values with SoSCoupling local_data
             keys_none = [key for key in disc.input_grammar.get_data_names() if
                          key.split(NS_SEP)[-1] not in self.NUM_DESC_IN and input_data.get(key) is None]
@@ -712,7 +707,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
              self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
         dict_out[self.RESIDUALS_HISTORY] = residuals_history
         self.store_sos_outputs_values(dict_out, update_dm=True)
-        # self.update_dm_with_local_data(residuals_history)
 
         # store local data in datamanager
         self.update_dm_with_local_data(self.mdo_discipline_wrapp.mdo_discipline.local_data)
@@ -770,36 +764,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
         self.set_cache(mda, self.get_sosdisc_inputs(
             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-
-    def _set_data_io_with_gemseo_grammar(self):
-        '''
-        Construct the data_in and the data_out of the coupling with the GEMS grammar
-        '''
-        if self.with_data_io:
-            # keep numerical inputs in data_in
-            self._data_in = {key: value for key, value in self._data_in.items(
-            ) if
-                             key in self.DESC_IN or key in self.NUM_DESC_IN}
-            # add coupling inputs in data_in
-            gems_grammar_in_keys = self.input_grammar.get_data_names()
-            for var_f_name in gems_grammar_in_keys:
-                var_name = self.dm.get_data(
-                    var_f_name, ProxyDisciplineBuilder.VAR_NAME)
-                if var_name not in self.NUM_DESC_IN:
-                    self._data_in[var_name] = self.dm.get_data(var_f_name)
-
-            # keep residuals_history if in data_out
-            if self.RESIDUALS_HISTORY in self._data_out:
-                self._data_out = {
-                    self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]}
-            else:
-                self._data_out = {}
-            # add coupling outputs in data_out
-            gems_grammar_out_keys = self.output_grammar.get_data_names()
-            for var_f_name in gems_grammar_out_keys:
-                var_name = self.dm.get_data(
-                    var_f_name, ProxyDisciplineBuilder.VAR_NAME)
-                self._data_out[var_name] = self.dm.get_data(var_f_name)
 
     def _get_numerical_inputs(self):
         '''
@@ -920,8 +884,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
          Overwrite of sos_discipline property where the order is defined by default
          by the order of sos_disciplines
         '''
-        #         ordered_list = []
-        #         ordered_list = self.ordered_disc_list_rec(self.mdo_discipline.mdo_chain, ordered_list)
+
         ordered_list = self.proxy_disciplines
         self.logger.warning(
             "TODO: fix the order disc list in proxy coupling (set as the top level list of disciplines for debug purpose)")
@@ -941,52 +904,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         return ordered_list
 
-#     def run(self):
-#         '''
-#         Call the _run method of MDAChain in case of SoSCoupling.
-#         '''
-#         # set linear solver options for MDA
-#         self.linear_solver = self.linear_solver_MDA
-#         self.linear_solver_options = self.linear_solver_options_MDA
-#         self.linear_solver_tolerance = self.linear_solver_tolerance_MDA
-# 
-#         self.pre_run_mda()
-# 
-#         if len(self.sub_mda_list) > 0:
-#             self.logger.info(f'{self.get_disc_full_name()} MDA history')
-#             self.logger.info('\tIt.\tRes. norm')
-# 
-#         MDAChain._run(self)
-# 
-#         # save residual history
-#         dict_out = {}
-#         residuals_history = DataFrame(
-#             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
-#         dict_out[self.RESIDUALS_HISTORY] = residuals_history
-#         self.store_sos_outputs_values(dict_out, update_dm=True)
-# 
-#         # store local data in datamanager
-#         self.update_dm_with_local_data()
-# 
 
-#     # -- Protected methods
-# 
-#     def _run(self):
-#         ''' Overloads ProxyDiscipline run method.
-#             In SoSCoupling, self.local_data is updated through MDAChain
-#             and self._data_out is updated through self.local_data.
-#         '''
-#         ProxyDisciplineBuilder._run(self)
-# 
-#         # logging of residuals of the mdas
-#         # if len(self.sub_mda_list) > 0:
-#         # self.logger.info(f'{self.get_disc_full_name()} MDA history')
-#         # for sub_mda in self.sub_mda_list:
-#         # self.logger.info('\tIt.\tRes. norm')
-#         # for res_tuple in sub_mda.residual_history:
-#         # res_norm = '{:e}'.format(res_tuple[0])
-#         # self.logger.info(f'\t{res_tuple[1]}\t{res_norm}')
-# 
 #     def linearize(self, input_data=None, force_all=False, force_no_exec=False):
 #         '''
 #         Overload the linearize of soscoupling to use the one of ProxyDiscipline and not the one of MDAChain
@@ -1069,112 +987,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #             print("IN CHECK of soscoupling")
 #             ProxyDiscipline._check_min_max_gradients(self, self.jac)
 
-#     def _set_residual_history(self):
-#         ''' set residuals history into data_out
-#         and update DM
-#         '''
-#
-#         def update_flags_of_disc(coupling_key, disc_name, in_or_out):
-#
-#             disc_list = self.dm.get_disciplines_with_name(disc_name)
-#             var_name_out = None
-#             for a_disc in disc_list:
-#                 if in_or_out == 'in':
-#                     data_io = a_disc._data_in
-#                 else:
-#                     data_io = a_disc._data_out
-#
-#                 if var_name_k in data_io.keys():
-#                     var_name_out = var_name_k
-#                 else:
-#                     var_name_out_list = [
-#                         key for key in data_io.keys() if coupling_key.endswith(NS_SEP + key)]
-#                     # To be modified
-#                     if len(var_name_out_list) != 0:
-#                         var_name_out = var_name_out_list[0]
-#                 if var_name_out is not None and var_name_out in data_io:
-#                     data_io[var_name_out][self.COUPLING] = True
-#                     if self.get_var_full_name(var_name_out, data_io) in self.strong_couplings:
-#                         data_io[var_name_out][self.EDITABLE] = True
-#                         data_io[var_name_out][self.OPTIONAL] = True
-#                     else:
-#                         data_io[var_name_out][self.EDITABLE] = False
-#
-#         # END update_flags_of_disc
-#
-#         # -- update couplings flag into DataManager
-#         coupl = self.export_couplings()
-#         couplings = coupl[self.VAR_NAME]
-#         disc_1 = coupl['disc_1']
-#         disc_2 = coupl['disc_2']
-#
-#         # loop on couplings variables and the disciplines linked
-#         for k, from_disc_name, to_disc_name in zip(
-#                 couplings, disc_1, disc_2):
-#             self.dm.set_data(k, self.COUPLING, True)
-#             # Deal with pre run of MDA to enter strong couplings if needed
-#             if k in self.strong_couplings:
-#                 self.dm.set_data(k, self.IO_TYPE, self.IO_TYPE_IN)
-#                 self.dm.set_data(k, self.EDITABLE, True)
-#                 self.dm.set_data(k, self.OPTIONAL, True)
-#             else:
-#                 self.dm.set_data(k, self.EDITABLE, False)
-#             var_name_k = self.dm.get_data(k, self.VAR_NAME)
-#
-#             # update flags of discipline 1
-#             update_flags_of_disc(k, from_disc_name, 'out')
-#             # update flags of discipline 2
-#             update_flags_of_disc(k, to_disc_name, 'in')
-# 
-#     def configure_mda(self):
-#         ''' Configuration of SoSCoupling, call to super class MDAChain
-#         '''
-#         num_data = self._get_numerical_inputs()
-# 
-#         # store cache to reset after MDAChain init
-#         cache = self.cache
-# 
-#         MDAChain.__init__(self,
-#                           disciplines=self.sos_disciplines,
-#                           name=self.sos_name,
-#                           grammar_type=self.SOS_GRAMMAR_TYPE,
-#                           ** num_data)
-# 
-#         # TODO: pass cache to MDAChain init to avoid reset cache, idem for
-#         # MDOChain
-#         self.cache = cache
-#         self.set_cache(self.mdo_chain, self.get_sosdisc_inputs(
-#             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-# 
-#         # Check variables mismatch between coupling disciplines
-#         self.check_var_data_mismatch()
-# 
-#         self.logger.info(
-#             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
-
-# def _set_residual_history(self):
-#     '''
-#     Set residuals history into data_out and update DM.
-#     '''
-#     # dataframe init
-#     residuals_history = DataFrame(
-#         {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
-#
-#     # set residual type and value
-#     rdict = {}
-#     rdict[self.RESIDUALS_HISTORY] = {}
-#     rdict[self.RESIDUALS_HISTORY][self.USER_LEVEL] = 3
-#     rdict[self.RESIDUALS_HISTORY][self.TYPE] = 'dataframe'
-#     rdict[self.RESIDUALS_HISTORY][self.VALUE] = residuals_history
-#     rdict[self.RESIDUALS_HISTORY][self.UNIT] = '-'
-#     # init other fields
-#     full_out = self._prepare_data_dict(self.IO_TYPE_OUT, rdict)
-#     self.dm.update_with_discipline_dict(
-#         disc_id=self.disc_id, disc_dict=full_out)
-#
-#     # update in loader_out
-#     self._data_out.update(full_out)
-
 #     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
 #         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain
 #         with all the scenarios inside
@@ -1220,7 +1032,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 #         """
 #         for discipline in self.proxy_disciplines:
 #             discipline.clean()
-# 
+#
 #         ProxyDiscipline.clean(self)
 #         # if 'epsilon0' in self._data_in:
 #         #     self.ee.dm.remove_keys(

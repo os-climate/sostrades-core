@@ -21,11 +21,6 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 class SoSWrappException(Exception):
     pass
 
-
-# to avoid circular redundancy with nsmanager
-NS_SEP = '.'
-
-
 class SoSWrapp(object):
     '''**SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
 
