@@ -43,7 +43,7 @@ class SoSDisciplineGather(SoSDiscipline):
         'icon': 'fas fa-outdent fa-fw',
         'version': '',
     }
-    EE_PATH = 'sostrades_core.execution_engine'
+    EE_PATH = 'sos_trades_core.execution_engine'
 
     def __init__(self, sos_name, ee, map_name, cls_builder):
         '''
@@ -91,11 +91,12 @@ class SoSDisciplineGather(SoSDiscipline):
         Consult the associated scatter build map and complete the inst_desc_in
         '''
         input_name = self.sc_map.get_input_name()
-        input_type = self.sc_map.get_input_type()
+        input_type = 'list'
+        input_subtype_descriptor = {'list': 'string'}
         input_ns = self.sc_map.get_input_ns()
 
         scatter_desc_in = {input_name: {
-            SoSDiscipline.TYPE: input_type, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
+            SoSDiscipline.TYPE: input_type,SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
     def build_dynamic_inst_desc_in_gather_variables(self):

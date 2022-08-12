@@ -61,8 +61,15 @@ class SoSMultiScenario(SoSSimpleMultiScenario):
             if trade_var_name not in self.inst_desc_in:
                 output_type = trade_var_map.get_output_type()[0]
                 input_ns = trade_var_map.get_input_ns()
-                trade_var_input = {f'{trade_var_name}_trade': {
-                    SoSDiscipline.TYPE: f'{output_type}_list', SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
+                if output_type not  in ['list','dict']:
+                    trade_var_input = {f'{trade_var_name}_trade': {
+                        SoSDiscipline.TYPE: 'list', SoSDiscipline.SUBTYPE: output_type,
+                        SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns,
+                        SoSDiscipline.STRUCTURING: True}}
+                else :
+
+                    trade_var_input = {f'{trade_var_name}_trade': {
+                        SoSDiscipline.TYPE: 'list', SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
                 self.inst_desc_in.update(trade_var_input)
 
         # add scenario_dict to inst_desc_in
