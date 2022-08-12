@@ -553,7 +553,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution(input_data)
-            if disc.mdo_discipline_wrapp.mdo_discipline is not None:
+            if disc.mdo_discipline_wrapp is not None:
                 sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
 
         # store cache and n_calls before MDAChain reset, if prepare_execution has already been called

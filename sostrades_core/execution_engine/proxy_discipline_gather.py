@@ -91,11 +91,12 @@ class ProxyDisciplineGather(ProxyDiscipline):
         Consult the associated scatter build map and complete the inst_desc_in
         '''
         input_name = self.sc_map.get_input_name()
-        input_type = self.sc_map.get_input_type()
+        input_type = 'list'
+        input_subtype_descriptor = {'list': 'string'}
         input_ns = self.sc_map.get_input_ns()
 
         scatter_desc_in = {input_name: {
-            ProxyDiscipline.TYPE: input_type, ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY, ProxyDiscipline.NAMESPACE: input_ns, ProxyDiscipline.STRUCTURING: True}}
+            ProxyDiscipline.TYPE: input_type,ProxyDiscipline.SUBTYPE: input_subtype_descriptor, ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY, ProxyDiscipline.NAMESPACE: input_ns, ProxyDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
     def build_dynamic_inst_desc_in_gather_variables(self):
@@ -264,7 +265,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         Assemble the output dictionary and store it in the DM
         '''
         # get gather builder
-        mod_path = f'{self.EE_PATH}.sos_discipline_gather.SoSDisciplineGather'
+        mod_path = f'{self.EE_PATH}.proxy_discipline_gather.ProxyDisciplineGather'
         cls_gather = self.__factory.get_disc_class_from_module(mod_path)
 
         new_values_dict = {}

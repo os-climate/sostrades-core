@@ -94,7 +94,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         '''
         input_name = self.sc_map.get_input_name()
         input_type = 'list'
-        input_subtype_descriptor = {'list':'string'}
+        input_subtype_descriptor = {'list': 'string'}
 
         if self.sc_map.INPUT_NS in self.sc_map.get_map():
             scatter_desc_in = {input_name: {
@@ -312,16 +312,22 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         pass
 
     def setup_sos_disciplines(self):
-        '''
+        """
         Method to be overloaded to add dynamic inputs/outputs using add_inputs/add_outputs methods.
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
         DESC_IN = {'X': {'structuring':True}}
-        '''
+        """
         pass
 
     def prepare_execution(self, input_data):
         """
         Overload
+        """
+        pass
+
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
+        """
+        overload of proxy_discipline's method
         """
         pass
 

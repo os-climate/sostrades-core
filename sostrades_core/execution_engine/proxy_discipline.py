@@ -239,7 +239,8 @@ class ProxyDiscipline(object):
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
+        self.mdo_discipline_wrapp = None
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
         self._reload(sos_name, ee)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
@@ -266,7 +267,6 @@ class ProxyDiscipline(object):
         """
         self.proxy_disciplines = []
         self._status = None
-
         # ------------DEBUG VARIABLES----------------------------------------
         self.debug_modes = []
         # ----------------------------------------------------
@@ -308,6 +308,13 @@ class ProxyDiscipline(object):
 
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
+
+    def create_mdo_discipline_wrap(self,name, wrapper, wrapping_mode):
+        """
+        creation of mdo_discipline_wrapp by the proxy
+        To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
+        """
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
 
     @property
     def status(self):  # type: (...) -> str
@@ -761,7 +768,7 @@ class ProxyDiscipline(object):
         """
 
         if debug_mode == 'all':
-            self.debug_modes = [mode for mode in ProxyDiscipline.AVAILABLE_DEBUG_MODE if mode not in ['','all']]
+            self.debug_modes = [mode for mode in ProxyDiscipline.AVAILABLE_DEBUG_MODE if mode not in ['', 'all']]
         elif debug_mode not in self.debug_modes:
             self.debug_modes.append(debug_mode)
 
