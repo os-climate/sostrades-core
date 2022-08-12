@@ -28,17 +28,11 @@ from numpy import ndarray, floating
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-_NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
-
-
 class SoSMDODisciplineException(Exception):
     pass
 
-
-# to avoid circular redundancy with nsmanager
-NS_SEP = '.'
+# get module logger not sos logger
 LOGGER = logging.getLogger(__name__)
-
 
 class SoSMDODiscipline(MDODiscipline):
     """**SoSMDODiscipline** is the class that overloads MDODiscipline when using SoSTrades wrapping mode. It handles the
@@ -55,6 +49,8 @@ class SoSMDODiscipline(MDODiscipline):
         output_full_name_map (Dict[string]): map from short names to full names of model output variables
    """
 
+    _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
+
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
         '''
         Constructor
@@ -70,7 +66,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.output_full_name_map = None
-        self.debug_modes = [] #to be set by the proxy
+        self.debug_modes = [] # to be set by the proxy
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,

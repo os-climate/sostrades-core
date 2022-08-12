@@ -26,16 +26,12 @@ GEMSEO_ADDON_DIR = "gemseo_addon"
 os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 
 from copy import deepcopy
-
 from pandas import DataFrame
 from numpy import ndarray
-
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
-# from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.api import get_sos_logger
-# from gemseo.core.chain import MDOChain
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
@@ -148,7 +144,7 @@ class ProxyDiscipline(object):
     # column_editable)}
     DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
     DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
-
+    #
     DF_EXCLUDED_COLUMNS = 'dataframe_excluded_columns'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     DISCIPLINES_FULL_PATH_LIST = 'discipline_full_path_list'
@@ -186,9 +182,10 @@ class ProxyDiscipline(object):
         if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
             UNSUPPORTED_GEMSEO_TYPES.append(type)
 
-    # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
-    # df_dict = dict , string_dict = dict, list_dict = dict
+    # # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
+    # # df_dict = dict , string_dict = dict, list_dict = dict
     TYPE_METADATA = "type_metadata"
+
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
 
@@ -466,7 +463,6 @@ class ProxyDiscipline(object):
 
     def get_variable_name_from_ns_key(self, io_type, ns_key):
         """
-        UNUSED [???]
         """
         return self.get_data_io_dict(io_type)[ns_key][self.VAR_NAME]
 
@@ -1129,44 +1125,6 @@ class ProxyDiscipline(object):
 
         return values_dict
 
-    # -- execute/runtime section
-    #     def execute(self, input_data=None):
-    #         """
-    #         Overwrite execute method from MDODiscipline to load input_data from datamanager if possible
-    #         IMPORTANT NOTE: input_data should NOT be filled when execute called outside GEMS
-    #         """
-    #         if input_data is None:
-    #             # if no input_data, i.e. not called by GEMS
-    #             input_data = self.get_input_data_for_gems()
-    #         else:
-    #             # if input_data exists, i.e. called by GEMS
-    #             # no need to convert the data
-    #             pass
-    #
-    #         # update status to 'PENDING' after configuration
-    #         self.update_status_pending()
-    #
-    #         result = None
-    #         try:
-    #             result = MDODiscipline.execute(self, input_data=input_data)
-    #         except Exception as error:
-    #             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
-    #             # so we have to force data manager status update in this case
-    #             self._update_status_dm(self.status)
-    #             raise error
-    #
-    #         # When execution is done, is the status is again to 'pending' then we have to check if execution has been used
-    #         # If execution cache is used, then the discipline is not run and its
-    #         # status is not changed
-    #         if (self.status == ProxyDiscipline.STATUS_PENDING and self._cache_was_loaded is True):
-    #             self._update_status_recursive(self.STATUS_DONE)
-    #
-    #         self.__check_nan_in_data(result)
-    # m
-    #         if self.check_min_max_couplings:
-    #             self.display_min_max_couplings()
-    #         return result
-
     #     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
     #                   exec_before_linearize=True):
     #         """overloads GEMS linearize function
@@ -1422,12 +1380,6 @@ class ProxyDiscipline(object):
         '''
         self.dm.set_values_from_dict(local_data)
 
-    def run(self):
-        '''
-        To be overloaded by sublcasses [???]
-        '''
-        raise NotImplementedError()
-
     def _update_study_ns_in_varname(self, names):
         '''
         Updates the study name in the variable input names.
@@ -1456,24 +1408,6 @@ class ProxyDiscipline(object):
         '''
         # fill data using data connector if needed
         self._update_with_values(self._data_out, dict_values, update_dm)
-
-    def fill_output_value_connector(self):
-        """
-        get value of output variable with data connector
-        """
-        self._data_out
-        updated_values = {}
-        for key in self._data_out.keys():
-            # if data connector is needed, use it
-            if self.CONNECTOR_DATA in self._data_out[key].keys():
-                if self._data_out[key][self.CONNECTOR_DATA] is not None:
-                    # desc out is used because user update desc out keys.
-
-                    updated_values[key] = ConnectorFactory.use_data_connector(
-                        self._data_out[key][self.CONNECTOR_DATA],
-                        self.ee.logger)
-
-        self.store_sos_outputs_values(updated_values)
 
     def update_meta_data_out(self, new_data_dict):
         """
@@ -1656,20 +1590,6 @@ class ProxyDiscipline(object):
         # Force update into discipline_dict (GEMS can change status but cannot update the
         # discipline_dict
         self.dm.disciplines_dict[self.disc_id]['status'] = status
-
-    def update_status_pending(self):
-        """
-        Recursively update STATUS_PENDING for self and descendancy of sub proxies and in data manager.
-        """
-        # keep reference branch status to 'REFERENCE'
-        self._update_status_recursive(self.STATUS_PENDING)
-
-    def update_status_running(self):
-        """
-        Recursively update STATUS_RUNNING for self and descendancy of sub proxies and in data manager.
-        """
-        # keep reference branch status to 'REFERENCE'
-        self._update_status_recursive(self.STATUS_RUNNING)
 
     def _update_status_recursive(self, status):
         """

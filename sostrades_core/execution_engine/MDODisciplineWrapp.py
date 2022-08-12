@@ -21,12 +21,8 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 
-class SoSWrappException(Exception):
+class MDODisciplineWrappException(Exception):
     pass
-
-
-# to avoid circular redundancy with nsmanager
-NS_SEP = '.'
 
 
 class MDODisciplineWrapp(object):
@@ -161,17 +157,6 @@ class MDODisciplineWrapp(object):
         self._init_grammar_with_keys(proxy)
         self._update_default_values(input_data)
         proxy.status = self.mdo_discipline.status
-
-    # def create_wrapp(self):  # type: (...) -> None
-    #     """
-    #     SoSWrapp instanciation
-    #     """
-    #     if self.wrapping_mode == 'SoSTrades':
-    #         # self.wrapper = SoSMDODiscipline(self.sos_name,self.wrapper)
-    #         pass
-    #     else:
-    #         # self.mdo_discipline = create_discipline(self.sos_name)
-    #         pass
 
     def execute(self, input_data):
         """
