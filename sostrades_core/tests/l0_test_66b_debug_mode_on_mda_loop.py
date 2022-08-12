@@ -182,7 +182,7 @@ class TestMDALoop(unittest.TestCase):
             raise Exception('Execution worked, and it should not have')
 
 
-    def test_05_debug_mode_mda_min_max_coupling(self):
+    def test_04_debug_mode_mda_min_max_coupling(self):
         """
         Checks message is logged after activating min_max_coupling debug mode.
         """
@@ -245,11 +245,7 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
         self.assertIn('Discipline Sellar_1 set to debug mode min_max_grad', self.my_handler.msg_list)
 
-        exec_eng.execute()
-        self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
-        self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
-
-    def test_05_debug_mode_coupling_cumulative(self):
+    def _test_06_debug_mode_coupling(self):
         """
         Checks the recursive, cumulative propagation of coupling debug mode flags on ProxyDiscipline side.
         """
@@ -281,22 +277,55 @@ class TestMDALoop(unittest.TestCase):
 
 
         exec_eng.load_study_from_input_dict(disc_dict)
+        # test that the dm has the proper values
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'linearize_data_change')
 
-        self.assertIn('Discipline Sellar_1 set to debug mode nan', self.my_handler.msg_list)
-        self.assertIn('Discipline Sellar_3 set to debug mode min_max_grad', self.my_handler.msg_list)
-        self.assertIn(f'Discipline {coupling_name} set to debug mode input_change', self.my_handler.msg_list)
+        # test the activation has been properly logged
+        self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
+        self.assertIn('Discipline Sellar_3 set to debug mode linearize_data_change', self.my_handler.msg_list)
+        self.assertIn(f'Discipline {coupling_name} set to debug mode linearize_data_change', self.my_handler.msg_list)
         self.assertIn(f'Discipline {self.name} set to debug mode linearize_data_change', self.my_handler.msg_list)
-        # the Sellar_Problem has all the debug modes
-        self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
 
-        # each of the other disciplines have their own debug modes
-        self.assertIn('nan', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
-        self.assertNotIn('nan', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
-        self.assertIn('min_max_grad', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
-        self.assertNotIn('min_max_grad', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
+        # the information has been properly transmitted to the sos_wrapps for execution
+        exec_eng.execute()
+        self.assertEqual(
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.local_data_short_name['debug_mode'],
+            'linearize_data_change')
+        self.assertEqual(
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.local_data_short_name['debug_mode'],
+            'linearize_data_change')
+        self.assertEqual(
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.local_data_short_name['debug_mode'],
+            'linearize_data_change')
 
-        # and all have those transmitted by the couplings
-        self.assertIn('input_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
-        self.assertIn('input_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
-        self.assertIn('linearize_data_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes)
-        self.assertIn('linearize_data_change', exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].debug_modes)
+        # check that if I deactivate the debug mode of the lower coupling nothing happens
+        disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = ''
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'linearize_data_change')
+
+
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 1.
+
+        # check that if I deactivate the debug mode of the higher coupling the disciplines go back to the debug mode defined
+        disc_dict[f'{self.name}.debug_mode'] = ''
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'all')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'nan')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'min_max_grad')
+
+        exec_eng.execute()
+        self.assertEqual(
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.local_data_short_name['debug_mode'],
+            'all')
+        self.assertEqual(
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.local_data_short_name['debug_mode'],
+            'nan')
+        self.assertEqual(
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.local_data_short_name['debug_mode'],
+            'min_max_grad')

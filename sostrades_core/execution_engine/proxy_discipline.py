@@ -188,7 +188,8 @@ class ProxyDiscipline(object):
 
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
-
+    
+    DEBUG_MODE = 'debug_mode'
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
@@ -212,7 +213,7 @@ class ProxyDiscipline(object):
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
-        'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+        DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                        NUMERICAL: True, 'structuring': True}
     }
 
@@ -266,10 +267,6 @@ class ProxyDiscipline(object):
         """
         self.proxy_disciplines = []
         self._status = None
-
-        # ------------DEBUG VARIABLES----------------------------------------
-        self.debug_modes = []
-        # ----------------------------------------------------
 
         # -- Base disciplinary attributes
         self.jac_boundaries = {}
@@ -346,7 +343,6 @@ class ProxyDiscipline(object):
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
-        self.mdo_discipline_wrapp.mdo_discipline.debug_modes = [mode for mode in self.debug_modes]
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
 
@@ -727,13 +723,13 @@ class ProxyDiscipline(object):
         if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
-            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
 
+            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
                 self._reset_cache = True
 
             # Debug mode logging and recursive setting (priority to the parent)
-            debug_mode = self.get_sosdisc_inputs('debug_mode')
+            debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
             if debug_mode != "":
                 if debug_mode == "all":
                     for mode in self.AVAILABLE_DEBUG_MODE:
@@ -749,14 +745,10 @@ class ProxyDiscipline(object):
         """
         set debug mode recursively to children with priority to parent
         """
-
-        if debug_mode == 'all':
-            self.debug_modes = [mode for mode in ProxyDiscipline.AVAILABLE_DEBUG_MODE if mode not in ['','all']]
-        elif debug_mode not in self.debug_modes:
-            self.debug_modes.append(debug_mode)
-
-        for proxy_disc in self.proxy_disciplines:
-            proxy_disc.set_debug_mode_rec(debug_mode)
+        self.dm.set_data(self.get_var_full_name(
+            self.DEBUG_MODE, self._data_in), self.VALUE, debug_mode, check_value=False)
+        for disc in self.proxy_disciplines:
+            disc.set_debug_mode_rec(debug_mode)
 
     def set_children_cache_inputs(self):
         '''
