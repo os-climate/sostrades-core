@@ -69,6 +69,9 @@ class TestMDALoop(unittest.TestCase):
         sleep(0.5)
 
     def test_01_debug_mode_mda_nan(self):
+        """
+        Checks exception is raised by activating nan debug mode in a bugged discipline.
+        """
 
         exec_eng = ExecutionEngine(self.name)
 
@@ -103,6 +106,9 @@ class TestMDALoop(unittest.TestCase):
             raise Exception('Execution worked, and it should not have')
 
     def test_02_debug_mode_mda_input_change(self):
+        """
+        Checks exception is raised by activating input_change debug mode in a bugged discipline.
+        """
 
         exec_eng = ExecutionEngine(self.name)
 
@@ -137,6 +143,10 @@ class TestMDALoop(unittest.TestCase):
             raise Exception('Execution worked, and it should not have')
 
     def _test_03_debug_mode_mda_linearize_data_change(self):
+        """
+        Checks exception is raised by activating linearize_data_change debug mode in a bugged discipline.
+        """
+
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines SellarCoupling
@@ -173,6 +183,10 @@ class TestMDALoop(unittest.TestCase):
 
 
     def test_05_debug_mode_mda_min_max_coupling(self):
+        """
+        Checks message is logged after activating min_max_coupling debug mode.
+        """
+
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines SellarCoupling
@@ -199,6 +213,9 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.515922583453351>', self.my_handler.msg_list)
 
     def test_05_debug_mode_all(self):
+        """
+        Check the proper setting of debug mode all both on ProxyDiscipline and SoSMDODiscipline sides.
+        """
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.logger.setLevel(DEBUG)
@@ -232,7 +249,10 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
         self.assertEqual(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.debug_modes, ['nan', 'input_change', 'linearize_data_change', 'min_max_grad', 'min_max_couplings'])
 
-    def test_05_debug_mode_coupling(self):
+    def test_05_debug_mode_coupling_cumulative(self):
+        """
+        Checks the recursive, cumulative propagation of coupling debug mode flags on ProxyDiscipline side.
+        """
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.logger.setLevel(DEBUG)

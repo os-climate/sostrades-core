@@ -91,7 +91,7 @@ class TestCache(unittest.TestCase):
 
     def test_1_test_cache_discipline_without_input_change(self):
         '''
-        check discipline namespace update
+        Checks cache setting and number of calls.
         '''
         # WITHOUT CACHE
 
@@ -196,7 +196,7 @@ class TestCache(unittest.TestCase):
 
     def test_2_test_cache_discipline_with_input_change(self):
         '''
-        check discipline namespace update
+        Checks number of calls is coherent.
         '''
         print_test_name()
         self.ee.select_root_process(self.repo, 'test_disc1')
@@ -231,7 +231,7 @@ class TestCache(unittest.TestCase):
 
     def test_3_test_cache_coupling_without_input_change(self):
         '''
-        check discipline namespace update
+        Checks number of calls is coherent.
         '''
         print_test_name()
         self.ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
@@ -258,7 +258,7 @@ class TestCache(unittest.TestCase):
 
     def test_4_test_cache_coupling_with_input_change(self):
         '''
-        check discipline namespace update
+        Checks number of calls is coherent.
         '''
         print_test_name()
         self.ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
@@ -332,7 +332,8 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_5_cache_coupling_wo_change_of_strings(self):
-        ''' test with input type not converted by SoSTrades
+        '''
+        Checks number of calls is coherent.
         '''
         ns_dict = {'ns_ac': self.name}
 
@@ -395,14 +396,13 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 0
         n_calls_disc2 += 0
         # check
-        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        # self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
         self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def _test_6_test_cache_coupling_with_string_change(self):
         '''
-        check discipline namespace update with string change
-        and check metadata known values
+        Checks number of calls is coherent.
         '''
         ns_dict = {'ns_ac': self.name}
 
@@ -514,8 +514,7 @@ class TestCache(unittest.TestCase):
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
         '''
-        check discipline namespace update with string change
-        and check metadata known values
+        Checks number of calls is coherent.
         '''
         ns_dict = {'ns_ac': self.name}
 
@@ -598,8 +597,6 @@ class TestCache(unittest.TestCase):
 
     def _test_8_test_cache_coupling_with_string_list_change(self):
         '''
-        check discipline namespace update with string change 
-        and check metadata known values 
         '''
         ns_dict = {'ns_ac': self.name}
 
@@ -696,8 +693,7 @@ class TestCache(unittest.TestCase):
 
     def test_9_test_cache_coupling_with_string_list_of_dict_change(self):
         '''
-        check discipline namespace update with string change 
-        and check metadata known values 
+        Checks number of calls is coherent.
         '''
         ns_dict = {'ns_ac': self.name}
 
@@ -1373,8 +1369,10 @@ class TestCache(unittest.TestCase):
         for discipline in study_1.execution_engine.factory.sos_disciplines:
             self.assertEqual(discipline.get_sosdisc_inputs('cache_type'), 'SimpleCache')
 
-    def test_17_cache_and_status(self):
-        ''' test with input type not converted by SoSTrades
+    def test_17_cache_and_status_coupling(self):
+        '''
+        Checks that both SoSTrades and GEMSEO objects have status PENDING after a second prepare_execution and go DONE
+        when the coupling loads cache.
         '''
         from gemseo.core.discipline import MDODiscipline
 
