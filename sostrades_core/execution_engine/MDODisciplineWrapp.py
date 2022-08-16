@@ -107,10 +107,13 @@ class MDODisciplineWrapp(object):
                                                    reduced_dm=reduced_dm)
             self._init_grammar_with_keys(proxy)
             self._update_default_values(input_data)
+            self._set_wrapper_attributes(proxy,self.wrapper)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
+    def _set_wrapper_attributes(self, proxy,wrapper):
+        proxy.set_wrapper_attributes(wrapper)
     def _init_grammar_with_keys(self, proxy):
         '''
         initialize GEMS grammar with names and type None
@@ -138,7 +141,9 @@ class MDODisciplineWrapp(object):
         if input_data is not None:
             for key in self.mdo_discipline.input_grammar.get_data_names():
                 self.mdo_discipline._default_inputs[key] = input_data.get(key)
-        
+
+
+
     def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
         """
         MDAChain instanciation when owned by a ProxyCoupling.

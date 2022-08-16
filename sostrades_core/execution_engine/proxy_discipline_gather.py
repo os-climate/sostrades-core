@@ -60,8 +60,11 @@ class ProxyDisciplineGather(ProxyDiscipline):
         self.input_map_value = None
         self.sc_map = ee.smaps_manager.get_build_map(self.map_name)
         self.builder = cls_builder
+        mod_path = f'{self.EE_PATH}.disciplines_wrappers.discipline_gather_wrapper.DisciplineGatherWrapper'
+        cls = self.__factory.get_disc_class_from_module(mod_path)
+        self.cls_gather = cls
 
-        ProxyDiscipline.__init__(self, sos_name, ee)
+        ProxyDiscipline.__init__(self, sos_name, ee,cls)
 
         # add input_name to inst_desc_in
         self.build_inst_desc_in_with_map()
@@ -148,7 +151,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         gather_ns_out = self.sc_map.get_gather_ns_out()
 
         # get gather builder
-        mod_path = f'{self.EE_PATH}.sos_discipline_gather.SoSDisciplineGather'
+        mod_path = f'{self.EE_PATH}.proxy_discipline_gather.ProxyDisciplineGather'
         cls_gather = self.__factory.get_disc_class_from_module(mod_path)
 
         for var_name in self.var_to_gather:
@@ -259,36 +262,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
         self.clean_variables(keys_to_delete, self.IO_TYPE_IN)
 
-    def run(self):
-        '''
-        Run function of the SoSGather : Collect variables to gather in a dict 
-        Assemble the output dictionary and store it in the DM
-        '''
-        # get gather builder
-        mod_path = f'{self.EE_PATH}.proxy_discipline_gather.ProxyDisciplineGather'
-        cls_gather = self.__factory.get_disc_class_from_module(mod_path)
-
-        new_values_dict = {}
-
-        input_name = self.sc_map.get_input_name()  # ac_name_list
-        gather_inputs = self.get_sosdisc_inputs(in_dict=True)
-
-        for var_gather in self.var_to_gather:
-            gather_dict = {}
-            if self.builder.cls == cls_gather:
-                for name in gather_inputs[input_name]:
-                    for sub_name, value in gather_inputs[f'{name}.{var_gather}'].items():
-                        gather_dict[f'{name}.{sub_name}'] = value
-                new_values_dict[f'{var_gather}'] = gather_dict
-            else:
-                for name in gather_inputs[input_name]:
-                    if f'{name}.{var_gather}' in gather_inputs:
-                        gather_dict[name] = gather_inputs[f'{name}.{var_gather}']
-                new_values_dict[f'{var_gather}_dict'] = gather_dict
-
-        self.store_sos_outputs_values(new_values_dict)
-    #-- Configure handling
-
     def get_maturity(self):
         '''FIX: solve conflicts between commits
             709b4be "Modify the exec_engine for evaluator processes" VJ
@@ -296,3 +269,19 @@ class ProxyDisciplineGather(ProxyDiscipline):
         # maturity = {}
         # return maturity
         return ''
+
+    def setup_sos_disciplines(self):
+        """
+        Method to be overloaded to add dynamic inputs/outputs using add_inputs/add_outputs methods.
+        If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
+        DESC_IN = {'X': {'structuring':True}}
+        """
+        pass
+
+    def set_wrapper_attributes(self,wrapper):
+        """ set the attribute attributes of wrapper
+        """
+        wrapper.attributes = {'input_name':self.sc_map.get_input_name(),
+                              'builder_cls':self.builder.cls,
+                              'var_gather':self.var_to_gather,
+                              'cls_gather':self.cls_gather}

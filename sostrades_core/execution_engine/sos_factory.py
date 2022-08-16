@@ -559,7 +559,7 @@ class SosFactory:
 
     def create_gather_builder(self, sos_name, map_name, cls_builder):
         """
-        create a builder  defined by a gather type SoSDisciplineGather
+        create a builder  defined by a gather type ProxyDisciplineGather
         """
         mod_path = f'{self.EE_PATH}.proxy_discipline_gather.ProxyDisciplineGather'
         cls = self.get_disc_class_from_module(mod_path)

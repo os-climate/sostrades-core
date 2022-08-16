@@ -77,6 +77,7 @@ class SoSWrapp(object):
         self.sos_name = sos_name
         self.local_data_short_name = {}
         self.run_output = {}
+        self.attributes = {}
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
         """

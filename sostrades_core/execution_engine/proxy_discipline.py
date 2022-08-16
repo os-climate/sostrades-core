@@ -1889,3 +1889,8 @@ class ProxyDiscipline(object):
         self.ee.ns_manager.remove_dependencies_after_disc_deletion(
             self, self.disc_id)
         self.ee.factory.remove_sos_discipline(self)
+
+    def set_wrapper_attributes(self,wrapper):
+        """ set the attribute attributes of wrapper
+        """
+        pass

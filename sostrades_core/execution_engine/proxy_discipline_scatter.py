@@ -339,3 +339,4 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         for proxy_discipline in self.proxy_disciplines:
             proxy_discipline.set_status_from_mdo_discipline()
         self.status = self.STATUS_DONE
+
