@@ -509,6 +509,7 @@ class ExecutionEngine:
     def set_debug_mode(self, mode=None, disc=None):
         ''' set recursively <disc> debug options of in ProxyDiscipline
         '''
+        # FIXME : update with new debug mode logic
         if disc is None:
             disc = self.root_process
         mode_str = mode

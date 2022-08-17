@@ -165,7 +165,7 @@ class SoSMDODiscipline(MDODiscipline):
             return self.input_grammar.get_data_names()
         else:
             return self.filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=LOGGER)
+                                                    logger=LOGGER) # FIXME: self.filter_variables_to_convert
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """
