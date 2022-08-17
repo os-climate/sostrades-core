@@ -23,7 +23,7 @@ from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-# from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
+from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
@@ -72,8 +72,8 @@ class ExecutionEngine:
                               study_filename=self.study_filename,
                               ns_manager=self.ns_manager,
                               logger=get_sos_logger(f'{self.logger.name}.DataManager'))
-#         self.smaps_manager = ScatterMapsManager(
-#             name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
+        self.smaps_manager = ScatterMapsManager(
+             name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
         self.__factory = SosFactory(
             self, self.study_name)
 
@@ -578,9 +578,7 @@ class ExecutionEngine:
 
         # -- execution with input data from DM
         ex_proc = self.root_process
-        input_data_root_process = self.get_input_data_for_gemseo(ex_proc)
-        ex_proc.execute(input_data=input_data_root_process)
-        
+        ex_proc.execute(input_data=input_data)
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())

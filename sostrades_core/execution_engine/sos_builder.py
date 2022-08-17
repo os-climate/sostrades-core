@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -86,11 +87,16 @@ class SoSBuilder(object):
         return self.disc
 
     def create_disc(self, future_new_ns_disc_name):
-        if self.cls.__name__ == 'ProxyCoupling':
+        if self.cls.__name__ in ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather']:
             self.disc = self.cls(**self.__args)
         else:
             self.disc = ProxyDiscipline(**self.__args)
-            
+
+        # if self.cls.__name__ == 'ProxyDiscipline':
+        #     self.disc = ProxyDiscipline(**self.__args)
+        # else:
+        #     self.disc = self.cls(**self.__args)
+
         self.disc.father_builder = self
         self.discipline_dict[future_new_ns_disc_name] = self.disc
 
