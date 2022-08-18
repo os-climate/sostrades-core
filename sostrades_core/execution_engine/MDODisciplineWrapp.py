@@ -106,7 +106,7 @@ class MDODisciplineWrapp(object):
                                                    sos_wrapp=self.wrapper,
                                                    reduced_dm=reduced_dm)
             self._init_grammar_with_keys(proxy)
-            self._update_default_values(input_data)
+            self._update_all_default_values(input_data)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
@@ -128,9 +128,9 @@ class MDODisciplineWrapp(object):
         grammar.clear()
         grammar.initialize_from_base_dict({output: None for output in output_names})
         
-    def _update_default_values(self, input_data):
+    def _update_all_default_values(self, input_data):
         '''
-        Store input_data in default values of mdo_discipline
+        Store all input grammar data names' values from input data in default values of mdo_discipline
 
         Arguments:
             input_data (dict): values to store
@@ -138,7 +138,21 @@ class MDODisciplineWrapp(object):
         if input_data is not None:
             for key in self.mdo_discipline.input_grammar.get_data_names():
                 self.mdo_discipline._default_inputs[key] = input_data.get(key)
-        
+
+    def update_default_from_dict(self, input_dict, check_input=True):
+        '''
+        Store values from input_dict in default values of mdo_discipline (when keys are present in input grammar data
+        names or input is not checked)
+
+        Arguments:
+            input_dict (dict): values to store
+            check_input (bool): flag to specify if inputs are checked or not to exist in input grammar
+        '''
+        if input_dict is not None:
+            to_update = [(key, value) for (key, value) in input_dict.items()
+                         if not check_input or key in self.mdo_discipline.input_grammar.get_data_names()]
+            self.mdo_discipline._default_inputs.update(to_update)
+
     def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
         """
         MDAChain instanciation when owned by a ProxyCoupling.
@@ -155,7 +169,7 @@ class MDODisciplineWrapp(object):
                                       ** proxy._get_numerical_inputs())
         
         self._init_grammar_with_keys(proxy)
-        self._update_default_values(input_data)
+        self._update_all_default_values(input_data)
         proxy.status = self.mdo_discipline.status
 
     def execute(self, input_data):

@@ -351,8 +351,9 @@ class ProxyDiscipline(object):
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
             if self._reset_debug_mode:
-                # TODO: TURN THIS INTO NON-PRIVATE METHOD SPECIFIC TO DEBUG MODE DEFAULT VALUE NOT ALL INPUT DATA
-                self.mdo_discipline_wrapp._update_default_values(input_data)
+                # update default values when changing debug modes between executions
+                to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
+                self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
