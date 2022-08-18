@@ -38,7 +38,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import conve
     convert_new_type_into_array
 
 from gemseo.core.discipline import MDODiscipline
-from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from gemseo.core.chain import MDOChain
 
 
@@ -236,7 +236,7 @@ class ProxyDiscipline(object):
         Arguments:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
-            cls_builder (Class): class constructor of the user-defined wrapper (or None) [???]
+            cls_builder (Class): class constructor of the user-defined wrapper (or None)
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances

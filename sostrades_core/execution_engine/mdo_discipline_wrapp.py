@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.SoSMDODiscipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
 
 '''

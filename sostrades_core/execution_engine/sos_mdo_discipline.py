@@ -16,7 +16,7 @@ limitations under the License.
 
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 import logging
 # debug mode

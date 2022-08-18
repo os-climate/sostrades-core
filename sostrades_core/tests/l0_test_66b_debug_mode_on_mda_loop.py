@@ -57,7 +57,7 @@ class TestMDALoop(unittest.TestCase):
         self.name = 'EE'
         self.root_dir = gettempdir()
         self.my_handler = UnitTestHandler()
-        LOGGER = getLogger('sostrades_core.execution_engine.SoSMDODiscipline')
+        LOGGER = getLogger('sostrades_core.execution_engine.sos_mdo_discipline')
         LOGGER.setLevel(DEBUG)
         LOGGER.addHandler(self.my_handler)
 
