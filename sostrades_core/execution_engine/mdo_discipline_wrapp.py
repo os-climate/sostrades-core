@@ -106,7 +106,6 @@ class MDODisciplineWrapp(object):
                                                    cache_file_path=cache_file_path,
                                                    sos_wrapp=self.wrapper,
                                                    reduced_dm=reduced_dm)
-
             self._init_grammar_with_keys(proxy)
             self._update_all_default_values(input_data)
 

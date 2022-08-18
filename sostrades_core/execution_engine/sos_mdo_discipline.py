@@ -76,11 +76,12 @@ class SoSMDODiscipline(MDODiscipline):
         """
         Call user-defined wrapper run.
         """
+
         # local data with short names for the wrapper
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
 
         # debug mode: input change
-        if 'input_change' in self.debug_modes:
+        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
 
@@ -92,10 +93,10 @@ class SoSMDODiscipline(MDODiscipline):
         self.fill_output_value_connector()
 
         # debug modes
-        if 'nan' in self.debug_modes:
+        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['nan','all']:
             self.__check_nan_in_data(self.local_data)
 
-        if 'input_change' in self.debug_modes:
+        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
@@ -105,7 +106,7 @@ class SoSMDODiscipline(MDODiscipline):
             if output_error != '':
                 raise ValueError(output_error)
 
-        if 'min_max_couplings' in self.debug_modes:
+        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['min_max_couplings','all']:
             self.display_min_max_couplings()
 
     def create_local_data_short_name(self):
@@ -165,7 +166,7 @@ class SoSMDODiscipline(MDODiscipline):
             return self.input_grammar.get_data_names()
         else:
             return self.filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=LOGGER)
+                                                    logger=LOGGER) # FIXME: self.filter_variables_to_convert
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """
