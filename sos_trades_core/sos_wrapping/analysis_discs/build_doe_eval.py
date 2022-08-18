@@ -673,8 +673,8 @@ class BuildDoeEval(SoSEval):
             sub_process_inputs_dict = {}
             sub_process_inputs_dict['process_repository'] = self.sub_process_couple[0]
             sub_process_inputs_dict['process_name'] = self.sub_process_couple[1]
-            #sub_process_inputs_dict['usecase_name'] = self.usecase_couple[0]
-            #sub_process_inputs_dict['usecase_data'] = self.usecase_couple[1]
+            sub_process_inputs_dict['usecase_name'] = self.usecase_couple[0]
+            sub_process_inputs_dict['usecase_data'] = self.usecase_couple[1]
             dynamic_inputs.update({self.SUB_PROCESS_INPUTS: {'type': 'dict',
                                                              'unit': None,
                                                              'editable': False,
