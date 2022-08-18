@@ -29,7 +29,7 @@ from sostrades_core.execution_engine.data_connector.data_connector_factory impor
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_disc1_data_connector_dremio.usecase import Study
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class TestMetadataDiscipline(SoSWrapp):

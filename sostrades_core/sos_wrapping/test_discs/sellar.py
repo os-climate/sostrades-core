@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 '''
 Implementation of Sellar Disciplines (Sellar, 1996)

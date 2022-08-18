@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline

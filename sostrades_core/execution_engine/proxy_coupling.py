@@ -17,7 +17,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.mda.sequential_mda import MDASequential
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from gemseo.mda.mda_chain import MDAChain
-from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8

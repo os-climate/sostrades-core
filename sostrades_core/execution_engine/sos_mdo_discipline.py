@@ -16,7 +16,7 @@ limitations under the License.
 
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 import logging
 # debug mode
@@ -66,7 +66,6 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.output_full_name_map = None
-        self.debug_modes = [] # to be set by the proxy
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,

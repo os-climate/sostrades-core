@@ -38,7 +38,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import conve
     convert_new_type_into_array
 
 from gemseo.core.discipline import MDODiscipline
-from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from gemseo.core.chain import MDOChain
 
 
@@ -94,7 +94,7 @@ class ProxyDiscipline(object):
         _maturity (string): maturity of the user-defined model
 
 
-        cls (Class): constructor of the model wrapper with user-defined run (or None)
+        cls (Class): constructor of the model wrapper with user-defin ed run (or None)
     """
     # -- Disciplinary attributes
     DESC_IN = None
@@ -188,7 +188,8 @@ class ProxyDiscipline(object):
 
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
-
+    
+    DEBUG_MODE = 'debug_mode'
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
@@ -212,8 +213,8 @@ class ProxyDiscipline(object):
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
-        'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                       NUMERICAL: True, 'structuring': True}
+        DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+                       NUMERICAL: True, STRUCTURING: True}
     }
 
     # -- grammars
@@ -235,7 +236,7 @@ class ProxyDiscipline(object):
         Arguments:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
-            cls_builder (Class): class constructor of the user-defined wrapper (or None) [???]
+            cls_builder (Class): class constructor of the user-defined wrapper (or None)
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
@@ -267,9 +268,6 @@ class ProxyDiscipline(object):
         """
         self.proxy_disciplines = []
         self._status = None
-        # ------------DEBUG VARIABLES----------------------------------------
-        self.debug_modes = []
-        # ----------------------------------------------------
 
         # -- Base disciplinary attributes
         self.jac_boundaries = {}
@@ -291,6 +289,7 @@ class ProxyDiscipline(object):
         self.in_checkjac = False
         self._is_configured = False
         self._reset_cache = False
+        self._reset_debug_mode = False
 
         # -- disciplinary data attributes
         self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
@@ -351,11 +350,15 @@ class ProxyDiscipline(object):
                 # set new cache when cache_type have changed (self._reset_cache == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            if self._reset_debug_mode:
+                # update default values when changing debug modes between executions
+                to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
+                self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
-        self.mdo_discipline_wrapp.mdo_discipline.debug_modes = [mode for mode in self.debug_modes]
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
+        self._reset_debug_mode = False
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
@@ -744,36 +747,37 @@ class ProxyDiscipline(object):
         if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
-            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
 
+            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
                 self._reset_cache = True
 
             # Debug mode logging and recursive setting (priority to the parent)
-            debug_mode = self.get_sosdisc_inputs('debug_mode')
-            if debug_mode != "":
-                if debug_mode == "all":
-                    for mode in self.AVAILABLE_DEBUG_MODE:
-                        if mode not in ["", "all"]:
-                            self.logger.info(
-                                f'Discipline {self.sos_name} set to debug mode {mode}')
-                else:
-                    self.logger.info(
-                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                self.set_debug_mode_rec(debug_mode)
+            debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
+            if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
+                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE]==None): #not necessary on first config
+                self._reset_debug_mode = True
+                # logging
+                if debug_mode != "":
+                    if debug_mode == "all":
+                        for mode in self.AVAILABLE_DEBUG_MODE:
+                            if mode not in ["", "all"]:
+                                self.logger.info(
+                                    f'Discipline {self.sos_name} set to debug mode {mode}')
+                    else:
+                        self.logger.info(
+                            f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+
 
     def set_debug_mode_rec(self, debug_mode):
         """
         set debug mode recursively to children with priority to parent
         """
-
-        if debug_mode == 'all':
-            self.debug_modes = [mode for mode in ProxyDiscipline.AVAILABLE_DEBUG_MODE if mode not in ['', 'all']]
-        elif debug_mode not in self.debug_modes:
-            self.debug_modes.append(debug_mode)
-
-        for proxy_disc in self.proxy_disciplines:
-            proxy_disc.set_debug_mode_rec(debug_mode)
+        for disc in self.proxy_disciplines:
+            if ProxyDiscipline.DEBUG_MODE in disc._data_in:
+                self.dm.set_data(self.get_var_full_name(
+                    self.DEBUG_MODE, disc._data_in), self.VALUE, debug_mode, check_value=False)
+                disc.set_debug_mode_rec(debug_mode)
 
     def set_children_cache_inputs(self):
         '''
@@ -790,6 +794,9 @@ class ProxyDiscipline(object):
                         self.dm.set_data(disc.get_var_full_name(
                             ProxyDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path,
                             check_value=False)
+        if self._reset_debug_mode:
+            self.set_debug_mode_rec(self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
+            self._reset_debug_mode = False
 
     def setup_sos_disciplines(self):
         """

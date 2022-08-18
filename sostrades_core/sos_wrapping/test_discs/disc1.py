@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class Disc1(SoSWrapp):
@@ -50,41 +50,41 @@ class Disc1(SoSWrapp):
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 
-    # def get_chart_filter_list(self):
-    #
-    #     chart_filters = []
-    #
-    #     chart_list = ['y vs x']
-    #
-    #     chart_filters.append(ChartFilter(
-    #         'Charts', chart_list, chart_list, 'graphs'))
-    #
-    #     return chart_filters
-    #
-    # def get_post_processing_list(self, filters=None):
-    #
-    #     instanciated_charts = []
-    #
-    #     # Overload default value with chart filter
-    #     if filters is not None:
-    #         for chart_filter in filters:
-    #             if chart_filter.filter_key == 'graphs':
-    #                 charts_list = chart_filter.selected_values
-    #
-    #     if 'y vs x' in charts_list:
-    #
-    #         chart_name = 'y vs x'
-    #
-    #         y = self.get_sosdisc_outputs('y')
-    #         x = self.get_sosdisc_inputs('x')
-    #         print(y, x)
-    #         new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
-    #                                              chart_name=chart_name)
-    #         serie = InstanciatedSeries(
-    #             [x], [y], '', 'lines')
-    #
-    #         new_chart.series.append(serie)
-    #
-    #         instanciated_charts.append(new_chart)
-    #
-    #     return instanciated_charts
+    def get_chart_filter_list(self):
+
+        chart_filters = []
+
+        chart_list = ['y vs x']
+
+        chart_filters.append(ChartFilter(
+            'Charts', chart_list, chart_list, 'graphs'))
+
+        return chart_filters
+
+    def get_post_processing_list(self, filters=None):
+
+        instanciated_charts = []
+
+        # Overload default value with chart filter
+        if filters is not None:
+            for chart_filter in filters:
+                if chart_filter.filter_key == 'graphs':
+                    charts_list = chart_filter.selected_values
+
+        if 'y vs x' in charts_list:
+
+            chart_name = 'y vs x'
+
+            y = self.get_sosdisc_outputs('y')
+            x = self.get_sosdisc_inputs('x')
+            print(y, x)
+            new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
+                                                 chart_name=chart_name)
+            serie = InstanciatedSeries(
+                [x], [y], '', 'lines')
+
+            new_chart.series.append(serie)
+
+            instanciated_charts.append(new_chart)
+
+        return instanciated_charts
