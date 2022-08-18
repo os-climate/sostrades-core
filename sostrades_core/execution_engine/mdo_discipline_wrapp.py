@@ -108,7 +108,7 @@ class MDODisciplineWrapp(object):
                                                    reduced_dm=reduced_dm)
 
             self._init_grammar_with_keys(proxy)
-            self._update_default_values(input_data)
+            self._update_all_default_values(input_data)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
