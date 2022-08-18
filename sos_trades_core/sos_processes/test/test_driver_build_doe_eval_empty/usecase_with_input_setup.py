@@ -34,7 +34,7 @@ class Study(StudyManager):
         mod_id = 'test_disc_hessian'
         values_dict = {}
         values_dict[f'{self.study_name}.DoE_Eval.repo_of_sub_processes'] = repo
-        values_dict[f'{self.study_name}.DoE_Eval.sub_process_short_name'] = mod_id
+        values_dict[f'{self.study_name}.DoE_Eval.sub_process_name'] = mod_id
         values_dict[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'Empty'
         ######### Numerical values   ####
         x = 2.0
