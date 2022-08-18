@@ -11,3 +11,5 @@ class UnitConversion:
     ft_per_min_to_m_per_s = 0.00508  # feet per minute to meter per second
     m_per_s_to_km_per_h = 3.6  # meter per second to kilometer per hour
     deg_to_rad = pi / 180
+    kts_to_ms = m_per_s_to_km_per_h / nm_to_km
+    gravity = 9.81
