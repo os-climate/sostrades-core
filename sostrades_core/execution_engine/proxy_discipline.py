@@ -1388,15 +1388,6 @@ class ProxyDiscipline(object):
                     self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
-    def update_dm_with_local_data(self, local_data):
-        '''
-        Update the DM with local data from GEMSEO
-
-        Arguments:
-            local_data (dict): to update datamanager with
-        '''
-        self.dm.set_values_from_dict(local_data)
-
     def _update_study_ns_in_varname(self, names):
         '''
         Updates the study name in the variable input names.

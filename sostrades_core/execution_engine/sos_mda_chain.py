@@ -35,6 +35,8 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda
 
+import logging
+
 N_CPUS = cpu_count()
 
 
@@ -47,6 +49,7 @@ def get_available_linear_solvers():
 
     return algos
 
+LOGGER = logging.getLogger(__name__)
 
 class SoSMDAChain(MDAChain):
     """ GEMSEO Overload
@@ -57,7 +60,7 @@ class SoSMDAChain(MDAChain):
     """
 
     def __init__(self,
-            ee,
+#             ee,
             disciplines,  # type: Sequence[MDODiscipline]
             sub_mda_class="MDAJacobi",  # type: str
             max_mda_iter=20,  # type: int
@@ -73,13 +76,15 @@ class SoSMDAChain(MDAChain):
             log_convergence=False,  # type: bool
             linear_solver="DEFAULT",  # type: str
             linear_solver_options=None,  # type: Mapping[str,Any]
+            authorize_self_coupled_disciplines=False, # type: bool
             ** sub_mda_options  # type: Optional[Union[float, int, bool, str]]
             ):
         ''' Constructor
         '''
         self.is_sos_coupling = True
-        self.ee = ee
-        self.dm = ee.dm
+#         self.ee = ee
+#         self.dm = ee.dm
+        self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
         
         MDAChain.__init__(self,
             disciplines,  # type: Sequence[MDODiscipline]
@@ -99,7 +104,7 @@ class SoSMDAChain(MDAChain):
             linear_solver_options=linear_solver_options,  # type: Mapping[str,Any]
             ** sub_mda_options  # type: Optional[Union[float, int, bool, str]]
         )
-
+        
     def _set_dm_cache_map(self):
         '''
         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
@@ -227,7 +232,7 @@ class SoSMDAChain(MDAChain):
         
         # TODO: probably better if moved into proxy discipline
         
-        if self.logger.level <= logging.DEBUG:
+        if LOGGER.level <= logging.DEBUG:
             coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
             for from_disc, to_disc, c_vars in coupling_vars:
                 for var in c_vars:
@@ -240,7 +245,7 @@ class SoSMDAChain(MDAChain):
                     for data_name in to_disc.proxy_discipline.DATA_TO_CHECK:
                         # Check if data_names are different
                         if from_disc_data[data_name] != to_disc_data[data_name]:
-                            self.logger.debug(
+                            LOGGER.debug(
                                 f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
                         # Check if unit is not None
                         elif from_disc_data[data_name] is None and data_name == to_disc.proxy_discipline.UNIT:
@@ -249,13 +254,13 @@ class SoSMDAChain(MDAChain):
                             if from_disc_data[to_disc.proxy_discipline.TYPE] == 'dataframe':
                                 # if no dataframe descriptor and no unit warning
                                 if from_disc_data[to_disc.proxy_discipline.DATAFRAME_DESCRIPTOR] is None:
-                                    self.logger.debug(
+                                    LOGGER.debug(
                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
     # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
     #                             else :
     #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
                             else:
-                                self.logger.debug(
+                                LOGGER.debug(
                                     f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
 
     def _run(self):
@@ -263,33 +268,35 @@ class SoSMDAChain(MDAChain):
         Call the _run method of MDAChain in case of SoSCoupling.
         '''
         # set linear solver options for MDA
-        self.linear_solver = self.proxy_discipline.linear_solver_MDA
-        self.linear_solver_options = self.proxy_discipline.linear_solver_options_MDA
-        self.linear_solver_tolerance = self.proxy_discipline.linear_solver_tolerance_MDA
+        self.linear_solver = self.linear_solver_MDA
+        self.linear_solver_options = self.linear_solver_options_MDA
+        self.linear_solver_tolerance = self.linear_solver_tolerance_MDA
 
         self.pre_run_mda()
 
         if len(self.sub_mda_list) > 0:
-            self.logger.info(f'{self.proxy_discipline.get_disc_full_name()} MDA history')
-            self.logger.info('\tIt.\tRes. norm')
+            LOGGER.info(f'{self.name} MDA history')
+            LOGGER.info('\tIt.\tRes. norm')
 
         MDAChain._run(self)
 
-        # save residual history
-        dict_out = {}
-        residuals_history = DataFrame(
+        # save residual history 
+        # TODO: to write in data_out after execution
+        self.residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
-        dict_out[self.proxy_discipline.RESIDUALS_HISTORY] = residuals_history
-        self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
 
-        # store local data in datamanager
-        self.proxy_discipline.update_dm_with_local_data(self.local_data)
+        # nothing saved in the DM anymore during execution
 
-    def update_dm_with_local_data(self, local_data, dm):
-        '''
-        Update the DM with local data from GEMSEO
-        '''
-        dm.set_values_from_dict(local_data)
+#         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
+
+#         # store local data in datamanager
+#         self.proxy_discipline.update_dm_with_local_data(self.local_data)
+
+#     def update_dm_with_local_data(self, local_data, dm):
+#         '''
+#         Update the DM with local data from GEMSEO
+#         '''
+#         dm.set_values_from_dict(local_data)
 
     def pre_run_mda(self):
         '''
@@ -298,11 +305,11 @@ class SoSMDAChain(MDAChain):
         '''
         strong_couplings_values = [self.local_data[key] for key in self.strong_couplings if key in self.local_data]
         if len(strong_couplings_values) < len(self.strong_couplings):
-            self.logger.info(
-                f'Execute a pre-run for the coupling ' + self.proxy_discipline.get_disc_full_name())
+            LOGGER.info(
+                f'Execute a pre-run for the coupling ' + self.name)
             self.recreate_order_for_first_execution()
-            self.logger.info(
-                f'End of pre-run execution for the coupling ' + self.proxy_discipline.get_disc_full_name())
+            LOGGER.info(
+                f'End of pre-run execution for the coupling ' + self.name)
 
     def recreate_order_for_first_execution(self):
         '''
@@ -342,7 +349,7 @@ class SoSMDAChain(MDAChain):
 
                         for discipline in ready_disciplines:
                             # Execute ready disciplines and update local_data
-                            if discipline.proxy_discipline.is_sos_coupling:
+                            if discipline.is_sos_coupling:
                                 # recursive call if subdisc is a SoSCoupling
                                 # TODO: check if it will work for cases like
                                 # Coupling1 > Driver > Coupling2
@@ -417,12 +424,12 @@ class SoSMDAChain(MDAChain):
  
         # logging of residuals of the mdas
         # if len(self.sub_mda_list) > 0:
-        # self.logger.info(f'{self.get_disc_full_name()} MDA history')
+        # LOGGER.info(f'{self.get_disc_full_name()} MDA history')
         # for sub_mda in self.sub_mda_list:
-        # self.logger.info('\tIt.\tRes. norm')
+        # LOGGER.info('\tIt.\tRes. norm')
         # for res_tuple in sub_mda.residual_history:
         # res_norm = '{:e}'.format(res_tuple[0])
-        # self.logger.info(f'\t{res_tuple[1]}\t{res_norm}')
+        # LOGGER.info(f'\t{res_tuple[1]}\t{res_norm}')
         
     def _old_sos_discipline_run(self):
         """ Temporary call to sostrades run that was previously in SoSDiscipline
@@ -457,7 +464,7 @@ class SoSMDAChain(MDAChain):
 
         except Exception as exc:
             self._update_status_dm(self.STATUS_FAILED)
-            self.logger.exception(exc)
+            LOGGER.exception(exc)
             raise exc
 
         # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
@@ -477,7 +484,7 @@ class SoSMDAChain(MDAChain):
         '''
         Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
         '''
-        self.logger.info(
+        LOGGER.info(
             f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
 
         return self._old_discipline_linearize(input_data=input_data,
@@ -669,17 +676,18 @@ class SoSMDAChain(MDAChain):
             sub_coupling_structures = repeat(None)
 
         sub_coupling_structures_iterator = iter(sub_coupling_structures)
-
+        
         for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
             # for now, parallel tasks are run sequentially
             for coupled_disciplines in parallel_tasks:
                 first_disc = coupled_disciplines[0]
+                print("self.authorize_self_coupled_disciplines", self.authorize_self_coupled_disciplines)
                 if len(coupled_disciplines) > 1 or (
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
-                        and not coupled_disciplines[0].proxy_discipline.is_sos_coupling
-                        and self.get_inputs_by_name('authorize_self_coupled_disciplines')
+                        and not coupled_disciplines[0].is_sos_coupling
+                        and self.authorize_self_coupled_disciplines
                 ):
                     # several disciplines coupled
 
@@ -750,7 +758,7 @@ class SoSMDAChain(MDAChain):
             # - build the parallel chain
             n_subcouplings_parallel = self.get_inputs_by_name(
                 "n_subcouplings_parallel")
-            self.logger.info(
+            LOGGER.info(
                 "Detection of %s parallelized disciplines" % str(len(scenarios)))
             par_chain = SoSParallelChain(scenarios, use_threading=False,
                                          name="SoSParallelChain",

@@ -15,6 +15,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.SoSMDODiscipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
+from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -105,6 +106,7 @@ class MDODisciplineWrapp(object):
                                                    cache_file_path=cache_file_path,
                                                    sos_wrapp=self.wrapper,
                                                    reduced_dm=reduced_dm)
+
             self._init_grammar_with_keys(proxy)
             self._update_default_values(input_data)
 
@@ -141,22 +143,41 @@ class MDODisciplineWrapp(object):
         
     def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
         """
-        MDAChain instanciation when owned by a ProxyCoupling.
+        MDAChain instantiation when owned by a ProxyCoupling.
 
         Arguments:
             sub_mdo_disciplines (List[MDODiscipline]): list of sub-MDODisciplines of the MDAChain
             proxy (ProxyDiscipline): proxy discipline for grammar initialisation
             input_data (dict): input data to update default values of the MDAChain with
         """
-        self.mdo_discipline = MDAChain(
-                                      disciplines=sub_mdo_disciplines,
-                                      name=proxy.get_disc_full_name(),
-                                      grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                      ** proxy._get_numerical_inputs())
-        
-        self._init_grammar_with_keys(proxy)
-        self._update_default_values(input_data)
-        proxy.status = self.mdo_discipline.status
+        if self.wrapping_mode == 'SoSTrades':
+            mdo_discipline = SoSMDAChain(
+                                          disciplines=sub_mdo_disciplines,
+                                          name=proxy.get_disc_full_name(),
+                                          grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                          ** proxy._get_numerical_inputs(),
+                                          authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
+            self.mdo_discipline = mdo_discipline
+            
+            # set linear solver options (todo after call to _get_numerical_inputs() )
+            # TODO: check with IRT how to handle it
+            mdo_discipline.linear_solver_MDA = proxy.linear_solver_MDA
+            mdo_discipline.linear_solver_options_MDA = proxy.linear_solver_options_MDA
+            mdo_discipline.linear_solver_tolerance_MDA = proxy.linear_solver_tolerance_MDA
+            mdo_discipline.linear_solver_MDO = proxy.linear_solver_MDO
+            mdo_discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
+            mdo_discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
+            
+            # set other additional options (SoSTrades)
+            mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines')
+                    
+#             self._init_grammar_with_keys(proxy)
+            self._update_default_values(input_data)
+            proxy.status = self.mdo_discipline.status
+
+        elif self.wrapping_mode == 'GEMSEO':
+            pass
+
 
     def execute(self, input_data):
         """

@@ -71,12 +71,12 @@ class SoSMDODiscipline(MDODiscipline):
                                grammar_type=grammar_type,
                                cache_type=cache_type,
                                cache_file_path=cache_file_path)
+        self.is_sos_coupling = False
 
     def _run(self):
         """
         Call user-defined wrapper run.
         """
-
         # local data with short names for the wrapper
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
 
