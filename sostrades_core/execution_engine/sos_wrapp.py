@@ -107,7 +107,6 @@ class SoSWrapp(object):
         Returns:
             The inputs values list or dict
         """
-
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
@@ -125,16 +124,46 @@ class SoSWrapp(object):
             else:
                 return list(inputs.values())[0]
 
+    def get_sosdisc_outputs(self, keys=None, in_dict=False):
+        """
+        Accessor for the outputs values as a list or dict.
+
+        Arguments:
+            keys (List): the output short names list
+            in_dict (bool): if output format is dict
+        Returns:
+            The outputs values list or dict
+        """
+        if keys is None:
+            # if no keys, get all discipline keys and force
+            # output format as dict
+            keys = list(self.run_output.keys()) # NB: method will return an empty dict, not raise error, if run_output uninitialized ({})
+            in_dict = True
+        outputs = self._get_sosdisc_io(
+            keys, io_type=self.IO_TYPE_OUT)
+        if in_dict:
+            # return outputs in an dictionary
+            return outputs
+        else:
+            # return outputs in an ordered tuple (default)
+            if len(outputs) > 1:
+                return list(outputs.values())
+            else:
+                return list(outputs.values())[0]
+
     def _get_sosdisc_io(self, keys, io_type):
         """
         Generic method to retrieve sos inputs and outputs
 
         Arguments:
             keys (List[String]): the data names list
-            io_type (string): 'in' or 'out' ???
+            io_type (string): 'in' or 'out'
             full_name: if keys in returned dict are full names
         Returns:
             dict of keys values
+        Raises:
+            ValueError if i_o type is not IO_TYPE_IN or IO_TYPE_OUT
+            KeyError if asked for an output key when self.run_output is not initialized
         """
 
         # convert local key names to namespaced ones
@@ -143,9 +172,15 @@ class SoSWrapp(object):
 
         values_dict = {}
 
+        if io_type == self.IO_TYPE_IN:
+            io_dict = self.local_data_short_name
+        elif io_type == self.IO_TYPE_OUT:
+            io_dict = self.run_output
+        else:
+            raise ValueError("Unknown io_type :" +
+                             str(io_type))
         for key in keys:
-            values_dict[key] = self.local_data_short_name[key]
-
+            values_dict[key] = io_dict[key]
         return values_dict
     
     def _run(self):

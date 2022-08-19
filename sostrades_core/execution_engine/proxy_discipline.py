@@ -1700,7 +1700,7 @@ class ProxyDiscipline(object):
 
         Returns: List[ChartFilter]
         """
-        return []
+        return self.mdo_discipline_wrapp.get_chart_filter_list()
 
     def get_post_processing_list(self, filters=None):
         """
@@ -1713,7 +1713,7 @@ class ProxyDiscipline(object):
             post processing instance list
         """
 
-        return []
+        return self.mdo_discipline_wrapp.get_post_processing_list(filters)
 
     def set_configure_status(self, is_configured):
         """
