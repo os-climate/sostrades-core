@@ -113,9 +113,6 @@ class BuildDoeEval(SoSEval):
     SUB_PROCESS_NAME = 'sub_process_name'
     USECASE_OF_SUB_PROCESS = 'usecase_of_sub_process'
 
-    SUB_PROCESSES_LIST_WEB = 'sub_processes_list'
-    USECASE_OF_SUB_PROCESS_WEB = 'usecase_of_sub_process_web'
-
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
 
     EVAL_INPUTS = 'eval_inputs'  # should be in SOS_EVAL
@@ -161,27 +158,40 @@ class BuildDoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    DESC_IN = {REPO_OF_SUB_PROCESSES: {'type': 'string',
-                                       'structuring': True,
-                                       #'default': 'None',
-                                       'possible_values': ['None', 'sos_trades_core.sos_processes.test'],
-                                       'user_level': 1,
-                                       'optional': False
-                                       },
-               SUB_PROCESS_NAME: {'type': 'string',
-                                  'structuring': True,
-                                  #'default': 'None',
-                                  #'editable': True,
-                                  'user_level': 1,
-                                  'optional': False
-                                  },
-               N_PROCESSES: {'type': 'int',
-                             'numerical': True,
-                             'default': 1},
-               WAIT_TIME_BETWEEN_FORK: {'type': 'float',
-                                        'numerical': True,
-                                        'default': 0.0},
-               }
+    default_sub_process_inputs_dict = {}
+    default_sub_process_inputs_dict['process_repository'] = None
+    default_sub_process_inputs_dict['process_name'] = None
+    default_sub_process_inputs_dict['usecase_name'] = 'Empty'
+    default_sub_process_inputs_dict['usecase_data'] = None
+
+    DESC_IN = {
+        SUB_PROCESS_INPUTS: {'type': 'dict',
+                             'structuring': True,
+                             'default': default_sub_process_inputs_dict,
+                             'user_level': 1,
+                             'optional': False
+                             },
+        REPO_OF_SUB_PROCESSES: {'type': 'string',
+                                'structuring': True,
+                                #'default': 'None',
+                                'possible_values': ['None', 'sos_trades_core.sos_processes.test'],
+                                'user_level': 1,
+                                'optional': False
+                                },
+        SUB_PROCESS_NAME: {'type': 'string',
+                           'structuring': True,
+                           #'default': 'None',
+                           #'editable': True,
+                           'user_level': 1,
+                           'optional': False
+                           },
+        N_PROCESSES: {'type': 'int',
+                      'numerical': True,
+                      'default': 1},
+        WAIT_TIME_BETWEEN_FORK: {'type': 'float',
+                                 'numerical': True,
+                                 'default': 0.0},
+    }
 
     DESC_OUT = {
         SAMPLES_INPUTS_DF: {'type': 'dataframe',
@@ -658,27 +668,17 @@ class BuildDoeEval(SoSEval):
                                                    'unit': None,
                                                    'editable': False,
                                                    'default': self.sub_process_ns_in_build}})
-        # Also provide desc_in for core/Web GUI/API link prototyping
-        if self.usecase_couple is not None:
-            dynamic_inputs.update({self.USECASE_OF_SUB_PROCESS_WEB: {'type': 'dict',
-                                                                     'unit': None,
-                                                                     'editable': False,
-                                                                     'default': self.usecase_couple[1]}})
-        if self.sub_process_couple is not None:
-            dynamic_inputs.update({self.SUB_PROCESSES_LIST_WEB: {'type': 'list',
-                                                                 'unit': None,
-                                                                 'editable': False,
-                                                                 'default': self.sub_process_couple}})
-        if self.sub_process_couple is not None and self.usecase_couple is not None:
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = self.sub_process_couple[0]
-            sub_process_inputs_dict['process_name'] = self.sub_process_couple[1]
-            sub_process_inputs_dict['usecase_name'] = self.usecase_couple[0]
-            sub_process_inputs_dict['usecase_data'] = self.usecase_couple[1]
-            dynamic_inputs.update({self.SUB_PROCESS_INPUTS: {'type': 'dict',
-                                                             'unit': None,
-                                                             'editable': False,
-                                                             'default': sub_process_inputs_dict}})
+        # Also provide desc_out for core/Web GUI/API link prototyping
+        # if self.sub_process_couple is not None and self.usecase_couple is not None:
+        #    sub_process_inputs_dict = {}
+        #    sub_process_inputs_dict['process_repository'] = self.sub_process_couple[0]
+        #    sub_process_inputs_dict['process_name'] = self.sub_process_couple[1]
+        #    sub_process_inputs_dict['usecase_name'] = self.usecase_couple[0]
+        #    sub_process_inputs_dict['usecase_data'] = self.usecase_couple[1]
+        #    dynamic_inputs.update({self.SUB_PROCESS_INPUTS: {'type': 'dict',
+        #                                                     'unit': None,
+        #                                                     'editable': False,
+        #                                                     'default': sub_process_inputs_dict}})
         return dynamic_inputs
 
     def setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(self, dynamic_inputs, dynamic_outputs):
