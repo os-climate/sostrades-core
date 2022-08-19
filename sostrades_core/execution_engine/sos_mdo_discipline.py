@@ -196,7 +196,7 @@ class SoSMDODiscipline(MDODiscipline):
         # pylint warning ==> method could be a function but when overridden,
         # it is a function==> self is required
 
-        return super().get_attributes_to_serialize() + _NEW_ATTR_TO_SERIALIZE
+        return super().get_attributes_to_serialize() + [self._NEW_ATTR_TO_SERIALIZE]
 
     # ----------------------------------------------------
     # ----------------------------------------------------
