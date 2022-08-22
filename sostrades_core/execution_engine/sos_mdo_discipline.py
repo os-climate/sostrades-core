@@ -92,6 +92,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.fill_output_value_connector()
 
         # debug modes
+        #FIXME: self.sos_wrapp.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE)
         if self.sos_wrapp.local_data_short_name['debug_mode'] in ['nan','all']:
             self.__check_nan_in_data(self.local_data)
 
@@ -149,6 +150,7 @@ class SoSMDODiscipline(MDODiscipline):
                     self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
                     LOGGER)
 
+        # FIXME: self.store_local_data(**updated_values)
         self.local_data.update(updated_values)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
