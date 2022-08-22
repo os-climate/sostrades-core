@@ -39,6 +39,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import conve
 
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.core.chain import MDOChain
 
 
@@ -189,7 +190,7 @@ class ProxyDiscipline(object):
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
     
-    DEBUG_MODE = 'debug_mode'
+    DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
@@ -927,7 +928,7 @@ class ProxyDiscipline(object):
             self.dm.set_values_from_dict(to_update_local_data)
         else:
             # update local_data after run
-            self.mdo_discipline.local_data.update(to_update_local_data)
+            self.mdo_discipline.store_local_data(**to_update_local_data)
 
         # need to update outputs that will disappear after filtering the
         # local_data with supported types

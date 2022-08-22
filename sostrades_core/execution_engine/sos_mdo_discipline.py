@@ -50,6 +50,7 @@ class SoSMDODiscipline(MDODiscipline):
    """
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
+    DEBUG_MODE = 'debug_mode'
 
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
         '''
@@ -80,7 +81,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
 
         # debug mode: input change
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
 
@@ -92,11 +93,10 @@ class SoSMDODiscipline(MDODiscipline):
         self.fill_output_value_connector()
 
         # debug modes
-        #FIXME: self.sos_wrapp.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE)
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['nan','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
             self.__check_nan_in_data(self.local_data)
 
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
@@ -106,7 +106,7 @@ class SoSMDODiscipline(MDODiscipline):
             if output_error != '':
                 raise ValueError(output_error)
 
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['min_max_couplings','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
 
     def create_local_data_short_name(self):
@@ -118,8 +118,10 @@ class SoSMDODiscipline(MDODiscipline):
         """
 
         local_data_short_name = {}
-        for key in self.get_input_data_names():
-            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
+        full_name_keys = self.get_input_data_names()
+        local_data_values = self.get_local_data_by_name(full_name_keys)
+        for key, value in zip(full_name_keys,local_data_values):
+            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = value
 
         if self.output_full_name_map is None:
             self.output_full_name_map = {}
@@ -150,8 +152,7 @@ class SoSMDODiscipline(MDODiscipline):
                     self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
                     LOGGER)
 
-        # FIXME: self.store_local_data(**updated_values)
-        self.local_data.update(updated_values)
+        self.store_local_data(**updated_values)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """
