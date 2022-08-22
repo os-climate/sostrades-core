@@ -1128,7 +1128,9 @@ class TestMDALoop(unittest.TestCase):
                          NR.linear_solver_options['max_iter'])
 
     def test_17_mda_loop_with_pre_run_mda_and_post_processing(self):
-
+        """
+        test the post-processing on discipline 6 after the mda loop
+        """
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.ns_manager.add_ns('ns_protected', self.name)
