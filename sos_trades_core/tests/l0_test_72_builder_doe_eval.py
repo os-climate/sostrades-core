@@ -1762,7 +1762,15 @@ class TestBuilderDoeEval(unittest.TestCase):
         self.check_discipline_values(
             hessian_disc, target_values_dict, print_flag=print_flag)
         # change of usecase
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        doe_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval')[0]
+        sub_process_inputs_dict = doe_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value']
+        sub_process_inputs_dict['usecase_name'] = 'usecase2'
         dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         dict_values[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'usecase2'
         print('load usecase2 file')
         study_dump.load_data(from_input_dict=dict_values)
@@ -2694,12 +2702,20 @@ class TestBuilderDoeEval(unittest.TestCase):
         # check input values (and print) of DoE_Eval discipline
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
+        tv_anonymize_input_dict_from_usecase = {}
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.ax2'] = 4.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.by2'] = 5.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.cx'] = 6.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.dy'] = 7.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.exy'] = 12.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.x'] = 2.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 3.0
         target_values_dict = {}
         tv_sub_process_inputs_dict = {}
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['repo_of_sub_processes'] = repo
         target_values_dict['sub_process_name'] = mod_id
@@ -2791,7 +2807,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['repo_of_sub_processes'] = repo
         target_values_dict['sub_process_name'] = mod_id
@@ -3023,12 +3039,18 @@ class TestBuilderDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         mod_id = 'test_proc_build_disc1_all_types'
+        tv_anonymize_input_dict_from_usecase = {}
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.a'] = 3
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.b'] = 2
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.name'] = 'A1'
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.x'] = 5.5
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.x_dict'] = {}
         target_values_dict = {}
         tv_sub_process_inputs_dict = {}
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'usecase1'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['repo_of_sub_processes'] = repo
         target_values_dict['sub_process_name'] = mod_id

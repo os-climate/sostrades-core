@@ -46,8 +46,38 @@ The doe_eval capability allows provide or create a sample and to run the subproc
         <var observable name>_dict':    for each selected output observable doe result
                                         associated to sample and the selected observable
 
+## The several usage steps are detailed below.
+Example of models
 
+sos_trades_core.sos_processes.test
 
+	test_disc_hessian
+	usecase
+	usecase2
+	usecase3
+
+	test_proc_build_disc0
+	usecase1
+	usecase2
+
+	test_proc_build_disc1_all_types
+	usecase1
+	usecase2
+	
+	test_proc_build_disc1_grid
+	usecase1
+	usecase2
+
+	test_disc1_disc2_coupling
+	usecase_coupling_2_disc_test
+	
+	test_sellar_coupling
+	usecase
+	
+	test_disc10_setup_sos_discipline
+	usecase_affine
+	usecase_linear
+	usecase_polynomial
 
 ## The several usage steps are detailed below.
 
