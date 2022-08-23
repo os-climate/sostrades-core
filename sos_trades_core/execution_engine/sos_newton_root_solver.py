@@ -93,7 +93,8 @@ class NewtonRootSolver(SoSEval):
         self.check_input_namespaces()
         self.check_variables_exists_and_are_arrays()
         self.set_x0()
-        self.add_children_inputs()
+        if self.father_executor.name == '_usecase_climb_cruise_19pax':
+            self.add_children_inputs()
 
     def set_x0(self):
 
@@ -178,7 +179,7 @@ class NewtonRootSolver(SoSEval):
         '''
         # Configure the Newton Raphson with parameters and initial variable
         self.configure_solver()
-        # Solvze the newton raphson
+        # Solve the newton raphson
         x_final = self.nr_solver.solve()
         residual_history = self.nr_solver.get_residual_hist()
         dict_values = {'x_final': x_final,
