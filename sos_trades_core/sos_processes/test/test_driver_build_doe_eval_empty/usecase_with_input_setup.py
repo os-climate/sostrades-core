@@ -32,10 +32,14 @@ class Study(StudyManager):
         # provide a process (with disciplines) to the set doe
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
+        sub_process_inputs_dict = {}
+        sub_process_inputs_dict['process_repository'] = repo
+        sub_process_inputs_dict['process_name'] = mod_id
+        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_data'] = None
+
         values_dict = {}
-        values_dict[f'{self.study_name}.DoE_Eval.repo_of_sub_processes'] = repo
-        values_dict[f'{self.study_name}.DoE_Eval.sub_process_name'] = mod_id
-        values_dict[f'{self.study_name}.DoE_Eval.usecase_of_sub_process'] = 'Empty'
+        values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         ######### Numerical values   ####
         x = 2.0
         y = 3.0

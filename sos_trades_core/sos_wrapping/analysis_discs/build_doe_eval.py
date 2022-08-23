@@ -43,15 +43,12 @@ class BuildDoeEval(SoSEval):
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
-            |_ REPO_OF_SUB_PROCESSES (structuring)
-                        |_ SUB_PROCESS_NAME (structuring)
-                                    |_ USECASE_OF_SUB_PROCESS (structuring,dynamic: SUB_PROCESS_NAME!='None')
-                                    |_ EVAL_INPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None') NB: Mandatory not to be empty (If not then warning)
-                                    |_ EVAL_OUTPUTS (structuring,dynamic : SUB_PROCESS_NAME!='None') NB: Mandatory not to be empty (If not then warning)
-                                    |_ SAMPLING_ALGO (structuring,dynamic : SUB_PROCESS_NAME!='None')
-                                            |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
-                                            |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
-                                            |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
+                |_ EVAL_INPUTS (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
+                |_ EVAL_OUTPUTS (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
+                |_ SAMPLING_ALGO (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP')
+                        |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
+                        |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
+                        |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
@@ -72,11 +69,6 @@ class BuildDoeEval(SoSEval):
                                                                           it is a temporary input: it will be put to None as soon as                                                                        
                                                                           its content is 'loaded' in the dm. We will have it has editable                                                                             
                                                 It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
-            |_ REPO_OF_SUB_PROCESSES:           folder root of the sub processes to be nested inside the DoE.
-                                                If 'None' then it uses the sos_processes python for doe creation.
-                |_ SUB_PROCESS_NAME:            selected process name to be nested inside the DoE.
-                                                If 'None' then it uses the sos_processes python for doe creation.
-                    |_ USECASE_OF_SUB_PROCESS : either empty or an available usecase of the sub_process
                     |_ EVAL_INPUTS:             selection of input variables to be used for the DoE
                     |_ EVAL_OUTPUTS:            selection of output variables to be used for the DoE (the selected observables)
                     |_ SAMPLING_ALGO:           method of defining the sampling input dataset for the variable chosen in self.EVAL_INPUTS
@@ -109,14 +101,11 @@ class BuildDoeEval(SoSEval):
 #################### End: Ontology of the discipline #####################
 #################### Begin: Constants and parameters #####################
     # -- Disciplinary attributes
-    REPO_OF_SUB_PROCESSES = 'repo_of_sub_processes'
-    SUB_PROCESS_NAME = 'sub_process_name'
-    USECASE_OF_SUB_PROCESS = 'usecase_of_sub_process'
-
-    SUB_PROCESSES_LIST_WEB = 'sub_processes_list'
-    USECASE_OF_SUB_PROCESS_WEB = 'usecase_of_sub_process_web'
-
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
+    PROCESS_NAME = 'process_name'
+    USECASE_NAME = 'usecase_name'
+    USECASE_DATA = 'usecase_data'
+    PROCESS_REPOSITORY = 'process_repository'
 
     EVAL_INPUTS = 'eval_inputs'  # should be in SOS_EVAL
     EVAL_OUTPUTS = 'eval_outputs'  # should be in SOS_EVAL
@@ -161,27 +150,26 @@ class BuildDoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    DESC_IN = {REPO_OF_SUB_PROCESSES: {'type': 'string',
-                                       'structuring': True,
-                                       #'default': 'None',
-                                       'possible_values': ['None', 'sos_trades_core.sos_processes.test'],
-                                       'user_level': 1,
-                                       'optional': False
-                                       },
-               SUB_PROCESS_NAME: {'type': 'string',
-                                  'structuring': True,
-                                  #'default': 'None',
-                                  #'editable': True,
-                                  'user_level': 1,
-                                  'optional': False
-                                  },
-               N_PROCESSES: {'type': 'int',
-                             'numerical': True,
-                             'default': 1},
-               WAIT_TIME_BETWEEN_FORK: {'type': 'float',
-                                        'numerical': True,
-                                        'default': 0.0},
-               }
+    default_sub_process_inputs_dict = {}
+    default_sub_process_inputs_dict['process_repository'] = None
+    default_sub_process_inputs_dict['process_name'] = None
+    default_sub_process_inputs_dict['usecase_name'] = 'Empty'
+    default_sub_process_inputs_dict['usecase_data'] = None
+
+    DESC_IN = {
+        SUB_PROCESS_INPUTS: {'type': 'dict',
+                             'structuring': True,
+                             'default': default_sub_process_inputs_dict,
+                             'user_level': 1,
+                             'optional': False
+                             },
+        N_PROCESSES: {'type': 'int',
+                      'numerical': True,
+                      'default': 1},
+        WAIT_TIME_BETWEEN_FORK: {'type': 'float',
+                                 'numerical': True,
+                                 'default': 0.0},
+    }
 
     DESC_OUT = {
         SAMPLES_INPUTS_DF: {'type': 'dataframe',
@@ -283,8 +271,6 @@ class BuildDoeEval(SoSEval):
         self.sub_process_ns_in_build = None
         self.sub_proc_build_status = 'Empty_SP'
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-        self.sub_process_couple = None
-        self.usecase_couple = None  # temporarly added attribute
 
     def build(self):
         '''
@@ -294,11 +280,11 @@ class BuildDoeEval(SoSEval):
             Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
             It comes before congiguring()
         '''
-        if self.REPO_OF_SUB_PROCESSES in self._data_in and self.SUB_PROCESS_NAME in self._data_in:
-            sub_process_repo = self.get_sosdisc_inputs(
-                self.REPO_OF_SUB_PROCESSES)
-            sub_process_name = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_NAME)
+        if self.SUB_PROCESS_INPUTS in self._data_in:
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_repo = sub_process_inputs_dict['process_repository']
+            sub_process_name = sub_process_inputs_dict['process_name']
             if sub_process_repo != None and sub_process_name != None:  # a sub_process_full_name is available
                 # either Unchanged_SP or Create_SP or Replace_SP
                 # 1. set_sub_process_status
@@ -335,37 +321,25 @@ class BuildDoeEval(SoSEval):
         In case of a CustomDOE', additional input is the custom sample (dataframe)
         In other cases, additional inputs are the number of samples and the design space
         """
-        # 1. provide possible values of sub_processes
-        if self.REPO_OF_SUB_PROCESSES in self._data_in:
-            sub_process_repo = self.get_sosdisc_inputs(
-                self.REPO_OF_SUB_PROCESSES)
-            # if sub_process_repo != self.previous_sub_process_repo:
-            # self.previous_sub_process_repo = sub_process_repo # Not useful
-            # because also in build
-            if sub_process_repo is not None:
-                self.setup_sos_disciplines_possible_sub_processes_in_repo(
-                    sub_process_repo)
+
         dynamic_inputs = {}
         dynamic_outputs = {}
-        # Remark: in cas of 'Unchanged_SP', it will do a refresh of available
+        # Remark: in case of 'Unchanged_SP', it will do a refresh of available
         # subprocesses
         if self.sub_proc_build_status != 'Empty_SP':
-            sub_process_repo = self.get_sosdisc_inputs(
-                self.REPO_OF_SUB_PROCESSES)
-            sub_process_name = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_NAME)
-            # 2. provide possible values of usecases
-            self.setup_sos_disciplines_building_inputs_sub_process_usecase(
-                sub_process_repo, sub_process_name, dynamic_inputs)
-            # 3. provide driver inputs based on selected subprocess
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_repo = sub_process_inputs_dict['process_repository']
+            sub_process_name = sub_process_inputs_dict['process_name']
+            # 1. provide driver inputs based on selected subprocess
             self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
                 dynamic_inputs)
-        dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(
-            dynamic_inputs, dynamic_outputs)
-        self.add_inputs(dynamic_inputs)
-        self.add_outputs(dynamic_outputs)
-        # 4. import data from selected sub_process_usecase
-        self.manage_import_inputs_from_sub_process()
+            dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(
+                dynamic_inputs, dynamic_outputs)
+            self.add_inputs(dynamic_inputs)
+            self.add_outputs(dynamic_outputs)
+            # 2. import data from selected sub_process_usecase
+            self.manage_import_inputs_from_sub_process()
 
     def set_eval_possible_values(self):
         '''
@@ -518,8 +492,6 @@ class BuildDoeEval(SoSEval):
         if sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo:
             self.previous_sub_process_repo = sub_process_repo
             self.previous_sub_process_name = sub_process_name
-            self.sub_process_couple = [
-                sub_process_repo, sub_process_name]
         # driver process with provided sub process
             if len(self.cls_builder) == 0:
                 self.sub_proc_build_status = 'Create_SP'
@@ -596,38 +568,9 @@ class BuildDoeEval(SoSEval):
             self.ee.ns_manager.update_namespace_with_extra_ns(
                 ns, extra_ns, after_name)
 
-    def setup_sos_disciplines_possible_sub_processes_in_repo(self, sub_process_repo):
-        """
-            Treatment of REPO_OF_SUB_PROCESSES/SUB_PROCESS_NAME
-            Configure list possible_values for the SUB_PROCESS_NAME
-            Function needed in setup_sos_disciplines()
-        """
-        possible_sub_process_name_list = self.get_possible_sub_processes_in_repo(
-            sub_process_repo, restricted_list=True)
-        if self.SUB_PROCESS_NAME in self._data_in:
-            self._data_in[self.SUB_PROCESS_NAME]['possible_values'] = possible_sub_process_name_list
-
-    def setup_sos_disciplines_building_inputs_sub_process_usecase(self, sub_process_repo, sub_process_name, dynamic_inputs):
-        """
-            Treatment of USECASE_OF_SUB_PROCESS
-            Setup the usecase_of_sub_process list
-            Function needed in setup_sos_disciplines()
-        """
-        process_usecase_list = ['Empty']
-        usecase_list = self.get_possible_sub_process_usecases(
-            sub_process_repo, sub_process_name)
-        process_usecase_list += usecase_list
-        dynamic_inputs.update({self.USECASE_OF_SUB_PROCESS: {'type': 'string',
-                                                             'default': 'Empty',
-                                                             'possible_values': process_usecase_list,
-                                                             'structuring': True,
-                                                             'description': 'usecase set of data inputs',
-                                                             }})
-        return dynamic_inputs
-
     def setup_sos_disciplines_driver_inputs_depend_on_sub_process(self, dynamic_inputs):
         """
-            Update of USECASE_OF_SUB_PROCESS/SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS/NS_IN_DF
+            Update of SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS/NS_IN_DF
             Function needed in setup_sos_disciplines()
         """
         dynamic_inputs.update({self.SAMPLING_ALGO: {'type': 'string',
@@ -658,27 +601,6 @@ class BuildDoeEval(SoSEval):
                                                    'unit': None,
                                                    'editable': False,
                                                    'default': self.sub_process_ns_in_build}})
-        # Also provide desc_in for core/Web GUI/API link prototyping
-        if self.usecase_couple is not None:
-            dynamic_inputs.update({self.USECASE_OF_SUB_PROCESS_WEB: {'type': 'dict',
-                                                                     'unit': None,
-                                                                     'editable': False,
-                                                                     'default': self.usecase_couple[1]}})
-        if self.sub_process_couple is not None:
-            dynamic_inputs.update({self.SUB_PROCESSES_LIST_WEB: {'type': 'list',
-                                                                 'unit': None,
-                                                                 'editable': False,
-                                                                 'default': self.sub_process_couple}})
-        if self.sub_process_couple is not None and self.usecase_couple is not None:
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = self.sub_process_couple[0]
-            sub_process_inputs_dict['process_name'] = self.sub_process_couple[1]
-            sub_process_inputs_dict['usecase_name'] = self.usecase_couple[0]
-            sub_process_inputs_dict['usecase_data'] = self.usecase_couple[1]
-            dynamic_inputs.update({self.SUB_PROCESS_INPUTS: {'type': 'dict',
-                                                             'unit': None,
-                                                             'editable': False,
-                                                             'default': sub_process_inputs_dict}})
         return dynamic_inputs
 
     def setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(self, dynamic_inputs, dynamic_outputs):
@@ -794,13 +716,16 @@ class BuildDoeEval(SoSEval):
             Function needed in setup_sos_disciplines()
         """
         # Set sub_proc_import_usecase_status
-        if self.USECASE_OF_SUB_PROCESS in self._data_in:  # and self.sub_proc_build_status != 'Empty_SP'
-            sub_process_usecase_name = self.get_sosdisc_inputs(
-                self.USECASE_OF_SUB_PROCESS)
+        if self.SUB_PROCESS_INPUTS in self._data_in:  # and self.sub_proc_build_status != 'Empty_SP'
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_repo = sub_process_inputs_dict['process_repository']
+            sub_process_name = sub_process_inputs_dict['process_name']
+            sub_process_usecase_name = sub_process_inputs_dict['usecase_name']
             self.set_sub_process_usecase_status_from_user_inputs(
                 sub_process_usecase_name)
-            possible_values = self.get_data_io_from_key('in', self.USECASE_OF_SUB_PROCESS)[
-                self.POSSIBLE_VALUES]
+            possible_values = self.get_possible_sub_process_usecases(
+                sub_process_repo, sub_process_name)
             # would be the case from script but not in the gui
             if sub_process_usecase_name not in possible_values:
                 self.logger.error(
@@ -813,20 +738,28 @@ class BuildDoeEval(SoSEval):
             poc_pre_treatment = True
             if poc_pre_treatment:
                 # 1.1 Find usecase sub_process_usecase_full_name
-                sub_process_usecase_full_name = self.get_sub_process_usecase_full_name()
+                sub_process_inputs_dict = self.get_sosdisc_inputs(
+                    self.SUB_PROCESS_INPUTS)
+                sub_process_repo = sub_process_inputs_dict['process_repository']
+                sub_process_name = sub_process_inputs_dict['process_name']
+                sub_process_usecase_name = sub_process_inputs_dict['usecase_name']
+                sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                    sub_process_repo, sub_process_name, sub_process_usecase_name)
+
                 # 1.2 import data in anonymized form
                 anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(
-                    sub_process_usecase_full_name)  # variable temporarly added as an attribute to put it as a editable desc_in
-                # 1.3 Store usecase_couple
-                self.usecase_couple = [self.get_sosdisc_inputs(self.USECASE_OF_SUB_PROCESS),
-                                       anonymize_input_dict_from_usecase]
+                    sub_process_usecase_full_name)  # variable temporary added as an attribute to put it as a editable desc_in
+                # 1.3 Store anonymize_input_dict_from_usecase
+                sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
             else:  # To be done for WEB GUI/API
                 pass
-                sub_process_usecase_name = self.get_sosdisc_inputs(
-                    self.SUB_PROCESS_INPUTS)['usecase_name']
-                anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
-                    self.SUB_PROCESS_INPUTS)['usecase_data']
-            # 2 put anonymized dict in context (unanonimize)
+                sub_process_inputs_dict = self.get_sosdisc_inputs(
+                    self.SUB_PROCESS_INPUTS)
+                sub_process_repo = sub_process_inputs_dict['process_repository']
+                sub_process_name = sub_process_inputs_dict['process_name']
+                sub_process_usecase_name = sub_process_inputs_dict['usecase_name']
+                anonymize_input_dict_from_usecase = sub_process_inputs_dict['usecase_data']
+            # 2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
                 anonymize_input_dict_from_usecase)
             # 3. treat data because of dynamic keys not in dict
@@ -850,7 +783,7 @@ class BuildDoeEval(SoSEval):
     def get_possible_sub_processes_in_repo(self, sub_process_repo, restricted_list=True):
         """
             Create_nested builders from their nested process.
-            Function needed in setup_sos_disciplines_possible_sub_processes_in_repo()
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
         """
         process_factory = SoSProcessFactory(additional_repository_list=[
             sub_process_repo], search_python_path=False)
@@ -886,9 +819,9 @@ class BuildDoeEval(SoSEval):
         '''
             Once subprocess has been selected,
             get the possible list of usecases if any
-            Function needed in setup_sos_disciplines_building_inputs_sub_process_usecase()
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
         '''
-        usecase_list = []
+        usecase_list = ['Empty']
         imported_module = import_module(
             '.'.join([sub_process_repo, sub_process_name]))
         process_directory = dirname(imported_module.__file__)
@@ -923,17 +856,10 @@ class BuildDoeEval(SoSEval):
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
-    def get_sub_process_usecase_full_name(self):
+    def get_sub_process_usecase_full_name(self, sub_process_repo, sub_process_name, sub_process_usecase_name):
         """
-            Function needed in manage_import_inputs_from_sub_process()
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
         """
-        sub_process_repo = self.get_sosdisc_inputs(
-            self.REPO_OF_SUB_PROCESSES)
-        sub_process_name = self.get_sosdisc_inputs(
-            self.SUB_PROCESS_NAME)
-        sub_process_usecase_name = self.get_sosdisc_inputs(
-            self.USECASE_OF_SUB_PROCESS)
-        #
         sub_process_usecase_repo = '.'.join(
             [sub_process_repo, sub_process_name])
         sub_process_usecase_full_name = '.'.join(
@@ -950,7 +876,7 @@ class BuildDoeEval(SoSEval):
         study_tmp = getattr(imported_module, 'Study')(
             execution_engine=self.ee)
         anonymize_input_dict_from_usecase = {}
-        # Remark: see def __anonymize_key in execution_engine
+        # Remark: see def anonymize_key in execution_engine
         study_tmp.study_name = self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT
         anonymize_usecase_data = study_tmp.setup_usecase()
         if not isinstance(anonymize_usecase_data, list):
