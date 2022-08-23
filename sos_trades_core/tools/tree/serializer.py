@@ -414,23 +414,25 @@ class DataSerializer:
         self.set_dm_pkl_files()
         return self.get_data_dict_from_pickle()[var_key]
 
-    def convert_to_dataframe_and_bytes_io(self, param_value, param_key):
+    @staticmethod
+    def convert_to_dataframe_and_bytes_io(param_value, param_key):
         # and convert to dataframe
-        df_data = self.convert_data_to_dataframe(param_value)
+        df_data = DataSerializer.convert_data_to_dataframe(param_value)
         # export data as a DataFrame using buffered I/O streams
-        return self.convert_to_bytes_io(df_data, param_key)
+        return DataSerializer.convert_to_bytes_io(df_data, param_key)
 
     def convert_model_table_to_df_and_bytes_io(self, model_table, param_key):
         ''' convert to dataframe '''
         df_data = DataFrame(model_table[1:], columns=model_table[0])
-        return self.convert_to_bytes_io(df_data, param_key)
+        return DataSerializer.convert_to_bytes_io(df_data, param_key)
 
     def convert_model_table_to_df(self, model_table):
         ''' convert to dataframe '''
         df_data = DataFrame(model_table[1:], columns=model_table[0])
         return df_data
 
-    def convert_to_bytes_io(self, df_data, data_key):
+    @staticmethod
+    def convert_to_bytes_io(df_data, data_key):
         ''' export data as a DataFrame using buffered I/O streams '''
         try:
             df_stream = StringIO()

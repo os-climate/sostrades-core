@@ -682,9 +682,7 @@ class DataManager:
         if param_value is None:
             return None
         else:
-            serializer = DataSerializer()
-            return serializer.convert_to_dataframe_and_bytes_io(param_value,
-                                                                parameter_key)
+            return DataSerializer.convert_to_dataframe_and_bytes_io(param_value, parameter_key)
 
     def get_var_name_from_uid(self, var_id):
         ''' Get namespace and var_name and return namespaced variable
