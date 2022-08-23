@@ -33,6 +33,11 @@ from sos_trades_core.sos_wrapping.analysis_discs.build_doe_eval import BuildDoeE
 from copy import deepcopy
 from tempfile import gettempdir
 
+from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
+from importlib import import_module
+from os.path import dirname
+from os import listdir
+
 
 class TestBuilderDoeEval(unittest.TestCase):
     """
@@ -51,6 +56,75 @@ class TestBuilderDoeEval(unittest.TestCase):
         self.exec_eng = ExecutionEngine(self.ns)
         self.factory = self.exec_eng.factory
 
+    #################### Begin : scripting functions #########################
+    def get_possible_sub_processes_in_repo(self, sub_process_repo, restricted_list=True):
+        """
+            Create_nested builders from their nested process.
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
+        """
+        process_factory = SoSProcessFactory(additional_repository_list=[
+            sub_process_repo], search_python_path=False)
+        process_list_dict = process_factory.get_processes_dict()
+        if restricted_list == True:
+            possible_sub_process_name_list = ['test_disc_hessian']
+            possible_sub_process_name_list += [
+                'test_disc1_disc2_coupling', 'test_sellar_coupling', 'test_disc10_setup_sos_discipline']
+            filtered_process_list = [
+                proc_name for proc_name in process_list_dict[sub_process_repo] if 'test_proc_build_' in proc_name]
+            possible_sub_process_name_list += filtered_process_list
+        else:
+            possible_sub_process_name_list = process_list_dict
+        return possible_sub_process_name_list
+
+    def get_possible_sub_process_usecases(self, sub_process_repo, sub_process_name):
+        '''
+            Once subprocess has been selected,
+            get the possible list of usecases if any
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
+        '''
+        usecase_list = ['Empty']
+        imported_module = import_module(
+            '.'.join([sub_process_repo, sub_process_name]))
+        process_directory = dirname(imported_module.__file__)
+        for usecase_py in listdir(process_directory):
+            if usecase_py.startswith('usecase'):
+                usecase = usecase_py.replace('.py', '')
+                usecase_list.append(
+                    '.'.join([usecase]))
+        return usecase_list
+
+    def get_sub_process_usecase_full_name(self, sub_process_repo, sub_process_name, sub_process_usecase_name):
+        """
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
+        """
+        sub_process_usecase_repo = '.'.join(
+            [sub_process_repo, sub_process_name])
+        sub_process_usecase_full_name = '.'.join(
+            [sub_process_usecase_repo, sub_process_usecase_name])
+        return sub_process_usecase_full_name
+
+    def import_input_data_from_usecase_of_sub_process(self, exec_eng, sub_process_usecase_full_name):
+        """
+            Load data in anonymized form of the selected sub process usecase
+            Function needed in manage_import_inputs_from_sub_process()
+        """
+        # Get anonymized dict from sub_process_usecase_full_name
+        imported_module = import_module(sub_process_usecase_full_name)
+        study_tmp = getattr(imported_module, 'Study')(
+            execution_engine=exec_eng)
+        anonymize_input_dict_from_usecase = {}
+        # Remark: see def anonymize_key in execution_engine
+        study_tmp.study_name = exec_eng.STUDY_PLACEHOLDER_WITHOUT_DOT
+        anonymize_usecase_data = study_tmp.setup_usecase()
+        if not isinstance(anonymize_usecase_data, list):
+            anonymize_usecase_data = [anonymize_usecase_data]
+        for uc_d in anonymize_usecase_data:
+            anonymize_input_dict_from_usecase.update(uc_d)
+        return anonymize_input_dict_from_usecase
+
+    #################### End : scripting functions ###########################
+
+    # Begin : factorized functions to create set of inputs
     def setup_Hessian_usecase_from_direct_input(self, restricted=True):
         """
         Define a set of data inputs with empty usecase and so the subprocess Hessian is filled directly as would be done manually in GUI
@@ -121,7 +195,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
         return [values_dict]
 
-    def setup_Hessian_usecase_from_sub_usecase(self, restricted=True, my_usecase='usecase'):
+    def setup_Hessian_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase'):
         """
         Define a set of data inputs with selected use_case
         """
@@ -133,6 +207,14 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = my_usecase
         sub_process_inputs_dict['usecase_data'] = None
+
+        if my_usecase != 'Empty':
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, mod_id, my_usecase)
+            anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
+                                                                                                   sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+
         ######### Numerical values   ####
 
         input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
@@ -171,7 +253,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
         return [values_dict]
 
-    def setup_usecase_from_sub_usecase(self, restricted=True, my_test=1, my_usecase=1):
+    def setup_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_test=1, my_usecase=1):
         """
         Define a set of data inputs with selected use_case
         """
@@ -338,6 +420,14 @@ class TestBuilderDoeEval(unittest.TestCase):
             my_doe_algo = "lhs"
             n_samples = 4
             dspace = pd.DataFrame(dspace_dict)
+
+        if sub_process_inputs_dict['usecase_name'] != 'Empty':
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, mod_id, sub_process_inputs_dict['usecase_name'])
+            anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
+                                                                                                   sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+
         ######### Fill the dictionary for dm   ####
         values_dict = {}
         if restricted == False:
@@ -352,7 +442,9 @@ class TestBuilderDoeEval(unittest.TestCase):
             'n_samples': n_samples}
 
         return [values_dict]
+    #################### End : functions to create set of inputs #############
 
+    #################### Begin : factorized function for test with assert ####
     def check_created_tree_structure(self, target_exp_tv_list):
         exp_tv_str = '\n'.join(target_exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -468,6 +560,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             else:
                 print('Inputs OK : process ready to be run')
         return missing_variables
+    #################### End : factorized function for test with assert ######
 
     def test_01_build_doe_eval_with_empty_disc(self):
         '''
@@ -1524,8 +1617,8 @@ class TestBuilderDoeEval(unittest.TestCase):
         # self.previous_usecase_of_sub_process is 'Empty' in init) to usecase
         # without direct user inputs
         if 1 == 1:
-            dict_values = self.setup_Hessian_usecase_from_sub_usecase(
-                restricted=False, my_usecase='usecase')
+            dict_values = self.setup_Hessian_usecase_from_sub_usecase(study_dump.ee,
+                                                                      restricted=False, my_usecase='usecase')
             print('load usecase file : from Empty to usecase without direct user inputs')
             study_dump.load_data(from_input_dict=dict_values)
         else:  # First direct user inputs and then load usecase file : from Empty to usecase
@@ -1539,6 +1632,11 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict = doe_disc.get_data_io_from_key(
                 'in', 'sub_process_inputs')['value']
             sub_process_inputs_dict['usecase_name'] = 'usecase'
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, 'test_disc_hessian', 'usecase')
+            anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                      sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
             dict_values = {}
             dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
             print('load usecase file')
@@ -1560,6 +1658,12 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict = doe_disc.get_data_io_from_key(
             'in', 'sub_process_inputs')['value']
         sub_process_inputs_dict['usecase_name'] = 'usecase2'
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, 'test_disc_hessian', 'usecase2')
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         print('load usecase2 file')
@@ -1578,6 +1682,11 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict = doe_disc.get_data_io_from_key(
                 'in', 'sub_process_inputs')['value']
             sub_process_inputs_dict['usecase_name'] = 'usecase4'
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, 'test_disc_hessian', 'usecase4')
+            anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                      sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
             dict_values = {}
             dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
             print('load usecase4 file: does not exist!')
@@ -1586,6 +1695,11 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict = doe_disc.get_data_io_from_key(
                 'in', 'sub_process_inputs')['value']
             sub_process_inputs_dict['usecase_name'] = 'usecase2'
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, 'test_disc_hessian', 'usecase2')
+            anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                      sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
             dict_values = {}
             dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
             print('load usecase2 file')
@@ -1960,19 +2074,13 @@ class TestBuilderDoeEval(unittest.TestCase):
         # 5 'test_disc1_disc2_coupling'
         # 6 'test_sellar_coupling'
         my_test = 1
-        dict_values = self.setup_usecase_from_sub_usecase(
-            restricted=False, my_test=my_test, my_usecase=1)
+        dict_values = self.setup_usecase_from_sub_usecase(study_dump.ee,
+                                                          restricted=False, my_test=my_test, my_usecase=1)
         dict_values = dict_values[0]
+        print(dict_values)
 
-        self.ns = f'{self.study_name}'
-        self.exec_eng = study_dump.ee
-        doe_disc = self.exec_eng.dm.get_disciplines_with_name(
-            f'{self.study_name}.DoE_Eval')[0]
-        sub_process_inputs_dict = doe_disc.get_data_io_from_key(
-            'in', 'sub_process_inputs')['value']
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
         if my_test == 5:
-            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs']['usecase_name'] = 'Empty'
             dict_values[self.study_name + '.DoE_Eval.x'] = 10.
             dict_values[self.study_name + '.DoE_Eval.Disc1.a'] = 5.
             dict_values[self.study_name + '.DoE_Eval.Disc1.b'] = 25431.
@@ -1981,7 +2089,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             dict_values[self.study_name + '.DoE_Eval.Disc2.power'] = 2
 
         if my_test == 6:
-            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs']['usecase_name'] = 'Empty'
             coupling_name = "SellarCoupling"
             ns = f'{self.study_name}'
             from numpy import array
@@ -1995,6 +2103,11 @@ class TestBuilderDoeEval(unittest.TestCase):
         # print(study_dump.ee.display_treeview_nodes(True))
 
         study_dump.dump_data(dump_dir)
+
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        doe_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval')[0]
 
         print(doe_disc.get_disc_full_name())
         print(len(doe_disc.sos_disciplines))
@@ -2314,6 +2427,22 @@ class TestBuilderDoeEval(unittest.TestCase):
         print("\n")
         print("1.3 Provide use case name")
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        if 0 == 0:  # directly provide anonymized dict
+            anonymize_input_dict = {}
+            anonymize_input_dict['<study_ph>.Hessian.ax2'] = 4.0
+            anonymize_input_dict['<study_ph>.Hessian.by2'] = 5.0
+            anonymize_input_dict['<study_ph>.Hessian.cx'] = 6.0
+            anonymize_input_dict['<study_ph>.Hessian.dy'] = 7.0
+            anonymize_input_dict['<study_ph>.Hessian.exy'] = 12.0
+            anonymize_input_dict['<study_ph>.Hessian.x'] = 2.0
+            anonymize_input_dict['<study_ph>.Hessian.y'] = 3.0
+        else:  # get it from usecase name
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, mod_id, my_usecase)
+            anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                      sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
@@ -2367,13 +2496,21 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        # None because we have empty the anonymized dictionary
+        tv_sub_process_inputs_dict['usecase_data'] = None
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
         self.check_discipline_values(
             doe_disc, target_values_dict, print_flag=print_flag)
+        hessian_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval.Hessian')[0]
+        target_x = 2.0
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        self.check_discipline_values(
+            hessian_disc, target_values_dict, print_flag=print_flag)
 
         # check input values_types (and print) of DoE_Eval discipline
         target_values_dict = {}
@@ -2438,7 +2575,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        tv_sub_process_inputs_dict['usecase_data'] = None
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2561,8 +2698,15 @@ class TestBuilderDoeEval(unittest.TestCase):
             f'{self.study_name}.DoE_Eval')[0]
         sub_process_inputs_dict = doe_disc.get_data_io_from_key(
             'in', 'sub_process_inputs')['value']
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc_hessian'
         my_usecase = 'usecase'
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
 
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
@@ -2584,7 +2728,11 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         input_selection = {'selected_input': [True],
                            'full_name': ['DoE_Eval.Disc1.x']}
         input_selection = pd.DataFrame(input_selection)
@@ -2650,13 +2798,19 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'usecase1'
-        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        # None because we have empty the anonymized dictionary
+        tv_sub_process_inputs_dict['usecase_data'] = None
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
         self.check_discipline_values(
             doe_disc, target_values_dict, print_flag=print_flag)
+        disc1_all_types = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval.Disc1')[0]
+        target_x = 5.5
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
 
         # check input values_types (and print) of DoE_Eval discipline
         target_values_dict = {}
@@ -2700,7 +2854,11 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'usecase'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id,  'usecase')
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         coupling_name = "SellarCoupling"
         ns = f'{self.study_name}'
 
@@ -2856,6 +3014,11 @@ class TestBuilderDoeEval(unittest.TestCase):
             'STEP_3.1: update with with data subprocess update from usecase_linear ')
         my_usecase = my_usecase_1
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
@@ -2874,6 +3037,12 @@ class TestBuilderDoeEval(unittest.TestCase):
             'STEP_3.2: update with with data subprocess update from usecase_affine ')
         my_usecase = my_usecase_2
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
@@ -2891,6 +3060,12 @@ class TestBuilderDoeEval(unittest.TestCase):
             'STEP_3.3: update with with data subprocess update from usecase_polynomial ')
         my_usecase = my_usecase_3
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
@@ -2928,6 +3103,12 @@ class TestBuilderDoeEval(unittest.TestCase):
             'STEP_3.5: update with with data subprocess update from usecase_linear ')
         my_usecase = my_usecase_1
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
@@ -2945,6 +3126,12 @@ class TestBuilderDoeEval(unittest.TestCase):
             'STEP_3.6: update with with data subprocess update from usecase_polynomial ')
         my_usecase = my_usecase_3
         sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, my_usecase)
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
         dict_values = {}
         dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
@@ -2992,6 +3179,88 @@ class TestBuilderDoeEval(unittest.TestCase):
         from shutil import rmtree
         rmtree(dump_dir)
 
+    def test_12_specific_scripting_functions(self):
+        '''
+        Test specific functions not needed in GUI mode but needed in scripting mode:
+        - get_possible_sub_processes_in_repo()
+        - get_possible_sub_process_usecases()
+        - get_sub_process_usecase_full_name()
+        - import_input_data_from_usecase_of_sub_process()
+        '''
+        print('test_12_specific_scripting_functions')
+        from os.path import join, dirname
+        from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
+        self.study_name = 'MyStudy'
+
+        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()
+
+        print_flag = True
+
+        # load usecase file : from Empty (because
+        # self.previous_usecase_of_sub_process is 'Empty' in init) to usecase
+        # without direct user inputs
+
+        dict_values = self.setup_Hessian_usecase_from_sub_usecase(study_dump.ee,
+                                                                  restricted=False, my_usecase='usecase')
+        print('load usecase file : from Empty to usecase without direct user inputs')
+        study_dump.load_data(from_input_dict=dict_values)
+
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        doe_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.DoE_Eval')[0]
+        sub_process_inputs_dict = doe_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value']
+        sub_process_repo = sub_process_inputs_dict['process_repository']
+        sub_process_name = sub_process_inputs_dict['process_name']
+        sub_process_usecase_name = sub_process_inputs_dict['usecase_name']
+        anonymize_input_dict = sub_process_inputs_dict['usecase_data']
+        # 1. get the list of possible sub_processes in selected repo
+        if sub_process_repo is not None:
+            # Restricted list
+            possible_sub_process_name_list = self.get_possible_sub_processes_in_repo(
+                sub_process_repo, restricted_list=True)
+            print('restricted list of possible sub_processes in selected repo:')
+            print(possible_sub_process_name_list)
+            print('\n')
+            # Complete list
+            possible_sub_process_name_list = self.get_possible_sub_processes_in_repo(
+                sub_process_repo, restricted_list=False)
+            if 0 == 0:
+                print('complete list of possible sub_processes in selected repo:')
+                print(possible_sub_process_name_list)
+                print('\n')
+        # 2. get possible list of usecases associated to the selected
+        # sub_process
+        if sub_process_repo is not None and sub_process_name is not None:
+            usecase_list = self.get_possible_sub_process_usecases(
+                sub_process_repo, sub_process_name)
+            if sub_process_usecase_name not in usecase_list:
+                self.logger.error(
+                    'Selected use_case is not in the possible_values!')
+        # 3. get anonymized dict associated to the selected usecase
+        if sub_process_repo is not None and sub_process_name is not None and sub_process_usecase_name != 'Empty':
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                sub_process_repo, sub_process_name, sub_process_usecase_name)
+            anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                                   sub_process_usecase_full_name)
+            print('usecase full name:')
+            print(sub_process_usecase_full_name)
+            print('\n')
+            print('anonymize input dict from disc:')
+            print(anonymize_input_dict)
+            print('\n')
+            print('anonymize input dict from folder:')
+            print(anonymize_input_dict_from_usecase)
+            print('\n')
+
 
 if '__main__' == __name__:
     my_test = TestBuilderDoeEval()
@@ -3022,3 +3291,5 @@ if '__main__' == __name__:
         my_test.test_10_build_doe_eval_with_nested_proc_selection_through_process_driver_several_subproc_and_updates()
     elif test_selector == 11:
         my_test.test_11_test_uscase_update_with_dynamic_subprocess()
+    elif test_selector == 12:
+        my_test.test_12_specific_scripting_functions()
