@@ -87,7 +87,7 @@ class SoSMDODiscipline(MDODiscipline):
 
         # SoSWrapp run
         run_output = self.sos_wrapp._run()
-        self.update_local_data(run_output)
+        self.store_local_data(map_short_to_full_names = True, **run_output)
 
         # get output from data connector
         self.fill_output_value_connector()
@@ -116,29 +116,36 @@ class SoSMDODiscipline(MDODiscipline):
         Return:
             local_data_short_name (Dict[Dict])
         """
-
-        local_data_short_name = {}
-        full_name_keys = self.get_input_data_names()
-        local_data_values = self.get_local_data_by_name(full_name_keys)
-        for key, value in zip(full_name_keys,local_data_values):
-            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = value
+        io_full_to_short_name = lambda key: self.reduced_dm[key][SoSWrapp.VAR_NAME]
+        full_name_input_keys = self.get_input_data_names()
+        local_data_input_values = self.get_local_data_by_name(full_name_input_keys)
+        local_data_short_name = dict(zip(map(io_full_to_short_name, full_name_input_keys), local_data_input_values))
 
         if self.output_full_name_map is None:
-            self.output_full_name_map = {}
-            for key in self.get_output_data_names():
-                self.output_full_name_map[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = key
+            full_name_output_keys = self.get_output_data_names()
+            self.output_full_name_map = dict(zip(map(io_full_to_short_name, full_name_output_keys), full_name_output_keys))
 
         return local_data_short_name
 
-    def update_local_data(self, run_output):
+    def store_local_data(self, map_short_to_full_names = False, **kwargs):
         """
         Update local_data[full_name] using the run_output[short_name].
 
         Arguments:
-            run_output (Dict): the values to update the local_data with
+            map_short_to_full_names (bool) : whether to map short to full names in kwargs.keys(), only available for
+                                             output variables.
+            **kwargs : unpacked dict to update the local_data with
+
+        Raises:
+            KeyError if map_short_to_full_names is True and the variables to update include anything other than outputs.
         """
-        for key, value in run_output.items():
-            self.local_data[self.output_full_name_map[key]] = value
+        if map_short_to_full_names:
+            short_name_keys = kwargs.keys()
+            full_name_keys = map(lambda key: self.output_full_name_map[key], short_name_keys)
+            to_store = dict(zip(full_name_keys, kwargs.values()))
+            super().store_local_data(**to_store)
+        else:
+            super().store_local_data(**kwargs)
 
     def fill_output_value_connector(self):
         """
@@ -152,7 +159,7 @@ class SoSMDODiscipline(MDODiscipline):
                     self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
                     LOGGER)
 
-        self.store_local_data(**updated_values)
+        self.store_local_data(map_short_to_full_names=False, **updated_values)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """
@@ -167,8 +174,8 @@ class SoSMDODiscipline(MDODiscipline):
         if not filtered_inputs:
             return self.input_grammar.get_data_names()
         else:
-            return self.filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=LOGGER) # FIXME: self.filter_variables_to_convert
+            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
+                                                    logger=LOGGER)
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """

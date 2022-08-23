@@ -40,6 +40,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import conve
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from gemseo.core.chain import MDOChain
 
 
@@ -101,40 +102,40 @@ class ProxyDiscipline(object):
     DESC_IN = None
     DESC_OUT = None
     IO_TYPE = 'io_type'
-    IO_TYPE_IN = 'in'
-    IO_TYPE_OUT = 'out'
-    TYPE = 'type'
-    SUBTYPE = 'subtype_descriptor'
-    COUPLING = 'coupling'
-    VISIBILITY = 'visibility'
-    LOCAL_VISIBILITY = 'Local'
-    INTERNAL_VISIBILITY = 'Internal'
-    SHARED_VISIBILITY = 'Shared'
+    IO_TYPE_IN = SoSWrapp.IO_TYPE_IN
+    IO_TYPE_OUT = SoSWrapp.IO_TYPE_OUT
+    TYPE = SoSWrapp.TYPE
+    SUBTYPE = SoSWrapp.SUBTYPE
+    COUPLING = SoSWrapp.COUPLING
+    VISIBILITY = SoSWrapp.VISIBILITY
+    LOCAL_VISIBILITY = SoSWrapp.LOCAL_VISIBILITY
+    INTERNAL_VISIBILITY = SoSWrapp.INTERNAL_VISIBILITY
+    SHARED_VISIBILITY = SoSWrapp.SHARED_VISIBILITY
     AVAILABLE_VISIBILITIES = [
         LOCAL_VISIBILITY,
         INTERNAL_VISIBILITY,
         SHARED_VISIBILITY]
-    NAMESPACE = 'namespace'
+    NAMESPACE = SoSWrapp.NAMESPACE
     NS_REFERENCE = 'ns_reference'
-    VALUE = 'value'
-    DEFAULT = 'default'
-    EDITABLE = 'editable'
-    USER_LEVEL = 'user_level'
-    STRUCTURING = 'structuring'
-    POSSIBLE_VALUES = 'possible_values'
-    RANGE = 'range'
-    UNIT = 'unit'
-    DESCRIPTION = 'description'
-    NUMERICAL = 'numerical'
+    VALUE = SoSWrapp.VALUE
+    DEFAULT = SoSWrapp.DEFAULT
+    EDITABLE = SoSWrapp.EDITABLE
+    USER_LEVEL = SoSWrapp.USER_LEVEL
+    STRUCTURING = SoSWrapp.STRUCTURING
+    POSSIBLE_VALUES = SoSWrapp.POSSIBLE_VALUES
+    RANGE = SoSWrapp.RANGE
+    UNIT = SoSWrapp.UNIT
+    DESCRIPTION = SoSWrapp.DESCRIPTION
+    NUMERICAL = SoSWrapp.NUMERICAL
     META_INPUT = 'meta_input'
     OPTIONAL = 'optional'
     ORIGIN = 'model_origin'
     HEADERS = 'headers'
     COMPOSED_OF = 'composed_of'
     DISCIPLINES_DEPENDENCIES = 'disciplines_dependencies'
-    VAR_NAME = 'var_name'
-    VISIBLE = 'visible'
-    CONNECTOR_DATA = 'connector_data'
+    VAR_NAME = SoSWrapp.VAR_NAME
+    VISIBLE = SoSWrapp.VISIBLE
+    CONNECTOR_DATA = SoSWrapp.CONNECTOR_DATA
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
 
@@ -143,8 +144,8 @@ class ProxyDiscipline(object):
     NO_UNIT_TYPES = ['bool', 'string', 'string_list']
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}
-    DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
-    DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
+    DATAFRAME_DESCRIPTOR = SoSWrapp.DATAFRAME_DESCRIPTOR
+    DATAFRAME_EDITION_LOCKED = SoSWrapp.DATAFRAME_EDITION_LOCKED
     #
     DF_EXCLUDED_COLUMNS = 'dataframe_excluded_columns'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
@@ -222,13 +223,13 @@ class ProxyDiscipline(object):
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
     # -- status
-    STATUS_VIRTUAL = "VIRTUAL"
-    STATUS_PENDING = "PENDING"
-    STATUS_DONE = "DONE"
-    STATUS_RUNNING = "RUNNING"
-    STATUS_FAILED = "FAILED"
-    STATUS_CONFIGURE = 'CONFIGURE'
-    STATUS_LINEARIZE = 'LINEARIZE'
+    STATUS_VIRTUAL = MDODiscipline.STATUS_VIRTUAL
+    STATUS_PENDING = MDODiscipline.STATUS_PENDING
+    STATUS_DONE = MDODiscipline.STATUS_DONE
+    STATUS_RUNNING = MDODiscipline.STATUS_RUNNING
+    STATUS_FAILED = MDODiscipline.STATUS_FAILED
+    STATUS_CONFIGURE = MDODiscipline.STATUS_CONFIGURE
+    STATUS_LINEARIZE = MDODiscipline.STATUS_LINEARIZE
 
     def __init__(self, sos_name, ee, cls_builder=None):
         '''
