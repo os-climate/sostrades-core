@@ -224,8 +224,8 @@ class TestMDALoop(unittest.TestCase):
                     list(target[key]), list(res[key]))
 
         residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-        residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-            'residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
+        residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].mdo_discipline_wrapp.mdo_discipline.get_inputs_by_name(
+            'EE.residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
         self.assertEqual(residual_history, residual_history_output)
 
         dump_dir = join(self.root_dir, self.name)
@@ -465,7 +465,6 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.h'] = array([8., 9.])
         values_dict['EE.n_processes'] = 1
         exec_eng.load_study_from_input_dict(values_dict)
-
         exec_eng.execute()
 
         target = {'EE.h': array([0.70710678,
@@ -598,7 +597,7 @@ class TestMDALoop(unittest.TestCase):
         # we check that in the root coupling, the subcoupling is NOT a (selfcoupled) MDA with an SoSCoupling inside
         # but a SoSCoupling directly
         sub_coupling = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[0]
-        assert sub_coupling.__class__.__name__ == "MDAChain"
+        assert sub_coupling.__class__.__name__ == "SoSMDAChain"
 
     def test_08_mda_numerical_options_NR(self):
 

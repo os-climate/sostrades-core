@@ -365,10 +365,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self.set_configure_status(True)
             # - build the coupling structure
             self._build_coupling_structure()
-            # - Update coupling and editable flags in the datamanager for the GUI
-            self._update_coupling_flags_in_dm()
             # - builds data_in/out according to the coupling structure
             self._build_data_io()
+            # - Update coupling and editable flags in the datamanager for the GUI
+            self._update_coupling_flags_in_dm()
 
     def _build_data_io(self):
         """
@@ -377,37 +377,77 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         to be able to retrieve inputs and outputs with same short name
         in sub proxies
         """
+        #- identify i/o grammars like in GEMSEO
+#         for discipline in self.disciplines:
+#             self.input_grammar.update_from_if_not_in(
+#                 discipline.input_grammar, self.output_grammar
+#             )
+#             self.output_grammar.update_from(discipline.output_grammar)
 
+        mda_outputs = []
+        mda_inputs = []
+        get_data =  self.dm.get_data
+        data_in = {}
+        data_out = {}
+        for d in self.proxy_disciplines:
+            disc_in = d.get_input_data_names()
+            disc_out = d.get_output_data_names()
+            mda_outputs += disc_out
+            
+            mda_inputs += list(set(disc_in) - set(mda_outputs))
+            d_data_in = {k : get_data(k_full) for k_full, k in zip(disc_in, d._data_in.keys()) if k_full not in mda_outputs}
+            data_in.update(d_data_in)
+             
+            d_data_out = {k : get_data(k_full) for k_full, k in zip(disc_out, d._data_out.keys())}
+            data_out.update(d_data_out)
+             
+        #- data_i/o setup
         self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
                                         self._data_in.items()
                                         if key in self.DESC_IN or key in self.NUM_DESC_IN}
         self._data_in = {key: value for key, value in self._data_in.items(
         ) if
                          key in self.DESC_IN or key in self.NUM_DESC_IN}
-        # add coupling inputs in data_in
-        for discipline in self.proxy_disciplines:
-            for var_f_name, var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
-                if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_IN:
-                    self._data_in_with_full_name[var_f_name] = self.dm.get_data(var_f_name)
-                    if not self.ee.dm.get_data(var_f_name, self.NUMERICAL):
-                        self._data_in[var_name] = self.dm.get_data(var_f_name)
+        
+        
+        # add inputs - that are not outputs - of all children disciplines in data_in
+        for k in data_in:
+            k_full = self.get_var_full_name(k, data_in)
+            self._data_in_with_full_name[k_full] = data_in[k]
+            if not self.ee.dm.get_data(k_full, self.NUMERICAL):
+                self._data_in[k] = self.dm.get_data(k_full)
+                
+#         for discipline in self.proxy_disciplines:
+#             for var_f_name, var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
+# #                 if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_IN:
+#                     self._data_in_with_full_name[var_f_name] = self.dm.get_data(var_f_name)
+#                     if not self.ee.dm.get_data(var_f_name, self.NUMERICAL):
+#                         self._data_in[var_name] = self.dm.get_data(var_f_name)
 
         # keep residuals_history if in data_out
         if self.RESIDUALS_HISTORY in self._data_out:
             self._data_out_with_full_name = {
                 f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
             self._data_out = {
-                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]}
+                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
         else:
             self._data_out_with_full_name = {}
             self._data_out = {}
-
-        for discipline in self.proxy_disciplines:
-            for var_f_name, var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
-                if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_OUT:
-                    self._data_out_with_full_name[var_f_name] = self.dm.get_data(var_f_name)
-                    self._data_out[var_name] = self.dm.get_data(var_f_name)
-
+        
+        # add outputs of all childred disciplines in data_out
+        for k in data_out:
+            k_full = self.get_var_full_name(k, data_out)
+            self._data_out_with_full_name[k_full] = data_out[k]
+            if not self.ee.dm.get_data(k_full, self.NUMERICAL):
+                self._data_out[k] = self.dm.get_data(k_full)
+        
+#         for discipline in self.proxy_disciplines:
+#             for var_f_name, var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
+# # since coupled outputs are flaged as inputs in the DM (for initialization of the variables), this condition does not seem relevant
+# #                 if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_OUT:
+#                     self._data_out_with_full_name[var_f_name] = self.dm.get_data(var_f_name)
+#                     self._data_out[var_name] = self.dm.get_data(var_f_name)
+            
     def get_input_data_names(self):
         '''
         Returns:
@@ -670,28 +710,28 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 # 
 #         self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(input_data)
 
-    def get_first_discs_to_execute(self, disciplines, input_data):
-        """
-        Gets the list of disciplines having all their inputs ready for execution.
-        """
-        ready_disciplines = []
-        disc_vs_keys_none = {}
-        for disc in disciplines:
-
-            # update inputs values with SoSCoupling local_data
-            keys_none = [key for key in disc.input_grammar.get_data_names() if
-                         key.split(NS_SEP)[-1] not in self.NUM_DESC_IN and input_data.get(key) is None]
-            if keys_none == []:
-                ready_disciplines.append(disc)
-            else:
-                disc_vs_keys_none[disc.name] = keys_none
-        if ready_disciplines == []:
-            message = '\n'.join(' : '.join([disc, str(keys_none)])
-                                for disc, keys_none in disc_vs_keys_none.items())
-            raise Exception(
-                f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
-        else:
-            return ready_disciplines
+#     def get_first_discs_to_execute(self, disciplines, input_data):
+#         """
+#         Gets the list of disciplines having all their inputs ready for execution.
+#         """
+#         ready_disciplines = []
+#         disc_vs_keys_none = {}
+#         for disc in disciplines:
+# 
+#             # update inputs values with SoSCoupling local_data
+#             keys_none = [key for key in disc.input_grammar.get_data_names() if
+#                          key.split(NS_SEP)[-1] not in self.NUM_DESC_IN and input_data.get(key) is None]
+#             if keys_none == []:
+#                 ready_disciplines.append(disc)
+#             else:
+#                 disc_vs_keys_none[disc.name] = keys_none
+#         if ready_disciplines == []:
+#             message = '\n'.join(' : '.join([disc, str(keys_none)])
+#                                 for disc, keys_none in disc_vs_keys_none.items())
+#             raise Exception(
+#                 f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
+#         else:
+#             return ready_disciplines
 
 #     def execute(self, input_data):
 #         """

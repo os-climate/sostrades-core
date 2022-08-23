@@ -35,6 +35,8 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda
 
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+
 import logging
 
 N_CPUS = cpu_count()
@@ -51,13 +53,39 @@ def get_available_linear_solvers():
 
 LOGGER = logging.getLogger(__name__)
 
-class SoSMDAChain(MDAChain):
+class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inheritance, keep MDAChain
     """ GEMSEO Overload
     
     A chain of sub-MDAs.
 
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
+    #TODO: remove this NUM_DESC_IN (that should be at least in SoSMDODiscipline)
+    TYPE = 'type'
+    DEFAULT = 'default'
+    STRUCTURING = 'structuring'
+    POSSIBLE_VALUES = 'possible_values'
+    NUMERICAL = 'numerical'
+    CACHE_TYPE = 'cache_type'
+    CACHE_FILE_PATH = 'cache_file_path'
+    DEBUG_MODE = "debug_mode"
+    OPTIONAL = "optional"
+    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
+                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
+    RESIDUALS_HISTORY = "residuals_history"
+    NUM_DESC_IN = {
+        'linearization_mode': {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+                               NUMERICAL: True},
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
+                     # POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
+                     # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+                     NUMERICAL: True,
+                     STRUCTURING: True},
+        CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
+        DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+                       NUMERICAL: True, STRUCTURING: True}
+    }
+
 
     def __init__(self,
 #             ee,
@@ -284,6 +312,9 @@ class SoSMDAChain(MDAChain):
         # TODO: to write in data_out after execution
         self.residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
+        
+        out = {f'{self.name}.{self.RESIDUALS_HISTORY}' : self.residuals_history} #TODO: use a method to get the full name
+        self.store_local_data(**out)
 
         # nothing saved in the DM anymore during execution
 
@@ -303,7 +334,7 @@ class SoSMDAChain(MDAChain):
         Pre run needed if one of the strong coupling variables is None in a MDA 
         No need of prerun otherwise 
         '''
-        strong_couplings_values = [self.local_data[key] for key in self.strong_couplings if key in self.local_data]
+        strong_couplings_values = [self.local_data[key] for key in self.strong_couplings if key in self.local_data] #TODO: replace local_data[key] per key should work
         if len(strong_couplings_values) < len(self.strong_couplings):
             LOGGER.info(
                 f'Execute a pre-run for the coupling ' + self.name)
@@ -346,7 +377,6 @@ class SoSMDAChain(MDAChain):
                     while sub_mda_disciplines != []:
                         ready_disciplines = self.get_first_discs_to_execute(
                             sub_mda_disciplines)
-
                         for discipline in ready_disciplines:
                             # Execute ready disciplines and update local_data
                             if discipline.is_sos_coupling:
@@ -385,12 +415,12 @@ class SoSMDAChain(MDAChain):
             # update inputs values with SoSCoupling local_data
             inputs_values = {}
             inputs_values.update(disc._filter_inputs(self.local_data))
-            keys_none = [key for key, value in inputs_values.items()
-                         if value is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
+            keys_none = [key for key in disc.get_input_data_names()
+                         if inputs_values.get(key) is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
             if keys_none == []:
                 ready_disciplines.append(disc)
             else:
-                disc_vs_keys_none[disc.sos_name] = keys_none
+                disc_vs_keys_none[disc.name] = keys_none
         if ready_disciplines == []:
             message = '\n'.join(' : '.join([disc, str(keys_none)])
                                 for disc, keys_none in disc_vs_keys_none.items())
@@ -682,7 +712,6 @@ class SoSMDAChain(MDAChain):
             # for now, parallel tasks are run sequentially
             for coupled_disciplines in parallel_tasks:
                 first_disc = coupled_disciplines[0]
-                print("self.authorize_self_coupled_disciplines", self.authorize_self_coupled_disciplines)
                 if len(coupled_disciplines) > 1 or (
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
@@ -739,6 +768,18 @@ class SoSMDAChain(MDAChain):
         self.mdo_chain = MDOChain(
             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
         )
+        
+    def update_gemseo_grammar(self, in_names, out_names):
+        ''' 
+        update GEMSEO grammar with sostrades 
+        # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
+        '''
+        # i/o grammars update with SoSTrades i/o
+        for names, grammar in zip([in_names, out_names], [self.input_grammar, self.output_grammar]):
+            # fake data dict with NoneType
+            data_dict = dict.fromkeys(names, None)
+            # This works since (for now) this method (for SimpleGrammar only) does not clear the existing grammar of MDAChain
+            grammar.initialize_from_base_dict(data_dict)
 
     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain

@@ -170,6 +170,19 @@ class MDODisciplineWrapp(object):
                                           grammar_type=proxy.SOS_GRAMMAR_TYPE,
                                           ** proxy._get_numerical_inputs(),
                                           authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
+            
+            #- retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
+            # (e.g., numerical inputs mainly)
+            # TODO: ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
+            #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
+            all_inputs = set(proxy.get_input_data_names())
+            missing_inputs = all_inputs - set(mdo_discipline.get_input_data_names())
+            all_outputs = set(proxy.get_output_data_names())
+            missing_outputs = all_outputs - set(mdo_discipline.get_output_data_names())
+            
+            mdo_discipline.update_gemseo_grammar(missing_inputs, 
+                                                 missing_outputs)
+            
             self.mdo_discipline = mdo_discipline
             
             # set linear solver options (todo after call to _get_numerical_inputs() )
