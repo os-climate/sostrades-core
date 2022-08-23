@@ -116,16 +116,20 @@ class SoSMDODiscipline(MDODiscipline):
         Return:
             local_data_short_name (Dict[Dict])
         """
-        io_full_to_short_name = lambda key: self.reduced_dm[key][SoSWrapp.VAR_NAME]
         full_name_input_keys = self.get_input_data_names()
         local_data_input_values = self.get_local_data_by_name(full_name_input_keys)
-        local_data_short_name = dict(zip(map(io_full_to_short_name, full_name_input_keys), local_data_input_values))
+        local_data_short_name = dict(zip(map(self.io_full_name_to_short, full_name_input_keys), local_data_input_values))
 
         if self.output_full_name_map is None:
             full_name_output_keys = self.get_output_data_names()
-            self.output_full_name_map = dict(zip(map(io_full_to_short_name, full_name_output_keys), full_name_output_keys))
-
+            self.output_full_name_map = dict(zip(map(self.io_full_name_to_short, full_name_output_keys), full_name_output_keys))
         return local_data_short_name
+
+    def io_full_name_to_short(self, full_name_key):
+        return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]
+
+    def io_short_name_to_full(self, short_name_key):
+        return self.output_full_name_map[short_name_key]
 
     def store_local_data(self, map_short_to_full_names = False, **kwargs):
         """
@@ -141,7 +145,7 @@ class SoSMDODiscipline(MDODiscipline):
         """
         if map_short_to_full_names:
             short_name_keys = kwargs.keys()
-            full_name_keys = map(lambda key: self.output_full_name_map[key], short_name_keys)
+            full_name_keys = map(self.io_short_name_to_full, short_name_keys)
             to_store = dict(zip(full_name_keys, kwargs.values()))
             super().store_local_data(**to_store)
         else:

@@ -757,7 +757,7 @@ class ProxyDiscipline(object):
             # Debug mode logging and recursive setting (priority to the parent)
             debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
             if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
-                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE]==None): #not necessary on first config
+                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None): #not necessary on first config
                 self._reset_debug_mode = True
                 # logging
                 if debug_mode != "":
