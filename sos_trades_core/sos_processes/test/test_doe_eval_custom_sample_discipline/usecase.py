@@ -30,7 +30,7 @@ class Study(StudyManager):
         sc_name = 'DoE_Eval'
 
         input_selection_ABC = {'selected_input': [True, True, True],
-                               'full_name': ['stat_A', 'stat_B', 'stat_C']}
+                               'full_name': ['stat_C', 'stat_B', 'stat_A']}
         input_selection_ABC = pd.DataFrame(input_selection_ABC)
         output_selection_sum_stat = {'selected_output': [True],
                                      'full_name': ['sum_stat']}
@@ -40,9 +40,9 @@ class Study(StudyManager):
         output_selection_sum_stat = pd.DataFrame(output_selection_sum_stat)
         my_doe_algo = 'CustomDOE'
         my_dict_of_vec = {}
-        my_dict_of_vec['stat_A'] = [2, 8]
-        my_dict_of_vec['stat_B'] = [2]
         my_dict_of_vec['stat_C'] = [3, 4, 8]
+        my_dict_of_vec['stat_B'] = [2]
+        my_dict_of_vec['stat_A'] = [2, 8]
 
         my_dict = {}
 
@@ -64,9 +64,9 @@ if '__main__' == __name__:
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.run()
-    # print(uc_cls.execution_engine.dm.get_value(
-    #    f'{uc_cls.study_name}.Combvec.my_dict_of_vec'))
-    # print(uc_cls.execution_engine.dm.get_value(
-    #    f'{uc_cls.study_name}.DoE_Eval.custom_samples_df'))
-    # print(uc_cls.execution_engine.dm.get_value(
-    #    f'{uc_cls.study_name}.sum_stat_dict'))
+    print(uc_cls.execution_engine.dm.get_value(
+        f'{uc_cls.study_name}.Combvec.my_dict_of_vec'))
+    print(uc_cls.execution_engine.dm.get_value(
+        f'{uc_cls.study_name}.DoE_Eval.custom_samples_df'))
+    print(uc_cls.execution_engine.dm.get_value(
+        f'{uc_cls.study_name}.sum_stat_dict'))
