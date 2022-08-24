@@ -35,7 +35,6 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda
 
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 
 import logging
 
@@ -53,7 +52,7 @@ def get_available_linear_solvers():
 
 LOGGER = logging.getLogger(__name__)
 
-class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inheritance, keep MDAChain
+class SoSMDAChain(MDAChain): 
     """ GEMSEO Overload
     
     A chain of sub-MDAs.
@@ -132,7 +131,8 @@ class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inherit
             linear_solver_options=linear_solver_options,  # type: Mapping[str,Any]
             ** sub_mda_options  # type: Optional[Union[float, int, bool, str]]
         )
-        
+    
+    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to reduce footprint in GEMSEO 
     def _set_dm_cache_map(self):
         '''
         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
@@ -163,133 +163,6 @@ class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inherit
             for sub_mda in mda.mda_sequence:
                 self._set_sub_mda_dm_cache_map(sub_mda)   
 
-    def _get_numerical_inputs(self):
-        '''
-        Get numerical parameters input values for MDAChain init
-        '''
-        # get input for MDAChain instantiation
-        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
-                                  'use_lu_fact', 'warm_start',
-                                  'n_processes']
-        num_data = self.get_inputs_by_name(
-            needed_numerical_param, in_dict=True)
-
-        if num_data['sub_mda_class'] == 'MDAJacobi':
-            num_data['acceleration'] = copy(
-                self.get_inputs_by_name('acceleration'))
-        if num_data['sub_mda_class'] == 'MDAGaussSeidel':
-            num_data['warm_start_threshold'] = copy(self.get_inputs_by_name(
-                'warm_start_threshold'))
-        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
-            #             num_data['max_mda_iter_gs'] = copy(self.get_inputs_by_name(
-            #                 'max_mda_iter_gs'))
-            num_data['tolerance_gs'] = copy(self.get_inputs_by_name(
-                'tolerance_gs'))
-        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
-                                         'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
-            num_data['relax_factor'] = copy(
-                self.get_inputs_by_name('relax_factor'))
-
-        # linear solver options MDA
-        num_data['linear_solver'] = copy(self.get_inputs_by_name(
-            'linear_solver_MDA'))
-        linear_solver_options_MDA = deepcopy(self.get_inputs_by_name(
-            'linear_solver_MDA_options'))
-
-        if num_data['linear_solver'].endswith('_PETSC'):
-            # PETSc case
-            linear_solver_options_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[
-                0].lower()
-            preconditioner = copy(self.get_inputs_by_name(
-                'linear_solver_MDA_preconditioner'))
-            linear_solver_options_MDA['preconditioner_type'] = (
-                preconditioner != 'None') * preconditioner or None
-        else:
-            # Scipy case / gmres
-            linear_solver_options_MDA['use_ilu_precond'] = (
-                copy(self.get_inputs_by_name('linear_solver_MDA_preconditioner')) == 'ilu')
-
-        num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
-            'tol')
-        num_data['linear_solver_options'] = linear_solver_options_MDA
-
-        self.linear_solver_MDA = num_data['linear_solver']
-        self.linear_solver_tolerance_MDA = num_data['linear_solver_tolerance']
-        self.linear_solver_options_MDA = deepcopy(
-            num_data['linear_solver_options'])
-
-        # linear solver options MDO
-        self.linear_solver_MDO = self.get_inputs_by_name('linear_solver_MDO')
-        linear_solver_options_MDO = deepcopy(self.get_inputs_by_name(
-            'linear_solver_MDO_options'))
-
-        if self.linear_solver_MDO.endswith('_PETSC'):
-            linear_solver_options_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[
-                0].lower()
-            preconditioner = self.get_inputs_by_name(
-                'linear_solver_MDO_preconditioner')
-            linear_solver_options_MDO['preconditioner_type'] = (
-                preconditioner != 'None') * preconditioner or None
-        else:
-            linear_solver_options_MDO['use_ilu_precond'] = (
-                self.get_inputs_by_name('linear_solver_MDO_preconditioner') == 'ilu')
-
-        self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
-        self.linear_solver_options_MDO = linear_solver_options_MDO
-
-        return num_data
-
-#     def set_epsilon0_and_cache(self, mda):
-#         '''
-#         Set epsilon0 that is not argument of the init of the MDA and need to be set outside of it with MDA attributes
-#         '''
-#         if isinstance(mda, MDASequential):
-#             for sub_mda in mda.mda_sequence:
-#                 self.set_epsilon0_and_cache(sub_mda)
-#         mda.epsilon0 = copy(self.proxy_discipline.get_sosdisc_inputs('epsilon0'))
-#         self.set_cache(mda, self.proxy_discipline.get_sosdisc_inputs(
-#             'cache_type'), self.proxy_discipline.get_sosdisc_inputs('cache_file_path'))
-
-    def check_var_data_mismatch(self):
-        '''
-        Check if a variable data is not coherent between two coupling disciplines
-
-        The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
-        the list of data_to_check is defined in SoSDiscipline
-        '''
-        
-        # TODO: probably better if moved into proxy discipline
-        
-        if LOGGER.level <= logging.DEBUG:
-            coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
-            for from_disc, to_disc, c_vars in coupling_vars:
-                for var in c_vars:
-                    # from disc is in output
-                    from_disc_data = from_disc.proxy_discipline.get_data_with_full_name(
-                        from_disc.proxy_discipline.IO_TYPE_OUT, var)
-                    # to_disc is in input
-                    to_disc_data = to_disc.proxy_discipline.get_data_with_full_name(
-                        to_disc.proxy_discipline.IO_TYPE_IN, var)
-                    for data_name in to_disc.proxy_discipline.DATA_TO_CHECK:
-                        # Check if data_names are different
-                        if from_disc_data[data_name] != to_disc_data[data_name]:
-                            LOGGER.debug(
-                                f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
-                        # Check if unit is not None
-                        elif from_disc_data[data_name] is None and data_name == to_disc.proxy_discipline.UNIT:
-                            # if unit is None in a dataframe check if there is a
-                            # dataframe descriptor with unit in it
-                            if from_disc_data[to_disc.proxy_discipline.TYPE] == 'dataframe':
-                                # if no dataframe descriptor and no unit warning
-                                if from_disc_data[to_disc.proxy_discipline.DATAFRAME_DESCRIPTOR] is None:
-                                    LOGGER.debug(
-                                        f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
-    # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
-    #                             else :
-    #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
-                            else:
-                                LOGGER.debug(
-                                    f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}')
 
     def _run(self):
         '''
@@ -323,11 +196,6 @@ class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inherit
 #         # store local data in datamanager
 #         self.proxy_discipline.update_dm_with_local_data(self.local_data)
 
-#     def update_dm_with_local_data(self, local_data, dm):
-#         '''
-#         Update the DM with local data from GEMSEO
-#         '''
-#         dm.set_values_from_dict(local_data)
 
     def pre_run_mda(self):
         '''
@@ -443,73 +311,7 @@ class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inherit
         return input_data
 
     # -- Protected methods
-    
-#     def _run(self):
-#         ''' Overloads SoSDiscipline run method.
-#             In SoSCoupling, self.local_data is updated through MDAChain
-#             and self._data_out is updated through self.local_data.
-#         '''
-#         MDAChain._run(self)
-#         self.proxy_discipline.update_dm_with_local_data(self.local_data)
- 
-        # logging of residuals of the mdas
-        # if len(self.sub_mda_list) > 0:
-        # LOGGER.info(f'{self.get_disc_full_name()} MDA history')
-        # for sub_mda in self.sub_mda_list:
-        # LOGGER.info('\tIt.\tRes. norm')
-        # for res_tuple in sub_mda.residual_history:
-        # res_norm = '{:e}'.format(res_tuple[0])
-        # LOGGER.info(f'\t{res_tuple[1]}\t{res_norm}')
         
-    def _old_sos_discipline_run(self):
-        """ Temporary call to sostrades run that was previously in SoSDiscipline
-        TODO: see with IRT how we can handle it
-        """
-        # Add an exception handler in order to have the capabilities to log
-        # the exception before GEMS (when GEMS manage an error it does not propagate it and does
-        # not record the stackstrace)
-        try:
-            # data conversion GEMS > SosStrades
-            self._update_type_metadata()
-
-            # execute model
-            self._update_status_dm(self.STATUS_RUNNING)
-
-            if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
-                    self.local_data).items() if key in self.input_grammar.data_names}
-
-            self.run()
-            self.fill_output_value_connector()
-            if self.check_if_input_change_after_run and not self.is_sos_coupling:
-                disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
-                    self.local_data).items() if key in self.input_grammar.data_names}
-                is_output_error = True
-                output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
-                                                                    disc_inputs_after_execution,
-                                                                    'Discipline inputs integrity through run',
-                                                                    is_output_error=is_output_error)
-                if output_error != '':
-                    raise ValueError(output_error)
-
-        except Exception as exc:
-            self._update_status_dm(self.STATUS_FAILED)
-            LOGGER.exception(exc)
-            raise exc
-
-        # Make a test regarding discipline children status. With GEMS parallel execution, child discipline
-        # can failed but FAILED (without an forward exception) status is not
-        # correctly propagate upward
-        if len(self.sos_disciplines) > 0:
-            failed_list = list(filter(
-                lambda d: d.status == self.STATUS_FAILED, self.sos_disciplines))
-
-            if len(failed_list) > 0:
-                raise SoSDisciplineException(
-                    f'An exception occurs during execution in \'{self.name}\' discipline.')
-
-        self._update_status_dm(self.STATUS_DONE)
-
     def linearize(self, input_data=None, force_all=False, force_no_exec=False):
         '''
         Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
