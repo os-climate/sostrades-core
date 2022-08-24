@@ -282,7 +282,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         chart_name='',
         branchvalues="total",
         textinfo='label+text',
-        hoverinfo='label+text+percent parent',
+        # hoverinfo='label+text+percent parent',
+        hoverinfo=None,
     ):
 
         # Create figure
@@ -545,12 +546,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         colors_dict={},
         legends_dict={},
         x_axis_title='',
-        y_axis_title='',
+        y_axis_title_bar='',
+        y_axis_title_line='',
         chart_name='',
         ticksuffix='',
         annotation_upper_left={},
         annotation_upper_right={},
         mode='lines',
+        barmode='stack',
         line=None,
     ):
 
@@ -574,6 +577,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             name=legends_dict[column]
                             if column in legends_dict
                             else f'{category}',
+                            xaxis='x',
+                            yaxis='y',
                             visible=True,
                             marker=dict(color=color),
                         )
@@ -594,6 +599,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             name=legends_dict[column]
                             if column in legends_dict
                             else f'{category}',
+                            xaxis='x',
+                            yaxis='y2',
                             visible=True,
                             mode=mode,
                             text=cf_df_by_cat[column].values.tolist(),
@@ -607,17 +614,29 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 title=x_axis_title, titlefont_size=12, tickfont_size=10, automargin=True
             ),
             yaxis=dict(
-                title=y_axis_title,
+                title=y_axis_title_bar,
                 titlefont_size=12,
                 tickfont_size=10,
                 ticksuffix=f'{ticksuffix}',
                 automargin=True,
             ),
+            yaxis2=dict(
+                title=y_axis_title_line,
+                titlefont_size=12,
+                tickfont_size=10,
+                ticksuffix=f'{ticksuffix}',
+                automargin=True,
+                anchor="x",
+                overlaying="y",
+                side="right",
+            ),
+            barmode=barmode,
         )
 
         new_chart = None
         if len(fig.data):
             # Create native plotly chart
+            fig = align_two_y_axes(fig, GRIDLINES=4)
             new_chart = InstantiatedPlotlyNativeChart(
                 fig=fig, chart_name=chart_name, default_legend=False
             )
