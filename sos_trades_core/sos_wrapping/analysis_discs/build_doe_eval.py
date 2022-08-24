@@ -153,7 +153,7 @@ class BuildDoeEval(SoSEval):
     default_sub_process_inputs_dict[PROCESS_REPOSITORY] = None
     default_sub_process_inputs_dict[PROCESS_NAME] = None
     default_sub_process_inputs_dict[USECASE_NAME] = 'Empty'
-    default_sub_process_inputs_dict[USECASE_DATA] = None
+    default_sub_process_inputs_dict[USECASE_DATA] = {}
 
     DESC_IN = {
         SUB_PROCESS_INPUTS: {'type': 'dict',
@@ -265,7 +265,7 @@ class BuildDoeEval(SoSEval):
         self.previous_sub_process_repo = None
         self.previous_sub_process_name = None
         self.previous_sub_process_usecase_name = 'Empty'
-        self.previous_sub_process_usecase_data = None
+        self.previous_sub_process_usecase_data = {}
         self.dyn_var_sp_from_import_dict = {}
         self.previous_algo_name = ""
         self.sub_process_ns_in_build = None
@@ -756,10 +756,10 @@ class BuildDoeEval(SoSEval):
                 self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
             # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[self.USECASE_DATA] = None
+            sub_process_inputs_dict[self.USECASE_DATA] = {}
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
-            self.previous_sub_process_usecase_data = None
+            self.previous_sub_process_usecase_data = {}
         # there are still dynamic variables put apart
         elif len(self.dyn_var_sp_from_import_dict) != 0:
             self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
@@ -802,7 +802,7 @@ class BuildDoeEval(SoSEval):
         if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
             self.previous_sub_process_usecase_name = sub_process_usecase_name
             self.previous_sub_process_usecase_data = sub_process_usecase_data
-            if sub_process_usecase_name != 'Empty' and sub_process_usecase_data is not None:
+            if sub_process_usecase_name != 'Empty' and sub_process_usecase_data != {}:
                 self.sub_proc_import_usecase_status = 'SP_UC_Import'
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'

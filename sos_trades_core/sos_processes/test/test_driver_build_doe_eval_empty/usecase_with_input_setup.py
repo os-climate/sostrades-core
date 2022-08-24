@@ -36,7 +36,7 @@ class Study(StudyManager):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
 
         values_dict = {}
         values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
