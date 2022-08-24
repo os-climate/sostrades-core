@@ -289,7 +289,7 @@ class Sellar3(SoSWrapp):
         if error_string == 'nan':
             y1_out['y_2'] = array([NaN])
         elif error_string == 'input_change':
-            y_1 = self.local_data_short_name['y_1']
+            y_1 = self.get_sosdisc_inputs('y_1')
             y_1[0] += 0.5
         self.store_sos_outputs_values(y1_out)
 

@@ -46,7 +46,7 @@ class SoSMDODiscipline(MDODiscipline):
     Attributes:
         sos_wrapp (SoSWrapp): the user-defined wrapper of the discipline
         reduced_dm (Dict[Dict]): reduced data manager for i/o handling (NB: there is only one reduced_dm per process)
-        output_full_name_map (Dict[string]): map from short names to full names of model output variables
+        io_full_name_map (Dict[string]): map from short names to full names of model output variables
    """
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
@@ -67,7 +67,7 @@ class SoSMDODiscipline(MDODiscipline):
         '''
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
-        self.output_full_name_map = None
+        self.io_full_name_map = None
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,
@@ -79,8 +79,11 @@ class SoSMDODiscipline(MDODiscipline):
         Call user-defined wrapper run.
         """
 
-        # local data with short names for the wrapper
-        self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
+        # send local data to the wrapper for i/o
+        self.sos_wrapp.local_data = self.local_data
+        self.sos_wrapp.input_data_names = self.get_input_data_names()
+        self.sos_wrapp.output_data_names = self.get_input_output_data_names()
+        self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
@@ -89,6 +92,7 @@ class SoSMDODiscipline(MDODiscipline):
 
         # SoSWrapp run
         run_output = self.sos_wrapp._run()
+        # local data update
         self.store_local_data(map_short_to_full_names = True, **run_output)
 
         # get output from data connector
@@ -111,37 +115,36 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
 
-    def create_local_data_short_name(self):
+    def create_io_full_name_map(self):
         """
-        Create a local_data_short_name (every run) and initialise the attribute output_full_name_map (the first run)
+        Create an io_full_name_map ainsi que des input_full_name_map and output_full_name_map for its sos_wrapp
 
         Return:
-            local_data_short_name (Dict[Dict])
+            input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
+            output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
+        Sets attribute:
+            self.io_full_name_map (Dict[Str]): union of the two above used for local data update
         """
 
-        if type(self.sos_wrapp).__name__ == 'DisciplineGatherWrapper':
-            local_data_short_name = {}
-            for key in self.local_data.keys():
-                if key.split('.')[-1] in self.NUM_DESC_IN:
-                    local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data[key]
-                else :
-                    local_data_short_name[key] = self.local_data[key]
-        else :
-            full_name_input_keys = self.get_input_data_names()
-            local_data_input_values = self.get_local_data_by_name(full_name_input_keys)
-            local_data_short_name = dict(zip(map(self.io_full_name_to_short, full_name_input_keys), local_data_input_values))
+        self.io_full_name_map, input_full_name_map, output_full_name_map = {}, {}, {}
 
+        for key in self.get_output_data_names():
+            short_name_key = self.io_full_name_to_short(key)
+            output_full_name_map[short_name_key] = key
+            self.io_full_name_map[short_name_key] = key
 
-        if self.output_full_name_map is None:
-            full_name_output_keys = self.get_output_data_names()
-            self.output_full_name_map = dict(zip(map(self.io_full_name_to_short, full_name_output_keys), full_name_output_keys))
-        return local_data_short_name
+        for key in self.get_input_data_names():
+            short_name_key = self.io_full_name_to_short(key)
+            input_full_name_map[short_name_key] = key
+            self.io_full_name_map[short_name_key] = key
+
+        return input_full_name_map, output_full_name_map
 
     def io_full_name_to_short(self, full_name_key):
         return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]
 
     def io_short_name_to_full(self, short_name_key):
-        return self.output_full_name_map[short_name_key]
+        return self.io_full_name_map[short_name_key]
 
     def store_local_data(self, map_short_to_full_names = False, **kwargs):
         """

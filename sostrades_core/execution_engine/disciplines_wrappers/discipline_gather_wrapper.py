@@ -39,7 +39,7 @@ class DisciplineGatherWrapper(SoSWrapp):
         new_values_dict = {}
 
         input_name = self.attributes['input_name']  # ac_name_list
-        gather_inputs = self.get_sosdisc_inputs(in_dict=True)
+        gather_inputs = self.get_sosdisc_inputs(in_dict=True, full_name_keys=True)
         builder_cls = self.attributes['builder_cls']
         gather_ns = self.attributes['gather_ns']
         for var_gather in self.attributes['var_gather']:

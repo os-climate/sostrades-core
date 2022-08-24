@@ -75,7 +75,11 @@ class SoSWrapp(object):
             sos_name (string): name of the discipline
         '''
         self.sos_name = sos_name
-        self.local_data_short_name = {}
+        self.local_data = {}
+        self.input_full_name_map = {}
+        self.output_full_name_map = {}
+        self.input_data_names = []
+        self.output_data_names = []
         self.run_output = {}
         self.attributes = {}
 
@@ -98,23 +102,29 @@ class SoSWrapp(object):
         """
         raise NotImplementedError()
     
-    def get_sosdisc_inputs(self, keys=None, in_dict=False):
+    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys = False):
         """
         Accessor for the inputs values as a list or dict.
 
         Arguments:
             keys (List): the input short names list
             in_dict (bool): if output format is dict
+            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that True
+                                   allows several variables to have same short name, whereas False gives spurious behaviour
+                                   for doubled short names in discipline, as a short to full name conversion is needed.
         Returns:
             The inputs values list or dict
         """
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
-            keys = list(self.local_data_short_name.keys())
+            if full_name_keys:
+                keys = self.input_data_names
+            else:
+                keys = list(self.input_full_name_map.keys())
             in_dict = True
         inputs = self._get_sosdisc_io(
-            keys, io_type=self.IO_TYPE_IN)
+            keys, io_type=self.IO_TYPE_IN, full_name_keys = full_name_keys)
         if in_dict:
             # return inputs in an dictionary
             return inputs
@@ -125,23 +135,29 @@ class SoSWrapp(object):
             else:
                 return list(inputs.values())[0]
 
-    def get_sosdisc_outputs(self, keys=None, in_dict=False):
+    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys = False):
         """
         Accessor for the outputs values as a list or dict.
 
         Arguments:
             keys (List): the output short names list
             in_dict (bool): if output format is dict
+            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that True
+                                   allows several variables to have same short name, whereas False gives spurious behaviour
+                                   for doubled short names in discipline, as a short to full name conversion is needed.
         Returns:
             The outputs values list or dict
         """
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
-            keys = list(self.run_output.keys()) # NB: method will return an empty dict, not raise error, if run_output uninitialized ({})
+            if full_name_keys:
+                keys = self.output_data_names
+            else:
+                keys = list(self.output_full_name_map.keys())
             in_dict = True
         outputs = self._get_sosdisc_io(
-            keys, io_type=self.IO_TYPE_OUT)
+            keys, io_type=self.IO_TYPE_OUT, full_name_keys=full_name_keys)
         if in_dict:
             # return outputs in an dictionary
             return outputs
@@ -152,14 +168,14 @@ class SoSWrapp(object):
             else:
                 return list(outputs.values())[0]
 
-    def _get_sosdisc_io(self, keys, io_type):
+    def _get_sosdisc_io(self, keys, io_type, full_name_keys):
         """
         Generic method to retrieve sos inputs and outputs
 
         Arguments:
             keys (List[String]): the data names list
-            io_type (string): 'in' or 'out'
-            full_name: if keys in returned dict are full names
+            io_type (string): 'in' or 'out' [NOT USED]
+            full_name_keys: if keys in args and returned dict are full names
         Returns:
             dict of keys values
         Raises:
@@ -171,17 +187,19 @@ class SoSWrapp(object):
         if isinstance(keys, str):
             keys = [keys]
 
-        values_dict = {}
 
-        if io_type == self.IO_TYPE_IN:
-            io_dict = self.local_data_short_name
-        elif io_type == self.IO_TYPE_OUT:
-            io_dict = self.run_output
+        if full_name_keys:
+            query_keys = keys
         else:
-            raise ValueError("Unknown io_type :" +
-                             str(io_type))
-        for key in keys:
-            values_dict[key] = io_dict[key]
+            if io_type == self.IO_TYPE_IN:
+                query_keys = [self.input_full_name_map[key] for key in keys]
+            elif io_type == self.IO_TYPE_OUT:
+                query_keys = [self.output_full_name_map[key] for key in keys]
+            else:
+                raise ValueError("Unknown io_type :" +
+                                 str(io_type))
+
+        values_dict = dict(zip(keys, map(self.local_data.get, query_keys)))
         return values_dict
     
     def _run(self):
