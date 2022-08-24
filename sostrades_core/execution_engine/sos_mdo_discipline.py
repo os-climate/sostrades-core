@@ -51,6 +51,7 @@ class SoSMDODiscipline(MDODiscipline):
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
     DEBUG_MODE = 'debug_mode'
+    NUM_DESC_IN = {'linearization_mode','cache_type','cache_file_path','debug_mode'}
 
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
         '''
@@ -119,7 +120,12 @@ class SoSMDODiscipline(MDODiscipline):
         """
 
         if type(self.sos_wrapp).__name__ == 'DisciplineGatherWrapper':
-            local_data_short_name = self.local_data
+            local_data_short_name = {}
+            for key in self.local_data.keys():
+                if key.split('.')[-1] in self.NUM_DESC_IN:
+                    local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data[key]
+                else :
+                    local_data_short_name[key] = self.local_data[key]
         else :
             full_name_input_keys = self.get_input_data_names()
             local_data_input_values = self.get_local_data_by_name(full_name_input_keys)
