@@ -221,8 +221,8 @@ class TestScatterDiscipline(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.name}',
                        f'|_ {self.name}',
-                       f'\t|_ Disc2',
-                       f'\t|_ Disc1']
+                       f'\t|_ Disc1',
+                       f'\t|_ Disc2']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.ee.display_treeview_nodes()
 

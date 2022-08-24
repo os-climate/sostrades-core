@@ -41,17 +41,18 @@ class DisciplineGatherWrapper(SoSWrapp):
         input_name = self.attributes['input_name']  # ac_name_list
         gather_inputs = self.get_sosdisc_inputs(in_dict=True)
         builder_cls = self.attributes['builder_cls']
+        gather_ns = self.attributes['gather_ns']
         for var_gather in self.attributes['var_gather']:
             gather_dict = {}
             if builder_cls == cls_gather:
                 for name in gather_inputs[input_name]:
-                    for sub_name, value in gather_inputs[f'{name}.{var_gather}'].items():
+                    for sub_name, value in gather_inputs[f'{gather_ns}.{name}.{var_gather}'].items():
                         gather_dict[f'{name}.{sub_name}'] = value
                 new_values_dict[f'{var_gather}'] = gather_dict
             else:
                 for name in gather_inputs[input_name]:
-                    if f'{name}.{var_gather}' in gather_inputs:
-                        gather_dict[name] = gather_inputs[f'{name}.{var_gather}']
+                    if f'{gather_ns}.{name}.{var_gather}' in gather_inputs:
+                        gather_dict[name] = gather_inputs[f'{gather_ns}.{name}.{var_gather}']
                 new_values_dict[f'{var_gather}_dict'] = gather_dict
 
         self.store_sos_outputs_values(new_values_dict)

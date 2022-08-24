@@ -92,7 +92,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         This method cleans the given list of children from the current discipline
         """
         for discipline in list_children:
-            self.built_sos_disciplines.remove(discipline)
+            self.built_proxy_disciplines.remove(discipline)
             discipline.clean()
             self.ee.factory.remove_discipline_from_father_executor(discipline)
 

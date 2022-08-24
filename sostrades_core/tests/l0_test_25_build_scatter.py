@@ -418,7 +418,7 @@ class TestBuildScatter(unittest.TestCase):
         self.assertEqual(z1, constant1 + y1 ** power1)
         self.assertEqual(z2, constant2 + y2 ** power2)
 
-    def _test_05_build_coupling_of_scatter_with_auto_gather(self):
+    def test_05_build_coupling_of_scatter_with_auto_gather(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
 
@@ -537,7 +537,7 @@ class TestBuildScatter(unittest.TestCase):
             1]
         self.assertEqual(gather_disc1._data_in['name_1.y']['user_level'], 3)
 
-    def _test_06_build_scatter_of_scatter_of_coupling_of_scatter(self):
+    def test_06_build_scatter_of_scatter_of_coupling_of_scatter(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
 
@@ -623,7 +623,7 @@ class TestBuildScatter(unittest.TestCase):
         self.assertEqual(len(toplevel_list) * len(secondlevel_list) * len(name_list)
                          * len(scenario_list), len(list_disciplines_wo_scatter))
 
-    def _test_07_build_coupling_of_scatter_with_auto_gather_from_process(self):
+    def test_07_build_coupling_of_scatter_with_auto_gather_from_process(self):
         # load process in GUI
         builders = self.factory.get_builder_from_process(
             repo=self.repo, mod_id='test_coupling_of_scatter')
@@ -685,7 +685,7 @@ class TestBuildScatter(unittest.TestCase):
         # Check gather disciplines
         self.assertDictEqual(y_dict, {'name_1': y1, 'name_2': y2})
 
-    def _test_08_build_scatter_of_scatter_of_coupling_of_scatter_with_load_study_from_input_dict(self):
+    def test_08_build_scatter_of_scatter_of_coupling_of_scatter_with_load_study_from_input_dict(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
 
@@ -773,10 +773,9 @@ class TestBuildScatter(unittest.TestCase):
         self.assertEqual(len(toplevel_list) * len(secondlevel_list) * len(name_list)
                          * len(scenario_list), len(list_disciplines_wo_scatter))
 
-    def _test_09_scatter_with_local_input(self):
+    def test_09_scatter_with_local_input(self):
         # load process in GUI
         mydict = {'input_name': 'name_list',
-
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
@@ -792,7 +791,7 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.configure()
 
         self.assertListEqual(list(self.exec_eng.dm.get_all_namespaces_from_var_name(
-            'name_list')), ['MyCase.Disc2.name_list', 'MyCase.Disc1.name_list'])
+            'name_list')), ['MyCase.Disc1.name_list', 'MyCase.Disc2.name_list'])
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.Disc1.name_list', 'visibility'), 'Local')
         self.assertEqual(self.exec_eng.dm.get_data(
@@ -830,8 +829,8 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(private_val)
 
         self.assertListEqual(list(self.exec_eng.dm.disciplines_id_map.keys()),
-                             ['MyCase', 'MyCase.Disc2', 'MyCase.Disc1', 'MyCase.Disc2.name_1',
-                              'MyCase.Disc2.name_2', 'MyCase.Disc1.name_1', 'MyCase.Disc1.name_2']
+                             ['MyCase', 'MyCase.Disc1', 'MyCase.Disc2', 'MyCase.Disc1.name_1',
+                              'MyCase.Disc1.name_2', 'MyCase.Disc2.name_1', 'MyCase.Disc2.name_2']
                              )
         self.exec_eng.execute()
 

@@ -116,10 +116,15 @@ class SoSMDODiscipline(MDODiscipline):
         Return:
             local_data_short_name (Dict[Dict])
         """
-
-        local_data_short_name = {}
-        for key in self.get_input_data_names():
-            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
+        if type(self.sos_wrapp).__name__ == 'DisciplineGatherWrapper':
+            local_data_short_name = self.local_data
+            # self.output_full_name_map = {}
+            # for key in self.get_output_data_names():
+            #     self.output_full_name_map[key] = key
+        else :
+            local_data_short_name = {}
+            for key in self.get_input_data_names():
+                local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
 
         if self.output_full_name_map is None:
             self.output_full_name_map = {}
