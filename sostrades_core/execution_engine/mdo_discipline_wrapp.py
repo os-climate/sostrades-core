@@ -88,6 +88,29 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
+    def get_chart_filter_list(self):
+        """
+        Return a list of ChartFilter instance base on the inherited class post processing filtering capabilities
+
+        Returns: List[ChartFilter]
+        """
+        if self.wrapper is not None:
+            return self.wrapper.get_chart_filter_list()
+
+    def get_post_processing_list(self, filters=None):
+        """
+        Return a list of post processing instance using the ChartFilter list given as parameter
+
+        Arguments:
+            filters: filters to apply during post processing making
+
+        Returns:
+            post processing instance list
+        """
+        if self.wrapper is not None:
+            return self.wrapper.get_post_processing_list(filters)
+
+
     def create_gemseo_discipline(self, proxy=None, input_data=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """
         SoSMDODiscipline instanciation.

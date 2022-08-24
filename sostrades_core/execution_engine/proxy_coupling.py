@@ -900,14 +900,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def remove_discipline_list(self, disc_list):
         '''
-        Remove several disciplines from coupling #FIXME: duplicate code
+        Remove several disciplines from coupling
         '''
         for disc in disc_list:
-            disc.clean_dm_from_disc()
-            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-                disc, self.disc_id)
-        self.proxy_disciplines = [
-            disc for disc in self.proxy_disciplines if disc not in disc_list]
+            self.remove_discipline(disc)
 
     @property
     def ordered_disc_list(self):

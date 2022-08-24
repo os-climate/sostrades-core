@@ -50,6 +50,7 @@ class SoSMDODiscipline(MDODiscipline):
    """
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
+    DEBUG_MODE = 'debug_mode'
 
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
         '''
@@ -81,22 +82,22 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp.local_data_short_name = self.create_local_data_short_name()
 
         # debug mode: input change
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
 
         # SoSWrapp run
         run_output = self.sos_wrapp._run()
-        self.update_local_data(run_output)
+        self.store_local_data(map_short_to_full_names = True, **run_output)
 
         # get output from data connector
         self.fill_output_value_connector()
 
         # debug modes
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['nan','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
             self.__check_nan_in_data(self.local_data)
 
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['input_change','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
@@ -106,7 +107,7 @@ class SoSMDODiscipline(MDODiscipline):
             if output_error != '':
                 raise ValueError(output_error)
 
-        if self.sos_wrapp.local_data_short_name['debug_mode'] in ['min_max_couplings','all']:
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
 
     def create_local_data_short_name(self):
@@ -116,27 +117,40 @@ class SoSMDODiscipline(MDODiscipline):
         Return:
             local_data_short_name (Dict[Dict])
         """
-
-        local_data_short_name = {}
-        for key in self.get_input_data_names():
-            local_data_short_name[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = self.local_data.get(key)
+        full_name_input_keys = self.get_input_data_names()
+        local_data_input_values = self.get_local_data_by_name(full_name_input_keys)
+        local_data_short_name = dict(zip(map(self.io_full_name_to_short, full_name_input_keys), local_data_input_values))
 
         if self.output_full_name_map is None:
-            self.output_full_name_map = {}
-            for key in self.get_output_data_names():
-                self.output_full_name_map[self.reduced_dm[key][SoSWrapp.VAR_NAME]] = key
-
+            full_name_output_keys = self.get_output_data_names()
+            self.output_full_name_map = dict(zip(map(self.io_full_name_to_short, full_name_output_keys), full_name_output_keys))
         return local_data_short_name
 
-    def update_local_data(self, run_output):
+    def io_full_name_to_short(self, full_name_key):
+        return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]
+
+    def io_short_name_to_full(self, short_name_key):
+        return self.output_full_name_map[short_name_key]
+
+    def store_local_data(self, map_short_to_full_names = False, **kwargs):
         """
         Update local_data[full_name] using the run_output[short_name].
 
         Arguments:
-            run_output (Dict): the values to update the local_data with
+            map_short_to_full_names (bool) : whether to map short to full names in kwargs.keys(), only available for
+                                             output variables.
+            **kwargs : unpacked dict to update the local_data with
+
+        Raises:
+            KeyError if map_short_to_full_names is True and the variables to update include anything other than outputs.
         """
-        for key, value in run_output.items():
-            self.local_data[self.output_full_name_map[key]] = value
+        if map_short_to_full_names:
+            short_name_keys = kwargs.keys()
+            full_name_keys = map(self.io_short_name_to_full, short_name_keys)
+            to_store = dict(zip(full_name_keys, kwargs.values()))
+            super().store_local_data(**to_store)
+        else:
+            super().store_local_data(**kwargs)
 
     def fill_output_value_connector(self):
         """
@@ -150,7 +164,7 @@ class SoSMDODiscipline(MDODiscipline):
                     self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
                     LOGGER)
 
-        self.local_data.update(updated_values)
+        self.store_local_data(map_short_to_full_names=False, **updated_values)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """
@@ -165,8 +179,8 @@ class SoSMDODiscipline(MDODiscipline):
         if not filtered_inputs:
             return self.input_grammar.get_data_names()
         else:
-            return self.filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=LOGGER) # FIXME: self.filter_variables_to_convert
+            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
+                                                    logger=LOGGER)
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """
