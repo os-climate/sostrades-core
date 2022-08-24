@@ -594,5 +594,8 @@ class ExecutionEngine:
         
         # -- store local data in datamanager
         self.update_dm_with_local_data(ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
+        
+        # -- update all proxy statuses
+        ex_proc.set_status_from_mdo_discipline()
 
         return ex_proc
