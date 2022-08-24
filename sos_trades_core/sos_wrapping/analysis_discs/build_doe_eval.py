@@ -149,11 +149,22 @@ class BuildDoeEval(SoSEval):
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
 
+    example_anonymize_input_dict = {}
+    example_anonymize_input_dict['<study_ph>.Hessian.ax2'] = 4.0
+    example_anonymize_input_dict['<study_ph>.Hessian.by2'] = 5.0
+    example_anonymize_input_dict['<study_ph>.Hessian.cx'] = 6.0
+    example_anonymize_input_dict['<study_ph>.Hessian.dy'] = 7.0
+    example_anonymize_input_dict['<study_ph>.Hessian.exy'] = 12.0
+    example_anonymize_input_dict['<study_ph>.Hessian.x'] = 2.0
+    example_anonymize_input_dict['<study_ph>.Hessian.y'] = 3.0
+
+    default_usecase_data = {}
+    default_usecase_data = example_anonymize_input_dict
     default_sub_process_inputs_dict = {}
     default_sub_process_inputs_dict[PROCESS_REPOSITORY] = None
     default_sub_process_inputs_dict[PROCESS_NAME] = None
     default_sub_process_inputs_dict[USECASE_NAME] = 'Empty'
-    default_sub_process_inputs_dict[USECASE_DATA] = {}
+    default_sub_process_inputs_dict[USECASE_DATA] = default_usecase_data
 
     DESC_IN = {
         SUB_PROCESS_INPUTS: {'type': 'dict',
@@ -756,10 +767,11 @@ class BuildDoeEval(SoSEval):
                 self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
             # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[self.USECASE_DATA] = {}
+            default_usecase_data = {}
+            sub_process_inputs_dict[self.USECASE_DATA] = default_usecase_data
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
-            self.previous_sub_process_usecase_data = {}
+            self.previous_sub_process_usecase_data = default_usecase_data
         # there are still dynamic variables put apart
         elif len(self.dyn_var_sp_from_import_dict) != 0:
             self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
@@ -802,7 +814,8 @@ class BuildDoeEval(SoSEval):
         if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
             self.previous_sub_process_usecase_name = sub_process_usecase_name
             self.previous_sub_process_usecase_data = sub_process_usecase_data
-            if sub_process_usecase_name != 'Empty' and sub_process_usecase_data != {}:
+            # means it is not an empty dictionary
+            if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
                 self.sub_proc_import_usecase_status = 'SP_UC_Import'
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
