@@ -769,18 +769,6 @@ class SoSMDAChain(SoSMDODiscipline, MDAChain): #TODO: remove this double inherit
             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
         )
         
-    def update_gemseo_grammar(self, in_names, out_names):
-        ''' 
-        update GEMSEO grammar with sostrades 
-        # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
-        '''
-        # i/o grammars update with SoSTrades i/o
-        for names, grammar in zip([in_names, out_names], [self.input_grammar, self.output_grammar]):
-            # fake data dict with NoneType
-            data_dict = dict.fromkeys(names, None)
-            # This works since (for now) this method (for SimpleGrammar only) does not clear the existing grammar of MDAChain
-            grammar.initialize_from_base_dict(data_dict)
-
     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain
         with all the scenarios inside

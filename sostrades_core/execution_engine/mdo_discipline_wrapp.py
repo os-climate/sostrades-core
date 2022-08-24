@@ -171,19 +171,9 @@ class MDODisciplineWrapp(object):
                                           ** proxy._get_numerical_inputs(),
                                           authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
             
-            #- retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
-            # (e.g., numerical inputs mainly)
-            # TODO: ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
-            #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
-            all_inputs = set(proxy.get_input_data_names())
-            missing_inputs = all_inputs - set(mdo_discipline.get_input_data_names())
-            all_outputs = set(proxy.get_output_data_names())
-            missing_outputs = all_outputs - set(mdo_discipline.get_output_data_names())
-            
-            mdo_discipline.update_gemseo_grammar(missing_inputs, 
-                                                 missing_outputs)
-            
             self.mdo_discipline = mdo_discipline
+
+            self.__update_gemseo_grammar(mdo_discipline)
             
             # set linear solver options (todo after call to _get_numerical_inputs() )
             # TODO: check with IRT how to handle it
@@ -198,12 +188,36 @@ class MDODisciplineWrapp(object):
             mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines')
                     
 #             self._init_grammar_with_keys(proxy)
-            self._update_all_default_values(input_data)
+            self._update_all_default_values(input_data) # TODO: check why/if it is really needed
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
+    def __update_gemseo_grammar(self, mdachain):
+        ''' 
+        update GEMSEO grammar with sostrades 
+        # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
+        '''
+        #- retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
+        # (e.g., numerical inputs mainly)
+        # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
+        #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
+        soscoupling_inputs = set(proxy.get_input_data_names())
+        mdachain_inputs = set(mdachain.get_input_data_names())
+        missing_inputs = soscoupling_inputs - mdachain_inputs
+        
+        soscoupling_outputs = set(proxy.get_output_data_names())
+        mdachain_outputs = set(mdachain.get_output_data_names())
+        missing_outputs = soscoupling_outputs - mdachain_outputs
+        
+        # i/o grammars update with SoSTrades i/o
+        for names, grammar in zip([missing_inputs, missing_outputs], [mdachain.input_grammar, mdachain.output_grammar]):
+            # fake data dict with NoneType
+            data_dict = dict.fromkeys(names, None)
+            # This works since (for now) this method (for SimpleGrammar only) does not clear the existing grammar of MDAChain
+            grammar.initialize_from_base_dict(data_dict)
+        
 
     def execute(self, input_data):
         """
