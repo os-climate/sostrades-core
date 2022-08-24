@@ -173,7 +173,7 @@ class MDODisciplineWrapp(object):
             
             self.mdo_discipline = mdo_discipline
 
-            self.__update_gemseo_grammar(mdo_discipline)
+            self.__update_gemseo_grammar(proxy, mdo_discipline)
             
             # set linear solver options (todo after call to _get_numerical_inputs() )
             # TODO: check with IRT how to handle it
@@ -194,7 +194,7 @@ class MDODisciplineWrapp(object):
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
-    def __update_gemseo_grammar(self, mdachain):
+    def __update_gemseo_grammar(self, proxy, mdachain):
         ''' 
         update GEMSEO grammar with sostrades 
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
