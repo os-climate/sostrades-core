@@ -111,7 +111,7 @@ class MDODisciplineWrapp(object):
             return self.wrapper.get_post_processing_list(filters)
 
 
-    def create_gemseo_discipline(self, proxy=None, input_data=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """
         SoSMDODiscipline instanciation.
 
@@ -130,7 +130,7 @@ class MDODisciplineWrapp(object):
                                                    sos_wrapp=self.wrapper,
                                                    reduced_dm=reduced_dm)
             self._init_grammar_with_keys(proxy)
-            self._update_all_default_values(input_data)
+#             self._update_all_default_values(input_data)
             self._set_wrapper_attributes(proxy,self.wrapper)
 
 
@@ -156,16 +156,16 @@ class MDODisciplineWrapp(object):
         grammar.clear()
         grammar.initialize_from_base_dict({output: None for output in output_names})
         
-    def _update_all_default_values(self, input_data):
-        '''
-        Store all input grammar data names' values from input data in default values of mdo_discipline
-
-        Arguments:
-            input_data (dict): values to store
-        '''
-        if input_data is not None:
-            for key in self.mdo_discipline.input_grammar.get_data_names():
-                self.mdo_discipline._default_inputs[key] = input_data.get(key)
+#    def _update_all_default_values(self, input_data):
+#        '''
+#        Store all input grammar data names' values from input data in default values of mdo_discipline
+#
+#        Arguments:
+#            input_data (dict): values to store
+#        '''
+#        if input_data is not None:
+#            for key in self.mdo_discipline.input_grammar.get_data_names():
+#                self.mdo_discipline._default_inputs[key] = input_data.get(key)
 
     def update_default_from_dict(self, input_dict, check_input=True):
         '''
@@ -215,7 +215,7 @@ class MDODisciplineWrapp(object):
             mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines')
                     
 #             self._init_grammar_with_keys(proxy)
-            self._update_all_default_values(input_data) # TODO: check why/if it is really needed
+#             self._update_all_default_values(input_data) # TODO: check why/if it is really needed
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':

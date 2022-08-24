@@ -333,16 +333,13 @@ class ProxyDiscipline(object):
         """
         self._update_status_dm(status)
 
-    def prepare_execution(self, input_data):
+    def prepare_execution(self):
         '''
         GEMSEO objects instanciation
-
-        Arguments:
-            input_data (dict): input data with full names and values, to update default values of the GEMSEO object with
         '''
         if self.mdo_discipline_wrapp.mdo_discipline is None:
             # init gemseo discipline if it has not been created yet
-            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, input_data=input_data,
+            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
                                                                cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
                                                                cache_file_path=self.get_sosdisc_inputs(
@@ -352,10 +349,10 @@ class ProxyDiscipline(object):
                 # set new cache when cache_type have changed (self._reset_cache == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-            if self._reset_debug_mode:
-                # update default values when changing debug modes between executions
-                to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
-                self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
+#             if self._reset_debug_mode:
+#                 # update default values when changing debug modes between executions
+#                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
+#                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
