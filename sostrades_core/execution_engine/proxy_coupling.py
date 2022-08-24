@@ -577,14 +577,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
                 self.get_disciplines_to_configure() == [])
 
-    def prepare_execution(self, input_data):
+    def prepare_execution(self):
         '''
         Preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
         # prepare_execution of proxy_disciplines
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
-            disc.prepare_execution(input_data)
+            disc.prepare_execution()
             if disc.mdo_discipline_wrapp is not None:
                 sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
 
@@ -597,7 +597,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             mda_chain_n_calls = None
 
         # create_mda_chain from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self, input_data)
+        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self)
 
         # set cache cache of gemseo object
         self.set_gemseo_disciplines_caches(mda_chain_cache, mda_chain_n_calls)

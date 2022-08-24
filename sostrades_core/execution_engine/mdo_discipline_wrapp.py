@@ -111,7 +111,7 @@ class MDODisciplineWrapp(object):
             return self.wrapper.get_post_processing_list(filters)
 
 
-    def create_gemseo_discipline(self, proxy=None, input_data=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """
         SoSMDODiscipline instanciation.
 

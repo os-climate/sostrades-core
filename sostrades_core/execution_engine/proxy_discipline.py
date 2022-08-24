@@ -333,16 +333,13 @@ class ProxyDiscipline(object):
         """
         self._update_status_dm(status)
 
-    def prepare_execution(self, input_data):
+    def prepare_execution(self):
         '''
         GEMSEO objects instanciation
-
-        Arguments:
-            input_data (dict): input data with full names and values, to update default values of the GEMSEO object with
         '''
         if self.mdo_discipline_wrapp.mdo_discipline is None:
             # init gemseo discipline if it has not been created yet
-            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self, input_data=input_data,
+            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
                                                                cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
                                                                cache_file_path=self.get_sosdisc_inputs(

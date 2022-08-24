@@ -163,11 +163,11 @@ class ExecutionEngine:
         # create DM treenode to be able to populate it from GUI
         self.dm.treeview = None
         
-    def prepare_execution(self, input_data=None):
+    def prepare_execution(self):
         '''
         loop on proxy disciplines and execute prepare execution
         '''
-        self.root_process.prepare_execution(input_data)
+        self.root_process.prepare_execution()
 
     def fill_data_in_with_connector(self):
         """
@@ -215,7 +215,7 @@ class ExecutionEngine:
         '''
         self.dm.cache_map = {}
         self.dm.gemseo_disciplines_id_map = {}
-        self.root_process._set_dm_cache_map()
+        self.root_process.mdo_discipline_wrapp.mdo_discipline._set_dm_cache_map()
         
     def get_cache_map_to_dump(self):
         '''
@@ -582,11 +582,11 @@ class ExecutionEngine:
         self.__factory.init_execution()
         
         # -- prepare execution
-        input_data = self.dm.get_data_dict_values()
-        self.prepare_execution(input_data=input_data)
+        self.prepare_execution()
 
         # -- execution with input data from DM
         ex_proc = self.root_process
+        input_data = self.dm.get_data_dict_values()
         ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(input_data=input_data)
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',

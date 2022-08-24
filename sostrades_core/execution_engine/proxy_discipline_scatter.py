@@ -319,7 +319,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         """
         pass
 
-    def prepare_execution(self, input_data):
+    def prepare_execution(self):
         """
         Overload
         """
