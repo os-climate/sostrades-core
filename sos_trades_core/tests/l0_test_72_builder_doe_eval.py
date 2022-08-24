@@ -195,7 +195,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
         return [values_dict]
 
-    def setup_Hessian_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase'):
+    def setup_Hessian_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase1'):
         """
         Define a set of data inputs with selected use_case
         """
@@ -263,7 +263,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             # SubProcess selection values
             mod_id = 'test_disc_hessian'
             if my_usecase == 1:
-                my_usecase = 'usecase'
+                my_usecase = 'usecase1'
             elif my_usecase == 2:
                 my_usecase = 'usecase2'
             elif my_usecase == 3:
@@ -1618,7 +1618,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         # without direct user inputs
         if 1 == 1:
             dict_values = self.setup_Hessian_usecase_from_sub_usecase(study_dump.ee,
-                                                                      restricted=False, my_usecase='usecase')
+                                                                      restricted=False, my_usecase='usecase1')
             print('load usecase file : from Empty to usecase without direct user inputs')
             study_dump.load_data(from_input_dict=dict_values)
         else:  # First direct user inputs and then load usecase file : from Empty to usecase
@@ -1631,9 +1631,9 @@ class TestBuilderDoeEval(unittest.TestCase):
                 f'{self.study_name}.DoE_Eval')[0]
             sub_process_inputs_dict = doe_disc.get_data_io_from_key(
                 'in', 'sub_process_inputs')['value']
-            sub_process_inputs_dict['usecase_name'] = 'usecase'
+            sub_process_inputs_dict['usecase_name'] = 'usecase1'
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
-                repo, 'test_disc_hessian', 'usecase')
+                repo, 'test_disc_hessian', 'usecase1')
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
             sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
@@ -2226,7 +2226,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         # Prepare inputs #########
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase'
+        my_usecase = 'usecase1'
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = None
@@ -2700,7 +2700,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             'in', 'sub_process_inputs')['value']
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase'
+        my_usecase = 'usecase1'
         sub_process_inputs_dict['usecase_name'] = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
@@ -2848,7 +2848,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         print(
             '################################################################################')
         print(
-            'STEP_5: update subprocess selection by changing test_disc_hessian to  sellar')
+            'STEP_5: update subprocess selection by changing test_disc_hessian to sellar')
         mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
@@ -3208,7 +3208,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         # without direct user inputs
 
         dict_values = self.setup_Hessian_usecase_from_sub_usecase(study_dump.ee,
-                                                                  restricted=False, my_usecase='usecase')
+                                                                  restricted=False, my_usecase='usecase1')
         print('load usecase file : from Empty to usecase without direct user inputs')
         study_dump.load_data(from_input_dict=dict_values)
 
