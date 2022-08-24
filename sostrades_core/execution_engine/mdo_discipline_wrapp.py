@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.SoSMDODiscipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
+from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -87,6 +88,29 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
+    def get_chart_filter_list(self):
+        """
+        Return a list of ChartFilter instance base on the inherited class post processing filtering capabilities
+
+        Returns: List[ChartFilter]
+        """
+        if self.wrapper is not None:
+            return self.wrapper.get_chart_filter_list()
+
+    def get_post_processing_list(self, filters=None):
+        """
+        Return a list of post processing instance using the ChartFilter list given as parameter
+
+        Arguments:
+            filters: filters to apply during post processing making
+
+        Returns:
+            post processing instance list
+        """
+        if self.wrapper is not None:
+            return self.wrapper.get_post_processing_list(filters)
+
+
     def create_gemseo_discipline(self, proxy=None, input_data=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """
         SoSMDODiscipline instanciation.
@@ -106,8 +130,9 @@ class MDODisciplineWrapp(object):
                                                    sos_wrapp=self.wrapper,
                                                    reduced_dm=reduced_dm)
             self._init_grammar_with_keys(proxy)
-            self._update_default_values(input_data)
+            self._update_all_default_values(input_data)
             self._set_wrapper_attributes(proxy,self.wrapper)
+
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
@@ -131,9 +156,9 @@ class MDODisciplineWrapp(object):
         grammar.clear()
         grammar.initialize_from_base_dict({output: None for output in output_names})
         
-    def _update_default_values(self, input_data):
+    def _update_all_default_values(self, input_data):
         '''
-        Store input_data in default values of mdo_discipline
+        Store all input grammar data names' values from input data in default values of mdo_discipline
 
         Arguments:
             input_data (dict): values to store
@@ -142,26 +167,84 @@ class MDODisciplineWrapp(object):
             for key in self.mdo_discipline.input_grammar.get_data_names():
                 self.mdo_discipline._default_inputs[key] = input_data.get(key)
 
+    def update_default_from_dict(self, input_dict, check_input=True):
+        '''
+        Store values from input_dict in default values of mdo_discipline (when keys are present in input grammar data
+        names or input is not checked)
 
+        Arguments:
+            input_dict (dict): values to store
+            check_input (bool): flag to specify if inputs are checked or not to exist in input grammar
+        '''
+        if input_dict is not None:
+            to_update = [(key, value) for (key, value) in input_dict.items()
+                         if not check_input or key in self.mdo_discipline.input_grammar.get_data_names()]
+            self.mdo_discipline._default_inputs.update(to_update)
 
     def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
         """
-        MDAChain instanciation when owned by a ProxyCoupling.
+        MDAChain instantiation when owned by a ProxyCoupling.
 
         Arguments:
             sub_mdo_disciplines (List[MDODiscipline]): list of sub-MDODisciplines of the MDAChain
             proxy (ProxyDiscipline): proxy discipline for grammar initialisation
             input_data (dict): input data to update default values of the MDAChain with
         """
-        self.mdo_discipline = MDAChain(
-                                      disciplines=sub_mdo_disciplines,
-                                      name=proxy.get_disc_full_name(),
-                                      grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                      ** proxy._get_numerical_inputs())
+        if self.wrapping_mode == 'SoSTrades':
+            mdo_discipline = SoSMDAChain(
+                                          disciplines=sub_mdo_disciplines,
+                                          name=proxy.get_disc_full_name(),
+                                          grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                          ** proxy._get_numerical_inputs(),
+                                          authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
+            
+            self.mdo_discipline = mdo_discipline
+
+            self.__update_gemseo_grammar(proxy, mdo_discipline)
+            
+            # set linear solver options (todo after call to _get_numerical_inputs() )
+            # TODO: check with IRT how to handle it
+            mdo_discipline.linear_solver_MDA = proxy.linear_solver_MDA
+            mdo_discipline.linear_solver_options_MDA = proxy.linear_solver_options_MDA
+            mdo_discipline.linear_solver_tolerance_MDA = proxy.linear_solver_tolerance_MDA
+            mdo_discipline.linear_solver_MDO = proxy.linear_solver_MDO
+            mdo_discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
+            mdo_discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
+            
+            # set other additional options (SoSTrades)
+            mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines')
+                    
+#             self._init_grammar_with_keys(proxy)
+            self._update_all_default_values(input_data) # TODO: check why/if it is really needed
+            proxy.status = self.mdo_discipline.status
+
+        elif self.wrapping_mode == 'GEMSEO':
+            pass
+
+    def __update_gemseo_grammar(self, proxy, mdachain):
+        ''' 
+        update GEMSEO grammar with sostrades 
+        # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
+        '''
+        #- retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
+        # (e.g., numerical inputs mainly)
+        # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
+        #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
+        soscoupling_inputs = set(proxy.get_input_data_names())
+        mdachain_inputs = set(mdachain.get_input_data_names())
+        missing_inputs = soscoupling_inputs - mdachain_inputs
         
-        self._init_grammar_with_keys(proxy)
-        self._update_default_values(input_data)
-        proxy.status = self.mdo_discipline.status
+        soscoupling_outputs = set(proxy.get_output_data_names())
+        mdachain_outputs = set(mdachain.get_output_data_names())
+        missing_outputs = soscoupling_outputs - mdachain_outputs
+        
+        # i/o grammars update with SoSTrades i/o
+        for names, grammar in zip([missing_inputs, missing_outputs], [mdachain.input_grammar, mdachain.output_grammar]):
+            # fake data dict with NoneType
+            data_dict = dict.fromkeys(names, None)
+            # This works since (for now) this method (for SimpleGrammar only) does not clear the existing grammar of MDAChain
+            grammar.initialize_from_base_dict(data_dict)
+        
 
     def execute(self, input_data):
         """

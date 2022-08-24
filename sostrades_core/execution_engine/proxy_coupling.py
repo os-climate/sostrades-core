@@ -17,7 +17,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.mda.sequential_mda import MDASequential
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from gemseo.mda.mda_chain import MDAChain
-from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -186,7 +186,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'authorize_self_coupled_disciplines': {ProxyDiscipline.TYPE: 'bool',
                                                ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                               ProxyDiscipline.DEFAULT: False, ProxyDiscipline.USER_LEVEL: 3,
+                                               ProxyDiscipline.DEFAULT: False, 
+                                               ProxyDiscipline.USER_LEVEL: 3,
                                                ProxyDiscipline.STRUCTURING: True}
     }
 
@@ -364,10 +365,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self.set_configure_status(True)
             # - build the coupling structure
             self._build_coupling_structure()
-            # - Update coupling and editable flags in the datamanager for the GUI
-            self._update_coupling_flags_in_dm()
             # - builds data_in/out according to the coupling structure
             self._build_data_io()
+            # - Update coupling and editable flags in the datamanager for the GUI
+            self._update_coupling_flags_in_dm()
 
     def _build_data_io(self):
         """
@@ -376,37 +377,68 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         to be able to retrieve inputs and outputs with same short name
         in sub proxies
         """
-
+        #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
+        data_in, data_out = self.__compute_mdachain_gemseo_based_data_io()
+             
+        #- data_i/o setup
+        #- TODO: check if we can remove _data_in_with_full_name
         self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
                                         self._data_in.items()
                                         if key in self.DESC_IN or key in self.NUM_DESC_IN}
         self._data_in = {key: value for key, value in self._data_in.items(
         ) if
                          key in self.DESC_IN or key in self.NUM_DESC_IN}
-        # add coupling inputs in data_in
-        for discipline in self.proxy_disciplines:
-            for var_f_name, var_name in zip(discipline.get_input_data_names(), list(discipline._data_in.keys())):
-                if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_IN:
-                    self._data_in_with_full_name[var_f_name] = self.dm.get_data(var_f_name)
-                    if not self.ee.dm.get_data(var_f_name, self.NUMERICAL):
-                        self._data_in[var_name] = self.dm.get_data(var_f_name)
-
+        
+        
+        # add inputs - that are not outputs - of all children disciplines in data_in
+        for k in data_in:
+            k_full = self.get_var_full_name(k, data_in)
+            self._data_in_with_full_name[k_full] = data_in[k]
+            if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
+                self._data_in[k] = self.dm.get_data(k_full)
+                
         # keep residuals_history if in data_out
         if self.RESIDUALS_HISTORY in self._data_out:
             self._data_out_with_full_name = {
                 f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
             self._data_out = {
-                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]}
+                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
         else:
             self._data_out_with_full_name = {}
             self._data_out = {}
-
-        for discipline in self.proxy_disciplines:
-            for var_f_name, var_name in zip(discipline.get_output_data_names(), list(discipline._data_out.keys())):
-                if self.ee.dm.get_data(var_f_name, self.IO_TYPE) == self.IO_TYPE_OUT:
-                    self._data_out_with_full_name[var_f_name] = self.dm.get_data(var_f_name)
-                    self._data_out[var_name] = self.dm.get_data(var_f_name)
-
+        
+        # add outputs of all childred disciplines in data_out
+        for k in data_out:
+            k_full = self.get_var_full_name(k, data_out)
+            self._data_out_with_full_name[k_full] = data_out[k]
+            if not self.ee.dm.get_data(k_full, self.NUMERICAL):
+                self._data_out[k] = self.dm.get_data(k_full)
+    
+    def __compute_mdachain_gemseo_based_data_io(self):
+        ''' mimics the definition of MDA i/o grammar
+        '''
+        #- identify i/o grammars like in GEMSEO (like in initialize_grammar method in MDOChain)
+        mda_outputs = []
+        mda_inputs = []
+        get_data =  self.dm.get_data
+        data_in = {}
+        data_out = {}
+        for d in self.proxy_disciplines:
+            disc_in = d.get_input_data_names()
+            disc_out = d.get_output_data_names()
+            mda_outputs += disc_out
+            
+            # get all inputs that are not in known outputs
+            mda_inputs += list(set(disc_in) - set(mda_outputs))
+            d_data_in = {k : get_data(k_full) for k_full, k in zip(disc_in, d._data_in.keys()) if k_full not in mda_outputs}
+            data_in.update(d_data_in)
+            
+            # get all outputs
+            d_data_out = {k : get_data(k_full) for k_full, k in zip(disc_out, d._data_out.keys())}
+            data_out.update(d_data_out)
+    
+        return data_in, data_out
+    
     def get_input_data_names(self):
         '''
         Returns:
@@ -594,124 +626,124 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
 
-    def pre_run_mda(self, input_data):
-        '''
-        Pre run needed if one of the strong coupling variables is None in a MDA 
-        No need of prerun otherwise 
-        '''
-        strong_couplings_values = [input_data[key] for key in
-                                   self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()]
-        if any(elem is None for elem in strong_couplings_values):
-            self.logger.info(
-                f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
-            self.recreate_order_for_first_execution(input_data)
-            self.logger.info(
-                f'End of pre-run execution for the coupling ' + self.get_disc_full_name())
+#     def pre_run_mda(self, input_data):
+#         '''
+#         Pre run needed if one of the strong coupling variables is None in a MDA 
+#         No need of prerun otherwise 
+#         '''
+#         strong_couplings_values = [input_data[key] for key in
+#                                    self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.strong_couplings()]
+#         if any(elem is None for elem in strong_couplings_values):
+#             self.logger.info(
+#                 f'Execute a pre-run for the coupling ' + self.get_disc_full_name())
+#             self.recreate_order_for_first_execution(input_data)
+#             self.logger.info(
+#                 f'End of pre-run execution for the coupling ' + self.get_disc_full_name())
 
-    def recreate_order_for_first_execution(self, input_data):
-        '''
-        For each sub mda defined in the GEMS execution sequence, 
-        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
-        until all disciplines have been run. 
-        While loop cannot be an infinite loop because raise an exception
-        if no disciplines are ready while some disciplines are missing in the list 
-        '''
-        for parallel_tasks in self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.sequence:
-            # to parallelize, check if 1 < len(parallel_tasks)
-            # for now, parallel tasks are run sequentially
-            for coupled_mdo_disciplines in parallel_tasks:
-                # several disciplines coupled
-                first_disc = coupled_mdo_disciplines[0]
-                if len(coupled_mdo_disciplines) > 1 or (
-                        len(coupled_mdo_disciplines) == 1
-                        and self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
-                        and not isinstance(coupled_mdo_disciplines[0], MDAChain)
-                ):
-                    # several disciplines coupled
+#     def recreate_order_for_first_execution(self, input_data):
+#         '''
+#         For each sub mda defined in the GEMS execution sequence, 
+#         we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
+#         until all disciplines have been run. 
+#         While loop cannot be an infinite loop because raise an exception
+#         if no disciplines are ready while some disciplines are missing in the list 
+#         '''
+#         for parallel_tasks in self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.sequence:
+#             # to parallelize, check if 1 < len(parallel_tasks)
+#             # for now, parallel tasks are run sequentially
+#             for coupled_mdo_disciplines in parallel_tasks:
+#                 # several disciplines coupled
+#                 first_disc = coupled_mdo_disciplines[0]
+#                 if len(coupled_mdo_disciplines) > 1 or (
+#                         len(coupled_mdo_disciplines) == 1
+#                         and self.mdo_discipline_wrapp.mdo_discipline.coupling_structure.is_self_coupled(first_disc)
+#                         and not isinstance(coupled_mdo_disciplines[0], MDAChain)
+#                 ):
+#                     # several disciplines coupled
+# 
+#                     # get the disciplines from self.disciplines
+#                     # order the MDA disciplines the same way as the
+#                     # original disciplines
+#                     sub_mda_disciplines = []
+#                     for disc in self.mdo_discipline_wrapp.mdo_discipline.disciplines:
+#                         if disc in coupled_mdo_disciplines:
+#                             sub_mda_disciplines.append(disc)
+#                     # submda disciplines are not ordered in a correct exec
+#                     # sequence...
+#                     # Need to execute ready disciplines one by one until all
+#                     # sub disciplines have been run
+#                     while sub_mda_disciplines != []:
+#                         ready_disciplines = self.get_first_discs_to_execute(
+#                             sub_mda_disciplines, input_data)
+# 
+#                         for discipline in ready_disciplines:
+#                             # Execute ready disciplines and update local_data
+#                             if isinstance(discipline, MDAChain):
+#                                 # recursive call if subdisc is a SoSCoupling
+#                                 # TODO: check if it will work for cases like
+#                                 # Coupling1 > Driver > Coupling2
+#                                 discipline.pre_run_mda(input_data)
+#                             else:
+#                                 temp_local_data = discipline.execute(
+#                                     input_data)
+#                                 input_data.update(temp_local_data)
+# 
+#                         sub_mda_disciplines = [
+#                             disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
+#                 else:
+#                     discipline = coupled_mdo_disciplines[0]
+#                     if isinstance(discipline, MDAChain):
+#                         # recursive call if subdisc is a SoSCoupling
+#                         discipline.pre_run_mda(input_data)
+#                     else:
+#                         temp_local_data = discipline.execute(input_data)
+#                         input_data.update(temp_local_data)
+# 
+#         self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(input_data)
 
-                    # get the disciplines from self.disciplines
-                    # order the MDA disciplines the same way as the
-                    # original disciplines
-                    sub_mda_disciplines = []
-                    for disc in self.mdo_discipline_wrapp.mdo_discipline.disciplines:
-                        if disc in coupled_mdo_disciplines:
-                            sub_mda_disciplines.append(disc)
-                    # submda disciplines are not ordered in a correct exec
-                    # sequence...
-                    # Need to execute ready disciplines one by one until all
-                    # sub disciplines have been run
-                    while sub_mda_disciplines != []:
-                        ready_disciplines = self.get_first_discs_to_execute(
-                            sub_mda_disciplines, input_data)
+#     def get_first_discs_to_execute(self, disciplines, input_data):
+#         """
+#         Gets the list of disciplines having all their inputs ready for execution.
+#         """
+#         ready_disciplines = []
+#         disc_vs_keys_none = {}
+#         for disc in disciplines:
+# 
+#             # update inputs values with SoSCoupling local_data
+#             keys_none = [key for key in disc.input_grammar.get_data_names() if
+#                          key.split(NS_SEP)[-1] not in self.NUM_DESC_IN and input_data.get(key) is None]
+#             if keys_none == []:
+#                 ready_disciplines.append(disc)
+#             else:
+#                 disc_vs_keys_none[disc.name] = keys_none
+#         if ready_disciplines == []:
+#             message = '\n'.join(' : '.join([disc, str(keys_none)])
+#                                 for disc, keys_none in disc_vs_keys_none.items())
+#             raise Exception(
+#                 f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
+#         else:
+#             return ready_disciplines
 
-                        for discipline in ready_disciplines:
-                            # Execute ready disciplines and update local_data
-                            if isinstance(discipline, MDAChain):
-                                # recursive call if subdisc is a SoSCoupling
-                                # TODO: check if it will work for cases like
-                                # Coupling1 > Driver > Coupling2
-                                discipline.pre_run_mda(input_data)
-                            else:
-                                temp_local_data = discipline.execute(
-                                    input_data)
-                                input_data.update(temp_local_data)
-
-                        sub_mda_disciplines = [
-                            disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
-                else:
-                    discipline = coupled_mdo_disciplines[0]
-                    if isinstance(discipline, MDAChain):
-                        # recursive call if subdisc is a SoSCoupling
-                        discipline.pre_run_mda(input_data)
-                    else:
-                        temp_local_data = discipline.execute(input_data)
-                        input_data.update(temp_local_data)
-
-        self.mdo_discipline_wrapp.mdo_discipline.default_inputs.update(input_data)
-
-    def get_first_discs_to_execute(self, disciplines, input_data):
-        """
-        Gets the list of disciplines having all their inputs ready for execution.
-        """
-        ready_disciplines = []
-        disc_vs_keys_none = {}
-        for disc in disciplines:
-
-            # update inputs values with SoSCoupling local_data
-            keys_none = [key for key in disc.input_grammar.get_data_names() if
-                         key.split(NS_SEP)[-1] not in self.NUM_DESC_IN and input_data.get(key) is None]
-            if keys_none == []:
-                ready_disciplines.append(disc)
-            else:
-                disc_vs_keys_none[disc.name] = keys_none
-        if ready_disciplines == []:
-            message = '\n'.join(' : '.join([disc, str(keys_none)])
-                                for disc, keys_none in disc_vs_keys_none.items())
-            raise Exception(
-                f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
-        else:
-            return ready_disciplines
-
-    def execute(self, input_data):
-        """
-        Pre run of the mda, execution of the MDA, update of the datamanager and status handling.
-        """
-        self.pre_run_mda(input_data)
-
-        self.mdo_discipline_wrapp.execute(input_data)
-
-        # save residual history
-        dict_out = {}
-        residuals_history = DataFrame(
-            {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in
-             self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
-        dict_out[self.RESIDUALS_HISTORY] = residuals_history
-        self.store_sos_outputs_values(dict_out, update_dm=True)
-
-        # store local data in datamanager
-        self.update_dm_with_local_data(self.mdo_discipline_wrapp.mdo_discipline.local_data)
-
-        self.set_status_from_mdo_discipline()
+#     def execute(self, input_data):
+#         """
+#         Pre run of the mda, execution of the MDA, update of the datamanager and status handling.
+#         """
+#         self.pre_run_mda(input_data)
+# 
+#         self.mdo_discipline_wrapp.execute(input_data)
+# 
+#         # save residual history
+#         dict_out = {}
+#         residuals_history = DataFrame(
+#             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in
+#              self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list})
+#         dict_out[self.RESIDUALS_HISTORY] = residuals_history
+#         self.store_sos_outputs_values(dict_out, update_dm=True)
+# 
+#         # store local data in datamanager
+#         self.update_dm_with_local_data(self.mdo_discipline_wrapp.mdo_discipline.local_data)
+# 
+#         self.set_status_from_mdo_discipline()
 
     def check_var_data_mismatch(self):
         '''
@@ -868,14 +900,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def remove_discipline_list(self, disc_list):
         '''
-        Remove several disciplines from coupling #FIXME: duplicate code
+        Remove several disciplines from coupling
         '''
         for disc in disc_list:
-            disc.clean_dm_from_disc()
-            self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-                disc, self.disc_id)
-        self.proxy_disciplines = [
-            disc for disc in self.proxy_disciplines if disc not in disc_list]
+            self.remove_discipline(disc)
 
     @property
     def ordered_disc_list(self):

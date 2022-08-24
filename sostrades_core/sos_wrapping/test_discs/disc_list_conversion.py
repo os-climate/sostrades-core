@@ -16,7 +16,7 @@ limitations under the License.
 import pandas as pd
 import numpy as np
 
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 

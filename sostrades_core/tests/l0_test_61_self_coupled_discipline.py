@@ -34,7 +34,7 @@ class TestSelfCoupledDiscipline(unittest.TestCase):
 
         # Test output value
         self.assertEqual(x, 0.5)
-        self.assertEqual(type(root_coupling.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[0]).__name__, 'SelfCoupledDiscipline')
+        self.assertEqual(type(root_coupling.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[0].sos_wrapp).__name__, 'SelfCoupledDiscipline')
 
         self.ee.load_study_from_input_dict({'Test.authorize_self_coupled_disciplines': True})
         print(root_coupling.mdo_discipline_wrapp.mdo_discipline.mdo_chain)

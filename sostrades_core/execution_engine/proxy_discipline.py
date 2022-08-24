@@ -38,7 +38,9 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import conve
     convert_new_type_into_array
 
 from gemseo.core.discipline import MDODiscipline
-from sostrades_core.execution_engine.MDODisciplineWrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from gemseo.core.chain import MDOChain
 
 
@@ -94,46 +96,46 @@ class ProxyDiscipline(object):
         _maturity (string): maturity of the user-defined model
 
 
-        cls (Class): constructor of the model wrapper with user-defined run (or None)
+        cls (Class): constructor of the model wrapper with user-defin ed run (or None)
     """
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
     IO_TYPE = 'io_type'
-    IO_TYPE_IN = 'in'
-    IO_TYPE_OUT = 'out'
-    TYPE = 'type'
-    SUBTYPE = 'subtype_descriptor'
-    COUPLING = 'coupling'
-    VISIBILITY = 'visibility'
-    LOCAL_VISIBILITY = 'Local'
-    INTERNAL_VISIBILITY = 'Internal'
-    SHARED_VISIBILITY = 'Shared'
+    IO_TYPE_IN = SoSWrapp.IO_TYPE_IN
+    IO_TYPE_OUT = SoSWrapp.IO_TYPE_OUT
+    TYPE = SoSWrapp.TYPE
+    SUBTYPE = SoSWrapp.SUBTYPE
+    COUPLING = SoSWrapp.COUPLING
+    VISIBILITY = SoSWrapp.VISIBILITY
+    LOCAL_VISIBILITY = SoSWrapp.LOCAL_VISIBILITY
+    INTERNAL_VISIBILITY = SoSWrapp.INTERNAL_VISIBILITY
+    SHARED_VISIBILITY = SoSWrapp.SHARED_VISIBILITY
     AVAILABLE_VISIBILITIES = [
         LOCAL_VISIBILITY,
         INTERNAL_VISIBILITY,
         SHARED_VISIBILITY]
-    NAMESPACE = 'namespace'
+    NAMESPACE = SoSWrapp.NAMESPACE
     NS_REFERENCE = 'ns_reference'
-    VALUE = 'value'
-    DEFAULT = 'default'
-    EDITABLE = 'editable'
-    USER_LEVEL = 'user_level'
-    STRUCTURING = 'structuring'
-    POSSIBLE_VALUES = 'possible_values'
-    RANGE = 'range'
-    UNIT = 'unit'
-    DESCRIPTION = 'description'
-    NUMERICAL = 'numerical'
+    VALUE = SoSWrapp.VALUE
+    DEFAULT = SoSWrapp.DEFAULT
+    EDITABLE = SoSWrapp.EDITABLE
+    USER_LEVEL = SoSWrapp.USER_LEVEL
+    STRUCTURING = SoSWrapp.STRUCTURING
+    POSSIBLE_VALUES = SoSWrapp.POSSIBLE_VALUES
+    RANGE = SoSWrapp.RANGE
+    UNIT = SoSWrapp.UNIT
+    DESCRIPTION = SoSWrapp.DESCRIPTION
+    NUMERICAL = SoSWrapp.NUMERICAL
     META_INPUT = 'meta_input'
     OPTIONAL = 'optional'
     ORIGIN = 'model_origin'
     HEADERS = 'headers'
     COMPOSED_OF = 'composed_of'
     DISCIPLINES_DEPENDENCIES = 'disciplines_dependencies'
-    VAR_NAME = 'var_name'
-    VISIBLE = 'visible'
-    CONNECTOR_DATA = 'connector_data'
+    VAR_NAME = SoSWrapp.VAR_NAME
+    VISIBLE = SoSWrapp.VISIBLE
+    CONNECTOR_DATA = SoSWrapp.CONNECTOR_DATA
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
 
@@ -142,8 +144,8 @@ class ProxyDiscipline(object):
     NO_UNIT_TYPES = ['bool', 'string', 'string_list']
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}
-    DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
-    DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
+    DATAFRAME_DESCRIPTOR = SoSWrapp.DATAFRAME_DESCRIPTOR
+    DATAFRAME_EDITION_LOCKED = SoSWrapp.DATAFRAME_EDITION_LOCKED
     #
     DF_EXCLUDED_COLUMNS = 'dataframe_excluded_columns'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
@@ -188,7 +190,8 @@ class ProxyDiscipline(object):
 
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
-
+    
+    DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
@@ -212,21 +215,21 @@ class ProxyDiscipline(object):
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
-        'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                       NUMERICAL: True, 'structuring': True}
+        DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+                       NUMERICAL: True, STRUCTURING: True}
     }
 
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
     # -- status
-    STATUS_VIRTUAL = "VIRTUAL"
-    STATUS_PENDING = "PENDING"
-    STATUS_DONE = "DONE"
-    STATUS_RUNNING = "RUNNING"
-    STATUS_FAILED = "FAILED"
-    STATUS_CONFIGURE = 'CONFIGURE'
-    STATUS_LINEARIZE = 'LINEARIZE'
+    STATUS_VIRTUAL = MDODiscipline.STATUS_VIRTUAL
+    STATUS_PENDING = MDODiscipline.STATUS_PENDING
+    STATUS_DONE = MDODiscipline.STATUS_DONE
+    STATUS_RUNNING = MDODiscipline.STATUS_RUNNING
+    STATUS_FAILED = MDODiscipline.STATUS_FAILED
+    STATUS_CONFIGURE = MDODiscipline.STATUS_CONFIGURE
+    STATUS_LINEARIZE = MDODiscipline.STATUS_LINEARIZE
 
     def __init__(self, sos_name, ee, cls_builder=None):
         '''
@@ -235,7 +238,7 @@ class ProxyDiscipline(object):
         Arguments:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
-            cls_builder (Class): class constructor of the user-defined wrapper (or None) [???]
+            cls_builder (Class): class constructor of the user-defined wrapper (or None)
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
@@ -267,9 +270,6 @@ class ProxyDiscipline(object):
         """
         self.proxy_disciplines = []
         self._status = None
-        # ------------DEBUG VARIABLES----------------------------------------
-        self.debug_modes = []
-        # ----------------------------------------------------
 
         # -- Base disciplinary attributes
         self.jac_boundaries = {}
@@ -291,6 +291,7 @@ class ProxyDiscipline(object):
         self.in_checkjac = False
         self._is_configured = False
         self._reset_cache = False
+        self._reset_debug_mode = False
 
         # -- disciplinary data attributes
         self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
@@ -351,11 +352,15 @@ class ProxyDiscipline(object):
                 # set new cache when cache_type have changed (self._reset_cache == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            if self._reset_debug_mode:
+                # update default values when changing debug modes between executions
+                to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
+                self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
-        self.mdo_discipline_wrapp.mdo_discipline.debug_modes = [mode for mode in self.debug_modes]
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
+        self._reset_debug_mode = False
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
@@ -744,36 +749,37 @@ class ProxyDiscipline(object):
         if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
-            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
 
+            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
             if cache_type != self._structuring_variables[self.CACHE_TYPE]:
                 self._reset_cache = True
 
             # Debug mode logging and recursive setting (priority to the parent)
-            debug_mode = self.get_sosdisc_inputs('debug_mode')
-            if debug_mode != "":
-                if debug_mode == "all":
-                    for mode in self.AVAILABLE_DEBUG_MODE:
-                        if mode not in ["", "all"]:
-                            self.logger.info(
-                                f'Discipline {self.sos_name} set to debug mode {mode}')
-                else:
-                    self.logger.info(
-                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                self.set_debug_mode_rec(debug_mode)
+            debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
+            if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
+                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None): #not necessary on first config
+                self._reset_debug_mode = True
+                # logging
+                if debug_mode != "":
+                    if debug_mode == "all":
+                        for mode in self.AVAILABLE_DEBUG_MODE:
+                            if mode not in ["", "all"]:
+                                self.logger.info(
+                                    f'Discipline {self.sos_name} set to debug mode {mode}')
+                    else:
+                        self.logger.info(
+                            f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+
 
     def set_debug_mode_rec(self, debug_mode):
         """
         set debug mode recursively to children with priority to parent
         """
-
-        if debug_mode == 'all':
-            self.debug_modes = [mode for mode in ProxyDiscipline.AVAILABLE_DEBUG_MODE if mode not in ['', 'all']]
-        elif debug_mode not in self.debug_modes:
-            self.debug_modes.append(debug_mode)
-
-        for proxy_disc in self.proxy_disciplines:
-            proxy_disc.set_debug_mode_rec(debug_mode)
+        for disc in self.proxy_disciplines:
+            if ProxyDiscipline.DEBUG_MODE in disc._data_in:
+                self.dm.set_data(self.get_var_full_name(
+                    self.DEBUG_MODE, disc._data_in), self.VALUE, debug_mode, check_value=False)
+                disc.set_debug_mode_rec(debug_mode)
 
     def set_children_cache_inputs(self):
         '''
@@ -790,6 +796,9 @@ class ProxyDiscipline(object):
                         self.dm.set_data(disc.get_var_full_name(
                             ProxyDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path,
                             check_value=False)
+        if self._reset_debug_mode:
+            self.set_debug_mode_rec(self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
+            self._reset_debug_mode = False
 
     def setup_sos_disciplines(self):
         """
@@ -920,7 +929,7 @@ class ProxyDiscipline(object):
             self.dm.set_values_from_dict(to_update_local_data)
         else:
             # update local_data after run
-            self.mdo_discipline.local_data.update(to_update_local_data)
+            self.mdo_discipline.store_local_data(**to_update_local_data)
 
         # need to update outputs that will disappear after filtering the
         # local_data with supported types
@@ -1388,15 +1397,6 @@ class ProxyDiscipline(object):
                     self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
-    def update_dm_with_local_data(self, local_data):
-        '''
-        Update the DM with local data from GEMSEO
-
-        Arguments:
-            local_data (dict): to update datamanager with
-        '''
-        self.dm.set_values_from_dict(local_data)
-
     def _update_study_ns_in_varname(self, names):
         '''
         Updates the study name in the variable input names.
@@ -1693,7 +1693,7 @@ class ProxyDiscipline(object):
 
         Returns: List[ChartFilter]
         """
-        return []
+        return self.mdo_discipline_wrapp.get_chart_filter_list()
 
     def get_post_processing_list(self, filters=None):
         """
@@ -1706,7 +1706,7 @@ class ProxyDiscipline(object):
             post processing instance list
         """
 
-        return []
+        return self.mdo_discipline_wrapp.get_post_processing_list(filters)
 
     def set_configure_status(self, is_configured):
         """

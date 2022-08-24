@@ -20,6 +20,9 @@ import unittest
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from logging import Handler
+from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
+from copy import copy
+from pandas._testing.asserters import assert_frame_equal
 
 
 class UnitTestHandler(Handler):
@@ -90,5 +93,11 @@ class TestDefaultInDM(unittest.TestCase):
 
         #Check that res2 equals res1 : Disc1.a was loaded from default value
         # in DESC_IN
-        self.assertDictEqual(res.mdo_discipline_wrapp.mdo_discipline.local_data, res2.mdo_discipline_wrapp.mdo_discipline.local_data, "results are not equal")
+        # NOTE: since residuals_history is a dataframe, need to pop it out of local_data to use specific assert
+        local_data = copy(res.mdo_discipline_wrapp.mdo_discipline.local_data)
+        residuals = local_data.pop('EETests.'+SoSMDAChain.RESIDUALS_HISTORY, None)
+        local_data2 = copy(res2.mdo_discipline_wrapp.mdo_discipline.local_data)
+        residuals2 = local_data2.pop('EETests.'+SoSMDAChain.RESIDUALS_HISTORY, None)
+        self.assertDictEqual(local_data, local_data2, "results are not equal")
+        assert_frame_equal(residuals, residuals2)
 

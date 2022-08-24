@@ -509,6 +509,7 @@ class ExecutionEngine:
     def set_debug_mode(self, mode=None, disc=None):
         ''' set recursively <disc> debug options of in ProxyDiscipline
         '''
+        # FIXME : update with new debug mode logic
         if disc is None:
             disc = self.root_process
         mode_str = mode
@@ -557,6 +558,15 @@ class ExecutionEngine:
 
         return input_data
 
+    def update_dm_with_local_data(self, local_data):
+        '''
+        Update the DM with local data from GEMSEO
+
+        Arguments:
+            local_data (dict): to update datamanager with
+        '''
+        self.dm.set_values_from_dict(local_data)
+
     def execute(self):
         ''' execution of the execution engine
         '''
@@ -577,8 +587,15 @@ class ExecutionEngine:
 
         # -- execution with input data from DM
         ex_proc = self.root_process
-        ex_proc.execute(input_data=input_data)
+        ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(input_data=input_data)
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())
+        
+        # -- store local data in datamanager
+        self.update_dm_with_local_data(ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
+        
+        # -- update all proxy statuses
+        ex_proc.set_status_from_mdo_discipline()
+
         return ex_proc

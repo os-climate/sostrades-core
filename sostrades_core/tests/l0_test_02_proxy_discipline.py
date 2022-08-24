@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 
-from sostrades_core.execution_engine.SoSWrapp import SoSWrapp
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
@@ -126,14 +126,7 @@ class TestProxyDiscipline(unittest.TestCase):
             self.assertEqual(self.ee.dm.get_discipline(
                 disc_id).status, 'DONE')
 
-        # get post-processing of disc1
-        disc1 = self.ee.dm.get_disciplines_with_name('Test.Disc1')[0]
-        filter = disc1.get_chart_filter_list()
-        graph_list = disc1.get_post_processing_list(filter)
-        # graph_list[0].to_plotly().show()
-
         y = self.ee.dm.get_value(self.name + '.y')
-
         self.assertEqual(y, a * x + b)
 
     def test_05_execution_failure(self):
@@ -361,3 +354,40 @@ class TestProxyDiscipline(unittest.TestCase):
         out_dict = disc8.get_sosdisc_outputs()
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
+
+
+    def test_11_post_processing(self):
+        '''
+        check discipline post-processing
+        '''
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', self.mod1_ns_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        a = 1.0
+        b = 2.0
+        x = 1.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
+
+        # get post-processing of disc1
+        disc1 = self.ee.dm.get_disciplines_with_name('Test.Disc1')[0]
+        filter = disc1.get_chart_filter_list()
+        graph_list = disc1.get_post_processing_list(filter)
+        # graph_list[0].to_plotly().show()
+
+        #test post-processing worked
+        self.assertEqual(len(graph_list[0].series[0].abscissa),1)
+        self.assertEqual(graph_list[0].series[0].abscissa[0],self.ee.dm.get_value('Test.x'))
+        self.assertEqual(graph_list[0].series[0].ordinate[0],self.ee.dm.get_value('Test.y'))

@@ -224,8 +224,8 @@ class TestMDALoop(unittest.TestCase):
                     list(target[key]), list(res[key]))
 
         residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
-        residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].get_sosdisc_outputs(
-            'residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
+        residual_history_output = exec_eng.dm.get_disciplines_with_name('EE')[0].mdo_discipline_wrapp.mdo_discipline.get_inputs_by_name(
+            'EE.residuals_history')[exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
         self.assertEqual(residual_history, residual_history_output)
 
         dump_dir = join(self.root_dir, self.name)
@@ -465,7 +465,6 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.h'] = array([8., 9.])
         values_dict['EE.n_processes'] = 1
         exec_eng.load_study_from_input_dict(values_dict)
-
         exec_eng.execute()
 
         target = {'EE.h': array([0.70710678,
@@ -598,7 +597,7 @@ class TestMDALoop(unittest.TestCase):
         # we check that in the root coupling, the subcoupling is NOT a (selfcoupled) MDA with an SoSCoupling inside
         # but a SoSCoupling directly
         sub_coupling = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[0]
-        assert sub_coupling.__class__.__name__ == "MDAChain"
+        assert sub_coupling.__class__.__name__ == "SoSMDAChain"
 
     def test_08_mda_numerical_options_NR(self):
 
@@ -1127,6 +1126,49 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(values_dict['EE.linear_solver_MDA_options']['max_iter'],
                          NR.linear_solver_options['max_iter'])
 
+    def test_17_mda_loop_with_pre_run_mda_and_post_processing(self):
+        """
+        test the post-processing on discipline 6 after the mda loop
+        """
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df_post_processing.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc7_builder])
+        exec_eng.configure()
+
+        # additional test to verify that values_in are used
+        values_dict = {}
+        values_dict['EE.h'] = array([8., 9.])
+        values_dict['EE.n_processes'] = 1
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        disc6 = exec_eng.dm.get_disciplines_with_name('EE.Disc6')[0]
+        filter = disc6.get_chart_filter_list()
+        graph_list = disc6.get_post_processing_list(filter)
+        # graph_list[0].to_plotly().show()
+
+        ordinate_target = [np.sqrt(2.) / 2., np.sqrt(2.) / 2.]
+        abscissa_target = [0., np.sqrt(2.) / 2.]
+        tolerance = exec_eng.dm.get_value('EE.tolerance')
+
+        self.assertEqual(len(graph_list[0].series[0].ordinate), 2)
+        self.assertAlmostEqual(ordinate_target[0], graph_list[0].series[0].ordinate[0], delta=tolerance)
+        self.assertAlmostEqual(ordinate_target[1], graph_list[0].series[0].ordinate[1], delta=tolerance)
+
+        self.assertEqual(len(graph_list[0].series[0].abscissa), 2)
+        self.assertAlmostEqual(abscissa_target[0], graph_list[0].series[0].abscissa[0], delta=tolerance)
+        self.assertAlmostEqual(abscissa_target[1], graph_list[0].series[0].abscissa[1], delta=tolerance)
 
 if '__main__' == __name__:
     cls = TestMDALoop()

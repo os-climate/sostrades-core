@@ -14,14 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+import numpy as np
+from scipy.sparse import diags
+# post processing
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
-class Disc1(SoSWrapp):
+
+class Disc6(SoSWrapp):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc1',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -29,33 +33,37 @@ class Disc1(SoSWrapp):
         'last_modification_date': '',
         'category': '',
         'definition': '',
-        'icon': 'fas fa-plane fa-fw',
+        'icon': '',
         'version': '',
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        'a': {'type': 'float', 'unit': '-'},
-        'b': {'type': 'float', 'unit': '-'}
+        'x': {'type': 'array', 'visibility':  SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
+
     DESC_OUT = {
-        'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'h': {'type': 'array', 'visibility':  SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):
         x = self.get_sosdisc_inputs('x')
-        a = self.get_sosdisc_inputs('a')
-        b = self.get_sosdisc_inputs('b')
-        dict_values = {'indicator': a * b, 'y': a * x + b}
-        # put new field value in data_out
+
+        h = np.array([0.5 * (x[0] + 1. / (2 * x[0])),
+                      0.5 * (x[1] + 1. / (2 * x[1]))])
+        dict_values = {'h': h}
         self.store_sos_outputs_values(dict_values)
+
+    def compute_sos_jacobian(self):
+        x = self.get_sosdisc_inputs('x')
+        grad = [0.5 * (1.0 - 0.5 / x[0] ** 2), 0.5 * (1.0 - 0.5 / x[1] ** 2)]
+        value = diags(grad) / 2
+        self.set_partial_derivative('h', 'x', value)
 
     def get_chart_filter_list(self):
 
         chart_filters = []
 
-        chart_list = ['y vs x']
+        chart_list = ['h vs x']
 
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'graphs'))
@@ -72,17 +80,17 @@ class Disc1(SoSWrapp):
                 if chart_filter.filter_key == 'graphs':
                     charts_list = chart_filter.selected_values
 
-        if 'y vs x' in charts_list:
+        if 'h vs x' in charts_list:
 
-            chart_name = 'y vs x'
+            chart_name = 'h vs x'
 
-            y = self.get_sosdisc_outputs('y')
-            x = self.get_sosdisc_inputs('x')
-            print(y, x)
-            new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
+            h = list(self.get_sosdisc_outputs('h'))
+            x = list(self.get_sosdisc_inputs('x') * np.array([0.,1.]))
+
+            new_chart = TwoAxesInstanciatedChart('x (-)', 'h (-)',
                                                  chart_name=chart_name)
             serie = InstanciatedSeries(
-                [x], [y], '', 'scatter')
+                x, h, '', 'lines')
 
             new_chart.series.append(serie)
 
