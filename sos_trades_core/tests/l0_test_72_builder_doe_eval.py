@@ -138,7 +138,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
 
         ######### Numerical values   ####
         x = 2.0
@@ -195,7 +195,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
         return [values_dict]
 
-    def setup_Hessian_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase'):
+    def setup_Hessian_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase1'):
         """
         Define a set of data inputs with selected use_case
         """
@@ -206,7 +206,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
 
         if my_usecase != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
@@ -263,7 +263,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             # SubProcess selection values
             mod_id = 'test_disc_hessian'
             if my_usecase == 1:
-                my_usecase = 'usecase'
+                my_usecase = 'usecase1'
             elif my_usecase == 2:
                 my_usecase = 'usecase2'
             elif my_usecase == 3:
@@ -272,7 +272,8 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict['process_repository'] = repo
             sub_process_inputs_dict['process_name'] = mod_id
             sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = None
+            # The import is factorized bellow for all my_test values
+            sub_process_inputs_dict['usecase_data'] = {}
             input_selection = {'selected_input': [True, True, False, False, False, False, False],
                                'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y',
                                              'DoE_Eval.Hessian.ax2', 'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx',
@@ -300,7 +301,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict['process_repository'] = repo
             sub_process_inputs_dict['process_name'] = mod_id
             sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = None
+            sub_process_inputs_dict['usecase_data'] = {}
             input_selection = {'selected_input': [True, False],
                                'full_name': ['DoE_Eval.Disc0.r', 'DoE_Eval.Disc0.mod']}
             input_selection = pd.DataFrame(input_selection)
@@ -326,7 +327,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict['process_repository'] = repo
             sub_process_inputs_dict['process_name'] = mod_id
             sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = None
+            sub_process_inputs_dict['usecase_data'] = {}
             input_selection = {'selected_input': [True],
                                'full_name': ['DoE_Eval.Disc1.x']}
             input_selection = pd.DataFrame(input_selection)
@@ -352,7 +353,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict['process_repository'] = repo
             sub_process_inputs_dict['process_name'] = mod_id
             sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = None
+            sub_process_inputs_dict['usecase_data'] = {}
             input_selection = {'selected_input': [True],
                                'full_name': ['DoE_Eval.Disc1.x']}
             input_selection = pd.DataFrame(input_selection)
@@ -377,7 +378,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict['process_repository'] = repo
             sub_process_inputs_dict['process_name'] = mod_id
             sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = None
+            sub_process_inputs_dict['usecase_data'] = {}
             input_selection = {'selected_input': [True],
                                'full_name': ['DoE_Eval.Disc1.a']}  # Disc1.a, Disc1.b, Disc2.constant, Disc2.power Coupled x(ns_ac) and y(ns_ac)
             input_selection = pd.DataFrame(input_selection)
@@ -401,7 +402,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             sub_process_inputs_dict['process_repository'] = repo
             sub_process_inputs_dict['process_name'] = mod_id
             sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = None
+            sub_process_inputs_dict['usecase_data'] = {}
             input_selection = {'selected_input': [True, True],
                                'full_name': ['DoE_Eval.SellarCoupling.x', 'DoE_Eval.SellarCoupling.z']}
             input_selection = pd.DataFrame(input_selection)
@@ -427,6 +428,9 @@ class TestBuilderDoeEval(unittest.TestCase):
             anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
                                                                                                    sub_process_usecase_full_name)
             sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+            if 0 == 1:
+                print('anonimized dict:')
+                print(anonymize_input_dict_from_usecase)
 
         ######### Fill the dictionary for dm   ####
         values_dict = {}
@@ -608,7 +612,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -682,7 +686,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -710,7 +714,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
         dict_values = {}
         dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -762,7 +766,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -843,7 +847,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -961,7 +965,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -990,7 +994,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
         dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -1041,7 +1045,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1123,7 +1127,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1241,7 +1245,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1315,7 +1319,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1442,7 +1446,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1518,7 +1522,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1618,7 +1622,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         # without direct user inputs
         if 1 == 1:
             dict_values = self.setup_Hessian_usecase_from_sub_usecase(study_dump.ee,
-                                                                      restricted=False, my_usecase='usecase')
+                                                                      restricted=False, my_usecase='usecase1')
             print('load usecase file : from Empty to usecase without direct user inputs')
             study_dump.load_data(from_input_dict=dict_values)
         else:  # First direct user inputs and then load usecase file : from Empty to usecase
@@ -1631,9 +1635,9 @@ class TestBuilderDoeEval(unittest.TestCase):
                 f'{self.study_name}.DoE_Eval')[0]
             sub_process_inputs_dict = doe_disc.get_data_io_from_key(
                 'in', 'sub_process_inputs')['value']
-            sub_process_inputs_dict['usecase_name'] = 'usecase'
+            sub_process_inputs_dict['usecase_name'] = 'usecase1'
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
-                repo, 'test_disc_hessian', 'usecase')
+                repo, 'test_disc_hessian', 'usecase1')
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
             sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
@@ -1780,7 +1784,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1809,7 +1813,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
         coupling_name = "SellarCoupling"
         ns = f'{self.study_name}'
 
@@ -1888,7 +1892,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1986,7 +1990,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2073,7 +2077,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         # 4 'test_proc_build_disc1_grid'
         # 5 'test_disc1_disc2_coupling'
         # 6 'test_sellar_coupling'
-        my_test = 1
+        my_test = 6
         dict_values = self.setup_usecase_from_sub_usecase(study_dump.ee,
                                                           restricted=False, my_test=my_test, my_usecase=1)
         dict_values = dict_values[0]
@@ -2089,15 +2093,19 @@ class TestBuilderDoeEval(unittest.TestCase):
             dict_values[self.study_name + '.DoE_Eval.Disc2.power'] = 2
 
         if my_test == 6:
-            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs']['usecase_name'] = 'Empty'
-            coupling_name = "SellarCoupling"
-            ns = f'{self.study_name}'
-            from numpy import array
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = array([1.])
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = array([1.])
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = array([1.])
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.z'] = array([1., 1.])
-            dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+            if 1 == 1:  # direct input
+                dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs']['usecase_name'] = 'Empty'
+                coupling_name = "SellarCoupling"
+                ns = f'{self.study_name}'
+                from numpy import array
+                dict_values[f'{ns}.DoE_Eval.{coupling_name}.x'] = array([1.])
+                dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_1'] = array([1.])
+                dict_values[f'{ns}.DoE_Eval.{coupling_name}.y_2'] = array([1.])
+                dict_values[f'{ns}.DoE_Eval.{coupling_name}.z'] = array([
+                                                                        1., 1.])
+                dict_values[f'{ns}.DoE_Eval.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+            else:  # imput from usecase
+                pass
 
         study_dump.load_data(from_input_dict=dict_values)
         # print(study_dump.ee.display_treeview_nodes(True))
@@ -2119,7 +2127,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
         skip_run = False
         if skip_run == False:
-            local_run = True
+            local_run = False
             if local_run == True:
                 study_dump.run()
             else:
@@ -2201,7 +2209,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = None
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2226,12 +2234,12 @@ class TestBuilderDoeEval(unittest.TestCase):
         # Prepare inputs #########
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase'
+        my_usecase = 'usecase1'
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = None
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
         x = 2.0
         y = 3.0
 
@@ -2319,7 +2327,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         self.check_discipline_values(
             doe_disc, target_values_dict, print_flag=print_flag)
@@ -2396,7 +2404,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2497,7 +2505,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
         # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2575,7 +2583,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2700,7 +2708,7 @@ class TestBuilderDoeEval(unittest.TestCase):
             'in', 'sub_process_inputs')['value']
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase'
+        my_usecase = 'usecase1'
         sub_process_inputs_dict['usecase_name'] = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
@@ -2799,7 +2807,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'usecase1'
         # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = None
+        tv_sub_process_inputs_dict['usecase_data'] = {}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2848,7 +2856,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         print(
             '################################################################################')
         print(
-            'STEP_5: update subprocess selection by changing test_disc_hessian to  sellar')
+            'STEP_5: update subprocess selection by changing test_disc_hessian to sellar')
         mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
@@ -2945,7 +2953,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
 
         my_usecase_1 = 'usecase_linear'
         my_usecase_2 = 'usecase_affine'
@@ -3208,7 +3216,7 @@ class TestBuilderDoeEval(unittest.TestCase):
         # without direct user inputs
 
         dict_values = self.setup_Hessian_usecase_from_sub_usecase(study_dump.ee,
-                                                                  restricted=False, my_usecase='usecase')
+                                                                  restricted=False, my_usecase='usecase1')
         print('load usecase file : from Empty to usecase without direct user inputs')
         study_dump.load_data(from_input_dict=dict_values)
 
@@ -3264,7 +3272,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestBuilderDoeEval()
-    test_selector = 10
+    test_selector = 8
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()
