@@ -1,0 +1,132 @@
+{
+  "title": "Ratatouille process",
+  "rows": [
+    [
+      {
+        "content_type": "TEXT",
+        "content": "This is a process of generic value assessment ",
+      }
+    ],
+    [
+      {
+        "content_type": "TEXT",
+        "style": "hr-solid"
+      }
+    ],
+    [
+      {
+        "content_type": "TEXT",
+        "content": "Inputs",
+        "style": "h3"
+      }
+    ],
+    [
+      {
+        "content_type": "SCALAR",
+        "content_namespace": "{study_name}.CapEx.Ratatouille.capex_input_values"
+      }
+    ],[
+      {
+        "content_type": "SCALAR",
+        "content_namespace": "{study_name}.OpEx.Ratatouille.opex_by_category"
+      }
+    ],
+    [
+      {
+        "content_type": "TEXT",
+        "style": "hr-solid"
+      }
+    ],
+    [
+      {
+        "content_type": "TEXT",
+        "content": "Output",
+        "style": "h3"
+      }
+    ],
+    [
+      {
+        "content_type": "TEXT",
+        "content": "OpEx",
+        "style": "h4"
+      }
+    ],
+    [
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.OpEx",
+        "graph_index": 0
+      },
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.OpEx",
+        "graph_index": 1
+      }
+    ],
+    [
+      {
+        "content_type": "TEXT",
+        "content": "CapEx",
+        "style": "h4"
+      }
+    ],
+    [
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.CapEx",
+        "graph_index": 0
+      },
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.CapEx",
+        "graph_index": 1
+      }
+    ],
+    [
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.CapEx",
+        "graph_index": 2
+      }
+    ]
+    ,
+    [
+      {
+        "content_type": "TEXT",
+        "content": "Business_Manufacturer",
+        "style": "h4"
+      }
+    ],
+    [
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.Business_Manufacturer",
+        "graph_index": 0
+      }]
+    ,[
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.Business_Manufacturer",
+        "graph_index": 1
+      },
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.Business_Manufacturer",
+        "graph_index": 2
+      }
+    ]
+    ,
+    [
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.Business_Manufacturer",
+        "graph_index": 3
+      },
+      {
+        "content_type": "POST_PROCESSING",
+        "content_namespace": "{study_name}.Business_Manufacturer",
+        "graph_index": 4
+      }
+    ]
+  ]
+}
