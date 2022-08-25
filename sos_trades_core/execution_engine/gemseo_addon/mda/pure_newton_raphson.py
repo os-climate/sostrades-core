@@ -83,7 +83,7 @@ class PureNewtonRaphson(MDARoot):
             {'tol': self.linear_solver_tolerance})
 
         self.parallel_execution = SoSDiscParallelExecution(
-            disciplines, n_processes=self.n_processes, use_threading=True
+            disciplines, n_processes=self.n_processes, use_threading=False
         )
 
         self.assembly.parallel_linearize.configure_linearize_options(
