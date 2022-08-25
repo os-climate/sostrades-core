@@ -158,7 +158,7 @@ Example of models
     {'<study_ph>.SellarCoupling.x': 1.,
     '<study_ph>.SellarCoupling.y_1': 1.,
     '<study_ph>.SellarCoupling.y_2': 1.,
-    '<study_ph>.SellarCoupling.z': (1., 1.),
+    '<study_ph>.SellarCoupling.z': [1., 1.],
     '<study_ph>.SellarCoupling.Sellar_Problem.local_dv': 10.,
     '<study_ph>.SellarCoupling.max_mda_iter': 100,
     '<study_ph>.SellarCoupling.tolerance': 1e-12}
