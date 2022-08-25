@@ -6,6 +6,7 @@
 from sos_trades_core.tools.grad_solvers.solvers.newton_raphson_problem import NewtonRaphsonProblem
 from sos_trades_core.execution_engine.sos_eval import SoSEval
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import InstantiatedPlotlyNativeChart
 from plotly import graph_objects as go
@@ -93,7 +94,8 @@ class NewtonRootSolver(SoSEval):
         self.check_input_namespaces()
         self.check_variables_exists_and_are_arrays()
         self.set_x0()
-        if self.father_executor.name == '_usecase_climb_cruise_19pax':
+        # In case of a sos_coupling, add children inputs to data_in
+        if type(self.sos_disciplines[0]) == SoSCoupling:
             self.add_children_inputs()
 
     def set_x0(self):
@@ -215,21 +217,8 @@ class NewtonRootSolver(SoSEval):
         unknown_name = self.get_unknown_namespaced_variable()
 
         self.dm.set_values_from_dict({unknown_name: x})
-
-        """
-        {'_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df'],
-                                            '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df']}
-        """
-
-        # Compute the coupling
-        # very dirty fix to enable execution
-        if '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df' in self.local_data and '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df' in self.local_data:
-            self.local_data = residual_process.execute({'_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.trajectory_df'],
-                                                '_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df':self.local_data['_usecase_climb_cruise_19pax.NewtonSolver.Aircraft.air_properties_df']})
-
-        else:
-            # nominal execution
-            self.local_data = residual_process.execute()
+        self.local_data.update({unknown_name: x})
+        self.local_data = residual_process.execute(self.local_data)
 
         residual_name = self.get_residual_namespaced_variable()
         idf_residual = self.local_data[residual_name]
