@@ -585,6 +585,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
+            # Exclude non executable proxy Disciplines
             if disc.mdo_discipline_wrapp is not None:
                 sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
 
