@@ -543,6 +543,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         x_axis_column,
         y_bar_axis_column_list,
         y_line_axis_column_list,
+        xaxis='x',
+        yaxis_bar='y',
+        yaxis_line='y2',
         colors_dict={},
         legends_dict={},
         x_axis_title='',
@@ -577,8 +580,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             name=legends_dict[column]
                             if column in legends_dict
                             else f'{category}',
-                            xaxis='x',
-                            yaxis='y',
+                            xaxis=xaxis,
+                            yaxis=yaxis_bar,
                             visible=True,
                             marker=dict(color=color),
                         )
@@ -599,8 +602,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             name=legends_dict[column]
                             if column in legends_dict
                             else f'{category}',
-                            xaxis='x',
-                            yaxis='y2',
+                            xaxis=xaxis,
+                            yaxis=yaxis_line,
                             visible=True,
                             mode=mode,
                             text=cf_df_by_cat[column].values.tolist(),
