@@ -1,0 +1,5 @@
+variable,value
+process_repository,sos_trades_core.sos_processes.test
+process_name,test_proc_build_disc1_all_types
+usecase_name,usecase1
+usecase_data,"{'<study_ph>.Disc1.x': 5.5, '<study_ph>.Disc1.a': 3, '<study_ph>.Disc1.b': 2, '<study_ph>.Disc1.name': 'A1', '<study_ph>.Disc1.x_dict': {}}"

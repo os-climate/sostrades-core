@@ -36,10 +36,8 @@ class Study(StudyManager):
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
         sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = None
+        sub_process_inputs_dict['usecase_data'] = {}
 
-        values_dict = {}
-        values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
         ######### Numerical values   ####
         x = 2.0
         y = 3.0
@@ -50,35 +48,30 @@ class Study(StudyManager):
         dy = 7.0
         exy = 12.0
 
-        input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
-                              'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y', 'DoE_Eval.Hessian.ax2',
-                                            'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
-        input_selection_xy = pd.DataFrame(input_selection_xy)
+        input_selection = {'selected_input': [True, True, False, False, False, False, False],
+                           'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y',
+                                         'DoE_Eval.Hessian.ax2', 'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx',
+                                         'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
+        input_selection = pd.DataFrame(input_selection)
 
-        input_selection_xy = {'selected_input': [True, True, False, False, False, False, False],
-                              'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y', 'DoE_Eval.Hessian.ax2',
-                                            'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx', 'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
-        input_selection_xy = pd.DataFrame(input_selection_xy)
+        output_selection = {'selected_output': [True],
+                            'full_name': ['DoE_Eval.Hessian.z']}
+        output_selection = pd.DataFrame(output_selection)
 
-        output_selection_z = {'selected_output': [True],
-                              'full_name': ['DoE_Eval.Hessian.z']}
-        output_selection_z = pd.DataFrame(output_selection_z)
-
-        dspace_dict_xy = {'variable': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y'],
-                          'lower_bnd': [-5., -5.],
-                          'upper_bnd': [+5., +5.],
-                          #                  'enable_variable': [True, True],
-                          #                  'activated_elem': [[True], [True]]
-                          }
+        dspace_dict = {'variable': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y'],
+                       'lower_bnd': [-5., -5.],
+                       'upper_bnd': [+5., +5.],
+                       }
         my_doe_algo = "lhs"
         n_samples = 4
-
-        dspace_xy = pd.DataFrame(dspace_dict_xy)
+        dspace = pd.DataFrame(dspace_dict)
 
         ######### Fill the dictionary for dm   ####
-        values_dict[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection_xy
-        values_dict[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection_z
-        values_dict[f'{self.study_name}.DoE_Eval.design_space'] = dspace_xy
+        values_dict = {}
+        values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        values_dict[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
+        values_dict[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
+        values_dict[f'{self.study_name}.DoE_Eval.design_space'] = dspace
 
         values_dict[f'{self.study_name}.DoE_Eval.sampling_algo'] = my_doe_algo
         values_dict[f'{self.study_name}.DoE_Eval.algo_options'] = {
