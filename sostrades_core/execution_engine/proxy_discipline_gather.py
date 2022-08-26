@@ -43,7 +43,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
         'icon': 'fas fa-outdent fa-fw',
         'version': '',
     }
-    EE_PATH = 'sostrades_core.execution_engine'
 
     def __init__(self, sos_name, ee, map_name, cls_builder):
         '''

@@ -221,4 +221,4 @@ class SoSWrapp(object):
         Arguments:
             dict_values (Dict): variables' values to store
         """
-        self.run_output = dict_values
+        self.run_output = dict_values # TODO: the user cannot call method several times in wrapper run with different outputs

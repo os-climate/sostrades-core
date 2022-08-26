@@ -131,14 +131,18 @@ class MDODisciplineWrapp(object):
                                                    reduced_dm=reduced_dm)
             self._init_grammar_with_keys(proxy)
 #             self._update_all_default_values(input_data)
-            self._set_wrapper_attributes(proxy,self.wrapper)
-
+            self._set_wrapper_attributes(proxy, self.wrapper)
+            self._set_discipline_attributes(proxy, self.mdo_discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
     def _set_wrapper_attributes(self, proxy,wrapper):
         proxy.set_wrapper_attributes(wrapper)
+
+    def _set_discipline_attributes(self, proxy, discipline):
+        proxy.set_discipline_attributes(discipline)
+
     def _init_grammar_with_keys(self, proxy):
         '''
         initialize GEMS grammar with names and type None
