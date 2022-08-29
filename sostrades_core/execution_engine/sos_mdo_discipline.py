@@ -80,7 +80,7 @@ class SoSMDODiscipline(MDODiscipline):
         """
         Call user-defined wrapper run.
         """
-
+        # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
         # send local data to the wrapper for i/o
         self.sos_wrapp.local_data = self.local_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
