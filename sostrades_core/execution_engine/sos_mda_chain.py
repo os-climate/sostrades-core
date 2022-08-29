@@ -132,38 +132,6 @@ class SoSMDAChain(MDAChain):
             ** sub_mda_options  # type: Optional[Union[float, int, bool, str]]
         )
     
-    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to reduce footprint in GEMSEO 
-    def _set_dm_cache_map(self):
-        '''
-        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
-        '''
-        if self.cache is not None:
-            # store SoSCoupling cache in DM
-            self._store_cache_with_hashed_uid(self)
-            
-            # store mdo_chain cache in DM
-            self._store_cache_with_hashed_uid(self.mdo_chain)
-        
-            # store sub mdas cache recursively
-            for mda in self.sub_mda_list:
-                self._set_sub_mda_dm_cache_map(mda)
-            
-        # store children cache recursively
-        for disc in self.sos_disciplines:
-            disc._set_dm_cache_map() 
-            
-    def _set_sub_mda_dm_cache_map(self, mda):
-        '''
-        Update cache_map disc in DM with mda cache and its sub_mdas recursively        
-        '''
-        # store mda cache in DM
-        self._store_cache_with_hashed_uid(mda)
-        # store sub mda cache recursively
-        if isinstance(mda, MDASequential):
-            for sub_mda in mda.mda_sequence:
-                self._set_sub_mda_dm_cache_map(sub_mda)   
-
-
     def _run(self):
         '''
         Call the _run method of MDAChain in case of SoSCoupling.

@@ -240,35 +240,37 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.is_sos_coupling = True
         ProxyDiscipline._reload(self, sos_name, ee)
 
-    #     def _set_dm_cache_map(self):
-    #         '''
-    #         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
-    #         '''
-    #         if self.cache is not None:
-    #             # store SoSCoupling cache in DM
-    #             self._store_cache_with_hashed_uid(self)
-    #
-    #             # store mdo_chain cache in DM
-    #             self._store_cache_with_hashed_uid(self.mdo_chain)
-    #
-    #             # store sub mdas cache recursively
-    #             for mda in self.sub_mda_list:
-    #                 self._set_sub_mda_dm_cache_map(mda)
-    #
-    #         # store children cache recursively
-    #         for disc in self.sos_disciplines:
-    #             disc._set_dm_cache_map()
-
-    #     def _set_sub_mda_dm_cache_map(self, mda):
-    #         '''
-    #         Update cache_map disc in DM with mda cache and its sub_mdas recursively
-    #         '''
-    #         # store mda cache in DM
-    #         self._store_cache_with_hashed_uid(mda)
-    #         # store sub mda cache recursively
-    #         if isinstance(mda, MDASequential):
-    #             for sub_mda in mda.mda_sequence:
-    #                 self._set_sub_mda_dm_cache_map(sub_mda)
+    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to reduce footprint in GEMSEO 
+    def _set_dm_cache_map(self):
+        '''
+        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
+        '''
+        mda_chain = self.mdo_discipline_wrapp.mdo_discipline
+        if mda_chain.cache is not None:
+            # store SoSCoupling cache in DM
+            self._store_cache_with_hashed_uid(mda_chain)
+            
+            # store mdo_chain cache in DM
+            self._store_cache_with_hashed_uid(mda_chain.mdo_chain)
+        
+            # store sub mdas cache recursively
+            for mda in mda_chain.sub_mda_list:
+                self._set_sub_mda_dm_cache_map(mda)
+            
+        # store children cache recursively
+        for disc in self.proxy_disciplines:
+            disc._set_dm_cache_map()
+            
+    def _set_sub_mda_dm_cache_map(self, mda):
+        '''
+        Update cache_map disc in DM with mda cache and its sub_mdas recursively        
+        '''
+        # store mda cache in DM
+        self._store_cache_with_hashed_uid(mda)
+        # store sub mda cache recursively
+        if isinstance(mda, MDASequential):
+            for sub_mda in mda.mda_sequence:
+                self._set_sub_mda_dm_cache_map(sub_mda)   
 
     def build(self):
         """
@@ -606,12 +608,13 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         Set cache of MDAChain, MDOChain and sub MDAs
         '''
+        cache_type = self.get_sosdisc_inputs('cache_type')
+        cache_file_path = self.get_sosdisc_inputs('cache_file_path')
         # set MDAChain cache
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
             # TODO: pass cache to MDAChain init to avoid reset cache
-            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(
-                'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, cache_type, cache_file_path)
             self._reset_cache = False
         else:
             # reset stored cache and n_calls of MDAChain
@@ -619,9 +622,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self.mdo_discipline_wrapp.mdo_discipline.n_calls = mda_chain_n_calls
 
         # set cache of MDOChain with cache_type and cache_file_path inputs of ProxyCoupling
-        self.set_cache(self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, self.get_sosdisc_inputs(
-            'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
-
+        self.set_cache(self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, cache_type, cache_file_path)
+        
         # set epsilon0 and cache of sub_mda_list
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
