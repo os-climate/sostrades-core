@@ -298,7 +298,8 @@ class DoeEval(SoSEval):
                         key: options_map[key] for key in all_options}
 
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                if (len(self.selected_inputs) > 0) and (
+                        any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
                     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
                     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
@@ -502,7 +503,7 @@ class DoeEval(SoSEval):
         return samples_custom
 
     def check_customed_samples(self):
-        """ We check that the columns of the dataframe are the same  that  the selected inputs
+        """ We that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
         if not set(self.selected_inputs).issubset(set(self.customed_samples.columns.to_list())):

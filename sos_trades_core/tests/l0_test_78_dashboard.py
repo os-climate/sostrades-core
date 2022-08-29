@@ -114,5 +114,4 @@ class TestDashboard(unittest.TestCase):
         }
         assert validated_dashboard == dashboard
 
-if __name__ == "__main__":
-    TestDashboard.test_01_test_dashboard_creation()
+
