@@ -326,7 +326,7 @@ class ProxyDiscipline(object):
         The status of the discipline, to be retrieved from the GEMSEO object after configuration.
         """
         if self._status != self.STATUS_CONFIGURE:
-            return self.mdo_discipline_wrapp.mdo_discipline.status
+            return self.get_status_after_configure()
         return self.STATUS_CONFIGURE
 
     @status.setter
@@ -1631,7 +1631,10 @@ class ProxyDiscipline(object):
         """
         for proxy_discipline in self.proxy_disciplines:
             proxy_discipline.set_status_from_mdo_discipline()
-        self.status = self.mdo_discipline_wrapp.mdo_discipline.status
+        self.status = self.get_status_after_configure()
+
+    def get_status_after_configure(self):
+        return self.mdo_discipline_wrapp.mdo_discipline.status
 
     def _check_status_before_run(self):
         """
