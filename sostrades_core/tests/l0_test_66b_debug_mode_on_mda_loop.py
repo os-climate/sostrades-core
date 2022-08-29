@@ -307,7 +307,6 @@ class TestMDALoop(unittest.TestCase):
 
         # upon activation of another debug mode for the higher coupling
         disc_dict[f'{self.name}.debug_mode'] = 'input_change'
-        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 5.
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
