@@ -201,6 +201,7 @@ class ProxyDoeEval(ProxyEval):
         self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_wrapper, wrapping_mode='SoSTrades')
 
     def setup_sos_disciplines(self):
+        # TODO: move to wrapper as it was originally?
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
         default descin are the algo name and its options
