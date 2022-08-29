@@ -207,8 +207,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                     array([-1.9947578026244557, 4.822570933860785]
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
+        wrong_values = 5*[0.0]
 
-        samples_dict = {'x': x_values, 'z': z_values}
+        #samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
+        samples_dict = {'z': z_values,'x': x_values, 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.DoEEval.custom_samples_df'] = samples_df
 

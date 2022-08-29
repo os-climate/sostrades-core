@@ -298,7 +298,8 @@ class DoeEval(SoSEval):
                         key: options_map[key] for key in all_options}
 
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                if (len(self.selected_inputs) > 0) and (
+                any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
                     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
                     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
@@ -503,12 +504,21 @@ class DoeEval(SoSEval):
         return samples_custom
 
     def check_customed_samples(self):
-        """ We check that the columns of the dataframe are the same  that  the selected inputs
+        """ We that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
-        if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
-            self.logger.error("the customed dataframe columns must be the same and in the same order than the eval in "
-                              "list ")
+        # if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
+        #     self.logger.error("the customed dataframe columns must be the same and in the same order than the eval in "
+        #                       "list ")
+        if not set(self.selected_inputs).issubset(set(self.customed_samples.columns.to_list())):
+            msg = "the customed dataframe columns must be the same and in the same order than the eval in list "
+            self.logger.error(msg)
+            raise ValueError(msg)
+        else:
+            not_relevant_columns = set(self.customed_samples.columns.to_list()) - set(self.selected_inputs)
+            if len(not_relevant_columns) != 0:
+                self.customed_samples.drop(not_relevant_columns, axis=1, inplace=True)
+            self.customed_samples = self.customed_samples[self.selected_inputs]
 
     def run(self):
         '''
@@ -536,7 +546,7 @@ class DoeEval(SoSEval):
             self.add_multiplied_var_to_samples(
                 multipliers_samples, origin_vars_to_update_dict)
             eval_in_with_multiplied_var = self.eval_in_list + \
-                list(origin_vars_to_update_dict.keys())
+                                          list(origin_vars_to_update_dict.keys())
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
@@ -663,7 +673,7 @@ class DoeEval(SoSEval):
                 col_index = keys_clean.index(col_name_clean)
                 col_name = var_to_update.keys()[col_index]
                 var_to_update[col_name] = multiplier_value * \
-                    var_to_update[col_name]
+                                          var_to_update[col_name]
         # if float to be multiplied
         else:
             var_to_update = multiplier_value * var_to_update
@@ -715,7 +725,7 @@ class DoeEval(SoSEval):
             full_id = disc.get_var_full_name(
                 data_in_key, disc._data_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
+                         ]['io_type'] == 'in'
             is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc._data_in[data_in_key]['editable']
             is_None = disc._data_in[data_in_key]['value'] is None
@@ -780,7 +790,7 @@ class DoeEval(SoSEval):
             # check & create float columns list from df
             columns = df_var.columns
             float_cols_list = [col_name for col_name in columns if (
-                df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+                    df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
             # if df with float columns
             if len(float_cols_list) > 0:
                 for col_name in float_cols_list:
