@@ -400,7 +400,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
         self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
-    def _test_6_test_cache_coupling_with_string_change(self):
+    def test_6_test_cache_coupling_with_string_change(self):
         '''
         Checks number of calls is coherent.
         '''
@@ -450,9 +450,9 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -465,8 +465,8 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # third execute with modif on privates on second discipline
         # so that all disciplines are executed twice
@@ -480,8 +480,8 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fourth execute with second modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -494,8 +494,8 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -509,8 +509,8 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
         '''
@@ -595,7 +595,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
         self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
-    def _test_8_test_cache_coupling_with_string_list_change(self):
+    def test_8_test_cache_coupling_with_string_list_change(self):
         '''
         '''
         ns_dict = {'ns_ac': self.name}
@@ -639,9 +639,9 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -654,8 +654,8 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -669,8 +669,8 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2']
         self.ee.load_study_from_input_dict(values_dict)
@@ -682,14 +682,14 @@ class TestCache(unittest.TestCase):
 
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.n_calls, n_calls_disc2)
+        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_9_test_cache_coupling_with_string_list_of_dict_change(self):
         '''
