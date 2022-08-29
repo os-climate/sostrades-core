@@ -231,6 +231,9 @@ class ProxyDiscipline(object):
     STATUS_CONFIGURE = MDODiscipline.STATUS_CONFIGURE
     STATUS_LINEARIZE = MDODiscipline.STATUS_LINEARIZE
 
+    EE_PATH = 'sostrades_core.execution_engine'
+
+
     def __init__(self, sos_name, ee, cls_builder=None):
         '''
         Constructor
@@ -323,7 +326,7 @@ class ProxyDiscipline(object):
         The status of the discipline, to be retrieved from the GEMSEO object after configuration.
         """
         if self._status != self.STATUS_CONFIGURE:
-            return self.mdo_discipline_wrapp.mdo_discipline.status
+            return self.get_status_after_configure()
         return self.STATUS_CONFIGURE
 
     @status.setter
@@ -345,6 +348,9 @@ class ProxyDiscipline(object):
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
         else:
+            # TODO : this should only be necessary when changes in structuring variables happened?
+            self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
+
             if self._reset_cache:
                 # set new cache when cache_type have changed (self._reset_cache == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
@@ -1141,7 +1147,7 @@ class ProxyDiscipline(object):
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
-                values_dict[new_key] = self.mdo_discipline.local_data[namespaced_key]
+                values_dict[new_key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
                 values_dict[new_key] = self.dm.get_value(namespaced_key)
@@ -1626,7 +1632,10 @@ class ProxyDiscipline(object):
         """
         for proxy_discipline in self.proxy_disciplines:
             proxy_discipline.set_status_from_mdo_discipline()
-        self.status = self.mdo_discipline_wrapp.mdo_discipline.status
+        self.status = self.get_status_after_configure()
+
+    def get_status_after_configure(self):
+        return self.mdo_discipline_wrapp.mdo_discipline.status
 
     def _check_status_before_run(self):
         """
@@ -1730,6 +1739,16 @@ class ProxyDiscipline(object):
         Return False if discipline needs to be configured, True if not
         '''
         return self.get_configure_status() and not self.check_structuring_variables_changes()
+
+    def get_disciplines_to_configure(self):
+        '''
+        Get sub disciplines list to configure according to their is_configured method (coupling, eval, etc.)
+        '''
+        disc_to_configure = []
+        for disc in self.proxy_disciplines:
+            if not disc.is_configured():
+                disc_to_configure.append(disc)
+        return disc_to_configure
 
     def check_structuring_variables_changes(self):
         '''
@@ -1888,7 +1907,12 @@ class ProxyDiscipline(object):
             self, self.disc_id)
         self.ee.factory.remove_sos_discipline(self)
 
-    def set_wrapper_attributes(self,wrapper):
+    def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
+        """
+        pass
+
+    def set_discipline_attributes(self, discipline):
+        """ set the attribute attributes of mdo_discipline
         """
         pass

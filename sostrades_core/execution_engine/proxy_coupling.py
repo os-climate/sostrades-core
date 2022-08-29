@@ -465,16 +465,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                             self.coupling_structure.strong_couplings(),
                                                             write_logs=True, logger=LOGGER)
 
-    def get_disciplines_to_configure(self):
-        '''
-        Get sub disciplines list to configure according to is_configured flag.
-        '''
-        disc_to_configure = []
-        for disc in self.proxy_disciplines:
-            if not disc.is_configured():
-                disc_to_configure.append(disc)
-        return disc_to_configure
-
     def configure(self):
         """
         Configure i/o, update status, update status in dm.
@@ -587,6 +577,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
+            # Exclude non executable proxy Disciplines
             if disc.mdo_discipline_wrapp is not None:
                 sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
 

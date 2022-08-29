@@ -212,7 +212,7 @@ class SoSWrapp(object):
         self.run()
         return self.run_output
     
-    def store_sos_outputs_values(self, dict_values):
+    def store_sos_outputs_values(self, dict_values, full_name_keys=False):
         """"
         Store run outputs in the run_output attribute.
 
@@ -221,4 +221,7 @@ class SoSWrapp(object):
         Arguments:
             dict_values (Dict): variables' values to store
         """
-        self.run_output = dict_values
+        if full_name_keys:
+            self.run_output = dict_values # NB: the user cannot call method several times in wrapper run with different outputs
+        else:
+            self.run_output = dict(zip(map(self.output_full_name_map.get, dict_values.keys()),dict_values.values()))

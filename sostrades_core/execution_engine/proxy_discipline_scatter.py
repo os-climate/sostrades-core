@@ -323,20 +323,17 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         """
         Overload
         """
-        pass
+        self._status = ProxyDiscipline.STATUS_PENDING
+
+    def get_status_after_configure(self):
+        if len(self.built_proxy_disciplines) > 0:
+            if any(proxy.status == ProxyDiscipline.STATUS_FAILED for proxy in self.built_proxy_disciplines):
+                return ProxyDiscipline.STATUS_FAILED
+            return self.built_proxy_disciplines[-1].status
+        return ProxyDiscipline.STATUS_DONE
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
         """
         overload of proxy_discipline's method
         """
         pass
-
-    def set_status_from_mdo_discipline(self):
-        """
-        Update status of self and children sub proxies by retreiving the status of the GEMSEO objects.
-
-        """
-        for proxy_discipline in self.proxy_disciplines:
-            proxy_discipline.set_status_from_mdo_discipline()
-        self.status = self.STATUS_DONE
-

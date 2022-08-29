@@ -65,9 +65,11 @@ class SoSMDODiscipline(MDODiscipline):
             sos_wrapp (SoSWrapp): user-defined wrapper of the discipline
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
         '''
+        self.disciplines = []
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
-        self.io_full_name_map = None
+        self.input_full_name_map = None
+        self.output_full_name_map = None
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,
@@ -93,7 +95,7 @@ class SoSMDODiscipline(MDODiscipline):
         # SoSWrapp run
         run_output = self.sos_wrapp._run()
         # local data update
-        self.store_local_data(map_short_to_full_names = True, **run_output)
+        self.store_local_data(**run_output)
 
         # get output from data connector
         self.fill_output_value_connector()
@@ -126,45 +128,25 @@ class SoSMDODiscipline(MDODiscipline):
             self.io_full_name_map (Dict[Str]): union of the two above used for local data update
         """
 
-        self.io_full_name_map, input_full_name_map, output_full_name_map = {}, {}, {}
+        if self.output_full_name_map is None:
+            self.output_full_name_map = {}
+            for key in self.get_output_data_names():
+                short_name_key = self.io_full_name_to_short(key)
+                self.output_full_name_map[short_name_key] = key
 
-        for key in self.get_output_data_names():
-            short_name_key = self.io_full_name_to_short(key)
-            output_full_name_map[short_name_key] = key
-            self.io_full_name_map[short_name_key] = key
+        if self.input_full_name_map is None:
+            self.input_full_name_map = {}
+            for key in self.get_input_data_names():
+                short_name_key = self.io_full_name_to_short(key)
+                self.input_full_name_map[short_name_key] = key
 
-        for key in self.get_input_data_names():
-            short_name_key = self.io_full_name_to_short(key)
-            input_full_name_map[short_name_key] = key
-            self.io_full_name_map[short_name_key] = key
-
-        return input_full_name_map, output_full_name_map
+        return self.input_full_name_map, self.output_full_name_map
 
     def io_full_name_to_short(self, full_name_key):
         return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]
 
-    def io_short_name_to_full(self, short_name_key):
-        return self.io_full_name_map[short_name_key]
-
-    def store_local_data(self, map_short_to_full_names = False, **kwargs):
-        """
-        Update local_data[full_name] using the run_output[short_name].
-
-        Arguments:
-            map_short_to_full_names (bool) : whether to map short to full names in kwargs.keys(), only available for
-                                             output variables.
-            **kwargs : unpacked dict to update the local_data with
-
-        Raises:
-            KeyError if map_short_to_full_names is True and the variables to update include anything other than outputs.
-        """
-        if map_short_to_full_names:
-            short_name_keys = kwargs.keys()
-            full_name_keys = map(self.io_short_name_to_full, short_name_keys)
-            to_store = dict(zip(full_name_keys, kwargs.values()))
-            super().store_local_data(**to_store)
-        else:
-            super().store_local_data(**kwargs)
+    # def io_short_name_to_full(self, short_name_key):
+    #     return self.io_full_name_map[short_name_key]
 
     def fill_output_value_connector(self):
         """
@@ -178,7 +160,7 @@ class SoSMDODiscipline(MDODiscipline):
                     self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
                     LOGGER)
 
-        self.store_local_data(map_short_to_full_names=False, **updated_values)
+        self.store_local_data(**updated_values)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """

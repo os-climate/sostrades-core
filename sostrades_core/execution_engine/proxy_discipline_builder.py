@@ -76,7 +76,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;
         We first begin by cleaning all the disciplines children, afterward we clean the discipline itself
         """
-        for discipline in self.built_sos_disciplines:
+        for discipline in self.built_proxy_disciplines:
             discipline.clean()
             self.ee.factory.remove_discipline_from_father_executor(discipline)
 

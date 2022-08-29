@@ -302,7 +302,7 @@ class SosFactory:
                 f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
             )
         elif eval_type == 'doe_eval':
-            module_struct_list = f'{self.GENERIC_MODS_PATH}.doe_eval.DoeEval'
+            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
         elif eval_type == 'build_doe_eval':
             module_struct_list = f'{self.GENERIC_MODS_PATH}.build_doe_eval.BuildDoeEval'
         elif eval_type == 'grid_search':
