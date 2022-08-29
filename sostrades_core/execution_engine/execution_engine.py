@@ -215,7 +215,7 @@ class ExecutionEngine:
         '''
         self.dm.cache_map = {}
         self.dm.gemseo_disciplines_id_map = {}
-        self.root_process.mdo_discipline_wrapp.mdo_discipline._set_dm_cache_map()
+        self.root_process._set_dm_cache_map()
         
     def get_cache_map_to_dump(self):
         '''

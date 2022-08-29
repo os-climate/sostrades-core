@@ -1469,8 +1469,9 @@ class ProxyDiscipline(object):
         '''
         Update cache_map dict in DM with cache and its children recursively
         '''
-        if self.cache is not None:
-            self._store_cache_with_hashed_uid(self)
+        mdo_discipline = self.mdo_discipline_wrapp.mdo_discipline
+        if mdo_discipline.cache is not None:
+            self._store_cache_with_hashed_uid(mdo_discipline)
         # store children cache recursively
         for disc in self.proxy_disciplines:
             disc._set_dm_cache_map()
