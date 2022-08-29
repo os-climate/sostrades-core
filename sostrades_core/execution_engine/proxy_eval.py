@@ -385,6 +385,7 @@ class ProxyEval(ProxyDisciplineBuilder):
     def set_discipline_attributes(self, discipline):
         """ set the attribute attributes of gemseo object
         """
+        # TODO : attribute has been added to SoSMDODiscipline __init__, use sos_disciplines rather ?
         discipline.disciplines = [self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline]
 
     def prepare_execution(self):
