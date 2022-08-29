@@ -68,7 +68,8 @@ class SoSMDODiscipline(MDODiscipline):
         self.disciplines = []
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
-        self.io_full_name_map = None
+        self.input_full_name_map = None
+        self.output_full_name_map = None
         MDODiscipline.__init__(self, name=full_name,
                                grammar_type=grammar_type,
                                cache_type=cache_type,
@@ -79,7 +80,7 @@ class SoSMDODiscipline(MDODiscipline):
         """
         Call user-defined wrapper run.
         """
-
+        # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
         # send local data to the wrapper for i/o
         self.sos_wrapp.local_data = self.local_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
@@ -127,25 +128,25 @@ class SoSMDODiscipline(MDODiscipline):
             self.io_full_name_map (Dict[Str]): union of the two above used for local data update
         """
 
-        self.io_full_name_map, input_full_name_map, output_full_name_map = {}, {}, {}
+        if self.output_full_name_map is None:
+            self.output_full_name_map = {}
+            for key in self.get_output_data_names():
+                short_name_key = self.io_full_name_to_short(key)
+                self.output_full_name_map[short_name_key] = key
 
-        for key in self.get_output_data_names():
-            short_name_key = self.io_full_name_to_short(key)
-            output_full_name_map[short_name_key] = key
-            self.io_full_name_map[short_name_key] = key
+        if self.input_full_name_map is None:
+            self.input_full_name_map = {}
+            for key in self.get_input_data_names():
+                short_name_key = self.io_full_name_to_short(key)
+                self.input_full_name_map[short_name_key] = key
 
-        for key in self.get_input_data_names():
-            short_name_key = self.io_full_name_to_short(key)
-            input_full_name_map[short_name_key] = key
-            self.io_full_name_map[short_name_key] = key
-
-        return input_full_name_map, output_full_name_map
+        return self.input_full_name_map, self.output_full_name_map
 
     def io_full_name_to_short(self, full_name_key):
         return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]
 
-    def io_short_name_to_full(self, short_name_key):
-        return self.io_full_name_map[short_name_key]
+    # def io_short_name_to_full(self, short_name_key):
+    #     return self.io_full_name_map[short_name_key]
 
     def fill_output_value_connector(self):
         """
