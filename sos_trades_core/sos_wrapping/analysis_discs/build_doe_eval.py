@@ -50,6 +50,7 @@ class BuildDoeEval(SoSEval):
                         |_ CUSTOM_SAMPLES_DF (namespace: 'ns_doe_eval', dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
                         |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
                         |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
+                        |_ <var multiplier name> (internal namespace: 'origin_var_ns', dynamic: almost one selected inputs with MULTIPLIER_PARTICULE ('__MULTIPLIER__) in its name, only used in grid_search_eval) 
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
@@ -75,7 +76,7 @@ class BuildDoeEval(SoSEval):
                         |_ CUSTOM_SAMPLES_DF:   provided input sample
                         |_ DESIGN_SPACE:        provided design space
                         |_ ALGO_OPTIONS:        options depending on the choice of self.SAMPLING_ALGO
-                        |_ <var multiplier name>:for each selected input with MULTIPLIER_PARTICULE in its name
+                        |_ <var multiplier name>: for each selected input with MULTIPLIER_PARTICULE in its name (only used in grid_search_eval)
             |_ N_PROCESSES:
             |_ WAIT_TIME_BETWEEN_FORK:
             |_ NS_IN_DF :                       a map of ns name: value
@@ -1100,19 +1101,23 @@ class BuildDoeEval(SoSEval):
             We also check that they are of the same type
             Function needed in create_samples_from_custom_df()
         """
-        # if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
-        #     self.logger.error("the customed dataframe columns must be the same and in the same order than the eval in "
-
-        #                       "list ")
         if not set(self.selected_inputs).issubset(set(self.customed_samples.columns.to_list())):
-            msg = "the customed dataframe columns must be the same and in the same order than the eval in list "
+            missing_eval_in_variables = set.union(set(self.selected_inputs), set(
+                self.customed_samples.columns.to_list())) - set(self.customed_samples.columns.to_list())
+            msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
+            # To do: provide also the list of missing eval_in variables:
             self.logger.error(msg)
             raise ValueError(msg)
         else:
-            not_relevant_columns = set(self.customed_samples.columns.to_list()) - set(self.selected_inputs)
+            not_relevant_columns = set(
+                self.customed_samples.columns.to_list()) - set(self.selected_inputs)
+            msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
+            self.logger.warning(msg)
             if len(not_relevant_columns) != 0:
-                self.customed_samples.drop(not_relevant_columns, axis=1, inplace=True)
+                self.customed_samples.drop(
+                    not_relevant_columns, axis=1, inplace=True)
             self.customed_samples = self.customed_samples[self.selected_inputs]
+
 
     def create_design_space(self):
         """
