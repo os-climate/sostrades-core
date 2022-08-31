@@ -10,6 +10,7 @@ from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import InstantiatedPlotlyNativeChart
 from plotly import graph_objects as go
+from numpy import ndarray
 
 
 class NewtonRootSolver(SoSEval):
@@ -29,7 +30,8 @@ class NewtonRootSolver(SoSEval):
 
     FD_MODE_TABLE = {'1st order FD': 1,
                      '2nd order FD': 2,
-                     'Complex step': 1j}
+                     'Complex step': 1j,
+                     'Analytic': 0}
     # ontology information
     _ontology_data = {
         'label': 'Newton Root Solver Model',
@@ -48,7 +50,7 @@ class NewtonRootSolver(SoSEval):
                'NR_stop_residual': {'type': 'float', 'default': 1e-7},
                'NR_relax_factor': {'type': 'float', 'default': 0.95},
                'NR_max_ite': {'type': 'float', 'default': 20},
-               'NR_diff_mode': {'type': 'string', 'default': '1st order FD', 'possible_values': ['1st order FD', '2nd order FD', 'Complex step']},
+               'NR_diff_mode': {'type': 'string', 'default': '1st order FD', 'possible_values': list(FD_MODE_TABLE.keys())},
                'NR_res0': {'type': 'float', 'default': 1.0}}
 
     DESC_OUT = {'x_final': {'type': 'array'},
@@ -112,7 +114,6 @@ class NewtonRootSolver(SoSEval):
         self.sos_disciplines[0].with_data_io = True
         self.sos_disciplines[0].configure_execution()
         self._data_in.update(self.sos_disciplines[0]._data_in)
-
 
     def check_variables_exists_and_are_arrays(self):
 
@@ -195,18 +196,49 @@ class NewtonRootSolver(SoSEval):
         '''
         inputs_dict = self.get_sosdisc_inputs()
 
+        if inputs_dict['NR_diff_mode'] == 'Analytic':
+            drdw_func = self.drdw_function
+        else:
+            drdw_func = None
         self.nr_solver = NewtonRaphsonProblem(
-            inputs_dict['x0'], self.residual_function, None, verbose=0)
+            inputs_dict['x0'], self.residual_function, drdw_func, verbose=0)
         self.nr_solver.set_max_iterations(inputs_dict['NR_max_ite'])
         self.nr_solver.set_stop_residual(inputs_dict['NR_stop_residual'])
         self.nr_solver.set_relax_factor(inputs_dict['NR_relax_factor'])
 
-        self.nr_solver.set_fd_mode(
-            self.FD_MODE_TABLE[inputs_dict['NR_diff_mode']])
+        if inputs_dict['NR_diff_mode'] != 'Analytic':
+            self.nr_solver.set_fd_mode(
+                self.FD_MODE_TABLE[inputs_dict['NR_diff_mode']])
         # if res_O is None then the residual is normalized with the first found residual
         # if res_0=1 the true residual norm is computed
         self.nr_solver.set_res_0(inputs_dict['NR_res0'])
         #self.nr_solver.bounds = [(-90., 90.), (-10., 1.e20)]
+
+    def drdw_function(self, x):
+        '''
+        FUnction that will compute dRdW with respect to W values
+        W is newton unknowns
+        R is the residual_name 
+        '''
+        # get the full name of the residual and the unknown
+        residual_name = self.get_residual_namespaced_variable()
+        unknown_name = self.get_unknown_namespaced_variable()
+        # get the sub process
+        residual_process = self.get_residual_process()
+#        We can use the compute_jacobian to get back the jacobian or use lthe linearize function
+#         residual_process.local_data.update({unknown_name: x})
+#         residual_process._compute_jacobian(inputs=[unknown_name],
+#                                            outputs=[residual_name])
+        residual_process.add_differentiated_inputs([unknown_name])
+        residual_process.add_differentiated_outputs([residual_name])
+        jac = residual_process.linearize(input_data={unknown_name: x})
+        drdw = jac[residual_name][unknown_name]
+
+        if not isinstance(drdw, ndarray):
+
+            return drdw.toarray()
+        else:
+            return drdw
 
     def residual_function(self, x):
         '''
