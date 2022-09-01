@@ -289,16 +289,21 @@ class ProxyEval(ProxyDisciplineBuilder):
         for x_id in self.eval_in_list:
             x_val = self.dm.get_value(x_id)
             x0.append(x_val)
-        return np.array(x0)
+        return x0 #Removed cast to array
+
 
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
         """
-        wrapper.attributes = {'sub_mdo_discipline' : self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline,
-                              'eval_in_list' : self.eval_in_list,
-                              'eval_out_list' : self.eval_out_list,
-                              'study_name' : self.ee.study_name,
-                              'dm' : self.ee.dm  # FIXME : pass data otherwise
+        wrapper.attributes = {'sub_mdo_discipline': self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline,
+                              'eval_in_list': self.eval_in_list,
+                              'eval_out_list': self.eval_out_list,
+                              'reference_scenario': self.get_x0(),
+                              'activated_elems_dspace_df': [[True, True]
+                                                            if self.ee.dm.get_data(var, 'type') == 'array' else [True]
+                                                            for var in self.eval_in_list], # Array dimensions greater than 2???
+                              'study_name': self.ee.study_name,
+                              'dm': self.ee.dm  # FIXME : pass data otherwise
                               }
 
     def set_discipline_attributes(self, discipline):

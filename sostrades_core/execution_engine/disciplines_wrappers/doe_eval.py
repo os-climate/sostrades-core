@@ -105,14 +105,12 @@ class DoeEval(EvalWrapper):
         values = lower_bounds
         enable_variables = [True for invar in self.attributes['eval_in_list']]
         # This won't work for an array with a dimension greater than 2
-        activated_elems = [[True, True] if self.attributes['dm'].get_data(var, 'type') == 'array' else [True] for var in
-                           self.attributes['eval_in_list']]
         dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
                                             self.VALUES: values,
                                             self.LOWER_BOUND: lower_bounds,
                                             self.UPPER_BOUND: upper_bounds,
                                             self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: activated_elems})
+                                            self.LIST_ACTIVATED_ELEM: self.attributes['activated_elems_dspace_df']})
 
         design_space = self.read_from_dataframe(dspace_dict_updated)
 
@@ -262,8 +260,7 @@ class DoeEval(EvalWrapper):
 
         # Then add the reference scenario (initial point ) to the generated
         # samples
-        self.samples.append(
-            [self.attributes['dm'].get_value(reference_variable_full_name) for reference_variable_full_name in self.attributes['eval_in_list']])
+        self.samples.append(self.attributes['reference_scenario'])
         reference_scenario_id = len(self.samples)
         eval_in_with_multiplied_var = None
         if self.INPUT_MULTIPLIER_TYPE != []:

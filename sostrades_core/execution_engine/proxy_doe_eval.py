@@ -570,9 +570,9 @@ class ProxyDoeEval(ProxyEval):
         # ProxyEval attributes
         super().set_wrapper_attributes(wrapper)
         # specific to ProxyDoeEval
-        doeeval_attributes = {'dict_desactivated_elem' : self.dict_desactivated_elem,
-                              'doe_factory' : self.doe_factory,
-                              'selected_inputs' : self.selected_inputs,
-                              'selected_outputs' : self.selected_outputs
+        doeeval_attributes = {'dict_desactivated_elem': self.dict_desactivated_elem,
+                              'doe_factory': self.doe_factory,
+                              'selected_inputs': self.selected_inputs,
+                              'selected_outputs': self.selected_outputs
                               }
         wrapper.attributes.update(doeeval_attributes)
