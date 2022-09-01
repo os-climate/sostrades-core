@@ -28,6 +28,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.proxy_eval import ProxyEval
+from sostrades_core.execution_engine.disciplines_wrappers.doe_eval import DoeEval
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 import pandas as pd
 from collections import ChainMap
@@ -40,7 +41,7 @@ class ProxyDoeEval(ProxyEval):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.analysis_discs.doe_eval',
+        'label': 'sostrades_core.execution_engine.proxy_doe_eval',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -53,11 +54,10 @@ class ProxyDoeEval(ProxyEval):
     }
     default_algo_options = {}
 
-    DEFAULT = 'default'
 
     # Design space dataframe headers
-    VARIABLES = "variable"
-    VALUES = "value"
+    VARIABLES = DoeEval.VARIABLES
+    VALUES = DoeEval.VALUES
     UPPER_BOUND = "upper_bnd"
     LOWER_BOUND = "lower_bnd"
     TYPE = "type"
@@ -189,7 +189,6 @@ class ProxyDoeEval(ProxyEval):
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
         self.design_space = None
-        self.samples = None
         self.customed_samples = None
         self.dict_desactivated_elem = {}
         self.selected_outputs = []
@@ -338,342 +337,6 @@ class ProxyDoeEval(ProxyEval):
                 )
         return dynamic_inputs_list
 
-    def create_design_space(self):
-        """
-        create_design_space
-        """
-        dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        design_space = None
-        if dspace is not None:
-            design_space = self.set_design_space()
-
-        return design_space
-
-    def set_design_space(self):
-        """
-        reads design space (set_design_space)
-        """
-
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        # variables = self.eval_in_list
-
-        if 'full_name' in dspace_df:
-            variables = dspace_df['full_name'].tolist()
-            variables = [f'{self.ee.study_name}.{eval}' for eval in variables]
-        else:
-            variables = self.eval_in_list
-
-        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
-        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
-        values = lower_bounds
-        enable_variables = [True for invar in self.eval_in_list]
-        # This won't work for an array with a dimension greater than 2
-        activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
-                           self.eval_in_list]
-        dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
-                                            self.VALUES: values,
-                                            self.LOWER_BOUND: lower_bounds,
-                                            self.UPPER_BOUND: upper_bounds,
-                                            self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: activated_elems})
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
-
-        return design_space
-
-    def read_from_dataframe(self, df):
-        """Parses a DataFrame to read the DesignSpace
-
-        :param df : design space df
-        :returns:  the design space
-        """
-        names = list(df[self.VARIABLES])
-        values = list(df[self.VALUES])
-        l_bounds = list(df[self.LOWER_BOUND])
-        u_bounds = list(df[self.UPPER_BOUND])
-        enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
-        list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
-        design_space = DesignSpace()
-        for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem,
-                                                            enabled_variable):
-
-            # check if variable is enabled to add it or not in the design var
-            if enable_var:
-                self.dict_desactivated_elem[dv] = {}
-
-                if [type(val), type(lb), type(ub)] == [str] * 3:
-                    val = val
-                    lb = lb
-                    ub = ub
-                name = dv
-                if type(val) != list and type(val) != ndarray:
-                    size = 1
-                    var_type = ['float']
-                    l_b = array([lb])
-                    u_b = array([ub])
-                    value = array([val])
-                else:
-                    # check if there is any False in l_activated
-                    if not all(l_activated):
-                        index_false = l_activated.index(False)
-                        self.dict_desactivated_elem[dv] = {
-                            'value': val[index_false], 'position': index_false}
-
-                        val = delete(val, index_false)
-                        lb = delete(lb, index_false)
-                        ub = delete(ub, index_false)
-
-                    size = len(val)
-                    var_type = ['float'] * size
-                    l_b = array(lb)
-                    u_b = array(ub)
-                    value = array(val)
-                design_space.add_variable(
-                    name, size, var_type, l_b, u_b, value)
-        return design_space
-
-    def configure(self):
-        """Configuration of the DoeEval and setting of the design space
-        """
-        super().configure()
-        # if self.DESIGN_SPACE in self._data_in:
-        #     self.design_space = self.create_design_space()
-
-    def generate_samples_from_doe_factory(self):
-        """Generating samples for the Doe using the Doe Factory
-        """
-        algo_name = self.get_sosdisc_inputs(self.ALGO)
-        if algo_name == 'CustomDOE':
-            return self.create_samples_from_custom_df()
-        else:
-            self.design_space = self.create_design_space()
-            options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-            filled_options = {}
-            for algo_option in options:
-                if options[algo_option] != 'default':
-                    filled_options[algo_option] = options[algo_option]
-
-            if self.N_SAMPLES not in options:
-                self.logger.warning("N_samples is not defined; pay attention you use fullfact algo "
-                                    "and that levels are well defined")
-
-            self.logger.info(filled_options)
-            filled_options[self.DIMENSION] = self.design_space.dimension
-            filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
-            filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-            # filled_options['n_processes'] = int(filled_options['n_processes'])
-            filled_options['n_processes'] = self.get_sosdisc_inputs(
-                'n_processes')
-            filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs(
-                'wait_time_between_fork')
-            algo = self.doe_factory.create(algo_name)
-
-            self.samples = algo._generate_samples(**filled_options)
-
-            unnormalize_vect = self.design_space.unnormalize_vect
-            round_vect = self.design_space.round_vect
-            samples = []
-            for sample in self.samples:
-                x_sample = round_vect(unnormalize_vect(sample))
-                self.design_space.check_membership(x_sample)
-                samples.append(x_sample)
-            self.samples = samples
-
-            return self.prepare_samples()
-
-    def prepare_samples(self):
-
-        samples = []
-        for sample in self.samples:
-            sample_dict = self.design_space.array_to_dict(sample)
-            # convert arrays in sample_dict into SoSTrades types
-            sample_dict = self._convert_array_into_new_type(sample_dict)
-            ordered_sample = []
-            for in_variable in self.eval_in_list:
-                ordered_sample.append(sample_dict[in_variable])
-            samples.append(ordered_sample)
-        return samples
-
-    def create_samples_from_custom_df(self):
-        """Generation of the samples in case of a customed DOE
-        """
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df')
-        self.check_customed_samples()
-        samples_custom = []
-        for index, rows in self.customed_samples.iterrows():
-            ordered_sample = []
-            for col in rows:
-                ordered_sample.append(col)
-            samples_custom.append(ordered_sample)
-        return samples_custom
-
-    def check_customed_samples(self):
-        """ We check that the columns of the dataframe are the same  that  the selected inputs
-        We also check that they are of the same type
-        """
-        if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
-            self.logger.error("the costumed dataframe columns must be the same and in the same order than the eval in "
-                              "list ")
-
-    # def run(self):
-    #     '''
-    #         Overloaded SoSEval method
-    #         The execution of the doe
-    #     '''
-    #     # upadte default inputs of children with dm values
-    #     self.update_default_inputs(self.sos_disciplines[0])
-    #
-    #     dict_sample = {}
-    #     dict_output = {}
-    #
-    #     # We first begin by sample generation
-    #     self.samples = self.generate_samples_from_doe_factory()
-    #
-    #     # Then add the reference scenario (initial point ) to the generated
-    #     # samples
-    #     self.samples.append(
-    #         [self.ee.dm.get_value(reference_variable_full_name) for reference_variable_full_name in self.eval_in_list])
-    #     reference_scenario_id = len(self.samples)
-    #     eval_in_with_multiplied_var = None
-    #     if self.INPUT_MULTIPLIER_TYPE != []:
-    #         origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
-    #         multipliers_samples = copy.deepcopy(self.samples)
-    #         self.add_multiplied_var_to_samples(
-    #             multipliers_samples, origin_vars_to_update_dict)
-    #         eval_in_with_multiplied_var = self.eval_in_list + \
-    #             list(origin_vars_to_update_dict.keys())
-    #
-    #     # evaluation of the samples through a call to samples_evaluation
-    #     evaluation_outputs = self.samples_evaluation(
-    #         self.samples, convert_to_array=False, completed_eval_in_list=eval_in_with_multiplied_var)
-    #
-    #     # we loop through the samples evaluated to build dictionnaries needed
-    #     # for output generation
-    #     reference_scenario = f'scenario_{reference_scenario_id}'
-    #
-    #     for (scenario_name, evaluated_samples) in evaluation_outputs.items():
-    #
-    #         # generation of the dictionnary of samples used
-    #         dict_one_sample = {}
-    #         current_sample = evaluated_samples[0]
-    #         scenario_naming = scenario_name if scenario_name != reference_scenario else 'reference'
-    #         for idx, f_name in enumerate(self.eval_in_list):
-    #             dict_one_sample[f_name] = current_sample[idx]
-    #         dict_sample[scenario_naming] = dict_one_sample
-    #
-    #         # generation of the dictionnary of outputs
-    #         dict_one_output = {}
-    #         current_output = evaluated_samples[1]
-    #         for idx, values in enumerate(current_output):
-    #             dict_one_output[self.eval_out_list[idx]] = values
-    #         dict_output[scenario_naming] = dict_one_output
-    #
-    #     # construction of a dataframe of generated samples
-    #     # columns are selected inputs
-    #     columns = ['scenario']
-    #     columns.extend(self.selected_inputs)
-    #     samples_all_row = []
-    #     for (scenario, scenario_sample) in dict_sample.items():
-    #         samples_row = [scenario]
-    #         for generated_input in scenario_sample.values():
-    #             samples_row.append(generated_input)
-    #         samples_all_row.append(samples_row)
-    #     samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
-    #
-    #     # construction of a dictionnary of dynamic outputs
-    #     # The key is the output name and the value a dictionnary of results
-    #     # with scenarii as keys
-    #     global_dict_output = {key: {} for key in self.eval_out_list}
-    #     for (scenario, scenario_output) in dict_output.items():
-    #         for full_name_out in scenario_output.keys():
-    #             global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
-    #
-    #     # saving outputs in the dm
-    #     self.store_sos_outputs_values(
-    #         {'samples_inputs_df': samples_dataframe})
-    #     for dynamic_output in self.eval_out_list:
-    #         self.store_sos_outputs_values({
-    #             f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
-    #                 global_dict_output[dynamic_output]})
-
-    def update_default_inputs(self, disc):
-        '''
-        Update default inputs of disc with dm values
-        '''
-        input_data = {}
-        input_data_names = disc.get_input_data_names()
-        for data_name in input_data_names:
-            val = self.ee.dm.get_value(data_name)
-            if val is not None:
-                input_data[data_name] = val
-
-        # store mdo_chain default inputs
-        if disc.is_sos_coupling:
-            disc.mdo_chain.default_inputs.update(input_data)
-        disc.default_inputs.update(input_data)
-
-        # recursive update default inputs of children
-        for sub_disc in disc.sos_disciplines:
-            self.update_default_inputs(sub_disc)
-
-    def create_origin_vars_to_update_dict(self):
-        origin_vars_to_update_dict = {}
-        for select_in in self.eval_in_list:
-            if self.MULTIPLIER_PARTICULE in select_in:
-                var_origin_f_name = self.get_names_from_multiplier(select_in)[
-                    0]
-                if var_origin_f_name not in origin_vars_to_update_dict:
-                    origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
-                        self.ee.dm.get_data(var_origin_f_name)['value'])
-        return origin_vars_to_update_dict
-
-    def add_multiplied_var_to_samples(self, multipliers_samples, origin_vars_to_update_dict):
-        for sample_i in range(len(multipliers_samples)):
-            x = multipliers_samples[sample_i]
-            vars_to_update_dict = {}
-            for multiplier_i, x_id in enumerate(self.eval_in_list):
-                # for grid search multipliers inputs
-                var_name = x_id.split(self.ee.study_name + '.')[-1]
-                if self.MULTIPLIER_PARTICULE in var_name:
-                    var_origin_f_name = '.'.join(
-                        [self.ee.study_name, self.get_names_from_multiplier(var_name)[0]])
-                    if var_origin_f_name in vars_to_update_dict:
-                        var_to_update = vars_to_update_dict[var_origin_f_name]
-                    else:
-                        var_to_update = copy.deepcopy(
-                            origin_vars_to_update_dict[var_origin_f_name])
-                    vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
-                        multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100.0, var_to_update=var_to_update)
-            for multiplied_var in vars_to_update_dict:
-                self.samples[sample_i].append(
-                    vars_to_update_dict[multiplied_var])
-
-    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        # if dict or dataframe to be multiplied
-        if '@' in multiplier_name:
-            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
-                0].split('@')[1]
-            if col_name_clean == 'allcolumns':
-                if isinstance(var_to_update, dict):
-                    float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
-                        var_to_update[dict_keys], float)]
-                elif isinstance(var_to_update, pd.DataFrame):
-                    float_cols_ids_list = [
-                        df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
-                for key in float_cols_ids_list:
-                    var_to_update[key] = multiplier_value * var_to_update[key]
-            else:
-                keys_clean = [self.clean_var_name(var)
-                              for var in var_to_update.keys()]
-                col_index = keys_clean.index(col_name_clean)
-                col_name = var_to_update.keys()[col_index]
-                var_to_update[col_name] = multiplier_value * \
-                    var_to_update[col_name]
-        # if float to be multiplied
-        else:
-            var_to_update = multiplier_value * var_to_update
-        return var_to_update
-
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
         """
@@ -682,23 +345,6 @@ class ProxyDoeEval(ProxyEval):
             return self.algo_dict[algo_name]
         else:
             return self.default_algo_options
-
-    def get_full_names(self, names):
-        '''
-        get full names of ineq_names and obj_names
-        '''
-        full_names = []
-        for i_name in names:
-            full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
-            if full_id_l != []:
-                if len(full_id_l) > 1:
-                    # full_id = full_id_l[0]
-                    full_id = self.get_scenario_lagr(full_id_l)
-                else:
-                    full_id = full_id_l[0]
-                full_names.append(full_id)
-
-        return full_names
 
     def fill_possible_values(self, disc):
         '''
@@ -800,19 +446,6 @@ class ProxyDoeEval(ProxyEval):
                         self.ee.study_name + ".")[1]
                     poss_in_values_list.append(multiplier_fullname)
         return poss_in_values_list
-
-    def clean_var_name(self, var_name):
-        return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
-
-    def get_names_from_multiplier(self, var_name):
-        column_name = None
-        var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
-            0].split('@')[0]
-        if '@' in var_name:
-            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
-                0].split('@')[1]
-
-        return [var_origin_name, column_name]
 
     def set_eval_possible_values(self):
         '''

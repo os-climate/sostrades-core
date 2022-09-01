@@ -15,10 +15,14 @@ limitations under the License.
 '''
 import copy
 import re
+import numpy as np
 
 import platform
 from tqdm import tqdm
 import time
+
+from sostrades_core.tools.base_functions.compute_len import compute_len
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
 
 from numpy import array, ndarray, delete, NaN
 
@@ -34,6 +38,7 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 import pandas as pd
 from collections import ChainMap
+from gemseo.core.parallel_execution import ParallelExecution
 
 # get module logger not sos logger
 import logging
@@ -43,6 +48,15 @@ class EvalWrapper(SoSWrapp):
     '''
     Generic Wrapper with SoSEval functions
     '''
+
+    _maturity = 'Fake'
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
+
+    def __init__(self, sos_name):
+
+        super().__init__(sos_name)
+        self.samples = None
+
 
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
         # FIXME: should be moved to mother class EvalWrapper
@@ -165,8 +179,8 @@ class EvalWrapper(SoSWrapp):
         self.attributes['dm'].set_values_from_dict(local_data)
 
         if convert_to_array:
-            out_local_data_converted = self._convert_new_type_into_array(
-                out_local_data)
+            out_local_data_converted = convert_new_type_into_array(
+                out_local_data, self.attributes['dm'])
             out_values = np.concatenate(
                 list(out_local_data_converted.values())).ravel()
         else:
@@ -180,7 +194,7 @@ class EvalWrapper(SoSWrapp):
         return out_values
 
     def get_input_data_for_gems(self, disc):
-        # FIXME : will need to be done differently without dm
+        # FIXME : will need to be done differently without dm or move to driver wrapper
         '''
         Get input_data for linearize sosdiscipline
         '''
@@ -192,3 +206,170 @@ class EvalWrapper(SoSWrapp):
                 input_data[data_name] = self.attributes['dm'].get_value(data_name)
 
         return input_data
+
+    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
+        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[1]
+        if any(char.isdigit() for char in col_index):
+            col_index = re.findall(r'\d+', col_index)[0]
+            cols_list = var_to_update.columns.to_list()
+            key = cols_list[int(col_index)]
+            var_to_update[key] = multiplier_value * var_to_update[key]
+        else:
+            if isinstance(var_to_update, dict):
+                float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
+                    var_to_update[dict_keys], float)]
+            elif isinstance(var_to_update, pd.DataFrame):
+                float_cols_ids_list = [
+                    df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
+            for key in float_cols_ids_list:
+                var_to_update[key] = multiplier_value * var_to_update[key]
+        return var_to_update
+
+    def convert_output_results_toarray(self):
+        #FIXME: unused???
+        '''
+        COnvert toutput results into array in order to apply FDGradient on it for example
+        '''
+        out_values = []
+        self.eval_out_type = []
+        self.eval_out_list_size = []
+        for y_id in self.attributes['eval_out_list']:
+
+            y_val = self.dm.get_value(y_id)
+            self.eval_out_type.append(type(y_val))
+            # Need a flatten list for the eval computation if val is dict
+            if type(y_val) in [dict, DataFrame]:
+                val_dict = {y_id: y_val}
+                dict_flatten = convert_new_type_into_array(
+                    val_dict, self.attributes['dm'])
+                y_val = dict_flatten[y_id].tolist()
+
+            else:
+                y_val = [y_val]
+            self.eval_out_list_size.append(len(y_val))
+            out_values.extend(y_val)
+
+        return np.array(out_values)
+
+    def reconstruct_output_results(self, outputs_eval):
+        '''
+        Reconstruct the metadata saved earlier to get same object in output
+        instead of a flatten list
+        '''
+        #TODO: check eval_process_disc when implementing sos_gradients
+        outeval_final_dict = {}
+        for j, key_in in enumerate(self.attributes['eval_in_list']):
+            outeval_dict = {}
+            old_size = 0
+            for i, key in enumerate(self.attributes['eval_out_list']):
+                eval_out_size = compute_len(
+                    self.eval_process_disc.local_data[key])
+                output_eval_key = outputs_eval[old_size:old_size +
+                                               eval_out_size]
+                old_size = eval_out_size
+                type_sos = self.attributes['dm'].get_data(key, 'type')
+                if type_sos in ['dict', 'dataframe']:
+                    outeval_dict[key] = np.array([
+                        sublist[j] for sublist in output_eval_key])
+                else:
+                    outeval_dict[key] = output_eval_key[0][j]
+
+            outeval_dict = convert_array_into_new_type(outeval_dict,self.attributes['dm'])
+            outeval_base_dict = {f'{key_out} vs {key_in}': value for key_out, value in zip(
+                self.attributes['eval_out_list'], outeval_dict.values())}
+            outeval_final_dict.update(outeval_base_dict)
+
+        return outeval_final_dict
+
+    def update_default_inputs(self, disc):
+        '''
+        Update default inputs of disc with dm values
+        '''
+        input_data = {}
+        input_data_names = disc.get_input_data_names()
+        for data_name in input_data_names:
+            val = self.attributes['dm'].get_value(data_name) # FIXME : pass data otherwise
+            # val = self.get_value(data_name)
+            if val is not None:
+                input_data[data_name] = val
+
+        # store mdo_chain default inputs
+        if disc.is_sos_coupling:
+            disc.mdo_chain.default_inputs.update(input_data)
+        disc.default_inputs.update(input_data)
+
+        # recursive update default inputs of children
+        for sub_disc in disc.sos_disciplines:
+            self.update_default_inputs(sub_disc)
+
+    def create_origin_vars_to_update_dict(self):
+        origin_vars_to_update_dict = {}
+        for select_in in self.attributes['eval_in_list']:
+            if self.MULTIPLIER_PARTICULE in select_in:
+                var_origin_f_name = self.get_names_from_multiplier(select_in)[
+                    0]
+                if var_origin_f_name not in origin_vars_to_update_dict:
+                    origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
+                        self.attributes['dm'].get_data(var_origin_f_name)['value'])
+        return origin_vars_to_update_dict
+
+    def add_multiplied_var_to_samples(self, multipliers_samples, origin_vars_to_update_dict):
+        for sample_i in range(len(multipliers_samples)):
+            x = multipliers_samples[sample_i]
+            vars_to_update_dict = {}
+            for multiplier_i, x_id in enumerate(self.attributes['eval_in_list']):
+                # for grid search multipliers inputs
+                var_name = x_id.split(self.attributes["study_name"] + '.')[-1]
+                if self.MULTIPLIER_PARTICULE in var_name:
+                    var_origin_f_name = '.'.join(
+                        [self.attributes["study_name"], self.get_names_from_multiplier(var_name)[0]])
+                    if var_origin_f_name in vars_to_update_dict:
+                        var_to_update = vars_to_update_dict[var_origin_f_name]
+                    else:
+                        var_to_update = copy.deepcopy(
+                            origin_vars_to_update_dict[var_origin_f_name])
+                    vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
+                        multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100.0, var_to_update=var_to_update)
+            for multiplied_var in vars_to_update_dict:
+                self.samples[sample_i].append(
+                    vars_to_update_dict[multiplied_var])
+
+    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
+        # if dict or dataframe to be multiplied
+        if '@' in multiplier_name:
+            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
+            if col_name_clean == 'allcolumns':
+                if isinstance(var_to_update, dict):
+                    float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
+                        var_to_update[dict_keys], float)]
+                elif isinstance(var_to_update, pd.DataFrame):
+                    float_cols_ids_list = [
+                        df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
+                for key in float_cols_ids_list:
+                    var_to_update[key] = multiplier_value * var_to_update[key]
+            else:
+                keys_clean = [self.clean_var_name(var)
+                              for var in var_to_update.keys()]
+                col_index = keys_clean.index(col_name_clean)
+                col_name = var_to_update.keys()[col_index]
+                var_to_update[col_name] = multiplier_value * \
+                    var_to_update[col_name]
+        # if float to be multiplied
+        else:
+            var_to_update = multiplier_value * var_to_update
+        return var_to_update
+
+    def clean_var_name(self, var_name):
+        return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
+
+    def get_names_from_multiplier(self, var_name):
+        column_name = None
+        var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[0]
+        if '@' in var_name:
+            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
+
+        return [var_origin_name, column_name]

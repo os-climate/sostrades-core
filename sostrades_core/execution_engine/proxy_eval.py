@@ -59,7 +59,6 @@ class ProxyEval(ProxyDisciplineBuilder):
         'icon': '',
         'version': '',
     }
-    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
         'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
@@ -140,7 +139,7 @@ class ProxyEval(ProxyDisciplineBuilder):
             is_structuring = disc._data_in[data_in_key].get(
                 self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
-                SoSCoupling.DESC_IN.keys())
+                ProxyCoupling.DESC_IN.keys())
             full_id = self.dm.get_all_namespaces_from_var_name(data_in_key)[0]
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
                                            ]['io_type'] == 'in'
@@ -291,81 +290,6 @@ class ProxyEval(ProxyDisciplineBuilder):
             x_val = self.dm.get_value(x_id)
             x0.append(x_val)
         return np.array(x0)
-
-    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
-            0].split('@')[1]
-        if any(char.isdigit() for char in col_index):
-            col_index = re.findall(r'\d+', col_index)[0]
-            cols_list = var_to_update.columns.to_list()
-            key = cols_list[int(col_index)]
-            var_to_update[key] = multiplier_value * var_to_update[key]
-        else:
-            if isinstance(var_to_update, dict):
-                float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
-                    var_to_update[dict_keys], float)]
-            elif isinstance(var_to_update, pd.DataFrame):
-                float_cols_ids_list = [
-                    df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
-            for key in float_cols_ids_list:
-                var_to_update[key] = multiplier_value * var_to_update[key]
-        return var_to_update
-
-    def convert_output_results_toarray(self):
-        '''
-        COnvert toutput results into array in order to apply FDGradient on it for example
-        '''
-        out_values = []
-        self.eval_out_type = []
-        self.eval_out_list_size = []
-        for y_id in self.eval_out_list:
-
-            y_val = self.dm.get_value(y_id)
-            self.eval_out_type.append(type(y_val))
-            # Need a flatten list for the eval computation if val is dict
-            if type(y_val) in [dict, DataFrame]:
-                val_dict = {y_id: y_val}
-                dict_flatten = self._convert_new_type_into_array(
-                    val_dict)
-                y_val = dict_flatten[y_id].tolist()
-
-            else:
-                y_val = [y_val]
-            self.eval_out_list_size.append(len(y_val))
-            out_values.extend(y_val)
-
-        return np.array(out_values)
-
-    def reconstruct_output_results(self, outputs_eval):
-        '''
-        Reconstruct the metadata saved earlier to get same object in output
-        instead of a flatten list
-        '''
-
-        outeval_final_dict = {}
-        for j, key_in in enumerate(self.eval_in_list):
-            outeval_dict = {}
-            old_size = 0
-            for i, key in enumerate(self.eval_out_list):
-                eval_out_size = compute_len(
-                    self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size +
-                                               eval_out_size]
-                old_size = eval_out_size
-                type_sos = self.dm.get_data(key, 'type')
-                if type_sos in ['dict', 'dataframe']:
-                    outeval_dict[key] = np.array([
-                        sublist[j] for sublist in output_eval_key])
-                else:
-                    outeval_dict[key] = output_eval_key[0][j]
-
-            outeval_dict = self._convert_array_into_new_type(outeval_dict)
-            outeval_base_dict = {f'{key_out} vs {key_in}': value for key_out, value in zip(
-                self.eval_out_list, outeval_dict.values())}
-            outeval_final_dict.update(outeval_base_dict)
-
-        return outeval_final_dict
-
 
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
