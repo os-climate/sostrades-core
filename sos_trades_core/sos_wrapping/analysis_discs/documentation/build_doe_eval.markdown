@@ -10,18 +10,19 @@ The doe_eval capability allows provide or create a sample and to run the subproc
 ## Strucrure of Desc_in/Desc_out
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
-                |_ EVAL_INPUTS (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
-                |_ EVAL_OUTPUTS (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
+                |_ EVAL_INPUTS (namespace: 'ns_doe_eval', structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
+                |_ EVAL_OUTPUTS (structuring, namespace: 'ns_doe_eval', dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ SAMPLING_ALGO (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP')
-                        |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
+                        |_ CUSTOM_SAMPLES_DF (namespace: 'ns_doe_eval', dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
                         |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
                         |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
+                        |_ <var multiplier name>:for each selected input with MULTIPLIER_PARTICULE in its name
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
             |_ SAMPLES_INPUTS_DF
-            |_ <var>_dict (dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
+            |_ <var>_dict (internal namspace 'ns_doe', dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
 
 ##     Description of DESC parameters
         SUB_PROCESS_INPUTS: 	    All inputs for driver builder in the form of a dictionary of four keys        

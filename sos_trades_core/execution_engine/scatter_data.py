@@ -223,8 +223,11 @@ class SoSScatterData(SoSDiscipline):
                     for scatter_name in scatter_list:
                         # check type, if it is a dataframe, use .loc
                         if input_type != 'dataframe':
-                            scatter_output_value = deepcopy(
-                                to_scatter_variable[scatter_name])
+                            if scatter_name in to_scatter_variable:
+                                scatter_output_value = deepcopy(
+                                    to_scatter_variable[scatter_name])
+                            else:
+                                self.logger.error(f'Value:"{scatter_name}" is missing in parameter {input_name} located at {self.get_var_full_name(input_name,self._data_in)}, update it before run!')
                         else:
                             col = scatter_column_name_list[i]
                             # check if column exists in dataframe

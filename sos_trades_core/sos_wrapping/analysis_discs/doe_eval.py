@@ -312,7 +312,6 @@ class DoeEval(SoSEval):
             if self.MULTIPLIER_PARTICULE in selected_in:
                 multiplier_name = selected_in.split('.')[-1]
                 origin_var_name = multiplier_name.split('.')[0].split('@')[0]
-                # if
                 if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
                     self.logger.exception(
                         'Multiplier name selected already exists!')
@@ -506,9 +505,22 @@ class DoeEval(SoSEval):
         """ We check that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
-        if set(self.selected_inputs) != set(self.customed_samples.columns.to_list()):
-            self.logger.error("the customed dataframe columns must be the same and in the same order than the eval in "
-                              "list ")
+        if not set(self.selected_inputs).issubset(set(self.customed_samples.columns.to_list())):
+            missing_eval_in_variables = set.union(set(self.selected_inputs), set(
+                self.customed_samples.columns.to_list())) - set(self.customed_samples.columns.to_list())
+            msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
+            # To do: provide also the list of missing eval_in variables:
+            self.logger.error(msg)
+            raise ValueError(msg)
+        else:
+            not_relevant_columns = set(
+                self.customed_samples.columns.to_list()) - set(self.selected_inputs)
+            msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
+            self.logger.warning(msg)
+            if len(not_relevant_columns) != 0:
+                self.customed_samples.drop(
+                    not_relevant_columns, axis=1, inplace=True)
+            self.customed_samples = self.customed_samples[self.selected_inputs]
 
     def run(self):
         '''
@@ -840,9 +852,12 @@ class DoeEval(SoSEval):
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
+        my_ns_doe_eval_path = self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_doe_eval'].get_value(
+        )
         if eval_input_new_dm is None:
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
+
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
@@ -854,11 +869,11 @@ class DoeEval(SoSEval):
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
                     index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
                              'value', default_dataframe, check_value=False)
 
         if eval_output_new_dm is None:
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
             # check if the eval_inputs need to be updtated after a subprocess
             # configure
@@ -871,11 +886,11 @@ class DoeEval(SoSEval):
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
                     index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
                              'value', default_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
-        self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
+        self.dm.set_data(f'{my_ns_doe_eval_path}.sampling_algo',
                          self.POSSIBLE_VALUES, self.custom_order_possible_algorithms(self.doe_factory.algorithms))
 
     def custom_order_possible_algorithms(self, algo_list):

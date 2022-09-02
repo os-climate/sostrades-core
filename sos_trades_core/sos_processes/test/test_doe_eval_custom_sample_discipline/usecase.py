@@ -41,8 +41,9 @@ class Study(StudyManager):
         my_doe_algo = 'CustomDOE'
         my_dict_of_vec = {}
         my_dict_of_vec['stat_C'] = [3, 4, 8]
-        my_dict_of_vec['stat_B'] = [2]
         my_dict_of_vec['stat_A'] = [2, 8]
+        my_dict_of_vec['stat_B'] = [2]
+        my_dict_of_vec['stat_D'] = [5, 6]
 
         my_dict = {}
 
@@ -68,5 +69,7 @@ if '__main__' == __name__:
         f'{uc_cls.study_name}.Combvec.my_dict_of_vec'))
     print(uc_cls.execution_engine.dm.get_value(
         f'{uc_cls.study_name}.DoE_Eval.custom_samples_df'))
+    print(uc_cls.execution_engine.dm.get_value(
+        f'{uc_cls.study_name}.DoE_Eval.samples_inputs_df'))
     print(uc_cls.execution_engine.dm.get_value(
         f'{uc_cls.study_name}.sum_stat_dict'))
