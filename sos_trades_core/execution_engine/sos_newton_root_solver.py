@@ -214,7 +214,7 @@ class NewtonRootSolver(SoSEval):
         self.nr_solver.set_res_0(inputs_dict['NR_res0'])
         #self.nr_solver.bounds = [(-90., 90.), (-10., 1.e20)]
 
-    def drdw_function(self, x):
+    def drdw_function(self, w):
         '''
         FUnction that will compute dRdW with respect to W values
         W is newton unknowns
@@ -231,7 +231,7 @@ class NewtonRootSolver(SoSEval):
 #                                            outputs=[residual_name])
         residual_process.add_differentiated_inputs([unknown_name])
         residual_process.add_differentiated_outputs([residual_name])
-        jac = residual_process.linearize(input_data={unknown_name: x})
+        jac = residual_process.linearize(input_data={unknown_name: w})
         drdw = jac[residual_name][unknown_name]
 
         if not isinstance(drdw, ndarray):
