@@ -151,7 +151,7 @@ class DoeEval(EvalWrapper):
                     # check if there is any False in l_activated
                     if not all(l_activated):
                         index_false = l_activated.index(False)
-                        self.dict_desactivated_elem[dv] = {
+                        self.attributes['dict_desactivated_elem'][dv] = {
                             'value': val[index_false], 'position': index_false}
 
                         val = delete(val, index_false)

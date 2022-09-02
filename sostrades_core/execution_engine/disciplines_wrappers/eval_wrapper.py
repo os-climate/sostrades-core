@@ -141,8 +141,6 @@ class EvalWrapper(SoSWrapp):
 
 
     def evaluation(self, x, scenario_name=None, convert_to_array=True, completed_eval_in_list=None):
-        # FIXME: should be moved to mother class EvalWrapper
-
         '''
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
