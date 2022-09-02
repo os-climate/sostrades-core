@@ -231,7 +231,8 @@ class NewtonRootSolver(SoSEval):
 #                                            outputs=[residual_name])
         residual_process.add_differentiated_inputs([unknown_name])
         residual_process.add_differentiated_outputs([residual_name])
-        jac = residual_process.linearize(input_data={unknown_name: w})
+        self.local_data.update({unknown_name: w})
+        jac = residual_process.linearize(input_data=self.local_data)
         drdw = jac[residual_name][unknown_name]
 
         if not isinstance(drdw, ndarray):
