@@ -891,7 +891,7 @@ class DoeEval(SoSEval):
                              'value', default_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
-        self.dm.set_data(f'{my_ns_doe_eval_path}.sampling_algo',
+        self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
                          self.POSSIBLE_VALUES, self.custom_order_possible_algorithms(self.doe_factory.algorithms))
 
     def custom_order_possible_algorithms(self, algo_list):
