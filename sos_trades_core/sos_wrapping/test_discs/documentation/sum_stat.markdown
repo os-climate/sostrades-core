@@ -11,4 +11,4 @@ DESC_OUT
 	- sum_stat: {'type': 'float', 'unit': '-', 'visibility': 'Shared', 'namespace': 'ns_sum_stat'}
 RUN
 
-$sum_stat = stat_A + stat_B + stat_C$
+$sum_stat = 1 * stat_A + 2 * stat_B + 3 * stat_C$
