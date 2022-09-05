@@ -134,17 +134,17 @@ Please find here an overview description of the Input/Output widgets tree struct
 
         |_ DESC_IN
                 |_ EVAL_INPUTS (namespace: 'ns_doe_eval', structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
-                |_ EVAL_OUTPUTS (structuring, namespace: 'ns_doe_eval', dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
+                |_ EVAL_OUTPUTS (namespace: 'ns_doe_eval', structuring, dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ SAMPLING_ALGO (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP')
-                        |_ CUSTOM_SAMPLES_DF (namespace: 'ns_doe_eval', dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
+                        |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
                         |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
                         |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
-            |_ SAMPLES_INPUTS_DF
-            |_ <var>_dict (internal namspace 'ns_doe', dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
+            |_ SAMPLES_INPUTS_DF (namespace: 'ns_doe_eval')
+            |_ <var>_dict (internal namespace 'ns_doe', dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
 
 and a short definition of those DESC parameters:
 

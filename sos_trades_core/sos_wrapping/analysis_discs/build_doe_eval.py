@@ -45,9 +45,9 @@ class BuildDoeEval(SoSEval):
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
                 |_ EVAL_INPUTS (namespace: 'ns_doe_eval', structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
-                |_ EVAL_OUTPUTS (structuring,namespace: 'ns_doe_eval', dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
+                |_ EVAL_OUTPUTS (namespace: 'ns_doe_eval', structuring, dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ SAMPLING_ALGO (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP')
-                        |_ CUSTOM_SAMPLES_DF (namespace: 'ns_doe_eval', dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
+                        |_ CUSTOM_SAMPLES_DF (dynamic: SAMPLING_ALGO=="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo 
                         |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
                         |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
                         |_ <var multiplier name> (internal namespace: 'origin_var_ns', dynamic: almost one selected inputs with MULTIPLIER_PARTICULE ('__MULTIPLIER__) in its name, only used in grid_search_eval) 
@@ -55,7 +55,7 @@ class BuildDoeEval(SoSEval):
             |_ WAIT_TIME_BETWEEN_FORK
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
-            |_ SAMPLES_INPUTS_DF
+            |_ SAMPLES_INPUTS_DF (namespace: 'ns_doe_eval') 
             |_ <var>_dict (internal namspace 'ns_doe', dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
 
     2) Description of DESC parameters:
@@ -1117,7 +1117,6 @@ class BuildDoeEval(SoSEval):
                 self.customed_samples.drop(
                     not_relevant_columns, axis=1, inplace=True)
             self.customed_samples = self.customed_samples[self.selected_inputs]
-
 
     def create_design_space(self):
         """
