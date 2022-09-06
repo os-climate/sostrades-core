@@ -86,8 +86,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
                                'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
-                                             'y_2',
-                                             'z']}
+                                             'y_2', 'z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
@@ -197,6 +196,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.configure()
 
         # -- set up disciplines in Scenario
+
         disc_dict = {f'{self.ns}.DoEEval.sampling_algo': "CustomDOE",
                      f'{self.ns}.DoEEval.eval_inputs': self.input_selection_x_z,
                      f'{self.ns}.DoEEval.eval_outputs': self.output_selection_obj_y1_y2}
@@ -1007,6 +1007,85 @@ class TestSoSDOEScenario(unittest.TestCase):
         theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
         self.assertEqual(len(doe_disc_samples),
                          theoretical_fullfact_samples + 1)
+
+    def test_12_doe_eval_CustomDoE_non_alpha_order(self):
+        """ this test checks that the doe_eval delivers expected outputs in case of invertion of x, z in eval_inputs
+        It is a non regression test
+        """
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        input_selection_z_x = {'selected_input': [False, True, True, False, False],
+                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'z', 'x', 'y_1',
+                                             'y_2']}
+        input_selection_z_x = pd.DataFrame(input_selection_z_x)
+
+        disc_dict = {f'{self.ns}.DoEEval.sampling_algo': "CustomDOE",
+                     f'{self.ns}.DoEEval.eval_inputs': input_selection_z_x,
+                     f'{self.ns}.DoEEval.eval_outputs': self.output_selection_obj_y1_y2}
+        # DoE inputs
+
+        x_values = [array([9.379763880395856]), array([8.88644794300546]),
+                    array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
+        z_values = [array([1.515949043849158, 5.6317362409322165]),
+                    array([-1.1962705421254114, 6.523436208612142]),
+                    array([-1.9947578026244557, 4.822570933860785]
+                          ), array([1.7490668861813, 3.617234050834533]),
+                    array([-9.316161097119341, 9.918161285133076])]
+        wrong_values = 5 * [0.0]
+
+        #samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
+        samples_dict = {'z': z_values, 'x': x_values,
+                        'wrong_values': wrong_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{self.ns}.DoEEval.custom_samples_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
+                       f'{self.ns}.z': array([1., 1.]), f'{self.ns}.DoEEval.Sellar_Problem.local_dv': local_dv}
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Sellar_2',
+                       '\t\t|_ Sellar_1',
+                       '\t\t|_ Sellar_Problem']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
+        self.assertEqual(len(doe_disc_samples), 6)
+        self.assertEqual(len(doe_disc_obj), 6)
+        self.assertDictEqual(doe_disc_y1,
+                             {'scenario_1': array([15.102817691025274]), 'scenario_2': array([15.000894464408367]),
+                              'scenario_3': array([11.278122259980103]), 'scenario_4': array([5.1893098993071565]),
+                              'scenario_5': array([101.52834810032466]), 'reference': array([2.29689011157193])})
+        self.assertDictEqual(doe_disc_y2,
+                             {'scenario_1': array([11.033919669249876]), 'scenario_2': array([9.200264485831308]),
+                              'scenario_3': array([6.186104699873589]), 'scenario_4': array([7.644306621667905]),
+                              'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])})
 
 
 if '__main__' == __name__:

@@ -41,6 +41,7 @@ class Combvec(SoSDiscipline):
     default_my_dict_of_vec['stat_C'] = [3, 4, 8]
     default_my_dict_of_vec['stat_B'] = [2]
     default_my_dict_of_vec['stat_A'] = [2, 7]
+    default_my_dict_of_vec['stat_D'] = [6]
 
     DESC_IN = {
         'my_dict_of_vec': {'type': 'dict', 'subtype_descriptor': {'dict': {'list': 'int'}}, 'default': default_my_dict_of_vec, 'unit': '-', 'visibility': SoSDiscipline.LOCAL_VISIBILITY}

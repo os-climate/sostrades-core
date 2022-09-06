@@ -492,7 +492,8 @@ class DoeEval(SoSEval):
     def create_samples_from_custom_df(self):
         """Generation of the samples in case of a customed DOE
         """
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df')
+        self.customed_samples = self.get_sosdisc_inputs(
+            'custom_samples_df').copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():
@@ -521,6 +522,7 @@ class DoeEval(SoSEval):
             if len(not_relevant_columns) != 0:
                 self.customed_samples.drop(
                     not_relevant_columns, axis=1, inplace=True)
+            self.selected_inputs.sort()
             self.customed_samples = self.customed_samples[self.selected_inputs]
 
     def run(self):

@@ -67,11 +67,21 @@ if '__main__' == __name__:
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.run()
+    print('eval_inputs:')
+    print(uc_cls.execution_engine.dm.get_value(
+        f'{uc_cls.study_name}.DoE_Eval.eval_inputs'))
+    print('eval_outputs:')
+    print(uc_cls.execution_engine.dm.get_value(
+        f'{uc_cls.study_name}.DoE_Eval.eval_outputs'))
+    print('my_dict_of_vec:')
     print(uc_cls.execution_engine.dm.get_value(
         f'{uc_cls.study_name}.Combvec.my_dict_of_vec'))
+    print('custom_samples_df:')
     print(uc_cls.execution_engine.dm.get_value(
         f'{uc_cls.study_name}.DoE_Eval.custom_samples_df'))
+    print('samples_inputs_df:')
     print(uc_cls.execution_engine.dm.get_value(
         f'{uc_cls.study_name}.DoE_Eval.samples_inputs_df'))
+    print('sum_stat_dict:')
     print(uc_cls.execution_engine.dm.get_value(
         f'{uc_cls.study_name}.sum_stat_dict'))
