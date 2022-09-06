@@ -528,11 +528,16 @@ class SoSDiscipline(MDODiscipline):
         self.setup_sos_disciplines()
 
         self.reload_io()
+        
+        self.check_data_integrity()
 
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
         self.set_configure_status(True)
+        
+    def check_data_integrity(self):
+        pass
 
     def set_numerical_parameters(self):
         '''
