@@ -50,7 +50,7 @@ class Sumstat(SoSDiscipline):
     def run(self):
 
         input_dict = self.get_sosdisc_inputs()
-        sum_stat = input_dict['stat_A'] + \
-            input_dict['stat_B'] + input_dict['stat_C']
+        sum_stat = 1 * input_dict['stat_A'] + \
+            2 * input_dict['stat_B'] + 3 * input_dict['stat_C']
         dict_values = {'sum_stat': sum_stat}
         self.store_sos_outputs_values(dict_values)

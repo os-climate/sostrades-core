@@ -43,7 +43,9 @@ class Study(StudyManager):
         my_dict_of_vec['stat_C'] = [3, 4, 8]
         my_dict_of_vec['stat_A'] = [2, 8]
         my_dict_of_vec['stat_B'] = [2]
-        my_dict_of_vec['stat_D'] = [5, 6]
+        # we provide only one value for D to avoid duplicated lines when column D is
+        # removed
+        my_dict_of_vec['stat_D'] = [5]
 
         my_dict = {}
 
