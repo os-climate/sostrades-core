@@ -586,7 +586,7 @@ class BuildDoeEval(SoSEval):
         if namespace_list is None:
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
-                elem for elem in namespace_list if f'{self.ee.study_name}.DoE_Eval' not in elem.get_value()]
+                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
         for ns in namespace_list:
             self.ee.ns_manager.update_namespace_with_extra_ns(
                 ns, extra_ns, after_name)
