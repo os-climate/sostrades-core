@@ -586,7 +586,7 @@ class BuildDoeEval(SoSEval):
         if namespace_list is None:
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
-                elem for elem in namespace_list if f'{self.ee.study_name}.DoE_Eval' not in elem.get_value()]
+                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
         for ns in namespace_list:
             self.ee.ns_manager.update_namespace_with_extra_ns(
                 ns, extra_ns, after_name)
@@ -1085,7 +1085,8 @@ class BuildDoeEval(SoSEval):
             Generation of the samples in case of a customed DOE
             Function needed in generate_samples_from_doe_factory()
         """
-        self.customed_samples = self.get_sosdisc_inputs(self.CUSTOM_SAMPLES_DF)
+        self.customed_samples = self.get_sosdisc_inputs(
+            self.CUSTOM_SAMPLES_DF).copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():
@@ -1116,6 +1117,7 @@ class BuildDoeEval(SoSEval):
             if len(not_relevant_columns) != 0:
                 self.customed_samples.drop(
                     not_relevant_columns, axis=1, inplace=True)
+            self.selected_inputs.sort()
             self.customed_samples = self.customed_samples[self.selected_inputs]
 
     def create_design_space(self):
