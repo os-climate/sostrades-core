@@ -119,6 +119,7 @@ class SoSDiscipline(MDODiscipline):
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
     FLOAT_MAP = (float, np_float64, np_complex128)
+    PROC_BUILDER_MODAL = 'proc_builder_modal'
     VAR_TYPE_MAP = {
         # an integer cannot be a float
         'int': INT_MAP,
@@ -135,7 +136,8 @@ class SoSDiscipline(MDODiscipline):
         'dict': dict,
         'dataframe': DataFrame,
         'bool': bool,
-        'list': list
+        'list': list,
+        PROC_BUILDER_MODAL: dict
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
@@ -172,10 +174,10 @@ class SoSDiscipline(MDODiscipline):
         'linearization_mode': {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                NUMERICAL: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
-                       POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
-                       # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
-                       NUMERICAL: True,
-                       STRUCTURING: True},
+                     POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
+                     # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+                     NUMERICAL: True,
+                     STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         'debug_mode': {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                        NUMERICAL: True, 'structuring': True}
@@ -529,10 +531,15 @@ class SoSDiscipline(MDODiscipline):
 
         self.reload_io()
 
+        self.check_data_integrity()
+
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
         self.set_configure_status(True)
+
+    def check_data_integrity(self):
+        pass
 
     def set_numerical_parameters(self):
         '''
@@ -575,7 +582,7 @@ class SoSDiscipline(MDODiscipline):
                 else:
                     self.logger.info(
                         f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-                    
+
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
         Instantiate and set cache for disc if cache_type is not 'None'
@@ -588,14 +595,15 @@ class SoSDiscipline(MDODiscipline):
             if cache_type != 'None':
                 disc.set_cache_policy(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
-                
+
     def set_children_cache_inputs(self):
         '''
         Set cache_type and cache_file_path input values to children, if cache inputs have changed
         '''
         if self._set_children_cache_inputs:
             cache_type = self.get_sosdisc_inputs(SoSDiscipline.CACHE_TYPE)
-            cache_file_path = self.get_sosdisc_inputs(SoSDiscipline.CACHE_FILE_PATH)
+            cache_file_path = self.get_sosdisc_inputs(
+                SoSDiscipline.CACHE_FILE_PATH)
             for disc in self.sos_disciplines:
                 if SoSDiscipline.CACHE_TYPE in disc._data_in:
                     self.dm.set_data(disc.get_var_full_name(
@@ -1104,11 +1112,11 @@ class SoSDiscipline(MDODiscipline):
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
 
             elif index_y_column is None and index_x_column is not None:
-                self.jac[new_y_key][new_x_key][:, index_x_column * 
+                self.jac[new_y_key][new_x_key][:, index_x_column *
                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-                                                                        'end':-1},
+                                                                        'end': -1},
                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
                                                                         'end': (index_x_column + 1) * lines_nb_x}})
             elif index_y_column is not None and index_x_column is None:
@@ -1117,7 +1125,7 @@ class SoSDiscipline(MDODiscipline):
                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                         'end': (index_y_column + 1) * lines_nb_y},
                                             f'{new_x_key},{x_column}': {'start': 0,
-                                                                        'end':-1}})
+                                                                        'end': -1}})
             else:
                 raise Exception(
                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
@@ -1127,11 +1135,12 @@ class SoSDiscipline(MDODiscipline):
         var_full_name = self.get_var_full_name(key, data_io_disc)
         key_type = self.dm.get_data(var_full_name, self.TYPE)
         value = self._get_sosdisc_io(key, io_type)[key]
-        
+
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
             lines_nb = len(value)
-            index_column = [column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(column)
+            index_column = [
+                column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(column)
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None
@@ -1305,7 +1314,7 @@ class SoSDiscipline(MDODiscipline):
             self)
         self.disc_id = self.dm.update_disciplines_dict(
             self.disc_id, disc_dict_info, disc_ns_name)
-        
+
     def _set_dm_cache_map(self):
         '''
         Update cache_map dict in DM with cache and its children recursively
@@ -1314,8 +1323,8 @@ class SoSDiscipline(MDODiscipline):
             self._store_cache_with_hashed_uid(self)
         # store children cache recursively
         for disc in self.sos_disciplines:
-            disc._set_dm_cache_map() 
-            
+            disc._set_dm_cache_map()
+
     def _store_cache_with_hashed_uid(self, disc):
         '''
         Generate hashed uid and store cache in DM
@@ -1323,20 +1332,21 @@ class SoSDiscipline(MDODiscipline):
         full_name = self.get_disc_full_name().split(self.ee.study_name)[-1]
         class_name = disc.__class__.__name__
         anoninmated_data_io = self.get_anonimated_data_io(disc)
-        
-        # set disc infos string list with full name, class name and anonimated i/o for hashed uid generation
+
+        # set disc infos string list with full name, class name and anonimated
+        # i/o for hashed uid generation
         disc_info_list = [full_name, class_name, anoninmated_data_io]
         hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
-        
+
         # store cache in DM map
         self.dm.cache_map[hashed_uid] = disc.cache
-        
+
         # store disc in DM map
         if hashed_uid in self.dm.gemseo_disciplines_id_map:
             self.dm.gemseo_disciplines_id_map[hashed_uid].append(disc)
         else:
             self.dm.gemseo_disciplines_id_map[hashed_uid] = [disc]
-            
+
     def get_var_full_name(self, var_name, disc_dict):
         ''' Get namespaced variable from namespace and var_name in disc_dict
         '''
@@ -1385,7 +1395,7 @@ class SoSDiscipline(MDODiscipline):
     def get_disc_id_from_namespace(self):
 
         return self.ee.dm.get_discipline_ids_list(self.get_disc_full_name())
-    
+
     def get_anonimated_data_io(self, disc):
         '''
         return list of anonimated input and output keys for serialisation purpose
@@ -1394,7 +1404,7 @@ class SoSDiscipline(MDODiscipline):
 
         for key in disc.get_input_data_names():
             anonimated_data_io += key.split(self.ee.study_name)[-1]
-            
+
         for key in disc.get_output_data_names():
             anonimated_data_io += key.split(self.ee.study_name)[-1]
 
@@ -1481,12 +1491,12 @@ class SoSDiscipline(MDODiscipline):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy :" + 
+            raise ValueError("Unknown re_exec_policy :" +
                              str(self.re_exec_policy))
         if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) + 
-                             " with status: " + str(self.status) + 
-                             " while re_exec_policy is : " + 
+            raise ValueError("Trying to run a discipline " + str(type(self)) +
+                             " with status: " + str(self.status) +
+                             " while re_exec_policy is : " +
                              str(self.re_exec_policy))
 
     # -- Maturity handling section
@@ -1588,7 +1598,7 @@ class SoSDiscipline(MDODiscipline):
             return dict_values_dm != self._structuring_variables
         except:
             return not dict_are_equal(dict_values_dm,
-                         self._structuring_variables)
+                                      self._structuring_variables)
 
     def set_structuring_variables_values(self):
         '''

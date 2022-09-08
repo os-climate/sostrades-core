@@ -165,6 +165,12 @@ class BuildDoeEval(SoSEval):
                              'user_level': 1,
                              'optional': False
                              },
+        # SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
+        #                     'structuring': True,
+        #                     'default': default_sub_process_inputs_dict,
+        #                     'user_level': 1,
+        #                     'optional': False
+        #                     },
         N_PROCESSES: {'type': 'int',
                       'numerical': True,
                       'default': 1},
