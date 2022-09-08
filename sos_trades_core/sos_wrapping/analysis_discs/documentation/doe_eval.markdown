@@ -6,6 +6,7 @@ It provides the capability to:
 1. Step 1: Generate (or provide)  an "input sample of data". 
 2. Step 2: Run a nested sub_process on the rows of this input sample. A loop is performed on all rows of this sample, so as to compute the nested sub_process. 
 
+## Warning: in future SoSTrades versions, the "Custom DoE" capability will be removed from DoE_Eval
 
 ## Types and ordering rules
 
