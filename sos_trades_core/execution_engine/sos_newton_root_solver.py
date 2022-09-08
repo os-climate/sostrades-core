@@ -51,7 +51,9 @@ class NewtonRootSolver(SoSEval):
                'NR_relax_factor': {'type': 'float', 'default': 0.95},
                'NR_max_ite': {'type': 'float', 'default': 20},
                'NR_diff_mode': {'type': 'string', 'default': '1st order FD', 'possible_values': list(FD_MODE_TABLE.keys())},
-               'NR_res0': {'type': 'float', 'default': 1.0}}
+               'NR_res0': {'type': 'float', 'default': 1.0},
+               'verbose': {'type': 'int', 'default': 1}
+               }
 
     DESC_OUT = {'x_final': {'type': 'array'},
                 'residual_history': {'type': 'list'}}
@@ -201,7 +203,7 @@ class NewtonRootSolver(SoSEval):
         else:
             drdw_func = None
         self.nr_solver = NewtonRaphsonProblem(
-            inputs_dict['x0'], self.residual_function, drdw_func, verbose=0)
+            inputs_dict['x0'], self.residual_function, drdw_func, verbose=inputs_dict['verbose'])
         self.nr_solver.set_max_iterations(inputs_dict['NR_max_ite'])
         self.nr_solver.set_stop_residual(inputs_dict['NR_stop_residual'])
         self.nr_solver.set_relax_factor(inputs_dict['NR_relax_factor'])
