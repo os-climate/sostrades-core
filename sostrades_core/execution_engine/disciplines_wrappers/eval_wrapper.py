@@ -56,15 +56,17 @@ class EvalWrapper(SoSWrapp):
 
         super().__init__(sos_name)
         self.samples = None
-
+        self.input_data_for_disc = None
 
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
-        # FIXME: should be moved to mother class EvalWrapper
 
         '''This function executes a parallel execution of the function sample_evaluation
         over a list a samples. Depending on the numerical parameter n_processes it loops
         on a sequential or parallel way over the list of samples to evaluate
         '''
+
+        self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_discipline'])
+
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
         wait_time_between_samples = self.get_sosdisc_inputs(
@@ -159,7 +161,7 @@ class EvalWrapper(SoSWrapp):
         # to run  soseval on a structuring variable. Therefore structuring variables are
         # excluded from eval possible values
         # set values_dict in the data manager to execute the sub process
-        self.attributes['dm'].set_values_from_dict(values_dict)
+        # self.attributes['dm'].set_values_from_dict(values_dict)
 
         # # execute eval process stored in children
         # if len(self.proxy_disciplines) > 1:
@@ -167,26 +169,29 @@ class EvalWrapper(SoSWrapp):
         #     raise ProxyEvalException(
         #         f'ProxyEval discipline has more than one child discipline')
         # else:
-        input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_discipline'])
-        local_data = self.attributes['sub_mdo_discipline'].execute(input_data_for_disc)
-
-        out_local_data = {key: value for key,
-                          value in local_data.items() if key in self.attributes['eval_out_list']}
+        # input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_discipline'])
+        # local_data = self.attributes['sub_mdo_discipline'].execute(input_data_for_disc)
+        self.input_data_for_disc.update(values_dict)
+        local_data = self.attributes['sub_mdo_discipline'].execute(self.input_data_for_disc)
+        out_local_data = {key: value for key,value in local_data.items()
+                          if key in self.attributes['eval_out_list']}
 
         # needed for gradient computation
-        self.attributes['dm'].set_values_from_dict(local_data)
+        # TODO: manage data flow for gradient computation
+        # self.attributes['dm'].set_values_from_dict(local_data)
 
         if convert_to_array:
             out_local_data_converted = convert_new_type_into_array(
-                out_local_data, self.attributes['dm'])
+                out_local_data, self.attributes['reduced_dm'])
             out_values = np.concatenate(
                 list(out_local_data_converted.values())).ravel()
         else:
+            # out_values = list(out_local_data.values())
             out_values = []
             # get back out_local_data is not enough because some variables
-            # could be filtered for unsupported type for gemseo
+            # could be filtered for unsupported type for gemseo  TODO: is this case relevant??
             for y_id in self.attributes['eval_out_list']:
-                y_val = self.attributes['dm'].get_value(y_id)
+                y_val = out_local_data[y_id]
                 out_values.append(y_val)
 
         return out_values
@@ -199,9 +204,9 @@ class EvalWrapper(SoSWrapp):
         input_data = {}
         input_data_names = disc.input_grammar.get_data_names()
         if len(input_data_names) > 0:
-
-            for data_name in input_data_names:
-                input_data[data_name] = self.attributes['dm'].get_value(data_name)
+            input_data = self.get_sosdisc_inputs(keys=input_data_names, in_dict=True, full_name_keys=True)
+            # for data_name in input_data_names:
+            #     input_data[data_name] = self.attributes['dm'].get_value(data_name)
 
         return input_data
 
@@ -224,61 +229,61 @@ class EvalWrapper(SoSWrapp):
                 var_to_update[key] = multiplier_value * var_to_update[key]
         return var_to_update
 
-    def convert_output_results_toarray(self):
-        #FIXME: unused???
-        '''
-        COnvert toutput results into array in order to apply FDGradient on it for example
-        '''
-        out_values = []
-        self.eval_out_type = []
-        self.eval_out_list_size = []
-        for y_id in self.attributes['eval_out_list']:
+    # def convert_output_results_toarray(self):
+    #     #FIXME: unused???
+    #     '''
+    #     COnvert toutput results into array in order to apply FDGradient on it for example
+    #     '''
+    #     out_values = []
+    #     self.eval_out_type = []
+    #     self.eval_out_list_size = []
+    #     for y_id in self.attributes['eval_out_list']:
+    #
+    #         y_val = self.dm.get_value(y_id)
+    #         self.eval_out_type.append(type(y_val))
+    #         # Need a flatten list for the eval computation if val is dict
+    #         if type(y_val) in [dict, DataFrame]:
+    #             val_dict = {y_id: y_val}
+    #             dict_flatten = convert_new_type_into_array(
+    #                 val_dict, self.attributes['dm'])
+    #             y_val = dict_flatten[y_id].tolist()
+    #
+    #         else:
+    #             y_val = [y_val]
+    #         self.eval_out_list_size.append(len(y_val))
+    #         out_values.extend(y_val)
+    #
+    #     return np.array(out_values)
 
-            y_val = self.dm.get_value(y_id)
-            self.eval_out_type.append(type(y_val))
-            # Need a flatten list for the eval computation if val is dict
-            if type(y_val) in [dict, DataFrame]:
-                val_dict = {y_id: y_val}
-                dict_flatten = convert_new_type_into_array(
-                    val_dict, self.attributes['dm'])
-                y_val = dict_flatten[y_id].tolist()
-
-            else:
-                y_val = [y_val]
-            self.eval_out_list_size.append(len(y_val))
-            out_values.extend(y_val)
-
-        return np.array(out_values)
-
-    def reconstruct_output_results(self, outputs_eval):
-        '''
-        Reconstruct the metadata saved earlier to get same object in output
-        instead of a flatten list
-        '''
-        #TODO: check eval_process_disc when implementing sos_gradients
-        outeval_final_dict = {}
-        for j, key_in in enumerate(self.attributes['eval_in_list']):
-            outeval_dict = {}
-            old_size = 0
-            for i, key in enumerate(self.attributes['eval_out_list']):
-                eval_out_size = compute_len(
-                    self.eval_process_disc.local_data[key])
-                output_eval_key = outputs_eval[old_size:old_size +
-                                               eval_out_size]
-                old_size = eval_out_size
-                type_sos = self.attributes['dm'].get_data(key, 'type')
-                if type_sos in ['dict', 'dataframe']:
-                    outeval_dict[key] = np.array([
-                        sublist[j] for sublist in output_eval_key])
-                else:
-                    outeval_dict[key] = output_eval_key[0][j]
-
-            outeval_dict = convert_array_into_new_type(outeval_dict,self.attributes['dm'])
-            outeval_base_dict = {f'{key_out} vs {key_in}': value for key_out, value in zip(
-                self.attributes['eval_out_list'], outeval_dict.values())}
-            outeval_final_dict.update(outeval_base_dict)
-
-        return outeval_final_dict
+    # def reconstruct_output_results(self, outputs_eval):
+    #     '''
+    #     Reconstruct the metadata saved earlier to get same object in output
+    #     instead of a flatten list
+    #     '''
+    #     #TODO: check eval_process_disc when implementing sos_gradients.
+    #     outeval_final_dict = {}
+    #     for j, key_in in enumerate(self.attributes['eval_in_list']):
+    #         outeval_dict = {}
+    #         old_size = 0
+    #         for i, key in enumerate(self.attributes['eval_out_list']):
+    #             eval_out_size = compute_len(
+    #                 self.eval_process_disc.local_data[key])
+    #             output_eval_key = outputs_eval[old_size:old_size +
+    #                                            eval_out_size]
+    #             old_size = eval_out_size
+    #             type_sos = self.attributes['dm'].get_data(key, 'type')
+    #             if type_sos in ['dict', 'dataframe']:
+    #                 outeval_dict[key] = np.array([
+    #                     sublist[j] for sublist in output_eval_key])
+    #             else:
+    #                 outeval_dict[key] = output_eval_key[0][j]
+    #
+    #         outeval_dict = convert_array_into_new_type(outeval_dict,self.attributes['dm'])
+    #         outeval_base_dict = {f'{key_out} vs {key_in}': value for key_out, value in zip(
+    #             self.attributes['eval_out_list'], outeval_dict.values())}
+    #         outeval_final_dict.update(outeval_base_dict)
+    #
+    #     return outeval_final_dict
 
     def update_default_inputs(self, disc):
         '''
@@ -308,8 +313,10 @@ class EvalWrapper(SoSWrapp):
                 var_origin_f_name = self.get_names_from_multiplier(select_in)[
                     0]
                 if var_origin_f_name not in origin_vars_to_update_dict:
+                    # origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
+                    #     self.attributes['dm'].get_data(var_origin_f_name)['value'])
                     origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
-                        self.attributes['dm'].get_data(var_origin_f_name)['value'])
+                        self.get_sosdisc_inputs(var_origin_f_name, full_name_keys=True))
         return origin_vars_to_update_dict
 
     def add_multiplied_var_to_samples(self, multipliers_samples, origin_vars_to_update_dict):

@@ -102,7 +102,7 @@ class SoSWrapp(object):
         """
         raise NotImplementedError()
     
-    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys = False):
+    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
         Accessor for the inputs values as a list or dict.
 

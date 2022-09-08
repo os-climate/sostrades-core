@@ -303,14 +303,15 @@ class ProxyEval(ProxyDisciplineDriver):
                                                             if self.ee.dm.get_data(var, 'type') == 'array' else [True]
                                                             for var in self.eval_in_list], # Array dimensions greater than 2???
                               'study_name': self.ee.study_name,
-                              'dm': self.ee.dm  # FIXME : pass data otherwise
+                              'reduced_dm': self.ee.dm.reduced_dm, #for conversions
+                              # 'dm': self.ee.dm  # FIXME : pass data otherwise
                               }
 
-    def set_discipline_attributes(self, discipline):
-        """ set the attribute attributes of gemseo object
-        """
-        # TODO : attribute has been added to SoSMDODiscipline __init__, use sos_disciplines rather ?
-        discipline.disciplines = [self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline]
+    # def set_discipline_attributes(self, discipline):
+    #     """ set the attribute attributes of gemseo object
+    #     """
+    #     # TODO : attribute has been added to SoSMDODiscipline __init__, use sos_disciplines rather ?
+    #     discipline.disciplines = [self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline]
 
 #     def prepare_execution(self):
 #         '''
