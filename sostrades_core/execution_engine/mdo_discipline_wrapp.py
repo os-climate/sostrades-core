@@ -110,7 +110,6 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             return self.wrapper.get_post_processing_list(filters)
 
-
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """
         SoSMDODiscipline instanciation.
@@ -132,7 +131,7 @@ class MDODisciplineWrapp(object):
             self._init_grammar_with_keys(proxy)
 #             self._update_all_default_values(input_data)
             self._set_wrapper_attributes(proxy, self.wrapper)
-            self._set_discipline_attributes(proxy, self.mdo_discipline)
+            # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
