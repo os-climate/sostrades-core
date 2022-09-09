@@ -140,7 +140,6 @@ class NamespaceManager:
             self.ns_list.append(ns)
             self.all_ns_dict[f'{name}__{ns_value}'] = ns
 
-            ns.value = ns_value
         self.shared_ns_dict[name] = ns
 
         return ns
