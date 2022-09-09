@@ -87,7 +87,6 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
         grammar.initialize_from_base_dict({input: None for input in input_names})
 
         output_names = list(set(proxy.get_output_data_names()) | set(proxy.proxy_disciplines[0].get_output_data_names()))
-        output_names = proxy.get_output_data_names()
         grammar = self.mdo_discipline.output_grammar
         grammar.clear()
         grammar.initialize_from_base_dict({output: None for output in output_names})
