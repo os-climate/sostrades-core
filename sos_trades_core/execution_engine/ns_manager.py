@@ -104,7 +104,7 @@ class NamespaceManager:
         return self.__disc_ns_dict
 
     #-- Data name space methods
-    def add_ns_def(self, ns_info):
+    def add_ns_def(self, ns_info, overwrite_value=False):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
@@ -112,7 +112,7 @@ class NamespaceManager:
         for key, value in ns_info.items():
             self.add_ns(key, value)
 
-    def add_ns(self, name, ns_value):
+    def add_ns(self, name, ns_value, overwrite_value=False):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -120,6 +120,8 @@ class NamespaceManager:
         ns = None
         if f'{name}__{ns_value}' in self.all_ns_dict:
             ns = self.all_ns_dict[f'{name}__{ns_value}']
+            if overwrite_value:
+                ns.value = ns_value
 
         # -- check if name and value
 #         found = False
@@ -138,6 +140,7 @@ class NamespaceManager:
             self.ns_list.append(ns)
             self.all_ns_dict[f'{name}__{ns_value}'] = ns
 
+            ns.value = ns_value
         self.shared_ns_dict[name] = ns
 
         return ns
