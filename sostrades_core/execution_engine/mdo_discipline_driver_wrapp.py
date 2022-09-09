@@ -66,7 +66,7 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
                                                         reduced_dm=reduced_dm,
                                                         disciplines=sub_mdo_disciplines)
             self._init_grammar_with_keys(proxy)
-#             self._update_all_default_values(input_data)
+#             self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
             # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
@@ -86,7 +86,7 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
         grammar.clear()
         grammar.initialize_from_base_dict({input: None for input in input_names})
 
-        # output_names = list(set(proxy.get_output_data_names()) | set(proxy.proxy_disciplines[0].get_output_data_names()))
+        output_names = list(set(proxy.get_output_data_names()) | set(proxy.proxy_disciplines[0].get_output_data_names()))
         output_names = proxy.get_output_data_names()
         grammar = self.mdo_discipline.output_grammar
         grammar.clear()
