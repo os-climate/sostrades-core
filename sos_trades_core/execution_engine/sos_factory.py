@@ -535,6 +535,40 @@ class SosFactory:
 
         return list_builder
 
+    def create_build_very_simple_multi_scenario_builder(
+        self,
+        sos_name,
+        map_name,
+        cls_builder,
+        autogather=False,
+        gather_node=None,
+        business_post_proc=False,
+    ):
+        """
+        create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
+        """
+        # no autogather for proc builder (in a first step)
+        autogather = False
+        builder_list = self.convert_builder_to_list(cls_builder)
+        mod_path = (
+            f'{self.EE_PATH}.build_sos_very_simple_multi_scenario.BuildSoSVerySimpleMultiScenario'
+        )
+        cls = self.get_disc_class_from_module(mod_path)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        builder.set_builder_info('map_name', map_name)
+        builder.set_builder_info('autogather', autogather)
+        builder.set_builder_info('gather_node', gather_node)
+        builder.set_builder_info('cls_builder', builder_list)
+        builder.set_builder_info('business_post_proc', business_post_proc)
+
+        list_builder = [builder]
+
+        if autogather:
+            pass
+            # no autogather for proc builder (in a first step)
+
+        return list_builder
+
     def create_scatter_data_builder(self, sos_name, map_name):
         """
         create a builder defined by a scatter data type SoSScatterData
