@@ -110,7 +110,7 @@ class NamespaceManager:
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         for key, value in ns_info.items():
-            self.add_ns(key, value)
+            self.add_ns(key, value,overwrite_value)
 
     def add_ns(self, name, ns_value, overwrite_value=False):
         '''
