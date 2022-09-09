@@ -28,14 +28,14 @@ class BaseProcessBuilder:
     def get_builders(self):
         return []
 
-    def create_builder_list(self, mods_dict, ns_dict=None):
+    def create_builder_list(self, mods_dict, ns_dict=None, overwrite_value=False):
         ''' 
         define a base namespace
         instantiate builders iterating over a list of module paths
         return the list of disciplines built
         '''
         if ns_dict is not None:
-            self.ee.ns_manager.add_ns_def(ns_dict)
+            self.ee.ns_manager.add_ns_def(ns_dict, overwrite_value)
         builders = []
         for disc_name, mod_path in mods_dict.items():
             a_b = self.ee.factory.get_builder_from_module(
