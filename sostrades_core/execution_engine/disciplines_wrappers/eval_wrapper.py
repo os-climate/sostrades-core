@@ -197,7 +197,6 @@ class EvalWrapper(SoSWrapp):
         return out_values
 
     def get_input_data_for_gems(self, disc):
-        # FIXME : will need to be done differently without dm or move to driver wrapper
         '''
         Get input_data for linearize sosdiscipline
         '''
