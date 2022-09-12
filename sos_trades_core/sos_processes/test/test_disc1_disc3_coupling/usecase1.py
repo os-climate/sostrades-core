@@ -20,9 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc_hessian process.
-    This process instantiates the Hessian Discipline.
-    It uses the 1 wrapped discipline : sos_trades_core.sos_wrapping.test_discs.disc_hessian.DiscHessian.
+     the test_disc1_disc3_coupling.
+    This process instantiates the coupling of (disc1_scenario,disc3_scenario).
     '''
 
     def __init__(self, execution_engine=None):
@@ -30,25 +29,20 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ######### Numerical values   ####
-        x1 = 2.
-        x2 = 4.
-        a1 = 3
-        b1 = 4
-        a2 = 6
-        b2 = 2
-        name_list = ['name_1', 'name_2']
+        x = 2.
+        a = 3
+        b = 4
+        constant = 3
+        power = 2
+        z = 1.2
         ######### Fill the dictionary for dm   ####
         dict_values = {}
-        dict_values[self.study_name + '.name_list'] = name_list
-        dict_values[self.study_name + '.name_1.a'] = a1
-        dict_values[self.study_name + '.name_2.a'] = a2
-        dict_values[self.study_name + '.name_1.x'] = x1
-        dict_values[self.study_name + '.name_2.x'] = x2
-        dict_values[self.study_name + '.Disc1.name_1.b'] = b1
-        dict_values[self.study_name + '.Disc1.name_2.b'] = b2
-        dict_values[self.study_name + '.Disc3.constant'] = 3
-        dict_values[self.study_name + '.Disc3.power'] = 2
-        dict_values[self.study_name + '.Disc3.z'] = 1.2
+        dict_values[self.study_name + '.x'] = x
+        dict_values[self.study_name + '.a'] = a
+        dict_values[self.study_name + '.Disc1.b'] = b
+        dict_values[self.study_name + '.Disc3.constant'] = constant
+        dict_values[self.study_name + '.Disc3.power'] = power
+        dict_values[self.study_name + '.Disc3.z'] = z
 
         return [dict_values]
 

@@ -20,8 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc1_disc3_very_simple_multi_scenario process.
-    This process instantiates the multiscenario of scatter of the disc1_scenario and disc3_scenario Disciplines.
+     the test_scatter-disc1_disc3_vs_MS_from_proc process.
+    This process instantiates the multiscenario of (scatter of the disc1_scenario, disc3_scenario).
     '''
 
     def __init__(self, execution_engine=None):
@@ -40,24 +40,24 @@ class Study(StudyManager):
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = scenario_list
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
         for scenario in scenario_list:
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.vs_MS.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.vs_MS.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.vs_MS.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.vs_MS.' +
                         scenario + '.Disc3.power'] = 2
         dict_values[self.study_name +
-                    '.multi_scenarios.name_list'] = name_list
+                    '.vs_MS.name_list'] = name_list
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+                    '.vs_MS.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+                    '.vs_MS.scenario_2.Disc3.z'] = 1.5
         dict_values[self.study_name + '.name_1.x'] = x1
         dict_values[self.study_name + '.name_2.x'] = x2
         return [dict_values]
