@@ -906,10 +906,10 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     fig.add_trace(
                         go.Scatter(
                             x=cf_df_by_cat[x_axis_column].values.tolist(),
-                            y=cf_df_by_cat[column].cumsum().values.tolist()
+                            y=(cf_df_by_cat[column].cumsum().values.tolist()
                             if add_cumulated
-                            else cf_df_by_cat[column].values.tolist(),
-                            name=name if name is not None else f'{category}',
+                            else cf_df_by_cat[column].values.tolist()),
+                            name=(name if name is not None else f'{category}'),
                             xaxis='x',
                             yaxis='y',
                             visible=vis,
@@ -949,8 +949,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 dict(
                     buttons=list([dict(
                         args=[
-                            {'visible': [True if i == j else False for j in range(
-                                len(col_pretty_list))] * int(len(fig.data) / len(col_pretty_list))},
+                            {'visible': [True if i == j else False for j in range(int(len(fig.data)/len(categories_list)))] * len(categories_list)},
                             {'title': f'<b>{col_pretty_list[i]} in {ticksuffix} for {layout} layout</b>'},
                         ],
                         label=col_pretty_list[i],
@@ -988,6 +987,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         column_with_categories,
         var1_name: str,
         var2_name: str,
+        var_to_compare_ref: str,
         mpax_ref: float,
         x_axis_title: str = '',
         y_axis_title: str = '',
@@ -1017,7 +1017,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             cocs_y = []
             mpax_z = []
 
-            mpax = cf_df_by_cat['Number Seat'].to_list()   
+            mpax = cf_df_by_cat[var_to_compare_ref].to_list()   
             coc=cf_df_by_cat[var1_name].to_list()
             cocs=cf_df_by_cat[var2_name].to_list()
 

@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Very Simple Multi Scenario Process of (Disc1,Disc3)',
+        'label': 'Core Test Very Simple Multi Scenario Process of (Disc1,Disc3) : variante',
         'description': '',
         'category': '',
         'version': '',
@@ -46,7 +46,7 @@ class ProcessBuilder(BaseProcessBuilder):
                         'output_name': output_name,
                         'scatter_ns': scatter_ns,
                         'gather_ns': input_ns,
-                        'ns_to_update': ['ns_disc3', 'ns_out_disc3', 'ns_ac']}
+                        'ns_to_update': ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']}
         self.ee.smaps_manager.add_build_map(
             scenario_map_name, scenario_map)
         # driver name
