@@ -31,10 +31,10 @@ class Study(StudyManager):
         ######### Numerical values   ####
         x1 = 2.
         x2 = 4.
-        a1 = 3
-        b1 = 4
-        a2 = 6
-        b2 = 2
+        a1 = 3.
+        b1 = 4.
+        a2 = 6.
+        b2 = 2.
         scenario_list = ['scenario_1', 'scenario_2']
         name_list = ['name_1', 'name_2']
         ######### Fill the dictionary for dm   ####
@@ -49,7 +49,7 @@ class Study(StudyManager):
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_2.b'] = b2
             dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = 3
+                        scenario + '.Disc3.constant'] = 3.
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
         dict_values[self.study_name +
