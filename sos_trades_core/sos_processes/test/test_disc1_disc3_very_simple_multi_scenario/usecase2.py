@@ -20,9 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc_hessian process.
-    This process instantiates the Hessian Discipline.
-    It uses the 1 wrapped discipline : sos_trades_core.sos_wrapping.test_discs.disc_hessian.DiscHessian.
+     the test_disc1_disc3_very_simple_multi_scenario process.
+    This process instantiates the multiscenario of scatter of the disc1_scenario and disc3_scenario Disciplines.
     '''
 
     def __init__(self, execution_engine=None):
