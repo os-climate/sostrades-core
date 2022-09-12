@@ -26,19 +26,19 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['x', 'z'],
+        dspace_dict_x = {'variable': ['x'],
 
-                       'lower_bnd': [0., [-10., 0.]],
-                       'upper_bnd': [10., [10., 10.]],
+                         'lower_bnd': [0.],
+                         'upper_bnd': [10.],
 
-                       }
-        dspace = pd.DataFrame(dspace_dict)
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
 
-        input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
-                                             'y_2',
-                                             'z']}
-        input_selection_x_z = pd.DataFrame(input_selection_x_z)
+        input_selection_x = {'selected_input': [False, True, False, False, False],
+                             'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                           'y_2',
+                                           'z_in']}
+        input_selection_x = pd.DataFrame(input_selection_x)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
                                       'full_name': ['c_1', 'c_2', 'obj',
@@ -48,10 +48,10 @@ class Study(StudyManager):
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
-        disc_dict[f'{ns}.DoEEval.design_space'] = dspace
+        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{ns}.DoEEval.design_space'] = dspace_x
         disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
-        disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_obj_y1_y2
 
         # Sellar inputs
@@ -59,7 +59,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.x'] = array([1.])
         disc_dict[f'{ns}.y_1'] = array([1.])
         disc_dict[f'{ns}.y_2'] = array([1.])
-        disc_dict[f'{ns}.z'] = array([1., 1.])
+        disc_dict[f'{ns}.z_in'] = 2 * array([1., 1.])
         disc_dict[f'{ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

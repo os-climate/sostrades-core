@@ -367,6 +367,30 @@ class Sellar3(SoSWrapp):
                         raise ValueError("in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
                                 d_name, out, inp, maxi))
 
+class SimpleDisc(SoSWrapp):
+    """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
+    """
+    _maturity = 'Fake'
+    DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+
+    DESC_OUT = {'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+
+    def run(self):
+        """ Discipline 1 execution
+        """
+        z_in = self.get_sosdisc_inputs(['z_in'])
+        z = self.compute_z(z_in)
+        z_out = {'z': z}
+        self.store_sos_outputs_values(z_out)
+
+    @staticmethod
+    def compute_z(z):
+        """ Computes the output of the simple discipline in array form
+        """
+        out = z * pow(2, -1)
+        return out
+
+
 
 if __name__ == '__main__':
     disc_id = 'coupling_disc'

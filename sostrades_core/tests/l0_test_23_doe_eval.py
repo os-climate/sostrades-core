@@ -837,7 +837,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         print(' number of samples retrieved after parallel execution ' + str(len(doe_disc_obj)))
 
     def test_9_doe_eval_with_2_outputs_with_the_same_name(self):
-        """ Here we test that the doe displays properly 2 inputs
+        """ Here we test that the doe displays properly 2 outputs
         with the same short name
         """
 
