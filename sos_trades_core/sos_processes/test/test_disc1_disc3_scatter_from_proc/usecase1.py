@@ -31,10 +31,10 @@ class Study(StudyManager):
         ######### Numerical values   ####
         x1 = 2.
         x2 = 4.
-        a1 = 3
-        b1 = 4
-        a2 = 6
-        b2 = 2
+        a1 = 3.
+        b1 = 4.
+        a2 = 6.
+        b2 = 2.
         name_list = ['name_1', 'name_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
@@ -45,8 +45,8 @@ class Study(StudyManager):
         dict_values[self.study_name + '.name_2.x'] = x2
         dict_values[self.study_name + '.Disc1.name_1.b'] = b1
         dict_values[self.study_name + '.Disc1.name_2.b'] = b2
-        dict_values[self.study_name + '.Disc3.name_1.constant'] = 3
-        dict_values[self.study_name + '.Disc3.name_2.constant'] = 2
+        dict_values[self.study_name + '.Disc3.name_1.constant'] = 3.
+        dict_values[self.study_name + '.Disc3.name_2.constant'] = 2.
         dict_values[self.study_name + '.Disc3.name_1.power'] = 1
         dict_values[self.study_name + '.Disc3.name_2.power'] = 2
         dict_values[self.study_name + '.Disc3.z'] = 1.2
