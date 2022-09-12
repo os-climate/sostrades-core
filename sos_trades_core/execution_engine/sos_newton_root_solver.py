@@ -109,13 +109,25 @@ class NewtonRootSolver(SoSEval):
         self.dm.set_values_from_dict(
             {unknown_name: x0})
 
+    def update_gems_grammar_with_data_io(self):
+        """
+        Overload method to update gems object grammar with the coupling grammar
+        """
+        SoSEval.update_gems_grammar_with_data_io(self)
+        self.input_grammar.update_from(self.sos_disciplines[0].input_grammar)
+        self.output_grammar.update_from(self.sos_disciplines[0].output_grammar)
+
+
     def add_children_inputs(self):
         """
         Update input grammar
         """
         self.sos_disciplines[0].with_data_io = True
         self.sos_disciplines[0].configure_execution()
-        self._data_in.update(self.sos_disciplines[0]._data_in)
+        #self._data_in.update(self.sos_disciplines[0]._data_in)
+        #self._data_out.update(self.sos_disciplines[0]._data_out)
+
+
 
     def check_variables_exists_and_are_arrays(self):
 
