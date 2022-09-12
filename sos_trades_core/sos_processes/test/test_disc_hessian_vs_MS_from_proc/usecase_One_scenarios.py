@@ -20,8 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc1_disc3_coupling.
-    This process instantiates the coupling of (disc1_scenario,disc3_scenario).
+     the test_disc_hessian_vs_MS_from_proc process.
+    This process instantiates the multiscenario of a Hessian Discipline.
     '''
 
     def __init__(self, execution_engine=None):
@@ -29,21 +29,28 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ######### Numerical values   ####
-        x = 2.
-        a = 3.
-        b = 4.
-        constant = 3.
-        power = 2
-        z = 1.2
+        x = 2.0
+        y = 3.0
+
+        ax2 = 4.0
+        by2 = 5.0
+        cx = 6.0
+        dy = 7.0
+        exy = 12.0
+        scenario_list = ['scenario_1']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
-        dict_values[self.study_name + '.x'] = x
-        dict_values[self.study_name + '.a'] = a
-        dict_values[self.study_name + '.Disc1.b'] = b
-        dict_values[self.study_name + '.Disc3.constant'] = constant
-        dict_values[self.study_name + '.Disc3.power'] = power
-        dict_values[self.study_name + '.Disc3.z'] = z
 
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+        for scenario in scenario_list:
+            my_root = f'{self.study_name}' + '.vs_MS.' + scenario
+            dict_values[f'{my_root}' + '.Hessian.x'] = x
+            dict_values[f'{my_root}' + '.Hessian.y'] = y
+            dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2
+            dict_values[f'{my_root}' + '.Hessian.by2'] = by2
+            dict_values[f'{my_root}' + '.Hessian.cx'] = cx
+            dict_values[f'{my_root}' + '.Hessian.dy'] = dy
+            dict_values[f'{my_root}' + '.Hessian.exy'] = exy
         return [dict_values]
 
 

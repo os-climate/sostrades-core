@@ -20,8 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_scatter-disc1_disc3_vs_MS_from_proc process.
-    This process instantiates the multiscenario of (scatter of the disc1_scenario, disc3_scenario).
+     the test_disc_hessian_vs_MS_from_proc process.
+    This process instantiates the multiscenario of a Hessian Discipline.
     '''
 
     def __init__(self, execution_engine=None):
@@ -29,37 +29,40 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ######### Numerical values   ####
-        x1 = 2.
-        x2 = 4.
-        a1 = 3.
-        b1 = 4.
-        a2 = 6.
-        b2 = 2.
+        x = 2.0
+        y = 3.0
+
+        ax2 = 4.0
+        by2 = 5.0
+        cx = 6.0
+        dy = 7.0
+        exy = 12.0
         scenario_list = ['scenario_1', 'scenario_2']
-        name_list = ['name_1', 'name_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
-        for scenario in scenario_list:
-            dict_values[self.study_name + '.name_1.a'] = a1
-            dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.constant'] = 3.
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.power'] = 2
-        dict_values[self.study_name +
-                    '.vs_MS.name_list'] = name_list
-        dict_values[self.study_name +
-                    '.vs_MS.scenario_1.Disc3.z'] = 1.2
-        dict_values[self.study_name +
-                    '.vs_MS.scenario_2.Disc3.z'] = 1.5
-        dict_values[self.study_name + '.name_1.x'] = x1
-        dict_values[self.study_name + '.name_2.x'] = x2
+        
+        scenario = scenario_list[0]
+        my_root = f'{self.study_name}' + '.vs_MS.' + scenario
+        dict_values[f'{my_root}' + '.Hessian.x'] = x
+        dict_values[f'{my_root}' + '.Hessian.y'] = y
+        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2
+        dict_values[f'{my_root}' + '.Hessian.by2'] = by2
+        dict_values[f'{my_root}' + '.Hessian.cx'] = cx
+        dict_values[f'{my_root}' + '.Hessian.dy'] = dy
+        dict_values[f'{my_root}' + '.Hessian.exy'] = exy
+        
+        scenario = scenario_list[1]
+        my_root = f'{self.study_name}' + '.vs_MS.' + scenario
+        dict_values[f'{my_root}' + '.Hessian.x'] = x + 10.
+        dict_values[f'{my_root}' + '.Hessian.y'] = y+ 10.
+        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2+ 10.
+        dict_values[f'{my_root}' + '.Hessian.by2'] = by2+ 10.
+        dict_values[f'{my_root}' + '.Hessian.cx'] = cx+ 10.
+        dict_values[f'{my_root}' + '.Hessian.dy'] = dy+ 10.
+        dict_values[f'{my_root}' + '.Hessian.exy'] = exy+ 10.
+        
         return [dict_values]
 
 

@@ -30,9 +30,9 @@ class Study(StudyManager):
     def setup_usecase(self):
         ######### Numerical values   ####
         x = 4.
-        a = 6
-        b = 2
-        constant = 3
+        a = 6.
+        b = 2.
+        constant = 3.
         power = 2
         z = 1.2
         ######### Fill the dictionary for dm   ####

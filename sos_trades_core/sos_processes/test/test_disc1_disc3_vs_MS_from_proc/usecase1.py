@@ -30,8 +30,8 @@ class Study(StudyManager):
     def setup_usecase(self):
         ######### Numerical values   ####
         x = 2.
-        a = 3
-        b = 4
+        a = 3.
+        b = 4.
         scenario_list = ['scenario_1', 'scenario_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
@@ -42,7 +42,7 @@ class Study(StudyManager):
             dict_values[self.study_name + '.vs_MS.' +
                         scenario + '.Disc1.b'] = b
             dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.constant'] = 3
+                        scenario + '.Disc3.constant'] = 3.
             dict_values[self.study_name + '.vs_MS.' +
                         scenario + '.Disc3.power'] = 2
         dict_values[self.study_name +
