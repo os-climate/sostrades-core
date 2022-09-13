@@ -183,9 +183,18 @@ Example of models
     '<study_ph>.Disc10.b': 4.0}
 
 
+
 ## The several usage steps are detailed below.
 
 ###  Step 1 : xxxxx
 
 xxxx
+
+## Future evolutions
+- The input selection of the process/associated usecase will be replaced by a dedicated widget in SoSTrades GUI
+
+## Current small restrictions
+- The driver name is 'DoE_Eval' and cannot be changed by the user
+- The namespace 'ns_doe_eval' is set to f'{self.ee.study_name}.DoE_Eval'
+
 
