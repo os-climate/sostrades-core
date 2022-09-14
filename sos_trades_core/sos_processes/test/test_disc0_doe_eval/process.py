@@ -23,7 +23,7 @@ from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilde
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_processes.test.test_sellar_doe_eval',
+        'label': 'sos_trades_core.sos_processes.test.test_disc0_doe_eval',
         'description': '',
         'category': '',
         'version': '',
