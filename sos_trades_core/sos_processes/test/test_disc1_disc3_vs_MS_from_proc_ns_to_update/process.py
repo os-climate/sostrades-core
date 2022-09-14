@@ -22,7 +22,8 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Very Simple Multi Scenario Process of (Disc1,Disc3) with a different ns_to_update'
+        'label': 'Core Test Very Simple Multi Scenario Process of (Disc1,Disc3) with a different ns_to_update',
+        'description': '',
         'category': '',
         'version': '',
     }
