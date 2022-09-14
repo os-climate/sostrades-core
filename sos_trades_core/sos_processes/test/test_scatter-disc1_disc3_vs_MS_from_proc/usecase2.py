@@ -39,29 +39,32 @@ class Study(StudyManager):
         name_list = ['name_1', 'name_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
+
+        dict_values[f'{self.study_name}.name_1.a'] = a1
+        dict_values[f'{self.study_name}.name_1.x'] = x1
+        dict_values[f'{self.study_name}.name_2.a'] = a2
+        dict_values[f'{self.study_name}.name_2.x'] = x2
+
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
         dict_values[f'{self.study_name}.vs_MS.name_list'] = name_list
-        for scenario in scenario_list:
-            dict_values[self.study_name + '.name_1.a'] = a1
-            dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.constant'] = 3.
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.power'] = 2
-        dict_values[self.study_name +
-                    '.vs_MS.scenario_A.Disc3.z'] = 1.2
-        dict_values[self.study_name +
-                    '.vs_MS.scenario_B.Disc3.z'] = 1.5
-        dict_values[self.study_name + '.name_1.x'] = x1
-        dict_values[self.study_name + '.name_2.x'] = x2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_A.Disc1.name_1.b'] = b1
+        dict_values[f'{self.study_name}.vs_MS.scenario_A.Disc1.name_2.b'] = b2
+        dict_values[f'{self.study_name}.vs_MS.scenario_A.Disc3.constant'] = 3.
+        dict_values[f'{self.study_name}.vs_MS.scenario_A.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_A.Disc3.z'] = 1.2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_B.Disc1.name_1.b'] = b1
+        dict_values[f'{self.study_name}.vs_MS.scenario_B.Disc1.name_2.b'] = b2
+        dict_values[f'{self.study_name}.vs_MS.scenario_B.Disc3.constant'] = 3.
+        dict_values[f'{self.study_name}.vs_MS.scenario_B.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_B.Disc3.z'] = 1.5
+
         return [dict_values]
 
 
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
+    uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)
