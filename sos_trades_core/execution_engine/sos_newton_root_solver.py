@@ -56,7 +56,7 @@ class NewtonRootSolver(SoSEval):
                }
 
     DESC_OUT = {'x_final': {'type': 'array'},
-                'residual_history': {'type': 'list'}}
+                'residual_history': {'type': 'list','subtype_descriptor': {'list': 'float'}}}
 
     def __init__(self, sos_name, ee, residual_builders, residual_infos):
 
@@ -271,6 +271,10 @@ class NewtonRootSolver(SoSEval):
         idf_residual = self.local_data[residual_name]
 
         return idf_residual
+
+    def compute_sos_jacobian(self):
+        pass
+
 
     def get_chart_filter_list(self):
 
