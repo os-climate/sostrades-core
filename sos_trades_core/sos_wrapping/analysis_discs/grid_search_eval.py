@@ -171,7 +171,7 @@ class GridSearchEval(DoeEval):
                     for out_var in self.eval_out_list:
                         dynamic_outputs.update(
                             {
-                                f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {
+                                f'{out_var.split(self.ee.study_name + ".",1)[1]}_dict': {
                                     'type': 'dict',
                                     'visibility': 'Shared',
                                     'namespace': 'ns_doe',
@@ -699,20 +699,21 @@ class GridSearchEval(DoeEval):
                     if (
                         isinstance(list_outputs[0], pd.DataFrame)
                     ) and (len(list_outputs[0]) == 1):
-                        
+
                         # we extract the columns of the dataframe of type float which will represents the possible outputs
                         # we assume that all dataframes contains the same columns
                         # and only look at the first element
-                        # We check if the columns in list_outputs[0] (<<type_col>>) is not a pd.Series of Dataframes 
-                        # Afterwards, we verify if list_outputs[0] is float or a string == 'NA' 
+                        # We check if the columns in list_outputs[0] (<<type_col>>) is not a pd.Series of Dataframes
+                        # Afterwards, we verify if list_outputs[0] is float or a string == 'NA'
                         # string == 'NA' takes into account the possibility of adding a NaN as string
-                        # Finally,  We select the outputs to plot at the first element
-                        
-                        filtered_name=[]
+                        # Finally,  We select the outputs to plot at the first
+                        # element
+
+                        filtered_name = []
                         for col in list_outputs[0].columns:
-                            type_col=list_outputs[0][col]
-                            
-                            if not (isinstance(type_col[0],pd.DataFrame)):
+                            type_col = list_outputs[0][col]
+
+                            if not (isinstance(type_col[0], pd.DataFrame)):
                                 if ((type_col.dtype == 'float') or (type_col[0] == 'NA')):
                                     filtered_name.append(col)
 
@@ -730,7 +731,7 @@ class GridSearchEval(DoeEval):
                                     )
                                 ) or all(
                                     (list_outputs
-                                    [i][col][0] == 'NA')
+                                     [i][col][0] == 'NA')
                                     for i in range(scenarii)
                                 ):
                                     filtered_name.remove(col)

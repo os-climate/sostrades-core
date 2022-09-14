@@ -240,8 +240,8 @@ class DoeEval(SoSEval):
 
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
-                                                                                'namespace': 'ns_doe'}})
+                        {f'{out_var.split(self.ee.study_name + ".",1)[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                  'namespace': 'ns_doe'}})
 
                 if algo_name == "CustomDOE":
                     default_custom_dataframe = pd.DataFrame(
@@ -298,7 +298,8 @@ class DoeEval(SoSEval):
                         key: options_map[key] for key in all_options}
 
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                if (len(self.selected_inputs) > 0) and (
+                        any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
                     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
                     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
@@ -503,7 +504,7 @@ class DoeEval(SoSEval):
         return samples_custom
 
     def check_customed_samples(self):
-        """ We check that the columns of the dataframe are the same  that  the selected inputs
+        """ We that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
         if not set(self.selected_inputs).issubset(set(self.customed_samples.columns.to_list())):
@@ -602,7 +603,7 @@ class DoeEval(SoSEval):
             {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
-                f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
+                f'{dynamic_output.split(self.ee.study_name + ".",1)[1]}_dict':
                     global_dict_output[dynamic_output]})
 
     def update_default_inputs(self, disc):
@@ -642,7 +643,7 @@ class DoeEval(SoSEval):
             vars_to_update_dict = {}
             for multiplier_i, x_id in enumerate(self.eval_in_list):
                 # for grid search multipliers inputs
-                var_name = x_id.split(self.ee.study_name + '.')[-1]
+                var_name = x_id.split(self.ee.study_name + '.', 1)[-1]
                 if self.MULTIPLIER_PARTICULE in var_name:
                     var_origin_f_name = '.'.join(
                         [self.ee.study_name, self.get_names_from_multiplier(var_name)[0]])
@@ -740,7 +741,7 @@ class DoeEval(SoSEval):
                 # sake of simplicity
                 if is_input_type:
                     poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".")[1])
+                        full_id.split(self.ee.study_name + ".", 1)[1])
 
                 if is_input_multiplier_type and not is_None:
                     poss_in_values_list = self.set_multipliers_values(
@@ -759,7 +760,7 @@ class DoeEval(SoSEval):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".")[1])
+                    full_id.split(self.ee.study_name + ".", 1)[1])
 
         return poss_in_values_full, poss_out_values_full
 
@@ -781,7 +782,7 @@ class DoeEval(SoSEval):
 
         if disc._data_in[var_name][self.TYPE] == 'float':
             multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
-                self.ee.study_name + ".")[1]
+                self.ee.study_name + ".", 1)[1]
             poss_in_values_list.append(multiplier_fullname)
 
         else:
@@ -800,13 +801,13 @@ class DoeEval(SoSEval):
                 for col_name in float_cols_list:
                     col_name_clean = self.clean_var_name(col_name)
                     multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
-                        self.ee.study_name + ".")[1]
+                        self.ee.study_name + ".", 1)[1]
                     poss_in_values_list.append(multiplier_fullname)
                 # if df with more than one float column, create multiplier for all
                 # columns also
                 if len(float_cols_list) > 1:
                     multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
-                        self.ee.study_name + ".")[1]
+                        self.ee.study_name + ".", 1)[1]
                     poss_in_values_list.append(multiplier_fullname)
         return poss_in_values_list
 

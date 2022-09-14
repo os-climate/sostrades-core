@@ -38,18 +38,21 @@ class Study(StudyManager):
         name_list = ['name_1', 'name_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
-        dict_values[self.study_name + '.name_list'] = name_list
-        dict_values[self.study_name + '.name_1.a'] = a1
-        dict_values[self.study_name + '.name_2.a'] = a2
-        dict_values[self.study_name + '.name_1.x'] = x1
-        dict_values[self.study_name + '.name_2.x'] = x2
-        dict_values[self.study_name + '.Disc1.name_1.b'] = b1
-        dict_values[self.study_name + '.Disc1.name_2.b'] = b2
-        dict_values[self.study_name + '.Disc3.name_1.constant'] = 3.
-        dict_values[self.study_name + '.Disc3.name_2.constant'] = 2.
-        dict_values[self.study_name + '.Disc3.name_1.power'] = 1
-        dict_values[self.study_name + '.Disc3.name_2.power'] = 2
-        dict_values[self.study_name + '.Disc3.z'] = 1.2
+        dict_values[f'{self.study_name}.name_list'] = name_list
+
+        dict_values[f'{self.study_name}.name_1.a'] = a1
+        dict_values[f'{self.study_name}.name_1.x'] = x1
+        dict_values[f'{self.study_name}.name_2.a'] = a2
+        dict_values[f'{self.study_name}.name_2.x'] = x2
+
+        dict_values[f'{self.study_name}.Disc1.name_1.b'] = b1
+        dict_values[f'{self.study_name}.Disc1.name_2.b'] = b2
+
+        dict_values[f'{self.study_name}.Disc3.z'] = 1.2
+        dict_values[f'{self.study_name}.Disc3.name_1.constant'] = 3.
+        dict_values[f'{self.study_name}.Disc3.name_1.power'] = 1
+        dict_values[f'{self.study_name}.Disc3.name_2.constant'] = 2.
+        dict_values[f'{self.study_name}.Disc3.name_2.power'] = 2
 
         return [dict_values]
 
@@ -57,4 +60,5 @@ class Study(StudyManager):
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
+    uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)
