@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Very Simple Multi Scenario Process of (Disc1,Disc3) : variante',
+        'label': 'Core Test Very Simple Multi Scenario Process of a Hessian Discipline',
         'description': '',
         'category': '',
         'version': '',
@@ -32,7 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # 1. Define builder list from sub_proc
         repo = 'sos_trades_core.sos_processes.test'
-        sub_proc = 'test_disc1_disc3_coupling'
+        sub_proc = 'test_disc_hessian'
         builder_list = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
 
@@ -46,7 +46,7 @@ class ProcessBuilder(BaseProcessBuilder):
                         'output_name': output_name,
                         'scatter_ns': scatter_ns,
                         'gather_ns': input_ns,
-                        'ns_to_update': ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']}
+                        'ns_to_update': []}
         self.ee.smaps_manager.add_build_map(
             scenario_map_name, scenario_map)
         # driver name
@@ -56,16 +56,11 @@ class ProcessBuilder(BaseProcessBuilder):
         # shared namespace :
         self.ee.ns_manager.add_ns(
             input_ns, f'{driver_root}')
-        # shared namespace : shifted by nested operation
-        self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{driver_root}.Disc3')
-        self.ee.ns_manager.add_ns(
-            'ns_out_disc3', f'{driver_root}')
         # remark : 'ns_scenario' set to {self.ee.study_name} in subprocess not
         # needed !
 
         # 3. add multi_scenario
         multi_scenarios = self.ee.factory.create_very_simple_multi_scenario_builder(
-            driver_name, scenario_map_name, builder_list, autogather=False, gather_node='Post-processing')
+            driver_name, scenario_map_name, builder_list, autogather=True, gather_node='Post-processing')
 
         return multi_scenarios

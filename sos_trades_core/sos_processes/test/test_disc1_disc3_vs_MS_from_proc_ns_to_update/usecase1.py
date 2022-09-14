@@ -29,33 +29,38 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ######### Numerical values   ####
-        x = 2.
-        a = 3.
-        b = 4.
+        x1 = 2.
+        x2 = 4.
+        a1 = 3.
+        b1 = 4.
+        a2 = 6.
+        b2 = 2.
         scenario_list = ['scenario_1', 'scenario_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
+        dict_values[f'{self.study_name}.scenario_1.a'] = a1
+        dict_values[f'{self.study_name}.scenario_1.x'] = x1
+
+        dict_values[f'{self.study_name}.scenario_2.a'] = a2
+        dict_values[f'{self.study_name}.scenario_2.x'] = x2
+
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
-        for scenario in scenario_list:
-            dict_values[self.study_name + '.' +
-                        scenario + '.a'] = a
-            dict_values[self.study_name + '.' +
-                        scenario + '.x'] = x
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc1.b'] = b
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.constant'] = 3.
-            dict_values[self.study_name + '.vs_MS.' +
-                        scenario + '.Disc3.power'] = 2
-        dict_values[self.study_name +
-                    '.vs_MS.scenario_1.Disc3.z'] = 1.2
-        dict_values[self.study_name +
-                    '.vs_MS.scenario_2.Disc3.z'] = 1.5
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.2
         return [dict_values]
 
 
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
+    uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)

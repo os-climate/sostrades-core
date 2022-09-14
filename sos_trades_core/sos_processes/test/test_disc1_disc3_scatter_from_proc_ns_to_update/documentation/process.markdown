@@ -1,24 +1,24 @@
-# test disc1_disc3_vs_MS (from proc)
-This "test disc1_disc3_vs_MS" specifies an example of a very symple multi scenario process.
+# test test_scatter-disc1_disc3_vs_MS_from_proc with a different ns_to_update
+This "test_disc1_disc3_scatter_from_proc specifies an example of a scatter process applied on (disc1,disc3).
 It uses a scatter based on :
 
+1) a scatter build map:
 
-1) a scenario build map
-
-		scenario_map = 
+		ac_map = 
 				{'input_name': 'scenario_list',
 				'input_ns': 'ns_scatter_scenario',
-				'output_name': 'scenario_name',
-				'scatter_ns': 'ns_scenario',
-				'gather_ns': 'ns_scatter_scenario',
-				'ns_to_update': ['ns_disc3', 'ns_out_disc3','ns_ac']}
+				'output_name': 'ac_name',
+				'scatter_ns': 'ns_ac',
+				'gather_ns': 'ns_scenario',
+				'ns_to_update': ['ns_data_ac']}
 				
+2) The name space variables:
 - the namespace table 
-				'ns_scatter_scenario' = f'{self.ee.study_name}.vs_MS'
-				'ns_scenario' : not needed
-				
-2) the process 'test_disc1_scenario' based on 
-- the discipline test_discs.disc1_scenario.Disc1
+
+				'ns_scatter_scenario' = f'{self.ee.study_name}'
+				'ns_scenario' = f'{self.ee.study_name}'
+
+3) the discipline test_discs.disc1_scenario.Disc1
 
 		DESC_IN = 
 				{'x': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_data_ac'},
@@ -37,7 +37,7 @@ It uses a scatter based on :
 				'ns_data_ac' =  self.ee.study_name
 
 
-3) the discipline disc3_scenario.Disc3
+4) the discipline disc3_scenario.Disc3
 
 		DESC_IN = 
 				{'z': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_disc3'},
@@ -50,5 +50,6 @@ It uses a scatter based on :
 		'o'=  constant + z**power
 		
 - the namespace table 
-				'ns_disc3' = f'{self.ee.study_name}.vs_MS.Disc3)
-				'ns_out_disc3'=  f'{self.ee.study_name}.vs_MS'
+
+				'ns_disc3' = f'{self.ee.study_name}.Disc3
+				'ns_out_disc3'=  f'{self.ee.study_name}'

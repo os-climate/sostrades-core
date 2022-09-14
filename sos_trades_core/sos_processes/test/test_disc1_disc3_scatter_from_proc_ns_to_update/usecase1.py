@@ -20,8 +20,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_scatter-disc1_disc3_from_proc process.
-    This process instantiates (the scatter of the disc1_scenario,disc3_scenario) Disciplines.
+     the test_disc1_disc3_scatter_from_proc process.
+    This process instantiates the scatter of (disc1_scenario,disc3_scenario).
     '''
 
     def __init__(self, execution_engine=None):
@@ -35,22 +35,25 @@ class Study(StudyManager):
         b1 = 4.
         a2 = 6.
         b2 = 2.
-        name_list = ['name_1', 'name_2']
+        scenario_list = ['scenario_1', 'scenario_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
-        dict_values[f'{self.study_name}.name_list'] = name_list
+        dict_values[f'{self.study_name}.scenario_list'] = scenario_list
 
-        dict_values[f'{self.study_name}.name_1.a'] = a1
-        dict_values[f'{self.study_name}.name_1.x'] = x1
-        dict_values[f'{self.study_name}.name_2.a'] = a2
-        dict_values[f'{self.study_name}.name_2.x'] = x2
+        dict_values[f'{self.study_name}.scenario_1.a'] = a1
+        dict_values[f'{self.study_name}.scenario_1.x'] = x1
 
-        dict_values[f'{self.study_name}.Disc1.name_1.b'] = b1
-        dict_values[f'{self.study_name}.Disc1.name_2.b'] = b2
+        dict_values[f'{self.study_name}.scenario_2.a'] = a2
+        dict_values[f'{self.study_name}.scenario_2.x'] = x2
 
-        dict_values[f'{self.study_name}.Disc3.constant'] = 3.
-        dict_values[f'{self.study_name}.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.Disc1.scenario_1.b'] = b1
+        dict_values[f'{self.study_name}.Disc1.scenario_2.b'] = b2
+
         dict_values[f'{self.study_name}.Disc3.z'] = 1.2
+        dict_values[f'{self.study_name}.Disc3.scenario_1.constant'] = 3.
+        dict_values[f'{self.study_name}.Disc3.scenario_1.power'] = 1
+        dict_values[f'{self.study_name}.Disc3.scenario_2.constant'] = 2.
+        dict_values[f'{self.study_name}.Disc3.scenario_2.power'] = 2
 
         return [dict_values]
 
