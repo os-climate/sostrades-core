@@ -92,15 +92,15 @@ class ProxyEval(ProxyDisciplineDriver):
         '''
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
-        elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
+        # elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
+        else:
             # if eval process is a list of builders or a non executable builder,
-            # then we build a coupling containing the eval porcess
+            # then we build a coupling containing the eval process
+            # In the case of a single sub-disc for sos_eval, although len(self.cls_builder) = 1 and it is an
+            # executable discipline, a coupling is also wanted to contain the eval process: TODO this method only used in SoSEval???
             disc_builder = self.ee.factory.create_builder_coupling(
                 self.sos_name)
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
-        else:
-            # else return the single builder
-            disc_builder = self.cls_builder[0]
 
         return disc_builder
 
@@ -172,23 +172,24 @@ class ProxyEval(ProxyDisciplineDriver):
             current_ns = self.ee.ns_manager.current_disc_ns
             self.ee.ns_manager.set_current_disc_ns(
                 current_ns.split(f'.{self.sos_name}')[0])
-            # build coupling containing eval process
-            self.eval_process_disc = self.eval_process_builder.build()
-            # store coupling in the children of SoSEval
-            if self.eval_process_disc not in self.proxy_disciplines:
-                self.ee.factory.add_discipline(self.eval_process_disc)
+            self.build_eval_process()
             # reset current_ns after build
             self.ee.ns_manager.set_current_disc_ns(current_ns)
         else:
-            # build and store eval process in the children of SoSEval
-            self.eval_process_disc = self.eval_process_builder.build()
-            if self.eval_process_disc not in self.proxy_disciplines:
-                self.ee.factory.add_discipline(self.eval_process_disc)
+            self.build_eval_process()
 
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the high
         # level coupling and we do not have to restore the current_discipline
         if old_current_discipline is not None:
             self.ee.factory.current_discipline = old_current_discipline
+
+    def build_eval_process(self):
+        # build coupling containing eval process if self.cls_builder[0] != self.eval_process_builder
+        # or build and store eval process in the children of SoSEval
+        self.eval_process_disc = self.eval_process_builder.build()
+        # store coupling in the children of SoSEval
+        if self.eval_process_disc not in self.proxy_disciplines:
+            self.ee.factory.add_discipline(self.eval_process_disc)
 
     def configure(self):
         '''
@@ -203,7 +204,8 @@ class ProxyEval(ProxyDisciplineDriver):
             # If it is a coupling the grammar is already configured
             # FIXME : this won't work
             if not disc.is_sos_coupling:
-                disc.update_gems_grammar_with_data_io()
+                # disc.update_gems_grammar_with_data_io()
+                pass
 
         if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
             # Explanation:
