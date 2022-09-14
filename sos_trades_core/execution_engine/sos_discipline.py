@@ -1329,7 +1329,7 @@ class SoSDiscipline(MDODiscipline):
         '''
         Generate hashed uid and store cache in DM
         '''
-        full_name = self.get_disc_full_name().split(self.ee.study_name)[-1]
+        full_name = self.get_disc_full_name().split(self.ee.study_name, 1)[-1]
         class_name = disc.__class__.__name__
         anoninmated_data_io = self.get_anonimated_data_io(disc)
 
@@ -1403,10 +1403,10 @@ class SoSDiscipline(MDODiscipline):
         anonimated_data_io = ''
 
         for key in disc.get_input_data_names():
-            anonimated_data_io += key.split(self.ee.study_name)[-1]
+            anonimated_data_io += key.split(self.ee.study_name, 1)[-1]
 
         for key in disc.get_output_data_names():
-            anonimated_data_io += key.split(self.ee.study_name)[-1]
+            anonimated_data_io += key.split(self.ee.study_name, 1)[-1]
 
         return anonimated_data_io
 

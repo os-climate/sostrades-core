@@ -506,7 +506,7 @@ class BuildDoeEval(SoSEval):
             {self.SAMPLES_INPUTS_DF: samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
-                f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
+                f'{dynamic_output.split(self.ee.study_name + ".",1)[1]}_dict':
                     global_dict_output[dynamic_output]})
 
 #################### End: Main methods ################################
@@ -969,7 +969,7 @@ class BuildDoeEval(SoSEval):
                 # sake of simplicity
                 if is_input_type:
                     poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".")[1])
+                        full_id.split(self.ee.study_name + ".", 1)[1])
 
                 # Added treatment for multiplier
                 is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
@@ -990,7 +990,7 @@ class BuildDoeEval(SoSEval):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".")[1])
+                    full_id.split(self.ee.study_name + ".", 1)[1])
         return poss_in_values_full, poss_out_values_full
 
     def set_eval_in_out_lists(self, in_list, out_list):
@@ -1272,7 +1272,7 @@ class BuildDoeEval(SoSEval):
             vars_to_update_dict = {}
             for multiplier_i, x_id in enumerate(self.eval_in_list):
                 # for grid search multipliers inputs
-                var_name = x_id.split(self.ee.study_name + '.')[-1]
+                var_name = x_id.split(self.ee.study_name + '.', 1)[-1]
                 if self.MULTIPLIER_PARTICULE in var_name:
                     var_origin_f_name = '.'.join(
                         [self.ee.study_name, self.get_names_from_multiplier(var_name)[0]])

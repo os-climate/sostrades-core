@@ -851,7 +851,7 @@ class UncertaintyQuantification(SoSDiscipline):
         ns_from_var = self.ee.dm.get_all_namespaces_from_var_name(
             eval_output_name)
         ns_from_var_wo_study_list = [
-            elem.split(self.ee.study_name + '.')[1] for elem in ns_from_var
+            elem.split(self.ee.study_name + '.', 1)[1] for elem in ns_from_var
         ]
         var_name_list = list(
             set(ns_from_var_wo_study_list)
