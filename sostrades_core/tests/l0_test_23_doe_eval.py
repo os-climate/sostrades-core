@@ -1002,8 +1002,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                      f'{self.ns}.DoEEval.eval_inputs': input_selection_x,
                      f'{self.ns}.DoEEval.eval_outputs': output_selection_y}
 
+        n_samples = 10
         exec_eng.load_study_from_input_dict(disc_dict)
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': 'faced'},
                      'doe.DoEEval.design_space': dspace}
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1015,7 +1016,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'samples_inputs_df')
         doe_disc_y = doe_disc.get_sosdisc_outputs('y_dict')
 
-        self.assertEqual(len(doe_disc_y), 11)
+        self.assertEqual(len(doe_disc_y), n_samples+1)
         i = 0
         for key in doe_disc_y.keys():
             self.assertAlmostEqual(doe_disc_y[key], private_values[self.study_name + '.DoEEval.Disc1.b']

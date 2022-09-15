@@ -34,10 +34,10 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
         # add disciplines Sellar
-        disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-        mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
-                     'Sellar_2': disc_dir + 'Sellar2',
-                     'Sellar_1': disc_dir + 'Sellar1'}
+        disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
+        mods_dict = {'Sellar_Problem': disc_dir + 'sellar.SellarProblem',
+                     'Sellar_2': disc_dir + 'sellar.Sellar2',
+                     'Sellar_1': disc_dir + 'sellar.Sellar1'}
         builder_list = self.create_builder_list(mods_dict,
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
                                                          'ns_doe_eval': f'{self.ee.study_name}.DoEEval'}
@@ -46,7 +46,7 @@ class ProcessBuilder(BaseProcessBuilder):
             'DoEEval', 'doe_eval', builder_list)
 
 
-        mods_dict2 = {'Simple_Disc': disc_dir + 'SimpleDisc'}
+        mods_dict2 = {'Simple_Disc': disc_dir + 'simple_disc.SimpleDisc'}
         builder_list2 = self.create_builder_list(mods_dict2,
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name}
                                                 )
