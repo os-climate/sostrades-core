@@ -37,7 +37,8 @@ class DiscCsvData(SoSDiscipline):
     DESC_IN = {
         'dict_mix_types': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
         'array_mix_types': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dataframe_mix_types': {'type': 'dataframe', 'visibility': 'Shared', 'namespace': 'ns_test'}
+        'dataframe_mix_types': {'type': 'dataframe', 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'dict_as_dict_dataframe': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {'z': {'type': 'float'}}
