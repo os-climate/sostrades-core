@@ -65,7 +65,7 @@ class SoSMDODiscipline(MDODiscipline):
             sos_wrapp (SoSWrapp): user-defined wrapper of the discipline
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
         '''
-        self.disciplines = []
+        # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.input_full_name_map = None

@@ -36,7 +36,6 @@ class SoSMDODriverException(Exception):
 LOGGER = logging.getLogger(__name__)
 
 class SoSMDODisciplineDriver(SoSMDODiscipline):
-    # TODO: class is currently only for case with 1 only sub discipline as SoSEval drivers
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, disciplines):
         super().__init__(full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm)
         self.disciplines = disciplines
