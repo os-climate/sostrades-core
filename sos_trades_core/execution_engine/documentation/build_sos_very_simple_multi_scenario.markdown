@@ -349,7 +349,7 @@ It is realised by creating a dedicated discipline instance per scenario name:
 
 
 We can then denotes each family by the label of the scenarios:
-- the family of scenario inputs $(x_{<scenario\_name>})$
-- the family of process instances $(P_{<scenario\_name)}>$
-- and the associated outputs by $(y_{<scenario\_name>})$, where $$y_{<scenario\_name>} = P_{<scenario\_name>}(x_{<scenario\_name>})$$.
+- the family of scenario inputs $x_{<scenario\_name>})$
+- the family of process instances $P_{<scenario\_name>}$
+- and the associated outputs by $y_{<scenario\_name>}$, where $$y_{<scenario\_name>} = P_{<scenario\_name>}(x_{<scenario\_name>})$$.
 
