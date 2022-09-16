@@ -20,6 +20,8 @@ from sos_trades_core.execution_engine.build_sos_discipline_scatter import BuildS
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.sos_wrapping.old_sum_value_block_discipline import OldSumValueBlockDiscipline
 
+import pandas as pd
+
 
 class BuildSoSSimpleMultiScenarioException(Exception):
     pass
@@ -34,7 +36,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
             |_ SCENARIO_MAP (structuring)            
-               |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : valid SUB_PROCESS_INPUTS and SCENARIO_MAP)
+               |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP['input_name'] != '')
         |_ DESC_OUT
 
     2) Description of DESC parameters:
@@ -166,6 +168,12 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # Possible values: 'No_SP_UC_Import', 'SP_UC_Import'
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
+    def set_cls_builder(self, value):
+        self.__cls_builder = value
+
+    def get_cls_builder(self):
+        return self.__cls_builder
+
     def get_autogather(self):
         return self.__autogather
 
@@ -174,9 +182,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def get_build_business_io(self):
         return self.__build_business_io
-
-    def get_cls_builder(self):
-        return self.__cls_builder
 
     def build(self):
         '''
@@ -191,7 +196,24 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # Remark: Nested build is done by creating (in SoSDisciplineScatter.build/build_sub_coupling)
         # as many coupling as names in the provided list of the data key
         # SCENARIO_MAP['input_name']
+
+        if self.SUB_PROCESS_INPUTS in self._data_in:
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
+            sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
+            if sub_process_repo != None and sub_process_name != None:  # a sub_process_full_name is available
+                # either Unchanged_SP or Create_SP or Replace_SP
+                # 1. set_sub_process_status
+                self.set_sub_process_status(
+                    sub_process_repo, sub_process_name)
+                # 2 build_eval_subproc
+                if self.sub_proc_build_status == 'Create_SP' or self.sub_proc_build_status == 'Replace_SP':
+                    self.build_driver_subproc(
+                        sub_process_repo, sub_process_name)
+
         BuildSoSDisciplineScatter.build(self)
+        # Dynamically add INST_DESC_IN and  INST_DESC_OUT if autogather is True
         self.build_business_io()
 
     def configure(self):
@@ -201,9 +223,19 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
             It comes after build()
         """
+
+        # if self._data_in == {} or len(self.__cls_builder) == 0:
+
         BuildSoSDisciplineScatter.configure(self)
+
         # Remark: the dynamic input SCENARIO_MAP['input_name'] is set in
         # build_inst_desc_in_with_map() in __init__ of sos_discipline_scatter
+
+    def is_configured(self):
+        '''
+        Function to modify is_configured if an added condition is needed
+        '''
+        return SoSDiscipline.is_configured(self)
 
     def setup_sos_disciplines(self):
         """
@@ -221,8 +253,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # 1. provide driver inputs based on selected subprocess
             # self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
             #    dynamic_inputs)
-            self.add_inputs(dynamic_inputs)
-            self.add_outputs(dynamic_outputs)
+            # self.add_inputs(dynamic_inputs)
+            # self.add_outputs(dynamic_outputs)
             # 2. import data from selected sub_process_usecase
 
     def run(self):
@@ -300,3 +332,82 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                     full_key, self.NS_REFERENCE, self.get_ns_reference(SoSDiscipline.SHARED_VISIBILITY, self.NS_BUSINESS_OUTPUTS))
                 self.ee.dm.generate_data_id_map()
 ##################### End: Sub methods ################################
+
+##################### Begin: Sub methods  for build ######################
+    def set_sub_process_status(self, sub_process_repo, sub_process_name):
+        '''
+            State subprocess CRUD status
+            The subprocess is defined by its name and repository
+            Function needed in build(self)
+        '''
+        # We come from outside driver process
+        if sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo:
+            self.previous_sub_process_repo = sub_process_repo
+            self.previous_sub_process_name = sub_process_name
+        # driver process with provided sub process
+            if len(self.__cls_builder) == 0:
+                self.sub_proc_build_status = 'Create_SP'
+            else:
+                self.sub_proc_build_status = 'Replace_SP'
+        else:
+            self.sub_proc_build_status = 'Unchanged_SP'
+
+    def build_driver_subproc(self, sub_process_repo, sub_process_name):
+        '''
+            Get and build builder from sub_process of eval driver
+            The subprocess is defined by its name and repository
+            Function needed in build(self)
+        '''
+        # 1. Clean if needed
+        if self.sub_proc_build_status == 'Replace_SP':
+            pass
+            # clean all instances before rebuilt
+            # self.sos_disciplines[0].clean()
+            # self.sos_disciplines = []  # Should it be del self.sos_disciplines[0]?
+            # We "clean" also all dynamic inputs to be reloaded by
+            # the usecase
+            # self.add_inputs({})
+        # 2. Get and set the builder of subprocess
+        cls_builder = self.get_nested_builders_from_sub_process(
+            sub_process_repo, sub_process_name)
+        if not isinstance(cls_builder, list):
+            cls_builder = [cls_builder]
+        self.set_nested_builders(cls_builder)
+        # 3. Optional step : capture the input namespace specified at
+        # building step
+        # 4. Shift namespace due to the 'vs_MS' inserted
+
+    def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
+        """
+            Create_nested builders from their nested process.
+            Function needed in build_eval_subproc(self)
+        """
+        cls_builder = self.ee.factory.get_builder_from_process(
+            repo=sub_process_repo, mod_id=sub_process_name)
+        return cls_builder
+
+    def set_nested_builders(self, cls_builder):
+        """
+            Set nested builder to the eval process in case this eval process was instantiated with an empty nested builder. 
+            Function needed in build_eval_subproc(self)
+        """
+        self.set_cls_builder(cls_builder)
+        self.set_builders(cls_builder)  # update also in mother class
+
+        self.driver_process_builder = self._set_driver_process_builder()
+        return
+
+    def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, after_name=None, namespace_list=None):
+        '''
+            Update the value of a list of namespaces with an extra namespace placed behind after_name
+            In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
+            Function needed in build_eval_subproc(self)
+        '''
+        if namespace_list is None:
+            namespace_list = self.ee.ns_manager.ns_list
+            namespace_list = [
+                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
+        for ns in namespace_list:
+            self.ee.ns_manager.update_namespace_with_extra_ns(
+                ns, extra_ns, after_name)
+##################### End: Sub methods for build #########################

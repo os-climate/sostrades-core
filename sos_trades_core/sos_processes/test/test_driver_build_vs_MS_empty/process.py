@@ -80,7 +80,7 @@ class ProcessBuilder(BaseProcessBuilder):
         # needed !
 
         # 3. empty nested process and associated map
-        #builder_list = []
+        builder_list = []
         #scenario_map_name = ''
 
         # 4. add multi_scenario
