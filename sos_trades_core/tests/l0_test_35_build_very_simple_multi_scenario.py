@@ -354,7 +354,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t\t|_ Hessian',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Hessian']
-        self.check_created_tree_structure(exp_tv_list)
+        self.check_created_tree_structure(exp_tv_list)  # KO if no rebuild done
         # print configuration state:
         if print_flag:
             self.print_config_state()
@@ -709,6 +709,16 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         ################ End checks ##########################
 
+        if 0 == 1:
+            ################ Added ##########################
+            print("\n")
+            print("1.2 pre  Provide 'scenario_list'")
+            dict_values = {}
+            dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+            study_dump.load_data(from_input_dict=dict_values)
+            ################ Added ##########################
+
+        ################ End checks ##########################
         print("\n")
         print("1.2 Provide process name")
         sub_process_inputs_dict['process_name'] = mod_id
@@ -885,7 +895,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t\t|_ Hessian',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Hessian']
-        self.check_created_tree_structure(exp_tv_list)
+        self.check_created_tree_structure(exp_tv_list)  # KO if no rebuild done
 
         # print configuration state:
         if print_flag:
