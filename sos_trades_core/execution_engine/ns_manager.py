@@ -109,8 +109,12 @@ class NamespaceManager:
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
+        ns_ids = []
         for key, value in ns_info.items():
-            self.add_ns(key, value,overwrite_value)
+            ns_id = self.add_ns(key, value, overwrite_value)
+            ns_ids.append(ns_id)
+
+        return ns_ids
 
     def add_ns(self, name, ns_value, overwrite_value=False):
         '''
@@ -142,7 +146,7 @@ class NamespaceManager:
 
         self.shared_ns_dict[name] = ns
 
-        return ns
+        return ns.get_ns_id()
 
     def get_all_namespace_with_name(self, name):
         '''
@@ -263,9 +267,21 @@ class NamespaceManager:
         '''
 
         local_ns = self.create_local_namespace(disc)
+
+        others_ns = self.get_associated_ns(disc)
         disc_ns_info = {'local_ns': local_ns,
-                        'others_ns': self.get_shared_ns_dict()}
+                        'others_ns': others_ns}
         self.add_disc_ns_info(disc, disc_ns_info)
+
+    def get_associated_ns(self, disc):
+
+        if len(disc.associated_namespaces) == 0:
+            others_ns = self.get_shared_ns_dict()
+        else:
+            others_ns = {
+                self.all_ns_dict[ns].name: self.all_ns_dict[ns] for ns in disc.associated_namespaces}
+
+        return others_ns
 
     def create_local_namespace(self, disc):
         '''

@@ -17,6 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+
 class Namespace:
     '''
     Specification: Namespace class describes name, value and dependencies of namespace object
@@ -45,6 +46,10 @@ class Namespace:
         Get the value in the Namespace
         '''
         return self.value
+
+    def get_ns_id(self):
+
+        return f'{self.name}__{self.value}'
 
     def get_dependency_disc_list(self):
         '''

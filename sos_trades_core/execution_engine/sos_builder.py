@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -40,6 +41,7 @@ class SoSBuilder(object):
         # flag to determine if the associated discipline has a run method
         # (True by default)
         self._is_executable = is_executable
+        self.__associated_namespaces = []
 
     @property
     def sos_name(self):
@@ -48,6 +50,10 @@ class SoSBuilder(object):
     @property
     def args(self):
         return self.__args
+
+    @property
+    def associated_namespaces(self):
+        return self.__associated_namespaces
 
     def set_builder_info(self, key_info, value_info):
         ''' Sets the arguments that will be needed to instantiate self.cls
@@ -60,6 +66,19 @@ class SoSBuilder(object):
 
         self.__disc_name = new_disc_name
         self.__args['sos_name'] = self.__disc_name
+
+    def associate_namespaces(self, ns_list):
+        '''
+        Associate namespaces to a builder, rule to instantiate the disciplines
+        '''
+        if isinstance(ns_list, str):
+            self.__associated_namespaces.append(ns_list)
+        elif isinstance(ns_list, list):
+            self.__associated_namespaces.extend(ns_list)
+        else:
+            raise Exception(
+                'Should specify a list of strings or a string to associate namespaces')
+        self.__args['associated_namespaces'] = self.__associated_namespaces
 
     def build(self):
         ''' Instantiates the class self.cls

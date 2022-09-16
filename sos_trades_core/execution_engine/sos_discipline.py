@@ -189,13 +189,13 @@ class SoSDiscipline(MDODiscipline):
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
-    def __init__(self, sos_name, ee):
+    def __init__(self, sos_name, ee, associated_namespaces=[]):
         '''
         Constructor
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-        self._reload(sos_name, ee)
+        self._reload(sos_name, ee, associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.father_builder = None
@@ -204,7 +204,7 @@ class SoSDiscipline(MDODiscipline):
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
 
-    def _reload(self, sos_name, ee):
+    def _reload(self, sos_name, ee, associated_namespaces=[]):
         ''' reload object, eventually with coupling_namespace
         '''
 
@@ -214,7 +214,7 @@ class SoSDiscipline(MDODiscipline):
         self.sos_name = sos_name
         self.ee = ee
         self.dm = self.ee.dm
-
+        self.associated_namespaces = associated_namespaces
         self.ee.ns_manager.create_disc_ns_info(self)
 
         if not hasattr(self, 'is_sos_coupling'):
