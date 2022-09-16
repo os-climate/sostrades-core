@@ -265,7 +265,7 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         return new_sub_names
 
     def add_disc_to_remove_recursive(self, disc, to_remove):
-        if isinstance(disc, SoSDisciplineScatter):
+        if isinstance(disc, BuildSoSDisciplineScatter):
             to_remove.append(disc)
             for disc_list in disc.__scattered_disciplines.values():
                 for sub_disc in disc_list:
@@ -310,6 +310,6 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
 
     def run(self):
         '''
-        No run function for a SoSDisciplineScatter
+        No run function for a BuildSoSDisciplineScatter
         '''
         pass
