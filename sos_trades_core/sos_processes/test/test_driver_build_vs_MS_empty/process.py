@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test vs_MS (very simple Multi Scenarios) Process creation',
+        'label': 'Process vs_MS (very simple Multi Scenarios) driver creation',
         'description': 'Process to instantiate the vs_MS driver (very simple Multi Scenarios) without any nested builder or by specifiying the nested builder from a process.py python file',
         'category': '',
         'version': '',
