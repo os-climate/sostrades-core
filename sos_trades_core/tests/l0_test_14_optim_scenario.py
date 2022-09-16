@@ -1176,7 +1176,64 @@ class TestSoSOptimScenario(unittest.TestCase):
             exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
 
 
+
+    def test_18_optim_scenario_differentiation_method_complex(self):
+        print("\n Test 18 : differentiation_method_complex")
+        set_printoptions(precision=20)
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        repo_discopt = 'sos_trades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # -- set up design space
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [[2.], [2., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space']
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
+            'c_1', 'c_2']
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            2., 2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-16
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_2.differentiation_method'] = 'complex_step'
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.display_treeview_nodes(display_variables=True)
+
+        exec_eng.execute()
+
+
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
     cls.setUp()
-    cls.test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step()
+    cls.test_18_optim_scenario_differentiation_method_complex()

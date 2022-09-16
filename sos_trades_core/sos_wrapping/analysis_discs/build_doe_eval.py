@@ -165,6 +165,12 @@ class BuildDoeEval(SoSEval):
                              'user_level': 1,
                              'optional': False
                              },
+        # SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
+        #                     'structuring': True,
+        #                     'default': default_sub_process_inputs_dict,
+        #                     'user_level': 1,
+        #                     'optional': False
+        #                     },
         N_PROCESSES: {'type': 'int',
                       'numerical': True,
                       'default': 1},
@@ -500,7 +506,7 @@ class BuildDoeEval(SoSEval):
             {self.SAMPLES_INPUTS_DF: samples_dataframe})
         for dynamic_output in self.eval_out_list:
             self.store_sos_outputs_values({
-                f'{dynamic_output.split(self.ee.study_name + ".")[1]}_dict':
+                f'{dynamic_output.split(self.ee.study_name + ".",1)[1]}_dict':
                     global_dict_output[dynamic_output]})
 
 #################### End: Main methods ################################
@@ -586,7 +592,7 @@ class BuildDoeEval(SoSEval):
         if namespace_list is None:
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
-                elem for elem in namespace_list if f'{self.ee.study_name}.DoE_Eval' not in elem.get_value()]
+                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
         for ns in namespace_list:
             self.ee.ns_manager.update_namespace_with_extra_ns(
                 ns, extra_ns, after_name)
@@ -963,7 +969,7 @@ class BuildDoeEval(SoSEval):
                 # sake of simplicity
                 if is_input_type:
                     poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".")[1])
+                        full_id.split(self.ee.study_name + ".", 1)[1])
 
                 # Added treatment for multiplier
                 is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
@@ -984,7 +990,7 @@ class BuildDoeEval(SoSEval):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".")[1])
+                    full_id.split(self.ee.study_name + ".", 1)[1])
         return poss_in_values_full, poss_out_values_full
 
     def set_eval_in_out_lists(self, in_list, out_list):
@@ -1085,7 +1091,8 @@ class BuildDoeEval(SoSEval):
             Generation of the samples in case of a customed DOE
             Function needed in generate_samples_from_doe_factory()
         """
-        self.customed_samples = self.get_sosdisc_inputs(self.CUSTOM_SAMPLES_DF)
+        self.customed_samples = self.get_sosdisc_inputs(
+            self.CUSTOM_SAMPLES_DF).copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():
@@ -1116,6 +1123,7 @@ class BuildDoeEval(SoSEval):
             if len(not_relevant_columns) != 0:
                 self.customed_samples.drop(
                     not_relevant_columns, axis=1, inplace=True)
+            self.selected_inputs.sort()
             self.customed_samples = self.customed_samples[self.selected_inputs]
 
     def create_design_space(self):
@@ -1264,7 +1272,7 @@ class BuildDoeEval(SoSEval):
             vars_to_update_dict = {}
             for multiplier_i, x_id in enumerate(self.eval_in_list):
                 # for grid search multipliers inputs
-                var_name = x_id.split(self.ee.study_name + '.')[-1]
+                var_name = x_id.split(self.ee.study_name + '.', 1)[-1]
                 if self.MULTIPLIER_PARTICULE in var_name:
                     var_origin_f_name = '.'.join(
                         [self.ee.study_name, self.get_names_from_multiplier(var_name)[0]])

@@ -8,6 +8,7 @@ from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plo
 )
 import pandas as pd
 import numpy as np
+import math
 
 
 class CommonCharts(InstantiatedPlotlyNativeChart):
@@ -386,12 +387,17 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         line=None,
         legendgroup=None,
         add_cumulated=False,
+        marker=dict(size=12,),
+        string_text=False,
+        
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
         x_axis_column : string column name of x axis
         y_axis_column_list : list columns names for y bar to plot
         add_cumulated : True to add the cumulative serie of the data
+        if mode = 'markers' or mode = 'markers + text'
+            marker= {'color': str, 'size': integer, }
         '''
 
         categories_list = data_df[column_with_categories].unique()
@@ -417,7 +423,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             stackgroup=stackgroup,
                             hoveron=hoveron,
                             line=line,
-                            text=cf_df_by_cat[column].values.tolist(),
+                            text=f'{category}' if string_text else cf_df_by_cat[column].values.tolist() ,
+                            marker= marker,
                             textposition=textposition,
                             legendgroup=legendgroup,
                         )
@@ -830,3 +837,284 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         new_chart.set_csv_data_from_dataframe(export_data)
 
         return new_chart
+
+    def generate_lines_chart_with_display(
+        self,
+        data_df: pd.DataFrame,
+        column_with_categories,
+        col_pretty_list: list,
+        x_axis_column: str,
+        y_axis_column_list: list,
+        x_axis_title: str = '',
+        y_axis_title: str = '',
+        layout: str = '',
+        mode:str = 'markers+lines',
+        ticksuffix: str = '',
+        chart_name: str ='',
+        name=None,
+        textposition="top center",
+        fill=None,
+        stackgroup=None,
+        hoveron=None,
+        legend=None,
+        fillcolor=None,
+        line=None,
+        legendgroup=None,
+        add_cumulated:bool =False,
+        marker=dict(size=12,),
+        string_text:bool =False,
+        annotation_upper_left:dict ={},
+        annotation_upper_right:dict ={},
+
+    ):        
+        '''Generate a bar chart from data in a dataframe
+
+        Args:
+            data_df (pd.DataFrame): dataframe containing data.
+            x_axis_column (str): dataframe column name for the x-axis
+            y_axis_column_list (list): dataframe columns name for the y-axis. Each column will result in a separate serie
+            x_axis_title (str, optional): Title for x-axis. Defaults to ''.
+            y_axis_title (str, optional): Title for y-axis. Defaults to ''.
+            chart_name (str, optional): Chart name. Defaults to ''.
+            ticksuffix (str, optional): Ticksuffix to display units after the values for exemple. Defaults to ''.
+            annotation_upper_left (dict, optional): annotation to put in the upper left corner of the chart. Defaults to {}.
+            annotation_upper_right (dict, optional): annotation to put in the upper right corner of the chart.. Defaults to {}.
+            labels_dict (dict, optional): _description_. Defaults to {}.
+            annotations (list, optional): _description_. Defaults to [].
+            updatemenus (list, optional): _description_. Defaults to [].
+            barmode (str, optional): stack to have stacked bar, group to have a separate bar for each serie. Defaults to 'stack'.
+            text_inside_bar (bool, optional): _description_. Defaults to False.
+            add_cumulated (bool, optional): True to add a cumulated serie for te value. Defaults to False.
+            column_val_cum_sum (str, optional): Column to use as the cumulated value. Defaults to None.
+            showlegend (bool, optional): Possibility to show or hide the legend. Defaults to True.
+
+        Returns:
+            InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data'''
+        
+        categories_list = data_df[column_with_categories].unique()
+        # Create figure
+        fig = go.Figure()
+        vis=True
+        for category in categories_list:
+            cf_df_by_cat = data_df[data_df[column_with_categories] == category]
+            for column in y_axis_column_list:
+                if column in data_df:
+                    if column == y_axis_column_list[0]:
+                        vis = True
+                    else:
+                        vis = False                    
+                    fig.add_trace(
+                        go.Scatter(
+                            x=cf_df_by_cat[x_axis_column].values.tolist(),
+                            y=(cf_df_by_cat[column].cumsum().values.tolist()
+                            if add_cumulated
+                            else cf_df_by_cat[column].values.tolist()),
+                            name=(name if name is not None else f'{category}'),
+                            xaxis='x',
+                            yaxis='y',
+                            visible=vis,
+                            mode=mode,
+                            fill=fill,
+                            fillcolor=fillcolor,
+                            stackgroup=stackgroup,
+                            hoveron=hoveron,
+                            line=line,
+                            text=f'{category}' if string_text else cf_df_by_cat[column].values.tolist() ,
+                            marker= marker,
+                            textposition=textposition,
+                            legendgroup=legendgroup,
+                        )
+                    )
+
+        fig.update_layout(
+            autosize=True,
+            xaxis=dict(
+                title=x_axis_title,
+                titlefont_size=12,
+                tickfont_size=10,
+                automargin=True
+            ),
+            yaxis=dict(
+                title=y_axis_title,
+                titlefont_size=12,
+                tickfont_size=10,
+                ticksuffix=f'{ticksuffix}',
+                automargin=True,
+            ),
+            legend=None,
+        )
+        
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    buttons=list([dict(
+                        args=[
+                            {'visible': [True if i == j else False for j in range(int(len(fig.data)/len(categories_list)))] * len(categories_list)},
+                            {'title': f'<b>{col_pretty_list[i]} in {ticksuffix} for {layout} layout</b>'},
+                        ],
+                        label=col_pretty_list[i],
+                        method="update"
+                    ) for i in range(len(col_pretty_list))]),
+                    direction='down',
+                    type='dropdown',
+                    pad={"r": 0, "t": 0},
+                    showactive=True,
+                    active=0,
+                    x=1.0,
+                    y=1.01,
+                    yanchor='bottom',
+                    xanchor='right'
+                ),
+            ]
+        )
+
+        new_chart = None
+        if len(fig.data):
+            # Create native plotly chart
+            chart_name = f'{chart_name}'
+            new_chart = InstantiatedPlotlyNativeChart(
+                fig=fig, chart_name=chart_name, default_legend=False
+            )
+            new_chart.annotation_upper_left = annotation_upper_left
+            new_chart.annotation_upper_right = annotation_upper_right
+            # new_chart.set_csv_data_from_dataframe(data_df)
+        
+        return new_chart
+    
+    def generate_marker_chart_by_category_with_isoline(
+        self,
+        data_df: pd.DataFrame,
+        column_with_categories,
+        var1_name: str,
+        var2_name: str,
+        var_to_compare_ref: str,
+        mpax_ref: float,
+        x_axis_title: str = '',
+        y_axis_title: str = '',
+        layout: str = '',
+        mode:str = 'markers+text',
+        ticksuffix: str = '',
+        chart_name: str ='',
+        name=None,
+        textposition="top center",
+        marker=dict(size=12,),
+        string_text:bool =False,
+        annotation_upper_left:dict ={},
+        annotation_upper_right:dict ={},
+        ):
+    
+        categories_list = data_df[column_with_categories].unique()
+        # Create figure
+        fig = go.Figure()
+  
+        for category in categories_list:
+            cf_df_by_cat = data_df[data_df[column_with_categories] == category]
+            # for column in y_axis_column_list:
+            #     if column in data_df:
+                    
+
+            coc_x = []
+            cocs_y = []
+            mpax_z = []
+
+            mpax = cf_df_by_cat[var_to_compare_ref].to_list()   
+            coc=cf_df_by_cat[var1_name].to_list()
+            cocs=cf_df_by_cat[var2_name].to_list()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=coc,
+                    y=cocs,
+                    name=f'{category}',
+                    text=[f'{category}'],
+                    textposition='top right',
+                    visible=True,
+                    mode=mode,
+                    marker=marker)
+            )
+
+            coc_x += coc
+            cocs_y += cocs
+            mpax_z += mpax
+
+        # create isolines from min -10 to max + 10, with step 10
+        list_seat = [*range(math.trunc(min(mpax_z) / 10) * 10 - 10,
+                            math.ceil(max(mpax_z) / 10) * 10 + 20, 10)]
+
+        # select plot window
+        range_x = [min(coc_x) - 10, max(coc_x) + 10]
+        range_y = [min(cocs_y) - 10, max(cocs_y) + 10]
+
+        # add text isoline
+        min_x_text = range_x[0] / 100 + 5 / \
+            100 * (range_x[1] - range_x[0]) / 100
+        min_y_text = range_y[0] / 100 + 5 / \
+            100 * (range_y[1] - range_y[0]) / 100
+
+        fig.add_shape(type='line', x0=0, x1=0,  y0=range_y[0], y1=range_y[1],
+                      line=dict(color='black'))
+
+        fig.add_shape(type='line', x0=range_x[0], x1=range_x[1], y0=0, y1=0,
+                      line=dict(color='black'))
+
+        for i in list_seat:
+            # isoline : y = m*x + p
+            m_i = mpax_ref / i
+            p_i = (mpax_ref - i) / i
+            x0 = range_x[0] / 100
+            x1 = range_x[1] / 100
+            y0 = (m_i * x0 + p_i)
+            y1 = (m_i * x1 + p_i)
+
+            # text on isoline
+            x_text = min_x_text
+            y_text = m_i * min_x_text + p_i
+
+            if min_y_text > y_text:
+                y_text = min_y_text
+                x_text = (min_y_text - p_i) / m_i
+
+            fig.add_shape(type='line', opacity=0.1,
+                          x0=x0 * 100, x1=x1 * 100,
+                          y0=y0 * 100, y1=y1 * 100, )
+
+            fig.add_annotation(x=x_text * 100,
+                               y=y_text * 100,
+                               text=str(i) + ' pax',
+                               textangle=-20,
+                               showarrow=False,
+                               opacity=0.6)
+
+        fig.update_layout(
+            autosize=True,
+            xaxis=dict(
+                range=range_x,
+                title=x_axis_title,
+                titlefont_size=12,
+                tickfont_size=10,
+                automargin=True,
+                ticksuffix=ticksuffix,
+                dtick=5,
+                tick0=0
+            ),
+            yaxis=dict(
+                range=range_y,
+                title=y_axis_title,
+                titlefont_size=12,
+                tickfont_size=10,
+                automargin=True,
+                ticksuffix=ticksuffix,
+                dtick=5,
+                tick0=0
+            ),
+            legend=self.default_legend,
+        )
+
+        new_chart = None
+        if len(fig.data):
+            # Create native plotly chart
+            new_chart = InstantiatedPlotlyNativeChart(
+                fig=fig, chart_name=chart_name, default_legend=False)
+
+        return new_chart
+    

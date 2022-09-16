@@ -49,3 +49,10 @@ class Polynom(SoSDiscipline):
         dict_values = {'z': np.array([x - y + 1, y - x**2 - 1])}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
+
+    def compute_sos_jacobian(self):
+        newton_unknowns = self.get_sosdisc_inputs('newton_unknowns')
+
+        grad = np.array([[1, -1],
+                         [-2 * newton_unknowns[0], 1]])
+        self.set_partial_derivative('z', 'newton_unknowns', grad)
