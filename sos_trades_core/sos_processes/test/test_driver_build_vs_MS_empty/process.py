@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 1 process
+# -- Generate test 1 process
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -40,7 +40,15 @@ class ProcessBuilder(BaseProcessBuilder):
         scenario_map_name = ''
 
         # 2. add multi_scenario
-        multi_scenarios = self.ee.factory.create_build_very_simple_multi_scenario_builder(
-            driver_name, scenario_map_name, builder_list, autogather=autogather, gather_node=gather_node, business_post_proc=business_post_proc)
+        multi_scenarios = (
+            self.ee.factory.create_build_very_simple_multi_scenario_builder(
+                driver_name,
+                scenario_map_name,
+                builder_list,
+                autogather=autogather,
+                gather_node=gather_node,
+                business_post_proc=business_post_proc,
+            )
+        )
 
         return multi_scenarios

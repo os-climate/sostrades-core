@@ -1,0 +1,5 @@
+variable,value
+process_repository,sos_trades_core.sos_processes.test
+process_name,test_disc_hessian
+usecase_name,usecase1
+usecase_data,"{'<study_ph>.Hessian.x': 2.0, '<study_ph>.Hessian.y': 3.0, '<study_ph>.Hessian.ax2': 4.0, '<study_ph>.Hessian.by2': 5.0, '<study_ph>.Hessian.cx': 6.0, '<study_ph>.Hessian.dy': 7.0, '<study_ph>.Hessian.exy': 12.0}"
