@@ -1,5 +1,0 @@
-variable,value
-process_repository,sos_trades_core.sos_processes.test
-process_name,test_proc_build_disc1_grid
-usecase_name,usecase1
-usecase_data,"{'<study_ph>.Disc1.x': 3.5, '<study_ph>.Disc1.a': 20, '<study_ph>.Disc1.b': 2, '<study_ph>.Disc1.name': 'A1', '<study_ph>.Disc1.x_dict': {'x_1': 1.1, 'x_2': 2.1, 'x_3': 3.5, 'x_4': 9.1}, '<study_ph>.Disc1.d': 1., '<study_ph>.Disc1.f': 1., '<study_ph>.Disc1.g': 1., '<study_ph>.Disc1.h': 1., '<study_ph>.Disc1.j': 1.}"

@@ -1,5 +1,0 @@
-variable,value
-process_repository,sos_trades_core.sos_processes.test
-process_name,test_disc_hessian
-usecase_name,Empty
-usecase_data,{}
