@@ -73,23 +73,23 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
-    def _init_grammar_with_keys(self, proxy):
-        '''
-        initialize GEMS grammar with names and type None
-
-        Arguments:
-            proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
-        '''
-        # TODO: generalize to n subdisciplines
-        input_names = list(set(proxy.get_input_data_names()) | set(proxy.proxy_disciplines[0].get_input_data_names()))
-        grammar = self.mdo_discipline.input_grammar
-        grammar.clear()
-        grammar.initialize_from_base_dict({input: None for input in input_names})
-
-        output_names = list(set(proxy.get_output_data_names()) | set(proxy.proxy_disciplines[0].get_output_data_names()))
-        grammar = self.mdo_discipline.output_grammar
-        grammar.clear()
-        grammar.initialize_from_base_dict({output: None for output in output_names})
+    # def _init_grammar_with_keys(self, proxy):
+    #     '''
+    #     initialize GEMS grammar with names and type None
+    #
+    #     Arguments:
+    #         proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
+    #     '''
+    #     # TODO: generalize to n subdisciplines
+    #     input_names = list(set(proxy.get_input_data_names()) | set(proxy.proxy_disciplines[0].get_input_data_names()))
+    #     grammar = self.mdo_discipline.input_grammar
+    #     grammar.clear()
+    #     grammar.initialize_from_base_dict({input: None for input in input_names})
+    #
+    #     output_names = list(set(proxy.get_output_data_names()) | set(proxy.proxy_disciplines[0].get_output_data_names()))
+    #     grammar = self.mdo_discipline.output_grammar
+    #     grammar.clear()
+    #     grammar.initialize_from_base_dict({output: None for output in output_names})
         
 #    def _update_all_default_values(self, input_data):
 #        '''

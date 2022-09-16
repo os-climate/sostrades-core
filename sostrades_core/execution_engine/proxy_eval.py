@@ -85,25 +85,6 @@ class ProxyEval(ProxyDisciplineDriver):
         # self.eval_process_builder = self._set_eval_process_builder()
         self.eval_process_disc = None
 
-
-    # def _set_eval_process_builder(self):
-    #     '''
-    #     Create the eval process builder, in a coupling if necessary
-    #     '''
-    #     if len(self.cls_builder) == 0:  # added condition for proc build
-    #         disc_builder = None
-    #     # elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
-    #     else:
-    #         # if eval process is a list of builders or a non executable builder,
-    #         # then we build a coupling containing the eval process
-    #         # In the case of a single sub-disc for sos_eval, although len(self.cls_builder) = 1 and it is an
-    #         # executable discipline, a coupling is also wanted to contain the eval process: TODO this method only used in SoSEval???
-    #         disc_builder = self.ee.factory.create_builder_coupling(
-    #             self.sos_name)
-    #         disc_builder.set_builder_info('cls_builder', self.cls_builder)
-    #
-    #     return disc_builder
-
     def set_eval_in_out_lists(self, in_list, out_list):
         '''
         Set the evaluation variable list (in and out) present in the DM
@@ -191,32 +172,10 @@ class ProxyEval(ProxyDisciplineDriver):
         if self.eval_process_disc not in self.proxy_disciplines:
             self.ee.factory.add_discipline(self.eval_process_disc)
 
-    def configure(self):
-        '''
-        Configure the SoSEval and its children sos_disciplines + set eval possible values for the GUI 
-        '''
-        # configure eval process stored in children
-        for disc in self.get_disciplines_to_configure():
-            disc.configure()
-
-        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
-            # Explanation:
-            # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
-            # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
-            # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
-            # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
-            # Remark: condition "(   and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
-            #
-            # Call standard configure methods to set the process discipline
-            # tree
-            ProxyDiscipline.configure(self)
-
-            # Extract variables for eval analysis
-            if len(self.proxy_disciplines) > 0:
-                self.set_eval_possible_values()
-
-        if len(self.get_disciplines_to_configure()) == 0:
-            self.set_children_cache_inputs()
+    def configure_driver(self):
+        # Extract variables for eval analysis
+        if len(self.proxy_disciplines) > 0:
+            self.set_eval_possible_values()
 
     def is_configured(self):
         '''

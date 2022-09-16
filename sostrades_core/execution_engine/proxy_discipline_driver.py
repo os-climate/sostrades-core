@@ -31,6 +31,7 @@ from pandas.core.frame import DataFrame
 
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 class ProxyDisciplineDriverException(Exception):
     pass
@@ -52,6 +53,55 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
         self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, wrapper, wrapping_mode)
+
+    def configure(self):
+        '''
+        Configure the SoSEval and its children sos_disciplines + set eval possible values for the GUI
+        '''
+        # configure eval process stored in children
+        for disc in self.get_disciplines_to_configure():
+            disc.configure()
+
+        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
+            # Explanation:
+            # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
+            # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
+            # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
+            # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
+            # Remark: condition "(   and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
+            #
+            # Call standard configure methods to set the process discipline
+            # tree
+            ProxyDiscipline.configure(self)
+            self.configure_driver()
+
+        if len(self.get_disciplines_to_configure()) == 0:
+            if len(self.proxy_disciplines) == 1 and self.proxy_disciplines[0].is_sos_coupling:
+                self.update_data_io_with_subprocess_io() # only for 1 subcoupling, so not handling cases like driver of driver
+            else:
+                raise NotImplementedError
+            self.set_children_cache_inputs()
+
+    def update_data_io_with_subprocess_io(self):
+        # FIXME: working with short names is problematic for driver of driver example bi-level optimization
+        # only for 1 subcoupling
+        self._data_in.update({key:value
+                              for key,value in self.proxy_disciplines[0].get_data_in().items()
+                              if key not in self.NUM_DESC_IN.keys()}) # the subcoupling num_desc_in is crushed
+        self._data_out.update(self.proxy_disciplines[0].get_data_out())
+
+    def configure_driver(self):
+        """
+        To be overload by drivers with specific configuration actions
+        """
+
+    def reload_io(self):
+        '''
+        Create the data_in and data_out of the discipline with the DESC_IN/DESC_OUT, inst_desc_in/inst_desc_out
+        and initialize GEMS grammar with it (with a filter for specific variable types)
+        '''
+        ProxyDiscipline.reload_io(self)
+
 
     def prepare_execution(self):
         '''

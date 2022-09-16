@@ -39,9 +39,3 @@ class SoSMDODisciplineDriver(SoSMDODiscipline):
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, disciplines):
         super().__init__(full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm)
         self.disciplines = disciplines
-    #
-    # def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
-    #     return list(set(super().get_input_data_names() ) | set(self.disciplines[0].get_input_data_names()))
-    #
-    # def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
-    #     return list(set(super().get_output_data_names())  | set(self.disciplines[0].get_output_data_names()))
