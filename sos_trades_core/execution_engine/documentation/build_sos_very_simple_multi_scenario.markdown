@@ -42,146 +42,21 @@ Each instance will have its inputs and its outcome outputs (after run).
 
          |_ DESC_OUT
 
-## The several usage steps are detailed below.
-Example of models
+## Example of models to be nested
 
-    ########################################################
-    sos_trades_core.sos_processes.test
-    test_disc_hessian
+### csv files for sub_process_inputs and scenario_map_csv
+In the "empty driver process" folder, csv files are provided for a list of nested models:
+- sub_process_inputs_csv folder:
 
-    usecase1
-    {'<study_ph>.Hessian.x': 2.0,
-    '<study_ph>.Hessian.y': 3.0,
-    '<study_ph>.Hessian.ax2': 4.0,
-    '<study_ph>.Hessian.by2': 5.0,
-    '<study_ph>.Hessian.cx': 6.0,
-    '<study_ph>.Hessian.dy': 7.0,
-    '<study_ph>.Hessian.exy': 12.0}
-    
-    usecase2
-    {'<study_ph>.Hessian.x': 12.0,
-    '<study_ph>.Hessian.y': 13.0,
-    '<study_ph>.Hessian.ax2': 14.0,
-    '<study_ph>.Hessian.by2': 15.0,
-    '<study_ph>.Hessian.cx': 16.0,
-    '<study_ph>.Hessian.dy': 17.0,
-    '<study_ph>.Hessian.exy': 112.0}
+![sub_process_inputs](./sos_vs_MS_png/vs_MS_14.PNG)
+- scenario_map_csv folder:
 
-    usecase3
-    {'<study_ph>.Hessian.x': 22.0,
-    '<study_ph>.Hessian.y': 23.0,
-    '<study_ph>.Hessian.ax2': 24.0,
-    '<study_ph>.Hessian.by2': 25.0,
-    '<study_ph>.Hessian.cx': 26.0,
-    '<study_ph>.Hessian.dy': 27.0,
-    '<study_ph>.Hessian.exy': 212.0}
+![scenario_map_csv](./sos_vs_MS_png/vs_MS_15.PNG)
 
-    ###################################################
-    sos_trades_core.sos_processes.test
-    test_proc_build_disc0
+### Models in usecases
+In the "empty driver process" folder, complete uscases are provided for a list of nested models:
 
-    usecase_int
-    {'<study_ph>.Disc0.r': 4,
-    '<study_ph>.Disc0.mod': 2}
-
-    usecase_float
-    {'<study_ph>.Disc0.r': 4.5,
-    '<study_ph>.Disc0.mod': 2}
-
-    #####################################################
-    sos_trades_core.sos_processes.test
-    test_proc_build_disc1_all_types
-
-    usecase1
-    {'<study_ph>.Disc1.x': 5.5,
-    '<study_ph>.Disc1.a': 3,
-    '<study_ph>.Disc1.b': 2,
-    '<study_ph>.Disc1.name': 'A1',
-    '<study_ph>.Disc1.x_dict': {}}
-
-    usecase2
-    {'<study_ph>.Disc1.x': 5.5,
-    '<study_ph>.Disc1.a': 3,
-    '<study_ph>.Disc1.b': 2,
-    '<study_ph>.Disc1.name': 'A1',
-    '<study_ph>.Disc1.x_dict': {'x_1':1.1,'x_2':2.1,'x_3':5.5,'x_4':9.1}}
-
-    #####################################################
-    sos_trades_core.sos_processes.test
-    test_proc_build_disc1_grid
-
-    usecase1
-    {'<study_ph>.Disc1.x': 3.5,
-    '<study_ph>.Disc1.a': 20,
-    '<study_ph>.Disc1.b': 2,
-    '<study_ph>.Disc1.name': 'A1',
-    '<study_ph>.Disc1.x_dict': {'x_1': 1.1, 'x_2': 2.1, 'x_3': 3.5, 'x_4': 9.1},
-    '<study_ph>.Disc1.d': 1.,
-    '<study_ph>.Disc1.f': 1.,
-    '<study_ph>.Disc1.g': 1.,
-    '<study_ph>.Disc1.h': 1.,
-    '<study_ph>.Disc1.j': 1.}
-
-    usecase2
-    {'<study_ph>.Disc1.x': 13.,
-    '<study_ph>.Disc1.a': 30,
-    '<study_ph>.Disc1.b': 5,
-    '<study_ph>.Disc1.name': 'A1',
-    '<study_ph>.Disc1.x_dict': {'x_1': 1.2, 'x_2': 2.2, 'x_3': 13., 'x_4': 9.1},
-    '<study_ph>.Disc1.d': 1.,
-    '<study_ph>.Disc1.f': 1.,
-    '<study_ph>.Disc1.g': 1.,
-    '<study_ph>.Disc1.h': 1.,
-    '<study_ph>.Disc1.j': 1.}
-
-    ##################################################### 
-    sos_trades_core.sos_processes.test
-    test_disc1_disc2_coupling
-
-    usecase_coupling_2_disc_test
-    {'<study_ph>.x': 10.,
-    '<study_ph>.Disc1.a': 5.,
-    '<study_ph>.Disc1.b': 25431.,
-    '<study_ph>.y': 4.,
-    '<study_ph>.Disc2.constant': 3.1416,
-    '<study_ph>.Disc2.power': 2}
-
-    ##################################################### 
-    sos_trades_core.sos_processes.test
-    test_sellar_coupling
-
-    usecase
-    {'<study_ph>.SellarCoupling.x': 1.,
-    '<study_ph>.SellarCoupling.y_1': 1.,
-    '<study_ph>.SellarCoupling.y_2': 1.,
-    '<study_ph>.SellarCoupling.z': [1., 1.],
-    '<study_ph>.SellarCoupling.Sellar_Problem.local_dv': 10.,
-    '<study_ph>.SellarCoupling.max_mda_iter': 100,
-    '<study_ph>.SellarCoupling.tolerance': 1e-12}
-
-    #####################################################
-    sos_trades_core.sos_processes.test
-    test_disc10_setup_sos_discipline
-
-    usecase_affine
-    {'<study_ph>.Disc10.Model_Type': 'Affine',
-    '<study_ph>.Disc10.x': 5.0,
-    '<study_ph>.Disc10.b': 3.0}
-
-    usecase_linear
-    {'<study_ph>.Disc10.Model_Type': 'Linear',
-    '<study_ph>.Disc10.x': 2.0}
-
-    usecase_polynomial
-    {'<study_ph>.Disc10.Model_Type': 'Polynomial',
-    '<study_ph>.Disc10.x': 2.0,
-    '<study_ph>.Disc10.b': 4.0}
-
-    ########################################################
-	hessian scenario_map
-	
-	
-	disc1Disc3 scenario_map
+![Study creation](./sos_vs_MS_png/vs_MS_16.PNG)
 
 ## The several usage steps are detailed below.
 
@@ -194,10 +69,6 @@ xxxx
 
 ## Current small restrictions
 - xxx
-
-
-
-
 
 # Documentation of the vs_MS (very simple Multi Scenarios) driver
 
@@ -244,11 +115,11 @@ It provides the capability to:
 
 ## GUI inputs: Selected example
 The selected example for this manual is a vs_MS applied to the "disc1_disc3" disciplines. There exists a SoSTrades process for this example and it can be selected as follows: 
-![Example of doe process](./sos_vs_MS/vs_MS__01.PNG)
+![Example of doe process](./sos_vs_MS_png/vs_MS_01.PNG)
 
-![Study creation](./sos_vs_MS/vs_MS__02.PNG)
+![Study creation](./sos_vs_MS_png/vs_MS_02.PNG)
 
-![Tree view example](./sos_vs_MS/vs_MS__03.PNG)
+![Tree view example](./sos_vs_MS_png/vs_MS_03.PNG)
 
 The user is then ready to provide the inputs depending on his needs.
 
@@ -270,7 +141,7 @@ In this context, each variable will have a unique full name defined as a path in
 A variable that has the same full name and belongs to two disciplines with an input/output status, is a coupled variable.
 
 ### SoSTrades trades off or scenarios
-We want to create several scenarios, where a scenario is a set of $(x_k)$ coherent input values.
+We want to create several scenarios, where a scenario is a set of 'x_k' coherent input values.
 Each process will be defined by its name provided in a list ['Scenario_1', 'Scenario_2', 'Scenario_3', ...]
 
 | Scenario      | Scenario name |               |      'x_j'        |               |               |
@@ -354,15 +225,15 @@ The overall process appears as a tree view:
 - the study name: e.g. Example_vs_MS_Disc1_Disc3
 - the driver name: e.g. vs_MS
 
-![Tree view example](./sos_vs_MS/vs_MS__03.PNG)
+![Tree view example](./sos_vs_MS_png/vs_MS_03.PNG)
 
 The the user with select a name for each of his scenario:
 
-![Main inputs](./sos_vs_MS/vs_MS__04.PNG)
+![Main inputs](./sos_vs_MS_png/vs_MS_04.PNG)
 
 The user needs to select the list of scenario names by using this "Scenario List" selector.
 
-![Eval in](./sos_vs_MS/vs_MS__05.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_05.PNG)
 
 
 Remark:
@@ -372,7 +243,7 @@ Remark:
 		
 - the tree of the nested subprocess: (Disc1,Disc3) with as many instances and names as we have values in the "Scenario List" input.
 
-![Eval in](./sos_vs_MS/vs_MS__06.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_06.PNG)
 
 
 The "Scenario List" will usually be placed in the tree view at the vs_MS driver node (however its namescape defined by the "input_ns" value in the "Scatter build map", can be put somewhere else).
@@ -386,16 +257,16 @@ There are other parameters associated with the vs_MS driver:
 ### GUI inputs: data input for each instance of the nested sub_process
 The user NEEDs also to provide value for each input variable of each instance of the nested subprocess.
 For example, in case of this  example: 
-![Eval in](./sos_vs_MS/vs_MS__07.PNG)
-![Eval in](./sos_vs_MS/vs_MS__12.PNG)
-![Eval in](./sos_vs_MS/vs_MS__08.PNG)
-![Eval in](./sos_vs_MS/vs_MS__09.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_07.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_12.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_08.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_09.PNG)
 
 ### GUI: run
 When all inputs data have been provided, and saved, the user can run the vs_MS, that goes from the configuration state, to Pending and Done (or Failure with error message if something goes wrong). 
 
-![Eval in](./sos_vs_MS/vs_MS__13.PNG)
-![Eval in](./sos_vs_MS/vs_MS__11.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_13.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_11.PNG)
 
 ### GUI outputs: 
 Then the user can see and post-treat the results.
@@ -405,7 +276,7 @@ In the output section of each instance of the nested process, he will find the v
 Those variables will be put in the treeview in a location that will depend on their namespace.
 
 In our example, the outputs are the following:
-![Eval in](./sos_vs_MS/vs_MS__10.PNG)
+![Eval in](./sos_vs_MS_png/vs_MS_10.PNG)
 
 ### GUI outputs: Option "autogather" = True
 
@@ -478,7 +349,7 @@ It is realised by creating a dedicated discipline instance per scenario name:
 
 
 We can then denotes each family by the label of the scenarios:
-- the family of scenario inputs $(x_{<scenario_name>})$
-- the family of process instances $(P_{<scenario_name)}>$
-- and the associated outputs by $(y_{<scenario_name>})$, where $${y_<scenario_name>} = P_{<scenario_name>}(x_{<scenario_name>})$$.
+- the family of scenario inputs $(x_{<scenario\_name>})$
+- the family of process instances $(P_{<scenario\_name)}>$
+- and the associated outputs by $(y_{<scenario\_name>})$, where $$y_{<scenario\_name>} = P_{<scenario\_name>}(x_{<scenario\_name>})$$.
 
