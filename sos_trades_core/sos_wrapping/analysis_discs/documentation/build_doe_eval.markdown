@@ -2,9 +2,10 @@
 
 
 ## Short description
-The build doe_eval discipline driver is a specialisation of the sos-eval driver. It extend the doe_eval discipline driver bu providing the capability to select in the GUI the used sub_process of the driver. 
+The build doe_eval discipline driver is a specialisation of the doe_eval driver. 
+It extends the doe_eval discipline driver by providing the capability to select in the GUI the used sub_process of the driver. 
 
-The doe_eval capability allows provide or create a sample and to run the subprocess on this sample. 
+The doe_eval capability provides or creates a sample and to run the subprocess on this sample. 
 
 
 ## Strucrure of Desc_in/Desc_out
