@@ -292,7 +292,7 @@ class BuildDoeEval(SoSEval):
             Get and build builder from sub_process of doe_eval driver
             Added to provide proc builder capability
             Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
-            It comes before congiguring()
+            It comes before configuring()
         '''
         if self.SUB_PROCESS_INPUTS in self._data_in:
             sub_process_inputs_dict = self.get_sosdisc_inputs(

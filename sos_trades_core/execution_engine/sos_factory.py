@@ -345,6 +345,22 @@ class SosFactory:
 
         return builder
 
+    def create_build_scatter_builder(self, sos_name, map_name, cls_builder):
+        """
+        create a builder  defined by a scatter type SoSDisciplineScatter
+        """
+        mod_path = f'{self.EE_PATH}.build_sos_discipline_scatter.SoSDisciplineScatter'
+        cls = self.get_disc_class_from_module(mod_path)
+        # is_executable flag is False because the scatter discipline has no
+        # run method
+        builder = SoSBuilder(
+            sos_name, self.__execution_engine, cls, is_executable=False
+        )
+        builder.set_builder_info('map_name', map_name)
+        builder.set_builder_info('cls_builder', cls_builder)
+
+        return builder
+
     def create_value_block_builder(
         self,
         builder_name,
