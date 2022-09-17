@@ -39,7 +39,7 @@ from os.path import dirname
 from os import listdir
 
 
-class TestBuilderDoeEval(unittest.TestCase):
+class TestBuildDoeEval(unittest.TestCase):
     """
     MultiScenario and doe_eval processes test class
     """
@@ -3271,7 +3271,7 @@ class TestBuilderDoeEval(unittest.TestCase):
 
 
 if '__main__' == __name__:
-    my_test = TestBuilderDoeEval()
+    my_test = TestBuildDoeEval()
     test_selector = 8
     if test_selector == 1:
         my_test.setUp()
