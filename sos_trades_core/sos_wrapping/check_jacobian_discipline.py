@@ -69,9 +69,8 @@ class CheckJacobianDiscipline(SoSDiscipline):
                 full_name = f'{self.get_disc_full_name()}.{builder.sos_name}'
                 self.SUB_BUILDER_NAME = full_name
                 builder.set_disc_name(full_name)
-                for ns in self.ee.ns_manager.shared_ns_dict.values():
-                    self.ee.ns_manager.update_namespace_with_extra_ns(
-                        ns, self.name, self.ee.study_name)
+                self.ee.ns_manager.update_namespace_list_with_extra_ns(
+                    self.name, self.ee.study_name)
                 disc = builder.build()
                 self.ee.factory.add_discipline(disc)
 

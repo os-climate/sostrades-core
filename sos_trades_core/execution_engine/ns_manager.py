@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from copy import deepcopy, copy
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from copy import copy
 
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.namespace import Namespace
@@ -395,7 +395,25 @@ class NamespaceManager:
 
         return result
 
-    def update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None):
+    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
+        '''
+        Update the value of a list of namespaces with an extra namespace placed behind after_name
+        '''
+        if namespace_list is None:
+            namespace_list = list(self.shared_ns_dict.values())
+        for ns in deepcopy(namespace_list):
+            self.__update_namespace_with_extra_ns(ns, extra_ns, after_name)
+
+    def update_all_shared_namespaces_by_name(self, extra_ns, shared_ns_name, after_name=None):
+        '''
+        Update all shared namespaces named shared_ns_name with extra_namespace
+        '''
+        for namespace in deepcopy(self.ns_list):
+            if namespace.name == shared_ns_name:
+                self.__update_namespace_with_extra_ns(
+                    namespace, extra_ns, after_name)
+
+    def __update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None):
         '''
         Update the value of old_ns_object with an extra namespace which will be placed just after the variable after_name
         if after is the name of the discipline then we do not add the extra namespace
@@ -403,43 +421,14 @@ class NamespaceManager:
 
         old_ns_value = old_ns_object.get_value()
 
-        if after_name is None:
-            new_ns_value = self.compose_ns([extra_ns,
-                                            old_ns_value])
-            old_ns_object.update_value(new_ns_value)
-        else:
-            if f'{after_name}' in old_ns_value:
-                old_ns_value_split = old_ns_value.split(self.NS_SEP)
-                new_ns_value_split = []
-                for item in old_ns_value_split:
-                    new_ns_value_split.append(item)
-                    if item == after_name.replace(self.NS_SEP, ''):
-                        new_ns_value_split.append(extra_ns)
-                new_ns_value = self.compose_ns(
-                    new_ns_value_split)
-                old_ns_object.update_value(new_ns_value)
+        new_ns_value = self.update_ns_value_with_extra_ns(
+            old_ns_value, extra_ns, after_name)
 
-        return old_ns_object
-
-    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
-        '''
-        Update the value of a list of namespaces with an extra namespace placed behind after_name
-        '''
-        if namespace_list is None:
-            namespace_list = self.ns_list
-        for ns in namespace_list:
-            self.update_namespace_with_extra_ns(ns, extra_ns, after_name)
-
-    def update_all_shared_namespaces_by_name(self, extra_ns, shared_ns_name, after_name=None):
-        '''
-        Update all shared namespaces named shared_ns_name with extra_namespace
-        '''
-        for namespace in self.ns_list:
-            if namespace.name == shared_ns_name:
-                self.update_namespace_with_extra_ns(
-                    namespace, extra_ns, after_name)
-
-                self.ee.dm.generate_data_id_map()
+        # Add a new namespace (o or not if it exists already) but NEVER update
+        # the value of a namespace without modifying the ordering of the
+        # ns_manager
+        self.add_ns(old_ns_object.name, new_ns_value)
+        # old_ns_object.update_value(new_ns_value)
 
     def update_ns_value_with_extra_ns(self, ns_value, extra_ns, after_name=None):
         '''
@@ -447,20 +436,21 @@ class NamespaceManager:
         if after_name is not given try to find it with the current_disc_ns
         '''
         if after_name is None:
-            return self.compose_ns([extra_ns,
-                                    ns_value])
+            new_ns_value = self.compose_ns([extra_ns,
+                                            ns_value])
+        elif f'{after_name}' in ns_value:
+            old_ns_value_split = ns_value.split(self.NS_SEP)
+            new_ns_value_split = []
+            for item in old_ns_value_split:
+                new_ns_value_split.append(item)
+                if item == after_name.split('.')[-1]:
+                    new_ns_value_split.append(extra_ns)
+            new_ns_value = self.compose_ns(
+                new_ns_value_split)
         else:
-            if f'{after_name}' in ns_value:
-                old_ns_value_split = ns_value.split(self.NS_SEP)
-                new_ns_value_split = []
-                for item in old_ns_value_split:
-                    new_ns_value_split.append(item)
-                    if item == after_name.split('.')[-1]:
-                        new_ns_value_split.append(extra_ns)
-                return self.compose_ns(
-                    new_ns_value_split)
-            else:
-                return self.compose_ns([ns_value, extra_ns])
+            new_ns_value = self.compose_ns([ns_value, extra_ns])
+
+        return new_ns_value
 
     def modify_all_local_namespaces_with_study_name(self, study_name):
 

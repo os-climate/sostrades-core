@@ -595,9 +595,8 @@ class BuildDoeEval(SoSEval):
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
                 elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
-        for ns in namespace_list:
-            self.ee.ns_manager.update_namespace_with_extra_ns(
-                ns, extra_ns, after_name)
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_ns, after_name=after_name, namespace_list=namespace_list)
 
     def setup_sos_disciplines_driver_inputs_depend_on_sub_process(self, dynamic_inputs):
         """
