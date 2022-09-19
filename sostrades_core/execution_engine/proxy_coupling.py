@@ -371,6 +371,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self._build_data_io()
             # - Update coupling and editable flags in the datamanager for the GUI
             self._update_coupling_flags_in_dm()
+    #
+    # def get_data_io_with_full_name(self, io_type):
+    #     if io_type == self.IO_TYPE_IN:
+    #         return self._data_in_with_full_name
+    #     elif io_type == self.IO_TYPE_OUT:
+    #         return self._data_out_with_full_name
+    #     else:
+    #         raise ValueError('Unknown io type')
 
     def _build_data_io(self):
         """
@@ -429,7 +437,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc_in = d.get_input_data_names()
             disc_out = d.get_output_data_names()
             mda_outputs += disc_out
-            
+
+            # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
             # get all inputs that are not in known outputs
             mda_inputs += list(set(disc_in) - set(mda_outputs))
             d_data_in = {k : get_data(k_full) for k_full, k in zip(disc_in, d._data_in.keys()) if k_full not in mda_outputs}

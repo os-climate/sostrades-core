@@ -85,10 +85,19 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     def update_data_io_with_subprocess_io(self):
         # FIXME: working with short names is problematic for driver of driver example bi-level optimization
         # only for 1 subcoupling
+        # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+        #                         self._data_in.items()
+        #                         if key in self.DESC_IN or key in self.NUM_DESC_IN}
+        # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+        #                         self._data_out.items()}
+        # self._data_in_with_full_name.update(self.proxy_disciplines[0].get_data_io_with_full_name(self.IO_TYPE_IN)) # the subcoupling num_desc_in is crushed
+        # self._data_out_with_full_name.update(self.proxy_disciplines[0].get_data_io_with_full_name(self.IO_TYPE_OUT))
+        #
         self._data_in.update({key:value
                               for key,value in self.proxy_disciplines[0].get_data_in().items()
                               if key not in self.NUM_DESC_IN.keys()}) # the subcoupling num_desc_in is crushed
         self._data_out.update(self.proxy_disciplines[0].get_data_out())
+
 
     def configure_driver(self):
         """
@@ -132,3 +141,17 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
 
         return disc_builder
+
+    # def get_input_data_names(self):
+    #     '''
+    #     Returns:
+    #         (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
+    #     '''
+    #     return list(self._data_in_with_full_name.keys())
+    #
+    # def get_output_data_names(self):
+    #     '''
+    #     Returns:
+    #         (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
+    #     '''
+    #     return list(self._data_out_with_full_name.keys())
