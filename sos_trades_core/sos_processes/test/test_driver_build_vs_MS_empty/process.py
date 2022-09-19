@@ -35,9 +35,6 @@ class ProcessBuilder(BaseProcessBuilder):
         gather_node = 'Post-processing'
         business_post_proc = False
 
-        flag = 'Hessian'
-        #flag = 'D1D3'
-
         # driver name
         driver_name = 'vs_MS'
         root = f'{self.ee.study_name}'
@@ -47,11 +44,13 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns(
             input_ns, f'{driver_root}')
         # shared namespace : shifted by nested operation
-        if flag == "D1D3":
-            self.ee.ns_manager.add_ns(
-                'ns_disc3', f'{driver_root}.Disc3')
-            self.ee.ns_manager.add_ns(
-                'ns_out_disc3', f'{driver_root}')
+
+        self.ee.ns_manager.add_ns(
+            'ns_disc3', f'{driver_root}.Disc3')
+        self.ee.ns_manager.add_ns(
+            'ns_out_disc3', f'{driver_root}')
+        self.ee.ns_manager.add_ns('ns_ac', f'{driver_root}')
+
         # remark : 'ns_scenario' set to {self.ee.study_name} in subprocess not
         # needed !
 
