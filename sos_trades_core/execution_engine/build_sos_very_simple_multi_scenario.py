@@ -267,28 +267,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # True
             self.build_business_io()  # should be put in setup_sos_disciplines !
 
-    def set_sc_map_status(self, sc_map_dict):
-        '''
-            State sc_map CRUD status
-            The sc_map is defined by its dictionary
-            Function needed in build(self)
-        '''
-        # We come from outside driver process
-        if sc_map_dict != self.previous_sc_map_dict:
-            if self.previous_sc_map_dict is None:
-                previous_sc_map_name = None
-            else:
-                previous_sc_map_name = self.previous_sc_map_dict['input_name']
-            self.previous_sc_map_dict = sc_map_dict
-            # driver process with provided sc_map
-            sc_map_name = sc_map_dict['input_name']
-            if previous_sc_map_name == '' or previous_sc_map_name is None:
-                self.sc_map_build_status = 'Create'
-            else:
-                self.sc_map_build_status = 'Replace'
-        else:
-            self.sc_map_build_status = 'Unchanged'
-
     def configure(self):
         """
             Overloaded SoSDiscipline method
@@ -403,7 +381,30 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 self.ee.dm.generate_data_id_map()
 ##################### End: Sub methods ################################
 
-##################### Begin: Sub methods  for build ######################
+##################### Begin: Sub methods  added for proc builder #########
+
+    def set_sc_map_status(self, sc_map_dict):
+        '''
+            State sc_map CRUD status
+            The sc_map is defined by its dictionary
+            Function needed in build(self)
+        '''
+        # We come from outside driver process
+        if sc_map_dict != self.previous_sc_map_dict:
+            if self.previous_sc_map_dict is None:
+                previous_sc_map_name = None
+            else:
+                previous_sc_map_name = self.previous_sc_map_dict['input_name']
+            self.previous_sc_map_dict = sc_map_dict
+            # driver process with provided sc_map
+            sc_map_name = sc_map_dict['input_name']
+            if previous_sc_map_name == '' or previous_sc_map_name is None:
+                self.sc_map_build_status = 'Create'
+            else:
+                self.sc_map_build_status = 'Replace'
+        else:
+            self.sc_map_build_status = 'Unchanged'
+
     def set_sub_process_status(self, sub_process_repo, sub_process_name):
         '''
             State subprocess CRUD status
@@ -450,7 +451,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
     def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
         """
             Create_nested builders from their nested process.
-            Function needed in build_eval_subproc(self)
+            Function needed in build_driver_subproc(self)
         """
         cls_builder = self.ee.factory.get_builder_from_process(
             repo=sub_process_repo, mod_id=sub_process_name)
@@ -459,27 +460,13 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
     def set_nested_builders(self, cls_builder):
         """
             Set nested builder to the eval process in case this eval process was instantiated with an empty nested builder. 
-            Function needed in build_eval_subproc(self)
+            Function needed in build_driver_subproc(self)
         """
         self.set_cls_builder(cls_builder)
         self.set_builders(cls_builder)  # update also in mother class
 
         self.driver_process_builder = self._set_driver_process_builder()
         return
-
-    def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, after_name=None, namespace_list=None):
-        '''
-            Update the value of a list of namespaces with an extra namespace placed behind after_name
-            In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
-            Function needed in build_eval_subproc(self)
-        '''
-        if namespace_list is None:
-            namespace_list = self.ee.ns_manager.ns_list
-            namespace_list = [
-                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
-        for ns in namespace_list:
-            self.ee.ns_manager.update_namespace_with_extra_ns(
-                ns, extra_ns, after_name)
 
     def setup_sos_disciplines_driver_inputs_depend_on_sc_map(self, dynamic_inputs):
         """
@@ -491,4 +478,5 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         dynamic_inputs.update(scatter_desc_in)
 
         return dynamic_inputs
+
 ##################### End: Sub methods for build #########################
