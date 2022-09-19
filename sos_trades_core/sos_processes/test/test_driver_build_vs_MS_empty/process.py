@@ -49,7 +49,9 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_disc3', f'{driver_root}.Disc3')
         self.ee.ns_manager.add_ns(
             'ns_out_disc3', f'{driver_root}')
+
         self.ee.ns_manager.add_ns('ns_ac', f'{driver_root}')
+        self.ee.ns_manager.add_ns('ns_data_ac', f'{root}')
 
         # remark : 'ns_scenario' set to {self.ee.study_name} in subprocess not
         # needed !
