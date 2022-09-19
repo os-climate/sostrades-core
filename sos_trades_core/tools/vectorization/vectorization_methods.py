@@ -91,6 +91,7 @@ def get_inputs_for_path(
     PATH: str,
     parent_path_admissible: bool = False,
     unique_value: bool = False,
+    parameter_name: str = '',
 ):
     filtered_input_parameter = None
     if BREAKDOWN_COLUMN in input_parameter:
@@ -156,7 +157,9 @@ def check_aircraft_breakdown_in_inputs(
             )
 
 
-def flatten(nested_dict, flatten_list=None, parent_key=None):
+def flatten(
+    nested_dict: dict, flatten_list: list = None, parent_key: str = None
+) -> list:
     if flatten_list is None:
         flatten_list = []
     for key, sub_dict in sorted(nested_dict.items()):
@@ -168,3 +171,96 @@ def flatten(nested_dict, flatten_list=None, parent_key=None):
         if sub_dict:
             flatten(sub_dict, flatten_list, parent_key=full_key)
     return flatten_list
+
+
+def generate_breakdown_by_level(aircraft_breakdown_tree: list) -> dict:
+    breakdown_by_level = {'calculate': [], 'sum': {}}
+    aircraft_breakdown_list = flatten(nested_dict=aircraft_breakdown_tree)
+    key_with_children = {}
+    for key in aircraft_breakdown_list:
+        sub_keys_list = [
+            k
+            for k in aircraft_breakdown_list
+            if key in k and len(k.split('.')) == len(key.split('.')) + 1
+        ]
+        key_with_children[key] = sub_keys_list
+
+    breakdown_by_level['calculate'] = [
+        key for key, children_list in key_with_children.items() if children_list == []
+    ]
+    unsorted_sum_dict = {
+        key: children_list
+        for key, children_list in key_with_children.items()
+        if children_list != []
+    }
+
+    breakdown_by_level['sum'] = {
+        key: unsorted_sum_dict[key]
+        for key in sorted(
+            unsorted_sum_dict.keys(), key=lambda x: len(x.split('.')), reverse=True
+        )
+    }
+
+    return breakdown_by_level
+
+
+def compute_sum_df(
+    df_dict: dict,
+    parent_key: str,
+    children_keys: list,
+    columns_not_to_sum: list = [],
+):
+    """
+    Method to compute sum of dict of dataframes
+    not_sum : column name to not sum
+    """
+    # infer not summable columns in dataframe
+    not_summable_nested_list = [
+        df.convert_dtypes()
+        .select_dtypes(exclude=[np.number, 'datetime'])
+        .columns.to_list()
+        for df in df_dict.values()
+    ]
+    not_summable = [l for sublist in not_summable_nested_list for l in sublist]
+    if len(not_summable):
+        if columns_not_to_sum is None:
+            columns_not_to_sum = not_summable
+        else:
+            columns_not_to_sum.extend(not_summable)
+            columns_not_to_sum = list(set(columns_not_to_sum))
+
+    df_sum = None
+    for key in children_keys:
+        # check coherency between parent_key and children keys
+        if parent_key not in key:
+            raise Exception(
+                f'Breakdown {key} is not a children of {parent_key}. The sum cannot be applied.'
+            )
+        col_split = key.split('.')
+        if len(col_split) != len(parent_key.split('.')) + 1:
+            raise Exception(
+                f'Breakdown {key} is not a direct children of {parent_key}. The sum cannot be applied.'
+            )
+        if key not in df_dict.keys():
+            raise Exception(
+                f'Children key {key} is not in specified dict of DataFrame to sum.'
+            )
+
+        df_to_sum = df_dict[key]
+        in_columns = [col for col in df_to_sum.columns if col not in columns_not_to_sum]
+        filtered_df_to_sum = df_to_sum[in_columns]
+        if df_sum is None:
+            df_sum = filtered_df_to_sum.copy(deep=True)
+        else:
+            df_sum = df_sum.add(filtered_df_to_sum, fill_value=0.0)
+
+    # restore column not to sum in result sum df
+    if columns_not_to_sum != []:
+        df_restore_base = list(df_dict.values())[0]
+        restore_columns = [
+            col for col in df_restore_base.columns if col in columns_not_to_sum
+        ]
+        df_restore = df_restore_base[restore_columns]
+        df_sum = df_restore.join(df_sum)
+
+    return df_sum
