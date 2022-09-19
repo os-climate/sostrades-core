@@ -105,46 +105,37 @@ class NamespaceManager:
         return self.__disc_ns_dict
 
     #-- Data name space methods
-    def add_ns_def(self, ns_info, overwrite_value=False):
+    def add_ns_def(self, ns_info):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
         for key, value in ns_info.items():
-            ns_id = self.add_ns(key, value, overwrite_value)
+            ns_id = self.add_ns(key, value)
             ns_ids.append(ns_id)
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, overwrite_value=False):
+    def add_ns(self, name, ns_value):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
         '''
-        ns = None
+
+        # if the couple (name,value) already exists do not create another
+        # object take the one that exists
         if f'{name}{self.NS_NAME_SEPARATOR}{ns_value}' in self.all_ns_dict:
             ns = self.all_ns_dict[f'{name}{self.NS_NAME_SEPARATOR}{ns_value}']
-            if overwrite_value:
-                ns.value = ns_value
 
-        # -- check if name and value
-#         found = False
-#         for ns_obj in self.ns_list:
-#             if ns_obj.name == name and ns_obj.value == ns_value:
-#                 # -- found an already existing namespace
-#                 ns = ns_obj
-#                 found = True
-#                 break
-            # else a ns already exists but with different value, continue
-
-        # -- else generate
-        if ns is None:
+        # else we create a new object and store it in all_ns_dict
+        else:
             ns = Namespace(name, ns_value)
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'] = ns
-
+        # This shared_ns_dict delete the namespace if already exist: new one
+        # has priority
         self.shared_ns_dict[name] = ns
 
         return ns.get_ns_id()

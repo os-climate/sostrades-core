@@ -30,7 +30,7 @@ class BaseProcessBuilder:
     def get_builders(self):
         return []
 
-    def create_builder_list(self, mods_dict, ns_dict=None, overwrite_value=False, associate_namespace=False):
+    def create_builder_list(self, mods_dict, ns_dict=None, associate_namespace=False):
         ''' 
         define a base namespace
         instantiate builders iterating over a list of module paths
@@ -38,7 +38,7 @@ class BaseProcessBuilder:
         '''
         ns_ids = []
         if ns_dict is not None:
-            ns_ids = self.ee.ns_manager.add_ns_def(ns_dict, overwrite_value)
+            ns_ids = self.ee.ns_manager.add_ns_def(ns_dict)
         builders = []
         for disc_name, mod_path in mods_dict.items():
             a_b = self.ee.factory.get_builder_from_module(
