@@ -377,3 +377,9 @@ class TestSerializeDF(unittest.TestCase):
         self.assertEqual(y2, a2 * x2 + b2)
         self.dir_to_del.append(
             dump_dir)
+
+
+if '__main__' == __name__:
+    cls = TestSerializeDF()
+    cls.setUp()
+    cls.test_05_load_study_after_execute()

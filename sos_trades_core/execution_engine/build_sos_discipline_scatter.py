@@ -22,11 +22,11 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
 
 
-class SoSDisciplineScatterException(Exception):
+class BuildSoSDisciplineScatterException(Exception):
     pass
 
 
-class SoSDisciplineScatter(SoSDisciplineBuilder):
+class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
     '''
     Class that build disciplines using a builder and a map containing data to scatter
     '''
@@ -49,6 +49,9 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         '''
         Constructor
         '''
+        SoSDisciplineBuilder.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
+
         self.__factory = ee.factory
         self.__scattered_disciplines = {}
         self.sub_coupling_builder_dict = {}
@@ -59,20 +62,24 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         self._maturity = ''
 
         self.coupling_per_scatter = False
-        # associate map to discipline
-        self.map_name = map_name
-        self.sc_map = ee.smaps_manager.get_build_map(self.map_name)
-        ee.smaps_manager.associate_disc_to_build_map(self)
-        self.sc_map.configure_map(cls_builder)
+
+        # associate map to discipline if a map name has been defined
+        self._associate_map_to_discipline(ee, map_name, cls_builder)
+
+        # Treatment of cls_builder
         self.__builders = cls_builder
-        # if isinstance(self.__builders)
-        SoSDisciplineBuilder.__init__(
-            self, sos_name, ee, associated_namespaces=associated_namespaces)
-        # add input_name to inst_desc_in
+        # Create the process builder associated to the driver
+        self.driver_process_builder = self._set_driver_process_builder()
+        self.driver_process_disc = None  # will be self._set_driver_process_builder.build()
+
+        # Dynamically add input_name to INST_DESC_IN
         self.build_inst_desc_in_with_map()
-        self.builder_name = None
-        if not isinstance(self.__builders, list):
-            self.builder_name = self.__builders.sos_name
+
+    def set_builders(self, value):
+        self.__builders = value
+
+    def get_builders(self):
+        return self.__builders
 
     def get_scattered_disciplines(self):
         return self.__scattered_disciplines
@@ -89,24 +96,53 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
     def scatter_build_map(self):
         return self.__scatter_build_map
 
+    def _associate_map_to_discipline(self, ee, map_name, cls_builder):
+        '''
+        Associate provided scenario map to driver
+        '''
+        self.map_name = map_name
+        if self.map_name == '':  # added condition for proc build
+            self.sc_map = None
+        else:
+            self.sc_map = ee.smaps_manager.get_build_map(map_name)
+            ee.smaps_manager.associate_disc_to_build_map(self)
+            self.sc_map.configure_map(cls_builder)
+
+    def _set_driver_process_builder(self):
+        '''
+        Create the driver process builder
+        '''
+        # if isinstance(self.__builders)
+        if len(self.__builders) == 0:  # added condition for proc build
+            disc_builder = None
+        else:
+            # else return the builder
+            disc_builder = self.__builders
+        # get the builder name if not a list
+        self.builder_name = None
+        if not isinstance(self.__builders, list):
+            self.builder_name = self.__builders.sos_name
+        return disc_builder
+
     def build_inst_desc_in_with_map(self):
         '''
         Consult the associated scatter map and adapt the inst_desc_in of the gather with the scatter var_name 
         '''
-        input_name = self.sc_map.get_input_name()
-        input_type = 'list'
-        input_subtype_descriptor = {'list': 'string'}
+        if self.map_name != '':  # added condition for proc build
+            input_name = self.sc_map.get_input_name()
+            input_type = 'list'
+            input_subtype_descriptor = {'list': 'string'}
 
-        if self.sc_map.INPUT_NS in self.sc_map.get_map():
-            scatter_desc_in = {input_name: {
-                SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
-                SoSDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
-        else:
-            scatter_desc_in = {input_name: {
-                SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
-                SoSDiscipline.STRUCTURING: True}}
+            if self.sc_map.INPUT_NS in self.sc_map.get_map():
+                scatter_desc_in = {input_name: {
+                    SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
+                    SoSDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
+            else:
+                scatter_desc_in = {input_name: {
+                    SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
+                    SoSDiscipline.STRUCTURING: True}}
 
-        self.inst_desc_in.update(scatter_desc_in)
+            self.inst_desc_in.update(scatter_desc_in)
 
     def build(self):
         ''' 
@@ -118,39 +154,41 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         - Scatter the instantiator cls and adapt namespaces depending if it is a list or a singleton
         '''
 
-        # old_current_discipline = self.ee.factory.current_discipline
-        # self.ee.factory.current_discipline = self
+        if len(self.__builders) == 0 or self.map_name == '':  # added condition for proc build
+            pass
+        else:
+            # old_current_discipline = self.ee.factory.current_discipline
+            # self.ee.factory.current_discipline = self
+            self.ee.ns_manager.update_shared_ns_with_others_ns(self)
+            input_name = self.sc_map.get_input_name()  # ac_name_list
+            local_namespace = self.ee.ns_manager.get_local_namespace_value(
+                self)
 
-        self.ee.ns_manager.update_shared_ns_with_others_ns(self)
-        input_name = self.sc_map.get_input_name()  # ac_name_list
-        local_namespace = self.ee.ns_manager.get_local_namespace_value(
-            self)
+            ns_to_update = self.sc_map.get_ns_to_update()
+            # store ns_to_update namespace object
+            old_ns_to_update = {}
+            for ns_name in ns_to_update:
+                old_ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self,
+                                                                                    ns_name)
 
-        ns_to_update = self.sc_map.get_ns_to_update()
-        # store ns_to_update namespace object
-        old_ns_to_update = {}
-        for ns_name in ns_to_update:
-            old_ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self,
-                                                                                ns_name)
+            # remove all disciplines not in subproc_names
+            if input_name in self._data_in.keys():
+                sub_names = self.get_sosdisc_inputs(
+                    input_name)  # [ac1, ac2, ...]
+                if sub_names is not None:
 
-        # remove all disciplines not in subproc_names
-        if input_name in self._data_in.keys():
-            sub_names = self.get_sosdisc_inputs(
-                input_name)  # [ac1, ac2, ...]
-            if sub_names is not None:
+                    new_sub_names = self.clean_scattered_disciplines(sub_names)
 
-                new_sub_names = self.clean_scattered_disciplines(sub_names)
+                    # build sub_process through the factory
+                    for name in sub_names:
+                        if self.coupling_per_scatter:
+                            self.build_sub_coupling(
+                                name, local_namespace, new_sub_names, old_ns_to_update)
+                        else:
+                            self.build_child_scatter(
+                                name, local_namespace, new_sub_names, old_ns_to_update)
 
-                # build sub_process through the factory
-                for name in sub_names:
-                    if self.coupling_per_scatter:
-                        self.build_sub_coupling(
-                            name, local_namespace, new_sub_names, old_ns_to_update)
-                    else:
-                        self.build_child_scatter(
-                            name, local_namespace, new_sub_names, old_ns_to_update)
-
-                self.ee.ns_manager.shared_ns_dict.update(old_ns_to_update)
+                    self.ee.ns_manager.shared_ns_dict.update(old_ns_to_update)
 
         # if old_current_discipline is not None:
         #     self.ee.factory.current_discipline = old_current_discipline
@@ -183,26 +221,22 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
 
     def build_child_scatter(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
-        ns_ids = []
         # Call scatter map to modify the associated namespace
-        ns_scatter_id = self.sc_map.modify_scatter_ns(
-            self.builder_name, name, local_namespace)
-        ns_ids.append(ns_scatter_id)
+        self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
 
-        ns_update_ids = self.sc_map.update_ns(
+        self.sc_map.update_ns(
             old_ns_to_update, name, self.sos_name)
-        ns_ids.extend(ns_update_ids)
 
         # Case of a scatter of coupling :
         if isinstance(self.__builders, list):
             self.build_scatter_of_coupling(
-                name, local_namespace, new_sub_names, ns_update_ids)
+                name, local_namespace, new_sub_names)
 
         # Case of a coupling of scatter :
         else:
-            self.build_coupling_of_scatter(name, new_sub_names, ns_update_ids)
+            self.build_coupling_of_scatter(name, new_sub_names)
 
-    def build_scatter_of_coupling(self, name, local_namespace, new_sub_names, ns_update_ids):
+    def build_scatter_of_coupling(self, name, local_namespace, new_sub_names):
         '''
         # We set the scatter_name in the namespace and the discipline is called with its origin name
         #
@@ -218,15 +252,14 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         for builder in self.__builders:
             self.ee.ns_manager.set_current_disc_ns(
                 f'{local_namespace}.{name}')
-            builder.add_namespace_list_in_associated_namespaces(
-                ns_update_ids)
+
             disc = builder.build()
             # Add the discipline only if it is in
             # new_sub_names
             if name in new_sub_names:
                 self.add_scatter_discipline(disc, name)
 
-    def build_coupling_of_scatter(self, name, new_sub_names, ns_update_ids):
+    def build_coupling_of_scatter(self, name, new_sub_names):
         '''
         # We set the scatter_name as the discipline name in the scatter which has already the name of the builder
         # Disc1 is the scatter
@@ -237,8 +270,7 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         '''
         old_builder_name = self.__builders.sos_name
         self.__builders.set_disc_name(name)
-        self.__builders.add_namespace_list_in_associated_namespaces(
-            ns_update_ids)
+
         disc = self.__builders.build()
         self.__builders.set_disc_name(old_builder_name)
 
@@ -267,7 +299,7 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         return new_sub_names
 
     def add_disc_to_remove_recursive(self, disc, to_remove):
-        if isinstance(disc, SoSDisciplineScatter):
+        if isinstance(disc, BuildSoSDisciplineScatter):
             to_remove.append(disc)
             for disc_list in disc.__scattered_disciplines.values():
                 for sub_disc in disc_list:
@@ -312,6 +344,6 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
 
     def run(self):
         '''
-        No run function for a SoSDisciplineScatter
+        No run function for a BuildSoSDisciplineScatter
         '''
         pass

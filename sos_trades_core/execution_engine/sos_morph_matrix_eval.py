@@ -83,11 +83,12 @@ class SoSMorphMatrixEval(SoSEval):
                'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
                }
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         '''
             Constructor
         '''
-        super(SoSMorphMatrixEval, self).__init__(sos_name, ee, cls_builder)
+        super(SoSMorphMatrixEval, self).__init__(sos_name, ee,
+                                                 cls_builder, associated_namespaces=associated_namespaces)
         self.scenario_generator = ScenarioGenerator()
         # allowed input types
         self.eval_input_types = ['float', 'int', 'string']
@@ -235,7 +236,7 @@ class SoSMorphMatrixEval(SoSEval):
             self.ee.logger.error(
                 'Evaluated Inputs: select at least one input')
         elif '' in selected_inputs:
-            missing_input_variable_names = eval_inputs.loc[(eval_inputs['selected_input']) & 
+            missing_input_variable_names = eval_inputs.loc[(eval_inputs['selected_input']) &
                                                            (eval_inputs['input_variable_name'] == ''), 'name'].values.tolist(
             )
             self.ee.logger.error(
@@ -252,7 +253,7 @@ class SoSMorphMatrixEval(SoSEval):
             self.ee.logger.error(
                 'Evaluated Outputs: select at least one output')
         elif '' in selected_outputs:
-            missing_output_variable_names = eval_outputs.loc[(eval_outputs['selected_output']) & 
+            missing_output_variable_names = eval_outputs.loc[(eval_outputs['selected_output']) &
                                                              (eval_outputs['output_variable_name'] == ''), 'name'].values.tolist(
             )
             self.ee.logger.error(
@@ -495,14 +496,18 @@ class SoSMorphMatrixEval(SoSEval):
         samples_to_evaluate = []
         scenario_name_matching = {}
         for index, row in selected_scenario_df.iterrows():
-            samples_to_evaluate.append(row[list(self.eval_input_dict.keys())].values)
-            scenario_name_matching["scenario_" + str(index + 1)] = row['scenario_name']
+            samples_to_evaluate.append(
+                row[list(self.eval_input_dict.keys())].values)
+            scenario_name_matching["scenario_" +
+                                   str(index + 1)] = row['scenario_name']
 
-        evaluation_outputs = self.samples_evaluation(samples_to_evaluate, convert_to_array=False)
+        evaluation_outputs = self.samples_evaluation(
+            samples_to_evaluate, convert_to_array=False)
 
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
             for i, output in enumerate(self.namespaced_eval_outputs.keys()):
-                output_dict[output][scenario_name_matching[scenario_name]] = evaluated_samples[1][i]
+                output_dict[output][scenario_name_matching[scenario_name]
+                                    ] = evaluated_samples[1][i]
         return output_dict
 
     def run(self):
@@ -522,4 +527,3 @@ class SoSMorphMatrixEval(SoSEval):
         self.store_sos_outputs_values(output_dict)
         # update status of eval process even if no run has been executed
         self._update_status_recursive(self.STATUS_DONE)
-

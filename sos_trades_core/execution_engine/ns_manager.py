@@ -35,6 +35,7 @@ class NamespaceManager:
     Specification: NamespaceManager allows to manage namespaces for disciplines data
     '''
     NS_SEP = '.'
+    NS_NAME_SEPARATOR = '__'
 
     def __init__(self, name, ee):
         '''
@@ -122,8 +123,8 @@ class NamespaceManager:
         WARNING: Do not use to update namespace values
         '''
         ns = None
-        if f'{name}__{ns_value}' in self.all_ns_dict:
-            ns = self.all_ns_dict[f'{name}__{ns_value}']
+        if f'{name}{self.NS_NAME_SEPARATOR}{ns_value}' in self.all_ns_dict:
+            ns = self.all_ns_dict[f'{name}{self.NS_NAME_SEPARATOR}{ns_value}']
             if overwrite_value:
                 ns.value = ns_value
 
@@ -142,7 +143,7 @@ class NamespaceManager:
             ns = Namespace(name, ns_value)
             #-- add in the list if created
             self.ns_list.append(ns)
-            self.all_ns_dict[f'{name}__{ns_value}'] = ns
+            self.all_ns_dict[f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'] = ns
 
         self.shared_ns_dict[name] = ns
 
@@ -274,13 +275,22 @@ class NamespaceManager:
         self.add_disc_ns_info(disc, disc_ns_info)
 
     def get_associated_ns(self, disc):
-
+        shared_ns_dict = self.get_shared_ns_dict()
         if len(disc.associated_namespaces) == 0:
-            others_ns = self.get_shared_ns_dict()
+            others_ns = shared_ns_dict
         else:
+            get_ns_names = [
+                self.all_ns_dict[ns].name for ns in disc.associated_namespaces]
+            if len(get_ns_names) != len(set(get_ns_names)):
+                raise Exception(
+                    f'There is two namespaces with the same name in the associated namespace list of {disc.get_disc_full_name()}')
             others_ns = {
                 self.all_ns_dict[ns].name: self.all_ns_dict[ns] for ns in disc.associated_namespaces}
-
+            # FIX to wait all process modifs
+            # add namespaces present in shared_ns_dict and not in associated_ns
+            for shared_ns_name, shared_ns in shared_ns_dict.items():
+                if shared_ns_name not in others_ns:
+                    others_ns[shared_ns_name] = shared_ns
         return others_ns
 
     def create_local_namespace(self, disc):
@@ -315,7 +325,7 @@ class NamespaceManager:
                 disc_id) for disc_id in dependendy_disc_id_list]
             if len(list(filter(None, dependency_disc_list))) == 0:
                 self.ns_list.remove(ns)
-                del self.all_ns_dict[f'{ns.name}__{ns.value}']
+                del self.all_ns_dict[f'{ns.name}{self.NS_NAME_SEPARATOR}{ns.value}']
                 del self.shared_ns_dict[ns.name]
 
     def add_disc_ns_info(self, pt, disc_ns_info):

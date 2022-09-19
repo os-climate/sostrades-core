@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sos_trades_core.execution_engine.ns_manager import NamespaceManager
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -24,6 +25,7 @@ class SoSBuilder(object):
     '''
     Class that stores a class and associated attributes to be built afterwards
     '''
+    NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''
@@ -80,6 +82,21 @@ class SoSBuilder(object):
                 'Should specify a list of strings or a string to associate namespaces')
         self.__args['associated_namespaces'] = self.__associated_namespaces
 
+    def add_namespace_list_in_associated_namespaces(self, ns_list):
+        '''
+        Add a namespace in associated namespaces list but check if one already exists with the same name
+        If yes then the new one has the priority 
+        '''
+        for ns in ns_list:
+            ns_name = ns.split(self.NS_NAME_SEPARATOR)[0]
+            existing_ns_withsame_name = [
+                as_ns for as_ns in self.associated_namespaces if as_ns.startswith(ns_name)]
+            if len(existing_ns_withsame_name) != 0:
+                self.__associated_namespaces = [
+                    as_ns for as_ns in self.associated_namespaces if as_ns not in existing_ns_withsame_name]
+            self.__associated_namespaces.append(ns)
+        self.__args['associated_namespaces'] = self.__associated_namespaces
+
     def build(self):
         ''' Instantiates the class self.cls
         '''
@@ -104,7 +121,10 @@ class SoSBuilder(object):
         return self.disc
 
     def create_disc(self, future_new_ns_disc_name):
-        self.disc = self.cls(**self.__args)
+        try:
+            self.disc = self.cls(**self.__args)
+        except:
+            print('toto')
         self.disc.father_builder = self
         self.discipline_dict[future_new_ns_disc_name] = self.disc
 

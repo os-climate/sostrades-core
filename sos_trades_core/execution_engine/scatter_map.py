@@ -17,6 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+
 class ScatterMap:
     '''
     Specification: ScatterMap class allows to define parameters to build Scatter and Gather disciplines
@@ -89,18 +90,25 @@ class ScatterMap:
         else:
             base_namespace = local_namespace
 
-        self.ee.ns_manager.add_ns(
+        ns_id = self.ee.ns_manager.add_ns(
             self.get_scatter_ns(), f'{base_namespace}.{scatter_name}')
+
+        return ns_id
 
     def update_ns(self, old_ns, name, after_name):
         '''
         Create namespaces for ns_to_update and add to shared_ns_dict
         '''
+        ns_ids = []
+
         for ns_name in old_ns:
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
                 old_ns[ns_name].get_value(), name, after_name=after_name)
-            self.ee.ns_manager.add_ns(
+            ns_id = self.ee.ns_manager.add_ns(
                 ns_name, updated_value)
+            ns_ids.append(ns_id)
+
+        return ns_ids
 
     def get_input_name(self):
         '''
