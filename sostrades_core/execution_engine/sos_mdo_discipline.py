@@ -84,7 +84,7 @@ class SoSMDODiscipline(MDODiscipline):
         # send local data to the wrapper for i/o
         self.sos_wrapp.local_data = self.local_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
-        self.sos_wrapp.output_data_names = self.get_input_output_data_names()
+        self.sos_wrapp.output_data_names = self.get_output_data_names()
         self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change

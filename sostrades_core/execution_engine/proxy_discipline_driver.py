@@ -95,12 +95,12 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         To be overload by drivers with specific configuration actions
         """
 
-    def reload_io(self):
-        '''
-        Create the data_in and data_out of the discipline with the DESC_IN/DESC_OUT, inst_desc_in/inst_desc_out
-        and initialize GEMS grammar with it (with a filter for specific variable types)
-        '''
-        ProxyDiscipline.reload_io(self)
+    # def reload_io(self):
+    #     '''
+    #     Create the data_in and data_out of the discipline with the DESC_IN/DESC_OUT, inst_desc_in/inst_desc_out
+    #     and initialize GEMS grammar with it (with a filter for specific variable types)
+    #     '''
+    #     ProxyDiscipline.reload_io(self)
 
 
     def prepare_execution(self):
