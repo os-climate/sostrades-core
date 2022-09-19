@@ -36,7 +36,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
             |_ SCENARIO_MAP (structuring)            
-               |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP['input_name'] != '')
+               |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP['input_name'] != '' or is not None)
         |_ DESC_OUT
 
     2) Description of DESC parameters:
@@ -157,14 +157,24 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
         self.previous_sub_process_repo = None
         self.previous_sub_process_name = None
+
+        self.previous_sc_map_dict = None
+
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
         self.dyn_var_sp_from_import_dict = {}
+
         self.previous_algo_name = ""
+
         self.sub_process_ns_in_build = None
+
         # Possible values: 'Empty_SP', 'Create_SP', 'Replace_SP',
         # 'Unchanged_SP'
         self.sub_proc_build_status = 'Empty_SP'
+
+        # Possible values: 'Empty', 'Create', 'Replace', 'Unchanged'
+        self.sc_map_build_status = 'Empty'
+
         # Possible values: 'No_SP_UC_Import', 'SP_UC_Import'
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
@@ -197,6 +207,36 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # as many coupling as names in the provided list of the data key
         # SCENARIO_MAP['input_name']
 
+        # 1. Create and add scenario_map
+        if self.SCENARIO_MAP in self._data_in:
+            sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
+            sc_map_name = sc_map_dict['input_name']
+            sc_map_ns = sc_map_dict['input_ns']
+
+            if sc_map_name is not None and sc_map_name != '' and sc_map_ns is not None and sc_map_ns != '':  # a filled sc_map is available
+                # either Unchanged or Create or Replace
+                # 1. set_sc_map_status
+                self.set_sc_map_status(sc_map_dict)
+                # 2. create and add map
+                sc_map_build_status = self.sc_map_build_status
+                # in case of replace then we should update/clean the previous existing sc_map.
+                # In case of cleaning, can this map be used by other and need
+                # not to be clean ?
+                #print(f'sc_map_build_status: {sc_map_build_status}')
+                if sc_map_build_status == 'Create' or sc_map_build_status == 'Replace':
+                    # add sc_map
+                    self.ee.smaps_manager.add_build_map(
+                        sc_map_name, sc_map_dict)
+                    # add input ns
+                    driver_name = 'vs_MS'
+                    root = f'{self.ee.study_name}'
+                    driver_root = f'{root}.{driver_name}'
+                    input_ns = sc_map_dict['input_ns']
+                    self.ee.ns_manager.add_ns(input_ns, f'{driver_root}')
+                    # self.ee.ns_manager.shared_ns_dict[input_ns].add_dependency(
+                    #    self.disc_id)
+
+        # 2. Create and add cls_builder
         if self.SUB_PROCESS_INPUTS in self._data_in:
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
@@ -208,13 +248,46 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 self.set_sub_process_status(
                     sub_process_repo, sub_process_name)
                 # 2 build_eval_subproc
-                if self.sub_proc_build_status == 'Create_SP' or self.sub_proc_build_status == 'Replace_SP':
+                sub_proc_build_status = self.sub_proc_build_status
+                if sub_proc_build_status == 'Create_SP' or sub_proc_build_status == 'Replace_SP':
                     self.build_driver_subproc(
                         sub_process_repo, sub_process_name)
 
-        BuildSoSDisciplineScatter.build(self)
-        # Dynamically add INST_DESC_IN and  INST_DESC_OUT if autogather is True
-        self.build_business_io()
+        # 3. Associate map to discipline and build (automatically done when
+        # structuring variable has changed and OK here even if empty proc or
+        # map)
+        if self.SCENARIO_MAP in self._data_in:
+            cls_builder = self.__cls_builder
+            sc_map = self.get_sosdisc_inputs(self.SCENARIO_MAP)
+            sc_map_name = sc_map['input_name']
+            BuildSoSDisciplineScatter._associate_map_to_discipline(self,
+                                                                   self.ee, sc_map_name, cls_builder)
+            BuildSoSDisciplineScatter.build(self)
+            # Dynamically add INST_DESC_IN and  INST_DESC_OUT if autogather is
+            # True
+            self.build_business_io()  # should be put in setup_sos_disciplines !
+
+    def set_sc_map_status(self, sc_map_dict):
+        '''
+            State sc_map CRUD status
+            The sc_map is defined by its dictionary
+            Function needed in build(self)
+        '''
+        # We come from outside driver process
+        if sc_map_dict != self.previous_sc_map_dict:
+            if self.previous_sc_map_dict is None:
+                previous_sc_map_name = None
+            else:
+                previous_sc_map_name = self.previous_sc_map_dict['input_name']
+            self.previous_sc_map_dict = sc_map_dict
+            # driver process with provided sc_map
+            sc_map_name = sc_map_dict['input_name']
+            if previous_sc_map_name == '' or previous_sc_map_name is None:
+                self.sc_map_build_status = 'Create'
+            else:
+                self.sc_map_build_status = 'Replace'
+        else:
+            self.sc_map_build_status = 'Unchanged'
 
     def configure(self):
         """
@@ -245,16 +318,12 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         """
         dynamic_inputs = {}
         dynamic_outputs = {}
-        if self.sub_proc_build_status != 'Empty_SP':
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            # 1. provide driver inputs based on selected subprocess
-            # self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
-            #    dynamic_inputs)
-            # self.add_inputs(dynamic_inputs)
-            # self.add_outputs(dynamic_outputs)
+        if self.sc_map is not None:
+            # 1. provide driver inputs based on selected scenario map
+            self.setup_sos_disciplines_driver_inputs_depend_on_sc_map(
+                dynamic_inputs)
+            self.add_inputs(dynamic_inputs)
+            self.add_outputs(dynamic_outputs)
             # 2. import data from selected sub_process_usecase
 
     def run(self):
@@ -268,6 +337,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
 #################### End: Main methods ################################
 ##################### Begin: Sub methods ################################
+# Remark: those sub methods should be private functions
 
     def run_autogather(self):
         '''
@@ -410,4 +480,15 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         for ns in namespace_list:
             self.ee.ns_manager.update_namespace_with_extra_ns(
                 ns, extra_ns, after_name)
+
+    def setup_sos_disciplines_driver_inputs_depend_on_sc_map(self, dynamic_inputs):
+        """
+            Update of SCENARIO_MAP['input_name']
+            Function needed in setup_sos_disciplines()
+        """
+        scatter_desc_in = BuildSoSDisciplineScatter.build_inst_desc_in_with_map(
+            self)
+        dynamic_inputs.update(scatter_desc_in)
+
+        return dynamic_inputs
 ##################### End: Sub methods for build #########################

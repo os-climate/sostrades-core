@@ -296,7 +296,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print("Full_inputs_list_last:")
         # print(full_inputs_list_last)
         inputs_list = ['sub_process_inputs', 'scenario_map']
-        inputs_list = inputs_list + ['scenario_list']
         inputs_list = inputs_list + \
             ['linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']
         # print(driver_disc.get_data_io_dict_keys('in'))
@@ -321,7 +320,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                            'ns_to_update': []}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
-        target_values_dict['scenario_list'] = None
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
 
@@ -329,13 +327,12 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         target_values_dict = {}
         target_values_dict['sub_process_inputs'] = 'USER'
         target_values_dict['scenario_map'] = 'USER'
-        target_values_dict['scenario_list'] = 'MISSING'
         self.check_discipline_value_types(
             driver_disc, target_values_dict, print_flag=print_flag)
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
-        target_missing_variables = ['scenario_list']
+        target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
         ################ End checks ##########################
 
@@ -376,7 +373,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print(added_inputs_list)
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
-        target_added_inputs_list = []
+        target_added_inputs_list = ['scenario_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -545,7 +542,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print("Full_inputs_list_last:")
         # print(full_inputs_list_last)
         inputs_list = ['sub_process_inputs', 'scenario_map']
-        inputs_list = inputs_list + ['scenario_list']
+        inputs_list = inputs_list
         inputs_list = inputs_list + \
             ['linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']
         # print(driver_disc.get_data_io_dict_keys('in'))
@@ -570,7 +567,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                            'ns_to_update': []}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
-        target_values_dict['scenario_list'] = None
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
 
@@ -578,13 +574,12 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         target_values_dict = {}
         target_values_dict['sub_process_inputs'] = 'USER'
         target_values_dict['scenario_map'] = 'USER'
-        target_values_dict['scenario_list'] = 'MISSING'
         self.check_discipline_value_types(
             driver_disc, target_values_dict, print_flag=print_flag)
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
-        target_missing_variables = ['scenario_list']
+        target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
@@ -689,7 +684,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                            'ns_to_update': []}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
-        target_values_dict['scenario_list'] = None
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
 
@@ -697,26 +691,16 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         target_values_dict = {}
         target_values_dict['sub_process_inputs'] = 'USER'
         target_values_dict['scenario_map'] = 'USER'
-        target_values_dict['scenario_list'] = 'MISSING'
 
         self.check_discipline_value_types(
             driver_disc, target_values_dict, print_flag=print_flag)
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
-        target_missing_variables = ['scenario_list']
+        target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
-
-        if 0 == 1:
-            ################ Added ##########################
-            print("\n")
-            print("1.2 pre  Provide 'scenario_list'")
-            dict_values = {}
-            dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
-            study_dump.load_data(from_input_dict=dict_values)
-            ################ Added ##########################
 
         ################ End checks ##########################
         print("\n")
@@ -782,7 +766,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                            'ns_to_update': []}
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
-        target_values_dict['scenario_list'] = None
 
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -791,21 +774,19 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         target_values_dict = {}
         target_values_dict['sub_process_inputs'] = 'USER'
         target_values_dict['scenario_map'] = 'USER'
-        target_values_dict['scenario_list'] = 'MISSING'
 
         self.check_discipline_value_types(
             driver_disc, target_values_dict, print_flag=print_flag)
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
-        target_missing_variables = ['scenario_list']
+        target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
 
         print("\n")
         print("1.3 Provide scenario_map")
-        sub_process_inputs_dict['process_name'] = mod_id
         dict_values = {}
         dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
         study_dump.load_data(from_input_dict=dict_values)
@@ -837,7 +818,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print(added_inputs_list)
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
-        target_added_inputs_list = []
+        target_added_inputs_list = ['scenario_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)

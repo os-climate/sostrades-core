@@ -38,36 +38,12 @@ class ProcessBuilder(BaseProcessBuilder):
         flag = 'Hessian'
         #flag = 'D1D3'
 
-        # 1. Define builder list from sub_proc
-        repo = 'sos_trades_core.sos_processes.test'
-        if flag == 'D1D3':
-            sub_proc = 'test_disc1_disc3_coupling'
-            ns_to_update = ['ns_disc3', 'ns_out_disc3', 'ns_ac']
-        else:
-            sub_proc = 'test_disc_hessian'
-            ns_to_update = []
-
-        builder_list = self.ee.factory.get_builder_from_process(
-            repo=repo, mod_id=sub_proc)
-
-        # 2. scenario build map
-        scenario_map_name = 'scenario_list'
-        input_ns = 'ns_scatter_scenario'
-        output_name = 'scenario_name'
-        scatter_ns = 'ns_scenario'  # not used
-        scenario_map = {'input_name': scenario_map_name,
-                        'input_ns': input_ns,
-                        'output_name': output_name,
-                        'scatter_ns': scatter_ns,
-                        'gather_ns': input_ns,
-                        'ns_to_update': ns_to_update}
-        self.ee.smaps_manager.add_build_map(
-            scenario_map_name, scenario_map)
         # driver name
         driver_name = 'vs_MS'
         root = f'{self.ee.study_name}'
         driver_root = f'{root}.{driver_name}'
         # shared namespace :
+        input_ns = 'ns_scatter_scenario'
         self.ee.ns_manager.add_ns(
             input_ns, f'{driver_root}')
         # shared namespace : shifted by nested operation
@@ -81,7 +57,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # 3. empty nested process and associated map
         builder_list = []
-        #scenario_map_name = ''
+        scenario_map_name = ''
 
         # 4. add multi_scenario
         multi_scenarios = self.ee.factory.create_build_very_simple_multi_scenario_builder(

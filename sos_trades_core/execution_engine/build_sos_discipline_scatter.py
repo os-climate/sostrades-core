@@ -72,7 +72,8 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         self.driver_process_disc = None  # will be self._set_driver_process_builder.build()
 
         # Dynamically add input_name to INST_DESC_IN
-        self.build_inst_desc_in_with_map()
+        #scatter_desc_in = self.build_inst_desc_in_with_map()
+        # self.inst_desc_in.update(scatter_desc_in)
 
     def set_builders(self, value):
         self.__builders = value
@@ -100,7 +101,7 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         Associate provided scenario map to driver
         '''
         self.map_name = map_name
-        if self.map_name == '':  # added condition for proc build
+        if self.map_name == '' or self.map_name is None:  # added condition for proc build
             self.sc_map = None
         else:
             self.sc_map = ee.smaps_manager.get_build_map(map_name)
@@ -127,7 +128,8 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         '''
         Consult the associated scatter map and adapt the inst_desc_in of the gather with the scatter var_name 
         '''
-        if self.map_name != '':  # added condition for proc build
+        scatter_desc_in = {}
+        if self.map_name != '' and self.map_name is not None:  # added condition for proc build
             input_name = self.sc_map.get_input_name()
             input_type = 'list'
             input_subtype_descriptor = {'list': 'string'}
@@ -140,8 +142,7 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
                 scatter_desc_in = {input_name: {
                     SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
                     SoSDiscipline.STRUCTURING: True}}
-
-            self.inst_desc_in.update(scatter_desc_in)
+        return scatter_desc_in
 
     def build(self):
         ''' 
@@ -153,7 +154,8 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         - Scatter the instantiator cls and adapt namespaces depending if it is a list or a singleton
         '''
 
-        if len(self.__builders) == 0 or self.map_name == '':  # added condition for proc build
+        # added condition for proc build
+        if len(self.__builders) == 0 or self.map_name == '' or self.map_name is None:
             pass
         else:
             # old_current_discipline = self.ee.factory.current_discipline
