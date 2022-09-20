@@ -215,3 +215,84 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+
+    def _test_2_DoeEval_of_DoeEval(self):
+        """ Here we test a DoeEval of a DoeEval process on a single sub-discipline to check that the transition of the
+        ProxyDisciplineDriver from working with short names to working with tuples of short names and namespace (of the
+        discipline to the local data variable belongs) is implemented. It is really a test of driver of a driver using
+        DoeEval.
+
+        The test is commented given that, even though the desired treeview is "reached", since eval_in and eval_out of
+        the two different DoeEval are defined with the same doeeval namespace (see DESC_IN and DESC_OUT of ProxyDoeEval),
+        variables do not configure properly. The exec_eng.configure() is not passed so the assert of the treeview shall
+        not be taken into account (see treeview in console during debugging).
+        """
+
+        dspace_dict = {'variable': ['x'],
+
+                       'lower_bnd': [0.],
+                       'upper_bnd': [100.],
+
+                       }
+        dspace = pd.DataFrame(dspace_dict)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+        proc_name = "test_disc1_doe_eval_of_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ Disc1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        assert exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+
+        # -- set up disciplines
+        private_values = {
+            self.study_name + '.x': array([10.]),
+            self.study_name + '.DoEEval.Disc1.a': array([5.]),
+            self.study_name + '.DoEEval.Disc1.b': array([25431.]),
+            self.study_name + '.y': array([4.])}
+        exec_eng.load_study_from_input_dict(private_values)
+        input_selection_x = {'selected_input': [True, False, False],
+                               'full_name': ['x', 'DoEEval.Disc1.a', 'DoEEval.Disc1.b']}
+        input_selection_x = pd.DataFrame(input_selection_x)
+
+        output_selection_y = {'selected_output': [True, False],
+                                'full_name': ['y', 'Disc1.indicator']}
+        output_selection_y = pd.DataFrame(output_selection_y)
+
+        disc_dict = {f'{self.ns}.DoEEval.sampling_algo': "lhs",
+                     f'{self.ns}.DoEEval.eval_inputs': input_selection_x,
+                     f'{self.ns}.DoEEval.eval_outputs': output_selection_y}
+
+        n_samples = 10
+        exec_eng.load_study_from_input_dict(disc_dict)
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': 'faced'},
+                     'doe.DoEEval.design_space': dspace}
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+
+        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        doe_disc_y = doe_disc.get_sosdisc_outputs('y_dict')
+
+        self.assertEqual(len(doe_disc_y), n_samples+1)
+        i = 0
+        for key in doe_disc_y.keys():
+            self.assertAlmostEqual(doe_disc_y[key], private_values[self.study_name + '.DoEEval.Disc1.b']
+                                   + private_values[self.study_name + '.DoEEval.Disc1.a']*doe_disc_samples.x[i][0])
+            i += 1
