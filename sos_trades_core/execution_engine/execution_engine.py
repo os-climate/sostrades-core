@@ -409,9 +409,10 @@ class ExecutionEngine:
         corresp_dict = {}
         for key in input_dict.keys():
             if type(input_dict[key]) == type(pd.DataFrame()):
-                for key_df in input_dict[key].keys():
-                    value_dict[f'{key}.{key_df}'] = input_dict[key][key_df].values[0]
-                    corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+                if len(input_dict[key]) > 0:
+                    for key_df in input_dict[key].keys():
+                        value_dict[f'{key}.{key_df}'] = input_dict[key][key_df].values[0]
+                        corresp_dict[f'{key}.{key_df}'] = [key, key_df]
             elif type(input_dict[key]) == type({}):
                 for key_df in input_dict[key].keys():
                     value_dict[f'{key}.{key_df}'] = input_dict[key][key_df]
