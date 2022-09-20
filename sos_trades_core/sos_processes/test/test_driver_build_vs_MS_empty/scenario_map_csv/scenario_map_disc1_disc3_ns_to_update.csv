@@ -1,0 +1,7 @@
+variable,value
+input_name,my_scenario_list3
+input_ns,ns_scatter_scenario
+output_name,scenario_name
+scatter_ns,ns_scenario
+gather_ns,ns_scatter_scenario
+ns_to_update,"['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']"

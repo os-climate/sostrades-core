@@ -511,6 +511,7 @@ class BuildDoeEval(SoSEval):
 
 #################### End: Main methods ################################
 ##################### Begin: Sub methods ################################
+# Remark: those sub methods should be private functions
     def set_sub_process_status(self, sub_process_repo, sub_process_name):
         '''
             State subprocess CRUD status

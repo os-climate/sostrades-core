@@ -21,9 +21,11 @@ Created on 27 july 2022
 from logging import Logger
 
 import pandas as pd
+import numpy as np
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 GRANULARITY_COLUMN = 'PATH'
+
 
 def get_parent_path(PATH):
     path_list = PATH.split('.')
@@ -34,7 +36,7 @@ def get_parent_path(PATH):
         return path_list
 
 
-def merge_df_dict_with_path(df_dict:dict)->pd.DataFrame:
+def merge_df_dict_with_path(df_dict: dict) -> pd.DataFrame:
     """Method to merge a dictionary of dataframe into a single dataframe.
     A new column for the granularity is created and the dictionary key is used as the value for the resulting dataframe
 
@@ -43,14 +45,14 @@ def merge_df_dict_with_path(df_dict:dict)->pd.DataFrame:
 
     Returns:
         pd.DataFrame: merged dataframe with a new column GRANULARITY_COLUMN with the dict key as value
-    """    
+    """
     df_with_path = pd.DataFrame({})
     for key, df in df_dict.items():
         df_copy = df.copy(deep=True)
-        df_copy.insert(0,GRANULARITY_COLUMN,key)
+        df_copy.insert(0, GRANULARITY_COLUMN, key)
         df_with_path = df_with_path.append(df_copy, ignore_index=True)
 
-    return df_with_path
+    return df_with_path.fillna(0.0)
 
 
 def compute_parent_path_sum(df, path, based_on, columns_not_to_sum):
@@ -84,7 +86,13 @@ def check_compute_parent_path_sum(df, columns_not_to_sum, based_on):
 
 # return input_parameter filtered on PATH parameter
 # if parent_path_admissible, return iput_parameter filtered on parent path if existing
-def get_inputs_for_path(input_parameter:pd.DataFrame, PATH:str, parent_path_admissible:bool=False, unique_value:bool = False):
+def get_inputs_for_path(
+    input_parameter: pd.DataFrame,
+    PATH: str,
+    parent_path_admissible: bool = False,
+    unique_value: bool = False,
+    parameter_name: str = '',
+):
     filtered_input_parameter = None
     if GRANULARITY_COLUMN in input_parameter:
         while filtered_input_parameter is None and len(PATH) > 0:
@@ -97,18 +105,22 @@ def get_inputs_for_path(input_parameter:pd.DataFrame, PATH:str, parent_path_admi
                     PATH = get_parent_path(PATH)
                 else:
                     raise Exception(
-                        f'the path {PATH} is not found in PATH input_parameter column'
+                        f'the path {PATH} is not found for parameter {parameter_name} but is required for the calculation. Please update it.'
                     )
     else:
-        raise Exception(f"The column {GRANULARITY_COLUMN} is not found as an input_parameter column")
+        raise Exception(
+            f"The column {GRANULARITY_COLUMN} is not found as an input_parameter column"
+        )
     if filtered_input_parameter is None:
         raise Exception("Can not find parent path")
     else:
-        filtered_input_parameter = filtered_input_parameter.drop(columns=['PATH']).reset_index(drop=True)
+        filtered_input_parameter = filtered_input_parameter.drop(
+            columns=['PATH']
+        ).reset_index(drop=True)
         # check if result dataframe is only one column
         if filtered_input_parameter.shape[1] == 1:
             # in that case, return only the column values as a list
-            values_list = filtered_input_parameter.iloc[:,0].values.tolist()
+            values_list = filtered_input_parameter.iloc[:, 0].values.tolist()
             if unique_value:
                 return values_list[0]
             else:
@@ -117,17 +129,137 @@ def get_inputs_for_path(input_parameter:pd.DataFrame, PATH:str, parent_path_admi
             return filtered_input_parameter
 
 
-
-def check_granularity_in_inputs(inputs_dict:dict, parameters_dict:dict, granularity_list:list,logger:Logger,sos_discipline:SoSDiscipline):
+def check_granularity_in_inputs(
+    inputs_dict: dict,
+    parameters_dict: dict,
+    granularity_list: list,
+    logger: Logger,
+    sos_discipline: SoSDiscipline,
+):
     for param_name, conf_dict in parameters_dict.items():
-        parameter = inputs_dict.get(param_name,None)
+        parameter = inputs_dict.get(param_name, None)
         if parameter is not None:
             if GRANULARITY_COLUMN in parameter:
                 for granularity in granularity_list:
                     if not granularity in parameter[GRANULARITY_COLUMN].values:
-                        logger.warning(f'Granularity {granularity} is missing for parameter {param_name} for discipline {sos_discipline.get_disc_full_name()}')
+                        logger.warning(
+                            f'Granularity {granularity} is missing for parameter {param_name} for discipline {sos_discipline.get_disc_full_name()}'
+                        )
             else:
-                logger.warning(f'Parameter {param_name} does not have the column {GRANULARITY_COLUMN}, impossible to check if all values are present for discipline {sos_discipline.get_disc_full_name()}')
+                logger.warning(
+                    f'Parameter {param_name} does not have the column {GRANULARITY_COLUMN}, impossible to check if all values are present for discipline {sos_discipline.get_disc_full_name()}'
+                )
 
         else:
-            logger.warning(f'Parameter {param_name} is not in input dictionary for discipline {sos_discipline.get_disc_full_name()}')
+            logger.warning(
+                f'Parameter {param_name} is not in input dictionary for discipline {sos_discipline.get_disc_full_name()}'
+            )
+
+
+def flatten(
+    nested_dict: dict, flatten_list: list = None, parent_key: str = None
+) -> list:
+    if flatten_list is None:
+        flatten_list = []
+    for key, sub_dict in sorted(nested_dict.items()):
+        if parent_key is None:
+            full_key = key
+        else:
+            full_key = f'{parent_key}.{key}'
+        flatten_list.append(full_key)
+        if sub_dict:
+            flatten(sub_dict, flatten_list, parent_key=full_key)
+    return flatten_list
+
+
+def generate_breakdown_by_level(aircraft_breakdown_tree: list) -> dict:
+    breakdown_by_level = {'calculate': [], 'sum': {}}
+    aircraft_breakdown_list = flatten(nested_dict=aircraft_breakdown_tree)
+    key_with_children = {}
+    for key in aircraft_breakdown_list:
+        sub_keys_list = [
+            k
+            for k in aircraft_breakdown_list
+            if key in k and len(k.split('.')) == len(key.split('.')) + 1
+        ]
+        key_with_children[key] = sub_keys_list
+
+    breakdown_by_level['calculate'] = [
+        key for key, children_list in key_with_children.items() if children_list == []
+    ]
+    unsorted_sum_dict = {
+        key: children_list
+        for key, children_list in key_with_children.items()
+        if children_list != []
+    }
+
+    breakdown_by_level['sum'] = {
+        key: unsorted_sum_dict[key]
+        for key in sorted(
+            unsorted_sum_dict.keys(), key=lambda x: len(x.split('.')), reverse=True
+        )
+    }
+
+    return breakdown_by_level
+
+
+def compute_sum_df(
+    df_dict: dict,
+    parent_key: str,
+    children_keys: list,
+    columns_not_to_sum: list = [],
+):
+    """
+    Method to compute sum of dict of dataframes
+    not_sum : column name to not sum
+    """
+    # infer not summable columns in dataframe
+    not_summable_nested_list = [
+        df.convert_dtypes()
+        .select_dtypes(exclude=[np.number, 'datetime'])
+        .columns.to_list()
+        for df in df_dict.values()
+    ]
+    not_summable = [l for sublist in not_summable_nested_list for l in sublist]
+    if len(not_summable):
+        if columns_not_to_sum is None:
+            columns_not_to_sum = not_summable
+        else:
+            columns_not_to_sum.extend(not_summable)
+            columns_not_to_sum = list(set(columns_not_to_sum))
+
+    df_sum = None
+    for key in children_keys:
+        # check coherency between parent_key and children keys
+        if parent_key not in key:
+            raise Exception(
+                f'Breakdown {key} is not a children of {parent_key}. The sum cannot be applied.'
+            )
+        col_split = key.split('.')
+        if len(col_split) != len(parent_key.split('.')) + 1:
+            raise Exception(
+                f'Breakdown {key} is not a direct children of {parent_key}. The sum cannot be applied.'
+            )
+        if key not in df_dict.keys():
+            raise Exception(
+                f'Children key {key} is not in specified dict of DataFrame to sum.'
+            )
+
+        df_to_sum = df_dict[key]
+        in_columns = [col for col in df_to_sum.columns if col not in columns_not_to_sum]
+        filtered_df_to_sum = df_to_sum[in_columns]
+        if df_sum is None:
+            df_sum = filtered_df_to_sum.copy(deep=True)
+        else:
+            df_sum = df_sum.add(filtered_df_to_sum, fill_value=0.0)
+
+    # restore column not to sum in result sum df
+    if columns_not_to_sum != []:
+        df_restore_base = list(df_dict.values())[0]
+        restore_columns = [
+            col for col in df_restore_base.columns if col in columns_not_to_sum
+        ]
+        df_restore = df_restore_base[restore_columns]
+        df_sum = df_restore.join(df_sum)
+
+    return df_sum
