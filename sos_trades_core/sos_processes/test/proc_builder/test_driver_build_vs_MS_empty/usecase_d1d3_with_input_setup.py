@@ -44,10 +44,10 @@ class Study(StudyManager):
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = ['ns_disc3', 'ns_out_disc3', 'ns_ac']
         scenario_map = {'input_name': scenario_map_name,
-                        'input_ns': input_ns,
-                        'output_name': output_name,
-                        'scatter_ns': scatter_ns,
-                        'gather_ns': input_ns,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
                         'ns_to_update': ns_to_update}
 
         ######### Numerical values   ####
@@ -63,8 +63,8 @@ class Study(StudyManager):
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
 
-        dict_values[f'{self.study_name}.a'] = a
-        dict_values[f'{self.study_name}.x'] = x
+        dict_values[f'{self.study_name}.vs_MS.a'] = a
+        dict_values[f'{self.study_name}.vs_MS.x'] = x
 
         dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b
         dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3.

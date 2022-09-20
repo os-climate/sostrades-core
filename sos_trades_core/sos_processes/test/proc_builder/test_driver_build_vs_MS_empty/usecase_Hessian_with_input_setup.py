@@ -44,10 +44,10 @@ class Study(StudyManager):
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = []
         scenario_map = {'input_name': scenario_map_name,
-                        'input_ns': input_ns,
-                        'output_name': output_name,
-                        'scatter_ns': scatter_ns,
-                        'gather_ns': input_ns,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
                         'ns_to_update': ns_to_update}
 
         ######### Numerical values   ####
