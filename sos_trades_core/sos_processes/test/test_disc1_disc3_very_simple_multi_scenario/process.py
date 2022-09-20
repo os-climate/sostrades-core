@@ -17,6 +17,7 @@ limitations under the License.
 #-- Generate test 1 process
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
@@ -26,8 +27,11 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
-    
+        '''
+        Subprocess for multiscenario 
+        '''
         # scatter build map
         ac_map = {'input_name': 'name_list',
 
@@ -36,9 +40,26 @@ class ProcessBuilder(BaseProcessBuilder):
                   'scatter_ns': 'ns_ac',
                   'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
-    
+
         self.ee.smaps_manager.add_build_map('name_list', ac_map)
-    
+
+        # instantiate factory # get instantiator from Discipline class
+
+        builder_list = self.ee.factory.get_builder_from_process(repo='sos_trades_core.sos_processes.test',
+                                                                mod_id='test_disc1_scenario')
+
+        scatter_list = self.ee.factory.create_multi_scatter_builder_from_list(
+            'name_list', builder_list=builder_list, autogather=True)
+
+        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
+        disc3_builder = self.create_builder_list({'Disc3': mod_list}, ns_dict={'ns_disc3': f'{self.ee.study_name}.Disc3',
+                                                                               'ns_out_disc3': f'{self.ee.study_name}'}
+                                                 )
+        scatter_list.extend(disc3_builder)
+        '''
+        End of subprocess
+        '''
+
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
 
@@ -46,36 +67,20 @@ class ProcessBuilder(BaseProcessBuilder):
                         'output_name': 'scenario_name',
                         'scatter_ns': 'ns_scenario',
                         'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
-    
+                        'ns_to_update': ['ns_disc3', 'ns_out_disc3']}
+
         self.ee.smaps_manager.add_build_map(
             'scenario_list', scenario_map)
-    
-        # shared namespace
-        self.ee.ns_manager.add_ns('ns_barrierr', self.ee.study_name)
+
+#         # shared namespace
         self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', f'{self.ee.study_name}.multi_scenarios')
-        self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{self.ee.study_name}.multi_scenarios.Disc3')
-        self.ee.ns_manager.add_ns(
-            'ns_out_disc3', f'{self.ee.study_name}.multi_scenarios')
-        self.ee.ns_manager.add_ns(
-            'ns_data_ac', self.ee.study_name)
-    
-        # instantiate factory # get instantiator from Discipline class
-    
-        builder_list = self.ee.factory.get_builder_from_process(repo='sos_trades_core.sos_processes.test',
-                                                           mod_id='test_disc1_scenario')
-    
-        scatter_list = self.ee.factory.create_multi_scatter_builder_from_list(
-            'name_list', builder_list=builder_list, autogather=True)
-    
-        mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
-        disc3_builder = self.ee.factory.get_builder_from_module(
-            'Disc3', mod_list)
-        scatter_list.append(disc3_builder)
-    
+            'ns_scatter_scenario', f'{self.ee.study_name}')
+
+        multi_scenario_name = 'multi_scenarios'
         multi_scenarios = self.ee.factory.create_very_simple_multi_scenario_builder(
-            'multi_scenarios', 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing')
-    
+            multi_scenario_name, 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing')
+
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_ns=multi_scenario_name, after_name=self.ee.study_name)
+
         return multi_scenarios
