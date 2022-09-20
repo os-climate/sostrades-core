@@ -961,7 +961,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)
 
     def test_11_doe_eval_of_single_sub_discipline(self):
-        """ Here we test a DoEEval process on a single sub-discipline so that there is no ProxyCoupling built in node.
+        """ Here we test a DoeEval process on a single sub-discipline (with a ProxyCoupling built in node).
         """
 
         dspace_dict = {'variable': ['x'],
