@@ -88,5 +88,6 @@ class Study(StudyManager):
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.ee.display_treeview_nodes(True)
+    uc_cls.ee.display_treeview_nodes()
+    # uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)

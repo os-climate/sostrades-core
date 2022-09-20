@@ -37,6 +37,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             |_ SUB_PROCESS_INPUTS (structuring)
             |_ SCENARIO_MAP (structuring)            
                |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP['input_name'] != '' or is not None)
+            |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
 
     2) Description of DESC parameters:
@@ -59,7 +60,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                                                                           it is a temporary input: it will be put to None as soon as                                                                        
                                                     GATHER_NS:            namespace of the gather discipline associated to the scatter discipline 
                                                                           (input_ns by default and optional)
-                                                    NS_TO_UPDATE:         list of namespaces depending on the scatter namespace (can be optional)                                                                                                                                            
+                                                    NS_TO_UPDATE:         list of namespaces depending on the scatter namespace (can be optional)   
+            |_ NS_IN_DF :                       a map of ns name: value                                                                                                                                        
 
          |_ DESC_OUT
     '''
@@ -102,6 +104,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     SCENARIO_DICT = 'scenario_dict'
     NS_BUSINESS_OUTPUTS = 'ns_business_outputs'
+
+    NS_IN_DF = 'ns_in_df'
 
     default_sub_process_inputs_dict = {}
     default_sub_process_inputs_dict[PROCESS_REPOSITORY] = None
@@ -227,14 +231,12 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                     # add sc_map
                     self.ee.smaps_manager.add_build_map(
                         sc_map_name, sc_map_dict)
-                    # add input ns
-                    driver_name = 'vs_MS'
-                    root = f'{self.ee.study_name}'
-                    driver_root = f'{root}.{driver_name}'
-                    input_ns = sc_map_dict['input_ns']
-                    self.ee.ns_manager.add_ns(input_ns, f'{driver_root}')
-                    # self.ee.ns_manager.shared_ns_dict[input_ns].add_dependency(
-                    #    self.disc_id)
+                    # namespace value
+                    current_ns = self.ee.ns_manager.current_disc_ns
+                    self.ee.ns_manager.add_ns(sc_map_ns, current_ns)
+                    self.ee.ns_manager.disc_ns_dict[self]['others_ns'].update(
+                        {sc_map_ns: self.ee.ns_manager.shared_ns_dict[sc_map_ns]})
+                    #print([var_ns for var_ns in self.ee.ns_manager.get_disc_others_ns(self)])
 
         # 2. Create and add cls_builder
         if self.SUB_PROCESS_INPUTS in self._data_in:
@@ -252,7 +254,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 if sub_proc_build_status == 'Create_SP' or sub_proc_build_status == 'Replace_SP':
                     self.build_driver_subproc(
                         sub_process_repo, sub_process_name)
-
         # 3. Associate map to discipline and build (automatically done when
         # structuring variable has changed and OK here even if empty proc or
         # map)
@@ -444,9 +445,31 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         if not isinstance(cls_builder, list):
             cls_builder = [cls_builder]
         self.set_nested_builders(cls_builder)
-        # 3. Optional step : capture the input namespace specified at
+        # 3. Optional up_sosstep : capture the input namespace specified at
         # building step
-        # 4. Shift namespace due to the 'vs_MS' inserted
+        my_keys = [
+            key for key in self.ee.ns_manager.shared_ns_dict if key != 'ns_doe']
+        my_dict = {}
+        for item in my_keys:
+            my_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value()
+            self.sub_process_ns_in_build = pd.DataFrame(
+                list(my_dict.items()), columns=['Name', 'Value'])
+        print(self.sub_process_ns_in_build)
+        # 4. Add ns keys to driver discipline
+        current_ns = self.ee.ns_manager.current_disc_ns
+        #self.ee.ns_manager.add_ns(sc_map_ns, current_ns)
+        root = f'{self.ee.study_name}'
+        self.ee.ns_manager.add_ns('ns_disc3', f'{current_ns}.Disc3')
+        self.ee.ns_manager.add_ns('ns_out_disc3', f'{current_ns}')
+        self.ee.ns_manager.add_ns('ns_ac', f'{current_ns}')
+        self.ee.ns_manager.add_ns('ns_data_ac', f'{root}')
+
+        for item in my_keys:
+            self.ee.ns_manager.disc_ns_dict[self]['others_ns'].update(
+                {item: self.ee.ns_manager.shared_ns_dict[item]})
+
+        # 5. Management of namespace due to the 'vs_MS' inserted
+        # It is done in BuildSoSDisciplineScatter.build()
 
     def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
         """
@@ -468,14 +491,37 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         self.driver_process_builder = self._set_driver_process_builder()
         return
 
+    def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, after_name=None, namespace_list=None):
+        '''
+            Update the value of a list of namespaces with an extra namespace placed behind after_name
+            In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
+            Function needed in build_eval_subproc(self)
+        '''
+        if namespace_list is None:
+            namespace_list = self.ee.ns_manager.ns_list
+            namespace_list = [
+                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
+        for ns in namespace_list:
+            self.ee.ns_manager.update_namespace_with_extra_ns(
+                ns, extra_ns, after_name)
+
     def setup_sos_disciplines_driver_inputs_depend_on_sc_map(self, dynamic_inputs):
         """
-            Update of SCENARIO_MAP['input_name']
+            Update of SCENARIO_MAP['input_name'] and NS_IN_DF
             Function needed in setup_sos_disciplines()
         """
         scatter_desc_in = BuildSoSDisciplineScatter.build_inst_desc_in_with_map(
             self)
         dynamic_inputs.update(scatter_desc_in)
+        self.sub_proc_build_status = 'Unchanged_SP'
+        self.sc_map_build_status = 'Unchanged_SP'
+        # Also provide information about namespace variables provided at
+        # building time
+        if self.sub_process_ns_in_build is not None:
+            dynamic_inputs.update({self.NS_IN_DF: {'type': 'dataframe',
+                                                   'unit': None,
+                                                   'editable': False,
+                                                   'default': self.sub_process_ns_in_build}})
 
         return dynamic_inputs
 
