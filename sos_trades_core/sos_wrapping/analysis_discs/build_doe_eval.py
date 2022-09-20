@@ -256,7 +256,7 @@ class BuildDoeEval(SoSEval):
 #################### End: Constants and parameters #######################
 #################### Begin: Main methods ################################
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -264,7 +264,8 @@ class BuildDoeEval(SoSEval):
         # namespace to store output dictionaries associated to eval_outputs
         if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super(BuildDoeEval, self).__init__(sos_name, ee, cls_builder)
+        super(BuildDoeEval, self).__init__(sos_name, ee, cls_builder,
+                                           associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
         self.design_space = None
@@ -594,9 +595,8 @@ class BuildDoeEval(SoSEval):
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
                 elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
-        for ns in namespace_list:
-            self.ee.ns_manager.update_namespace_with_extra_ns(
-                ns, extra_ns, after_name)
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_ns, after_name=after_name, namespace_list=namespace_list)
 
     def setup_sos_disciplines_driver_inputs_depend_on_sub_process(self, dynamic_inputs):
         """

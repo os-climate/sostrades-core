@@ -45,11 +45,12 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
-        SoSDisciplineBuilder.__init__(self, sos_name, ee)
+        SoSDisciplineBuilder.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.__factory = ee.factory
         self.__scattered_disciplines = {}

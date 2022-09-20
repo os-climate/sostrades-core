@@ -157,7 +157,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 #################### End: Constants and parameters #######################
 #################### Begin: Main methods ################################
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc):
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -166,7 +166,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         self.__build_business_io = business_post_proc
         self.__cls_builder = cls_builder
         BuildSoSDisciplineScatter.__init__(
-            self, sos_name, ee, map_name, cls_builder)
+            self, sos_name, ee, map_name, cls_builder, associated_namespaces=associated_namespaces)
         self._maturity = ''
 
         self.previous_sub_process_repo = None
@@ -526,9 +526,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
                 elem for elem in namespace_list if elem.__dict__['name'] not in driver_ns_list]
-        for ns in namespace_list:
-            self.ee.ns_manager.update_namespace_with_extra_ns(
-                ns, extra_ns, after_name)
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_ns, after_name, namespace_list=namespace_list)
 
     def setup_sos_disciplines_driver_inputs_depend_on_sc_map(self, dynamic_inputs):
         """

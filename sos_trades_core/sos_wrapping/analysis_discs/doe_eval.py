@@ -177,7 +177,7 @@ class DoeEval(SoSEval):
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -185,7 +185,8 @@ class DoeEval(SoSEval):
         # namespace to store output dictionaries associated to eval_outputs
         if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super(DoeEval, self).__init__(sos_name, ee, cls_builder)
+        super(DoeEval, self).__init__(sos_name, ee, cls_builder,
+                                      associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
         self.design_space = None

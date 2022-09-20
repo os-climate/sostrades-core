@@ -121,7 +121,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     DESC_OUT = {'design_space_out': {'type': 'dataframe'}
                 }
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         """
         Constructor
         """
@@ -132,7 +132,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         self.opt_problem = None
         self._maturity = None
 
-        self._reload(sos_name, ee)
+        self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.SoSScenario')
 
         self.DESIGN_SPACE = 'design_space'
@@ -321,7 +321,8 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         else:
             for algo_option in algo_options_keys:
                 if algo_option in self.default_algo_options:
-                    algo_default_val = self.default_algo_options.get(algo_option)
+                    algo_default_val = self.default_algo_options.get(
+                        algo_option)
                     if algo_default_val is not None:
                         default_dict[algo_option] = algo_default_val
 
@@ -565,22 +566,22 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
         u_bounds = list(df[self.UPPER_BOUND])
         enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
         list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
-        
+
         # looking for the optionnal variable type in the design space
         if self.VARIABLE_TYPE in df:
             var_types = df[self.VARIABLE_TYPE]
         else:
             # set to None for all variables if not exists
             var_types = [None] * len(names)
-        
+
         design_space = DesignSpace()
-        
+
         for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds, list_activated_elem, enabled_variable, var_types):
 
             # check if variable is enabled to add it or not in the design var
             if enable_var:
                 self.dict_desactivated_elem[dv] = {}
-                
+
                 if type(val) != list and type(val) != ndarray:
                     size = 1
                     var_type = ['float']
@@ -603,11 +604,11 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
                     l_b = array(lb)
                     u_b = array(ub)
                     value = array(val)
-                
+
                 # 'automatic' var_type values are overwritten if filled by the user
                 if vtype is not None:
                     var_type = vtype
-                
+
                 design_space.add_variable(
                     dv, size, var_type, l_b, u_b, value)
         return design_space

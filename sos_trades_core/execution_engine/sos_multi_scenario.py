@@ -31,7 +31,6 @@ class SoSMultiScenario(SoSSimpleMultiScenario):
     The scenarios generated are the combinations of the trade variables
     '''
 
-
     # ontology information
     _ontology_data = {
         'label': 'Multi-Scenario Model',
@@ -45,12 +44,13 @@ class SoSMultiScenario(SoSSimpleMultiScenario):
         'icon': 'fas fa-stream fa-fw',
         'version': '',
     }
-    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc):
+
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
         '''
         Constructor
         '''
         SoSSimpleMultiScenario.__init__(
-            self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc)
+            self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=associated_namespaces)
 
     def build_inst_desc_io_with_scenario_parameters(self):
         '''
@@ -61,12 +61,12 @@ class SoSMultiScenario(SoSSimpleMultiScenario):
             if trade_var_name not in self.inst_desc_in:
                 output_type = trade_var_map.get_output_type()[0]
                 input_ns = trade_var_map.get_input_ns()
-                if output_type not  in ['list','dict']:
+                if output_type not in ['list', 'dict']:
                     trade_var_input = {f'{trade_var_name}_trade': {
                         SoSDiscipline.TYPE: 'list', SoSDiscipline.SUBTYPE: output_type,
                         SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns,
                         SoSDiscipline.STRUCTURING: True}}
-                else :
+                else:
 
                     trade_var_input = {f'{trade_var_name}_trade': {
                         SoSDiscipline.TYPE: 'list', SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
