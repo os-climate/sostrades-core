@@ -155,3 +155,6 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     #         (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
     #     '''
     #     return list(self._data_out_with_full_name.keys())
+
+    def set_wrapper_attributes(self, wrapper):
+        wrapper.attributes = {'sub_mdo_discipline': self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline}

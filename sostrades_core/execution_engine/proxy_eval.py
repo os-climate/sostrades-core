@@ -248,16 +248,18 @@ class ProxyEval(ProxyDisciplineDriver):
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
         """
-        wrapper.attributes = {'sub_mdo_discipline': self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline,
-                              'eval_in_list': self.eval_in_list,
-                              'eval_out_list': self.eval_out_list,
-                              'reference_scenario': self.get_x0(),
-                              'activated_elems_dspace_df': [[True, True]
-                                                            if self.ee.dm.get_data(var, 'type') == 'array' else [True]
-                                                            for var in self.eval_in_list], # TODO: Array dimensions greater than 2???
-                              'study_name': self.ee.study_name,
-                              'reduced_dm': self.ee.dm.reduced_dm, #for conversions
-                              }
+        # ProxyDisciplineDriver attributes (sub_mdo_discipline)
+        super().set_wrapper_attributes(wrapper)
+        eval_attributes = {'eval_in_list': self.eval_in_list,
+                          'eval_out_list': self.eval_out_list,
+                          'reference_scenario': self.get_x0(),
+                          'activated_elems_dspace_df': [[True, True]
+                                                        if self.ee.dm.get_data(var, 'type') == 'array' else [True]
+                                                        for var in self.eval_in_list], # TODO: Array dimensions greater than 2???
+                          'study_name': self.ee.study_name,
+                          'reduced_dm': self.ee.dm.reduced_dm, #for conversions
+                          }
+        wrapper.attributes.update(eval_attributes)
 
     # def set_discipline_attributes(self, discipline):
     #     """ set the attribute attributes of gemseo object
