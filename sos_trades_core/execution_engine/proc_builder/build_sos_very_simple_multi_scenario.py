@@ -261,10 +261,11 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                     self.ee.smaps_manager.add_build_map(
                         sc_map_name, sc_map_dict)
                     # namespace value
-                    current_ns = self.ee.ns_manager.current_disc_ns
-                    self.ee.ns_manager.add_ns(sc_map_ns, current_ns)
-                    self.ee.ns_manager.update_others_ns_with_shared_ns(
-                        self, sc_map_ns)
+                    if sc_map_ns is not None:
+                        current_ns = self.ee.ns_manager.current_disc_ns
+                        self.ee.ns_manager.add_ns(sc_map_ns, current_ns)
+                        self.ee.ns_manager.update_others_ns_with_shared_ns(
+                            self, sc_map_ns)
 
         # 2. Create and add cls_builder
         if self.SUB_PROCESS_INPUTS in self._data_in:
@@ -298,7 +299,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             BuildSoSDisciplineScatter.build(self)
             # Dynamically add INST_DESC_IN and  INST_DESC_OUT if autogather is
             # True
-            self.build_business_io()  # should be put in setup_sos_disciplines !
+            # self.build_business_io()  # should be put in
+            # setup_sos_disciplines !
 
     def configure(self):
         """
@@ -335,6 +337,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 dynamic_inputs)
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
+            # Dynamically add INST_DESC_IN and  INST_DESC_OUT if autogather is True
+            # self.build_business_io()  # should be put in
+            # setup_sos_disciplines !
+            # self.build_business_io()
             # 2. import data from selected sub_process_usecase
 
     def run(self):
