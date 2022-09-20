@@ -899,6 +899,16 @@ class TestSoSDOEScenario(unittest.TestCase):
             'doe.DoEEval.Disc1.z_dict')), 11)
         self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')), 11)
 
+        # # Test that the lower-level coupling does not crush outputs nor numerical variables of its subprocess ->
+        # # /!\ TO BE REACTIVATED and better moved to another test
+        # self.assertEqual(set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_output_data_names()),
+        #                  set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.get_output_data_names()))
+        # self.assertEqual(set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names()),
+        #                  set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.get_input_data_names()))
+        # self.assertIn('doe.DoEEval.Disc2.cache_file_path',exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names())
+        # self.assertIn('doe.DoEEval.Disc1.cache_file_path',exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names())
+
+
     def test_10_warning_in_case_of_a_wrong_inputs_outputs_in_doe_eval(self):
         """ We check that a warning is displayed in doe eval in case the user
         sets a value for eval inputs or outputs which is not among the possible
