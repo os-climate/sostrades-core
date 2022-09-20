@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from scipy.sparse.lil import lil_matrix
+from pandas import DataFrame
 
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from sos_trades_core.tools.controllers.simpy_formula import SympyFormula
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -101,6 +103,7 @@ class SoSDiscipline(MDODiscipline):
     CONNECTOR_DATA = 'connector_data'
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
+    FORMULA = 'formula'
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -769,6 +772,7 @@ class SoSDiscipline(MDODiscipline):
                 curr_data[self.DISCIPLINES_FULL_PATH_LIST] = []
             if self.VISIBILITY not in data_keys:
                 curr_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
+
             if self.DEFAULT not in data_keys:
                 if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     raise Exception(
@@ -788,6 +792,10 @@ class SoSDiscipline(MDODiscipline):
                 curr_data[self.NUMERICAL] = False
             if self.META_INPUT not in data_keys:
                 curr_data[self.META_INPUT] = False
+
+            # initialize formula
+            if self.FORMULA not in data_keys:
+                curr_data[self.FORMULA] = None
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
