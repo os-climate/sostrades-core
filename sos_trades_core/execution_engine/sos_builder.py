@@ -121,10 +121,8 @@ class SoSBuilder(object):
         return self.disc
 
     def create_disc(self, future_new_ns_disc_name):
-        try:
-            self.disc = self.cls(**self.__args)
-        except:
-            print('toto')
+
+        self.disc = self.cls(**self.__args)
         self.disc.father_builder = self
         self.discipline_dict[future_new_ns_disc_name] = self.disc
 

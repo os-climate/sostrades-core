@@ -129,7 +129,8 @@ class ScatterMap:
         if self.INPUT_NS in self.map:
             return self.map[self.INPUT_NS]
         else:
-            return self.map[self.OUTPUT_NS]
+            # None means that the inout_ns is local to the discipline
+            return None
 
     def get_output_name(self):
         '''

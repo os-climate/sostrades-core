@@ -96,8 +96,14 @@ class SoSDisciplineGather(SoSDiscipline):
         input_subtype_descriptor = {'list': 'string'}
         input_ns = self.sc_map.get_input_ns()
 
-        scatter_desc_in = {input_name: {
-            SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
+        if input_ns is None:
+            # that means that the input variable is local to the gather
+            scatter_desc_in = {input_name: {
+                SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.STRUCTURING: True}}
+
+        else:
+            scatter_desc_in = {input_name: {
+                SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
     def build_dynamic_inst_desc_in_gather_variables(self):
