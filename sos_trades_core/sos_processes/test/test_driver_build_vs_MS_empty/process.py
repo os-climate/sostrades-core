@@ -35,32 +35,11 @@ class ProcessBuilder(BaseProcessBuilder):
         gather_node = 'Post-processing'
         business_post_proc = False
 
-        # driver name
-        driver_name = 'vs_MS'
-        root = f'{self.ee.study_name}'
-        driver_root = f'{root}.{driver_name}'
-        # shared namespace :
-        input_ns = 'ns_scatter_scenario'
-        self.ee.ns_manager.add_ns(
-            input_ns, f'{driver_root}')
-        # shared namespace : shifted by nested operation
-
-        self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{driver_root}.Disc3')
-        self.ee.ns_manager.add_ns(
-            'ns_out_disc3', f'{driver_root}')
-
-        self.ee.ns_manager.add_ns('ns_ac', f'{driver_root}')
-        self.ee.ns_manager.add_ns('ns_data_ac', f'{root}')
-
-        # remark : 'ns_scenario' set to {self.ee.study_name} in subprocess not
-        # needed !
-
-        # 3. empty nested process and associated map
+        # 1. empty nested process and associated map
         builder_list = []
         scenario_map_name = ''
 
-        # 4. add multi_scenario
+        # 2. add multi_scenario
         multi_scenarios = self.ee.factory.create_build_very_simple_multi_scenario_builder(
             driver_name, scenario_map_name, builder_list, autogather=autogather, gather_node=gather_node, business_post_proc=business_post_proc)
 
