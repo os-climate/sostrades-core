@@ -43,25 +43,29 @@ class Study(StudyManager):
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']
-        scenario_map = {'input_name': scenario_map_name,
-                        'input_ns': input_ns,
-                        'output_name': output_name,
-                        'scatter_ns': scatter_ns,
-                        'gather_ns': input_ns,
-                        'ns_to_update': ns_to_update}
+        scenario_map = {
+            'input_name': scenario_map_name,
+            'input_ns': input_ns,
+            'output_name': output_name,
+            'scatter_ns': scatter_ns,
+            'gather_ns': input_ns,
+            'ns_to_update': ns_to_update,
+        }
 
         ######### Numerical values   ####
-        x1 = 2.
-        x2 = 4.
-        a1 = 3.
-        b1 = 4.
-        a2 = 6.
-        b2 = 2.
+        x1 = 2.0
+        x2 = 4.0
+        a1 = 3.0
+        b1 = 4.0
+        a2 = 6.0
+        b2 = 2.0
         scenario_list = ['scenario_1', 'scenario_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[
+            f'{self.study_name}.vs_MS.sub_process_inputs'
+        ] = sub_process_inputs_dict
         dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
@@ -88,5 +92,6 @@ class Study(StudyManager):
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.ee.display_treeview_nodes(True)
+    uc_cls.ee.display_treeview_nodes()
+    # uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)

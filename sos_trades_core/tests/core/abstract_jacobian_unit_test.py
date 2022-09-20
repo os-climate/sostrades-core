@@ -88,17 +88,18 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         if AbstractJacobianUnittest.DUMP_JACOBIAN:
             local_logger.info(
                 f'Jacobian dump mode enable on {join(location, filename)}')
-            check_flag = discipline.check_jacobian(step=step, inputs=inputs,
+            check_flag = discipline.check_jacobian(step=step, threshold=threshold, inputs=inputs,
                                                    outputs=outputs, derr_approx=derr_approx,
                                                    dump_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
         else:
-            check_flag = discipline.check_jacobian(step=step, inputs=inputs,
+            check_flag = discipline.check_jacobian(step=step, threshold=threshold, inputs=inputs,
                                                    outputs=outputs, derr_approx=derr_approx,
                                                    load_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
 
-        self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.get_disc_full_name()}")
+        self.assertTrue(
+            check_flag, msg=f"Wrong gradient in {discipline.get_disc_full_name()}")
 
     @staticmethod
     def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=[PICKLE_DIRECTORY], test_names=[]):
@@ -153,11 +154,13 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                     entry.join()
             local_logger.info(
                 f'----------------- Git commit and push ------------------------')
-            os.system('git config user.email "julien.souchard.external@airbus.com"')
+            os.system(
+                'git config user.email "julien.souchard.external@airbus.com"')
             os.system('git config user.name "Jacobian pickle dumper"')
             for directory in directories:
                 os.system(f'git add ./{directory}/*.pkl')
-            os.system(f'git commit -m "regeneration of jacobian pickles for {file_regex}"')
+            os.system(
+                f'git commit -m "regeneration of jacobian pickles for {file_regex}"')
             os.system('git pull')
             os.system('git push')
         else:

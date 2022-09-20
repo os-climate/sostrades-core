@@ -56,7 +56,7 @@ class NewtonRootSolver(SoSEval):
                }
 
     DESC_OUT = {'x_final': {'type': 'array'},
-                'residual_history': {'type': 'list'}}
+                'residual_history': {'type': 'list','subtype_descriptor': {'list': 'float'}}}
 
     def __init__(self, sos_name, ee, residual_builders, residual_infos):
 
@@ -109,13 +109,35 @@ class NewtonRootSolver(SoSEval):
         self.dm.set_values_from_dict(
             {unknown_name: x0})
 
+    def update_gems_grammar_with_data_io(self):
+        """
+        Overload method to update gems object grammar with the coupling grammar
+        """
+        SoSEval.update_gems_grammar_with_data_io(self)
+        #get intersection between input and output grammar
+        list_keys_in_grammar = self.sos_disciplines[0].input_grammar._names_to_types.keys()
+        list_keys_out_grammar = self.sos_disciplines[0].output_grammar._names_to_types.keys()
+        # delete keys from input grammar if intersection between input and output is not None
+        intersection_grammar = list(set(list_keys_in_grammar) & set(list_keys_out_grammar))
+        if len(intersection_grammar) != 0:
+            filtered_inputs = {k:v for k,v in self.sos_disciplines[0].input_grammar._names_to_types.items() if k not in intersection_grammar }
+            # update input grammar with children input grammar not in output_grammar
+            self.input_grammar._names_to_types.update(filtered_inputs)
+        else:
+            self.input_grammar.update_from(self.sos_disciplines[0].input_grammar)
+        self.output_grammar.update_from(self.sos_disciplines[0].output_grammar)
+
+
     def add_children_inputs(self):
         """
         Update input grammar
         """
         self.sos_disciplines[0].with_data_io = True
         self.sos_disciplines[0].configure_execution()
-        self._data_in.update(self.sos_disciplines[0]._data_in)
+        #self._data_in.update(self.sos_disciplines[0]._data_in)
+        #self._data_out.update(self.sos_disciplines[0]._data_out)
+
+
 
     def check_variables_exists_and_are_arrays(self):
 
@@ -259,6 +281,10 @@ class NewtonRootSolver(SoSEval):
         idf_residual = self.local_data[residual_name]
 
         return idf_residual
+
+    def compute_sos_jacobian(self):
+        pass
+
 
     def get_chart_filter_list(self):
 

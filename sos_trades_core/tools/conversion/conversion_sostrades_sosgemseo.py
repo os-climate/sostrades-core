@@ -669,6 +669,9 @@ def convert_new_type_into_array(
                         if subtype is not None:
                             check_subtype(key, subtype, 'list')
                             values_list, metadata = convert_list_into_array(var, subtype)
+                        else:
+                            raise ValueError(f'Sub type is not defined for variable {key}, '
+                                             f'you must define it in DESC_IN')
                     else:
                         values_list, metadata = var, None
 
