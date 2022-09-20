@@ -535,9 +535,14 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
         if self.INPUT_NS in sc_map_dict.keys():
             sc_map_ns = sc_map_dict[self.INPUT_NS]
-            ns_of_driver = [sc_map_ns]
+            if sc_map_ns is not None:
+                ns_of_driver = [sc_map_ns]
+            else:
+                ns_of_driver = []
         ns_of_sub_proc = [
             key for key in self.ee.ns_manager.shared_ns_dict if key not in ns_of_driver]
+        if ns_of_sub_proc == [None]:
+            ns_of_sub_proc = []
         self.ns_of_sub_proc = ns_of_sub_proc
         self.default_scenario_map[self.NS_TO_UPDATE] = ns_of_sub_proc
 

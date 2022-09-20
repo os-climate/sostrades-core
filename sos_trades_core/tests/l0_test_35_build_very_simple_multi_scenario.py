@@ -413,7 +413,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print(added_inputs_list)
         # print("Removed Inputs_list:")
         # print(removed_inputs_list)
-        target_added_inputs_list = ['scenario_list', 'ns_in_df']
+        target_added_inputs_list = ['scenario_list']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -1372,7 +1372,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestBuildVerySimpleMultiScenario()
-    test_selector = 2
+    test_selector = 1
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_vs_MS_with_nested_proc_selection_through_process_driver_Hessian_subproc()
