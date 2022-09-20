@@ -50,6 +50,7 @@ DATAFRAME_DESCRIPTOR = SoSDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = SoSDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = SoSDiscipline.TYPE_METADATA
 SUBTYPE = SoSDiscipline.SUBTYPE
+FORMULA = SoSDiscipline.FORMULA
 
 
 class DataManager:
@@ -425,7 +426,8 @@ class DataManager:
                         disc_dict[var_name] = self.data_dict[var_id]
                     # else data already exist as OUTPUT and has priority!
                     # => do nothing
-                    # if subtype descriptor is in the disc_dict but not in dm we fetch it from the disc_dict
+                    # if subtype descriptor is in the disc_dict but not in dm
+                    # we fetch it from the disc_dict
                     if (SUBTYPE in disc_dict[var_name].keys()) and (SUBTYPE not in self.data_dict[var_id].keys()):
                         self.data_dict[var_id][SUBTYPE] = disc_dict[var_name][SUBTYPE]
 

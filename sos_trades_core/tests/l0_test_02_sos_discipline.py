@@ -22,6 +22,7 @@ from sos_trades_core.sos_wrapping.test_discs.disc1 import Disc1
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+import pandas as pd
 
 
 class TestSoSDiscipline(unittest.TestCase):
@@ -40,6 +41,7 @@ class TestSoSDiscipline(unittest.TestCase):
         self.mod1_path = f'{base_path}.disc1.Disc1'
         self.mod2_path = f'{base_path}.disc2.Disc2'
         self.mod8_path = f'{base_path}.disc8.Disc8'
+        self.mod11_path = f'{base_path}.disc11.Disc11'
 
     def test_01_instantiate_sosdiscipline(self):
         '''
@@ -350,3 +352,79 @@ class TestSoSDiscipline(unittest.TestCase):
         out_dict = disc8.get_sosdisc_outputs()
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
+
+    def test_11_check_simpy_formula(self):
+        '''
+        check simpy formula usage
+        '''
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', self.mod1_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        x = 3.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': '3*Test.x',
+                       self.name + '.Disc1.b': '2*Test.Disc1.a'}
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
+
+        # check status DONE after execution
+        for disc_id in self.ee.dm.disciplines_dict.keys():
+            self.assertEqual(self.ee.dm.get_discipline(
+                disc_id).status, 'DONE')
+
+        self.ee.execute()
+
+        # check status DONE after execution
+        for disc_id in self.ee.dm.disciplines_dict.keys():
+            self.assertEqual(self.ee.dm.get_discipline(
+                disc_id).status, 'DONE')
+
+        # get post-processing of disc1
+        disc1 = self.ee.dm.get_disciplines_with_name('Test.Disc1')[0]
+        filter = disc1.get_chart_filter_list()
+        graph_list = disc1.get_post_processing_list(filter)
+        # graph_list[0].to_plotly().show()
+
+        y = self.ee.dm.get_value(self.name + '.y')
+
+        self.assertEqual(y, 45)
+
+    def test_12_check_simpy_formula_with_df(self):
+        '''
+        check simpy formula usage
+        '''
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc11_builder = self.ee.factory.get_builder_from_module(
+            'Disc11', self.mod11_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc11_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        x = 3.0
+        test_df = pd.DataFrame()
+        test_df['a'] = ['3*Test.x']
+        test_df['b'] = ['2*Test.Disc11.test_df.a']
+        c_dict = {}
+        c_dict['c'] = 'Test.Disc11.test_df.a + Test.Disc11.test_df.b'
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc11.test_df': test_df,
+                       self.name + '.Disc11.c_dict': c_dict, }
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        self.ee.display_treeview_nodes()
+        self.ee.execute()
+        y = self.ee.dm.get_value(self.name + '.y')
+
+        self.assertEqual(y, 72)

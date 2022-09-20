@@ -251,3 +251,52 @@ class TestExecutionEngine(unittest.TestCase):
         except Exception:
             issue_using_sos_logging = True
         assert not issue_using_sos_logging
+
+    def test_06_execution_engine_soscoupling_with_formula(self):
+        process = 'test_disc1_disc2_coupling'
+        master_logger = get_sos_logger('SoS')
+        master_logger.setLevel(INFO)
+        master_logger.info(
+            f'Master Logger {master_logger} is ready to gather all the loggers of subprocesses')
+        exec_eng = ExecutionEngine(self.name)
+        ns_dict = {'ns_ac': 'EETests'}
+        exec_eng.ns_manager.add_ns_def(ns_dict)
+        exec_eng.select_root_process(self.repo, process)
+        exec_eng.configure()
+
+        # modify DM ----
+        values_dict = {}
+        values_dict['EETests.Disc1.a'] = 'EETests.Disc2.power*5'
+        values_dict['EETests.Disc1.b'] = 20.
+        values_dict['EETests.Disc2.power'] = 2
+        values_dict['EETests.Disc2.constant'] = -10.
+        values_dict['EETests.x'] = 3.
+
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.execute()
+        print('\ntest_02_execution_engine_soscoupling::root_process execution result:')
+        res = exec_eng.dm.data_dict
+        print(res)
+        print('test_02_execution_engine_soscoupling::exec_engine.dm.disciplines_dict:')
+        print(exec_eng.dm.disciplines_dict.keys())
+        print('keys into dm')
+        for key in exec_eng.dm.data_dict.keys():
+            print(' ', key)
+        self.assertSetEqual(set(exec_eng.dm.disciplines_id_map.keys()),
+                            set(['EETests', 'EETests.Disc2',
+                                 'EETests.Disc1']),
+                            'bad list of keys stored in exec_engine.dm.disciplines_dict')
+
+        res_target = {
+            'EETests.x': 3.0,
+            'EETests.Disc1.a': 10.0,
+            'EETests.Disc1.b': 20.0,
+            'EETests.Disc2.constant': -10.0,
+            'EETests.Disc2.power': 2,
+            'EETests.Disc1.indicator': 200.0,
+            'EETests.y': 50.0,
+            'EETests.z': 2490.0}
+
+        for key in res_target:
+            self.assertEqual(res[exec_eng.dm.data_id_map[key]]
+                             ['value'], res_target[key])
