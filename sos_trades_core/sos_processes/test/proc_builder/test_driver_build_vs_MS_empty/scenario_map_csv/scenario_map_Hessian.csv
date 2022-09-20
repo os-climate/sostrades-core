@@ -1,7 +1,3 @@
 variable,value
 input_name,scenario_list
-input_ns,ns_scatter_scenario
-output_name,scenario_name
-scatter_ns,ns_scenario
-gather_ns,ns_scatter_scenario
 ns_to_update,[]
