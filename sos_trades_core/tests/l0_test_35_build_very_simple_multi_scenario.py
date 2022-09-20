@@ -29,9 +29,7 @@ from os.path import join
 import os
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.execution_engine.build_sos_very_simple_multi_scenario import (
-    BuildSoSVerySimpleMultiScenario,
-)
+from sos_trades_core.execution_engine.proc_builder.build_sos_very_simple_multi_scenario import BuildSoSVerySimpleMultiScenario
 from sos_trades_core.execution_engine.scatter_data import SoSScatterData
 from tempfile import gettempdir
 from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump
@@ -81,14 +79,13 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = []
-        scenario_map = {
-            'input_name': scenario_map_name,
-            'input_ns': input_ns,
-            'output_name': output_name,
-            'scatter_ns': scatter_ns,
-            'gather_ns': input_ns,
-            'ns_to_update': ns_to_update,
-        }
+
+        scenario_map = {'input_name': scenario_map_name,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
+                        'ns_to_update': ns_to_update}
 
         ######### Numerical values   ####
         x = 2.0
@@ -167,7 +164,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
             self.assertIn(key, full_inputs_list)
 
     def check_discipline_outputs_list(self, my_disc, target_outputs_list):
-        outputs_list_disc = [elem for elem in my_disc.get_data_io_dict_keys('out')]
+        outputs_list_disc = [
+            elem for elem in my_disc.get_data_io_dict_keys('out')]
         self.assertCountEqual(target_outputs_list, outputs_list_disc)
 
     def check_discipline_value(
@@ -186,7 +184,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self, my_disc, target_values_dict, print_flag=True, ioType='in'
     ):
         if print_flag:
-            print(f'Check_discipline value for {my_disc.get_disc_full_name()}:')
+            print(
+                f'Check_discipline value for {my_disc.get_disc_full_name()}:')
         for key in target_values_dict.keys():
             self.check_discipline_value(
                 my_disc,
@@ -227,7 +226,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self, my_disc, target_values_dict, print_flag=True
     ):
         if print_flag:
-            print(f'Check_discipline value type for {my_disc.get_disc_full_name()}:')
+            print(
+                f'Check_discipline value type for {my_disc.get_disc_full_name()}:')
         for key in target_values_dict.keys():
             self.check_discipline_value_type(
                 my_disc,
@@ -268,8 +268,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self,
     ):
         '''
-        Test the creation of the vs_MS without nested disciplines directly from vs_MS class :
-        through_process_test_driver_build_vs_MS_empty.
+        Test the creation of the vs_MS without nested disciplines directly from vs_MS class : 
+        through process test_driver_build_vs_MS_empty.
         And then its update with with an input process for discipline selection.
         It is then used (fill data and execute)
         Here the study is used as in the study defined in the GUI (if test work then gui should work!)
@@ -285,11 +285,12 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_driver = 'test_driver_build_vs_MS_empty'
         self.study_name = 'MyStudy'
 
-        study_dump = BaseStudyManager(repo, mod_id_empty_driver, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_driver, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
@@ -342,14 +343,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
         tv_sub_process_inputs_dict['usecase_data'] = {}
-        tv_scenario_map = {
-            'input_name': None,
-            'input_ns': '',
-            'output_name': '',
-            'scatter_ns': '',
-            'gather_ns': '',
-            'ns_to_update': [],
-        }
+
+        tv_scenario_map = {'input_name': None,
+                           #'input_ns': '',
+                           #'output_name': '',
+                           #'scatter_ns': '',
+                           #'gather_ns': '',
+                           'ns_to_update': []}
+
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
@@ -372,7 +373,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # Step 1: Provide subprocess and provide data input
         print('Step 1: provide a process (with disciplines) to the set driver')
-        dict_values = self.setup_Hessian_usecase_from_direct_input(restricted=False)[0]
+        dict_values = self.setup_Hessian_usecase_from_direct_input(restricted=False)[
+            0]
         study_dump.load_data(from_input_dict=dict_values)
 
         ################ Start checks ##########################
@@ -438,14 +440,13 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = []
-        tv_scenario_map = {
-            'input_name': scenario_map_name,
-            'input_ns': input_ns,
-            'output_name': output_name,
-            'scatter_ns': scatter_ns,
-            'gather_ns': input_ns,
-            'ns_to_update': ns_to_update,
-        }
+
+        tv_scenario_map = {'input_name': scenario_map_name,
+                           #'input_ns': input_ns,
+                           #'output_name': output_name,
+                           #'scatter_ns': scatter_ns,
+                           #'gather_ns': input_ns,
+                           'ns_to_update': ns_to_update}
 
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
@@ -526,7 +527,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
             self.assertAlmostEqual(target_x, my_value, delta=tolerance)
 
             ########################
-            study_load = BaseStudyManager(repo, mod_id_empty_driver, 'MyStudy')
+            study_load = BaseStudyManager(
+                repo_proc_builder, mod_id_empty_driver, 'MyStudy')
             study_load.load_data(from_path=dump_dir)
             # print(study_load.ee.dm.get_data_dict_values())
             study_load.run()
@@ -536,8 +538,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
     def test_02_build_vs_MS_test_GUI_sequence(self):
         '''
-        Test the creation of the driver without nested disciplines directly from vs_MS class :
-        through_process_test_driver_build_vs_MS_empty.
+        Test the creation of the driver without nested disciplines directly from vs_MS class : 
+        through process test_driver_build_vs_MS_empty.
         And then its update with with an input process for discipline selection.
         It is then used (fill data and execute)
         Here the study is used as in the study defined in the GUI (if test work then gui should work!)
@@ -551,7 +553,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_driver = 'test_driver_build_vs_MS_empty'
         self.study_name = 'MyStudy'
 
@@ -560,7 +562,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
             '################################################################################'
         )
         print('STEP_0: create session with empty driver')
-        study_dump = BaseStudyManager(repo, mod_id_empty_driver, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_driver, 'MyStudy')
         study_dump.load_data()  # configure
 
         study_dump.set_dump_directory(dump_dir)
@@ -616,14 +619,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
         tv_sub_process_inputs_dict['usecase_data'] = {}
-        tv_scenario_map = {
-            'input_name': None,
-            'input_ns': '',
-            'output_name': '',
-            'scatter_ns': '',
-            'gather_ns': '',
-            'ns_to_update': [],
-        }
+
+        tv_scenario_map = {'input_name': None,
+                           #'input_ns': '',
+                           #'output_name': '',
+                           #'scatter_ns': '',
+                           #'gather_ns': '',
+                           'ns_to_update': []}
+
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
@@ -660,14 +663,13 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = []
-        scenario_map = {
-            'input_name': scenario_map_name,
-            'input_ns': input_ns,
-            'output_name': output_name,
-            'scatter_ns': scatter_ns,
-            'gather_ns': input_ns,
-            'ns_to_update': ns_to_update,
-        }
+
+        scenario_map = {'input_name': scenario_map_name,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
+                        'ns_to_update': ns_to_update}
 
         x = 2.0
         y = 3.0
@@ -748,14 +750,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = None
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
         tv_sub_process_inputs_dict['usecase_data'] = {}
-        tv_scenario_map = {
-            'input_name': None,
-            'input_ns': '',
-            'output_name': '',
-            'scatter_ns': '',
-            'gather_ns': '',
-            'ns_to_update': [],
-        }
+
+        tv_scenario_map = {'input_name': None,
+                           #'input_ns': '',
+                           #'output_name': '',
+                           #'scatter_ns': '',
+                           #'gather_ns': '',
+                           'ns_to_update': []}
+
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
@@ -841,14 +843,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
         tv_sub_process_inputs_dict['usecase_data'] = {}
-        tv_scenario_map = {
-            'input_name': None,
-            'input_ns': '',
-            'output_name': '',
-            'scatter_ns': '',
-            'gather_ns': '',
-            'ns_to_update': [],
-        }
+
+        tv_scenario_map = {'input_name': None,
+                           #'input_ns': '',
+                           #'output_name': '',
+                           #'scatter_ns': '',
+                           #'gather_ns': '',
+                           'ns_to_update': []}
+
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = tv_scenario_map
 
@@ -1358,7 +1360,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
             if flag_local:
                 study_dump.run()
             else:
-                study_load = BaseStudyManager(repo, mod_id_empty_driver, 'MyStudy')
+                study_load = BaseStudyManager(
+                    repo, mod_id_empty_driver, 'MyStudy')
                 study_load.load_data(from_path=dump_dir)
                 print(study_load.ee.dm.get_data_dict_values())
                 study_load.run()
@@ -1369,7 +1372,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestBuildVerySimpleMultiScenario()
-    test_selector = 1
+    test_selector = 2
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_vs_MS_with_nested_proc_selection_through_process_driver_Hessian_subproc()
