@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Disc2 Coupling Default Process',
+        'label': 'Core Test Disc11 Disc2 Coupling Default Process',
         'description': '',
         'category': '',
         'version': '',
