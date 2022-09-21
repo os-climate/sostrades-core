@@ -116,13 +116,13 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         scenario = scenario_list[1]
         my_root = f'{self.study_name}' + '.vs_MS.' + scenario
-        dict_values[f'{my_root}' + '.Hessian.x'] = x + 10.
-        dict_values[f'{my_root}' + '.Hessian.y'] = y + 10.
-        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2 + 10.
-        dict_values[f'{my_root}' + '.Hessian.by2'] = by2 + 10.
-        dict_values[f'{my_root}' + '.Hessian.cx'] = cx + 10.
-        dict_values[f'{my_root}' + '.Hessian.dy'] = dy + 10.
-        dict_values[f'{my_root}' + '.Hessian.exy'] = exy + 10.
+        dict_values[f'{my_root}' + '.Hessian.x'] = x + 10.0
+        dict_values[f'{my_root}' + '.Hessian.y'] = y + 10.0
+        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2 + 10.0
+        dict_values[f'{my_root}' + '.Hessian.by2'] = by2 + 10.0
+        dict_values[f'{my_root}' + '.Hessian.cx'] = cx + 10.0
+        dict_values[f'{my_root}' + '.Hessian.dy'] = dy + 10.0
+        dict_values[f'{my_root}' + '.Hessian.exy'] = exy + 10.0
 
         return [dict_values]
 
@@ -182,7 +182,12 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                 f'Check_discipline value for {my_disc.get_disc_full_name()}:')
         for key in target_values_dict.keys():
             self.check_discipline_value(
-                my_disc, key, target_value=target_values_dict[key], print_flag=print_flag, ioType=ioType)
+                my_disc,
+                key,
+                target_value=target_values_dict[key],
+                print_flag=print_flag,
+                ioType=ioType,
+            )
         if print_flag:
             print('\n')
 
@@ -216,7 +221,11 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                 f'Check_discipline value type for {my_disc.get_disc_full_name()}:')
         for key in target_values_dict.keys():
             self.check_discipline_value_type(
-                my_disc, key, target_value=target_values_dict[key], print_flag=print_flag)
+                my_disc,
+                key,
+                target_value=target_values_dict[key],
+                print_flag=print_flag,
+            )
         if print_flag:
             print('\n')
 
@@ -297,8 +306,12 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print("Full_inputs_list_last:")
         # print(full_inputs_list_last)
         inputs_list = ['sub_process_inputs', 'scenario_map']
-        inputs_list = inputs_list + \
-            ['linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']
+        inputs_list = inputs_list + [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+        ]
         # print(driver_disc.get_data_io_dict_keys('in'))
         self.check_discipline_inputs_list(driver_disc, inputs_list)
         # check output parameter list  of vs_MS discipline
@@ -980,13 +993,13 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         scenario = scenario_list[1]
         my_root = f'{self.study_name}' + '.vs_MS.' + scenario
-        dict_values[f'{my_root}' + '.Hessian.x'] = x + 10.
-        dict_values[f'{my_root}' + '.Hessian.y'] = y + 10.
-        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2 + 10.
-        dict_values[f'{my_root}' + '.Hessian.by2'] = by2 + 10.
-        dict_values[f'{my_root}' + '.Hessian.cx'] = cx + 10.
-        dict_values[f'{my_root}' + '.Hessian.dy'] = dy + 10.
-        dict_values[f'{my_root}' + '.Hessian.exy'] = exy + 10.
+        dict_values[f'{my_root}' + '.Hessian.x'] = x + 10.0
+        dict_values[f'{my_root}' + '.Hessian.y'] = y + 10.0
+        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2 + 10.0
+        dict_values[f'{my_root}' + '.Hessian.by2'] = by2 + 10.0
+        dict_values[f'{my_root}' + '.Hessian.cx'] = cx + 10.0
+        dict_values[f'{my_root}' + '.Hessian.dy'] = dy + 10.0
+        dict_values[f'{my_root}' + '.Hessian.exy'] = exy + 10.0
 
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
@@ -1214,7 +1227,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestBuildVerySimpleMultiScenario()
-    test_selector = 2
+    test_selector = 1
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_vs_MS_with_nested_proc_selection_through_process_driver_Hessian_subproc()

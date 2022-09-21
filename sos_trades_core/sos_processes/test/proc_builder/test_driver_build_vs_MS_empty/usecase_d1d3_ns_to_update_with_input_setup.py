@@ -51,12 +51,12 @@ class Study(StudyManager):
                         'ns_to_update': ns_to_update}
 
         ######### Numerical values   ####
-        x1 = 2.
-        x2 = 4.
-        a1 = 3.
-        b1 = 4.
-        a2 = 6.
-        b2 = 2.
+        x1 = 2.0
+        x2 = 4.0
+        a1 = 3.0
+        b1 = 4.0
+        a2 = 6.0
+        b2 = 2.0
         scenario_list = ['scenario_1', 'scenario_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}

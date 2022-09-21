@@ -171,7 +171,10 @@ class ScatterMap:
         '''
         Get the scatter namespace name in the map (namespace associated to the map)
         '''
-        return self.map[self.SCATTER_NS]
+        if self.SCATTER_NS in self.map:
+            return self.map[self.SCATTER_NS]
+        else:
+            return None
 
     def get_gather_ns(self):
         '''

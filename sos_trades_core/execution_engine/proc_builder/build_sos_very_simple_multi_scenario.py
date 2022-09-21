@@ -261,14 +261,15 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            if sub_process_repo != None and sub_process_name != None:  # a sub_process_full_name is available
+            # a sub_process_full_name is available
+            if (sub_process_repo != None and sub_process_name != None):
                 # either Unchanged_SP or Create_SP or Replace_SP
                 # 1. set_sub_process_status
                 self.set_sub_process_status(
                     sub_process_repo, sub_process_name)
                 # 2 build_eval_subproc
                 sub_proc_build_status = self.sub_proc_build_status
-                if sub_proc_build_status == 'Create_SP' or sub_proc_build_status == 'Replace_SP':
+                if (sub_proc_build_status == 'Create_SP' or sub_proc_build_status == 'Replace_SP'):
                     self.build_driver_subproc(
                         sub_process_repo, sub_process_name)
         # 3. Associate map to discipline and build (automatically done when
@@ -278,6 +279,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             cls_builder = self.__cls_builder
             sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
             sc_map_name = sc_map_dict[self.INPUT_NAME]
+            # print(sc_map_dict[self.INPUT_NAME])
+            # print(sc_map_dict[self.NS_TO_UPDATE])
             BuildSoSDisciplineScatter._associate_map_to_discipline(self,
                                                                    self.ee, sc_map_name, cls_builder)
             BuildSoSDisciplineScatter.build(self)
@@ -313,11 +316,28 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
            Reached from configure() of sos_discipline [SoSDiscipline.configure in config() of scatter discipline].
            It is done upstream of set_eval_possible_values()
         """
-        dynamic_inputs = {}
-        dynamic_outputs = {}
+
+        # Update of non dynamic desc_in
+        # Update default_scenario_map with list of subprocess ns and provide it
+        # to  sc_map_name dynamic input if self.SCENARIO_MAP is still with
+        # default values
+
         if self.sc_map is not None:
+            dynamic_inputs = {}
+            dynamic_outputs = {}
+            # 0. Update list of all ns of subprocess in default ns_to_update
+            if self.SCENARIO_MAP in self._data_in:
+                sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
+                sc_map_name = sc_map_dict[self.INPUT_NAME]
+                if sc_map_name == '' or sc_map_name is None:
+                    dynamic_inputs.update({self.SCENARIO_MAP: {'type': 'dict',
+                                                               'structuring': True,
+                                                               'default': self.default_scenario_map,
+                                                               'user_level': 1,
+                                                               'optional': False
+                                                               }})
             # 1. provide driver inputs based on selected scenario map
-            self.setup_sos_disciplines_driver_inputs_depend_on_sc_map(
+            dynamic_inputs = self.setup_sos_disciplines_driver_inputs_depend_on_sc_map(
                 dynamic_inputs)
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -435,7 +455,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             Function needed in build(self)
         '''
         # We come from outside driver process
-        if sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo:
+        if (sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo):
             self.previous_sub_process_repo = sub_process_repo
             self.previous_sub_process_name = sub_process_name
         # driver process with provided sub process
@@ -480,21 +500,25 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         ns_of_sub_proc = [
             key for key in self.ee.ns_manager.shared_ns_dict if key not in ns_of_driver]
         self.ns_of_sub_proc = ns_of_sub_proc
+        # also update self.NS_TO_UPDATE in default_scenario_map
         self.default_scenario_map[self.NS_TO_UPDATE] = ns_of_sub_proc
 
         ns_of_sub_proc_dict = {}
         for item in ns_of_sub_proc:
             ns_of_sub_proc_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value(
             )
-            self.sub_process_ns_in_build = pd.DataFrame(
-                list(ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
-        # print(self.sub_process_ns_in_build)
-        # 4. Add ns keys to driver discipline and shift ns with driver name
-        for item in ns_of_sub_proc:
-            self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
+        ns_of_sub_pro_pd = pd.DataFrame(
+            list(ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
+        print(ns_of_sub_pro_pd)
+        self.sub_process_ns_in_build = ns_of_sub_pro_pd
+        # 4. Treat ns
+        #   Shift ns with driver name
         driver_name = self.name
         self.update_namespace_list_with_extra_ns_except_driver(
             driver_name, ns_of_driver, after_name=self.ee.study_name)
+        #   then add ns keys to driver discipline
+        for item in ns_of_sub_proc:
+            self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
 
     def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
         """
@@ -526,6 +550,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
                 elem for elem in namespace_list if elem.__dict__['name'] not in driver_ns_list]
+
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
             extra_ns, after_name, namespace_list=namespace_list)
 

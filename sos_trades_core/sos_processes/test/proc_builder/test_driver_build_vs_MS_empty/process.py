@@ -40,7 +40,15 @@ class ProcessBuilder(BaseProcessBuilder):
         scenario_map_name = ''
 
         # 2. add multi_scenario
-        multi_scenarios = self.ee.factory.create_build_very_simple_multi_scenario_builder(
-            driver_name, scenario_map_name, builder_list, autogather=autogather, gather_node=gather_node, business_post_proc=business_post_proc)
-
+        multi_scenarios = (
+            self.ee.factory.create_build_very_simple_multi_scenario_builder(
+                driver_name,
+                scenario_map_name,
+                builder_list,
+                autogather=autogather,
+                gather_node=gather_node,
+                business_post_proc=business_post_proc,
+            )
+        )
+        
         return multi_scenarios

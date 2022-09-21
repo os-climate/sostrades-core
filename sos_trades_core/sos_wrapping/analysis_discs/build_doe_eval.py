@@ -347,7 +347,7 @@ class BuildDoeEval(SoSEval):
             sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
             # 1. provide driver inputs based on selected subprocess
-            self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
+            dynamic_inputs = self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
                 dynamic_inputs)
             dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(
                 dynamic_inputs, dynamic_outputs)
