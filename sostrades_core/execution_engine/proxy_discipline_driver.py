@@ -76,7 +76,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
             self.configure_driver()
 
         if len(self.get_disciplines_to_configure()) == 0:
-            if len(self.proxy_disciplines) == 1 and self.proxy_disciplines[0].is_sos_coupling:
+            if len(self.proxy_disciplines) == 1:
                 self.update_data_io_with_subprocess_io() # only for 1 subcoupling, so not handling cases like driver of driver
             else:
                 raise NotImplementedError

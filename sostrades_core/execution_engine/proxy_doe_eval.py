@@ -173,6 +173,7 @@ class ProxyDoeEval(ProxyEval):
         self.selected_inputs = []
         self.previous_algo_name = ""
 
+        # FIXME: use the builder to assign a driver_wrapper as custom_driver does, instead of crushing the default None
         mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
         cls_wrapper = ee.factory.get_disc_class_from_module(mod_path)
         self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_wrapper, wrapping_mode='SoSTrades')

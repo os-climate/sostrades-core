@@ -297,9 +297,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                    + private_values[self.study_name + '.DoEEval.Disc1.a']*doe_disc_samples.x[i][0])
             i += 1
 
-    def _test_3_simple_custom_driver(self):
+    def test_3_simple_custom_driver(self):
 
-        exec_eng = ExecutionEngine(self.study_name)
+        study_name = 'root'
+        exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
         proc_name = "test_disc1_custom_driver"
         driver_builder = factory.get_builder_from_process(repo=self.repo,
@@ -309,4 +310,24 @@ class TestSoSDOEScenario(unittest.TestCase):
             driver_builder)
 
         exec_eng.configure()
-        exec_eng.prepare_execution()
+
+        in_dict = {}
+        in_dict[f'{study_name}.Driver1.output_full_name'] = f'{study_name}.y'
+        in_dict[f'{study_name}.x'] = array([10.])
+        in_dict[f'{study_name}.Driver1.Disc1.a'] = array([5.])
+        in_dict[f'{study_name}.Driver1.Disc1.b'] = array([25431.])
+        exec_eng.load_study_from_input_dict(in_dict)
+
+        # check expected output from execution
+        exec_eng.execute()
+        self.assertEqual(exec_eng.dm.get_value('root.Driver1.output_squared'),array([649281361.]))
+
+        # check that the root process knows all the numerical inputs of the entire subprocess
+        root_inputs = exec_eng.root_process.get_input_data_names()
+        self.assertIn('root.linearization_mode', root_inputs)
+        self.assertIn('root.Driver1.linearization_mode', root_inputs)
+        # self.assertIn('root.Driver1.Disc1.linearization_mode', root_inputs)
+
+
+
+
