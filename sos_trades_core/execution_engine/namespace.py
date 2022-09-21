@@ -22,6 +22,7 @@ class Namespace:
     '''
     Specification: Namespace class describes name, value and dependencies of namespace object
     '''
+    NS_NAME_SEPARATOR = '__'
 
     def __init__(self, name, value):
         '''
@@ -49,7 +50,7 @@ class Namespace:
 
     def get_ns_id(self):
 
-        return f'{self.name}__{self.value}'
+        return f'{self.name}{self.NS_NAME_SEPARATOR}{self.value}'
 
     def get_dependency_disc_list(self):
         '''

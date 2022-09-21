@@ -35,7 +35,7 @@ class NamespaceManager:
     Specification: NamespaceManager allows to manage namespaces for disciplines data
     '''
     NS_SEP = '.'
-    NS_NAME_SEPARATOR = '__'
+    NS_NAME_SEPARATOR = Namespace.NS_NAME_SEPARATOR
 
     def __init__(self, name, ee):
         '''
@@ -125,15 +125,17 @@ class NamespaceManager:
 
         # if the couple (name,value) already exists do not create another
         # object take the one that exists
-        if f'{name}{self.NS_NAME_SEPARATOR}{ns_value}' in self.all_ns_dict:
-            ns = self.all_ns_dict[f'{name}{self.NS_NAME_SEPARATOR}{ns_value}']
+        ns_id = f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'
+
+        if ns_id in self.all_ns_dict:
+            ns = self.all_ns_dict[ns_id]
 
         # else we create a new object and store it in all_ns_dict
         else:
             ns = Namespace(name, ns_value)
             #-- add in the list if created
             self.ns_list.append(ns)
-            self.all_ns_dict[f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'] = ns
+            self.all_ns_dict[ns.get_ns_id()] = ns
         # This shared_ns_dict delete the namespace if already exist: new one
         # has priority
         self.shared_ns_dict[name] = ns
