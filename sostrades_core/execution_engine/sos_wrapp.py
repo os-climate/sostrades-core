@@ -36,7 +36,7 @@ class SoSWrapp(object):
     Attributes:
         sos_name (string): name of the discipline
         local_data_short_name (Dict[Dict]): short name version of the local data for model input and output
-        run_output (Dict[Any]): output of the model last run
+        local_data (Dict[Any]): output of the model last run
     '''
     # -- Disciplinary attributes
     DESC_IN = {}
@@ -77,13 +77,12 @@ class SoSWrapp(object):
             sos_name (string): name of the discipline
         '''
         self.sos_name = sos_name
-        self.local_data = {}
         self.input_full_name_map = {}
         self.output_full_name_map = {}
         self.input_data_names = []
         self.output_data_names = []
-        self.run_output = {}
         self.attributes = {}
+        self.local_data = {}
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
         """
@@ -182,7 +181,7 @@ class SoSWrapp(object):
             dict of keys values
         Raises:
             ValueError if i_o type is not IO_TYPE_IN or IO_TYPE_OUT
-            KeyError if asked for an output key when self.run_output is not initialized
+            KeyError if asked for an output key when self.local_data is not initialized
         """
 
         # convert local key names to namespaced ones
@@ -209,14 +208,14 @@ class SoSWrapp(object):
         Run user-defined model.
 
         Returns:
-            run_output (Dict): outputs of the model run
+            local_data (Dict): outputs of the model run
         """
         self.run()
-        return self.run_output
+        return self.local_data
     
     def store_sos_outputs_values(self, dict_values, full_name_keys=False):
         """"
-        Store run outputs in the run_output attribute.
+        Store run outputs in the local_data attribute.
 
         NB: permits coherence with EEV3 wrapper run definition.
 
@@ -224,7 +223,7 @@ class SoSWrapp(object):
             dict_values (Dict): variables' values to store
         """
         if full_name_keys:
-            self.run_output.update(dict_values) # NB: the user cannot call method several times in wrapper run with different outputs
+            self.local_data.update(dict_values) 
         else:
             outputs = dict(zip(map(self.output_full_name_map.get, dict_values.keys()), dict_values.values()))
-            self.run_output.update(outputs)
+            self.local_data.update(outputs)

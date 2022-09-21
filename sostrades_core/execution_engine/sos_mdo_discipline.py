@@ -93,9 +93,9 @@ class SoSMDODiscipline(MDODiscipline):
                 self.local_data).items() if key in self.input_grammar.data_names}
 
         # SoSWrapp run
-        run_output = self.sos_wrapp._run()
+        local_data = self.sos_wrapp._run()
         # local data update
-        self.store_local_data(**run_output)
+        self.store_local_data(**local_data)
 
         # get output from data connector
         self.fill_output_value_connector()
