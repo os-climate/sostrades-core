@@ -38,10 +38,12 @@ class Disc11(SoSDiscipline):
         'x': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'test_df': {'type': 'dataframe', 'unit': '-'},
         'c_dict': {'type': 'dict', 'unit': '-'},
+        'test_string': {'type': 'string', 'unit': '-'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'out_string': {'type': 'string', 'unit': '-'},
     }
 
     def run(self):
@@ -51,6 +53,8 @@ class Disc11(SoSDiscipline):
         test_df = self.get_sosdisc_inputs('test_df')
         a = test_df['a'].values
         b = test_df['b'].values
-        dict_values = {'indicator': a * b, 'y': a * x + b + c}
+        test_string = self.get_sosdisc_inputs('test_string')
+        dict_values = {'indicator': a * b, 'y': a *
+                       x + b + c, 'out_string': test_string}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)

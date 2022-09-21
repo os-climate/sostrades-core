@@ -533,7 +533,7 @@ class SoSDiscipline(MDODiscipline):
         self.setup_sos_disciplines()
 
         self.reload_io()
-
+        # self.check_generic_data_integrity()
         self.check_data_integrity()
 
         # update discipline status to CONFIGURE
@@ -1386,6 +1386,80 @@ class SoSDiscipline(MDODiscipline):
         # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
+
+    def update_dm_with_formula(self):
+        """
+        Update dm with the value of formula if variable is defined by a formula
+        """
+        # dict {parameter_name : value}
+        value_dict = {}
+        # dict : {parameter_name : key in variable}
+        corresp_dict = {}
+        for key in self._data_in.keys():
+            if type(self._data_in[key]) == type(DataFrame()):
+                if len(self._data_in[key]) > 0:
+                    for key_df in self._data_in[key].keys():
+                        value_dict[f'{key}.{key_df}'] = self._data_in[key][key_df].values[0]
+                        corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+            elif type(self._data_in[key]) == type({}):
+                for key_df in self._data_in[key].keys():
+                    value_dict[f'{key}.{key_df}'] = self._data_in[key][key_df]
+                    corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+
+            else:
+                value_dict[key] = self._data_in[key]
+                corresp_dict[key] = key
+
+        for key in value_dict.keys():
+
+            # variable is a float, and depends on other float from same disc
+            if type(value_dict[key]) == type('string'):
+                # store formula in dm.data_dict
+                if key in self._data_in.keys():
+                    try:
+                        id_in_dm = self.dm.get_data_id(key)
+                        info_data_dict = self.dm.data_dict[id_in_dm]
+                        if info_data_dict['formula'] is None:
+                            self.dm.data_dict[id_in_dm]['formula'] = self._data_in[key]
+                    except:
+                        pass
+                else:
+                    try:
+                        input_item = corresp_dict[key][0]
+                        id_in_dm = self.dm.get_data_id(input_item)
+                        info_data_dict = self.dm.data_dict[id_in_dm]
+                        if info_data_dict['formula'] is None:
+                            self.dm.data_dict[id_in_dm]['formula'] = deepcopy(
+                                self._data_in[input_item])
+                    except:
+                        pass
+                try:
+                    if type(corresp_dict[key]) == type([]):
+                        in_el_key = corresp_dict[key][1]
+                        if self.dm.data_dict[id_in_dm]['type'] == 'dict':
+                            sympy_formula = SympyFormula(
+                                self.dm.data_dict[id_in_dm]['formula'][in_el_key])
+                        elif self.dm.data_dict[id_in_dm]['type'] == 'dataframe':
+                            sympy_formula = SympyFormula(
+                                self.dm.data_dict[id_in_dm]['formula'][in_el_key].values[0])
+                    else:
+                        sympy_formula = SympyFormula(
+                            self.dm.data_dict[id_in_dm]['formula'])
+                    sympy_formula.evaluate(value_dict)
+                    if corresp_dict[key] == key:
+                        id_in_dm = self.dm.get_data_id(key)
+                        self.dm.data_dict[id_in_dm]['value'] = sympy_formula.get_value(
+                        )
+                        value_dict[key] = sympy_formula.get_value()
+                    else:
+                        df_name = corresp_dict[key][0]
+                        df_key = corresp_dict[key][1]
+                        id_in_dm = self.dm.get_data_id(key)
+                        self.dm.data_dict[id_in_dm]['value'][df_key] = sympy_formula.get_value(
+                        )
+                        value_dict[key] = sympy_formula.get_value()
+                except:
+                    pass
 
     def fill_subtype_descriptor(self):
         """This method is used to fill the subtype descriptor of scatter and gather data

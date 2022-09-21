@@ -30,13 +30,14 @@ class Study(StudyManager):
         test_df['a'] = [5]
         test_df['b'] = [2]
         c_dict = {}
-        c_dict['c'] = 8
+        c_dict['c'] = f'{self.study_name}.x + 1'
         private_values = {
             self.study_name + '.x': 10.,
             self.study_name + '.Disc11.test_df': test_df,
             self.study_name + '.Disc11.c_dict': c_dict,
             self.study_name + '.Disc2.constant': 3.1416,
-            self.study_name + '.Disc2.power': 2}
+            self.study_name + '.Disc2.power': 2.,
+            self.study_name + '.Disc11.test_string': '3+1'}
         setup_data_list.append(private_values)
         return setup_data_list
 

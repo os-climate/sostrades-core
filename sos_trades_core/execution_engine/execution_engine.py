@@ -431,8 +431,9 @@ class ExecutionEngine:
                     try:
                         id_in_dm = self.dm.get_data_id(key)
                         info_data_dict = self.dm.data_dict[id_in_dm]
-                        if info_data_dict['formula'] is None:
-                            self.dm.data_dict[id_in_dm]['formula'] = input_dict[key]
+                        if info_data_dict['type'] != 'string':
+                            if info_data_dict['formula'] is None:
+                                self.dm.data_dict[id_in_dm]['formula'] = input_dict[key]
                     except:
                         pass
                 else:

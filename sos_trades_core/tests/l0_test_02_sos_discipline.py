@@ -417,14 +417,18 @@ class TestSoSDiscipline(unittest.TestCase):
         test_df['b'] = ['2*Test.Disc11.test_df.a']
         c_dict = {}
         c_dict['c'] = 'Test.Disc11.test_df.a + Test.Disc11.test_df.b'
+        test_string = '3+1'
         values_dict = {self.name + '.x': x,
                        self.name + '.Disc11.test_df': test_df,
-                       self.name + '.Disc11.c_dict': c_dict, }
+                       self.name + '.Disc11.c_dict': c_dict,
+                       self.name + '.Disc11.test_string': test_string, }
 
         self.ee.load_study_from_input_dict(values_dict)
 
         self.ee.display_treeview_nodes()
         self.ee.execute()
         y = self.ee.dm.get_value(self.name + '.y')
+        out_string = self.ee.dm.get_value(self.name + '.Disc11.out_string')
 
         self.assertEqual(y, 72)
+        self.assertEqual(test_string, '3+1')
