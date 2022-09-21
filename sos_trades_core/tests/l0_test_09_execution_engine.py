@@ -266,7 +266,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         # modify DM ----
         values_dict = {}
-        values_dict['EETests.Disc1.a'] = 'EETests.Disc2.power*5'
+        values_dict['EETests.Disc1.a'] = 'formula:EETests.Disc2.power*5'
         values_dict['EETests.Disc1.b'] = 20.
         values_dict['EETests.Disc2.power'] = 2
         values_dict['EETests.Disc2.constant'] = -10.
