@@ -368,8 +368,8 @@ class TestSoSDiscipline(unittest.TestCase):
         self.ee.configure()
         x = 3.0
         values_dict = {self.name + '.x': x,
-                       self.name + '.Disc1.a': '3*Test.x',
-                       self.name + '.Disc1.b': '2*Test.Disc1.a'}
+                       self.name + '.Disc1.a': 'formula:3*Test.x',
+                       self.name + '.Disc1.b': 'formula:2*Test.Disc1.a'}
 
         self.ee.load_study_from_input_dict(values_dict)
 
@@ -413,10 +413,10 @@ class TestSoSDiscipline(unittest.TestCase):
         self.ee.configure()
         x = 3.0
         test_df = pd.DataFrame()
-        test_df['a'] = ['3*Test.x']
-        test_df['b'] = ['2*Test.Disc11.test_df.a']
+        test_df['a'] = ['formula:3*Test.x']
+        test_df['b'] = ['formula:2*Test.Disc11.test_df.a']
         c_dict = {}
-        c_dict['c'] = 'Test.Disc11.test_df.a + Test.Disc11.test_df.b'
+        c_dict['c'] = 'formula:Test.Disc11.test_df.a + Test.Disc11.test_df.b'
         test_string = '3+1'
         values_dict = {self.name + '.x': x,
                        self.name + '.Disc11.test_df': test_df,
@@ -431,4 +431,4 @@ class TestSoSDiscipline(unittest.TestCase):
         out_string = self.ee.dm.get_value(self.name + '.Disc11.out_string')
 
         self.assertEqual(y, 72)
-        self.assertEqual(test_string, '3+1')
+        self.assertEqual(out_string, '3+1')
