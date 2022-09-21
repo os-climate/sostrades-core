@@ -75,6 +75,30 @@ class DoeEval(EvalWrapper):
     INPUT_TYPE = ['float', 'array', 'int', 'string']
     INPUT_MULTIPLIER_TYPE = []
 
+
+    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
+               'eval_inputs': {'type': 'dataframe',
+                               'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                        'full_name': ('string', None, False)},
+                               'dataframe_edition_locked': False,
+                               'structuring': True,
+                               'visibility': SoSWrapp.SHARED_VISIBILITY,
+                               'namespace': 'ns_doe_eval'},
+               'eval_outputs': {'type': 'dataframe',
+                                'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                         'full_name': ('string', None, False)},
+                                'dataframe_edition_locked': False,
+                                'structuring': True, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                'namespace': 'ns_doe_eval'},
+               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+               'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
+               }
+
+    DESC_OUT = {
+        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                              'namespace': 'ns_doe_eval'}
+    }
+
     def create_design_space(self):
         """
         create_design_space

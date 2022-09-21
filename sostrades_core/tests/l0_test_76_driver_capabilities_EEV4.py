@@ -296,3 +296,17 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(doe_disc_y[key], private_values[self.study_name + '.DoEEval.Disc1.b']
                                    + private_values[self.study_name + '.DoEEval.Disc1.a']*doe_disc_samples.x[i][0])
             i += 1
+
+    def _test_3_simple_custom_driver(self):
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+        proc_name = "test_disc1_custom_driver"
+        driver_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            driver_builder)
+
+        exec_eng.configure()
+        exec_eng.prepare_execution()

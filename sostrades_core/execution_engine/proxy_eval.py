@@ -59,13 +59,6 @@ class ProxyEval(ProxyDisciplineDriver):
         'icon': '',
         'version': '',
     }
-    DESC_IN = {
-        'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
-        'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
-        'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
-        'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
-
-    }
 
     def __init__(self, sos_name, ee, cls_builder):
         '''
@@ -176,21 +169,6 @@ class ProxyEval(ProxyDisciplineDriver):
         # Extract variables for eval analysis
         if len(self.proxy_disciplines) > 0:
             self.set_eval_possible_values()
-
-    def is_configured(self):
-        '''
-        Return False if discipline is not configured or structuring variables have changed or children are not all configured
-        '''
-        return ProxyDiscipline.is_configured(self) and (
-            (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(
-                self.cls_builder) == 0)
-        # Explanation:
-        # 1. SoSDiscipline.is_configured(self) : as in discipline (i.e. conf status of Eval = True and no change in structuring variables of Eval
-        # 2. Added condition compared to ProxSDiscipline :
-        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline exist but all configured
-        # 2.2 len(self.cls_builder) == 0 No yet provided builder and so Is configured is True
-        # Remark: condition "and len(self.proxy_disciplines) != 0) or
-        # len(self.cls_builder) == 0)" added for proc build
 
     def set_eval_possible_values(self):
         '''

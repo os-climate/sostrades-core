@@ -86,28 +86,6 @@ class ProxyDoeEval(ProxyEval):
     INPUT_MULTIPLIER_TYPE = []
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
-               'eval_inputs': {'type': 'dataframe',
-                               'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                        'full_name': ('string', None, False)},
-                               'dataframe_edition_locked': False,
-                               'structuring': True,
-                               'visibility': ProxyDiscipline.SHARED_VISIBILITY,
-                               'namespace': 'ns_doe_eval'},
-               'eval_outputs': {'type': 'dataframe',
-                                'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                         'full_name': ('string', None, False)},
-                                'dataframe_edition_locked': False,
-                                'structuring': True, 'visibility': ProxyDiscipline.SHARED_VISIBILITY,
-                                'namespace': 'ns_doe_eval'},
-               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
-               'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
-               }
-
-    DESC_OUT = {
-        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': ProxyDiscipline.SHARED_VISIBILITY,
-                              'namespace': 'ns_doe_eval'}
-    }
     # We define here the different default algo options in a case of a DOE
     # TODO Implement a generic get_options functions to retrieve the default
     # options using directly the DoeFactory

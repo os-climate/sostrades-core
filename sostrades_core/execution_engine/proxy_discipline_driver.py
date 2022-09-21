@@ -39,11 +39,11 @@ class ProxyDisciplineDriverException(Exception):
 
 class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None):
         '''
         Constructor
         '''
-        super().__init__(sos_name, ee)
+        super().__init__(sos_name, ee, driver_wrapper_cls)
         self.cls_builder = cls_builder
         self.eval_process_builder = self._set_eval_process_builder()
 
@@ -158,3 +158,24 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
     def set_wrapper_attributes(self, wrapper):
         wrapper.attributes = {'sub_mdo_discipline': self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline}
+
+    def is_configured(self):
+        '''
+        Return False if discipline is not configured or structuring variables have changed or children are not all configured
+        '''
+        return ProxyDiscipline.is_configured(self) and (
+            (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(
+                self.cls_builder) == 0)
+        # Explanation:
+        # 1. SoSDiscipline.is_configured(self) : as in discipline (i.e. conf status of Eval = True and no change in structuring variables of Eval
+        # 2. Added condition compared to ProxSDiscipline :
+        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline exist but all configured
+        # 2.2 len(self.cls_builder) == 0 No yet provided builder and so Is configured is True
+        # Remark: condition "and len(self.proxy_disciplines) != 0) or
+        # len(self.cls_builder) == 0)" added for proc build
+
+    def get_desc_in_out(self, io_type):
+        if self.mdo_discipline_wrapp.wrapper is not None:
+            return ProxyDiscipline.get_desc_in_out(self, io_type)
+        else:
+            return super().get_desc_in_out(io_type)

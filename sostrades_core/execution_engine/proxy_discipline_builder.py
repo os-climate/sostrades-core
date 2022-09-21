@@ -63,13 +63,34 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #     self.proxy_discipline = None
     #     self.built_sos_disciplines = None
 
-    @abstractmethod
+    # @abstractmethod
+    # def build(self):
+    #     """
+    #     To be overloaded by subclasses
+    #     Builds sub processes (i.e., in case of scatters, ...)"""
+    #
+    #     # self.proxy_discipline.build()
+
     def build(self):
         """
-        To be overloaded by subclasses
-        Builds sub processes (i.e., in case of scatters, ...)"""
+        Instanciate sub proxies managed by the coupling
+        """
+        old_current_discipline = self.ee.factory.current_discipline
+        self.ee.factory.current_discipline = self
+        for builder in self.cls_builder:
+            proxy_disc = builder.build()
+            if proxy_disc not in self.proxy_disciplines:
+                self.ee.factory.add_discipline(proxy_disc)
+        # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
+        # high level coupling and we do not have to restore the
+        # current_discipline
+        if old_current_discipline is not None:
+            self.ee.factory.current_discipline = old_current_discipline
 
-        # self.proxy_discipline.build()
+    #     def clear_cache(self):
+    #         self.mdo_chain.cache.clear()
+    #         ProxyDisciplineBuilder.clear_cache(self)
+
 
     def clean(self):
         """

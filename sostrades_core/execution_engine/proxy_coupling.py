@@ -272,25 +272,25 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for sub_mda in mda.mda_sequence:
                 self._set_sub_mda_dm_cache_map(sub_mda)   
 
-    def build(self):
-        """
-        Instanciate sub proxies managed by the coupling
-        """
-        old_current_discipline = self.ee.factory.current_discipline
-        self.ee.factory.current_discipline = self
-        for builder in self.cls_builder:
-            proxy_disc = builder.build()
-            if proxy_disc not in self.proxy_disciplines:
-                self.ee.factory.add_discipline(proxy_disc)
-        # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
-        # high level coupling and we do not have to restore the
-        # current_discipline
-        if old_current_discipline is not None:
-            self.ee.factory.current_discipline = old_current_discipline
-
-    #     def clear_cache(self):
-    #         self.mdo_chain.cache.clear()
-    #         ProxyDisciplineBuilder.clear_cache(self)
+    # def build(self):
+    #     """
+    #     Instanciate sub proxies managed by the coupling
+    #     """
+    #     old_current_discipline = self.ee.factory.current_discipline
+    #     self.ee.factory.current_discipline = self
+    #     for builder in self.cls_builder:
+    #         proxy_disc = builder.build()
+    #         if proxy_disc not in self.proxy_disciplines:
+    #             self.ee.factory.add_discipline(proxy_disc)
+    #     # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
+    #     # high level coupling and we do not have to restore the
+    #     # current_discipline
+    #     if old_current_discipline is not None:
+    #         self.ee.factory.current_discipline = old_current_discipline
+    #
+    # #     def clear_cache(self):
+    # #         self.mdo_chain.cache.clear()
+    # #         ProxyDisciplineBuilder.clear_cache(self)
 
     # -- Public methods
 

@@ -51,6 +51,13 @@ class EvalWrapper(SoSWrapp):
 
     _maturity = 'Fake'
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
+    DESC_IN = {
+        'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
+        'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
+        'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+        'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
+
+    }
 
     def __init__(self, sos_name):
 

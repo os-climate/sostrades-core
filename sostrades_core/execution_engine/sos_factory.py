@@ -282,11 +282,24 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
+    def create_custom_driver_builder(self, sos_name, driver_wrapper_mod, cls_builder):
+        module_struct_list = f'{self.EE_PATH}.proxy_discipline_driver.ProxyDisciplineDriver'
+        cls = self.get_disc_class_from_module(module_struct_list)
+        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        if isinstance(cls_builder, list):
+            builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
+            builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+        else:
+            builder.set_builder_info('cls_builder', [cls_builder])
+            builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+        return builder
+
     def create_evaluator_builder(self, sos_name, eval_type, cls_builder):
         """
         create a builder for an evaluator defined by its eval_type
         """
-
+        # TODO: can be refactored with calls to create_custom_driver_builder
         if eval_type == 'sensitivity':
             module_struct_list = (
                 f'{self.GENERIC_MODS_PATH}.sensitivity_analysis.SensitivityAnalysis'
