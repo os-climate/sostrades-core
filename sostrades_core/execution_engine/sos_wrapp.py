@@ -16,7 +16,9 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 
+LOGGER = logging.getLogger(__name__)
 
 class SoSWrappException(Exception):
     pass
@@ -222,6 +224,7 @@ class SoSWrapp(object):
             dict_values (Dict): variables' values to store
         """
         if full_name_keys:
-            self.run_output = dict_values # NB: the user cannot call method several times in wrapper run with different outputs
+            self.run_output.update(dict_values) # NB: the user cannot call method several times in wrapper run with different outputs
         else:
-            self.run_output = dict(zip(map(self.output_full_name_map.get, dict_values.keys()),dict_values.values()))
+            outputs = dict(zip(map(self.output_full_name_map.get, dict_values.keys()), dict_values.values()))
+            self.run_output.update(outputs)
