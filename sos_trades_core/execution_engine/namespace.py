@@ -49,7 +49,9 @@ class Namespace:
         return self.value
 
     def get_ns_id(self):
-
+        '''
+        Get the namespace id used to store the namespace in the namespace_manager
+        '''
         return f'{self.name}{self.NS_NAME_SEPARATOR}{self.value}'
 
     def get_dependency_disc_list(self):

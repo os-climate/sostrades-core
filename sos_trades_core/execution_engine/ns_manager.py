@@ -268,6 +268,11 @@ class NamespaceManager:
         self.add_disc_ns_info(disc, disc_ns_info)
 
     def get_associated_ns(self, disc):
+        '''
+        Get the others_ns by default from shared_ns_dict
+        IF the discipline has some associated namespaces then the others_ns dict is build in priority with these namespaces
+        for other namespaces not "associated" we pick namespaces from shared_ns_dict
+        '''
         shared_ns_dict = self.get_shared_ns_dict()
         if len(disc.associated_namespaces) == 0:
             others_ns = shared_ns_dict
