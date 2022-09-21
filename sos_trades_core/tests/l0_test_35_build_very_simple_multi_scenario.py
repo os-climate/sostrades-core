@@ -387,7 +387,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print(added_inputs_list)
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
-        target_added_inputs_list = ['scenario_list']
+        target_added_inputs_list = ['scenario_list', 'ns_in_df']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
@@ -834,7 +834,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # print(added_inputs_list)
         #print("Removed Inputs_list:")
         # print(removed_inputs_list)
-        target_added_inputs_list = ['scenario_list']
+        target_added_inputs_list = ['scenario_list', 'ns_in_df']
         self.assertCountEqual(target_added_inputs_list, added_inputs_list)
         target_removed_inputs_list = []
         self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
