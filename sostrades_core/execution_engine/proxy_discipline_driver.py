@@ -93,11 +93,13 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         # self._data_in_with_full_name.update(self.proxy_disciplines[0].get_data_io_with_full_name(self.IO_TYPE_IN)) # the subcoupling num_desc_in is crushed
         # self._data_out_with_full_name.update(self.proxy_disciplines[0].get_data_io_with_full_name(self.IO_TYPE_OUT))
         #
-        self._data_in.update({key:value
-                              for key,value in self.proxy_disciplines[0].get_data_in().items()
-                              if key not in self.NUM_DESC_IN.keys()}) # the subcoupling num_desc_in is crushed
-        self._data_out.update(self.proxy_disciplines[0].get_data_out())
-
+        # self._data_in.update({key:value
+        #               for key,value in self.proxy_disciplines[0].get_data_in().items()
+        #               if key not in self.NUM_DESC_IN.keys()}) # the subcoupling num_desc_in is crushed
+        # self._data_out.update(self.proxy_disciplines[0].get_data_out())
+        for proxy_disc in self.proxy_disciplines:
+            self._data_in.update(proxy_disc.get_data_in())
+            self._data_out.update(proxy_disc.get_data_out())
 
     def configure_driver(self):
         """
