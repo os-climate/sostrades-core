@@ -324,7 +324,7 @@ class EvalWrapper(SoSWrapp):
             vars_to_update_dict = {}
             for multiplier_i, x_id in enumerate(self.attributes['eval_in_list']):
                 # for grid search multipliers inputs
-                var_name = x_id.split(self.attributes["study_name"] + '.')[-1]
+                var_name = x_id.split(self.ee.study_name + '.', 1)[-1]
                 if self.MULTIPLIER_PARTICULE in var_name:
                     var_origin_f_name = '.'.join(
                         [self.attributes["study_name"], self.get_names_from_multiplier(var_name)[0]])

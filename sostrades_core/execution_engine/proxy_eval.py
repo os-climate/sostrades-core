@@ -85,7 +85,7 @@ class ProxyEval(ProxyDisciplineDriver):
         # self.eval_process_builder = self._set_eval_process_builder()
         self.eval_process_disc = None
 
-    def set_eval_in_out_lists(self, in_list, out_list):
+    def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
         '''
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
@@ -96,8 +96,11 @@ class ProxyEval(ProxyDisciplineDriver):
         for v_id in in_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
             for full_id in full_id_list:
-                self.eval_in_list.append(full_id)
-
+                if not inside_evaluator:
+                    self.eval_in_list.append(full_id)
+                else:
+                    if full_id.startswith(self.get_disc_full_name()):
+                        self.eval_in_list.append(full_id)
         self.eval_out_list = []
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
