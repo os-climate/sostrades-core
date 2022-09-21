@@ -222,8 +222,8 @@ class ProxyDoeEval(ProxyEval):
 
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
-                                                                                'namespace': 'ns_doe'}})
+                        {f'{out_var.split(self.ee.study_name + ".",1)[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                  'namespace': 'ns_doe'}})
 
                 if algo_name == "CustomDOE":
                     default_custom_dataframe = pd.DataFrame(
@@ -355,7 +355,7 @@ class ProxyDoeEval(ProxyEval):
                 # sake of simplicity
                 if is_input_type:
                     poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".")[1])
+                        full_id.split(self.ee.study_name + ".", 1)[1])
 
                 if is_input_multiplier_type and not is_None:
                     poss_in_values_list = self.set_multipliers_values(
@@ -374,7 +374,7 @@ class ProxyDoeEval(ProxyEval):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".")[1])
+                    full_id.split(self.ee.study_name + ".", 1)[1])
 
         return poss_in_values_full, poss_out_values_full
 
@@ -396,7 +396,7 @@ class ProxyDoeEval(ProxyEval):
 
         if disc._data_in[var_name][self.TYPE] == 'float':
             multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
-                self.ee.study_name + ".")[1]
+                self.ee.study_name + ".", 1)[1]
             poss_in_values_list.append(multiplier_fullname)
 
         else:
@@ -415,16 +415,16 @@ class ProxyDoeEval(ProxyEval):
                 for col_name in float_cols_list:
                     col_name_clean = self.clean_var_name(col_name)
                     multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
-                        self.ee.study_name + ".")[1]
+                        self.ee.study_name + ".", 1)[1]
                     poss_in_values_list.append(multiplier_fullname)
                 # if df with more than one float column, create multiplier for all
                 # columns also
                 if len(float_cols_list) > 1:
                     multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
-                        self.ee.study_name + ".")[1]
+                        self.ee.study_name + ".", 1)[1]
                     poss_in_values_list.append(multiplier_fullname)
         return poss_in_values_list
-
+    
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
@@ -456,9 +456,12 @@ class ProxyDoeEval(ProxyEval):
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
+        my_ns_doe_eval_path = self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_doe_eval'].get_value(
+        )
         if eval_input_new_dm is None:
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
                              'value', default_in_dataframe, check_value=False)
+
         # check if the eval_inputs need to be updtated after a subprocess
         # configure
         elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
@@ -470,11 +473,11 @@ class ProxyDoeEval(ProxyEval):
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
                     index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_inputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
                              'value', default_dataframe, check_value=False)
 
         if eval_output_new_dm is None:
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
             # check if the eval_inputs need to be updtated after a subprocess
             # configure
@@ -487,13 +490,13 @@ class ProxyDoeEval(ProxyEval):
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
                     index]
-            self.dm.set_data(f'{self.get_disc_full_name()}.eval_outputs',
+            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
                              'value', default_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
                          self.POSSIBLE_VALUES, self.custom_order_possible_algorithms(self.doe_factory.algorithms))
-
+        
     def custom_order_possible_algorithms(self, algo_list):
         """ This algo sorts the possible algorithms list so that most used algorithms
         which are fullfact,lhs and CustomDOE appears at the top of the list
@@ -551,6 +554,9 @@ class ProxyDoeEval(ProxyEval):
         doeeval_attributes = {'dict_desactivated_elem': self.dict_desactivated_elem,
                               'doe_factory': self.doe_factory,
                               'selected_inputs': self.selected_inputs,
-                              'selected_outputs': self.selected_outputs
+                              'selected_outputs': self.selected_outputs,
+                              'eval_in_list': self.eval_in_list,
+                              'eval_out_list': self.eval_out_list,
+                              'study_name': self.ee.study_name,
                               }
         wrapper.attributes.update(doeeval_attributes)
