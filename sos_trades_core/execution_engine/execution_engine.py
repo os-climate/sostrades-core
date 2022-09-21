@@ -360,6 +360,7 @@ class ExecutionEngine:
         Load a study from an input dictionary : Convert the input_dictionary into a dm-like dictionary
         and compute the function load_study_from_dict
         '''
+        input_dict_to_load = self.get_value_from_formula(input_dict_to_load)
         dict_to_load = self.convert_input_dict_into_dict(input_dict_to_load)
         self.load_study_from_dict(
             dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
@@ -394,7 +395,6 @@ class ExecutionEngine:
         return converted_dict
 
     def convert_input_dict_into_dict(self, input_dict):
-        input_dict = self.get_value_from_formula(input_dict)
         dm_dict = {key: {SoSDiscipline.VALUE: value}
                    for key, value in input_dict.items()}
         return dm_dict
@@ -428,6 +428,7 @@ class ExecutionEngine:
             if type(value_dict[key]) == type('string'):
                 # store formula in dm.data_dict
                 if key in input_dict.keys():
+
                     try:
                         id_in_dm = self.dm.get_data_id(key)
                         info_data_dict = self.dm.data_dict[id_in_dm]
@@ -450,14 +451,15 @@ class ExecutionEngine:
                     if type(corresp_dict[key]) == type([]):
                         in_el_key = corresp_dict[key][1]
                         if self.dm.data_dict[id_in_dm]['type'] == 'dict':
-                            sympy_formula = SympyFormula(
-                                self.dm.data_dict[id_in_dm]['formula'][in_el_key])
+                            if self.dm.data_dict[id_in_dm]['formula'][in_el_key].startswith('formula:'):
+                                sympy_formula = SympyFormula(
+                                    self.dm.data_dict[id_in_dm]['formula'][in_el_key].split(':')[1])
                         elif self.dm.data_dict[id_in_dm]['type'] == 'dataframe':
                             sympy_formula = SympyFormula(
-                                self.dm.data_dict[id_in_dm]['formula'][in_el_key].values[0])
+                                self.dm.data_dict[id_in_dm]['formula'][in_el_key].values[0].split(':')[1])
                     else:
                         sympy_formula = SympyFormula(
-                            self.dm.data_dict[id_in_dm]['formula'])
+                            self.dm.data_dict[id_in_dm]['formula'].split(':')[1])
                     sympy_formula.evaluate(value_dict)
                     if corresp_dict[key] == key:
                         input_dict[key] = sympy_formula.get_value()

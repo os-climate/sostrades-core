@@ -30,7 +30,7 @@ class Study(StudyManager):
         test_df['a'] = [5]
         test_df['b'] = [2]
         c_dict = {}
-        c_dict['c'] = f'{self.study_name}.x + 1'
+        c_dict['c'] = f'formula:{self.study_name}.x + 1'
         private_values = {
             self.study_name + '.x': 10.,
             self.study_name + '.Disc11.test_df': test_df,
