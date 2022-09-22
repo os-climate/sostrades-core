@@ -360,7 +360,6 @@ class ExecutionEngine:
         Load a study from an input dictionary : Convert the input_dictionary into a dm-like dictionary
         and compute the function load_study_from_dict
         '''
-        input_dict_to_load = self.get_value_from_formula(input_dict_to_load)
         dict_to_load = self.convert_input_dict_into_dict(input_dict_to_load)
         self.load_study_from_dict(
             dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
@@ -429,13 +428,11 @@ class ExecutionEngine:
             if type(value_dict[key]) == type('string'):
                 # store formula in dm.data_dict
                 if key in input_dict.keys():
-
                     id_in_dm = self.dm.get_data_id(key)
                     info_data_dict = self.dm.data_dict[id_in_dm]
                     if info_data_dict['type'] != 'string':
                         # if info_data_dict['formula'] is None:
                         self.dm.data_dict[id_in_dm]['formula'] = input_dict[key]
-
                 else:
                     input_item = corresp_dict[key][0]
                     id_in_dm = self.dm.get_data_id(input_item)
