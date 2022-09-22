@@ -403,9 +403,10 @@ class ExecutionEngine:
         """
         Update dm with the value of formula if variable is defined by a formula
         """
-        # dict {parameter_name : value}
+        # value_dict {parameter_name : value}
         value_dict = {}
-        # dict : {parameter_name : key in variable}
+        # corresp_dict : {parameter_name : key in variable} for case formula is
+        # in df or dict
         corresp_dict = {}
         for key in input_dict.keys():
             if type(input_dict[key]) == type(pd.DataFrame()):
@@ -429,26 +430,22 @@ class ExecutionEngine:
                 # store formula in dm.data_dict
                 if key in input_dict.keys():
 
-                    try:
-                        id_in_dm = self.dm.get_data_id(key)
-                        info_data_dict = self.dm.data_dict[id_in_dm]
-                        if info_data_dict['type'] != 'string':
-                            if info_data_dict['formula'] is None:
-                                self.dm.data_dict[id_in_dm]['formula'] = input_dict[key]
-                    except:
-                        pass
+                    id_in_dm = self.dm.get_data_id(key)
+                    info_data_dict = self.dm.data_dict[id_in_dm]
+                    if info_data_dict['type'] != 'string':
+                        # if info_data_dict['formula'] is None:
+                        self.dm.data_dict[id_in_dm]['formula'] = input_dict[key]
+
                 else:
-                    try:
-                        input_item = corresp_dict[key][0]
-                        id_in_dm = self.dm.get_data_id(input_item)
-                        info_data_dict = self.dm.data_dict[id_in_dm]
-                        if info_data_dict['formula'] is None:
-                            self.dm.data_dict[id_in_dm]['formula'] = deepcopy(
-                                input_dict[input_item])
-                    except:
-                        pass
+                    input_item = corresp_dict[key][0]
+                    id_in_dm = self.dm.get_data_id(input_item)
+                    info_data_dict = self.dm.data_dict[id_in_dm]
+                    # if info_data_dict['formula'] is None:
+                    self.dm.data_dict[id_in_dm]['formula'] = deepcopy(
+                        input_dict[input_item])
                 try:
                     if type(corresp_dict[key]) == type([]):
+                        # key of variable in dataframe or dict
                         in_el_key = corresp_dict[key][1]
                         if self.dm.data_dict[id_in_dm]['type'] == 'dict':
                             if self.dm.data_dict[id_in_dm]['formula'][in_el_key].startswith('formula:'):
@@ -469,8 +466,9 @@ class ExecutionEngine:
                         df_key = corresp_dict[key][1]
                         input_dict[df_name][df_key] = sympy_formula.get_value()
                         value_dict[key] = sympy_formula.get_value()
-                except:
-                    pass
+                except Exception as exp:
+                    self.logger.error(
+                        f'error while interpreting formula: {exp}')
         return(input_dict)
 
     def update_token_formula_from_other_disc(self, token_list, value_dict):
