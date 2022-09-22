@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-# -- Generate test 1 process
+#-- Generate test 1 process
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -50,5 +50,5 @@ class ProcessBuilder(BaseProcessBuilder):
                 business_post_proc=business_post_proc,
             )
         )
-
+        
         return multi_scenarios

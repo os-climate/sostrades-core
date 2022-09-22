@@ -18,9 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 from sos_trades_core.execution_engine.proc_builder.build_sos_discipline_scatter import BuildSoSDisciplineScatter
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.sos_wrapping.old_sum_value_block_discipline import (
-    OldSumValueBlockDiscipline,
-)
+from sos_trades_core.sos_wrapping.old_sum_value_block_discipline import OldSumValueBlockDiscipline
 
 import pandas as pd
 
@@ -30,14 +28,14 @@ class BuildSoSSimpleMultiScenarioException(Exception):
 
 
 class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
-    '''
+    ''' 
     Class that build scatter discipline and linked scatter data from scenario defined in a usecase
 
 
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
-            |_ SCENARIO_MAP (structuring)
+            |_ SCENARIO_MAP (structuring)            
                |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP['input_name'] != '' or is not None)
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
@@ -51,9 +49,9 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                                                                           If 'None' then it uses the sos_processes python for doe creation.
                                                     USECASE_NAME:         either empty or an available usecase of the sub_process
                                                     USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
-                                                                          it is a temporary input: it will be put to None as soon as
-                                                                          its content is 'loaded' in the dm. We will have it has editable
-                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget)
+                                                                          it is a temporary input: it will be put to None as soon as                                                                        
+                                                                          its content is 'loaded' in the dm. We will have it has editable                                                                             
+                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
            |_ SCENARIO_MAP:                     All inputs for driver builder in the form of a dictionary of four keys
                                                     INPUT_NAME:           name of the variable to scatter
                                                     INPUT_NS:             Optional key: namespace of the variable to scatter if the INPUT_NS key is this scenario map. 
@@ -66,10 +64,11 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                                                     NS_TO_UPDATE:         list of namespaces depending on the scatter namespace 
                                                                           (by default, we have the list of namespaces of the nested sub_process)   
             |_ NS_IN_DF :                       Only in tread only and hidden: a map of ns name: value for namespaces of the nested sub_process                                                                                                                                         
+
          |_ DESC_OUT
     '''
 
-    #################### Begin: Ontology of the discipline ###################
+#################### Begin: Ontology of the discipline ###################
     # ontology information
     _ontology_data = {
         'label': 'Proc Builder Core Very Simple Multi-Scenario',
@@ -83,8 +82,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         'icon': 'fas fa-stream fa-fw',
         'version': '',
     }
-    #################### End: Ontology of the discipline #####################
-    #################### Begin: Constants and parameters #####################
+#################### End: Ontology of the discipline #####################
+#################### Begin: Constants and parameters #####################
     # -- Disciplinary attributes
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     PROCESS_NAME = 'process_name'
@@ -133,43 +132,32 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
     default_full_scenario_map[NS_TO_UPDATE] = []
 
     DESC_IN = {
-        SUB_PROCESS_INPUTS: {
-            'type': 'dict',
-            'structuring': True,
-            'default': default_sub_process_inputs_dict,
-            'user_level': 1,
-            'optional': False,
-        },
+        SUB_PROCESS_INPUTS: {'type': 'dict',
+                             'structuring': True,
+                             'default': default_sub_process_inputs_dict,
+                             'user_level': 1,
+                             'optional': False
+                             },
         # SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
         #                     'structuring': True,
         #                     'default': default_sub_process_inputs_dict,
         #                     'user_level': 1,
         #                     'optional': False
         #                     },
-        SCENARIO_MAP: {
-            'type': 'dict',
-            'structuring': True,
-            'default': default_scenario_map,
-            'user_level': 1,
-            'optional': False,
-        },
+        SCENARIO_MAP: {'type': 'dict',
+                       'structuring': True,
+                       'default': default_scenario_map,
+                       'user_level': 1,
+                       'optional': False
+                       }
     }
 
-    # DESC_OUT = {}
+    #DESC_OUT = {}
 
-    #################### End: Constants and parameters #######################
-    #################### Begin: Main methods ################################
+#################### End: Constants and parameters #######################
+#################### Begin: Main methods ################################
 
-    def __init__(
-        self,
-        sos_name,
-        ee,
-        map_name,
-        cls_builder,
-        autogather,
-        gather_node,
-        business_post_proc,
-    ):
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -178,7 +166,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         self.__build_business_io = business_post_proc
         self.__cls_builder = cls_builder
         BuildSoSDisciplineScatter.__init__(
-            self, sos_name, ee, map_name, cls_builder)
+            self, sos_name, ee, map_name, cls_builder, associated_namespaces=associated_namespaces)
         self._maturity = ''
 
         self.previous_sub_process_repo = None
@@ -222,11 +210,11 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def build(self):
         '''
-        Overloaded scatter discipline method to "configure" scenarios
-        Get and build builder from sub_process of vs_MS driver
-        Added to provide proc builder capability
-        Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
-        It comes before configuring()
+            Overloaded scatter discipline method to "configure" scenarios
+            Get and build builder from sub_process of vs_MS driver
+            Added to provide proc builder capability
+            Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
+            It comes before configuring()
         '''
         self.coupling_per_scatter = True
         # Remark: cls_builder and sc_map added in __init__ of sos_discipline_scatter
@@ -273,18 +261,15 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            if (
-                sub_process_repo != None and sub_process_name != None
-            ):  # a sub_process_full_name is available
+            # a sub_process_full_name is available
+            if (sub_process_repo != None and sub_process_name != None):
                 # either Unchanged_SP or Create_SP or Replace_SP
                 # 1. set_sub_process_status
-                self.set_sub_process_status(sub_process_repo, sub_process_name)
+                self.set_sub_process_status(
+                    sub_process_repo, sub_process_name)
                 # 2 build_eval_subproc
                 sub_proc_build_status = self.sub_proc_build_status
-                if (
-                    sub_proc_build_status == 'Create_SP'
-                    or sub_proc_build_status == 'Replace_SP'
-                ):
+                if (sub_proc_build_status == 'Create_SP' or sub_proc_build_status == 'Replace_SP'):
                     self.build_driver_subproc(
                         sub_process_repo, sub_process_name)
         # 3. Associate map to discipline and build (automatically done when
@@ -294,6 +279,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             cls_builder = self.__cls_builder
             sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
             sc_map_name = sc_map_dict[self.INPUT_NAME]
+            # print(sc_map_dict[self.INPUT_NAME])
+            # print(sc_map_dict[self.NS_TO_UPDATE])
             BuildSoSDisciplineScatter._associate_map_to_discipline(self,
                                                                    self.ee, sc_map_name, cls_builder)
             BuildSoSDisciplineScatter.build(self)
@@ -304,10 +291,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def configure(self):
         """
-        Overloaded SoSDiscipline method
-        Configuration of the Build vsMS
-        Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
-        It comes after build()
+            Overloaded SoSDiscipline method
+            Configuration of the Build vsMS
+            Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
+            It comes after build()
         """
 
         # if self._data_in == {} or len(self.__cls_builder) == 0:
@@ -325,15 +312,32 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def setup_sos_disciplines(self):
         """
-        Overload setup_sos_disciplines to create a dynamic desc_in
-        Reached from configure() of sos_discipline [SoSDiscipline.configure in config() of scatter discipline].
-        It is done upstream of set_eval_possible_values()
+           Overload setup_sos_disciplines to create a dynamic desc_in
+           Reached from configure() of sos_discipline [SoSDiscipline.configure in config() of scatter discipline].
+           It is done upstream of set_eval_possible_values()
         """
-        dynamic_inputs = {}
-        dynamic_outputs = {}
+
+        # Update of non dynamic desc_in
+        # Update default_scenario_map with list of subprocess ns and provide it
+        # to  sc_map_name dynamic input if self.SCENARIO_MAP is still with
+        # default values
+
         if self.sc_map is not None:
+            dynamic_inputs = {}
+            dynamic_outputs = {}
+            # 0. Update list of all ns of subprocess in default ns_to_update
+            if self.SCENARIO_MAP in self._data_in:
+                sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
+                sc_map_name = sc_map_dict[self.INPUT_NAME]
+                if sc_map_name == '' or sc_map_name is None:
+                    dynamic_inputs.update({self.SCENARIO_MAP: {'type': 'dict',
+                                                               'structuring': True,
+                                                               'default': self.default_scenario_map,
+                                                               'user_level': 1,
+                                                               'optional': False
+                                                               }})
             # 1. provide driver inputs based on selected scenario map
-            self.setup_sos_disciplines_driver_inputs_depend_on_sc_map(
+            dynamic_inputs = self.setup_sos_disciplines_driver_inputs_depend_on_sc_map(
                 dynamic_inputs)
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -345,45 +349,37 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def run(self):
         '''
-        Overloaded scatter discipline method
-        Store business outputs in dictionaries if autogather is True
+            Overloaded scatter discipline method
+            Store business outputs in dictionaries if autogather is True
         '''
         if self.get_autogather():
             self.run_autogather()
 
-    #################### End: Main methods ################################
-    ##################### Begin: Sub methods ################################
-    # Remark: those sub methods should be private functions
+
+#################### End: Main methods ################################
+##################### Begin: Sub methods ################################
+# Remark: those sub methods should be private functions
 
     def run_autogather(self):
         '''
-        Store business outputs in dictionaries if autogather is True
+           Store business outputs in dictionaries if autogather is True
         '''
         new_values_dict = {}
         for long_key in self._data_in.keys():
             for key in self._data_out.keys():
                 if long_key.endswith(key.split('_dict')[0]):
                     if key in new_values_dict:
-                        new_values_dict[key].update(
-                            {
-                                long_key.rsplit('.', 1)[0]: self.ee.dm.get_value(
-                                    self.get_var_full_name(
-                                        long_key, self._data_in)
-                                )
-                            }
-                        )
+                        new_values_dict[key].update({long_key.rsplit('.', 1)[0]: self.ee.dm.get_value(
+                            self.get_var_full_name(long_key, self._data_in))})
                     else:
-                        new_values_dict[key] = {
-                            long_key.rsplit('.', 1)[0]: self.ee.dm.get_value(
-                                self.get_var_full_name(long_key, self._data_in)
-                            )
-                        }
+                        new_values_dict[key] = {long_key.rsplit('.', 1)[0]: self.ee.dm.get_value(
+                            self.get_var_full_name(long_key, self._data_in))}
         self.store_sos_outputs_values(new_values_dict)
 
     def build_business_io(self):
         '''
-        Add SumValueBlockDiscipline ouputs in INST_DESC_IN and dict in INST_DESC_OUT if autogather is True
-        Function needed in build(self)
+           Add SumValueBlockDiscipline ouputs in INST_DESC_IN and dict in INST_DESC_OUT if autogather is True
+           Function needed in build(self)
         '''
         if self.get_build_business_io():
 
@@ -395,19 +391,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             if self.NS_BUSINESS_OUTPUTS not in self.ee.ns_manager.shared_ns_dict:
                 self.ee.ns_manager.add_ns(self.NS_BUSINESS_OUTPUTS, ns_value)
                 self.ee.ns_manager.disc_ns_dict[self]['others_ns'].update(
-                    {
-                        self.NS_BUSINESS_OUTPUTS: self.ee.ns_manager.shared_ns_dict[
-                            self.NS_BUSINESS_OUTPUTS
-                        ]
-                    }
-                )
+                    {self.NS_BUSINESS_OUTPUTS: self.ee.ns_manager.shared_ns_dict[self.NS_BUSINESS_OUTPUTS]})
 
-            ns_to_cut = (
-                self.ee.ns_manager.get_shared_namespace_value(
-                    self, self.sc_map.get_gather_ns()
-                )
-                + self.ee.ns_manager.NS_SEP
-            )
+            ns_to_cut = self.ee.ns_manager.get_shared_namespace_value(
+                self, self.sc_map.get_gather_ns()) + self.ee.ns_manager.NS_SEP
 
             # In the case of old sum value block disciplines (used in business cases processes)
             # we needed a gather_data for multi scenario post processing
@@ -419,62 +406,31 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                         full_key = disc.get_var_full_name(key, disc._data_out)
                         end_key = full_key.split(ns_to_cut)[-1]
                         if end_key not in self._data_in:
-                            self.inst_desc_in.update(
-                                {
-                                    end_key: {
-                                        SoSDiscipline.TYPE: disc._data_out[key][
-                                            SoSDiscipline.TYPE
-                                        ],
-                                        SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
-                                        SoSDiscipline.NAMESPACE: self.sc_map.get_gather_ns(),
-                                        SoSDiscipline.USER_LEVEL: 3,
-                                    }
-                                }
-                            )
+                            self.inst_desc_in.update({end_key: {SoSDiscipline.TYPE: disc._data_out[key][SoSDiscipline.TYPE],
+                                                                SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: self.sc_map.get_gather_ns(), SoSDiscipline.USER_LEVEL: 3}})
                         if f'{key}_dict' not in self._data_out:
-                            self.inst_desc_out.update(
-                                {
-                                    f'{key}_dict': {
-                                        SoSDiscipline.TYPE: 'dict',
-                                        SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
-                                        SoSDiscipline.NAMESPACE: self.NS_BUSINESS_OUTPUTS,
-                                        SoSDiscipline.USER_LEVEL: 2,
-                                    }
-                                }
-                            )
+                            self.inst_desc_out.update({f'{key}_dict': {SoSDiscipline.TYPE: 'dict',
+                                                                       SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: self.NS_BUSINESS_OUTPUTS, SoSDiscipline.USER_LEVEL: 2}})
 
             # modify SCENARIO_DICT input namespace to store it in
             # NS_BUSINESS_OUTPUTS node
-            if (
-                self.SCENARIO_DICT in self._data_in
-                and self.ee.dm.get_data(
-                    self.get_var_full_name(self.SCENARIO_DICT, self._data_in),
-                    SoSDiscipline.NAMESPACE,
-                )
-                != self.NS_BUSINESS_OUTPUTS
-            ):
+            if self.SCENARIO_DICT in self._data_in and self.ee.dm.get_data(self.get_var_full_name(self.SCENARIO_DICT, self._data_in), SoSDiscipline.NAMESPACE) != self.NS_BUSINESS_OUTPUTS:
                 full_key = self.get_var_full_name(
                     self.SCENARIO_DICT, self._data_in)
-                self.ee.dm.set_data(full_key, self.NAMESPACE,
-                                    self.NS_BUSINESS_OUTPUTS)
                 self.ee.dm.set_data(
-                    full_key,
-                    self.NS_REFERENCE,
-                    self.get_ns_reference(
-                        SoSDiscipline.SHARED_VISIBILITY, self.NS_BUSINESS_OUTPUTS
-                    ),
-                )
+                    full_key, self.NAMESPACE, self.NS_BUSINESS_OUTPUTS)
+                self.ee.dm.set_data(
+                    full_key, self.NS_REFERENCE, self.get_ns_reference(SoSDiscipline.SHARED_VISIBILITY, self.NS_BUSINESS_OUTPUTS))
                 self.ee.dm.generate_data_id_map()
+##################### End: Sub methods ################################
 
-    ##################### End: Sub methods ################################
-
-    ##################### Begin: Sub methods  added for proc builder #########
+##################### Begin: Sub methods  added for proc builder #########
 
     def set_sc_map_status(self, sc_map_dict):
         '''
-        State sc_map CRUD status
-        The sc_map is defined by its dictionary
-        Function needed in build(self)
+            State sc_map CRUD status
+            The sc_map is defined by its dictionary
+            Function needed in build(self)
         '''
         # We come from outside driver process
         if sc_map_dict != self.previous_sc_map_dict:
@@ -494,18 +450,15 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def set_sub_process_status(self, sub_process_repo, sub_process_name):
         '''
-        State subprocess CRUD status
-        The subprocess is defined by its name and repository
-        Function needed in build(self)
+            State subprocess CRUD status
+            The subprocess is defined by its name and repository
+            Function needed in build(self)
         '''
         # We come from outside driver process
-        if (
-            sub_process_name != self.previous_sub_process_name
-            or sub_process_repo != self.previous_sub_process_repo
-        ):
+        if (sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo):
             self.previous_sub_process_repo = sub_process_repo
             self.previous_sub_process_name = sub_process_name
-            # driver process with provided sub process
+        # driver process with provided sub process
             if len(self.__cls_builder) == 0:
                 self.sub_proc_build_status = 'Create_SP'
             else:
@@ -515,9 +468,9 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def build_driver_subproc(self, sub_process_repo, sub_process_name):
         '''
-        Get and build builder from sub_process of eval driver
-        The subprocess is defined by its name and repository
-        Function needed in build(self)
+            Get and build builder from sub_process of eval driver
+            The subprocess is defined by its name and repository
+            Function needed in build(self)
         '''
         # 1. Clean if needed
         if self.sub_proc_build_status == 'Replace_SP':
@@ -530,8 +483,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # self.add_inputs({})
         # 2. Get and set the builder of subprocess
         cls_builder = self.get_nested_builders_from_sub_process(
-            sub_process_repo, sub_process_name
-        )
+            sub_process_repo, sub_process_name)
         if not isinstance(cls_builder, list):
             cls_builder = [cls_builder]
         self.set_nested_builders(cls_builder)
@@ -547,39 +499,40 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 ns_of_driver = []
         ns_of_sub_proc = [
             key for key in self.ee.ns_manager.shared_ns_dict if key not in ns_of_driver]
-        if ns_of_sub_proc == [None]:
-            ns_of_sub_proc = []
         self.ns_of_sub_proc = ns_of_sub_proc
+        # also update self.NS_TO_UPDATE in default_scenario_map
         self.default_scenario_map[self.NS_TO_UPDATE] = ns_of_sub_proc
 
         ns_of_sub_proc_dict = {}
         for item in ns_of_sub_proc:
             ns_of_sub_proc_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value(
             )
-            self.sub_process_ns_in_build = pd.DataFrame(
-                list(ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
-        # print(self.sub_process_ns_in_build)
-        # 4. Add ns keys to driver discipline and shift ns with driver name
-        for item in ns_of_sub_proc:
-            self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
+        ns_of_sub_pro_pd = pd.DataFrame(
+            list(ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
+        print(ns_of_sub_pro_pd)
+        self.sub_process_ns_in_build = ns_of_sub_pro_pd
+        # 4. Treat ns
+        #   Shift ns with driver name
         driver_name = self.name
         self.update_namespace_list_with_extra_ns_except_driver(
             driver_name, ns_of_driver, after_name=self.ee.study_name)
+        #   then add ns keys to driver discipline
+        for item in ns_of_sub_proc:
+            self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
 
     def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
         """
-        Create_nested builders from their nested process.
-        Function needed in build_driver_subproc(self)
+            Create_nested builders from their nested process.
+            Function needed in build_driver_subproc(self)
         """
         cls_builder = self.ee.factory.get_builder_from_process(
-            repo=sub_process_repo, mod_id=sub_process_name
-        )
+            repo=sub_process_repo, mod_id=sub_process_name)
         return cls_builder
 
     def set_nested_builders(self, cls_builder):
         """
-        Set nested builder to the eval process in case this eval process was instantiated with an empty nested builder.
-        Function needed in build_driver_subproc(self)
+            Set nested builder to the eval process in case this eval process was instantiated with an empty nested builder. 
+            Function needed in build_driver_subproc(self)
         """
         self.set_cls_builder(cls_builder)
         self.set_builders(cls_builder)  # update also in mother class
@@ -589,22 +542,22 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, driver_ns_list, after_name=None, namespace_list=None):
         '''
-        Update the value of a list of namespaces with an extra namespace placed behind after_name
-        In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
-        Function needed in build_eval_subproc(self)
+            Update the value of a list of namespaces with an extra namespace placed behind after_name
+            In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
+            Function needed in build_eval_subproc(self)
         '''
         if namespace_list is None:
             namespace_list = self.ee.ns_manager.ns_list
             namespace_list = [
                 elem for elem in namespace_list if elem.__dict__['name'] not in driver_ns_list]
-        for ns in namespace_list:
-            self.ee.ns_manager.update_namespace_with_extra_ns(
-                ns, extra_ns, after_name)
+
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_ns, after_name, namespace_list=namespace_list)
 
     def setup_sos_disciplines_driver_inputs_depend_on_sc_map(self, dynamic_inputs):
         """
-        Update of SCENARIO_MAP['input_name'] and NS_IN_DF
-        Function needed in setup_sos_disciplines()
+            Update of SCENARIO_MAP['input_name'] and NS_IN_DF
+            Function needed in setup_sos_disciplines()
         """
         scatter_desc_in = BuildSoSDisciplineScatter.build_inst_desc_in_with_map(
             self)
@@ -615,18 +568,11 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # Optional: also provide information about namespace variables provided at
         # building time
         if self.sub_process_ns_in_build is not None:
-            dynamic_inputs.update(
-                {
-                    self.NS_IN_DF: {
-                        'type': 'dataframe',
-                        'unit': None,
-                        'editable': False,
-                        'default': self.sub_process_ns_in_build,
-                    }
-                }
-            )
+            dynamic_inputs.update({self.NS_IN_DF: {'type': 'dataframe',
+                                                   'unit': None,
+                                                   'editable': False,
+                                                   'default': self.sub_process_ns_in_build}})
 
         return dynamic_inputs
-
 
 ##################### End: Sub methods for build #########################

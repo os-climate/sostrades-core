@@ -43,7 +43,6 @@ class Study(StudyManager):
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
         ns_to_update = ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']
-
         scenario_map = {'input_name': scenario_map_name,
                         #'input_ns': input_ns,
                         #'output_name': output_name,
@@ -62,9 +61,7 @@ class Study(StudyManager):
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
-        dict_values[
-            f'{self.study_name}.vs_MS.sub_process_inputs'
-        ] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
         dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
