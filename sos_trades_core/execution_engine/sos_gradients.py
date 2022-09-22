@@ -29,7 +29,6 @@ class SoSGradients(SoSEval):
     '''SoSGradients class
     '''
 
-
     # ontology information
     _ontology_data = {
         'label': 'Core Gradients Model',
@@ -43,11 +42,13 @@ class SoSGradients(SoSEval):
         'icon': '',
         'version': '',
     }
-    def __init__(self, sos_name, ee, cls_builder):
+
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
-        super(SoSGradients, self).__init__(sos_name, ee, cls_builder)
+        super(SoSGradients, self).__init__(sos_name, ee, cls_builder,
+                                           associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Gradients')
 
     def set_x0(self, x0):

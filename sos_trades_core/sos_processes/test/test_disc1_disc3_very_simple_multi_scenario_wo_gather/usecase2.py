@@ -29,36 +29,36 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ######### Numerical values   ####
-        x1 = 2.
-        x2 = 4.
         a1 = 3.
         b1 = 4.
         a2 = 6.
         b2 = 2.
-        scenario_list = ['scenario_1', 'scenario_2']
+        x1 = 2.
+        x2 = 4.
+        scenario_list = ['scenario_A', 'scenario_B']
         name_list = ['name_1', 'name_2']
-        ms_name = 'multi_scenarios'
         ######### Fill the dictionary for dm   ####
         dict_values = {}
-        dict_values[f'{self.study_name}.{ms_name}.name_1.a'] = a1
-        dict_values[f'{self.study_name}.{ms_name}.name_2.a'] = a2
-        dict_values[f'{self.study_name}.{ms_name}.name_1.x'] = x1
-        dict_values[f'{self.study_name}.{ms_name}.name_2.x'] = x2
+        dict_values[f'{self.study_name}.name_1.a'] = a1
+        dict_values[f'{self.study_name}.name_2.a'] = a2
+        dict_values[f'{self.study_name}.name_1.x'] = x1
+        dict_values[f'{self.study_name}.name_2.x'] = x2
 
         dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = scenario_list
         dict_values[f'{self.study_name}.multi_scenarios.name_list'] = name_list
 
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc1.name_1.b'] = b1
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc1.name_2.b'] = b2
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc3.constant'] = 3.
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc3.power'] = 2
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_A.Disc3.z'] = 1.2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_B.Disc3.z'] = 1.5
 
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc1.name_1.b'] = b1
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc1.name_2.b'] = b2
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc3.constant'] = 3.
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc3.power'] = 2
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_A.Disc1.name_1.b'] = b1
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_A.Disc1.name_2.b'] = b2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_A.Disc3.constant'] = 3.
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_A.Disc3.power'] = 2
+
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_B.Disc1.name_1.b'] = b1
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_B.Disc1.name_2.b'] = b2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_B.Disc3.constant'] = 3.
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_B.Disc3.power'] = 2
 
         return [dict_values]
 

@@ -38,7 +38,6 @@ class ProcessBuilder(BaseProcessBuilder):
                   'input_ns': 'ns_scatter_scenario',
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac',
-                  'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
 
         self.ee.smaps_manager.add_build_map('name_list', ac_map)
@@ -49,7 +48,7 @@ class ProcessBuilder(BaseProcessBuilder):
                                                                 mod_id='test_disc1_scenario')
 
         scatter_list = self.ee.factory.create_multi_scatter_builder_from_list(
-            'name_list', builder_list=builder_list, autogather=True)
+            'name_list', builder_list=builder_list)
 
         mod_list = 'sos_trades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.create_builder_list({'Disc3': mod_list}, ns_dict={'ns_disc3': f'{self.ee.study_name}.Disc3',
@@ -62,11 +61,6 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
-
-                        'input_ns': 'ns_scatter_scenario',
-                        'output_name': 'scenario_name',
-                        'scatter_ns': 'ns_scenario',
-                        'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_out_disc3']}
 
         self.ee.smaps_manager.add_build_map(
@@ -78,7 +72,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         multi_scenario_name = 'multi_scenarios'
         multi_scenarios = self.ee.factory.create_very_simple_multi_scenario_builder(
-            multi_scenario_name, 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing')
+            multi_scenario_name, 'scenario_list', scatter_list)
 
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
             extra_ns=multi_scenario_name, after_name=self.ee.study_name)

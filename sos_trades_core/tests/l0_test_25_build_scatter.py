@@ -836,3 +836,9 @@ class TestBuildScatter(unittest.TestCase):
         z2 = self.exec_eng.dm.get_value(self.study_name + '.name_2.z')
         self.assertEqual(z1, constant1 + y1**power1)
         self.assertEqual(z2, constant2 + y2**power2)
+
+
+if '__main__' == __name__:
+    cls = TestBuildScatter()
+    cls.setUp()
+    cls.test_03_build_scatter_of_scatter_of_coupling()

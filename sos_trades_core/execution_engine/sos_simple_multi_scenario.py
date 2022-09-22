@@ -57,7 +57,7 @@ class SoSSimpleMultiScenario(SoSVerySimpleMultiScenario):
     DESC_IN = {'trade_variables': {'type': 'dict', 'value': {}, 'dataframe_descriptor': {'variable':  (
         'string',  None, True), 'value': ('string',  None, True), }, 'dataframe_edition_locked': False, 'structuring': True}}
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc):
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -65,7 +65,7 @@ class SoSSimpleMultiScenario(SoSVerySimpleMultiScenario):
         self.__trade_variables = {}
         self.__linked_scatter_data = {}
         SoSVerySimpleMultiScenario.__init__(
-            self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc)
+            self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=associated_namespaces)
 
         self._maturity = ''
 

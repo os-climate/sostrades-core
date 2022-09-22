@@ -47,7 +47,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                             'xtol_abs': 1e-9, 'max_ls_step_size': 0.,
                             'max_ls_step_nb': 20, 'max_fun_eval': 999999, 'max_time': 0,
-                            'pg_tol': 1e-5, 'disp': 0, 'maxCGit':-1, 'eta':-1.,
+                            'pg_tol': 1e-5, 'disp': 0, 'maxCGit': -1, 'eta': -1.,
                             'factr': 1e7, 'maxcor': 20, 'normalize_design_space': True,
                             'eq_tolerance': 1e-2, 'ineq_tolerance': 1e-4,
                             'stepmx': 0., 'minfev': 0., 'sigma': 10.0, 'bounds': [0.0, 10.0], 'population_size': 20}
@@ -56,7 +56,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                                     'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                                     'xtol_abs': 1e-9, 'max_ls_step_size': 0.,
                                     'max_ls_step_nb': 20, 'max_fun_eval': 999999, 'max_time': 0,
-                                    'pg_tol': 1e-5, 'disp': 0, 'maxCGit':-1, 'eta':-1.,
+                                    'pg_tol': 1e-5, 'disp': 0, 'maxCGit': -1, 'eta': -1.,
                                     'factr': 1e7, 'maxcor': 20, 'normalize_design_space': True,
                                     'eq_tolerance': 1e-2, 'ineq_tolerance': 1e-4,
                                     'stepmx': 0., 'minfev': 0., 'linesearch': 'lnsrlb', 'lnsrlb_xtol': 0.1,
@@ -77,14 +77,14 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
                                     'max_ls_step_nb': 500, 'max_fun_eval': 100000,
                                     'normalize_design_space': True, 'eq_tolerance': 1e-2,
                                     'ineq_tolerance': 1e-4, 'scale': None, 'pg_tol': 0.0}
-    
+
     default_algo_options_oa = {'max_iter': 999,  # pylint: disable=W0221
-                                    'ftol_abs': 1e-12,
-                                    'algo_options_MILP': {},
-                                    'algo_options_NLP': default_algo_options_nlopt,
-                                    'algo_NLP':'SLSQP',
-                                    'normalize_design_space': False,
-                                }
+                               'ftol_abs': 1e-12,
+                               'algo_options_MILP': {},
+                               'algo_options_NLP': default_algo_options_nlopt,
+                               'algo_NLP': 'SLSQP',
+                               'normalize_design_space': False,
+                               }
 
     algo_dict = {"NLOPT": default_algo_options_nlopt,
                  "OPENOPT": default_algo_options_openopt,
@@ -112,11 +112,12 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
     DESC_OUT = {}
     DESC_OUT.update(SoSScenario.DESC_OUT)
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         """
         Constructor
         """
-        SoSScenario.__init__(self, sos_name, ee, cls_builder)
+        SoSScenario.__init__(self, sos_name, ee, cls_builder,
+                             associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.SoSOptimScenario')
 
         self.ALGO_MANDATORY_FIELDS = [self.ALGO, self.MAX_ITER]
@@ -190,7 +191,8 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
             MDOScenario.__init__(self, self.sos_disciplines, formulation,
                                  obj_full_name, design_space, name=self.sos_name,
                                  grammar_type=SoSScenario.SOS_GRAMMAR_TYPE, maximize_objective=maximize_objective)
-            # TODO: pass cache to MDAChain init to avoid reset cache, idem for MDOChain
+            # TODO: pass cache to MDAChain init to avoid reset cache, idem for
+            # MDOChain
             self.cache = cache
             self.activated_variables = self.formulation.design_space.variables_names
             self.set_diff_method()
@@ -233,7 +235,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
         if options is None:
             options = {}
         if self.MAX_ITER in options:
-            self.logger.warning("Double definition of algorithm option " + 
+            self.logger.warning("Double definition of algorithm option " +
                                 "max_iter, keeping value: " + str(max_iter))
             options.pop(self.MAX_ITER)
         lib = self._algo_factory.create(algo_name)
