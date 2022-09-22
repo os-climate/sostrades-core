@@ -45,7 +45,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -66,7 +66,8 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         self.sc_map.configure_map(cls_builder)
         self.__builders = cls_builder
         # if isinstance(self.__builders)
-        ProxyDisciplineBuilder.__init__(self, sos_name, ee)
+        ProxyDisciplineBuilder.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
         # add input_name to inst_desc_in
         self.build_inst_desc_in_with_map()
         self.builder_name = None
