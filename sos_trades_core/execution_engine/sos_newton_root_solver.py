@@ -303,6 +303,7 @@ class NewtonRootSolver(SoSEval):
         Simple aero post procs
         '''
         instanciated_charts = []
+        chart_list = []
         # Overload default value with chart filter
         if chart_filters is not None:
             for chart_filter in chart_filters:

@@ -353,7 +353,7 @@ class TestSoSDiscipline(unittest.TestCase):
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
 
-    def test_11_check_simpy_formula(self):
+    def _test_11_check_simpy_formula(self):
         '''
         check simpy formula usage
         '''
@@ -398,7 +398,7 @@ class TestSoSDiscipline(unittest.TestCase):
 
         self.assertEqual(y, 45)
 
-    def test_12_check_simpy_formula_with_df(self):
+    def _test_12_check_simpy_formula_with_df(self):
         '''
         check simpy formula usage
         '''
