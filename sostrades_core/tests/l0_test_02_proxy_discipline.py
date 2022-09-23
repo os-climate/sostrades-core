@@ -23,6 +23,7 @@ from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
 class TestProxyDiscipline(unittest.TestCase):
@@ -391,3 +392,34 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertEqual(len(graph_list[0].series[0].abscissa),1)
         self.assertEqual(graph_list[0].series[0].abscissa[0],self.ee.dm.get_value('Test.x'))
         self.assertEqual(graph_list[0].series[0].ordinate[0],self.ee.dm.get_value('Test.y'))
+
+    def test_12_execution_success_of_discipline_alone(self):
+        '''
+        check discipline execution only of the SoSMDODiscipline i.e. without executing the root process
+        useful test for devs that need to start at (proxy) discipline level and propagate to all other (proxy) classes
+        '''
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', self.mod1_ns_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        a = 1.0
+        b = 2.0
+        x = 1.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        self.ee.display_treeview_nodes()
+
+        self.ee.prepare_execution()
+        local_data = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(values_dict)
+        ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0, 'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
+        self.assertTrue(dict_are_equal(local_data,ref_local_data))
+        pass

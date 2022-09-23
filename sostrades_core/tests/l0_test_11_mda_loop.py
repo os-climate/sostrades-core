@@ -421,7 +421,7 @@ class TestMDALoop(unittest.TestCase):
             'Disc6', mod_list)
 
         exec_eng2.factory.set_builders_to_coupling_builder(
-            [disc6_builder, disc7_builder])
+            [disc7_builder, disc6_builder])
         exec_eng2.configure()
 
         exec_eng2.load_study_from_input_dict(values_dict)
