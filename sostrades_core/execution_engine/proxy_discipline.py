@@ -515,6 +515,7 @@ class ProxyDiscipline(object):
             self._data_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(self._data_in)
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
+            #TODO: check if this have to be done during configuration or at the very end of it
             self.update_dm_with_data_dict(self._data_in)
 
             # Deal with numerical parameters inside the sosdiscipline

@@ -371,14 +371,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self._build_data_io()
             # - Update coupling and editable flags in the datamanager for the GUI
             self._update_coupling_flags_in_dm()
-    #
-    # def get_data_io_with_full_name(self, io_type):
-    #     if io_type == self.IO_TYPE_IN:
-    #         return self._data_in_with_full_name
-    #     elif io_type == self.IO_TYPE_OUT:
-    #         return self._data_out_with_full_name
-    #     else:
-    #         raise ValueError('Unknown io type')
+
+    def get_data_io_with_full_name(self, io_type):
+        if io_type == self.IO_TYPE_IN:
+            return self._data_in_with_full_name
+        elif io_type == self.IO_TYPE_OUT:
+            return self._data_out_with_full_name
+        else:
+            raise ValueError('Unknown io type')
 
     def _build_data_io(self):
         """
@@ -388,7 +388,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         in sub proxies
         """
         #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
-        data_in, data_out = self.__compute_mdachain_gemseo_based_data_io()
+        data_in_with_full_name, data_out_with_full_name = self.__compute_mdachain_gemseo_based_data_io()
              
         #- data_i/o setup
         #- TODO: check if we can remove _data_in_with_full_name
@@ -399,30 +399,40 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ) if
                          key in self.DESC_IN or key in self.NUM_DESC_IN}
         
-        
+
         # add inputs - that are not outputs - of all children disciplines in data_in
-        for k in data_in:
-            k_full = self.get_var_full_name(k, data_in)
-            self._data_in_with_full_name[k_full] = data_in[k]
-            if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
-                self._data_in[k] = self.dm.get_data(k_full)
-                
-        # keep residuals_history if in data_out
-        if self.RESIDUALS_HISTORY in self._data_out:
-            self._data_out_with_full_name = {
-                f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
-            self._data_out = {
-                self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
-        else:
-            self._data_out_with_full_name = {}
-            self._data_out = {}
+        self._data_in_with_full_name.update(data_in_with_full_name)
+        # for k_full in data_in:
+        #     self._data_in_with_full_name[k_full] = data_in[k_full]
+            # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
+            #     self._data_in[k] = self.dm.get_data(k_full)
+
+
+        self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+                                        self._data_out.items()
+                                        if key in self.DESC_OUT}
+        self._data_out = {key: value for key, value in self._data_out.items(
+        ) if
+                         key in self.DESC_OUT}
+
+
+        # # keep residuals_history if in data_out
+        # if self.RESIDUALS_HISTORY in self._data_out:
+        #     self._data_out_with_full_name = {
+        #         f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
+        #     self._data_out = {
+        #         self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
+        # else:
+        #     self._data_out_with_full_name = {}
+        #     self._data_out = {}
         
-        # add outputs of all childred disciplines in data_out
-        for k in data_out:
-            k_full = self.get_var_full_name(k, data_out)
-            self._data_out_with_full_name[k_full] = data_out[k]
-            if not self.ee.dm.get_data(k_full, self.NUMERICAL):
-                self._data_out[k] = self.dm.get_data(k_full)
+        # add outputs of all children disciplines in data_out
+        self._data_out_with_full_name.update(data_out_with_full_name)
+        # for k in data_out:
+        #     k_full = self.get_var_full_name(k, data_out)
+        #     self._data_out_with_full_name[k_full] = data_out[k]
+        #     if not self.ee.dm.get_data(k_full, self.NUMERICAL):
+        #         self._data_out[k] = self.dm.get_data(k_full)
     
     def __compute_mdachain_gemseo_based_data_io(self):
         ''' mimics the definition of MDA i/o grammar
@@ -430,7 +440,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         #- identify i/o grammars like in GEMSEO (like in initialize_grammar method in MDOChain)
         mda_outputs = []
         mda_inputs = []
-        get_data =  self.dm.get_data
+        get_data = self.dm.get_data
         data_in = {}
         data_out = {}
         for d in self.proxy_disciplines:
@@ -441,28 +451,28 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
             # get all inputs that are not in known outputs
             mda_inputs += list(set(disc_in) - set(mda_outputs))
-            d_data_in = {k : get_data(k_full) for k_full, k in zip(disc_in, d._data_in.keys()) if k_full not in mda_outputs}
+            d_data_in = {k_full: get_data(k_full) for k_full in disc_in if k_full not in mda_outputs}
             data_in.update(d_data_in)
             
             # get all outputs
-            d_data_out = {k : get_data(k_full) for k_full, k in zip(disc_out, d._data_out.keys())}
+            d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
             data_out.update(d_data_out)
     
         return data_in, data_out
     
-    def get_input_data_names(self):
-        '''
-        Returns:
-            (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
-        '''
-        return list(self._data_in_with_full_name.keys())
-
-    def get_output_data_names(self):
-        '''
-        Returns:
-            (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
-        '''
-        return list(self._data_out_with_full_name.keys())
+    # def get_input_data_names(self):
+    #     '''
+    #     Returns:
+    #         (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
+    #     '''
+    #     return list(self._data_in_with_full_name.keys())
+    #
+    # def get_output_data_names(self):
+    #     '''
+    #     Returns:
+    #         (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
+    #     '''
+    #     return list(self._data_out_with_full_name.keys())
 
     def _build_coupling_structure(self):
         """

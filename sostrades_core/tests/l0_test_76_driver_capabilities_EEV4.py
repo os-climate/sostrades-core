@@ -325,7 +325,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # check that the root process knows all the numerical inputs of the entire subprocess
         root_inputs = exec_eng.root_process.get_input_data_names()
         self.assertIn('root.linearization_mode', root_inputs)
-        # self.assertIn('root.Driver1.linearization_mode', root_inputs)
+        self.assertIn('root.Driver1.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.Disc1.linearization_mode', root_inputs)
 
 

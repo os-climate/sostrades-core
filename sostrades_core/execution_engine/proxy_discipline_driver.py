@@ -82,24 +82,24 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
                 raise NotImplementedError
             self.set_children_cache_inputs()
 
+    def get_data_io_with_full_name(self, io_type):
+        if io_type == self.IO_TYPE_IN:
+            return self._data_in_with_full_name
+        elif io_type == self.IO_TYPE_OUT:
+            return self._data_out_with_full_name
+        else:
+            raise ValueError('Unknown io type')
+
     def update_data_io_with_subprocess_io(self):
-        # FIXME: working with short names is problematic for driver of driver example bi-level optimization
-        # only for 1 subcoupling
-        # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
-        #                         self._data_in.items()
-        #                         if key in self.DESC_IN or key in self.NUM_DESC_IN}
-        # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
-        #                         self._data_out.items()}
-        # self._data_in_with_full_name.update(self.proxy_disciplines[0].get_data_io_with_full_name(self.IO_TYPE_IN)) # the subcoupling num_desc_in is crushed
-        # self._data_out_with_full_name.update(self.proxy_disciplines[0].get_data_io_with_full_name(self.IO_TYPE_OUT))
-        #
-        # self._data_in.update({key:value
-        #               for key,value in self.proxy_disciplines[0].get_data_in().items()
-        #               if key not in self.NUM_DESC_IN.keys()}) # the subcoupling num_desc_in is crushed
-        # self._data_out.update(self.proxy_disciplines[0].get_data_out())
+
+        # - data_i/o setup
+        self._data_in_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_in.keys()), self.IO_TYPE_IN), self._data_in.values()))
+        self._data_out_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_out.keys()), self.IO_TYPE_OUT), self._data_out.values()))
+
         for proxy_disc in self.proxy_disciplines:
-            self._data_in.update(proxy_disc.get_data_in())
-            self._data_out.update(proxy_disc.get_data_out())
+            self._data_in_with_full_name.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN))
+            self._data_out_with_full_name.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT))
+
 
     def configure_driver(self):
         """
