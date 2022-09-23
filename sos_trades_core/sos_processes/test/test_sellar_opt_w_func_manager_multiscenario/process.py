@@ -64,11 +64,11 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
             scatter_scenario_name, after_name=self.ee.study_name)
 
-        specific_ns_list = [ns for ns in self.shared_ns_dict.values() if ns.name not in [
+        specific_ns_list = [ns for ns in self.ee.ns_manager.ns_list if ns.name not in [
             'ns_functions', 'ns_barrierrr', 'ns_public', 'ns_optim', 'ns_OptimSellar']]
 
-        self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            after_name=scatter_scenario_name, namespace_list=specific_ns_list)
+#         self.ee.ns_manager.update_namespace_list_with_extra_ns(
+#             after_name=scatter_scenario_name, namespace_list=specific_ns_list)
         # Add new namespaces needed for the scatter multiscenario
         ns_dict = {
             'ns_scatter_scenario': f'{self.ee.study_name}.{scatter_scenario_name}'}
