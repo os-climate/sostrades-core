@@ -37,12 +37,13 @@ class Study(StudyManager):
         x2 = 4.
         scenario_list = ['scenario_A', 'scenario_B']
         name_list = ['name_1', 'name_2']
+        ms_name = 'multi_scenarios'
         ######### Fill the dictionary for dm   ####
         dict_values = {}
-        dict_values[f'{self.study_name}.name_1.a'] = a1
-        dict_values[f'{self.study_name}.name_2.a'] = a2
-        dict_values[f'{self.study_name}.name_1.x'] = x1
-        dict_values[f'{self.study_name}.name_2.x'] = x2
+        dict_values[f'{self.study_name}.{ms_name}.name_1.a'] = a1
+        dict_values[f'{self.study_name}.{ms_name}.name_2.a'] = a2
+        dict_values[f'{self.study_name}.{ms_name}.name_1.x'] = x1
+        dict_values[f'{self.study_name}.{ms_name}.name_2.x'] = x2
 
         dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = scenario_list
         dict_values[f'{self.study_name}.multi_scenarios.name_list'] = name_list
