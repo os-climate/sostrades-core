@@ -190,7 +190,7 @@ class ProxyDiscipline(object):
 
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
-    
+
     DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
@@ -216,7 +216,7 @@ class ProxyDiscipline(object):
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                       NUMERICAL: True, STRUCTURING: True}
+                     NUMERICAL: True, STRUCTURING: True}
     }
 
     # -- grammars
@@ -233,8 +233,7 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-
-    def __init__(self, sos_name, ee, cls_builder=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=[]):
         '''
         Constructor
 
@@ -246,8 +245,9 @@ class ProxyDiscipline(object):
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
-        self._reload(sos_name, ee)
+        self.create_mdo_discipline_wrap(
+            name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
+        self._reload(sos_name, ee, associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.father_builder = None
@@ -263,7 +263,7 @@ class ProxyDiscipline(object):
         """
         self.father_executor = father_executor
 
-    def _reload(self, sos_name, ee):
+    def _reload(self, sos_name, ee, associated_namespaces=[]):
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -280,7 +280,7 @@ class ProxyDiscipline(object):
         self.sos_name = sos_name
         self.ee = ee
         self.dm = self.ee.dm
-
+        self.associated_namespaces = associated_namespaces
         self.ee.ns_manager.create_disc_ns_info(self)
 
         if not hasattr(self, 'is_sos_coupling'):
@@ -313,12 +313,13 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self,name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(
+            name, wrapper, wrapping_mode)
 
     @property
     def status(self):  # type: (...) -> str
@@ -344,22 +345,26 @@ class ProxyDiscipline(object):
             # init gemseo discipline if it has not been created yet
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
-                                                               cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
+                                                               cache_type=self.get_sosdisc_inputs(
+                                                                   self.CACHE_TYPE),
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
         else:
-            # TODO : this should only be necessary when changes in structuring variables happened?
+            # TODO : this should only be necessary when changes in structuring
+            # variables happened?
             self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
 
             if self._reset_cache:
-                # set new cache when cache_type have changed (self._reset_cache == True)
+                # set new cache when cache_type have changed (self._reset_cache
+                # == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
 #             if self._reset_debug_mode:
 #                 # update default values when changing debug modes between executions
 #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
 #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
-            # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
+            # set the status to pending on GEMSEO side (so that it does not
+            # stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
@@ -760,7 +765,7 @@ class ProxyDiscipline(object):
             # Debug mode logging and recursive setting (priority to the parent)
             debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
             if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
-                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None): #not necessary on first config
+                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None):  # not necessary on first config
                 self._reset_debug_mode = True
                 # logging
                 if debug_mode != "":
@@ -772,7 +777,6 @@ class ProxyDiscipline(object):
                     else:
                         self.logger.info(
                             f'Discipline {self.sos_name} set to debug mode {debug_mode}')
-
 
     def set_debug_mode_rec(self, debug_mode):
         """
@@ -790,7 +794,8 @@ class ProxyDiscipline(object):
         '''
         if self._reset_cache:
             cache_type = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
-            cache_file_path = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_FILE_PATH)
+            cache_file_path = self.get_sosdisc_inputs(
+                ProxyDiscipline.CACHE_FILE_PATH)
             for disc in self.proxy_disciplines:
                 if ProxyDiscipline.CACHE_TYPE in disc._data_in:
                     self.dm.set_data(disc.get_var_full_name(
@@ -800,7 +805,8 @@ class ProxyDiscipline(object):
                             ProxyDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path,
                             check_value=False)
         if self._reset_debug_mode:
-            self.set_debug_mode_rec(self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
+            self.set_debug_mode_rec(
+                self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
             self._reset_debug_mode = False
 
     def setup_sos_disciplines(self):
@@ -1484,7 +1490,8 @@ class ProxyDiscipline(object):
         class_name = disc.__class__.__name__
         anoninmated_data_io = self.get_anonimated_data_io(disc)
 
-        # set disc infos string list with full name, class name and anonimated i/o for hashed uid generation
+        # set disc infos string list with full name, class name and anonimated
+        # i/o for hashed uid generation
         disc_info_list = [full_name, class_name, anoninmated_data_io]
         hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
 

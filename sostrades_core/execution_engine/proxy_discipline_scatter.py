@@ -45,7 +45,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -66,7 +66,8 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         self.sc_map.configure_map(cls_builder)
         self.__builders = cls_builder
         # if isinstance(self.__builders)
-        ProxyDisciplineBuilder.__init__(self, sos_name, ee)
+        ProxyDisciplineBuilder.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
         # add input_name to inst_desc_in
         self.build_inst_desc_in_with_map()
         self.builder_name = None
@@ -185,21 +186,24 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
     def build_child_scatter(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
         # Call scatter map to modify the associated namespace
-        self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
+        ns_ids = []
 
-        self.sc_map.update_ns(
+        ns_scatter_id = self.sc_map.modify_scatter_ns(
+            self.builder_name, name, local_namespace)
+        ns_ids.append(ns_scatter_id)
+        ns_update_ids = self.sc_map.update_ns(
             old_ns_to_update, name, self.sos_name)
-
+        ns_ids.extend(ns_update_ids)
         # Case of a scatter of coupling :
         if isinstance(self.__builders, list):
             self.build_scatter_of_coupling(
-                name, local_namespace, new_sub_names)
+                name, local_namespace, new_sub_names, ns_update_ids)
 
         # Case of a coupling of scatter :
         else:
-            self.build_coupling_of_scatter(name, new_sub_names)
+            self.build_coupling_of_scatter(name, new_sub_names, ns_update_ids)
 
-    def build_scatter_of_coupling(self, name, local_namespace, new_sub_names):
+    def build_scatter_of_coupling(self, name, local_namespace, new_sub_names, ns_update_ids):
         '''
         # We set the scatter_name in the namespace and the discipline is called with its origin name
         #
@@ -215,14 +219,15 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         for builder in self.__builders:
             self.ee.ns_manager.set_current_disc_ns(
                 f'{local_namespace}.{name}')
-
+            builder.add_namespace_list_in_associated_namespaces(
+                ns_update_ids)
             disc = builder.build()
             # Add the discipline only if it is in
             # new_sub_names
             if name in new_sub_names:
                 self.add_scatter_discipline(disc, name)
 
-    def build_coupling_of_scatter(self, name, new_sub_names):
+    def build_coupling_of_scatter(self, name, new_sub_names, ns_update_ids):
         '''
         # We set the scatter_name as the discipline name in the scatter which has already the name of the builder
         # Disc1 is the scatter
@@ -233,7 +238,8 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         '''
         old_builder_name = self.__builders.sos_name
         self.__builders.set_disc_name(name)
-
+        self.__builders.add_namespace_list_in_associated_namespaces(
+            ns_update_ids)
         disc = self.__builders.build()
         self.__builders.set_disc_name(old_builder_name)
 
