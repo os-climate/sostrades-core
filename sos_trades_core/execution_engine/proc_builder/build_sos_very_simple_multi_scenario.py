@@ -329,13 +329,21 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
        # 0. Update list of all ns of subprocess in default ns_to_update
         if (self.SCENARIO_MAP in self._data_in and self.sc_map is None):
-            self.default_scenario_map[self.NS_TO_UPDATE] = self.ns_of_sub_proc
             sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
             sc_map_name = sc_map_dict[self.INPUT_NAME]
-            if sc_map_name == '' or sc_map_name is None:
+            if sc_map_name == '' or sc_map_name is None:  # provide only if user has not provided already a scenario_map
+                # Define a new scenario map with ns_to_update that is with all
+                # sub_process namespaces
+                new_scenario_map = {}
+                new_scenario_map[self.INPUT_NAME] = None
+                #new_scenario_map[INPUT_NS] = ''
+                #new_scenario_map[OUTPUT_NAME] = ''
+                #new_scenario_map[SCATTER_NS] = ''
+                #new_scenario_map[GATHER_NS] = ''
+                new_scenario_map[self.NS_TO_UPDATE] = self.ns_of_sub_proc
                 driver_name = self.name
                 self.dm.set_data(f'{self.ee.study_name}.{driver_name}.{self.SCENARIO_MAP}',
-                                 'value', self.default_scenario_map, check_value=False)
+                                 'value', new_scenario_map, check_value=False)
 
         if self.sc_map is not None:
             dynamic_inputs = {}
@@ -477,9 +485,13 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             Function needed in build(self)
         '''
         # 1. Clean if needed
-        if (self.sub_proc_build_status == 'Replace_SP'):
-            if (self.sc_map_build_status == 'Unchanged'):
-                self.clean_all_for_rebuild()
+        if (self.sub_proc_build_status == 'Replace_SP' and self.sc_map_build_status == 'Unchanged'):
+            # clean the previous created map
+            self.clean_all_for_rebuild()
+            # Also reset input mat in desc_in to default map
+            driver_name = self.name
+            self.dm.set_data(f'{self.ee.study_name}.{driver_name}.{self.SCENARIO_MAP}',
+                             'value', self.default_scenario_map, check_value=False)
         # 2. Get and set the builder of subprocess
         cls_builder = self.get_nested_builders_from_sub_process(
             sub_process_repo, sub_process_name)
