@@ -241,13 +241,12 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 # 1. set_sc_map_status
                 self.set_sc_map_status(sc_map_dict)
                 # 2. create and add map
-                sc_map_build_status = self.sc_map_build_status
                 # in case of replace then we should update/clean the previous existing sc_map.
                 # In case of cleaning, can this map be used by other and need
                 # not to be clean ?
-                if (sc_map_build_status == 'Create' or sc_map_build_status == 'Replace'):
+                if (self.sc_map_build_status == 'Create' or self.sc_map_build_status == 'Replace'):
                     # 1. Take care of the Replace (if any)
-                    if (sc_map_build_status == 'Replace'):
+                    if (self.sc_map_build_status == 'Replace'):
                         self.clean_all_for_rebuild()
                     # 2. Do the create
                     # 2.1 add sc_map
@@ -459,6 +458,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 self.sc_map_build_status = 'Replace'
         else:
             self.sc_map_build_status = 'Unchanged'
+        return self.sc_map_build_status
 
     def set_sub_process_status(self, sub_process_repo, sub_process_name):
         '''
@@ -477,6 +477,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 self.sub_proc_build_status = 'Replace_SP'
         else:
             self.sub_proc_build_status = 'Unchanged_SP'
+        return self.sub_proc_build_status
 
     def build_driver_subproc(self, sub_process_repo, sub_process_name):
         '''
@@ -492,6 +493,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             driver_name = self.name
             self.dm.set_data(f'{self.ee.study_name}.{driver_name}.{self.SCENARIO_MAP}',
                              'value', self.default_scenario_map, check_value=False)
+            self.previous_sc_map_dict = None
+            self.previous_sc_map_name = None
         # 2. Get and set the builder of subprocess
         cls_builder = self.get_nested_builders_from_sub_process(
             sub_process_repo, sub_process_name)
@@ -518,13 +521,25 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             )
         ns_of_sub_pro_pd = pd.DataFrame(
             list(ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
-        # print(ns_of_sub_pro_pd)
+        print('\n')
+        print('ns_of_sub_pro_pd:')
+        print(ns_of_sub_pro_pd)
+        print('\n')
         self.sub_process_ns_in_build = ns_of_sub_pro_pd
         # 4. Treat ns
         #   Shift ns with driver name
         driver_name = self.name
         self.update_namespace_list_with_extra_ns_except_driver(
             driver_name, ns_of_driver, after_name=self.ee.study_name)
+        shifted_ns_of_sub_proc_dict = {}
+        for item in ns_of_sub_proc:
+            shifted_ns_of_sub_proc_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value(
+            )
+        shifted_ns_of_sub_proc_pd = pd.DataFrame(
+            list(shifted_ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
+        print('shifted_ns_of_sub_proc_pd:')
+        print(shifted_ns_of_sub_proc_pd)
+        print('\n')
         #   then add ns keys to driver discipline
         for item in ns_of_sub_proc:
             self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
@@ -569,12 +584,12 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
     def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, driver_ns_list, after_name=None, namespace_list=None):
         '''
             Update the value of a list of namespaces with an extra namespace placed behind after_name
-            In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
-            Function needed in build_eval_subproc(self)
+            In our context, we do not want to shift ns of driver_ns_list  already created before nested sub_process
+            Function needed in build_driver_subproc(self)
         '''
         if namespace_list is None:
-            namespace_list = self.ee.ns_manager.ns_list
-            #namespace_list = list(self.shared_ns_dict.values())
+            #namespace_list = self.ee.ns_manager.ns_list
+            namespace_list = list(self.ee.ns_manager.shared_ns_dict.values())
             namespace_list = [
                 elem for elem in namespace_list if elem.__dict__['name'] not in driver_ns_list]
 

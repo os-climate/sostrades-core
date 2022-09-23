@@ -180,7 +180,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.5
         return [dict_values]
 
-    def setup_Disc1Disc3_ns_all_usecase_from_direct_input(self, restricted=True):
+    def setup_Disc1Disc3_all_ns_usecase_from_direct_input(self, restricted=True):
         """
         Define a set of data inputs with empty usecase and so the subprocess Hessian is filled directly as would be done manually in GUI
         """
@@ -480,7 +480,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t\t|_ Hessian',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Hessian']
-        self.check_created_tree_structure(exp_tv_list)  # KO if no rebuild done
+        self.check_created_tree_structure(exp_tv_list)
         # print configuration state:
         if print_flag:
             self.print_config_state()
@@ -1007,7 +1007,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t\t|_ Hessian',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Hessian']
-        self.check_created_tree_structure(exp_tv_list)  # KO if no rebuild done
+        self.check_created_tree_structure(exp_tv_list)
 
         # print configuration state:
         if print_flag:
@@ -1732,7 +1732,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Disc1',
                        f'\t\t\t|_ Disc3']
-        self.check_created_tree_structure(exp_tv_list)  # KO if no rebuild done
+        self.check_created_tree_structure(exp_tv_list)
 
         # print configuration state:
         if print_flag:
@@ -2163,11 +2163,110 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t\t|_ Hessian',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Hessian']
-        self.check_created_tree_structure(exp_tv_list)  # KO if no rebuild done
+        self.check_created_tree_structure(exp_tv_list)
         print(
             '################################################################################')
         print(
-            'STEP_4: update subprocess selection by changing test_disc_hessian to test_disc1_disc3_coupling')
+            'STEP_2: update subprocess selection by changing test_disc_hessian to test_disc1_disc3_coupling with complete ns_to_update: both change in SubProc/Map')
+        #
+        dict_values = self.setup_Disc1Disc3_all_ns_usecase_from_direct_input(restricted=False)[
+            0]
+        study_dump.load_data(from_input_dict=dict_values)
+
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3']
+        self.check_created_tree_structure(exp_tv_list)
+        self.exec_eng.display_treeview_nodes(True)
+        print(
+            '################################################################################')
+        print(
+            'STEP_3: update test_disc1_disc3_coupling with complete ns_to_update to restricted ns_to_update by changing only Map without SubProc')
+        #
+        scenario_map_name = 'scenario_list'
+        ns_to_update = ['ns_ac', 'ns_disc3', 'ns_out_disc3']
+        scenario_map = {'input_name': scenario_map_name,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
+                        'ns_to_update': ns_to_update}
+        scenario_list = ['scenario_1', 'scenario_2']
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3']
+        self.check_created_tree_structure(exp_tv_list)
+        self.exec_eng.display_treeview_nodes(True)
+        print(
+            '################################################################################')
+        print(
+            'STEP_4: update test_disc1_disc3_coupling with restricted ns_to_update to test_disc_hessian by changing only SubProc without changing Map')
+        dict_values = {}
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc_hessian'
+        sub_process_inputs_dict = {}
+        sub_process_inputs_dict['process_repository'] = repo
+        sub_process_inputs_dict['process_name'] = mod_id
+        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_data'] = {}
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS']
+        self.check_created_tree_structure(exp_tv_list)
+        ################ End checks ##########################
+        scenario_map_name = 'scenario_list'
+        ns_to_update = []
+        scenario_map = {'input_name': scenario_map_name,
+                        'ns_to_update': ns_to_update}
+        scenario_list = ['scenario_1', 'scenario_2']
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Hessian',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Hessian']
+        self.check_created_tree_structure(exp_tv_list)
+        ################ End checks ##########################
+        print(
+            '################################################################################')
+        print(
+            'STEP_5: update subprocess selection by changing test_disc_hessian to test_disc1_disc3_coupling with restricted ns_to_update: both change in SubProc/Map')
         #
         dict_values = self.setup_Disc1Disc3_usecase_from_direct_input(restricted=False)[
             0]
@@ -2184,8 +2283,49 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Disc1',
                        f'\t\t\t|_ Disc3']
-        self.check_created_tree_structure(
-            exp_tv_list)  # KO if no rebuild done
+        self.check_created_tree_structure(exp_tv_list)
+        self.exec_eng.display_treeview_nodes(True)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_6: update subprocess selection by changing back test_disc1_disc3_coupling to test_disc_hessian : both change in SubProc/Map')
+        #
+        dict_values = self.setup_Hessian_usecase_from_direct_input(restricted=False)[
+            0]
+        study_dump.load_data(from_input_dict=dict_values)
+
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Hessian',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Hessian']
+        self.check_created_tree_structure(exp_tv_list)
+        print(
+            '################################################################################')
+        print(
+            'STEP_7: update subprocess selection by changing again test_disc_hessian to test_disc1_disc3_coupling: both change in SubProc/Map')
+        #
+        dict_values = self.setup_Disc1Disc3_usecase_from_direct_input(restricted=False)[
+            0]
+        study_dump.load_data(from_input_dict=dict_values)
+
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3']
+        self.check_created_tree_structure(exp_tv_list)
 
 
 if '__main__' == __name__:
