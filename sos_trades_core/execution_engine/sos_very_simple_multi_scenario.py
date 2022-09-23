@@ -46,7 +46,7 @@ class SoSVerySimpleMultiScenario(SoSDisciplineScatter):
     SCENARIO_DICT = 'scenario_dict'
     NS_BUSINESS_OUTPUTS = 'ns_business_outputs'
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc):
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -55,7 +55,7 @@ class SoSVerySimpleMultiScenario(SoSDisciplineScatter):
         self.__build_business_io = business_post_proc
         self.__cls_builder = cls_builder
         SoSDisciplineScatter.__init__(
-            self, sos_name, ee, map_name, cls_builder)
+            self, sos_name, ee, map_name, cls_builder, associated_namespaces=associated_namespaces)
 
         self._maturity = ''
 

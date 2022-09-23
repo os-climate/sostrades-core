@@ -48,6 +48,7 @@ def merge_df_dict_with_path(df_dict: dict) -> pd.DataFrame:
     """
     df_with_path = pd.DataFrame({})
     for key, df in df_dict.items():
+        # dict of dict
         df_copy = df.copy(deep=True)
         df_copy.insert(0, BREAKDOWN_COLUMN, key)
         df_with_path = df_with_path.append(df_copy, ignore_index=True)

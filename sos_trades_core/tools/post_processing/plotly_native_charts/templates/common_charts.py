@@ -950,7 +950,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     buttons=list([dict(
                         args=[
                             {'visible': [True if i == j else False for j in range(int(len(fig.data)/len(categories_list)))] * len(categories_list)},
-                            {'title': f'<b>{col_pretty_list[i]} in {ticksuffix} for {layout} layout</b>'},
+                            {'title': f'<b>{col_pretty_list[i]} for {layout} layout</b>'},
                         ],
                         label=col_pretty_list[i],
                         method="update"

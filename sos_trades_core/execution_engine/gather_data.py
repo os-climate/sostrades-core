@@ -39,14 +39,15 @@ class SoSGatherData(SoSDiscipline):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, parent=None):
+    def __init__(self, sos_name, ee, map_name, parent=None, associated_namespaces=[]):
         '''
         CLass to gather data
         '''
         self.name = sos_name
         self.sc_map = ee.smaps_manager.get_data_map(map_name)
 
-        SoSDiscipline.__init__(self, sos_name, ee)
+        SoSDiscipline.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
         # add scatter_var_name to inst_desc_in
         self.add_scatter_var_name()
         self.build_inst_desc_out()
@@ -131,14 +132,14 @@ class SoSGatherData(SoSDiscipline):
         scatter_var_name = self.sc_map.get_scatter_var_name()
         scatter_var_ns = self.ee.smaps_manager.get_input_ns_from_build_map(
             scatter_var_name)
-        #scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
+        # scatter_var_type = self.ee.smaps_manager.get_input_type_from_build_map(
         #    scatter_var_name)
         scatter_var_type = 'list'
         scatter_var_subtype = {'list': 'string'}
 
         if scatter_var_name not in self._data_in:
             add_to_desc_in = {scatter_var_name: {
-                self.TYPE: scatter_var_type,self.SUBTYPE: scatter_var_subtype, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
+                self.TYPE: scatter_var_type, self.SUBTYPE: scatter_var_subtype, self.VISIBILITY: self.SHARED_VISIBILITY, self.NAMESPACE: scatter_var_ns,
                 SoSDiscipline.STRUCTURING: True}}
             self.inst_desc_in.update(add_to_desc_in.copy())
 
@@ -195,16 +196,19 @@ class SoSGatherData(SoSDiscipline):
             first_gather_node = new_gather_inputs[0]
             i = 0
             for output_name, output_type in zip(output_name_list, output_type_list):
-                input_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][input_ns].get_value()
+                input_ns_name = self.ee.ns_manager.disc_ns_dict[self]['others_ns'][input_ns].get_value(
+                )
                 corresponding_input = f'{input_ns_name}.{first_gather_node}.{input_name_list[i]}'
-                type_of_input = self.ee.dm.get_data(corresponding_input, self.TYPE)
+                type_of_input = self.ee.dm.get_data(
+                    corresponding_input, self.TYPE)
                 subtype_descriptor = None
 
                 if output_type == 'dict':
                     if type_of_input not in ['list', 'dict']:
                         subtype_descriptor = {'dict': type_of_input}
                     else:
-                        subtype_descriptor = self.ee.dm.get_data(corresponding_input, self.SUBTYPE)
+                        subtype_descriptor = self.ee.dm.get_data(
+                            corresponding_input, self.SUBTYPE)
                         if subtype_descriptor is not None:
                             subtype_descriptor = {'dict': subtype_descriptor}
 

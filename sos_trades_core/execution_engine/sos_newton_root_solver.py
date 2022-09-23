@@ -58,11 +58,12 @@ class NewtonRootSolver(SoSEval):
     DESC_OUT = {'x_final': {'type': 'array'},
                 'residual_history': {'type': 'list','subtype_descriptor': {'list': 'float'}}}
 
-    def __init__(self, sos_name, ee, residual_builders, residual_infos):
+    def __init__(self, sos_name, ee, residual_builders, residual_infos, associated_namespaces=[]):
 
         if not isinstance(residual_builders, list):
             residual_builders = [residual_builders]
-        SoSEval.__init__(self, sos_name, ee, cls_builder=residual_builders)
+        SoSEval.__init__(self, sos_name, ee, cls_builder=residual_builders,
+                         associated_namespaces=associated_namespaces)
         self.nr_solver = None
 
         self.check_and_assign_residual_infos(residual_infos)
@@ -127,7 +128,6 @@ class NewtonRootSolver(SoSEval):
             self.input_grammar.update_from(self.sos_disciplines[0].input_grammar)
         self.output_grammar.update_from(self.sos_disciplines[0].output_grammar)
 
-
     def add_children_inputs(self):
         """
         Update input grammar
@@ -136,8 +136,6 @@ class NewtonRootSolver(SoSEval):
         self.sos_disciplines[0].configure_execution()
         #self._data_in.update(self.sos_disciplines[0]._data_in)
         #self._data_out.update(self.sos_disciplines[0]._data_out)
-
-
 
     def check_variables_exists_and_are_arrays(self):
 
@@ -285,7 +283,6 @@ class NewtonRootSolver(SoSEval):
     def compute_sos_jacobian(self):
         pass
 
-
     def get_chart_filter_list(self):
 
         # For the outputs, making a graph for tco vs year for each range and for specific
@@ -306,6 +303,7 @@ class NewtonRootSolver(SoSEval):
         Simple aero post procs
         '''
         instanciated_charts = []
+        chart_list = []
         # Overload default value with chart filter
         if chart_filters is not None:
             for chart_filter in chart_filters:

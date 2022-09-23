@@ -47,13 +47,13 @@ class SoSMultiScatterBuilder(SoSDisciplineBuilder):
     }
     ASSOCIATED_INPUTS = 'associated_inputs'
 
-    def __init__(self, sos_name, ee, associated_builder_list, own_map_name, child_map_name, autogather, builder_child_path=None):
+    def __init__(self, sos_name, ee, associated_builder_list, own_map_name, child_map_name, autogather, builder_child_path=None, associated_namespaces=[]):
         '''
         Constructor
         '''
         self.__dynamic_disciplines = {}
         SoSDisciplineBuilder.__init__(
-            self, sos_name, ee)
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.associated_builder_list = associated_builder_list
         self.activated_vb = {}
@@ -411,13 +411,13 @@ class SoSMultiScatterBuilder(SoSDisciplineBuilder):
         '''
         #input_type = self.child_sc_map.get_input_type()
         input_type = 'list'
-        input_subtype = {'list':'string'}
+        input_subtype = {'list': 'string'}
         input_ns = self.child_sc_map.get_input_ns()
         local_ns = self.ee.ns_manager.get_local_namespace(self).get_value()
 
         if not self.child_sc_map.get_input_name() in self._data_in:
             total_input = {self.child_sc_map.get_input_name(): {
-                SoSDisciplineBuilder.TYPE: input_type,SoSDisciplineBuilder.SUBTYPE: input_subtype, SoSDisciplineBuilder.VISIBILITY: SoSDisciplineBuilder.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: input_ns, SoSDisciplineBuilder.EDITABLE: False, SoSDisciplineBuilder.USER_LEVEL: 3}}
+                SoSDisciplineBuilder.TYPE: input_type, SoSDisciplineBuilder.SUBTYPE: input_subtype, SoSDisciplineBuilder.VISIBILITY: SoSDisciplineBuilder.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: input_ns, SoSDisciplineBuilder.EDITABLE: False, SoSDisciplineBuilder.USER_LEVEL: 3}}
             self.inst_desc_in.update(total_input)
             self.own_sc_map.map[self.ASSOCIATED_INPUTS].append(
                 self.child_sc_map.get_input_name())
@@ -437,7 +437,7 @@ class SoSMultiScatterBuilder(SoSDisciplineBuilder):
             input_key = f'{self.child_sc_map.get_input_name()}_{key}'
             if not input_key in self._data_in:
                 desc_in_key = {input_key: {
-                    SoSDisciplineBuilder.TYPE: input_type,SoSDisciplineBuilder.SUBTYPE: input_subtype, SoSDisciplineBuilder.VISIBILITY: SoSDisciplineBuilder.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: f'ns_{key}', SoSDisciplineBuilder.EDITABLE: False, SoSDisciplineBuilder.USER_LEVEL: 3}}
+                    SoSDisciplineBuilder.TYPE: input_type, SoSDisciplineBuilder.SUBTYPE: input_subtype, SoSDisciplineBuilder.VISIBILITY: SoSDisciplineBuilder.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: f'ns_{key}', SoSDisciplineBuilder.EDITABLE: False, SoSDisciplineBuilder.USER_LEVEL: 3}}
                 self.inst_desc_in.update(desc_in_key)
             else:
                 self.ee.dm.set_data(self.get_var_full_name(
@@ -464,7 +464,7 @@ class SoSMultiScatterBuilder(SoSDisciplineBuilder):
                 input_key = f'{self.child_sc_map.get_input_name()}_{actor}_{vb}'
                 if not input_key in self._data_in:
                     desc_in_key = {input_key: {
-                        SoSDisciplineBuilder.TYPE: input_type,SoSDisciplineBuilder.SUBTYPE: input_subtype, SoSDisciplineBuilder.VISIBILITY: SoSDisciplineBuilder.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: f'ns_{actor}_{vb}', SoSDisciplineBuilder.EDITABLE: False, SoSDisciplineBuilder.USER_LEVEL: 3}}
+                        SoSDisciplineBuilder.TYPE: input_type, SoSDisciplineBuilder.SUBTYPE: input_subtype, SoSDisciplineBuilder.VISIBILITY: SoSDisciplineBuilder.SHARED_VISIBILITY, SoSDisciplineBuilder.NAMESPACE: f'ns_{actor}_{vb}', SoSDisciplineBuilder.EDITABLE: False, SoSDisciplineBuilder.USER_LEVEL: 3}}
                     self.inst_desc_in.update(desc_in_key)
                 else:
                     self.ee.dm.set_data(self.get_var_full_name(

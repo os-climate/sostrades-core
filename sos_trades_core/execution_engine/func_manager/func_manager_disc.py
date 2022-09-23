@@ -102,11 +102,12 @@ class FunctionManagerDisc(SoSDiscipline):
                }
     DESC_OUT = {OPTIM_OUTPUT_DF: {'type': 'dataframe'}}
 
-    def __init__(self, sos_name, ee):
+    def __init__(self, sos_name, ee, associated_namespaces=[]):
         '''
         constructor
         '''
-        super(FunctionManagerDisc, self).__init__(sos_name, ee)
+        super(FunctionManagerDisc, self).__init__(
+            sos_name, ee, associated_namespaces=associated_namespaces)
         self.function_dict = None
         self.func_manager = FunctionManager()
 
@@ -222,7 +223,8 @@ class FunctionManagerDisc(SoSDiscipline):
         '''
 
         f_manager = self.func_manager
-        aggr_mod_ineq, aggr_mod_eq = self.get_sosdisc_inputs(['aggr_mod_ineq', 'aggr_mod_eq'])
+        aggr_mod_ineq, aggr_mod_eq = self.get_sosdisc_inputs(
+            ['aggr_mod_ineq', 'aggr_mod_eq'])
         f_manager.set_aggregation_mods(aggr_mod_ineq, aggr_mod_eq)
         # -- update function values
         for f in self.function_dict.keys():
@@ -376,8 +378,8 @@ class FunctionManagerDisc(SoSDiscipline):
                         grad_value = weight * np.ones(n)
                     elif self.func_manager.functions[variable_name][self.AGGR_TYPE] == 'smax':
                         grad_value = float(weight) * \
-                                     np.array(get_dsmooth_dvariable(
-                                         self.func_manager.functions[variable_name][self.VALUE]))
+                            np.array(get_dsmooth_dvariable(
+                                self.func_manager.functions[variable_name][self.VALUE]))
 
                     self.set_partial_derivative(
                         'objective_lagrangian', variable_name, 100.0 * np.atleast_2d(grad_value))
@@ -395,8 +397,8 @@ class FunctionManagerDisc(SoSDiscipline):
                             elif self.func_manager.functions[variable_name][self.AGGR_TYPE] == 'smax':
 
                                 grad_value = float(weight) * \
-                                             np.array(get_dsmooth_dvariable(
-                                                 self.func_manager.functions[variable_name][self.VALUE]))
+                                    np.array(get_dsmooth_dvariable(
+                                        self.func_manager.functions[variable_name][self.VALUE]))
 
                             self.set_partial_derivative_for_other_types(
                                 ('objective',), (variable_name, col_name), grad_value)
@@ -462,15 +464,17 @@ class FunctionManagerDisc(SoSDiscipline):
                             # g(h(k(x))) for each variable , f([g(h(k(x1)), g(h(k(x2)))])
                             # weight
                             weight = self.func_manager.functions[variable_name][self.WEIGHT]
-                            value = np.array(value_df[col_name].values * weight)
+                            value = np.array(
+                                value_df[col_name].values * weight)
                             if self.func_manager.functions[variable_name][
-                                self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_DELTA:
+                                    self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_DELTA:
                                 # k(x)
-                                k_cst = np.sqrt(compute_func_with_exp_min(value ** 2, 1e-15))
+                                k_cst = np.sqrt(
+                                    compute_func_with_exp_min(value ** 2, 1e-15))
                                 # k'(x)
                                 dk_dcst = 2 * np.ones(len(value)) * value * \
-                                          compute_dfunc_with_exp_min(value ** 2, 1e-15).reshape(value.shape) / (
-                                                  2 * k_cst)
+                                    compute_dfunc_with_exp_min(value ** 2, 1e-15).reshape(value.shape) / (
+                                    2 * k_cst)
                                 # h(k(x))
                                 h_k = f_manager.cst_func_ineq(
                                     k_cst)
@@ -479,10 +483,11 @@ class FunctionManagerDisc(SoSDiscipline):
                                     k_cst)
 
                             elif self.func_manager.functions[variable_name][
-                                self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
+                                    self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
                                 k_cst = f_manager.cst_func_eq_lintoquad(
                                     value)
-                                dk_dcst = self.get_dfunc_eq_lin_to_quad_dvariable(value)
+                                dk_dcst = self.get_dfunc_eq_lin_to_quad_dvariable(
+                                    value)
 
                                 h_k = k_cst
                                 dh_dcst = 1.
@@ -490,16 +495,13 @@ class FunctionManagerDisc(SoSDiscipline):
                                 k_cst = np.sqrt(np.sign(value) * value)
                                 # k'(x)
                                 dk_dcst = np.sign(value) * np.ones(len(value)) / (
-                                                  2 * k_cst)
+                                    2 * k_cst)
                                 # h(k(x))
                                 h_k = f_manager.cst_func_ineq(
                                     k_cst)
                                 # h'(k(x))
                                 dh_dcst = self.get_dfunc_ineq_dvariable(
                                     k_cst)
-
-
-
 
                             # g(h(k(x)))
                             value_ghk_l.append(
@@ -522,13 +524,14 @@ class FunctionManagerDisc(SoSDiscipline):
                     value = value_df * weight
 
                     if self.func_manager.functions[variable_name][
-                        self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_DELTA:
+                            self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_DELTA:
                         # k(x)
-                        k_cst = np.sqrt(compute_func_with_exp_min(value ** 2, 1e-15))
+                        k_cst = np.sqrt(
+                            compute_func_with_exp_min(value ** 2, 1e-15))
                         # k'(x)
                         dk_dcst = 2 * np.ones(len(value)) * value * \
-                                  compute_dfunc_with_exp_min(value ** 2, 1e-15).reshape(value.shape) / (
-                                          2 * k_cst)
+                            compute_dfunc_with_exp_min(value ** 2, 1e-15).reshape(value.shape) / (
+                            2 * k_cst)
                         # h(k(x))
                         h_k = f_manager.cst_func_ineq(
                             k_cst)
@@ -537,10 +540,11 @@ class FunctionManagerDisc(SoSDiscipline):
                             k_cst)
 
                     elif self.func_manager.functions[variable_name][
-                        self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
+                            self.AGGR_TYPE] == self.func_manager.AGGR_TYPE_LIN_TO_QUAD:
                         k_cst = f_manager.cst_func_eq_lintoquad(
                             value)
-                        dk_dcst = self.get_dfunc_eq_lin_to_quad_dvariable(value)
+                        dk_dcst = self.get_dfunc_eq_lin_to_quad_dvariable(
+                            value)
 
                         h_k = k_cst
                         dh_dcst = 1.
@@ -548,14 +552,13 @@ class FunctionManagerDisc(SoSDiscipline):
                         k_cst = np.sqrt(np.sign(value) * value)
                         # k'(x)
                         dk_dcst = np.sign(value) * np.ones(len(value)) / (
-                                2 * k_cst)
+                            2 * k_cst)
                         # h(k(x))
                         h_k = f_manager.cst_func_ineq(
                             k_cst)
                         # h'(k(x))
                         dh_dcst = self.get_dfunc_ineq_dvariable(
                             k_cst)
-
 
                     # g(h(k(x)))
                     value_ghk_l.append(
@@ -591,8 +594,10 @@ class FunctionManagerDisc(SoSDiscipline):
                 if isinstance(value_df, np.ndarray):
 
                     if self.func_manager.aggr_mod_ineq == 'smooth_max':
-                        grad_lagr_val = np.array(grad_value_l[variable_name]) * grad_val_ineq[i]
-                        grad_ineq_val = np.array(grad_value_l[variable_name]) * grad_val_ineq[i]
+                        grad_lagr_val = np.array(
+                            grad_value_l[variable_name]) * grad_val_ineq[i]
+                        grad_ineq_val = np.array(
+                            grad_value_l[variable_name]) * grad_val_ineq[i]
                     else:
                         grad_lagr_val = np.array(grad_value_l[variable_name])
                         grad_ineq_val = np.array(grad_value_l[variable_name])
@@ -604,7 +609,6 @@ class FunctionManagerDisc(SoSDiscipline):
                         'ineq_constraint', variable_name,
                         np.atleast_2d(weight * grad_ineq_val))
 
-
                     i = i + 1
 
                 elif isinstance(value_df, pd.DataFrame):
@@ -612,14 +616,19 @@ class FunctionManagerDisc(SoSDiscipline):
                     for col_name in value_df.columns:
                         if col_name != 'years':
                             if self.func_manager.aggr_mod_ineq == 'smooth_max':
-                                grad_lagr_val = np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i]
-                                grad_ineq_val = np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i]
-                            else :
-                                grad_lagr_val = np.array(grad_value_l[variable_name][col_name])
-                                grad_ineq_val = np.array(grad_value_l[variable_name][col_name])
+                                grad_lagr_val = np.array(
+                                    grad_value_l[variable_name][col_name]) * grad_val_ineq[i]
+                                grad_ineq_val = np.array(
+                                    grad_value_l[variable_name][col_name]) * grad_val_ineq[i]
+                            else:
+                                grad_lagr_val = np.array(
+                                    grad_value_l[variable_name][col_name])
+                                grad_ineq_val = np.array(
+                                    grad_value_l[variable_name][col_name])
 
                             self.set_partial_derivative_for_other_types(
-                                ('objective_lagrangian',), (variable_name, col_name),
+                                ('objective_lagrangian',
+                                 ), (variable_name, col_name),
                                 weight * 100.0 * grad_lagr_val)
                             self.set_partial_derivative_for_other_types(
                                 ('ineq_constraint',), (variable_name, col_name),
@@ -632,8 +641,10 @@ class FunctionManagerDisc(SoSDiscipline):
                 weight = self.func_manager.functions[variable_name][self.WEIGHT]
                 if isinstance(value_df, np.ndarray):
                     if self.func_manager.aggr_mod_eq == 'smooth_max':
-                        grad_lagr_val = np.array(grad_value_l[variable_name]) * grad_val_eq[j]
-                        grad_eq_val = np.array(grad_value_l[variable_name]) * grad_val_eq[j]
+                        grad_lagr_val = np.array(
+                            grad_value_l[variable_name]) * grad_val_eq[j]
+                        grad_eq_val = np.array(
+                            grad_value_l[variable_name]) * grad_val_eq[j]
                     else:
 
                         grad_lagr_val = np.array(grad_value_l[variable_name])
@@ -641,10 +652,10 @@ class FunctionManagerDisc(SoSDiscipline):
 
                     self.set_partial_derivative(
                         'objective_lagrangian', variable_name,
-                        np.atleast_2d( weight * 100.0 * grad_lagr_val ))
+                        np.atleast_2d(weight * 100.0 * grad_lagr_val))
                     self.set_partial_derivative(
                         'eq_constraint', variable_name,
-                        np.atleast_2d( weight * grad_eq_val))
+                        np.atleast_2d(weight * grad_eq_val))
                     j = j + 1
 
                 elif isinstance(value_df, pd.DataFrame):
@@ -652,14 +663,19 @@ class FunctionManagerDisc(SoSDiscipline):
                     for col_name in value_df.columns:
                         if col_name != 'years':
                             if self.func_manager.aggr_mod_eq == 'smooth_max':
-                                grad_lagr_val = np.array(grad_value_l[variable_name][col_name]) * grad_val_eq[j]
-                                grad_eq_val = np.array(grad_value_l[variable_name][col_name]) * grad_val_eq[j]
+                                grad_lagr_val = np.array(
+                                    grad_value_l[variable_name][col_name]) * grad_val_eq[j]
+                                grad_eq_val = np.array(
+                                    grad_value_l[variable_name][col_name]) * grad_val_eq[j]
                             else:
-                                grad_lagr_val = np.array(grad_value_l[variable_name][col_name])
-                                grad_eq_val = np.array(grad_value_l[variable_name][col_name])
+                                grad_lagr_val = np.array(
+                                    grad_value_l[variable_name][col_name])
+                                grad_eq_val = np.array(
+                                    grad_value_l[variable_name][col_name])
 
                             self.set_partial_derivative_for_other_types(
-                                ('objective_lagrangian',), (variable_name, col_name),
+                                ('objective_lagrangian',
+                                 ), (variable_name, col_name),
                                 weight * 100.0 * grad_lagr_val)
                             self.set_partial_derivative_for_other_types(
                                 ('eq_constraint',), (variable_name, col_name),
@@ -796,7 +812,7 @@ class FunctionManagerDisc(SoSDiscipline):
                     charts = chart_filter.selected_values
         if 'objective (colored)' in charts:
             if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
-            self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+                    self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
                 optim_output_df = deepcopy(
                     self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
                 new_chart = self.get_chart_obj_constraints_iterations(optim_output_df, [self.OBJECTIVE],
@@ -881,7 +897,7 @@ class FunctionManagerDisc(SoSDiscipline):
             elif 'eq_constraint' in row['ftype']:
                 eq_list.append(mod_parameter_dict['variable'])
             parameters_dict[mod_parameter_dict['variable']
-            ] = mod_parameter_dict
+                            ] = mod_parameter_dict
 
         # Aggregated objectives and constraints
         dict_aggr_obj = {'variable': self.OBJECTIVE,
@@ -944,7 +960,7 @@ class FunctionManagerDisc(SoSDiscipline):
                     buttons=list([
                         dict(
                             args=[{'visible': [False if scatter['stackgroup']
-                                                        == 'group' else True for scatter in fig.data]}, ],
+                                               == 'group' else True for scatter in fig.data]}, ],
                             label="Simple",
                             method="restyle"
                         ),
@@ -1070,25 +1086,25 @@ class FunctionManagerDisc(SoSDiscipline):
                     buttons=list([
                         dict(
                             args=[{'visible': [True if scatter['customdata'][0]
-                                                       == 'aggr' else False for scatter in fig.data]}, ],
+                                               == 'aggr' else False for scatter in fig.data]}, ],
                             label="All Aggregated",
                             method="restyle"
                         ),
                         dict(
                             args=[{'visible': [True if scatter['customdata'][1]
-                                                       == 'obj' else False for scatter in fig.data]}, ],
+                                               == 'obj' else False for scatter in fig.data]}, ],
                             label="Objective - Detailed",
                             method="restyle"
                         ),
                         dict(
                             args=[{'visible': [True if scatter['customdata'][1]
-                                                       == 'ineq' else False for scatter in fig.data]}, ],
+                                               == 'ineq' else False for scatter in fig.data]}, ],
                             label="Ineq Constraint - Detailed",
                             method="restyle"
                         ),
                         dict(
                             args=[{'visible': [True if scatter['customdata'][1]
-                                                       == 'eq' else False for scatter in fig.data]}, ],
+                                               == 'eq' else False for scatter in fig.data]}, ],
                             label="Eq Constraint - Detailed",
                             method="restyle"
                         ),
@@ -1239,7 +1255,7 @@ class FunctionManagerDisc(SoSDiscipline):
                         [dict(
                             args=[
                                 {'visible': [True if scatter['customdata'][0][2]
-                                                     == group else False for scatter in fig.data]},
+                                             == group else False for scatter in fig.data]},
                             ],
                             label='grouped',
                             method="update"
@@ -1255,7 +1271,7 @@ class FunctionManagerDisc(SoSDiscipline):
                         [dict(
                             args=[
                                 {'visible': [True if scatter['customdata'][0][2]
-                                                     == group else False for scatter in fig.data]},
+                                             == group else False for scatter in fig.data]},
                             ],
                             label='group ' + str(group),
                             method="update"
@@ -1362,7 +1378,7 @@ class FunctionManagerDisc(SoSDiscipline):
             tot_constraints_max_col = [
                 0 for index, row in tot_constraints.iterrows()]
             tot_constraints_max = [0 for index,
-                                         row in tot_constraints.iterrows()]
+                                   row in tot_constraints.iterrows()]
         fm_ineq = [value
                    for value in optim_output[self.INEQ_CONSTRAINT].values]
         fm_eq = [value

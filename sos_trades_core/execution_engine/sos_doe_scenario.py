@@ -136,11 +136,12 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
                 }
     DESC_OUT.update(SoSScenario.DESC_OUT)
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         """
         Constructor
         """
-        SoSScenario.__init__(self, sos_name, ee, cls_builder)
+        SoSScenario.__init__(self, sos_name, ee, cls_builder,
+                             associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.SoSDOEScenario')
         self.ALGO_MANDATORY_FIELDS = [self.ALGO, self.N_SAMPLES]
 
@@ -165,7 +166,7 @@ class SoSDOEScenario(SoSScenario, DOEScenario):
             # DOEScenario creation (GEMS object)
             DOEScenario.__init__(self, self.sos_disciplines, formulation,
                                  obj_full_name, design_space, name=self.sos_name,
-                                 grammar_type=SoSScenario.SOS_GRAMMAR_TYPE,maximize_objective=maximize_objective)
+                                 grammar_type=SoSScenario.SOS_GRAMMAR_TYPE, maximize_objective=maximize_objective)
 
             self.activated_variables = self.formulation.design_space.variables_names
             self.set_diff_method()
