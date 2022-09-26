@@ -2327,10 +2327,167 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t\t\t|_ Disc3']
         self.check_created_tree_structure(exp_tv_list)
 
+    def test_05_build_driver_with_nested_proc_and_updates_sequence_bis(self):
+        '''
+        Test of changing of nested sub_process
+        '''
+        print('test_05_build_driver_with_nested_proc_and_updates_sequence_bis')
+        # Step 0: setup an empty
+        print('Step 0: setup an empty driver')
+        from os.path import join, dirname
+        from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
+        mod_id_empty_driver = 'test_driver_build_vs_MS_empty'
+        self.study_name = 'MyStudy'
+
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_driver, 'MyStudy')
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()
+        ################ Start checks ##########################
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        print_flag = True
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS']
+        self.check_created_tree_structure(exp_tv_list)
+        # print configuration state:
+        if print_flag:
+            self.print_config_state()
+        # check configuration state
+        self.check_status_state()
+
+        # select vs_MS disc
+        driver_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS')[0]
+        # check input parameter list and values of vs_MS discipline
+        full_inputs_list_last = driver_disc.get_data_io_dict_keys('in')
+        full_inputs_list_last = [elem for elem in full_inputs_list_last]
+        # print("Full_inputs_list_last:")
+        # print(full_inputs_list_last)
+        inputs_list = ['sub_process_inputs', 'scenario_map']
+        inputs_list = inputs_list + [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+        ]
+        # print(driver_disc.get_data_io_dict_keys('in'))
+        self.check_discipline_inputs_list(driver_disc, inputs_list)
+        # check output parameter list  of vs_MS discipline
+        # print(driver_disc.get_data_io_dict_keys('out'))
+        outputs_list = []
+        self.check_discipline_outputs_list(driver_disc, outputs_list)
+
+        # check input values (and print) of vs_MS discipline
+        target_values_dict = {}
+        tv_sub_process_inputs_dict = {}
+        tv_sub_process_inputs_dict['process_repository'] = None
+        tv_sub_process_inputs_dict['process_name'] = None
+        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
+        tv_sub_process_inputs_dict['usecase_data'] = {}
+        tv_scenario_map = {'input_name': None,
+                           #'input_ns': '',
+                           #'output_name': '',
+                           #'scatter_ns': '',
+                           #'gather_ns': '',
+                           'ns_to_update': []}
+        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['scenario_map'] = tv_scenario_map
+        self.check_discipline_values(
+            driver_disc, target_values_dict, print_flag=print_flag)
+
+        # check input values_types (and print) of vs_MS discipline
+        target_values_dict = {}
+        target_values_dict['sub_process_inputs'] = 'USER'
+        target_values_dict['scenario_map'] = 'USER'
+        self.check_discipline_value_types(
+            driver_disc, target_values_dict, print_flag=print_flag)
+
+        # check start execution status (can be run if no mandatory value))
+        missing_variables = self.start_execution_status(print_flag=False)
+        target_missing_variables = []
+        self.assertCountEqual(target_missing_variables, missing_variables)
+        ################ End checks ##########################
+
+        # Step 1: Provide subprocess and provide data input
+        print('Step 1: provide Hessian process with both change in SubProc/Map')
+        dict_values = {}
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc_hessian'
+        sub_process_inputs_dict = {}
+        sub_process_inputs_dict['process_repository'] = repo
+        sub_process_inputs_dict['process_name'] = mod_id
+        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_data'] = {}
+
+        scenario_map_name = 'scenario_list'
+        ns_to_update = []
+        scenario_map = {'input_name': scenario_map_name,
+                        'ns_to_update': ns_to_update}
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
+
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS']
+        self.check_created_tree_structure(exp_tv_list)
+        ################ End checks ##########################
+        scenario_list = ['scenario_1', 'scenario_2']
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Hessian',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Hessian']
+        self.check_created_tree_structure(exp_tv_list)
+        print(
+            '################################################################################')
+        print(
+            'STEP_2: update subprocess selection by changing test_disc_hessian to test_disc1_disc3_coupling with complete ns_to_update: by changing only SubProc without changing Map')
+        #
+        dict_values = {}
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc1_disc3_coupling'
+        sub_process_inputs_dict = {}
+        sub_process_inputs_dict['process_repository'] = repo
+        sub_process_inputs_dict['process_name'] = mod_id
+        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_data'] = {}
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS']
+        self.check_created_tree_structure(exp_tv_list)
+
 
 if '__main__' == __name__:
     my_test = TestBuildVerySimpleMultiScenario()
-    test_selector = 4
+    test_selector = 5
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_vs_MS_with_nested_proc_selection_through_process_driver_Hessian_subproc()
@@ -2343,3 +2500,6 @@ if '__main__' == __name__:
     elif test_selector == 4:
         my_test.setUp()
         my_test.test_04_build_driver_with_nested_proc_and_updates()
+    elif test_selector == 5:
+        my_test.setUp()
+        my_test.test_05_build_driver_with_nested_proc_and_updates_sequence_bis()
