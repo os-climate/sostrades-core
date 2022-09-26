@@ -521,10 +521,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             )
         ns_of_sub_pro_pd = pd.DataFrame(
             list(ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
-        print('\n')
-        print('ns_of_sub_pro_pd:')
-        print(ns_of_sub_pro_pd)
-        print('\n')
+        # print('\n')
+        # print('ns_of_sub_pro_pd:')
+        # print(ns_of_sub_pro_pd)
+        # print('\n')
         self.sub_process_ns_in_build = ns_of_sub_pro_pd
         # 4. Treat ns
         #   Shift ns with driver name
@@ -537,9 +537,9 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             )
         shifted_ns_of_sub_proc_pd = pd.DataFrame(
             list(shifted_ns_of_sub_proc_dict.items()), columns=['Name', 'Value'])
-        print('shifted_ns_of_sub_proc_pd:')
-        print(shifted_ns_of_sub_proc_pd)
-        print('\n')
+        # print('shifted_ns_of_sub_proc_pd:')
+        # print(shifted_ns_of_sub_proc_pd)
+        # print('\n')
         #   then add ns keys to driver discipline
         for item in ns_of_sub_proc:
             self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
@@ -554,10 +554,17 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         new_sub_names = BuildSoSDisciplineScatter.clean_scattered_disciplines(
             self, sub_names)
         # 2 remove previous created scatter map of name
-        # self.previous_sc_map_name
-        self.ee.smaps_manager.remove_build_map(
-            self.previous_sc_map_name)
+        # "self.previous_sc_map_name"
+
         # Remark: self.previous_sc_map_name is also self.sc_map.get_input_name()
+        # print(self.previous_sc_map_name)
+        # print(self.sc_map.get_input_name())
+        #sc_map_name_to_remove = self.previous_sc_map_name
+        # Why self.previous_sc_map_name is not with the good value (None
+        # instead of scenario_list) in Test 05/Step 02 ?
+
+        sc_map_name_to_remove = self.sc_map.get_input_name()
+        self.ee.smaps_manager.remove_build_map(sc_map_name_to_remove)
         # 3 We "clean" also all dynamic inputs
         self.add_inputs({})
 
