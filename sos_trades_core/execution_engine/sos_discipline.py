@@ -104,6 +104,7 @@ class SoSDiscipline(MDODiscipline):
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
     FORMULA = 'formula'
+    IS_FORMULA = 'is_formula'
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -200,6 +201,7 @@ class SoSDiscipline(MDODiscipline):
         self.model = None
         self.father_builder = None
         self.father_executor = None
+        self.formula_dict = {}
 
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
@@ -796,6 +798,8 @@ class SoSDiscipline(MDODiscipline):
             # initialize formula
             if self.FORMULA not in data_keys:
                 curr_data[self.FORMULA] = None
+            if self.IS_FORMULA not in data_keys:
+                curr_data[self.FORMULA] = False
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
@@ -900,12 +904,173 @@ class SoSDiscipline(MDODiscipline):
                     f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
-                values_dict[new_key] = self.local_data[namespaced_key]
+                if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
+                    id_key = self.dm.data_id_map[namespaced_key]
+                    self.dm.data_dict[id_key][self.FORMULA] = self.local_data[namespaced_key]
+                    if self.dm.get_data(namespaced_key, self.TYPE) == 'dataframe':
+                        values_dict[new_key] = self.local_data[namespaced_key]
+                        for el in self.dm.get_value(namespaced_key).keys():
+                            if type(values_dict[new_key][el][0]) == type('str') and values_dict[new_key][el][0].startswith('formula:'):
+                                formula = self.dm.data_dict[id_key][self.FORMULA][el].values[0].split(':')[
+                                    1]
+                                self.formula_dict = self.fill_formula_dict(
+                                    formula)
+                                self.check_formula_dict()
+                                values_dict[new_key][el] = self.get_value_from_formula(formula
+                                                                                       )
+                                self.clean_formula_dict()
+
+                    elif self.dm.get_data(namespaced_key, self.TYPE) == 'dict':
+                        values_dict[new_key] = self.local_data[namespaced_key]
+                        for el in self.dm.get_value(namespaced_key).keys():
+                            if type(values_dict[new_key][el]) == type('str') and values_dict[new_key][el].startswith('formula:'):
+                                formula = self.dm.data_dict[id_key][self.FORMULA][el].split(':')[
+                                    1]
+                                self.formula_dict = self.fill_formula_dict(
+                                    formula)
+                                self.check_formula_dict()
+                                values_dict[new_key][el] = self.get_value_from_formula(formula
+                                                                                       )
+                                self.clean_formula_dict()
+
+                    else:
+                        formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
+                            1]
+                        self.formula_dict = self.fill_formula_dict(formula)
+                        self.check_formula_dict()
+                        values_dict[new_key] = self.get_value_from_formula(
+                            formula)
+                        self.clean_formula_dict()
+                else:
+                    values_dict[new_key] = self.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
-                values_dict[new_key] = self.dm.get_value(namespaced_key)
+                if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
+                    id_key = self.dm.data_id_map[namespaced_key]
+                    self.dm.data_dict[id_key][self.FORMULA] = self.local_data[namespaced_key]
+                    if self.dm.get_data(namespaced_key, self.TYPE) == 'dataframe':
+                        values_dict[new_key] = self.local_data[namespaced_key]
+                        for el in self.dm.get_value(namespaced_key).keys():
+                            if type(el) == type('str') and el.startswith('formula:'):
+                                formula = self.dm.data_dict[id_key][self.FORMULA].values[0].split(':')[
+                                    1]
+                                self.formula_dict = self.fill_formula_dict(
+                                    formula)
+                                self.check_formula_dict()
+                                values_dict[new_key][el] = self.get_value_from_formula(formula
+                                                                                       )
+                                self.clean_formula_dict()
+
+                    elif self.dm.get_data(namespaced_key, self.TYPE) == 'dict':
+                        values_dict[new_key] = self.local_data[namespaced_key]
+                        for el in self.dm.get_value(namespaced_key).keys():
+                            if type(el) == type('str') and el.startswith('formula:'):
+                                formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
+                                    1]
+                                self.formula_dict = self.fill_formula_dict(
+                                    formula)
+                                self.check_formula_dict()
+                                values_dict[new_key][el] = self.get_value_from_formula(formula
+                                                                                       )
+                                self.clean_formula_dict()
+
+                    else:
+                        formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
+                            1]
+                        self.formula_dict = self.fill_formula_dict(formula)
+                        self.check_formula_dict()
+                        values_dict[new_key] = self.get_value_from_formula(
+                            formula)
+                        self.clean_formula_dict()
+                else:
+                    values_dict[new_key] = self.dm.get_value(namespaced_key)
 
         return values_dict
+
+    def fill_formula_dict(self, formula):
+        """
+        build dict with all formulas and parameters to evaluate :formula given
+        """
+        filled_dict = {}
+        sympy_formula = SympyFormula(formula)
+        parameter_list = sympy_formula.get_token_list()
+        for parameter in parameter_list:
+            if parameter in self.dm.data_id_map:
+                if isinstance(self.dm.get_value(parameter), str):
+                    filled_dict[parameter] = self.dm.get_value(
+                        parameter).split(':')[1]
+                else:
+                    filled_dict[parameter] = self.dm.get_value(
+                        parameter)
+            else:
+                splitted_parameter = parameter.split('.')
+                el_key = splitted_parameter[-1]
+                el_name_space = self.reform_full_namespace(splitted_parameter)
+                el_id = self.dm.data_id_map[el_name_space]
+                if self.dm.data_dict[el_id][self.TYPE] == 'dataframe':
+                    if isinstance(self.dm.get_value(el_name_space)[
+                            el_key].values[0], str):
+                        filled_dict[parameter] = self.dm.get_value(
+                            el_name_space)[el_key].values[0].split(':')[1]
+                    else:
+                        filled_dict[parameter] = self.dm.get_value(el_name_space)[
+                            el_key].values[0]
+                elif self.dm.data_dict[el_id][self.TYPE] == 'dict':
+                    if isinstance(self.dm.get_value(el_name_space)[
+                            el_key], str):
+                        filled_dict[parameter] = self.dm.get_value(el_name_space)[
+                            el_key].split(':')[1]
+                    else:
+                        filled_dict[parameter] = self.dm.get_value(el_name_space)[
+                            el_key]
+        return filled_dict
+
+    def check_formula_dict(self):
+        """
+        """
+        twin_dict = deepcopy(self.formula_dict)
+        for key in self.formula_dict.keys():
+            if isinstance(self.formula_dict[key], str):
+                sympy_formula = SympyFormula(
+                    self.formula_dict[key])
+                parameter_list = sympy_formula.get_token_list()
+                for parameter in parameter_list:
+                    if parameter not in self.formula_dict.keys():
+                        filled_dict = self.fill_formula_dict(
+                            self.formula_dict[key])
+                        self.update_dict(twin_dict, filled_dict)
+        if twin_dict != self.formula_dict:
+            self.formula_dict = deepcopy(twin_dict)
+            self.check_formula_dict()
+
+    def update_dict(self, dict_to_update, filled_dict):
+        """
+        """
+        for key, value in filled_dict.items():
+            if key not in dict_to_update.keys():
+                dict_to_update[key] = value
+
+    def clean_formula_dict(self):
+        """
+        """
+        self.formula_dict = {}
+
+    def reform_full_namespace(self, splitted_name):
+        """
+        """
+        splitted_name.pop()
+        full_name_space = splitted_name.pop(0)
+        for el in splitted_name:
+            full_name_space += '.' + el
+        #full_name_space = full_name_space[:-1]
+        return full_name_space
+
+    def get_value_from_formula(self, formula):
+        """
+        """
+        sympy_formula = SympyFormula(formula)
+        sympy_formula.evaluate(self.formula_dict)
+        return sympy_formula.get_value()
 
     # -- execute/runtime section
     def execute(self, input_data=None):
