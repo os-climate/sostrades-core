@@ -372,11 +372,18 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # - Update coupling and editable flags in the datamanager for the GUI
             self._update_coupling_flags_in_dm()
 
-    def get_data_io_with_full_name(self, io_type):
+    def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
+        # TODO: code is duplicated in driver and coupling... move to builder ? [discuss]
         if io_type == self.IO_TYPE_IN:
-            return self._data_in_with_full_name
+            if as_namespaced_tuple:
+                return self._data_in_ns_tuple
+            else:
+                return self.namespaced_tuples_to_full_names(self._data_in_ns_tuple)
         elif io_type == self.IO_TYPE_OUT:
-            return self._data_out_with_full_name
+            if as_namespaced_tuple:
+                return self._data_out_ns_tuple
+            else:
+                return self.namespaced_tuples_to_full_names(self._data_out_ns_tuple)
         else:
             raise ValueError('Unknown io type')
 
@@ -388,11 +395,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         in sub proxies
         """
         #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
-        data_in_with_full_name, data_out_with_full_name = self.__compute_mdachain_gemseo_based_data_io()
+        subprocess_data_in_ns_tuple, subprocess_data_out_ns_tuple = self.__compute_mdachain_gemseo_based_data_io()
              
         #- data_i/o setup
         #- TODO: check if we can remove _data_in_with_full_name
-        self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+        # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+        #                                 self._data_in.items()
+        #                                 if key in self.DESC_IN or key in self.NUM_DESC_IN}
+        self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
                                         self._data_in.items()
                                         if key in self.DESC_IN or key in self.NUM_DESC_IN}
         self._data_in = {key: value for key, value in self._data_in.items(
@@ -401,14 +411,17 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         
 
         # add inputs - that are not outputs - of all children disciplines in data_in
-        self._data_in_with_full_name.update(data_in_with_full_name)
+        self._data_in_ns_tuple.update(subprocess_data_in_ns_tuple)
         # for k_full in data_in:
         #     self._data_in_with_full_name[k_full] = data_in[k_full]
             # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
             #     self._data_in[k] = self.dm.get_data(k_full)
 
 
-        self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+        # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+        #                                 self._data_out.items()
+        #                                 if key in self.DESC_OUT}
+        self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
                                         self._data_out.items()
                                         if key in self.DESC_OUT}
         self._data_out = {key: value for key, value in self._data_out.items(
@@ -427,7 +440,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         #     self._data_out = {}
         
         # add outputs of all children disciplines in data_out
-        self._data_out_with_full_name.update(data_out_with_full_name)
+        self._data_out_ns_tuple.update(subprocess_data_out_ns_tuple)
         # for k in data_out:
         #     k_full = self.get_var_full_name(k, data_out)
         #     self._data_out_with_full_name[k_full] = data_out[k]
@@ -444,20 +457,27 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         data_in = {}
         data_out = {}
         for d in self.proxy_disciplines:
-            disc_in = d.get_input_data_names()
-            disc_out = d.get_output_data_names()
-            mda_outputs += disc_out
+            # disc_in = d.get_input_data_names(as_namespaced_tuple=True)
+            # disc_out = d.get_output_data_names(as_namespaced_tuple=True)
+            # mda_outputs += disc_out
+            #
+            # # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
+            # # get all inputs that are not in known outputs
+            # mda_inputs += list(set(disc_in) - set(mda_outputs))
+            # d_data_in = {k_full: get_data(k_full) for k_full in disc_in if k_full not in mda_outputs}
+            # data_in.update(d_data_in)
+            #
+            # # get all outputs
+            # d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
+            # data_out.update(d_data_out)
 
-            # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
-            # get all inputs that are not in known outputs
-            mda_inputs += list(set(disc_in) - set(mda_outputs))
-            d_data_in = {k_full: get_data(k_full) for k_full in disc_in if k_full not in mda_outputs}
+            disc_in = d.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple = True)
+            disc_out = d.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple = True)
+            mda_outputs += disc_out
+            d_data_in = {key : value for key, value in disc_in.items() if key not in mda_outputs}
             data_in.update(d_data_in)
-            
-            # get all outputs
-            d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
-            data_out.update(d_data_out)
-    
+            data_out.update(disc_out)
+
         return data_in, data_out
     
     # def get_input_data_names(self):

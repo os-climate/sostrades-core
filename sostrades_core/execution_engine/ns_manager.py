@@ -66,6 +66,7 @@ class NamespaceManager:
         # List of dict with extra_ns and ater_name infos for local namespace
         # update
         self.extra_ns_local = []
+        self.ns_object_map = {}
 
     @staticmethod
     def compose_ns(args):
@@ -139,6 +140,7 @@ class NamespaceManager:
         # This shared_ns_dict delete the namespace if already exist: new one
         # has priority
         self.shared_ns_dict[name] = ns
+        self.ns_object_map[id(ns)] = ns
 
         return ns.get_ns_id()
 
@@ -299,6 +301,7 @@ class NamespaceManager:
         local_ns = Namespace(disc.sos_name, local_ns_value)
 
         self.local_ns_dict[disc] = local_ns
+        self.ns_object_map[id(local_ns)] = local_ns
 
         return local_ns
 

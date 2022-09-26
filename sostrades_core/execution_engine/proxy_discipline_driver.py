@@ -82,24 +82,33 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
                 raise NotImplementedError
             self.set_children_cache_inputs()
 
-    def get_data_io_with_full_name(self, io_type):
+    def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
+        # TODO: code is duplicated in driver and coupling... move to builder ? [discuss]
         if io_type == self.IO_TYPE_IN:
-            return self._data_in_with_full_name
+            if as_namespaced_tuple:
+                return self._data_in_ns_tuple
+            else:
+                return self.namespaced_tuples_to_full_names(self._data_in_ns_tuple)
         elif io_type == self.IO_TYPE_OUT:
-            return self._data_out_with_full_name
+            if as_namespaced_tuple:
+                return self._data_out_ns_tuple
+            else:
+                return self.namespaced_tuples_to_full_names(self._data_out_ns_tuple)
         else:
             raise ValueError('Unknown io type')
 
     def update_data_io_with_subprocess_io(self):
 
         # - data_i/o setup
-        self._data_in_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_in.keys()), self.IO_TYPE_IN), self._data_in.values()))
-        self._data_out_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_out.keys()), self.IO_TYPE_OUT), self._data_out.values()))
+        # self._data_in_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_in.keys()), self.IO_TYPE_IN), self._data_in.values()))
+        # self._data_out_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_out.keys()), self.IO_TYPE_OUT), self._data_out.values()))
+
+        self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])) : value for key, value in self._data_in.items()}
+        self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])) : value for key, value in self._data_out.items()}
 
         for proxy_disc in self.proxy_disciplines:
-            self._data_in_with_full_name.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN))
-            self._data_out_with_full_name.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT))
-
+            self._data_in_ns_tuple.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True))
+            self._data_out_ns_tuple.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True))
 
     def configure_driver(self):
         """

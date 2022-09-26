@@ -413,19 +413,19 @@ class ProxyDiscipline(object):
         if self.VISIBILITY in item and item[self.VISIBILITY] == self.SHARED_VISIBILITY:
             ns_list.append(item[self.NAMESPACE])
 
-    def get_input_data_names(self):
+    def get_input_data_names(self, as_namespaced_tuple=False):
         '''
         Returns:
             (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
         '''
-        return list(self.get_data_io_with_full_name(self.IO_TYPE_IN).keys())
+        return list(self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple).keys())
 
-    def get_output_data_names(self):
+    def get_output_data_names(self, as_namespaced_tuple=False):
         '''
         Returns:
             (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
         '''
-        return list(self.get_data_io_with_full_name(self.IO_TYPE_OUT).keys())
+        return list(self.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple).keys())
 
     def get_data_io_dict(self, io_type):
         '''
@@ -870,7 +870,7 @@ class ProxyDiscipline(object):
         """
         return self._data_out
 
-    def get_data_io_with_full_name(self, io_type):
+    def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
         """
         returns a version of the data_in/data_out of discipline with variable full names
 
@@ -881,8 +881,13 @@ class ProxyDiscipline(object):
             data_io_full_name (Dict[dict]): data_in/data_out with variable full names
         """
         data_io_short_name = self.get_data_io_dict(io_type)
-        data_io_full_name = {self.get_var_full_name(
-            var_name, data_io_short_name): value_dict for var_name, value_dict in data_io_short_name.items()}
+
+        if as_namespaced_tuple:
+            dict_key = lambda v: (v, id(data_io_short_name[v][self.NS_REFERENCE]))
+        else:
+            dict_key = lambda v: self.get_var_full_name(v, data_io_short_name)
+
+        data_io_full_name = {dict_key(var_name): value_dict for var_name, value_dict in data_io_short_name.items()}
 
         return data_io_full_name
 
@@ -1514,6 +1519,16 @@ class ProxyDiscipline(object):
         var_f_name = self.ee.ns_manager.compose_ns(
             [ns_reference.value, complete_var_name])
         return var_f_name
+
+    def namespaced_tuples_to_full_names(self, in_dict):
+        out_dict = {}
+        for key,value in in_dict.items():
+            complete_var_name = key[0]
+            ns_reference = self.ee.ns_manager.ns_object_map[key[1]]
+            var_f_name = self.ee.ns_manager.compose_ns(
+                [ns_reference.value, complete_var_name])
+            out_dict[var_f_name] = value
+        return out_dict
 
     def update_from_dm(self):
         """
