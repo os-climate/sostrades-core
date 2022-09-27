@@ -168,7 +168,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     #     return list(self._data_out_with_full_name.keys())
 
     def set_wrapper_attributes(self, wrapper):
-        wrapper.attributes = {'sub_mdo_discipline': self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline}
+        wrapper.attributes = {'sub_mdo_disciplines': [proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines]}
 
     def is_configured(self):
         '''

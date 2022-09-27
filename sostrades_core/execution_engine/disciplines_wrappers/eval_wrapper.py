@@ -72,7 +72,7 @@ class EvalWrapper(SoSWrapp):
         on a sequential or parallel way over the list of samples to evaluate
         '''
 
-        self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_discipline'])
+        self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][0])
 
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
@@ -176,10 +176,10 @@ class EvalWrapper(SoSWrapp):
         #     raise ProxyEvalException(
         #         f'ProxyEval discipline has more than one child discipline')
         # else:
-        # input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_discipline'])
+        # input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'])
         # local_data = self.attributes['sub_mdo_discipline'].execute(input_data_for_disc)
         self.input_data_for_disc.update(values_dict)
-        local_data = self.attributes['sub_mdo_discipline'].execute(self.input_data_for_disc)
+        local_data = self.attributes['sub_mdo_disciplines'][0].execute(self.input_data_for_disc)
         out_local_data = {key: value for key,value in local_data.items()
                           if key in self.attributes['eval_out_list']}
 

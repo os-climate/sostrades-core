@@ -289,7 +289,7 @@ class DoeEval(EvalWrapper):
         '''
         # upadte default inputs of children with dm values
         # TODO: Ask whether it is necessary to update default values.
-        # self.update_default_inputs(self.attributes['sub_mdo_discipline'])
+        # self.update_default_inputs(self.attributes['sub_mdo_disciplines'])
 
         dict_sample = {}
         dict_output = {}
