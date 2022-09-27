@@ -676,7 +676,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # 2.2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
                 anonymize_input_dict_from_usecase)
-            print(input_dict_from_usecase)
+            # print(input_dict_from_usecase)
             # self.ee.display_treeview_nodes(True)
             # 2.2. treat data because of dynamic keys not in dict
             #    Added treatment for input_dict_from_usecase with dynamic keys
