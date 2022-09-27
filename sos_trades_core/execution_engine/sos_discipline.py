@@ -105,6 +105,7 @@ class SoSDiscipline(MDODiscipline):
     CACHE_FILE_PATH = 'cache_file_path'
     FORMULA = 'formula'
     IS_FORMULA = 'is_formula'
+    IS_EVAL = 'is_eval'
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -800,6 +801,8 @@ class SoSDiscipline(MDODiscipline):
                 curr_data[self.FORMULA] = None
             if self.IS_FORMULA not in data_keys:
                 curr_data[self.FORMULA] = False
+            if self.IS_EVAL not in data_keys:
+                curr_data[self.IS_EVAL] = False
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
@@ -906,9 +909,7 @@ class SoSDiscipline(MDODiscipline):
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
                 if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
                     id_key = self.dm.data_id_map[namespaced_key]
-                    expression = self.dm.get_value(
-                        namespaced_key)
-                    if type(expression) == type('str'):
+                    if self.dm.data_dict[id_key][self.IS_EVAL] == False:
                         self.dm.data_dict[id_key][self.FORMULA] = self.dm.get_value(
                             namespaced_key)
                     values_dict[new_key] = self.dm.data_dict[id_key][self.FORMULA]
@@ -979,15 +980,14 @@ class SoSDiscipline(MDODiscipline):
                         values_dict[new_key] = value
                         self.clean_formula_dict()
                         self.dm.data_dict[id_key][self.VALUE] = value
+                    self.dm.data_dict[id_key][self.IS_EVAL] = True
                 else:
                     values_dict[new_key] = self.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
                 if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
                     id_key = self.dm.data_id_map[namespaced_key]
-                    expression = self.dm.get_value(
-                        namespaced_key)
-                    if type(expression) == type('str'):
+                    if self.dm.data_dict[id_key][self.IS_EVAL] == False:
                         self.dm.data_dict[id_key][self.FORMULA] = self.dm.get_value(
                             namespaced_key)
                     values_dict[new_key] = self.dm.data_dict[id_key][self.FORMULA]
@@ -1072,6 +1072,7 @@ class SoSDiscipline(MDODiscipline):
                         values_dict[new_key] = value
                         self.clean_formula_dict()
                         self.dm.data_dict[id_key][self.VALUE] = value
+                    self.dm.data_dict[id_key][self.IS_EVAL] = True
                 else:
                     values_dict[new_key] = self.dm.get_value(namespaced_key)
 
