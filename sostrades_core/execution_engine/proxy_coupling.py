@@ -199,7 +199,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     eps0 = 1.0e-6
     has_chart = False
 
-    def __init__(self, sos_name, ee, cls_builder=None, with_data_io=False):
+    def __init__(self, sos_name, ee, cls_builder=None, with_data_io=False, associated_namespaces=[]):
         '''
         Constructor
 
@@ -211,7 +211,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if cls_builder is None:
             cls_builder = []
         self.cls_builder = cls_builder #TODO: Move to ProxyDisciplineBuilder?
-        self._reload(sos_name, ee)
+        self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Coupling')
 
         self.with_data_io = with_data_io
@@ -229,7 +229,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
 
-    def _reload(self, sos_name, ee):
+    def _reload(self, sos_name, ee, associated_namespaces=[]):
         '''
         Reload ProxyCoupling with corresponding ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -238,7 +238,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(self, sos_name, ee)
+        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
 
     # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to reduce footprint in GEMSEO 
     def _set_dm_cache_map(self):

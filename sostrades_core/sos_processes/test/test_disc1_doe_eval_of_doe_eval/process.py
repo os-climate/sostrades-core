@@ -31,19 +31,20 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict_2 = {'Disc1': disc_dir + 'disc1.Disc1'}
-        builder_list_2 = self.create_builder_list(mods_dict_2, ns_dict={'ns_ac': self.ee.study_name,
-                                                                      'ns_doe_eval': f'{self.ee.study_name}.DoEEval1.DoEEval2'})
+        builder_list_2 = self.create_builder_list(mods_dict_2, ns_dict={'ns_ac': self.ee.study_name})
 
 
-        doe_eval_builder_2 = self.ee.factory.create_evaluator_builder(
-            'DoEEval2', 'doe_eval', builder_list_2)
+
+        ns_lower_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoEEvalUpper.DoEEvalLower')
+        doe_eval_builder_lower = self.ee.factory.create_evaluator_builder(
+            'DoEEvalLower', 'doe_eval', builder_list_2)
+        doe_eval_builder_lower.associate_namespaces(ns_lower_doe_eval)
 
         # self.ee.ns_manager.update_all_shared_namespaces_by_name(
         #     'Upper', 'ns_doe_eval')
-        self.ee.ns_manager.add_ns('ns_doe_eval',f'{self.ee.study_name}.DoEEval1')
-
-        doe_eval_builder = self.ee.factory.create_evaluator_builder(
-            'DoEEval1', 'doe_eval', doe_eval_builder_2)
-
-        return doe_eval_builder
+        ns_upper_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval',f'{self.ee.study_name}.DoEEvalUpper')
+        doe_eval_builder_upper = self.ee.factory.create_evaluator_builder(
+            'DoEEvalUpper', 'doe_eval', doe_eval_builder_lower)
+        doe_eval_builder_upper.associate_namespaces(ns_upper_doe_eval)
+        return doe_eval_builder_upper
 

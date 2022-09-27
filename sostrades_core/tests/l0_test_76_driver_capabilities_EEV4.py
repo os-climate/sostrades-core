@@ -227,7 +227,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         variables do not configure properly. The exec_eng.configure() is not passed so the assert of the treeview shall
         not be taken into account (see treeview in console during debugging).
         """
-
+        #TODO: WIP as the configure now works but the assert need to be reviewed
         dspace_dict = {'variable': ['x'],
 
                        'lower_bnd': [0.],

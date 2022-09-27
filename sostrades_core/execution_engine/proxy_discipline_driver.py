@@ -39,11 +39,11 @@ class ProxyDisciplineDriverException(Exception):
 
 class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
-    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None):
+    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None, associated_namespaces=[]):
         '''
         Constructor
         '''
-        super().__init__(sos_name, ee, driver_wrapper_cls)
+        super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces)
         self.cls_builder = cls_builder #TODO: Move to ProxyDisciplineBuilder?
 
     def create_mdo_discipline_wrap(self,name, wrapper, wrapping_mode):
