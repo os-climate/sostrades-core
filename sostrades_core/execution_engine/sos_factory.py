@@ -289,10 +289,10 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         if isinstance(cls_builder, list):
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
-            builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
         else:
             builder.set_builder_info('cls_builder', [cls_builder])
-            builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+
         return builder
 
     def create_evaluator_builder(self, sos_name, eval_type, cls_builder):
@@ -316,6 +316,7 @@ class SosFactory:
             )
         elif eval_type == 'doe_eval':
             module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
+            driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
         elif eval_type == 'build_doe_eval':
             module_struct_list = f'{self.GENERIC_MODS_PATH}.build_doe_eval.BuildDoeEval'
         elif eval_type == 'grid_search':
@@ -328,12 +329,14 @@ class SosFactory:
                 'The evaluation type should be sensitivity,gradient or FORM'
             )
 
-        cls = self.get_disc_class_from_module(module_struct_list)
+        cls = self.get_disc_class_from_module(module_struct_list)               #cls of ProxyEval specialization
+        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod_path)  #cls of driver wrapper
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        if isinstance(cls_builder, list):
+        if isinstance(cls_builder, list):                                       #cls builder of subprocess
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
         else:
             builder.set_builder_info('cls_builder', [cls_builder])
+        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
         return builder
 

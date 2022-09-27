@@ -60,11 +60,11 @@ class ProxyEval(ProxyDisciplineDriver):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls):
         '''
         Constructor
         '''
-        super().__init__(sos_name, ee, cls_builder)
+        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls)
         self.eval_in_base_list = None
         self.eval_in_list = None
         self.eval_out_base_list = None
