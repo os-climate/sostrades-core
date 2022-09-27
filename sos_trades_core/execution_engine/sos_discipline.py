@@ -919,6 +919,11 @@ class SoSDiscipline(MDODiscipline):
                                         formula)
                                     self.check_formula_dict()
                                 except:
+                                    formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
+                                        ':')
+                                    if len(formula_test) < 2:
+                                        raise Exception(
+                                            f'formula for {namespaced_key} have to starts with "formula:"')
                                     wrong_formula = SympyFormula(formula)
                                     token_list = wrong_formula.get_token_list()
                                     raise Exception(
@@ -938,6 +943,11 @@ class SoSDiscipline(MDODiscipline):
                                         formula)
                                     self.check_formula_dict()
                                 except:
+                                    formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
+                                        ':')
+                                    if len(formula_test) < 2:
+                                        raise Exception(
+                                            f'formula for {namespaced_key} have to starts with "formula:"')
                                     wrong_formula = SympyFormula(formula)
                                     token_list = wrong_formula.get_token_list()
                                     raise Exception(
@@ -948,16 +958,27 @@ class SoSDiscipline(MDODiscipline):
                                 self.dm.data_dict[id_key][self.VALUE][el] = value
 
                     else:
-                        try:
-                            formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
-                                1]
-                            self.formula_dict = self.fill_formula_dict(formula)
-                        except:
-                            wrong_formula = SympyFormula(formula)
-                            token_list = wrong_formula.get_token_list()
+                        values_dict[new_key] = self.local_data[namespaced_key]
+                        if type(values_dict[new_key]) == type('str'):
+                            try:
+                                formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
+                                    1]
+                                self.formula_dict = self.fill_formula_dict(
+                                    formula)
+                                self.check_formula_dict()
+                            except:
+                                formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
+                                    ':')
+                                if len(formula_test) < 2:
+                                    raise Exception(
+                                        f'formula for {namespaced_key} have to starts with "formula:"')
+                                wrong_formula = SympyFormula(formula)
+                                token_list = wrong_formula.get_token_list()
+                                raise Exception(
+                                    f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists')
+                        else:
                             raise Exception(
-                                f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists')
-                        self.check_formula_dict()
+                                f'{namespaced_key} is referenced as formula, but no formula is given')
                         value = self.get_value_from_formula(
                             formula)
                         values_dict[new_key] = value
@@ -973,12 +994,23 @@ class SoSDiscipline(MDODiscipline):
                     if self.dm.get_data(namespaced_key, self.TYPE) == 'dataframe':
                         values_dict[new_key] = self.local_data[namespaced_key]
                         for el in self.dm.get_value(namespaced_key).keys():
-                            if type(el) == type('str') and el.startswith('formula:'):
-                                formula = self.dm.data_dict[id_key][self.FORMULA].values[0].split(':')[
+                            if type(values_dict[new_key][el][0]) == type('str') and values_dict[new_key][el][0].startswith('formula:'):
+                                formula = self.dm.data_dict[id_key][self.FORMULA][el].split(':')[
                                     1]
-                                self.formula_dict = self.fill_formula_dict(
-                                    formula)
-                                self.check_formula_dict()
+                                try:
+                                    self.formula_dict = self.fill_formula_dict(
+                                        formula)
+                                    self.check_formula_dict()
+                                except:
+                                    formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
+                                        ':')
+                                    if len(formula_test) < 2:
+                                        raise Exception(
+                                            f'formula for {namespaced_key} have to starts with "formula:"')
+                                    wrong_formula = SympyFormula(formula)
+                                    token_list = wrong_formula.get_token_list()
+                                    raise Exception(
+                                        f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists')
                                 values_dict[new_key][el] = self.get_value_from_formula(formula
                                                                                        )
                                 self.dm.set_data(
@@ -988,22 +1020,50 @@ class SoSDiscipline(MDODiscipline):
                     elif self.dm.get_data(namespaced_key, self.TYPE) == 'dict':
                         values_dict[new_key] = self.local_data[namespaced_key]
                         for el in self.dm.get_value(namespaced_key).keys():
-                            if type(el) == type('str') and el.startswith('formula:'):
+                            if type(values_dict[new_key][el]) == type('str') and values_dict[new_key][el].startswith('formula:'):
                                 formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
                                     1]
-                                self.formula_dict = self.fill_formula_dict(
-                                    formula)
-                                self.check_formula_dict()
+                                try:
+                                    self.formula_dict = self.fill_formula_dict(
+                                        formula)
+                                    self.check_formula_dict()
+                                except:
+                                    formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
+                                        ':')
+                                    if len(formula_test) < 2:
+                                        raise Exception(
+                                            f'formula for {namespaced_key} have to starts with "formula:"')
+                                    wrong_formula = SympyFormula(formula)
+                                    token_list = wrong_formula.get_token_list()
+                                    raise Exception(
+                                        f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists')
                                 value = self.get_value_from_formula(formula)
                                 values_dict[new_key][el] = value
                                 self.clean_formula_dict()
                                 self.dm.data_dict[id_key][self.VALUE][el] = value
 
                     else:
-                        formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
-                            1]
-                        self.formula_dict = self.fill_formula_dict(formula)
-                        self.check_formula_dict()
+                        values_dict[new_key] = self.local_data[namespaced_key]
+                        if type(values_dict[new_key]) == type('str'):
+                            try:
+                                formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
+                                    1]
+                                self.formula_dict = self.fill_formula_dict(
+                                    formula)
+                                self.check_formula_dict()
+                            except:
+                                formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
+                                    ':')
+                                if len(formula_test) < 2:
+                                    raise Exception(
+                                        f'formula for {namespaced_key} have to starts with "formula:"')
+                                wrong_formula = SympyFormula(formula)
+                                token_list = wrong_formula.get_token_list()
+                                raise Exception(
+                                    f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists')
+                        else:
+                            raise Exception(
+                                f'{namespaced_key} is referenced as formula, but no formula is given')
                         value = self.get_value_from_formula(
                             formula)
                         values_dict[new_key] = value
@@ -1021,7 +1081,10 @@ class SoSDiscipline(MDODiscipline):
         filled_dict = {}
         sympy_formula = SympyFormula(formula)
         parameter_list = sympy_formula.get_token_list()
+        # look at each parameter of the formula
         for parameter in parameter_list:
+            # if parameter is a variable in dm, check if it s a formula or not.
+            # If formula, keep the exploitable part
             if parameter in self.dm.data_id_map:
                 if isinstance(self.dm.get_value(parameter), str):
                     filled_dict[parameter] = self.dm.get_value(
@@ -1029,13 +1092,15 @@ class SoSDiscipline(MDODiscipline):
                 else:
                     filled_dict[parameter] = self.dm.get_value(
                         parameter)
+            # if parameter not in dm, then it s a key of dict or df
             else:
+                # first identify in which df/dict the parameter is
                 splitted_parameter = parameter.split('.')
                 el_key = splitted_parameter[-1]
                 el_name_space = self.reform_full_namespace(splitted_parameter)
 
                 el_id = self.dm.data_id_map[el_name_space]
-
+                # dataframe case
                 if self.dm.data_dict[el_id][self.TYPE] == 'dataframe':
                     if isinstance(self.dm.get_value(el_name_space)[
                             el_key].values[0], str):
@@ -1044,6 +1109,7 @@ class SoSDiscipline(MDODiscipline):
                     else:
                         filled_dict[parameter] = self.dm.get_value(el_name_space)[
                             el_key].values[0]
+                # dict case
                 elif self.dm.data_dict[el_id][self.TYPE] == 'dict':
                     if isinstance(self.dm.get_value(el_name_space)[
                             el_key], str):
@@ -1052,29 +1118,40 @@ class SoSDiscipline(MDODiscipline):
                     else:
                         filled_dict[parameter] = self.dm.get_value(el_name_space)[
                             el_key]
+                else:
+                    no_supp_type = self.dm.data_dict[el_id][self.TYPE]
+                    raise Exception(
+                        f'{no_supp_type} is not supported for formula at the moment')
         return filled_dict
 
     def check_formula_dict(self):
         """
         check if all parameter are in formula_dict. If not, fill in formula_dict
+        twin_dict is created and updated. If twin_dict is different from formula_dict, formula_dict is updated and a new check is performed
+        if twin_dict and formula_dict are the same, there is no more parameter to add.
         """
         twin_dict = deepcopy(self.formula_dict)
         for key in self.formula_dict.keys():
+            # if it is a string, this is a formula to check
             if isinstance(self.formula_dict[key], str):
                 sympy_formula = SympyFormula(
                     self.formula_dict[key])
                 parameter_list = sympy_formula.get_token_list()
+                # look at if each parameter are referenced
                 for parameter in parameter_list:
                     if parameter not in self.formula_dict.keys():
                         filled_dict = self.fill_formula_dict(
                             self.formula_dict[key])
                         self.update_dict(twin_dict, filled_dict)
+        # if updates were made, a new check is performed. else, all parameter
+        # needed are known
         if twin_dict != self.formula_dict:
             self.formula_dict = deepcopy(twin_dict)
             self.check_formula_dict()
 
     def update_dict(self, dict_to_update, filled_dict):
         """
+        complete dict_to_update with the key : value of filled_dict if not possessed
         """
         for key, value in filled_dict.items():
             if key not in dict_to_update.keys():
@@ -1082,6 +1159,7 @@ class SoSDiscipline(MDODiscipline):
 
     def clean_formula_dict(self):
         """
+        reset self.formula_dict
         """
         self.formula_dict = {}
 
@@ -1097,6 +1175,7 @@ class SoSDiscipline(MDODiscipline):
 
     def get_value_from_formula(self, formula):
         """
+        evaluate formula using SympyFormula and self.formula_dict
         """
         sympy_formula = SympyFormula(formula)
         sympy_formula.evaluate(self.formula_dict)
