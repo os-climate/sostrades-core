@@ -155,7 +155,7 @@ class EvalWrapper(SoSWrapp):
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         '''
         # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
-        # self.attributes['sub_mdo_discipline'].clear_cache() # FIXME: cache management
+        # self.attributes['sub_mdo_discipline'].clear_cache() # FIXME: cache management?
 
         values_dict = {}
         eval_in = self.attributes['eval_in_list']
@@ -184,7 +184,7 @@ class EvalWrapper(SoSWrapp):
                           if key in self.attributes['eval_out_list']}
 
         # needed for gradient computation
-        # TODO: manage data flow for gradient computation
+        # TODO: manage data flow for gradient computation ?
         # self.attributes['dm'].set_values_from_dict(local_data)
 
         if convert_to_array:
@@ -236,7 +236,7 @@ class EvalWrapper(SoSWrapp):
         return var_to_update
 
     # def convert_output_results_toarray(self):
-    #     #FIXME: unused???
+    #     #unused???
     #     '''
     #     COnvert toutput results into array in order to apply FDGradient on it for example
     #     '''
@@ -291,26 +291,26 @@ class EvalWrapper(SoSWrapp):
     #
     #     return outeval_final_dict
 
-    def update_default_inputs(self, disc):
-        '''
-        Update default inputs of disc with dm values
-        '''
-        input_data = {}
-        input_data_names = disc.get_input_data_names()
-        for data_name in input_data_names:
-            val = self.attributes['dm'].get_value(data_name) # FIXME : pass data otherwise
-            # val = self.get_value(data_name)
-            if val is not None:
-                input_data[data_name] = val
-
-        # store mdo_chain default inputs
-        if disc.is_sos_coupling:
-            disc.mdo_chain.default_inputs.update(input_data)
-        disc.default_inputs.update(input_data)
-
-        # recursive update default inputs of children
-        for sub_disc in disc.sos_disciplines:
-            self.update_default_inputs(sub_disc)
+    # def update_default_inputs(self, disc):
+    #     '''
+    #     Update default inputs of disc with dm values
+    #     '''
+    #     input_data = {}
+    #     input_data_names = disc.get_input_data_names()
+    #     for data_name in input_data_names:
+    #         val = self.attributes['dm'].get_value(data_name)
+    #         # val = self.get_value(data_name)
+    #         if val is not None:
+    #             input_data[data_name] = val
+    #
+    #     # store mdo_chain default inputs
+    #     if disc.is_sos_coupling:
+    #         disc.mdo_chain.default_inputs.update(input_data)
+    #     disc.default_inputs.update(input_data)
+    #
+    #     # recursive update default inputs of children
+    #     for sub_disc in disc.sos_disciplines:
+    #         self.update_default_inputs(sub_disc)
 
     def create_origin_vars_to_update_dict(self):
         origin_vars_to_update_dict = {}

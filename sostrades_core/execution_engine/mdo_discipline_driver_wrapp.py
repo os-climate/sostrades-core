@@ -80,7 +80,6 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
     #     Arguments:
     #         proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
     #     '''
-    #     # TODO: generalize to n subdisciplines
     #     input_names = list(set(proxy.get_input_data_names()) | set(proxy.proxy_disciplines[0].get_input_data_names()))
     #     grammar = self.mdo_discipline.input_grammar
     #     grammar.clear()
