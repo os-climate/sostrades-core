@@ -75,7 +75,7 @@ class ProxyEval(ProxyDisciplineDriver):
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Eval')
         # self.cls_builder = cls_builder
         # Create the eval process builder associated to SoSEval
-        # self.eval_process_builder = self._set_eval_process_builder()
+        self.eval_process_builder = self._set_eval_process_builder()
         self.eval_process_disc = None
 
     def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
@@ -225,6 +225,22 @@ class ProxyEval(ProxyDisciplineDriver):
             x0.append(x_val)
         return x0 #Removed cast to array
 
+    def _set_eval_process_builder(self):
+        '''
+        Create the eval process builder, in a coupling if necessary
+        '''
+        if len(self.cls_builder) == 0:  # added condition for proc build
+            disc_builder = None
+        else:
+            # If eval process is a list of builders or a non executable builder,
+            # then we build a coupling containing the eval process
+            # In the case of a single sub-disc for sos_eval, although len(self.cls_builder) = 1 or it is an
+            # executable discipline, a coupling is also wanted to contain the eval process:
+            disc_builder = self.ee.factory.create_builder_coupling(
+                self.sos_name)
+            disc_builder.set_builder_info('cls_builder', self.cls_builder)
+
+        return disc_builder
 
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper

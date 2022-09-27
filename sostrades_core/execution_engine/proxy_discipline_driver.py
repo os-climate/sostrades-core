@@ -44,8 +44,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         Constructor
         '''
         super().__init__(sos_name, ee, driver_wrapper_cls)
-        self.cls_builder = cls_builder
-        self.eval_process_builder = self._set_eval_process_builder()
+        self.cls_builder = cls_builder #TODO: Move to ProxyDisciplineBuilder?
 
     def create_mdo_discipline_wrap(self,name, wrapper, wrapping_mode):
         """
@@ -135,23 +134,6 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
         super().prepare_execution()
 
-    def _set_eval_process_builder(self):
-        '''
-        Create the eval process builder, in a coupling if necessary
-        '''
-        if len(self.cls_builder) == 0:  # added condition for proc build
-            disc_builder = None
-        # elif len(self.cls_builder) > 1 or not self.cls_builder[0]._is_executable:
-        else:
-            # if eval process is a list of builders or a non executable builder,
-            # then we build a coupling containing the eval process
-            # In the case of a single sub-disc for sos_eval, although len(self.cls_builder) = 1 and it is an
-            # executable discipline, a coupling is also wanted to contain the eval process: TODO this method only used in SoSEval???
-            disc_builder = self.ee.factory.create_builder_coupling(
-                self.sos_name)
-            disc_builder.set_builder_info('cls_builder', self.cls_builder)
-
-        return disc_builder
 
     # def get_input_data_names(self):
     #     '''

@@ -32,9 +32,15 @@ class ProcessBuilder(BaseProcessBuilder):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict_2 = {'Disc1': disc_dir + 'disc1.Disc1'}
         builder_list_2 = self.create_builder_list(mods_dict_2, ns_dict={'ns_ac': self.ee.study_name,
-                                                                      'ns_doe_eval': f'{self.ee.study_name}.DoEEval'})
+                                                                      'ns_doe_eval': f'{self.ee.study_name}.DoEEval1.DoEEval2'})
+
+
         doe_eval_builder_2 = self.ee.factory.create_evaluator_builder(
             'DoEEval2', 'doe_eval', builder_list_2)
+
+        # self.ee.ns_manager.update_all_shared_namespaces_by_name(
+        #     'Upper', 'ns_doe_eval')
+        self.ee.ns_manager.add_ns('ns_doe_eval',f'{self.ee.study_name}.DoEEval1')
 
         doe_eval_builder = self.ee.factory.create_evaluator_builder(
             'DoEEval1', 'doe_eval', doe_eval_builder_2)
