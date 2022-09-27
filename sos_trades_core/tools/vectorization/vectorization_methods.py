@@ -92,6 +92,7 @@ def get_inputs_for_path(
     PATH: str,
     parent_path_admissible: bool = False,
     unique_value: bool = False,
+    allow_empty_dataframe: bool = False,
     parameter_name: str = '',
 ):
     filtered_input_parameter = None
@@ -102,8 +103,11 @@ def get_inputs_for_path(
                     input_parameter[BREAKDOWN_COLUMN] == PATH
                 ]
             else:
+
                 if parent_path_admissible:
                     PATH = get_parent_path(PATH)
+                elif allow_empty_dataframe:
+                    filtered_input_parameter=pd.DataFrame(columns=input_parameter.columns)
                 else:
                     raise Exception(
                         f'the path {PATH} is not found for parameter {parameter_name} but is required for the calculation. Please update it.'
@@ -128,6 +132,7 @@ def get_inputs_for_path(
                 return values_list
         else:
             return filtered_input_parameter
+
 
 
 def check_aircraft_breakdown_in_inputs(
