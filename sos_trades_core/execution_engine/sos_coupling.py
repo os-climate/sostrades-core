@@ -117,7 +117,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
                          SoSDiscipline.DEFAULT: M2D_ACCELERATION, SoSDiscipline.NUMERICAL: True,
                          SoSDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT:-1, SoSDiscipline.NUMERICAL: True,
+        'warm_start_threshold': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: -1, SoSDiscipline.NUMERICAL: True,
                                  SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {SoSDiscipline.TYPE: 'int', SoSDiscipline.DEFAULT: 1, SoSDiscipline.NUMERICAL: True,
@@ -191,7 +191,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         '''
         self.is_sos_coupling = True
         SoSDiscipline._reload(self, sos_name, ee)
-        
+
     def _set_dm_cache_map(self):
         '''
         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
@@ -199,18 +199,18 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         if self.cache is not None:
             # store SoSCoupling cache in DM
             self._store_cache_with_hashed_uid(self)
-            
+
             # store mdo_chain cache in DM
             self._store_cache_with_hashed_uid(self.mdo_chain)
-        
+
             # store sub mdas cache recursively
             for mda in self.sub_mda_list:
                 self._set_sub_mda_dm_cache_map(mda)
-            
+
         # store children cache recursively
         for disc in self.sos_disciplines:
-            disc._set_dm_cache_map() 
-            
+            disc._set_dm_cache_map()
+
     def _set_sub_mda_dm_cache_map(self, mda):
         '''
         Update cache_map disc in DM with mda cache and its sub_mdas recursively        
@@ -220,7 +220,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
         # store sub mda cache recursively
         if isinstance(mda, MDASequential):
             for sub_mda in mda.mda_sequence:
-                self._set_sub_mda_dm_cache_map(sub_mda)   
+                self._set_sub_mda_dm_cache_map(sub_mda)
 
     def build(self):
 
@@ -376,7 +376,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             for var_f_name in gems_grammar_in_keys:
                 var_name = self.dm.get_data(
                     var_f_name, SoSDisciplineBuilder.VAR_NAME)
-                if var_name not in self.NUM_DESC_IN :
+                if var_name not in self.NUM_DESC_IN:
                     self._data_in[var_name] = self.dm.get_data(var_f_name)
 
             # keep residuals_history if in data_out
@@ -480,7 +480,7 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
             'cache_type'), self.get_sosdisc_inputs('cache_file_path'))
 
         # Check variables mismatch between coupling disciplines
-        #self.check_var_data_mismatch()
+        # self.check_var_data_mismatch()
 
         self.logger.info(
             f"The MDA solver of the Coupling {self.get_disc_full_name()} is set to {num_data['sub_mda_class']}")
@@ -656,7 +656,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                             # if unit is None in a dataframe check if there is a
                             # dataframe descriptor with unit in it
                             if from_disc_data[self.TYPE] == 'dataframe':
-                                # if no dataframe descriptor and no unit warning
+                                # if no dataframe descriptor and no unit
+                                # warning
                                 if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
                                     self.logger.debug(
                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')

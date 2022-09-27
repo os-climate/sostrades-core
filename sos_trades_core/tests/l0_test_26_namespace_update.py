@@ -188,21 +188,24 @@ class TestNamespaceManagement(unittest.TestCase):
         ns_dict = {'ns_ac': f'{self.ns_test}'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
-
+        extra_ns = 'extraNS'
         disc1_builder = self.factory.get_builder_from_module(
             'Disc1', self.mod1_path)
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
-
+        self.ee.ns_manager.update_all_shared_namespaces_by_name(
+            extra_ns, 'ns_ac')
         self.factory.set_builders_to_coupling_builder(
             [disc1_builder, disc2_builder])
 
         self.ee.configure()
 
+        self.ee.display_treeview_nodes()
         a = 1.0
         b = 3.0
         x = 99.0
-        values_dict = {self.ns_test + '.x': x,
+        new_study_name = f'{extra_ns}.{self.ns_test}'
+        values_dict = {new_study_name + '.x': x,
                        self.ns_test + '.Disc1.a': a,
                        self.ns_test + '.Disc1.b': b,
                        self.ns_test + '.Disc2.constant': 1.5,
@@ -211,8 +214,7 @@ class TestNamespaceManagement(unittest.TestCase):
         self.ee.dm.set_values_from_dict(values_dict)
 
         # Now that the complete use case is set we change the local namespace
-        self.ee.ns_manager.update_all_shared_namespaces_by_name(
-            'extraNS', 'ns_ac')
+
         self.ee.configure()
         self.ee.display_treeview_nodes()
 
@@ -221,11 +223,11 @@ class TestNamespaceManagement(unittest.TestCase):
 
         self.ee.execute()
 
-        res = self.ee.dm.get_value('extraNS.' + self.ns_test + '.y')
+        res = self.ee.dm.get_value(f'{new_study_name}.y')
 
         self.assertEqual(res, a * x + b)
-        self.assertEqual(self.ee.dm.get_value('extraNS.' +
-                                              self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+        self.assertEqual(self.ee.dm.get_value(
+            new_study_name + '.x'), values_dict[new_study_name + '.x'])
 
     def test_06_update_shared_namespaces_and_builders_with_extra_name(self):
 
@@ -271,3 +273,9 @@ class TestNamespaceManagement(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
 
         self.ee.execute()
+
+
+if '__main__' == __name__:
+    cls = TestNamespaceManagement()
+    cls.setUp()
+    cls.test_05_update_shared_namespace_with_extra_ns()

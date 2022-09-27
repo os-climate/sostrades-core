@@ -225,12 +225,13 @@ class GridSearchEval(DoeEval):
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         """
         Constructor
         """
         ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super(GridSearchEval, self).__init__(sos_name, ee, cls_builder)
+        super(GridSearchEval, self).__init__(sos_name, ee,
+                                             cls_builder, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.GridSearch')
         self.eval_input_types = ['float', 'int', 'string']
         self.max_inputs_nb = 5

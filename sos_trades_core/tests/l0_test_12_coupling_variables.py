@@ -65,8 +65,9 @@ class TestCouplingVariables(unittest.TestCase):
         #-- setup inputs
         dm = ee.dm
         values_dict = {}
-        values_dict[f'{namespace}.Disc2.constant'] = -10.
-        values_dict[f'{namespace}.Disc2.power'] = -10.
+        values_dict[f'{namespace}.Disc2.constant'] = -10
+        # -10.
+        values_dict[f'{namespace}.Disc2.power'] = -10
         values_dict[f'{namespace}.Disc1.a'] = 10.
         values_dict[f'{namespace}.Disc1.b'] = 20.
         values_dict[f'{namespace}.Disc1.indicator'] = 10.

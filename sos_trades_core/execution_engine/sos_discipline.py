@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from scipy.sparse.lil import lil_matrix
+from pandas import DataFrame
 
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from sos_trades_core.tools.controllers.simpy_formula import SympyFormula
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -101,6 +103,7 @@ class SoSDiscipline(MDODiscipline):
     CONNECTOR_DATA = 'connector_data'
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
+    FORMULA = 'formula'
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -186,13 +189,13 @@ class SoSDiscipline(MDODiscipline):
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
-    def __init__(self, sos_name, ee):
+    def __init__(self, sos_name, ee, associated_namespaces=[]):
         '''
         Constructor
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-        self._reload(sos_name, ee)
+        self._reload(sos_name, ee, associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.father_builder = None
@@ -201,7 +204,7 @@ class SoSDiscipline(MDODiscipline):
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
 
-    def _reload(self, sos_name, ee):
+    def _reload(self, sos_name, ee, associated_namespaces=[]):
         ''' reload object, eventually with coupling_namespace
         '''
 
@@ -211,7 +214,7 @@ class SoSDiscipline(MDODiscipline):
         self.sos_name = sos_name
         self.ee = ee
         self.dm = self.ee.dm
-
+        self.associated_namespaces = associated_namespaces
         self.ee.ns_manager.create_disc_ns_info(self)
 
         if not hasattr(self, 'is_sos_coupling'):
@@ -530,7 +533,7 @@ class SoSDiscipline(MDODiscipline):
         self.setup_sos_disciplines()
 
         self.reload_io()
-
+        # self.check_generic_data_integrity()
         self.check_data_integrity()
 
         # update discipline status to CONFIGURE
@@ -769,6 +772,7 @@ class SoSDiscipline(MDODiscipline):
                 curr_data[self.DISCIPLINES_FULL_PATH_LIST] = []
             if self.VISIBILITY not in data_keys:
                 curr_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
+
             if self.DEFAULT not in data_keys:
                 if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     raise Exception(
@@ -788,6 +792,10 @@ class SoSDiscipline(MDODiscipline):
                 curr_data[self.NUMERICAL] = False
             if self.META_INPUT not in data_keys:
                 curr_data[self.META_INPUT] = False
+
+            # initialize formula
+            if self.FORMULA not in data_keys:
+                curr_data[self.FORMULA] = None
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
@@ -1378,6 +1386,80 @@ class SoSDiscipline(MDODiscipline):
         # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
+
+    def update_dm_with_formula(self):
+        """
+        Update dm with the value of formula if variable is defined by a formula
+        """
+        # dict {parameter_name : value}
+        value_dict = {}
+        # dict : {parameter_name : key in variable}
+        corresp_dict = {}
+        for key in self._data_in.keys():
+            if type(self._data_in[key]) == type(DataFrame()):
+                if len(self._data_in[key]) > 0:
+                    for key_df in self._data_in[key].keys():
+                        value_dict[f'{key}.{key_df}'] = self._data_in[key][key_df].values[0]
+                        corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+            elif type(self._data_in[key]) == type({}):
+                for key_df in self._data_in[key].keys():
+                    value_dict[f'{key}.{key_df}'] = self._data_in[key][key_df]
+                    corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+
+            else:
+                value_dict[key] = self._data_in[key]
+                corresp_dict[key] = key
+
+        for key in value_dict.keys():
+
+            # variable is a float, and depends on other float from same disc
+            if type(value_dict[key]) == type('string'):
+                # store formula in dm.data_dict
+                if key in self._data_in.keys():
+                    try:
+                        id_in_dm = self.dm.get_data_id(key)
+                        info_data_dict = self.dm.data_dict[id_in_dm]
+                        if info_data_dict['formula'] is None:
+                            self.dm.data_dict[id_in_dm]['formula'] = self._data_in[key]
+                    except:
+                        pass
+                else:
+                    try:
+                        input_item = corresp_dict[key][0]
+                        id_in_dm = self.dm.get_data_id(input_item)
+                        info_data_dict = self.dm.data_dict[id_in_dm]
+                        if info_data_dict['formula'] is None:
+                            self.dm.data_dict[id_in_dm]['formula'] = deepcopy(
+                                self._data_in[input_item])
+                    except:
+                        pass
+                try:
+                    if type(corresp_dict[key]) == type([]):
+                        in_el_key = corresp_dict[key][1]
+                        if self.dm.data_dict[id_in_dm]['type'] == 'dict':
+                            sympy_formula = SympyFormula(
+                                self.dm.data_dict[id_in_dm]['formula'][in_el_key])
+                        elif self.dm.data_dict[id_in_dm]['type'] == 'dataframe':
+                            sympy_formula = SympyFormula(
+                                self.dm.data_dict[id_in_dm]['formula'][in_el_key].values[0])
+                    else:
+                        sympy_formula = SympyFormula(
+                            self.dm.data_dict[id_in_dm]['formula'])
+                    sympy_formula.evaluate(value_dict)
+                    if corresp_dict[key] == key:
+                        id_in_dm = self.dm.get_data_id(key)
+                        self.dm.data_dict[id_in_dm]['value'] = sympy_formula.get_value(
+                        )
+                        value_dict[key] = sympy_formula.get_value()
+                    else:
+                        df_name = corresp_dict[key][0]
+                        df_key = corresp_dict[key][1]
+                        id_in_dm = self.dm.get_data_id(key)
+                        self.dm.data_dict[id_in_dm]['value'][df_key] = sympy_formula.get_value(
+                        )
+                        value_dict[key] = sympy_formula.get_value()
+                except:
+                    pass
 
     def fill_subtype_descriptor(self):
         """This method is used to fill the subtype descriptor of scatter and gather data

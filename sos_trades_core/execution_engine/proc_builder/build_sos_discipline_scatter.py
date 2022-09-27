@@ -45,11 +45,12 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
-        SoSDisciplineBuilder.__init__(self, sos_name, ee)
+        SoSDisciplineBuilder.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.__factory = ee.factory
         self.__scattered_disciplines = {}
@@ -72,8 +73,8 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         self.driver_process_disc = None  # will be self._set_driver_process_builder.build()
 
         # Dynamically add input_name to INST_DESC_IN
-        #scatter_desc_in = self.build_inst_desc_in_with_map()
-        # self.inst_desc_in.update(scatter_desc_in)
+        scatter_desc_in = self.build_inst_desc_in_with_map()
+        self.inst_desc_in.update(scatter_desc_in)
 
     def set_builders(self, value):
         self.__builders = value
@@ -197,7 +198,9 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
     def build_sub_coupling(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
         # Call scatter map to modify the associated namespace
-        self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
+        if self.sc_map.get_scatter_ns() is not None:
+            self.sc_map.modify_scatter_ns(
+                self.builder_name, name, local_namespace)
 
         self.sc_map.update_ns(
             old_ns_to_update, name, self.sos_name)
@@ -223,7 +226,9 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
     def build_child_scatter(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
         # Call scatter map to modify the associated namespace
-        self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
+        if self.sc_map.get_scatter_ns() is not None:
+            self.sc_map.modify_scatter_ns(
+                self.builder_name, name, local_namespace)
 
         self.sc_map.update_ns(
             old_ns_to_update, name, self.sos_name)

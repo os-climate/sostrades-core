@@ -567,7 +567,7 @@ class SosFactory:
         autogather = False
         builder_list = self.convert_builder_to_list(cls_builder)
         mod_path = (
-            f'{self.EE_PATH}.build_sos_very_simple_multi_scenario.BuildSoSVerySimpleMultiScenario'
+            f'{self.EE_PATH}.proc_builder.build_sos_very_simple_multi_scenario.BuildSoSVerySimpleMultiScenario'
         )
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)

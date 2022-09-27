@@ -45,7 +45,7 @@ class SoSDisciplineGather(SoSDiscipline):
     }
     EE_PATH = 'sos_trades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, map_name, cls_builder):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -61,7 +61,8 @@ class SoSDisciplineGather(SoSDiscipline):
         self.sc_map = ee.smaps_manager.get_build_map(self.map_name)
         self.builder = cls_builder
 
-        SoSDiscipline.__init__(self, sos_name, ee)
+        SoSDiscipline.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
 
         # add input_name to inst_desc_in
         self.build_inst_desc_in_with_map()
@@ -96,7 +97,7 @@ class SoSDisciplineGather(SoSDiscipline):
         input_ns = self.sc_map.get_input_ns()
 
         scatter_desc_in = {input_name: {
-            SoSDiscipline.TYPE: input_type,SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
+            SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY, SoSDiscipline.NAMESPACE: input_ns, SoSDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
     def build_dynamic_inst_desc_in_gather_variables(self):

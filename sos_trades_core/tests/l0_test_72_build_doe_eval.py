@@ -920,7 +920,7 @@ class TestBuildDoeEval(unittest.TestCase):
         print('test_03_build_doe_eval_with_nested_proc_selection_through_process_driver')
         # Step 0: setup an empty doe
         print('Step 0: setup an empty doe')
-        driver_repo = 'sos_trades_core.sos_processes.test'
+        driver_repo = 'sos_trades_core.sos_processes.test.proc_builder'
         driver_mod_id = 'test_driver_build_doe_eval_empty'
         doe_eval_builder = self.exec_eng.factory.get_builder_from_process(
             repo=driver_repo, mod_id=driver_mod_id)
@@ -1200,7 +1200,7 @@ class TestBuildDoeEval(unittest.TestCase):
         print('test_04_build_doe_eval_with_nested_proc_selection_through_process_driver')
         # Step 0: setup an empty doe
         print('Step 0: setup an empty doe')
-        driver_repo = 'sos_trades_core.sos_processes.test'
+        driver_repo = 'sos_trades_core.sos_processes.test.proc_builder'
         driver_mod_id = 'test_driver_build_doe_eval_empty'
         doe_eval_builder = self.exec_eng.factory.get_builder_from_process(
             repo=driver_repo, mod_id=driver_mod_id)
@@ -1398,10 +1398,12 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
@@ -1585,7 +1587,8 @@ class TestBuildDoeEval(unittest.TestCase):
             self.assertAlmostEqual(target_x, my_value, delta=tolerance)
 
             ########################
-            study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+            study_load = BaseStudyManager(
+                repo_proc_builder, mod_id_empty_doe, 'MyStudy')
             study_load.load_data(from_path=dump_dir)
             # print(study_load.ee.dm.get_data_dict_values())
             study_load.run()
@@ -1608,10 +1611,12 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
@@ -1713,7 +1718,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         study_dump.run()
 
-        study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_load = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_load.load_data(from_path=dump_dir)
         # print(study_load.ee.dm.get_data_dict_values())
         study_load.run()
@@ -1737,10 +1743,12 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
         ################ Start checks ##########################
@@ -2041,7 +2049,8 @@ class TestBuildDoeEval(unittest.TestCase):
             target_x = 42.37077735
             self.assertAlmostEqual(target_x, my_value[0], delta=tolerance)
 
-            study_load = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+            study_load = BaseStudyManager(
+                repo_proc_builder, mod_id_empty_doe, 'MyStudy')
             study_load.load_data(from_path=dump_dir)
             # print(study_load.ee.dm.get_data_dict_values())
             study_load.run()
@@ -2063,10 +2072,12 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
@@ -2132,7 +2143,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 study_dump.run()
             else:
                 study_load = BaseStudyManager(
-                    repo, mod_id_empty_doe, 'MyStudy')
+                    repo_proc_builder, mod_id_empty_doe, 'MyStudy')
                 study_load.load_data(from_path=dump_dir)
                 study_load.run()
         from shutil import rmtree
@@ -2155,6 +2166,7 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
@@ -2162,7 +2174,8 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             '################################################################################')
         print('STEP_0: create session with empty DoE')
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.load_data()  # configure
 
         study_dump.set_dump_directory(dump_dir)
@@ -2648,7 +2661,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 study_dump.run()
             else:
                 study_load = BaseStudyManager(
-                    repo, mod_id_empty_doe, 'MyStudy')
+                    repo_proc_builder, mod_id_empty_doe, 'MyStudy')
                 study_load.load_data(from_path=dump_dir)
                 print(study_load.ee.dm.get_data_dict_values())
                 study_load.run()
@@ -2669,6 +2682,7 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
@@ -2676,7 +2690,8 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             '################################################################################')
         print('STEP_1: create session with empty DoE')
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()  # configure
         study_dump.dump_data(dump_dir)
@@ -2847,7 +2862,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 study_dump.run()
             else:
                 study_load = BaseStudyManager(
-                    repo, mod_id_empty_doe, 'MyStudy')
+                    repo_proc_builder, mod_id_empty_doe, 'MyStudy')
                 study_load.load_data(from_path=dump_dir)
                 print(study_load.ee.dm.get_data_dict_values())
                 study_load.run()
@@ -2912,7 +2927,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 study_dump.run()
             else:
                 study_load = BaseStudyManager(
-                    repo, mod_id_empty_doe, 'MyStudy')
+                    repo_proc_builder, mod_id_empty_doe, 'MyStudy')
                 study_load.load_data(from_path=dump_dir)
                 print(study_load.ee.dm.get_data_dict_values())
                 study_load.run()
@@ -2930,6 +2945,7 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
@@ -2937,7 +2953,8 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             '################################################################################')
         print('STEP_1: create session with empty DoE')
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()  # configure
         study_dump.dump_data(dump_dir)
@@ -3180,7 +3197,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 study_dump.run()
             else:
                 study_load = BaseStudyManager(
-                    repo, mod_id_empty_doe, 'MyStudy')
+                    repo_proc_builder, mod_id_empty_doe, 'MyStudy')
                 study_load.load_data(from_path=dump_dir)
                 print(study_load.ee.dm.get_data_dict_values())
                 study_load.run()
@@ -3202,10 +3219,12 @@ class TestBuildDoeEval(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
         mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
         self.study_name = 'MyStudy'
 
-        study_dump = BaseStudyManager(repo, mod_id_empty_doe, 'MyStudy')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 

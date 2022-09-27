@@ -42,18 +42,21 @@ class Study(StudyManager):
         input_ns = 'ns_scatter_scenario'
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
-        ns_to_update = ['ns_disc3', 'ns_out_disc3', 'ns_ac']
+        ns_to_update = ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']
         scenario_map = {'input_name': scenario_map_name,
-                        'input_ns': input_ns,
-                        'output_name': output_name,
-                        'scatter_ns': scatter_ns,
-                        'gather_ns': input_ns,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
                         'ns_to_update': ns_to_update}
 
         ######### Numerical values   ####
-        x = 2.
-        a = 3.
-        b = 4.
+        x1 = 2.0
+        x2 = 4.0
+        a1 = 3.0
+        b1 = 4.0
+        a2 = 6.0
+        b2 = 2.0
         scenario_list = ['scenario_1', 'scenario_2']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
@@ -63,18 +66,21 @@ class Study(StudyManager):
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
 
-        dict_values[f'{self.study_name}.a'] = a
-        dict_values[f'{self.study_name}.x'] = x
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.a'] = a1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.x'] = x1
 
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3.
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.a'] = a2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.x'] = x2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 1
         dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
 
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 3.
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 2
         dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.5
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.2
 
         return [dict_values]
 
@@ -82,5 +88,6 @@ class Study(StudyManager):
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
+    uc_cls.ee.display_treeview_nodes()
     uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)
