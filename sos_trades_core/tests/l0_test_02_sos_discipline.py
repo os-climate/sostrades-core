@@ -388,34 +388,3 @@ class TestSoSDiscipline(unittest.TestCase):
 
         self.assertEqual(y, 72)
         self.assertEqual(out_string, '3+1')
-
-    def test_11_check_wrong_formula(self):
-        '''
-        check formula exception
-        '''
-        self.name = 'Test'
-        self.ee = ExecutionEngine(self.name)
-
-        disc11_builder = self.ee.factory.get_builder_from_module(
-            'Disc11', self.mod11_path)
-        self.ee.factory.set_builders_to_coupling_builder(disc11_builder)
-
-        self.ee.ns_manager.add_ns('ns_ac', self.name)
-        self.ee.configure()
-        x = 3.0
-        test_df = pd.DataFrame()
-        test_df['a'] = ['formula:3*Test.x']
-        test_df['b'] = ['formula:2*Test.Disc11.test_.a']
-        c_dict = {}
-        c_dict['c'] = 'formula:Test.Disc11.test_df.a + Test.Disc11.test_df.b'
-        test_string = '3+1'
-        values_dict = {self.name + '.x': x,
-                       self.name + '.Disc11.test_df': test_df,
-                       self.name + '.Disc11.c_dict': c_dict,
-                       self.name + '.Disc11.test_string': test_string, }
-
-        self.ee.load_study_from_input_dict(values_dict)
-
-        self.ee.display_treeview_nodes()
-        with self.assertRaises(Exception):
-            self.ee.execute()
