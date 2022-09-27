@@ -38,6 +38,11 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
+from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
+from importlib import import_module
+from os.path import dirname
+from os import listdir
+
 
 class TestBuildVerySimpleMultiScenario(unittest.TestCase):
     """
@@ -56,6 +61,74 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng = ExecutionEngine(self.ns)
         self.factory = self.exec_eng.factory
 
+    #################### Begin : scripting functions #########################
+    def get_possible_sub_processes_in_repo(self, sub_process_repo, restricted_list=True):
+        """
+            Create_nested builders from their nested process.
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
+        """
+        process_factory = SoSProcessFactory(additional_repository_list=[
+            sub_process_repo], search_python_path=False)
+        process_list_dict = process_factory.get_processes_dict()
+        if restricted_list == True:
+            possible_sub_process_name_list = ['test_disc_hessian']
+            possible_sub_process_name_list += [
+                'test_disc1_disc2_coupling', 'test_sellar_coupling', 'test_disc10_setup_sos_discipline']
+            filtered_process_list = [
+                proc_name for proc_name in process_list_dict[sub_process_repo] if 'test_proc_build_' in proc_name]
+            possible_sub_process_name_list += filtered_process_list
+        else:
+            possible_sub_process_name_list = process_list_dict
+        return possible_sub_process_name_list
+
+    def get_possible_sub_process_usecases(self, sub_process_repo, sub_process_name):
+        '''
+            Once subprocess has been selected,
+            get the possible list of usecases if any
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
+        '''
+        usecase_list = ['Empty']
+        imported_module = import_module(
+            '.'.join([sub_process_repo, sub_process_name]))
+        process_directory = dirname(imported_module.__file__)
+        for usecase_py in listdir(process_directory):
+            if usecase_py.startswith('usecase'):
+                usecase = usecase_py.replace('.py', '')
+                usecase_list.append(
+                    '.'.join([usecase]))
+        return usecase_list
+
+    def get_sub_process_usecase_full_name(self, sub_process_repo, sub_process_name, sub_process_usecase_name):
+        """
+            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
+        """
+        sub_process_usecase_repo = '.'.join(
+            [sub_process_repo, sub_process_name])
+        sub_process_usecase_full_name = '.'.join(
+            [sub_process_usecase_repo, sub_process_usecase_name])
+        return sub_process_usecase_full_name
+
+    def import_input_data_from_usecase_of_sub_process(self, exec_eng, sub_process_usecase_full_name):
+        """
+            Load data in anonymized form of the selected sub process usecase
+            Function needed in manage_import_inputs_from_sub_process()
+        """
+        # Get anonymized dict from sub_process_usecase_full_name
+        imported_module = import_module(sub_process_usecase_full_name)
+        study_tmp = getattr(imported_module, 'Study')(
+            execution_engine=exec_eng)
+        anonymize_input_dict_from_usecase = {}
+        # Remark: see def anonymize_key in execution_engine
+        study_tmp.study_name = exec_eng.STUDY_PLACEHOLDER_WITHOUT_DOT
+        anonymize_usecase_data = study_tmp.setup_usecase()
+        if not isinstance(anonymize_usecase_data, list):
+            anonymize_usecase_data = [anonymize_usecase_data]
+        for uc_d in anonymize_usecase_data:
+            anonymize_input_dict_from_usecase.update(uc_d)
+        return anonymize_input_dict_from_usecase
+
+    #################### End : scripting functions ###########################
+
     # Begin : factorized functions to create set of inputs
     def setup_Hessian_usecase_from_direct_input(self, restricted=True):
         """
@@ -69,7 +142,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_name'] = my_usecase
         sub_process_inputs_dict['usecase_data'] = {}
 
         scenario_map_name = 'scenario_list'
@@ -138,7 +211,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_name'] = my_usecase
         sub_process_inputs_dict['usecase_data'] = {}
 
         scenario_map_name = 'scenario_list'
@@ -169,6 +242,9 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
 
+        dict_values[f'{self.study_name}.vs_MS.a'] = a
+        dict_values[f'{self.study_name}.vs_MS.x'] = x
+
         dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
         dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3.0
         dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 2
@@ -192,7 +268,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
+        sub_process_inputs_dict['usecase_name'] = my_usecase
         sub_process_inputs_dict['usecase_data'] = {}
 
         scenario_map_name = 'scenario_list'
@@ -215,6 +291,146 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         a2 = 6.0
         b2 = 2.0
         scenario_list = ['scenario_1', 'scenario_2']
+
+        ######### Fill the dictionary for dm   ####
+        dict_values = {}
+
+        if restricted == False:
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.a'] = a1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.x'] = x1
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.a'] = a2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.x'] = x2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.2
+        return [dict_values]
+
+    def setup_Disc1Disc3_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase1'):
+        """
+        Define a set of data inputs with selected use_case
+        """
+        # SubProcess selection values
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc1_disc3_coupling'
+
+        sub_process_inputs_dict = {}
+        sub_process_inputs_dict['process_repository'] = repo
+        sub_process_inputs_dict['process_name'] = mod_id
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_inputs_dict['usecase_data'] = {}
+
+        if my_usecase != 'Empty':
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, mod_id, my_usecase)
+            anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
+                                                                                                   sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+
+        scenario_map_name = 'scenario_list'
+        input_ns = 'ns_scatter_scenario'
+        output_name = 'scenario_name'
+        scatter_ns = 'ns_scenario'  # not used
+        ns_to_update = ['ns_ac', 'ns_disc3', 'ns_out_disc3']
+        scenario_map = {'input_name': scenario_map_name,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
+                        'ns_to_update': ns_to_update}
+
+        ######### Numerical values   ####
+        x = 2.0
+        a = 3.0
+        b1 = 4.0
+        b2 = 2.0
+
+        if 0 == 1:
+            scenario_list = ['scenario_1', 'scenario_2']
+        else:
+            scenario_list = ['scenario_1', 'scenario_2', 'reference']
+
+        ######### Fill the dictionary for dm   ####
+        dict_values = {}
+
+        if restricted == False:
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+
+        dict_values[f'{self.study_name}.vs_MS.a'] = a
+        dict_values[f'{self.study_name}.vs_MS.x'] = x
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3.0
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
+
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 3.0
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.5
+        return [dict_values]
+    #################### End : functions to create set of inputs #############
+
+    def setup_Disc1Disc3_all_ns_usecase_from_sub_usecase(self, exec_eng, restricted=True, my_usecase='usecase1'):
+        """
+        Define a set of data inputs with selected use_case
+        """
+        # SubProcess selection values
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc1_disc3_coupling'
+
+        sub_process_inputs_dict = {}
+        sub_process_inputs_dict['process_repository'] = repo
+        sub_process_inputs_dict['process_name'] = mod_id
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_inputs_dict['usecase_data'] = {}
+
+        if my_usecase != 'Empty':
+            sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+                repo, mod_id, my_usecase)
+            anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
+                                                                                                   sub_process_usecase_full_name)
+            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+
+        scenario_map_name = 'scenario_list'
+        input_ns = 'ns_scatter_scenario'
+        output_name = 'scenario_name'
+        scatter_ns = 'ns_scenario'  # not used
+        ns_to_update = ['ns_ac', 'ns_data_ac', 'ns_disc3', 'ns_out_disc3']
+        scenario_map = {'input_name': scenario_map_name,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
+                        'ns_to_update': ns_to_update}
+
+        ######### Numerical values   ####
+        x1 = 2.0
+        x2 = 4.0
+        a1 = 3.0
+        b1 = 4.0
+        a2 = 6.0
+        b2 = 2.0
+
+        if 0 == 1:
+            scenario_list = ['scenario_1', 'scenario_2']
+        else:
+            scenario_list = ['scenario_1', 'scenario_2', 'reference']
 
         ######### Fill the dictionary for dm   ####
         dict_values = {}
@@ -718,7 +934,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # Prepare inputs #########
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase1'
+
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = None
@@ -799,8 +1015,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.check_discipline_outputs_list(driver_disc, outputs_list)
 
         # check input values (and print) of vs_MS discipline
-        repo = 'sos_trades_core.sos_processes.test'
-        mod_id = 'test_disc_hessian'
         target_values_dict = {}
         tv_sub_process_inputs_dict = {}
         tv_sub_process_inputs_dict['process_repository'] = repo
@@ -1089,6 +1303,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                                     'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy',
                                     'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy',
                                     'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy']
+        # Why do we have 4 rows and not only two ?
         self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
@@ -1205,20 +1420,42 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         missing_variables = self.start_execution_status(print_flag=False)
         target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
-
         ################ End checks ##########################
+
+        if 0 == 0:
+            print("\n")
+            print("1.6_pre Add scenario_ref")
+
+            dict_values = {}
+            scenario_list = scenario_list + ['reference']
+            dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+            study_dump.load_data(from_input_dict=dict_values)
+            ################ Start checks ##########################
+            exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                           '|_ MyStudy',
+                           f'\t|_ vs_MS',
+                           f'\t\t|_ scenario_1',
+                           f'\t\t\t|_ Hessian',
+                           f'\t\t|_ scenario_2',
+                           f'\t\t\t|_ Hessian',
+                           f'\t\t|_ reference',
+                           f'\t\t\t|_ Hessian']
+            self.check_created_tree_structure(exp_tv_list)
+        ################ End checks ##########################
+
         print("\n")
         print("1.6 Provide use case name and add scenario_ref")
+        my_usecase = 'usecase2'
         sub_process_inputs_dict['usecase_name'] = my_usecase
         if 0 == 0:  # directly provide anonymized dict
             anonymize_input_dict = {}
-            anonymize_input_dict['<study_ph>.Hessian.ax2'] = 4.0
-            anonymize_input_dict['<study_ph>.Hessian.by2'] = 5.0
-            anonymize_input_dict['<study_ph>.Hessian.cx'] = 6.0
-            anonymize_input_dict['<study_ph>.Hessian.dy'] = 7.0
-            anonymize_input_dict['<study_ph>.Hessian.exy'] = 12.0
-            anonymize_input_dict['<study_ph>.Hessian.x'] = 2.0
-            anonymize_input_dict['<study_ph>.Hessian.y'] = 3.0
+            anonymize_input_dict['<study_ph>.Hessian.ax2'] = 14.0
+            anonymize_input_dict['<study_ph>.Hessian.by2'] = 15.0
+            anonymize_input_dict['<study_ph>.Hessian.cx'] = 16.0
+            anonymize_input_dict['<study_ph>.Hessian.dy'] = 17.0
+            anonymize_input_dict['<study_ph>.Hessian.exy'] = 112.0
+            anonymize_input_dict['<study_ph>.Hessian.x'] = 12.0
+            anonymize_input_dict['<study_ph>.Hessian.y'] = 13.0
         else:  # get it from usecase name
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, mod_id, my_usecase)
@@ -1230,6 +1467,17 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Hessian',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Hessian',
+                       f'\t\t|_ reference',
+                       f'\t\t\t|_ Hessian']
+        self.check_created_tree_structure(exp_tv_list)
         # print configuration state:
         if print_flag:
             self.print_config_state()
@@ -1267,24 +1515,25 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         tv_anonymize_input_dict_from_usecase = {}
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.ax2'] = 4.0
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.by2'] = 5.0
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.cx'] = 6.0
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.dy'] = 7.0
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.exy'] = 12.0
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.x'] = 2.0
-        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 3.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.ax2'] = 14.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.by2'] = 15.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.cx'] = 16.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.dy'] = 17.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.exy'] = 112.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.x'] = 12.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 13.0
         target_values_dict = {}
         tv_sub_process_inputs_dict = {}
         tv_sub_process_inputs_dict['process_repository'] = repo
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
         # None because we have empty the anonymized dictionary
-        #tv_sub_process_inputs_dict['usecase_data'] = {}
-        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        tv_sub_process_inputs_dict['usecase_data'] = {}
+        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = scenario_map
-        target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
+        target_values_dict['scenario_list'] = [
+            'scenario_1', 'scenario_2', 'reference']
 
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -1305,6 +1554,16 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.check_discipline_values(
             hessian_disc, target_values_dict, print_flag=print_flag)
 
+        # Also check reference
+
+        hessian_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS.reference.Hessian')[0]
+        target_x = 12.0
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        self.check_discipline_values(
+            hessian_disc, target_values_dict, print_flag=print_flag)
+
         # check input values_types (and print) of vs_MS discipline
         target_values_dict = {}
         target_values_dict['sub_process_inputs'] = 'USER'
@@ -1316,6 +1575,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
+        # target_missing_variables = ['x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy',
+        #                            'x', 'y', 'ax2', 'by2', 'cx', 'dy', 'exy']
         target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
 
@@ -1349,6 +1610,9 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         Same as Test 2 but on Disc1Disc3 instead on Hesssian
         '''
         print('test_03_build_vs_MS_test_GUI_sequence_Disc1Disc3')
+
+        ns_to_update_mod = 2  # 1 is not complete ns_to_update and 2 is complete ns_to_update
+
         # Step 0: setup an empty driver
         print('Step 0: setup an empty driver')
         from os.path import join, dirname
@@ -1442,7 +1706,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # Prepare inputs #########
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
-        my_usecase = 'usecase1'
         sub_process_inputs_dict = {}
         sub_process_inputs_dict['process_repository'] = repo
         sub_process_inputs_dict['process_name'] = None
@@ -1453,7 +1716,11 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         input_ns = 'ns_scatter_scenario'
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
-        ns_to_update = ['ns_ac', 'ns_disc3', 'ns_out_disc3']
+
+        if ns_to_update_mod == 1:
+            ns_to_update = ['ns_ac', 'ns_disc3', 'ns_out_disc3']
+        else:
+            ns_to_update = ['ns_ac', 'ns_data_ac', 'ns_disc3', 'ns_out_disc3']
         #ns_to_update = ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']
         scenario_map = {'input_name': scenario_map_name,
                         #'input_ns': input_ns,
@@ -1520,8 +1787,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.check_discipline_outputs_list(driver_disc, outputs_list)
 
         # check input values (and print) of vs_MS discipline
-        repo = 'sos_trades_core.sos_processes.test'
-        mod_id = 'test_disc1_disc3_coupling'
         target_values_dict = {}
         tv_sub_process_inputs_dict = {}
         tv_sub_process_inputs_dict['process_repository'] = repo
@@ -1814,26 +2079,50 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                                     'x', 'a', 'b', 'z', 'constant', 'power',
                                     'x', 'a', 'b', 'z', 'constant', 'power',
                                     'x', 'a', 'b', 'z', 'constant', 'power']
+        # Why do we have 4 rows and not only two ?
         self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
         print("\n")
         print("1.5 Provide disciplines inputs")
 
-        dict_values = {}
-        scenario = scenario_list[0]
-        dict_values[f'{self.study_name}.vs_MS.a'] = a
-        dict_values[f'{self.study_name}.vs_MS.x'] = x
+        if ns_to_update_mod == 1:
+            dict_values = {}
+            dict_values[f'{self.study_name}.vs_MS.a'] = a
+            dict_values[f'{self.study_name}.vs_MS.x'] = x
 
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3.0
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 2
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3.0
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 2
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
 
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 3.0
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.5
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 3.0
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.5
+        else:
+            x1 = 2.0
+            x2 = 4.0
+            a1 = 3.0
+            b1 = 4.0
+            a2 = 6.0
+            b2 = 2.0
+
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.a'] = a1
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.x'] = x1
+
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.a'] = a2
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.x'] = x2
+
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 1
+            dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
+
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 2
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
+            dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.2
 
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
@@ -1928,15 +2217,54 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.assertCountEqual(target_missing_variables, missing_variables)
 
         ################ End checks ##########################
+
+        if 0 == 0:
+            print("\n")
+            print("1.6_pre Add scenario_ref")
+
+            dict_values = {}
+            scenario_list = scenario_list + ['reference']
+            dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
+            study_dump.load_data(from_input_dict=dict_values)
+            ################ Start checks ##########################
+            # check created tree structure
+            exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                           '|_ MyStudy',
+                           f'\t|_ vs_MS',
+                           f'\t\t|_ scenario_1',
+                           f'\t\t\t|_ Disc1',
+                           f'\t\t\t|_ Disc3',
+                           f'\t\t|_ scenario_2',
+                           f'\t\t\t|_ Disc1',
+                           f'\t\t\t|_ Disc3',
+                           f'\t\t|_ reference',
+                           f'\t\t\t|_ Disc1',
+                           f'\t\t\t|_ Disc3']
+            self.check_created_tree_structure(exp_tv_list)
+        ################ End checks ##########################
+
         print("\n")
         print("1.6 Provide use case name and add scenario_ref")
+        my_usecase = 'usecase1'
+        x = 2.0
+        a = 3.0
+        b = 4.0
+
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        driver_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS')[0]
+        sub_process_inputs_dict = driver_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value']
+
         sub_process_inputs_dict['usecase_name'] = my_usecase
+
         if 0 == 0:  # directly provide anonymized dict
             anonymize_input_dict = {}
             anonymize_input_dict['<study_ph>.a'] = a
             anonymize_input_dict['<study_ph>.x'] = x
-            anonymize_input_dict['<study_ph>.Disc1.b'] = b1
-            anonymize_input_dict['<study_ph>.Disc3.constant'] = 3.0
+            anonymize_input_dict['<study_ph>.Disc1.b'] = b
+            anonymize_input_dict['<study_ph>.Disc3.constant'] = 3.
             anonymize_input_dict['<study_ph>.Disc3.power'] = 2
             anonymize_input_dict['<study_ph>.Disc3.z'] = 1.2
         else:  # get it from usecase name
@@ -1950,6 +2278,20 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ reference',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3']
+        self.check_created_tree_structure(exp_tv_list)
         # print configuration state:
         if print_flag:
             self.print_config_state()
@@ -1999,11 +2341,12 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_sub_process_inputs_dict['process_name'] = mod_id
         tv_sub_process_inputs_dict['usecase_name'] = my_usecase
         # None because we have empty the anonymized dictionary
-        #tv_sub_process_inputs_dict['usecase_data'] = {}
-        tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        tv_sub_process_inputs_dict['usecase_data'] = {}
+        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
         target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
         target_values_dict['scenario_map'] = scenario_map
-        target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
+        target_values_dict['scenario_list'] = [
+            'scenario_1', 'scenario_2', 'reference']
 
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -2023,7 +2366,15 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         target_values_dict['b'] = target_b
         self.check_discipline_values(
             disc1_disc, target_values_dict, print_flag=print_flag)
-
+        # Also check reference
+        if 0 == 1:
+            disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.vs_MS.reference.Disc1')[0]
+            target_b = b
+            target_values_dict = {}
+            target_values_dict['b'] = target_b
+            self.check_discipline_values(
+                disc1_disc, target_values_dict, print_flag=print_flag)
         # check input values_types (and print) of vs_MS discipline
         target_values_dict = {}
         target_values_dict['sub_process_inputs'] = 'USER'
@@ -2035,9 +2386,146 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check start execution status (can be run if no mandatory value))
         missing_variables = self.start_execution_status(print_flag=False)
+        # target_missing_variables = ['b', 'z', 'constant', 'power',
+        #                            'b', 'z', 'constant', 'power']
         target_missing_variables = []
         self.assertCountEqual(target_missing_variables, missing_variables)
+        ################ End checks ##########################
 
+        print("\n")
+        print("1.7 Update usecase name")
+        my_usecase = 'usecase2'
+        # change of usecase
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+        driver_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS')[0]
+        sub_process_inputs_dict = driver_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value']
+        sub_process_inputs_dict['usecase_name'] = my_usecase
+        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+            repo, mod_id, 'usecase2')
+        anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
+                                                                                  sub_process_usecase_full_name)
+        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        print('load usecase2 file')
+        study_dump.load_data(from_input_dict=dict_values)
+        ################ Start checks ##########################
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ reference',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3']
+        self.check_created_tree_structure(exp_tv_list)
+        # print configuration state:
+        if print_flag:
+            self.print_config_state()
+        # check configuration state
+        self.check_status_state()
+
+        # select vs_MS disc
+        driver_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS')[0]
+        # check input parameter list and values of vs_MS discipline
+        full_inputs_list_new = driver_disc.get_data_io_dict_keys('in')
+        full_inputs_list_new = [elem for elem in full_inputs_list_new]
+        added_inputs_list = [
+            elem for elem in full_inputs_list_new if elem not in full_inputs_list_last]
+        removed_inputs_list = [
+            elem for elem in full_inputs_list_last if elem not in full_inputs_list_new]
+        full_inputs_list_last = full_inputs_list_new
+        #print("Added Inputs_list:")
+        # print(added_inputs_list)
+        #print("Removed Inputs_list:")
+        # print(removed_inputs_list)
+        target_added_inputs_list = []
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
+        target_removed_inputs_list = []
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
+
+        # print(driver_disc.get_data_io_dict_keys('in'))
+        self.check_discipline_inputs_list(driver_disc, inputs_list)
+        # check output parameter list  of vs_MS discipline
+        # print(driver_disc.get_data_io_dict_keys('out'))
+        outputs_list = []
+        self.check_discipline_outputs_list(driver_disc, outputs_list)
+
+        # check input values (and print) of vs_MS discipline
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc1_disc3_coupling'
+        tv_anonymize_input_dict_from_usecase = {}
+        tv_anonymize_input_dict_from_usecase['<study_ph>.a'] = 6.
+        tv_anonymize_input_dict_from_usecase['<study_ph>.x'] = 4.
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.b'] = 2.
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.constant'] = 3.
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.power'] = 2
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.z'] = 1.2
+        target_values_dict = {}
+        tv_sub_process_inputs_dict = {}
+        tv_sub_process_inputs_dict['process_repository'] = repo
+        tv_sub_process_inputs_dict['process_name'] = mod_id
+        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
+        # None because we have empty the anonymized dictionary
+        tv_sub_process_inputs_dict['usecase_data'] = {}
+        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['scenario_map'] = scenario_map
+        target_values_dict['scenario_list'] = [
+            'scenario_1', 'scenario_2', 'reference']
+
+        self.check_discipline_values(
+            driver_disc, target_values_dict, print_flag=print_flag)
+
+        disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS.scenario_1.Disc1')[0]
+        target_b = b1
+        target_values_dict = {}
+        target_values_dict['b'] = target_b
+        self.check_discipline_values(
+            disc1_disc, target_values_dict, print_flag=print_flag)
+
+        disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS.scenario_2.Disc1')[0]
+        target_b = b2
+        target_values_dict = {}
+        target_values_dict['b'] = target_b
+        self.check_discipline_values(
+            disc1_disc, target_values_dict, print_flag=print_flag)
+        # Also check reference
+        if 0 == 1:
+            disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.vs_MS.reference.Disc1')[0]
+            target_b = 2.
+            target_values_dict = {}
+            target_values_dict['b'] = target_b
+            self.check_discipline_values(
+                disc1_disc, target_values_dict, print_flag=print_flag)
+        # check input values_types (and print) of vs_MS discipline
+        target_values_dict = {}
+        target_values_dict['sub_process_inputs'] = 'USER'
+        target_values_dict['scenario_map'] = 'USER'
+        target_values_dict['scenario_list'] = 'USER'
+
+        self.check_discipline_value_types(
+            driver_disc, target_values_dict, print_flag=print_flag)
+
+        # check start execution status (can be run if no mandatory value))
+        missing_variables = self.start_execution_status(print_flag=False)
+        # target_missing_variables = ['b', 'z', 'constant', 'power',
+        #                            'b', 'z', 'constant', 'power']
+        target_missing_variables = []
+        self.assertCountEqual(target_missing_variables, missing_variables)
         ################ End checks ##########################
 
         # Run
@@ -2060,7 +2548,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
     def test_04_build_driver_with_nested_proc_and_updates(self):
         '''
-        Test of changing of nested sub_process
+        Test of changing of nested sub_process and map
         '''
         print('test_04_build_driver_with_nested_proc_and_updates')
         # Step 0: setup an empty
@@ -2419,7 +2907,6 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # Step 1: Provide subprocess and provide data input
         print('Step 1: provide Hessian process with both change in SubProc/Map')
-        dict_values = {}
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         sub_process_inputs_dict = {}
@@ -2484,10 +2971,206 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                        f'\t|_ vs_MS']
         self.check_created_tree_structure(exp_tv_list)
 
+    def test_06_build_driver_with_nested_proc_Disc1Disc3_and_uscase(self):
+        '''
+        Test of provided all subprocess inputs with providing usecase
+        '''
+        print('test_06_build_driver_with_nested_proc_Disc1Disc3_and_uscase')
+
+        ns_to_update_mod = 2  # 1 is not complete ns_to_update and 2 is complete ns_to_update
+
+        # Step 0: setup an empty
+        print('Step 0: setup an empty driver')
+        from os.path import join, dirname
+        from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
+        mod_id_empty_driver = 'test_driver_build_vs_MS_empty'
+        self.study_name = 'MyStudy'
+
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_driver, 'MyStudy')
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()
+
+        # Step 1: Provide subprocess and provide data input with usecase
+        print('Step 1: Provide subprocess and provide data input with usecase')
+
+        if ns_to_update_mod == 1:
+            dict_values = self.setup_Disc1Disc3_usecase_from_sub_usecase(
+                study_dump.ee, restricted=False, my_usecase='usecase1')[0]
+        else:
+            dict_values = self.setup_Disc1Disc3_all_ns_usecase_from_sub_usecase(
+                study_dump.ee, restricted=False, my_usecase='usecase1')[0]
+
+        study_dump.load_data(from_input_dict=dict_values)
+
+        ################ Start checks ##########################
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        print_flag = True
+
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ vs_MS',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3',
+                       f'\t\t|_ reference',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc3']
+        self.check_created_tree_structure(exp_tv_list)
+        # print configuration state:
+        if print_flag:
+            self.print_config_state()
+        # check configuration state
+        self.check_status_state()
+
+        # select vs_MS disc
+        driver_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS')[0]
+        # check input parameter list and values of vs_MS discipline
+        full_inputs_list_new = driver_disc.get_data_io_dict_keys('in')
+        full_inputs_list_new = [elem for elem in full_inputs_list_new]
+        added_inputs_list = full_inputs_list_new
+        removed_inputs_list = []
+        #print("Added Inputs_list:")
+        # print(added_inputs_list)
+        #print("Removed Inputs_list:")
+        # print(removed_inputs_list)
+
+        # print(driver_disc.get_data_io_dict_keys('in'))
+        inputs_list = ['sub_process_inputs', 'scenario_map']
+        inputs_list = inputs_list + [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+            'scenario_list', 'ns_in_df']
+
+        target_added_inputs_list = inputs_list
+        self.assertCountEqual(target_added_inputs_list, added_inputs_list)
+        target_removed_inputs_list = []
+        self.assertCountEqual(target_removed_inputs_list, removed_inputs_list)
+
+        self.check_discipline_inputs_list(driver_disc, inputs_list)
+        # check output parameter list  of vs_MS discipline
+        # print(driver_disc.get_data_io_dict_keys('out'))
+        outputs_list = []
+        self.check_discipline_outputs_list(driver_disc, outputs_list)
+
+        # check input values (and print) of vs_MS discipline
+        repo = 'sos_trades_core.sos_processes.test'
+        mod_id = 'test_disc1_disc3_coupling'
+
+        x = 2.0
+        a = 3.0
+        b = 4.0
+
+        b1 = 4.0
+        b2 = 2.0
+
+        scenario_map_name = 'scenario_list'
+        input_ns = 'ns_scatter_scenario'
+        output_name = 'scenario_name'
+        scatter_ns = 'ns_scenario'  # not used
+
+        if ns_to_update_mod == 1:
+            ns_to_update = ['ns_ac', 'ns_disc3', 'ns_out_disc3']
+        else:
+            ns_to_update = ['ns_ac', 'ns_data_ac', 'ns_disc3', 'ns_out_disc3']
+
+        scenario_map = {'input_name': scenario_map_name,
+                        #'input_ns': input_ns,
+                        #'output_name': output_name,
+                        #'scatter_ns': scatter_ns,
+                        #'gather_ns': input_ns,
+                        'ns_to_update': ns_to_update}
+
+        my_usecase = 'usecase1'
+        scenario_list = ['scenario_1', 'scenario_2', 'reference']
+        tv_anonymize_input_dict_from_usecase = {}
+        tv_anonymize_input_dict_from_usecase['<study_ph>.a'] = a
+        tv_anonymize_input_dict_from_usecase['<study_ph>.x'] = x
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.b'] = b
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.constant'] = 3.0
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.power'] = 2
+        tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.z'] = 1.2
+        target_values_dict = {}
+        tv_sub_process_inputs_dict = {}
+        tv_sub_process_inputs_dict['process_repository'] = repo
+        tv_sub_process_inputs_dict['process_name'] = mod_id
+        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
+        # None because we have empty the anonymized dictionary
+        tv_sub_process_inputs_dict['usecase_data'] = {}
+        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
+        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['scenario_map'] = scenario_map
+        # ['scenario_1', 'scenario_2','reference']
+        target_values_dict['scenario_list'] = scenario_list
+
+        self.check_discipline_values(
+            driver_disc, target_values_dict, print_flag=print_flag)
+
+        disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS.scenario_1.Disc1')[0]
+        target_b = b1
+        target_values_dict = {}
+        target_values_dict['b'] = target_b
+        self.check_discipline_values(
+            disc1_disc, target_values_dict, print_flag=print_flag)
+
+        disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.vs_MS.scenario_2.Disc1')[0]
+        target_b = b2
+        target_values_dict = {}
+        target_values_dict['b'] = target_b
+        self.check_discipline_values(
+            disc1_disc, target_values_dict, print_flag=print_flag)
+        # Also check reference
+        if 0 == 1:
+            disc1_disc = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.vs_MS.reference.Disc1')[0]
+            target_b = b
+            target_values_dict = {}
+            target_values_dict['b'] = target_b
+            self.check_discipline_values(
+                disc1_disc, target_values_dict, print_flag=print_flag)
+        # check input values_types (and print) of vs_MS discipline
+        target_values_dict = {}
+        target_values_dict['sub_process_inputs'] = 'USER'
+        target_values_dict['scenario_map'] = 'USER'
+        target_values_dict['scenario_list'] = 'USER'
+
+        self.check_discipline_value_types(
+            driver_disc, target_values_dict, print_flag=print_flag)
+
+        # check start execution status (can be run if no mandatory value))
+        missing_variables = self.start_execution_status(print_flag=False)
+        # target_missing_variables = ['b', 'z', 'constant', 'power',
+        #                            'b', 'z', 'constant', 'power']
+        target_missing_variables = []
+        self.assertCountEqual(target_missing_variables, missing_variables)
+        ################ End checks ##########################
+
+    def test_07_test_uscase_update_with_dynamic_subprocess(self):
+        '''
+        Test the replacemenent of the usecase in case of a dynamic subprocess 
+        '''
+        print('test_07_test_uscase_update_with_dynamic_subprocess')
+
 
 if '__main__' == __name__:
     my_test = TestBuildVerySimpleMultiScenario()
-    test_selector = 5
+    test_selector = 6
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_vs_MS_with_nested_proc_selection_through_process_driver_Hessian_subproc()
@@ -2503,3 +3186,9 @@ if '__main__' == __name__:
     elif test_selector == 5:
         my_test.setUp()
         my_test.test_05_build_driver_with_nested_proc_and_updates_sequence_bis()
+    elif test_selector == 6:
+        my_test.setUp()
+        my_test.test_06_build_driver_with_nested_proc_Disc1Disc3_and_uscase()
+    elif test_selector == 7:
+        my_test.setUp()
+        my_test.test_07_test_uscase_update_with_dynamic_subprocess()
