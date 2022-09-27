@@ -487,6 +487,10 @@ class ArchiBuilder(SoSDisciplineBuilder):
         """
         Method to build discipline with builder and namespace
         """
+
+        if self.associated_namespaces != []:
+            builder.associate_namespaces(self.associated_namespaces)
+
         if namespace == self.sos_name:
             # if namespace is architecture name, remove architecture name to
             # current_ns to build discipline at same node as architecture
