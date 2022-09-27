@@ -21,10 +21,7 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
-from os.path import dirname
-from os import listdir
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -33,6 +30,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.sos_eval import SoSEval
+from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 import pandas as pd
 from collections import ChainMap
 
@@ -65,7 +63,10 @@ class BuildDoeEval(SoSEval):
                                                                           If 'None' then it uses the sos_processes python for doe creation.
                                                     PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
                                                                           If 'None' then it uses the sos_processes python for doe creation.
-                                                    USECASE_NAME:         either empty or an available usecase of the sub_process
+                                                    USECASE_INFO:         either empty or an available data source of the sub_process
+                                                    USECASE_NAME:         children of USECASE_INFO that contains data source name (can be empty)
+                                                    USECASE_TYPE:         children of USECASE_INFO that contains data source type (can be empty)
+                                                    USECASE_IDENTIFIER:   children of USECASE_INFO that contains data source identifier (can be empty)
                                                     USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
                                                                           it is a temporary input: it will be put to None as soon as                                                                        
                                                                           its content is 'loaded' in the dm. We will have it has editable                                                                             
@@ -105,7 +106,10 @@ class BuildDoeEval(SoSEval):
     # -- Disciplinary attributes
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     PROCESS_NAME = 'process_name'
+    USECASE_INFO = 'usecase_info'
     USECASE_NAME = 'usecase_name'
+    USECASE_TYPE = 'usecase_type'
+    USECASE_IDENTIFIER = 'usecase_identifier'
     USECASE_DATA = 'usecase_data'
     PROCESS_REPOSITORY = 'process_repository'
 
@@ -152,25 +156,21 @@ class BuildDoeEval(SoSEval):
     INPUT_MULTIPLIER_TYPE = []
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    default_sub_process_inputs_dict = {}
-    default_sub_process_inputs_dict[PROCESS_REPOSITORY] = None
-    default_sub_process_inputs_dict[PROCESS_NAME] = None
-    default_sub_process_inputs_dict[USECASE_NAME] = 'Empty'
-    default_sub_process_inputs_dict[USECASE_DATA] = {}
+    default_process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
 
     DESC_IN = {
-        SUB_PROCESS_INPUTS: {'type': 'dict',
-                             'structuring': True,
-                             'default': default_sub_process_inputs_dict,
-                             'user_level': 1,
-                             'optional': False
-                             },
-        # SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
+        #SUB_PROCESS_INPUTS: {'type': 'dict',
         #                     'structuring': True,
         #                     'default': default_sub_process_inputs_dict,
         #                     'user_level': 1,
         #                     'optional': False
         #                     },
+        SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
+                             'structuring': True,
+                             'default': default_process_builder_parameter_type.to_data_manager_dict(),
+                             'user_level': 1,
+                             'optional': False
+                             },
         N_PROCESSES: {'type': 'int',
                       'numerical': True,
                       'default': 1},
@@ -763,7 +763,7 @@ class BuildDoeEval(SoSEval):
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[self.USECASE_NAME]
+            sub_process_usecase_name = sub_process_inputs_dict[self.USECASE_INFO][self.USECASE_NAME]
             sub_process_usecase_data = sub_process_inputs_dict[self.USECASE_DATA]
             self.set_sub_process_usecase_status_from_user_inputs(
                 sub_process_usecase_name, sub_process_usecase_data)
@@ -777,7 +777,7 @@ class BuildDoeEval(SoSEval):
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[self.USECASE_NAME]
+            sub_process_usecase_name = sub_process_inputs_dict[self.USECASE_INFO][self.USECASE_NAME]
             anonymize_input_dict_from_usecase = sub_process_inputs_dict[self.USECASE_DATA]
             # 2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
