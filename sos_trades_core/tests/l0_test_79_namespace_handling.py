@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
+from copy import deepcopy
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -21,15 +22,12 @@ import unittest
 from time import sleep
 from shutil import rmtree
 from pathlib import Path
-from os.path import join
 
-import numpy as np
 from numpy import array
 
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sos_trades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+from sos_trades_core.sos_processes.test.test_scatter_disc1_disc3_from_proc.usecase1 import Study
 
 
 class TestNamespaceHandling(unittest.TestCase):
@@ -134,8 +132,41 @@ class TestNamespaceHandling(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
 
+    def _test_03_same_sub_process_inside_a_process(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        builder_list1 = exec_eng.factory.get_builder_from_process(
+            'sos_trades_core.sos_processes.test', 'test_scatter_disc1_disc3_from_proc')
+        builder_list2 = deepcopy(builder_list1)
+        ns_list_standard = deepcopy(exec_eng.ns_manager.ns_list)
+        ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
+            'Scatter1', after_name=exec_eng.study_name)
+        for builder in builder_list1:
+            builder.set_disc_name(f'Scatter1.{builder.sos_name}')
+            builder.associate_namespaces(ns_scatter1)
+        ns_scatter2 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
+            'Scatter2', after_name=exec_eng.study_name, namespace_list=ns_list_standard)
+        for builder in builder_list2:
+            builder.set_disc_name(f'Scatter2.{builder.sos_name}')
+            builder.associate_namespaces(ns_scatter2)
+        builder_list1.extend(builder_list2)
+        exec_eng.factory.set_builders_to_coupling_builder(builder_list1)
+        exec_eng.configure()
+
+        study = Study(execution_engine=exec_eng)
+        study.study_name = self.name
+        private_val_list = study.setup_usecase()
+        private_val = {}
+        for dic in private_val_list:
+            private_val.update(dic)
+        exec_eng.load_study_from_input_dict(private_val)
+
+        exec_eng.display_treeview_nodes()
+        exec_eng.execute()
+
 
 if '__main__' == __name__:
     cls = TestNamespaceHandling()
     cls.setUp()
-    cls.test_02_same_sub_process_inside_a_process()
+    cls._test_03_same_sub_process_inside_a_process()
