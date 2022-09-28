@@ -1073,25 +1073,29 @@ class ProxyDiscipline(object):
 
         return data_dict
 
-    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name=False):
+    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
-        Accessor for the discipline input values as a list or dict
+        Accessor for the inputs values as a list or dict.
 
         Arguments:
-            keys (List[string]): the input short names list
-            in_dict (bool): True if return format is dict, False for list
-            full_name (bool): True if returned keys are full names, False for short names
+            keys (List): the input short or full names list (depending on value of full_name_keys)
+            in_dict (bool): if output format is dict
+            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that only
+                                   True allows to query for variables of the subprocess as well as of the discipline itself.
         Returns:
-            (list or dict): the inputs keys and values
+            The inputs values list or dict
         """
 
         if keys is None:
             # if no keys, get all discipline keys and force
-            # output format as dict
-            keys = list(self.get_data_in().keys())
+            # output format as dict #TODO: force full_name_keys=True too?
+            if full_name_keys:
+                keys = list(self.get_data_io_with_full_name(self.IO_TYPE_IN).keys())  #discipline and subprocess
+            else:
+                keys = list(self.get_data_in().keys())  #discipline only
             in_dict = True
         inputs = self._get_sosdisc_io(
-            keys, io_type=self.IO_TYPE_IN, full_name=full_name)
+            keys, io_type=self.IO_TYPE_IN, full_name_keys=full_name_keys)
         if in_dict:
             # return inputs in an dictionary
             return inputs
@@ -1102,24 +1106,29 @@ class ProxyDiscipline(object):
             else:
                 return list(inputs.values())[0]
 
-    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name=False):
+    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
-        Accessor for the outputs values as a list or dict
+        Accessor for the outputs values as a list or dict.
 
         Arguments:
-            keys (List[string]): the output short names list
-            in_dict (bool): True if return format is dict, False for list
-            full_name (bool): True if returned keys are full names, False for short names
+            keys (List): the output short or full names list (depending on value of full_name_keys)
+            in_dict (bool): if output format is dict
+            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that only
+                                   True allows to query for variables of the subprocess as well as of the discipline itself.
         Returns:
-            (list or dict): the outputs keys and values
+            The outputs values list or dict
         """
         if keys is None:
             # if no keys, get all discipline keys and force
-            # output format as dict
-            keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
+            # output format as dict #TODO: force full_name_keys=True too?
+            if full_name_keys:
+                keys = list(self.get_data_io_with_full_name(self.IO_TYPE_OUT).keys())  #discipline and subprocess
+            else:
+                keys = list(self.get_data_out().keys())  #discipline only
+            # keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
             in_dict = True
         outputs = self._get_sosdisc_io(
-            keys, io_type=self.IO_TYPE_OUT, full_name=full_name)
+            keys, io_type=self.IO_TYPE_OUT, full_name_keys=full_name_keys)
         if in_dict:
             # return outputs in an dictionary
             return outputs
@@ -1130,41 +1139,76 @@ class ProxyDiscipline(object):
             else:
                 return list(outputs.values())[0]
 
-    def _get_sosdisc_io(self, keys, io_type, full_name=False):
+    def _get_sosdisc_io(self, keys, io_type, full_name_keys=False):
         """
-        Generic method to retrieve discipline inputs and outputs
+        Generic method to retrieve sos inputs and outputs
 
         Arguments:
-            keys (List[string]): the output short names list
+            keys (List[String]): the data names list in short or full names (depending on value of full_name_keys)
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
-            full_name (bool): True if returned keys are full names, False for short names
-
-        Return:
-            values_dict (dict): dict of variable keys and values
+            full_name_keys: if keys in args and returned dict are full names. Note that only True allows to query for
+                            variables of the subprocess as well as of the discipline itself.
+        Returns:
+            dict of keys values
+        Raises:
+            Exception if query key is not in the data manager
         """
-
-        # convert local key names to namespaced ones
         if isinstance(keys, str):
             keys = [keys]
-        namespaced_keys_dict = {key: namespaced_key for key, namespaced_key in zip(
-            keys, self._convert_list_of_keys_to_namespace_name(keys, io_type))}
+
+        if full_name_keys:
+            query_keys = keys
+        else:
+            query_keys = self._convert_list_of_keys_to_namespace_name(keys, io_type)
 
         values_dict = {}
-
-        for key, namespaced_key in namespaced_keys_dict.items():
-            # new_key can be key or namespaced_key according to full_name value
-            new_key = full_name * namespaced_key + (1 - full_name) * key
-            if namespaced_key not in self.dm.data_id_map:
+        for key, q_key in zip(keys,query_keys):
+            if q_key not in self.dm.data_id_map:
                 raise Exception(
-                    f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-            # get data in local_data during run or linearize steps
+                    f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
+            # get data in local_data during run or linearize steps #TODO: this should not be possible, should it?
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
-                values_dict[new_key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[namespaced_key]
+                values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
             # get data in data manager during configure step
             else:
-                values_dict[new_key] = self.dm.get_value(namespaced_key)
-
+                values_dict[key] = self.dm.get_value(q_key)
         return values_dict
+
+    # def _get_sosdisc_io(self, keys, io_type, full_name=False):
+    #     """
+    #     Generic method to retrieve discipline inputs and outputs
+    #
+    #     Arguments:
+    #         keys (List[string]): the output short names list
+    #         io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+    #         full_name (bool): True if returned keys are full names, False for short names
+    #
+    #     Return:
+    #         values_dict (dict): dict of variable keys and values
+    #     """
+    #
+    #     # convert local key names to namespaced ones
+    #     if isinstance(keys, str):
+    #         keys = [keys]
+    #     namespaced_keys_dict = {key: namespaced_key for key, namespaced_key in zip(
+    #         keys, self._convert_list_of_keys_to_namespace_name(keys, io_type))}
+    #
+    #     values_dict = {}
+    #
+    #     for key, namespaced_key in namespaced_keys_dict.items():
+    #         # new_key can be key or namespaced_key according to full_name value
+    #         new_key = full_name * namespaced_key + (1 - full_name) * key
+    #         if namespaced_key not in self.dm.data_id_map:
+    #             raise Exception(
+    #                 f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
+    #         # get data in local_data during run or linearize steps
+    #         elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
+    #             values_dict[new_key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[namespaced_key]
+    #         # get data in data manager during configure step
+    #         else:
+    #             values_dict[new_key] = self.dm.get_value(namespaced_key)
+    #
+    #     return values_dict
 
     #     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
     #                   exec_before_linearize=True):

@@ -110,9 +110,8 @@ class SoSWrapp(object):
         Arguments:
             keys (List): the input short or full names list (depending on value of full_name_keys)
             in_dict (bool): if output format is dict
-            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that True
-                                   allows several variables to have same short name, whereas False gives spurious behaviour
-                                   for doubled short names in discipline, as a short to full name conversion is needed.
+            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that only
+                                   True allows to query for variables of the subprocess as well as of the discipline itself.
         Returns:
             The inputs values list or dict
         """
@@ -143,9 +142,8 @@ class SoSWrapp(object):
         Arguments:
             keys (List): the output short or full names list (depending on value of full_name_keys)
             in_dict (bool): if output format is dict
-            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that True
-                                   allows several variables to have same short name, whereas False gives spurious behaviour
-                                   for doubled short names in discipline, as a short to full name conversion is needed.
+            full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that only
+                                   True allows to query for variables of the subprocess as well as of the discipline itself.
         Returns:
             The outputs values list or dict
         """
@@ -175,8 +173,9 @@ class SoSWrapp(object):
 
         Arguments:
             keys (List[String]): the data names list in short or full names (depending on value of full_name_keys)
-            io_type (string): 'in' or 'out' [NOT USED]
-            full_name_keys: if keys in args and returned dict are full names
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            full_name_keys: if keys in args and returned dict are full names. Note that only True allows to query for
+                            variables of the subprocess as well as of the discipline itself.
         Returns:
             dict of keys values
         Raises:
