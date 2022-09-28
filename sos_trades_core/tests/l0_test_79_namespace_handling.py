@@ -132,13 +132,14 @@ class TestNamespaceHandling(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
 
-    def _test_03_same_sub_process_inside_a_process(self):
+    def test_03_two_same_scatter_inside_a_process(self):
 
         exec_eng = ExecutionEngine(self.name)
 
         builder_list1 = exec_eng.factory.get_builder_from_process(
             'sos_trades_core.sos_processes.test', 'test_scatter_disc1_disc3_from_proc')
-        builder_list2 = deepcopy(builder_list1)
+        builder_list2 = exec_eng.factory.get_builder_from_process(
+            'sos_trades_core.sos_processes.test', 'test_scatter_disc1_disc3_from_proc')
         ns_list_standard = deepcopy(exec_eng.ns_manager.ns_list)
         ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
             'Scatter1', after_name=exec_eng.study_name)
@@ -160,7 +161,55 @@ class TestNamespaceHandling(unittest.TestCase):
         private_val = {}
         for dic in private_val_list:
             private_val.update(dic)
-        exec_eng.load_study_from_input_dict(private_val)
+
+        private_val_scatter1 = {name.replace(
+            f'{self.name}.', f'{self.name}.Scatter1.'): value for name, value in private_val.items()}
+        private_val_scatter2 = {name.replace(
+            f'{self.name}.', f'{self.name}.Scatter2.'): value for name, value in private_val.items()}
+        private_val_scatter1.update(private_val_scatter2)
+        exec_eng.load_study_from_input_dict(private_val_scatter1)
+
+        exec_eng.display_treeview_nodes()
+        exec_eng.execute()
+
+    def test_04_two_archibuilder_with_scatter_inside_a_process(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        builder_1 = exec_eng.factory.get_builder_from_process(
+            'sos_trades_core.sos_processes.test', 'test_architecture')
+        builder_2 = exec_eng.factory.get_builder_from_process(
+            'sos_trades_core.sos_processes.test', 'test_architecture')
+        ns_list_standard = deepcopy(exec_eng.ns_manager.ns_list)
+        ns_archi1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
+            'Archi1', after_name=exec_eng.study_name)
+
+        builder_1.set_disc_name(f'Archi1.{builder_1.sos_name}')
+        builder_1.associate_namespaces(ns_archi1)
+
+        ns_archi2 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
+            'Archi2', after_name=exec_eng.study_name, namespace_list=ns_list_standard)
+
+        builder_2.set_disc_name(f'Archi2.{builder_2.sos_name}')
+        builder_2.associate_namespaces(ns_archi2)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [builder_1, builder_2])
+        exec_eng.configure()
+
+        study = Study(execution_engine=exec_eng)
+        study.study_name = self.name
+        private_val_list = study.setup_usecase()
+        private_val = {}
+        for dic in private_val_list:
+            private_val.update(dic)
+
+        private_val_archi1 = {name.replace(
+            f'{self.name}.', f'{self.name}.Archi1.'): value for name, value in private_val.items()}
+        private_val_archi2 = {name.replace(
+            f'{self.name}.', f'{self.name}.Archi2.'): value for name, value in private_val.items()}
+        private_val_archi1.update(private_val_archi2)
+        exec_eng.load_study_from_input_dict(private_val_archi1)
 
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
@@ -169,4 +218,4 @@ class TestNamespaceHandling(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestNamespaceHandling()
     cls.setUp()
-    cls._test_03_same_sub_process_inside_a_process()
+    cls.test_04_two_archibuilder_with_scatter_inside_a_process()
