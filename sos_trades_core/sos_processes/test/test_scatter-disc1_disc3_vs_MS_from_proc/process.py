@@ -32,7 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # 1. Define scatter_list from sub_proc
         repo = 'sos_trades_core.sos_processes.test'
-        sub_proc = 'test_scatter-disc1_disc3_from_proc'
+        sub_proc = 'test_scatter_disc1_disc3_from_proc'
         scatter_list = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
 
