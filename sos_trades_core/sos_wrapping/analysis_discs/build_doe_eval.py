@@ -58,7 +58,7 @@ class BuildDoeEval(SoSEval):
 
     2) Description of DESC parameters:
         |_ DESC_IN
-           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of a dictionary of four keys
+           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
                                                     PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
                                                                           If 'None' then it uses the sos_processes python for doe creation.
                                                     PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
@@ -105,13 +105,6 @@ class BuildDoeEval(SoSEval):
 #################### Begin: Constants and parameters #####################
     # -- Disciplinary attributes
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
-    PROCESS_NAME = 'process_name'
-    USECASE_INFO = 'usecase_info'
-    USECASE_NAME = 'usecase_name'
-    USECASE_TYPE = 'usecase_type'
-    USECASE_IDENTIFIER = 'usecase_identifier'
-    USECASE_DATA = 'usecase_data'
-    PROCESS_REPOSITORY = 'process_repository'
 
     EVAL_INPUTS = 'eval_inputs'  # should be in SOS_EVAL
     EVAL_OUTPUTS = 'eval_outputs'  # should be in SOS_EVAL
@@ -159,12 +152,6 @@ class BuildDoeEval(SoSEval):
     default_process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
 
     DESC_IN = {
-        #SUB_PROCESS_INPUTS: {'type': 'dict',
-        #                     'structuring': True,
-        #                     'default': default_sub_process_inputs_dict,
-        #                     'user_level': 1,
-        #                     'optional': False
-        #                     },
         SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
                              'structuring': True,
                              'default': default_process_builder_parameter_type.to_data_manager_dict(),
@@ -298,8 +285,8 @@ class BuildDoeEval(SoSEval):
         if self.SUB_PROCESS_INPUTS in self._data_in:
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
+            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
+            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
             if sub_process_repo != None and sub_process_name != None:  # a sub_process_full_name is available
                 # either Unchanged_SP or Create_SP or Replace_SP
                 # 1. set_sub_process_status
@@ -344,8 +331,8 @@ class BuildDoeEval(SoSEval):
         if self.sub_proc_build_status != 'Empty_SP':
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
+            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
+            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
             # 1. provide driver inputs based on selected subprocess
             dynamic_inputs = self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
                 dynamic_inputs)
@@ -761,10 +748,10 @@ class BuildDoeEval(SoSEval):
         if self.SUB_PROCESS_INPUTS in self._data_in:  # and self.sub_proc_build_status != 'Empty_SP'
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[self.USECASE_INFO][self.USECASE_NAME]
-            sub_process_usecase_data = sub_process_inputs_dict[self.USECASE_DATA]
+            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
+            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
+            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
             self.set_sub_process_usecase_status_from_user_inputs(
                 sub_process_usecase_name, sub_process_usecase_data)
         else:
@@ -775,10 +762,10 @@ class BuildDoeEval(SoSEval):
             # 1 get anonymized dict
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[self.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[self.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[self.USECASE_INFO][self.USECASE_NAME]
-            anonymize_input_dict_from_usecase = sub_process_inputs_dict[self.USECASE_DATA]
+            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
+            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
+            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            anonymize_input_dict_from_usecase = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
             # 2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
                 anonymize_input_dict_from_usecase)
@@ -795,7 +782,7 @@ class BuildDoeEval(SoSEval):
                 self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
             # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[self.USECASE_DATA] = {}
+            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {}
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             self.previous_sub_process_usecase_data = {}
