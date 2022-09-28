@@ -39,6 +39,7 @@ from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
+from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from importlib import import_module
 from os.path import dirname
 from os import listdir
@@ -139,11 +140,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -172,7 +169,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
 
         if restricted == False:
-            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
@@ -208,11 +205,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -237,7 +230,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
 
         if restricted == False:
-            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
@@ -265,11 +258,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -296,7 +285,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
 
         if restricted == False:
-            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
@@ -326,18 +315,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
 
         if my_usecase != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, mod_id, my_usecase)
             anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
                                                                                                    sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -366,7 +351,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
 
         if restricted == False:
-            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
@@ -394,18 +379,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
 
         if my_usecase != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, mod_id, my_usecase)
             anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
                                                                                                    sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -436,7 +417,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
 
         if restricted == False:
-            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
@@ -652,18 +633,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -734,11 +711,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -752,7 +725,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                            #'gather_ns': input_ns,
                            'ns_to_update': ns_to_update}
 
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
 
@@ -901,18 +874,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -935,11 +904,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = None
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -974,7 +939,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         print("\n")
         print("1.1 Provide repo")
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         # check multi-configure max 100 reached
         #
@@ -1016,18 +981,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -1050,9 +1011,9 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         ################ End checks ##########################
         print("\n")
         print("1.2 Provide process name")
-        sub_process_inputs_dict['process_name'] = mod_id
+        process_builder_parameter_type.process_name = mod_id
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         ##
         ################ Start checks ##########################
@@ -1098,18 +1059,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
 
         self.check_discipline_values(
@@ -1179,12 +1136,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = None
 
@@ -1260,12 +1213,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
 
@@ -1379,12 +1328,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
 
@@ -1446,7 +1391,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         print("\n")
         print("1.6 Provide use case name and add scenario_ref")
         my_usecase = 'usecase2'
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         if 0 == 0:  # directly provide anonymized dict
             anonymize_input_dict = {}
             anonymize_input_dict['<study_ph>.Hessian.ax2'] = 14.0
@@ -1461,10 +1406,10 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                 repo, mod_id, my_usecase)
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
         # check created tree structure
@@ -1523,14 +1468,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.x'] = 12.0
         tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 13.0
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = [
             'scenario_1', 'scenario_2', 'reference']
@@ -1673,18 +1612,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -1706,11 +1641,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         # Prepare inputs #########
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = None
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
 
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
@@ -1746,7 +1677,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         print("\n")
         print("1.1 Provide repo")
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         # check multi-configure max 100 reached
         #
@@ -1788,18 +1719,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -1822,9 +1749,9 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         ################ End checks ##########################
         print("\n")
         print("1.2 Provide process name")
-        sub_process_inputs_dict['process_name'] = mod_id
+        process_builder_parameter_type.process_name = mod_id
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         ##
         ################ Start checks ##########################
@@ -1870,11 +1797,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
@@ -1883,7 +1806,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                            'ns_to_update': ['ns_ac', 'ns_data_ac', 'ns_disc3', 'ns_out_disc3']}
         # updated by complete list of namspace
 
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
 
         self.check_discipline_values(
@@ -1953,12 +1876,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = None
 
@@ -2036,12 +1955,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
 
@@ -2174,12 +2089,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = ['scenario_1', 'scenario_2']
 
@@ -2254,10 +2165,10 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng = study_dump.ee
         driver_disc = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.study_name}.vs_MS')[0]
-        sub_process_inputs_dict = driver_disc.get_data_io_from_key(
-            'in', 'sub_process_inputs')['value']
+        process_nuilder_parameter_type = ProcessBuilderParameterType.create(driver_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value'])
 
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
 
         if 0 == 0:  # directly provide anonymized dict
             anonymize_input_dict = {}
@@ -2272,10 +2183,10 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                 repo, mod_id, my_usecase)
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
         # check created tree structure
@@ -2336,14 +2247,9 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.power'] = 2
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.z'] = 1.2
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = [
             'scenario_1', 'scenario_2', 'reference']
@@ -2400,17 +2306,17 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng = study_dump.ee
         driver_disc = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.study_name}.vs_MS')[0]
-        sub_process_inputs_dict = driver_disc.get_data_io_from_key(
-            'in', 'sub_process_inputs')['value']
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type = ProcessBuilderParameterType.create(driver_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value'])
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, 'usecase2')
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         print('load usecase2 file')
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
@@ -2472,14 +2378,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.power'] = 2
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.z'] = 1.2
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         target_values_dict['scenario_list'] = [
             'scenario_1', 'scenario_2', 'reference']
@@ -2607,18 +2507,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -2712,14 +2608,10 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
 
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
@@ -2876,18 +2768,14 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
         # check input values (and print) of vs_MS discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
         tv_scenario_map = {'input_name': None,
                            #'input_ns': '',
                            #'output_name': '',
                            #'scatter_ns': '',
                            #'gather_ns': '',
                            'ns_to_update': []}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = tv_scenario_map
         self.check_discipline_values(
             driver_disc, target_values_dict, print_flag=print_flag)
@@ -2909,11 +2797,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         print('Step 1: provide Hessian process with both change in SubProc/Map')
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         scenario_map_name = 'scenario_list'
         ns_to_update = []
@@ -2921,7 +2805,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
                         'ns_to_update': ns_to_update}
 
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         study_dump.load_data(from_input_dict=dict_values)
@@ -2954,14 +2838,10 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         dict_values = {}
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         dict_values = {}
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
 
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
@@ -3105,14 +2985,8 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.power'] = 2
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc3.z'] = 1.2
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        #tv_sub_process_inputs_dict['usecase_data'] = tv_anonymize_input_dict_from_usecase
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['scenario_map'] = scenario_map
         # ['scenario_1', 'scenario_2','reference']
         target_values_dict['scenario_list'] = scenario_list
