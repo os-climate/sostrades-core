@@ -21,6 +21,7 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
+from copy import deepcopy
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -356,16 +357,22 @@ class DoeEval(SoSEval):
         if 'full_name' in dspace_df:
             variables = dspace_df['full_name'].tolist()
             variables = [f'{self.ee.study_name}.{eval}' for eval in variables]
+            lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
+            upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         else:
-            variables = self.eval_in_list
+            #variables = self.eval_in_list
 
-        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
-        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
+            newdspace_df = dspace_df[dspace_df[self.VARIABLES].isin(
+                self.eval_in_base_list)]
+            variables = [self.eval_in_dict[var]
+                         for var in newdspace_df[self.VARIABLES].values]
+            lower_bounds = newdspace_df[self.LOWER_BOUND].tolist()
+            upper_bounds = newdspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
-        enable_variables = [True for invar in self.eval_in_list]
+        enable_variables = [True] * len(values)
         # This won't work for an array with a dimension greater than 2
         activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
-                           self.eval_in_list]
+                           variables]
         dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
                                             self.VALUES: values,
                                             self.LOWER_BOUND: lower_bounds,
@@ -919,12 +926,16 @@ class DoeEval(SoSEval):
         '''
         self.eval_in_base_list = [
             element.split(".")[-1] for element in in_list]
+
         self.eval_out_base_list = [
             element.split(".")[-1] for element in out_list]
         self.eval_in_list = [
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+
+        self.eval_in_dict = {base: full for base, full in zip(
+            self.eval_in_base_list, self.eval_in_list)}
 
     def check_eval_io(self, given_list, default_list, is_eval_input):
         """

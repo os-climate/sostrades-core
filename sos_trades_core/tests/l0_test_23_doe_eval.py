@@ -835,7 +835,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         with the same short name
         """
 
-        dspace_dict = {'variable': ['x', 'DoEEval.Disc1.a'],
+        dspace_dict = {'variable': ['x', 'a'],
 
                        'lower_bnd': [0., 50.],
                        'upper_bnd': [100., 200.],
@@ -1157,4 +1157,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_13_sameusecase_name_as_doe_eval()
+    cls.test_9_doe_eval_with_2_outputs_with_the_same_name()
