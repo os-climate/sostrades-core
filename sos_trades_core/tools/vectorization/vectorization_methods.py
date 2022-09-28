@@ -215,25 +215,27 @@ def compute_sum_df(
     parent_key: str,
     children_keys: list,
     columns_not_to_sum: list = [],
+    allow_empty_dataframe: bool = False,
 ):
     """
     Method to compute sum of dict of dataframes
     not_sum : column name to not sum
     """
     # infer not summable columns in dataframe
-    not_summable_nested_list = [
-        df.convert_dtypes()
-        .select_dtypes(exclude=[np.number, 'datetime'])
-        .columns.to_list()
-        for df in df_dict.values()
-    ]
-    not_summable = [l for sublist in not_summable_nested_list for l in sublist]
-    if len(not_summable):
-        if columns_not_to_sum is None:
-            columns_not_to_sum = not_summable
-        else:
-            columns_not_to_sum.extend(not_summable)
-            columns_not_to_sum = list(set(columns_not_to_sum))
+    if not allow_empty_dataframe:
+        not_summable_nested_list = [
+            df.convert_dtypes()
+            .select_dtypes(exclude=[np.number, 'datetime'])
+            .columns.to_list()
+            for df in df_dict.values()
+        ]
+        not_summable = [l for sublist in not_summable_nested_list for l in sublist]
+        if len(not_summable):
+            if columns_not_to_sum is None:
+                columns_not_to_sum = not_summable
+            else:
+                columns_not_to_sum.extend(not_summable)
+                columns_not_to_sum = list(set(columns_not_to_sum))
 
     df_sum = None
     for key in children_keys:
@@ -262,7 +264,10 @@ def compute_sum_df(
 
     # restore column not to sum in result sum df
     if columns_not_to_sum != []:
-        df_restore_base = list(df_dict.values())[0]
+        i=0
+        while (i in range(len(list(df_dict.values()))+1)) and (list(df_dict.values())[i].empty):
+            i+=1
+        df_restore_base = list(df_dict.values())[i]
         restore_columns = [
             col for col in df_restore_base.columns if col in columns_not_to_sum
         ]
