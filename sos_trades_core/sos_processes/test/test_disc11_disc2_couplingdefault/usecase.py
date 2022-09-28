@@ -27,12 +27,13 @@ class Study(StudyManager):
         setup_data_list = []
         # private values AC model
         test_df = pd.DataFrame()
-        test_df['a'] = [5]
+        test_df['a'] = [
+            f'formula:{self.study_name}.Disc11.test_df.b+{self.study_name}.Disc11.c_dict.c']
         test_df['b'] = [2]
         c_dict = {}
-        c_dict['c'] = f'formula:{self.study_name}.x + 1'
+        c_dict['c'] = f'formula:{self.study_name}.Disc2.power+3'
         private_values = {
-            self.study_name + '.x': 10.,
+            self.study_name + '.x': 10,
             self.study_name + '.Disc11.test_df': test_df,
             self.study_name + '.Disc11.c_dict': c_dict,
             self.study_name + '.Disc2.constant': 3.1416,
