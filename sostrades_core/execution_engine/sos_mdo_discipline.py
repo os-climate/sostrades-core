@@ -132,13 +132,17 @@ class SoSMDODiscipline(MDODiscipline):
             self.output_full_name_map = {}
             for key in self.get_output_data_names():
                 short_name_key = self.io_full_name_to_short(key)
-                self.output_full_name_map[short_name_key] = key
+                #FIXME: quick fix
+                if short_name_key not in self.output_full_name_map:
+                    self.output_full_name_map[short_name_key] = key
 
         if self.input_full_name_map is None:
             self.input_full_name_map = {}
             for key in self.get_input_data_names():
                 short_name_key = self.io_full_name_to_short(key)
-                self.input_full_name_map[short_name_key] = key
+                # FIXME: quick fix
+                if short_name_key not in self.input_full_name_map:
+                    self.input_full_name_map[short_name_key] = key
 
         return self.input_full_name_map, self.output_full_name_map
 

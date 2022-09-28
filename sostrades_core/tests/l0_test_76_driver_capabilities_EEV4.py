@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import copy
 import logging
 from logging import Handler
 from time import time
@@ -216,7 +217,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
-    def _test_2_DoeEval_of_DoeEval(self):
+    def test_2_DoeEval_of_DoeEval(self):
         """ Here we test a DoeEval of a DoeEval process on a single sub-discipline to check that the transition of the
         ProxyDisciplineDriver from working with short names to working with tuples of short names and namespace (of the
         discipline to the local data variable belongs) is implemented. It is really a test of driver of a driver using
@@ -227,14 +228,21 @@ class TestSoSDOEScenario(unittest.TestCase):
         variables do not configure properly. The exec_eng.configure() is not passed so the assert of the treeview shall
         not be taken into account (see treeview in console during debugging).
         """
-        #TODO: WIP as the configure now works but the assert need to be reviewed
-        dspace_dict = {'variable': ['x'],
 
-                       'lower_bnd': [0.],
-                       'upper_bnd': [100.],
+        dspace_dict_upper = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.b'],
 
-                       }
-        dspace = pd.DataFrame(dspace_dict)
+                               'lower_bnd': [50.],
+                               'upper_bnd': [200.],
+
+                               }
+        dspace_upper = pd.DataFrame(dspace_dict_upper)
+        dspace_dict_lower = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.a'],
+
+                               'lower_bnd': [50.],
+                               'upper_bnd': [200.],
+
+                               }
+        dspace_lower = pd.DataFrame(dspace_dict_lower)
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -249,53 +257,83 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ DoEEval',
-                       '\t\t|_ Disc1']
+                       f'\t|_ DoEEvalUpper',
+                       '\t\t|_ DoEEvalLower',
+                       '\t\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
         assert exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+        assert exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
 
         # -- set up disciplines
         private_values = {
             self.study_name + '.x': array([10.]),
-            self.study_name + '.DoEEval.Disc1.a': array([5.]),
-            self.study_name + '.DoEEval.Disc1.b': array([25431.]),
+            self.study_name + '.DoEEvalUpper.DoEEvalLower.Disc1.a': array([5.]),
+            self.study_name + '.DoEEvalUpper.DoEEvalLower.Disc1.b': array([25431.]),
             self.study_name + '.y': array([4.])}
         exec_eng.load_study_from_input_dict(private_values)
-        input_selection_x = {'selected_input': [True, False, False],
-                               'full_name': ['x', 'DoEEval.Disc1.a', 'DoEEval.Disc1.b']}
-        input_selection_x = pd.DataFrame(input_selection_x)
 
-        output_selection_y = {'selected_output': [True, False],
-                                'full_name': ['y', 'Disc1.indicator']}
-        output_selection_y = pd.DataFrame(output_selection_y)
+        input_selection_upper_b = {'selected_input': [False, False, True],
+                               'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a', 'DoEEvalUpper.DoEEvalLower.Disc1.b']}
+        input_selection_upper_b = pd.DataFrame(input_selection_upper_b)
+        output_selection_upper_y_dict = {'selected_output': [True, False, True],
+                                'full_name': ['y_dict', 'DoEEvalUpper.DoEEvalLower.Disc1.indicator', 'DoEEvalUpper.DoEEvalLower.samples_inputs_df']}
+        output_selection_upper_y_dict = pd.DataFrame(output_selection_upper_y_dict)
 
-        disc_dict = {f'{self.ns}.DoEEval.sampling_algo': "lhs",
-                     f'{self.ns}.DoEEval.eval_inputs': input_selection_x,
-                     f'{self.ns}.DoEEval.eval_outputs': output_selection_y}
+        input_selection_lower_a = {'selected_input': [False, True, False],
+                                   'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a', 'DoEEvalUpper.DoEEvalLower.Disc1.b']}
+        input_selection_lower_a = pd.DataFrame(input_selection_lower_a)
+        output_selection_lower_y = {'selected_output': [True, False],
+                                    'full_name': ['y', 'DoEEvalUpper.DoEEvalLower.Disc1.indicator']}
+        output_selection_lower_y = pd.DataFrame(output_selection_lower_y)
 
-        n_samples = 10
+        disc_dict = {f'{self.ns}.DoEEvalUpper.sampling_algo': "lhs",
+                     f'{self.ns}.DoEEvalUpper.eval_inputs': input_selection_upper_b,
+                     f'{self.ns}.DoEEvalUpper.eval_outputs': output_selection_upper_y_dict,
+                     f'{self.ns}.DoEEvalUpper.DoEEvalLower.sampling_algo': "lhs",
+                     f'{self.ns}.DoEEvalUpper.DoEEvalLower.eval_inputs': input_selection_lower_a,
+                     f'{self.ns}.DoEEvalUpper.DoEEvalLower.eval_outputs': output_selection_lower_y}
+
+
+        n_samples = 3
         exec_eng.load_study_from_input_dict(disc_dict)
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': 'faced'},
-                     'doe.DoEEval.design_space': dspace}
+        disc_dict = {'doe.DoEEvalUpper.algo_options': {'n_samples': n_samples, 'face': 'faced'},
+                     'doe.DoEEvalUpper.design_space': dspace_upper,
+                     'doe.DoEEvalUpper.DoEEvalLower.algo_options': {'n_samples': n_samples, 'face': 'faced'},
+                     'doe.DoEEvalUpper.DoEEvalLower.design_space': dspace_lower
+                     }
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
 
-        doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+        for var in ['doe.y_dict_dict', 'doe.y_dict', 'doe.y']:
+            self.assertIn(var, exec_eng.root_process.get_output_data_names())
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'samples_inputs_df')
-        doe_disc_y = doe_disc.get_sosdisc_outputs('y_dict')
+        proxy_disc = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0]
+        mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
+        reference_local_data = copy.deepcopy(mdo_disc.local_data)
 
-        self.assertEqual(len(doe_disc_y), n_samples+1)
-        i = 0
-        for key in doe_disc_y.keys():
-            self.assertAlmostEqual(doe_disc_y[key], private_values[self.study_name + '.DoEEval.Disc1.b']
-                                   + private_values[self.study_name + '.DoEEval.Disc1.a']*doe_disc_samples.x[i][0])
-            i += 1
+        keys_upper = list(exec_eng.dm.get_value('doe.y_dict_dict').keys())
+        i_upper = 0
+        for b in exec_eng.dm.get_value('doe.DoEEvalUpper.samples_inputs_df')['DoEEvalUpper.DoEEvalLower.Disc1.b']:
+            keys_lower = list(exec_eng.dm.get_value('doe.y_dict_dict')[keys_upper[i_upper]].keys())
+            i_lower = 0
+            samples_input_dataframe = exec_eng.dm.get_value('doe.DoEEvalUpper.DoEEvalLower.samples_inputs_df_dict')[keys_upper[i_upper]]
+            for a in samples_input_dataframe['DoEEvalUpper.DoEEvalLower.Disc1.a']:
+                y_output = exec_eng.dm.get_value('doe.y_dict_dict')[keys_upper[i_upper]][keys_lower[i_lower]]
+
+                in_local_data = copy.deepcopy(reference_local_data)
+                in_local_data['doe.DoEEvalUpper.DoEEvalLower.Disc1.a'] = a
+                in_local_data['doe.DoEEvalUpper.DoEEvalLower.Disc1.b'] = b
+                out_local_data = mdo_disc.execute(in_local_data)
+                y_reference = out_local_data['doe.y']
+
+                self.assertAlmostEqual(y_output, y_reference)
+
+                i_lower += 1
+            i_upper += 1
 
     def test_3_simple_custom_driver(self):
 
