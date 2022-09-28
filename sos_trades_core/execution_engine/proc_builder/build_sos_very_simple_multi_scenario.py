@@ -37,7 +37,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
             |_ SCENARIO_MAP (structuring)            
-               |_ SCENARIO_MAP[INPUT_NAME] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP['input_name'] != '' or is not None)
+               |_ SCENARIO_MAP[INPUT_NAME] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP[INPUT_NAME] != '' or is not None)
             |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
 
@@ -58,10 +58,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                                                     INPUT_NS:             Optional key: namespace of the variable to scatter if the INPUT_NS key is this scenario map. 
                                                                           If the key is not here then it is local to the driver.
                                                     OUTPUT_NAME:          name of the variable to overwrite
-                                                    SCATTER_NS:           Internal namespace: namespace associated to the scatter discipline
-                                                                          it is a temporary input: it will be put to None as soon as                                                                        
-                                                    GATHER_NS:            namespace of the gather discipline associated to the scatter discipline 
-                                                                          (input_ns by default and optional). Only used if autogather = True
+                                                    SCATTER_NS:           Optional key: Internal namespace associated to the scatter discipline
+                                                                          it is a temporary input: its value is put to None as soon as scenario disciplines are instantiated
+                                                    GATHER_NS:            Optional key: namespace of the gather discipline associated to the scatter discipline 
+                                                                          (input_ns by default). Only used if autogather = True
                                                     NS_TO_UPDATE:         list of namespaces depending on the scatter namespace 
                                                                           (by default, we have the list of namespaces of the nested sub_process)   
             |_ NS_IN_DF :                       Only in tread only and hidden: a map of ns name: value for namespaces of the nested sub_process                                                                                                                                         
@@ -753,6 +753,13 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # good prefix in context
         driver_name = self.name
         new_study_placeholder = f'{self.ee.study_name}.{driver_name}.{self.REFERENCE}'
+
+        # Following treatment of substitution of new_study_placeholder is
+        # OK if variable is a variable with ns  in ns_to_update
+        # If not then we should shift only of f'{self.ee.study_name}.{driver_name}
+        # For this we need to find ns of each variable
+        # self.ee.ns_manager.get_shared_namespace(disc, var_ns)
+
         input_dict_from_usecase = {}
         for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
             converted_key = key_to_unanonymize.replace(
