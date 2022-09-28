@@ -531,13 +531,17 @@ class SoSDiscipline(MDODiscipline):
 
         self.reload_io()
 
-        self.check_data_integrity()
+        self.__check_all_data_integrity()
 
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
         self.set_configure_status(True)
 
+    def __check_all_data_integrity(self):
+        ##-- generic data integrrity_check
+        self.check_data_integrity()
+        
     def check_data_integrity(self):
         pass
 
