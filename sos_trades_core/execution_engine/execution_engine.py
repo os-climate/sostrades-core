@@ -18,6 +18,8 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 # Execution engine SoSTrades code
+from copy import deepcopy
+import pandas as pd
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.data_manager import DataManager
 from sos_trades_core.execution_engine.sos_factory import SosFactory
@@ -29,6 +31,7 @@ from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 from rapidfuzz import process, fuzz
+from sos_trades_core.tools.controllers.simpy_formula import SympyFormula
 
 
 DEFAULT_FACTORY_NAME = 'default_factory'
@@ -391,10 +394,87 @@ class ExecutionEngine:
         return converted_dict
 
     def convert_input_dict_into_dict(self, input_dict):
-
         dm_dict = {key: {SoSDiscipline.VALUE: value}
                    for key, value in input_dict.items()}
         return dm_dict
+
+    def get_value_from_formula(self, input_dict):
+        """
+        Update dm with the value of formula if variable is defined by a formula
+        """
+        # value_dict {parameter_name : value}
+        value_dict = {}
+        # corresp_dict : {parameter_name : key in variable} for case formula is
+        # in df or dict
+        corresp_dict = {}
+        for key in input_dict.keys():
+            if type(input_dict[key]) == type(pd.DataFrame()):
+                if len(input_dict[key]) > 0:
+                    for key_df in input_dict[key].keys():
+                        value_dict[f'{key}.{key_df}'] = input_dict[key][key_df].values[0]
+                        corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+            elif type(input_dict[key]) == type({}):
+                for key_df in input_dict[key].keys():
+                    value_dict[f'{key}.{key_df}'] = input_dict[key][key_df]
+                    corresp_dict[f'{key}.{key_df}'] = [key, key_df]
+
+            else:
+                value_dict[key] = input_dict[key]
+                corresp_dict[key] = key
+
+        for key in value_dict.keys():
+
+            # variable is a float, and depends on other float from same disc
+            if type(value_dict[key]) == type('string'):
+                # store formula in dm.data_dict
+                if key in input_dict.keys():
+                    id_in_dm = self.dm.get_data_id(key)
+                    info_data_dict = self.dm.data_dict[id_in_dm]
+                    if info_data_dict['type'] != 'string':
+                        # if info_data_dict['formula'] is None:
+                        self.dm.data_dict[id_in_dm]['formula'] = input_dict[key]
+                else:
+                    input_item = corresp_dict[key][0]
+                    id_in_dm = self.dm.get_data_id(input_item)
+                    info_data_dict = self.dm.data_dict[id_in_dm]
+                    # if info_data_dict['formula'] is None:
+                    self.dm.data_dict[id_in_dm]['formula'] = deepcopy(
+                        input_dict[input_item])
+                try:
+                    if type(corresp_dict[key]) == type([]):
+                        # key of variable in dataframe or dict
+                        in_el_key = corresp_dict[key][1]
+                        if self.dm.data_dict[id_in_dm]['type'] == 'dict':
+                            if self.dm.data_dict[id_in_dm]['formula'][in_el_key].startswith('formula:'):
+                                sympy_formula = SympyFormula(
+                                    self.dm.data_dict[id_in_dm]['formula'][in_el_key].split(':')[1])
+                        elif self.dm.data_dict[id_in_dm]['type'] == 'dataframe':
+                            sympy_formula = SympyFormula(
+                                self.dm.data_dict[id_in_dm]['formula'][in_el_key].values[0].split(':')[1])
+                    else:
+                        sympy_formula = SympyFormula(
+                            self.dm.data_dict[id_in_dm]['formula'].split(':')[1])
+                    sympy_formula.evaluate(value_dict)
+                    if corresp_dict[key] == key:
+                        input_dict[key] = sympy_formula.get_value()
+                        value_dict[key] = sympy_formula.get_value()
+                    else:
+                        df_name = corresp_dict[key][0]
+                        df_key = corresp_dict[key][1]
+                        input_dict[df_name][df_key] = sympy_formula.get_value()
+                        value_dict[key] = sympy_formula.get_value()
+                except Exception as exp:
+                    self.logger.error(
+                        f'error while interpreting formula: {exp}')
+        return(input_dict)
+
+    def update_token_formula_from_other_disc(self, token_list, value_dict):
+        """
+        """
+        for token in token_list:
+            if token not in value_dict:
+                id_in_dm = self.dm.get_data_id(token)
+                info_data_dict = self.dm.data_dict[id_in_dm]
 
     def load_study_from_dict(self, dict_to_load, anonymize_function=None, update_status_configure=True):
         '''
@@ -461,14 +541,15 @@ class ExecutionEngine:
                     'CONFIGURE WARNING: root process is not configured after 100 iterations')
                 loop_stop = True
                 disciplines_not_configured = self.root_process.get_disciplines_to_configure()
-                if all( type(discipline).__name__ in ['SoSScatterData','SoSGatherData'] for discipline in disciplines_not_configured) :
+                if all(type(discipline).__name__ in ['SoSScatterData', 'SoSGatherData'] for discipline in disciplines_not_configured):
                     msg = "scattered variables in scatter_data or gathered variable in gather_data should be used by " \
                           "another process. Otherwise it is useless "
                     self.logger.error(msg)
                     raise ValueError(msg)
 
         # Convergence is ended
-        message = self.check_for_unutilized_inputs(data_cache, anonymize_function)
+        message = self.check_for_unutilized_inputs(
+            data_cache, anonymize_function)
         self.logger.info(message)
         # Set all output variables (to be able to get results
         for key, value in self.dm.data_dict.items():
@@ -499,45 +580,50 @@ class ExecutionEngine:
         '''
         if anonymize_function is self.anonymize_key:
             data_keys = list(self.get_anonimated_data_dict().keys())
-            ns_dict = {ns.name: ns.value for ns in self.get_anonymized_shared_ns_dict().values()}
+            ns_dict = {
+                ns.name: ns.value for ns in self.get_anonymized_shared_ns_dict().values()}
         else:
             data_keys = list(self.dm.data_id_map.keys())
-            ns_dict = {ns.name: ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()}
-        unchecked_keys=list(set(data_cache.keys()) - set(data_keys))
-        message=''
+            ns_dict = {
+                ns.name: ns.value for ns in self.dm.ns_manager.get_shared_ns_dict().values()}
+        unchecked_keys = list(set(data_cache.keys()) - set(data_keys))
+        message = ''
         if len(unchecked_keys):
-            message+='---------------------------------\n'
-            message+='Unexpected keys found in dict to load compared to keys in dm :\n'
+            message += '---------------------------------\n'
+            message += 'Unexpected keys found in dict to load compared to keys in dm :\n'
             for key in unchecked_keys:
-                #First, skip key if it is an output
+                # First, skip key if it is an output
                 try:
                     if self.dm.get_data(key)['io_type'] == 'out':
                         continue
                 except:
                     pass
-                #Then, check for match, with a different namespace
-                local_data=[key.split('.')[-1] for key in data_keys]
+                # Then, check for match, with a different namespace
+                local_data = [key.split('.')[-1] for key in data_keys]
                 if key.split('.')[-1] in local_data:
-                    matching_key={name: val+'.'+key.split('.')[-1] for name, val in ns_dict.items() if val+'.'+key.split('.')[-1] in data_keys}
+                    matching_key = {name: val + '.' + key.split('.')[-1] for name, val in ns_dict.items(
+                    ) if val + '.' + key.split('.')[-1] in data_keys}
                     if len(matching_key):
                         # If a match is found, return suggestions
                         grouped_matching_keys = {}
                         for i, v in sorted(matching_key.items()):
-                            grouped_matching_keys[v] = [i] if v not in grouped_matching_keys.keys() else grouped_matching_keys[v] + [i]
+                            grouped_matching_keys[v] = [i] if v not in grouped_matching_keys.keys(
+                            ) else grouped_matching_keys[v] + [i]
                         message += f'"{key}" not an expected input in dm, matches found:\n'
                         for suggestion, ns_names in grouped_matching_keys.items():
-                            message+=f'  - "{suggestion}" with namespaces "{ns_names}"\n'
+                            message += f'  - "{suggestion}" with namespaces "{ns_names}"\n'
                         continue
-                #If no match found with all the namespaces, perform string-match search
-                result=process.extractOne(key, data_keys, scorer=fuzz.WRatio)
+                # If no match found with all the namespaces, perform
+                # string-match search
+                result = process.extractOne(key, data_keys, scorer=fuzz.WRatio)
                 if result[1] > 90:
-                    #If a close match is found, make a suggestion
-                    message+=f'"{key}" not an expected input in dm, close match found:\n  - "{result[0]}" \n'
+                    # If a close match is found, make a suggestion
+                    message += f'"{key}" not an expected input in dm, close match found:\n  - "{result[0]}" \n'
                     continue
                 else:
-                    #Else, just print the key
-                    message+=f'"{key}" not an expected input in dm\n'
-            message+='---------------------------------\n'
+                    # Else, just print the key
+                    message += f'"{key}" not an expected input in dm\n'
+            message += '---------------------------------\n'
             return message
 
     def load_connectors_from_dict(self, connectors_to_load):
@@ -597,7 +683,7 @@ class ExecutionEngine:
         else:
             avail_debug = ["nan", "input_change",
                            "linearize_data_change", "min_max_grad", "min_max_couplings"]
-            raise ValueError("Debug mode %s is not among %s" % 
+            raise ValueError("Debug mode %s is not among %s" %
                              (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.sos_disciplines:

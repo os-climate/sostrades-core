@@ -19,6 +19,7 @@ Class that manage a whole study process (load, execute, save, dump..)
 """
 
 from time import time
+from importlib import import_module
 from os.path import join, isdir
 from logging import INFO, DEBUG
 
@@ -638,21 +639,68 @@ class BaseStudyManager():
         :params: execution_engine, execution engine to dump
         :type: sos_trades_core.execution_engine.execution_engine.ExecutionEngine
 
-        :params: rw_strategy, raed/write execution strategy instance
+        :params: rw_strategy, read/write execution strategy instance
         :type: sos_trades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
+        """
+
+        input_dict = BaseStudyManager.static_load_raw_data(study_folder_path, rw_strategy)
+
+        execution_engine.load_study_from_input_dict(input_dict)
+
+    @staticmethod
+    def static_load_raw_data(folder_path, rw_strategy):
+        """
+        Method that load the data pickle from a folder
+
+        :param folder_path: location of pickle file to load
+        :type folder_path: str
+
+        :param rw_strategy: read/write execution strategy instance
+        :type rw_strategy: sos_trades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
                 f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
-        if isdir(study_folder_path):
+        result = []
+
+        if isdir(folder_path):
             serializer = DataSerializer()
 
             loaded_dict = serializer.get_dict_from_study(
-                study_folder_path, DirectLoadDump())
+                folder_path, rw_strategy)
 
-            input_dict = {key: value[SoSDiscipline.VALUE]
-                          for key, value in loaded_dict.items()}
+            result = {key: value[SoSDiscipline.VALUE]
+                      for key, value in loaded_dict.items()}
 
-            execution_engine.load_study_from_input_dict(input_dict)
+        return result
+
+    @staticmethod
+    def static_load_raw_usecase_data(repository_name, process_name, usecase_name):
+        """
+        Method that load the data from a specific usecase file from a repository
+
+        :param repository_name: repository module name where the process is located
+        :type repository_name: str
+        :param process_name: process name in the repository
+        :type process_name: str
+        :param usecase_name: name of the final usecase module to load
+        :type usecase_name: str
+        :return: [dict]
+        """
+        imported_module = import_module(
+            '.'.join([repository_name, process_name, usecase_name]))
+
+        imported_usecase = getattr(
+            imported_module, 'Study')()
+
+        imported_usecase.load_data()
+        loaded_dict = imported_usecase.execution_engine.get_anonimated_data_dict()
+
+        result = {key: value[SoSDiscipline.VALUE]
+                  for key, value in loaded_dict.items()}
+
+        return result
+
+

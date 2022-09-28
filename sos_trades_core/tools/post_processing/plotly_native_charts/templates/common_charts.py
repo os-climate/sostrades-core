@@ -470,6 +470,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         annotation_upper_right={},
         compute_legend_title=False,
         compute_colors_details=False,
+        barmode='stack',
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -529,6 +530,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 ticksuffix=f'{ticksuffix}',
                 automargin=True,
             ),
+            barmode=barmode,
         )
 
         new_chart = None
@@ -950,7 +952,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     buttons=list([dict(
                         args=[
                             {'visible': [True if i == j else False for j in range(int(len(fig.data)/len(categories_list)))] * len(categories_list)},
-                            {'title': f'<b>{col_pretty_list[i]} in {ticksuffix} for {layout} layout</b>'},
+                            {'title': f'<b>{col_pretty_list[i]} for {layout} layout</b>'},
                         ],
                         label=col_pretty_list[i],
                         method="update"

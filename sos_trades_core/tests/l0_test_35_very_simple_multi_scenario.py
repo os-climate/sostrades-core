@@ -460,8 +460,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             a2 = 6
             b2 = 2
 
-            dict_values[self.study_name + '.name_1.a'] = a1
-            dict_values[self.study_name + '.name_2.a'] = a2
+            dict_values[self.study_name + '.multi_scenarios.name_1.a'] = a1
+            dict_values[self.study_name + '.multi_scenarios.name_2.a'] = a2
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_1.b'] = b1
             dict_values[self.study_name + '.multi_scenarios.' +
@@ -477,8 +477,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                     '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
-        dict_values[self.study_name + '.name_1.x'] = x1
-        dict_values[self.study_name + '.name_2.x'] = x2
+        dict_values[self.study_name + '.multi_scenarios.name_1.x'] = x1
+        dict_values[self.study_name + '.multi_scenarios.name_2.x'] = x2
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()

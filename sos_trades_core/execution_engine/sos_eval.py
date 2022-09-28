@@ -68,11 +68,12 @@ class SoSEval(SoSDisciplineBuilder):
 
     }
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
-        super(SoSEval, self).__init__(sos_name, ee)
+        super(SoSEval, self).__init__(sos_name, ee,
+                                      associated_namespaces=associated_namespaces)
         self.eval_in_base_list = None
         self.eval_in_list = None
         self.eval_out_base_list = None
@@ -104,7 +105,7 @@ class SoSEval(SoSDisciplineBuilder):
 
         return disc_builder
 
-    def set_eval_in_out_lists(self, in_list, out_list):
+    def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
         '''
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
@@ -115,8 +116,11 @@ class SoSEval(SoSDisciplineBuilder):
         for v_id in in_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
             for full_id in full_id_list:
-                self.eval_in_list.append(full_id)
-
+                if not inside_evaluator:
+                    self.eval_in_list.append(full_id)
+                else:
+                    if full_id.startswith(self.get_disc_full_name()):
+                        self.eval_in_list.append(full_id)
         self.eval_out_list = []
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)

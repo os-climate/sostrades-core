@@ -17,10 +17,12 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+
 class Namespace:
     '''
     Specification: Namespace class describes name, value and dependencies of namespace object
     '''
+    NS_NAME_SEPARATOR = '__'
 
     def __init__(self, name, value):
         '''
@@ -45,6 +47,12 @@ class Namespace:
         Get the value in the Namespace
         '''
         return self.value
+
+    def get_ns_id(self):
+        '''
+        Get the namespace id used to store the namespace in the namespace_manager
+        '''
+        return f'{self.name}{self.NS_NAME_SEPARATOR}{self.value}'
 
     def get_dependency_disc_list(self):
         '''

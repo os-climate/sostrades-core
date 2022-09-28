@@ -294,6 +294,7 @@ class TestScatterData(unittest.TestCase):
         dict_values = {self.study_name + '.name_list': ['name_1', 'name_2']}
         self.exec_eng.dm.set_values_from_dict(dict_values)
         self.exec_eng.configure()
+        self.exec_eng.display_treeview_nodes()
         df_default = pd.DataFrame({
             'name': ['name_1', 'name_1', 'name_2', 'name_2'],
             'c1': [1.0, 1.0, 10.0, 10.0],
@@ -341,20 +342,20 @@ class TestScatterData(unittest.TestCase):
 
         pd.testing.assert_frame_equal(self.exec_eng.dm.get_value(
             'MyCase.Disc2.name_1.df'), pd.DataFrame({
-            'name': ['name_1', 'name_1'],
-            'c1': [1.0, 1.0],
-            'c2': [5.0, 5.0],
-        }))
+                'name': ['name_1', 'name_1'],
+                'c1': [1.0, 1.0],
+                'c2': [5.0, 5.0],
+            }))
 
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.Disc2.name_1.df'), scatter_data_disc.get_data_out()['name_1.df'])
 
         pd.testing.assert_frame_equal(self.exec_eng.dm.get_value(
             'MyCase.Disc2.name_2.df'), pd.DataFrame({
-            'name': ['name_2', 'name_2'],
-            'c1': [10.0, 10.0],
-            'c2': [50.0, 50.0],
-        }))
+                'name': ['name_2', 'name_2'],
+                'c1': [10.0, 10.0],
+                'c2': [50.0, 50.0],
+            }))
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.Disc2.name_2.df'), scatter_data_disc.get_data_out()['name_2.df'])
 
@@ -482,20 +483,20 @@ class TestScatterData(unittest.TestCase):
 
         pd.testing.assert_frame_equal(self.exec_eng.dm.get_value(
             'MyCase.Disc2.name_1.df'), pd.DataFrame({
-            'name': ['name_1', 'name_1'],
-            'c1': [1.0, 1.0],
-            'c2': [5.0, 5.0],
-        }))
+                'name': ['name_1', 'name_1'],
+                'c1': [1.0, 1.0],
+                'c2': [5.0, 5.0],
+            }))
 
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.Disc2.name_1.df'), scatter_data_disc.get_data_out()['name_1.df'])
 
         pd.testing.assert_frame_equal(self.exec_eng.dm.get_value(
             'MyCase.Disc2.name_2.df'), pd.DataFrame({
-            'name': ['name_2', 'name_2'],
-            'c1': [10.0, 10.0],
-            'c2': [50.0, 50.0],
-        }))
+                'name': ['name_2', 'name_2'],
+                'c1': [10.0, 10.0],
+                'c2': [50.0, 50.0],
+            }))
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.Disc2.name_2.df'), scatter_data_disc.get_data_out()['name_2.df'])
 
@@ -587,7 +588,7 @@ class TestScatterData(unittest.TestCase):
         # assert that scatter data discipline has correct inputs and outputs
         self.assertListEqual(
             [key for key in list(scatter_data_disc._data_in.keys()) if key not in scatter_data_disc.NUM_DESC_IN], [
-                 'y_dict', 'dict_float_dict', 'list_float_dict', 'list_dict_float_dict','name_list',])
+                'y_dict', 'dict_float_dict', 'list_float_dict', 'list_dict_float_dict', 'name_list', ])
         self.assertListEqual(list(scatter_data_disc._data_out.keys()),
                              ['name_1.y', 'name_1.dict_float', 'name_1.list_float', 'name_1.list_dict_float',
                               'name_2.y', 'name_2.dict_float', 'name_2.list_float', 'name_2.list_dict_float'])
@@ -619,9 +620,10 @@ class TestScatterData(unittest.TestCase):
         self.assertDictEqual(self.exec_eng.dm.get_data(
             'MyCase.name_1.list_float', self.SUBTYPE), {'list': 'float'})
         self.assertDictEqual(self.exec_eng.dm.get_data(
-            'MyCase.name_1.list_dict_float', self.SUBTYPE), {'list': {'dict':'float'} })
+            'MyCase.name_1.list_dict_float', self.SUBTYPE), {'list': {'dict': 'float'}})
 
-        # assert that scattered discipline is fed with correct inputs values by scatter data
+        # assert that scattered discipline is fed with correct inputs values by
+        # scatter data
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.name_1.y'), 1.0)
         self.assertDictEqual(self.exec_eng.dm.get_value(
@@ -635,4 +637,6 @@ class TestScatterData(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    cls = TestScatterData()
+    cls.setUp()
+    cls.test_03_scatter_data_with_dataframe()

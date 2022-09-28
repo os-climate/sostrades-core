@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from copy import deepcopy, copy
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from copy import copy
 
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.namespace import Namespace
@@ -35,6 +35,7 @@ class NamespaceManager:
     Specification: NamespaceManager allows to manage namespaces for disciplines data
     '''
     NS_SEP = '.'
+    NS_NAME_SEPARATOR = Namespace.NS_NAME_SEPARATOR
 
     def __init__(self, name, ee):
         '''
@@ -104,45 +105,42 @@ class NamespaceManager:
         return self.__disc_ns_dict
 
     #-- Data name space methods
-    def add_ns_def(self, ns_info, overwrite_value=False):
+    def add_ns_def(self, ns_info):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
+        ns_ids = []
         for key, value in ns_info.items():
-            self.add_ns(key, value,overwrite_value)
+            ns_id = self.add_ns(key, value)
+            ns_ids.append(ns_id)
 
-    def add_ns(self, name, ns_value, overwrite_value=False):
+        return ns_ids
+
+    def add_ns(self, name, ns_value):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
         '''
-        ns = None
-        if f'{name}__{ns_value}' in self.all_ns_dict:
-            ns = self.all_ns_dict[f'{name}__{ns_value}']
-            if overwrite_value:
-                ns.value = ns_value
 
-        # -- check if name and value
-#         found = False
-#         for ns_obj in self.ns_list:
-#             if ns_obj.name == name and ns_obj.value == ns_value:
-#                 # -- found an already existing namespace
-#                 ns = ns_obj
-#                 found = True
-#                 break
-            # else a ns already exists but with different value, continue
+        # if the couple (name,value) already exists do not create another
+        # object take the one that exists
+        ns_id = f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'
 
-        # -- else generate
-        if ns is None:
+        if ns_id in self.all_ns_dict:
+            ns = self.all_ns_dict[ns_id]
+
+        # else we create a new object and store it in all_ns_dict
+        else:
             ns = Namespace(name, ns_value)
             #-- add in the list if created
             self.ns_list.append(ns)
-            self.all_ns_dict[f'{name}__{ns_value}'] = ns
-
+            self.all_ns_dict[ns.get_ns_id()] = ns
+        # This shared_ns_dict delete the namespace if already exist: new one
+        # has priority
         self.shared_ns_dict[name] = ns
 
-        return ns
+        return ns.get_ns_id()
 
     def get_all_namespace_with_name(self, name):
         '''
@@ -263,9 +261,35 @@ class NamespaceManager:
         '''
 
         local_ns = self.create_local_namespace(disc)
+
+        others_ns = self.get_associated_ns(disc)
         disc_ns_info = {'local_ns': local_ns,
-                        'others_ns': self.get_shared_ns_dict()}
+                        'others_ns': others_ns}
         self.add_disc_ns_info(disc, disc_ns_info)
+
+    def get_associated_ns(self, disc):
+        '''
+        Get the others_ns by default from shared_ns_dict
+        IF the discipline has some associated namespaces then the others_ns dict is build in priority with these namespaces
+        for other namespaces not "associated" we pick namespaces from shared_ns_dict
+        '''
+        shared_ns_dict = self.get_shared_ns_dict()
+        if len(disc.associated_namespaces) == 0:
+            others_ns = shared_ns_dict
+        else:
+            get_ns_names = [
+                self.all_ns_dict[ns].name for ns in disc.associated_namespaces]
+            if len(get_ns_names) != len(set(get_ns_names)):
+                raise Exception(
+                    f'There is two namespaces with the same name in the associated namespace list of {disc.sos_name}')
+            others_ns = {
+                self.all_ns_dict[ns].name: self.all_ns_dict[ns] for ns in disc.associated_namespaces}
+            # FIX to wait all process modifs
+            # add namespaces present in shared_ns_dict and not in associated_ns
+            for shared_ns_name, shared_ns in shared_ns_dict.items():
+                if shared_ns_name not in others_ns:
+                    others_ns[shared_ns_name] = shared_ns
+        return others_ns
 
     def create_local_namespace(self, disc):
         '''
@@ -299,7 +323,7 @@ class NamespaceManager:
                 disc_id) for disc_id in dependendy_disc_id_list]
             if len(list(filter(None, dependency_disc_list))) == 0:
                 self.ns_list.remove(ns)
-                del self.all_ns_dict[f'{ns.name}__{ns.value}']
+                del self.all_ns_dict[f'{ns.name}{self.NS_NAME_SEPARATOR}{ns.value}']
                 del self.shared_ns_dict[ns.name]
 
     def add_disc_ns_info(self, pt, disc_ns_info):
@@ -378,7 +402,30 @@ class NamespaceManager:
 
         return result
 
-    def update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None):
+    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
+        '''
+        Update the value of a list of namespaces with an extra namespace placed behind after_name
+        '''
+        ns_ids = []
+        if namespace_list is None:
+            namespace_list = list(self.shared_ns_dict.values())
+        for ns in deepcopy(namespace_list):
+            ns_id = self.__update_namespace_with_extra_ns(
+                ns, extra_ns, after_name)
+            ns_ids.append(ns_id)
+
+        return ns_ids
+
+    def update_all_shared_namespaces_by_name(self, extra_ns, shared_ns_name, after_name=None):
+        '''
+        Update all shared namespaces named shared_ns_name with extra_namespace
+        '''
+        for namespace in deepcopy(self.ns_list):
+            if namespace.name == shared_ns_name:
+                self.__update_namespace_with_extra_ns(
+                    namespace, extra_ns, after_name)
+
+    def __update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None):
         '''
         Update the value of old_ns_object with an extra namespace which will be placed just after the variable after_name
         if after is the name of the discipline then we do not add the extra namespace
@@ -386,43 +433,15 @@ class NamespaceManager:
 
         old_ns_value = old_ns_object.get_value()
 
-        if after_name is None:
-            new_ns_value = self.compose_ns([extra_ns,
-                                            old_ns_value])
-            old_ns_object.update_value(new_ns_value)
-        else:
-            if f'{after_name}' in old_ns_value:
-                old_ns_value_split = old_ns_value.split(self.NS_SEP)
-                new_ns_value_split = []
-                for item in old_ns_value_split:
-                    new_ns_value_split.append(item)
-                    if item == after_name.replace(self.NS_SEP, ''):
-                        new_ns_value_split.append(extra_ns)
-                new_ns_value = self.compose_ns(
-                    new_ns_value_split)
-                old_ns_object.update_value(new_ns_value)
+        new_ns_value = self.update_ns_value_with_extra_ns(
+            old_ns_value, extra_ns, after_name)
 
-        return old_ns_object
-
-    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
-        '''
-        Update the value of a list of namespaces with an extra namespace placed behind after_name
-        '''
-        if namespace_list is None:
-            namespace_list = self.ns_list
-        for ns in namespace_list:
-            self.update_namespace_with_extra_ns(ns, extra_ns, after_name)
-
-    def update_all_shared_namespaces_by_name(self, extra_ns, shared_ns_name, after_name=None):
-        '''
-        Update all shared namespaces named shared_ns_name with extra_namespace
-        '''
-        for namespace in self.ns_list:
-            if namespace.name == shared_ns_name:
-                self.update_namespace_with_extra_ns(
-                    namespace, extra_ns, after_name)
-
-                self.ee.dm.generate_data_id_map()
+        # Add a new namespace (o or not if it exists already) but NEVER update
+        # the value of a namespace without modifying the ordering of the
+        # ns_manager
+        ns_id = self.add_ns(old_ns_object.name, new_ns_value)
+        # old_ns_object.update_value(new_ns_value)
+        return ns_id
 
     def update_ns_value_with_extra_ns(self, ns_value, extra_ns, after_name=None):
         '''
@@ -430,20 +449,21 @@ class NamespaceManager:
         if after_name is not given try to find it with the current_disc_ns
         '''
         if after_name is None:
-            return self.compose_ns([extra_ns,
-                                    ns_value])
+            new_ns_value = self.compose_ns([extra_ns,
+                                            ns_value])
+        elif f'{after_name}' in ns_value:
+            old_ns_value_split = ns_value.split(self.NS_SEP)
+            new_ns_value_split = []
+            for item in old_ns_value_split:
+                new_ns_value_split.append(item)
+                if item == after_name.split('.')[-1]:
+                    new_ns_value_split.append(extra_ns)
+            new_ns_value = self.compose_ns(
+                new_ns_value_split)
         else:
-            if f'{after_name}' in ns_value:
-                old_ns_value_split = ns_value.split(self.NS_SEP)
-                new_ns_value_split = []
-                for item in old_ns_value_split:
-                    new_ns_value_split.append(item)
-                    if item == after_name.split('.')[-1]:
-                        new_ns_value_split.append(extra_ns)
-                return self.compose_ns(
-                    new_ns_value_split)
-            else:
-                return self.compose_ns([ns_value, extra_ns])
+            new_ns_value = self.compose_ns([ns_value, extra_ns])
+
+        return new_ns_value
 
     def modify_all_local_namespaces_with_study_name(self, study_name):
 

@@ -31,7 +31,6 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
     Class that build disciplines using a builder and a map containing data to scatter
     '''
 
-
     # ontology information
     _ontology_data = {
         'label': 'Scatter',
@@ -45,7 +44,8 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         'icon': 'fas fa-indent fa-fw',
         'version': '',
     }
-    def __init__(self, sos_name, ee, map_name, cls_builder):
+
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
         '''
         Constructor
         '''
@@ -66,7 +66,8 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         self.sc_map.configure_map(cls_builder)
         self.__builders = cls_builder
         # if isinstance(self.__builders)
-        SoSDisciplineBuilder.__init__(self, sos_name, ee)
+        SoSDisciplineBuilder.__init__(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
         # add input_name to inst_desc_in
         self.build_inst_desc_in_with_map()
         self.builder_name = None
@@ -94,15 +95,15 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         '''
         input_name = self.sc_map.get_input_name()
         input_type = 'list'
-        input_subtype_descriptor = {'list':'string'}
+        input_subtype_descriptor = {'list': 'string'}
 
         if self.sc_map.INPUT_NS in self.sc_map.get_map():
             scatter_desc_in = {input_name: {
-                SoSDiscipline.TYPE: input_type,SoSDiscipline.SUBTYPE:input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
+                SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
                 SoSDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
         else:
             scatter_desc_in = {input_name: {
-                SoSDiscipline.TYPE: input_type,SoSDiscipline.SUBTYPE:input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
+                SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
                 SoSDiscipline.STRUCTURING: True}}
 
         self.inst_desc_in.update(scatter_desc_in)
@@ -182,22 +183,26 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
 
     def build_child_scatter(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
+        ns_ids = []
         # Call scatter map to modify the associated namespace
-        self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
+        ns_scatter_id = self.sc_map.modify_scatter_ns(
+            self.builder_name, name, local_namespace)
+        ns_ids.append(ns_scatter_id)
 
-        self.sc_map.update_ns(
+        ns_update_ids = self.sc_map.update_ns(
             old_ns_to_update, name, self.sos_name)
+        ns_ids.extend(ns_update_ids)
 
         # Case of a scatter of coupling :
         if isinstance(self.__builders, list):
             self.build_scatter_of_coupling(
-                name, local_namespace, new_sub_names)
+                name, local_namespace, new_sub_names, ns_update_ids)
 
         # Case of a coupling of scatter :
         else:
-            self.build_coupling_of_scatter(name, new_sub_names)
+            self.build_coupling_of_scatter(name, new_sub_names, ns_update_ids)
 
-    def build_scatter_of_coupling(self, name, local_namespace, new_sub_names):
+    def build_scatter_of_coupling(self, name, local_namespace, new_sub_names, ns_update_ids):
         '''
         # We set the scatter_name in the namespace and the discipline is called with its origin name
         #
@@ -213,14 +218,18 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         for builder in self.__builders:
             self.ee.ns_manager.set_current_disc_ns(
                 f'{local_namespace}.{name}')
-
+            if builder.associated_namespaces != []:
+                builder.add_namespace_list_in_associated_namespaces(
+                    self.associated_namespaces)
+                builder.add_namespace_list_in_associated_namespaces(
+                    ns_update_ids)
             disc = builder.build()
             # Add the discipline only if it is in
             # new_sub_names
             if name in new_sub_names:
                 self.add_scatter_discipline(disc, name)
 
-    def build_coupling_of_scatter(self, name, new_sub_names):
+    def build_coupling_of_scatter(self, name, new_sub_names, ns_update_ids):
         '''
         # We set the scatter_name as the discipline name in the scatter which has already the name of the builder
         # Disc1 is the scatter
@@ -231,7 +240,11 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         '''
         old_builder_name = self.__builders.sos_name
         self.__builders.set_disc_name(name)
-
+        if self.__builders.associated_namespaces != []:
+            self.__builders.add_namespace_list_in_associated_namespaces(
+                self.associated_namespaces)
+            self.__builders.add_namespace_list_in_associated_namespaces(
+                ns_update_ids)
         disc = self.__builders.build()
         self.__builders.set_disc_name(old_builder_name)
 
