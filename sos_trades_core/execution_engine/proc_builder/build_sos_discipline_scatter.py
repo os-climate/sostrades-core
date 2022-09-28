@@ -143,6 +143,8 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
                 scatter_desc_in = {input_name: {
                     SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
                     SoSDiscipline.STRUCTURING: True}}
+            # Should we add a reference scenario SoSDiscipline.DEFAULT: ['ref']
+            # ?
         return scatter_desc_in
 
     def build(self):

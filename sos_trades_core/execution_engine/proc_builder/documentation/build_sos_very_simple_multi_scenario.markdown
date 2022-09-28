@@ -9,38 +9,65 @@ The vs_MS capability is dedicated to create as many scenarios as the user needs 
 It creates as many instances of the sub_process as selected scenarios. 
 Each instance will have its inputs and its outcome outputs (after run).
 
-## Structure of Desc_in/Desc_out
 
-        |_ DESC_IN
-            |_ SUB_PROCESS_INPUTS (structuring)
-            |_ SCENARIO_MAP (structuring)            
-               |_ SCENARIO_MAP['input_name'] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local,
-                                                      structuring, dynamic: valid SUB_PROCESS_INPUTS and SCENARIO_MAP)
-        |_ DESC_OUT
-		
-##     Description of DESC parameters
-        |_ DESC_IN
-           |_ SUB_PROCESS_INPUTS:  All inputs for driver builder in the form of a dictionary of four keys
-                                   PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
-                                                         If 'None' then it uses the sos_processes python for doe creation.
-                                   PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
-                                                         If 'None' then it uses the sos_processes python for doe creation.
-                                   USECASE_NAME:         either empty or an available usecase of the sub_process
-                                   USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
-                                                         it is a temporary input: it will be put to None as soon as                                                                        
-                                                         its content is 'loaded' in the dm. We will have it has editable                                                                             
-                                   It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
-           |_ SCENARIO_MAP:        All inputs for driver builder in the form of a dictionary of four keys
-                                   INPUT_NAME:           name of the variable to scatter
-                                   INPUT_NS:             namespace of the variable to scatter
-                                   OUTPUT_NAME:          name of the variable to overwrite
-                                   SCATTER_NS:           namespace associated to the scatter discipline
-                                                         it is a temporary input: it will be put to None as soon as                                                                        
-                                   GATHER_NS:            namespace of the gather discipline associated to the scatter discipline 
-                                                             (input_ns by default and optional)
-                                   NS_TO_UPDATE:         list of namespaces depending on the scatter namespace (can be optional)                                                                                                                                            
+## The several usage steps are detailed below.
 
-         |_ DESC_OUT
+![Empty vsMS](./sos_vs_MS_png/vs_MS_17.PNG)
+
+###  Step 1: 
+- 1.1 Select your sub_process_inputs: 
+	- proces_repository and process_name (obligatory)
+	- select a usecase to import data (optional)
+	
+![Empty vsMS](./sos_vs_MS_png/vs_MS_18.PNG)
+
+![Empty vsMS](./sos_vs_MS_png/vs_MS_19.PNG)
+
+You can also at this step select the data usecase for the reference scenario (or can do it later as seen in step 4)
+- 1.2 Select your scenario_map: (obligatory)
+	- input_name: it will be the name of "the dynamic input selector" to select the list of names of your scenario nodes
+	- ns_to_update: it is the list of namespace used in the sub_process. If the step 1.1 has been done and configured then the full list of namespaces is provided after configuration, it will generate the dynamic input selector
+
+![Empty vsMS](./sos_vs_MS_png/vs_MS_20.PNG)
+
+![Empty vsMS](./sos_vs_MS_png/vs_MS_21.PNG)
+
+
+
+Remark: you can do 
+- (1.1 and 1.2) and configure
+- 1.1 configure and then 1.2 configure
+- 1.2 configure and then 1.1 configure
+
+You finally are in the following state:
+![Empty vsMS](./sos_vs_MS_png/vs_MS_22.PNG)
+
+Remark: the instances of the subprocess will appear in the tree, only when a first name of scenario (or severals) is provided in "the dynamic input selector"
+
+Remark: the subprocess will be build in memory only when the step 1.1 and 1.2 have been achieved and configured
+
+###  Step 2: provide your list of name of your scenarios in the "the dynamic input selector"
+
+![Empty vsMS](./sos_vs_MS_png/vs_MS_23.PNG)
+
+![Empty vsMS](./sos_vs_MS_png/vs_MS_24.PNG)
+
+![Empty vsMS](./sos_vs_MS_png/vs_MS_25.PNG)
+
+Warning: you can created a "reference" scenario if you want to use the import of usecase capability
+
+###  Step 3: provide data in your instantiated disciplines
+
+###  Step 4: provide data in the reference scenario node by importing a usecase. 
+![Empty vsMS](./sos_vs_MS_png/vs_MS_26.PNG)
+
+Warning: you need to have first created a "reference" scenario by adding reference in the "the dynamic input selector"
+
+Warning: this capability only works with a ns_to_update filled with all namespaces
+
+###  Step 5 (optional): you can update the data of your reference usecase by importing a new usecase 
+
+###  Step 6 (optional): you can decide to provide a new subprocess and associated scenario map and rebuild a new process
 
 ## Example of models to be nested
 
@@ -54,21 +81,79 @@ In the "empty driver process" folder, csv files are provided for a list of neste
 ![scenario_map_csv](./sos_vs_MS_png/vs_MS_15.PNG)
 
 ### Models in usecases
-In the "empty driver process" folder, complete uscases are provided for a list of nested models:
+In the "empty driver process" folder, complete usecases are provided for a list of nested models:
 
 ![Study creation](./sos_vs_MS_png/vs_MS_16.PNG)
 
-## The several usage steps are detailed below.
-
-###  Step 1: xxxxx
-
-xxxx
-
-## Future evolutions
-- xxx
 
 ## Current small restrictions
-- xxx
+- import load case: it works only when a scenario of name 'reference' was already provided and the associated analysis already instantiated
+- import load case: it works only when all the namespaces are selected in the ns_to_update input
+
+## Future evolutions
+- The scenario_map should be a dynamic entry that is created only when sub_process has been created [to be confirmed]
+- In fact all the scatter map should be a (or several) Desc_in of the vsMS driver and SosScatterDiscipline should relies on dynamic 
+   Desc_in entries (maybe expert depending on parameters) rather than on a stored scenario map [to be confirmed]
+- Remove this step of scenario map in case of multiscenario with the same architecture for all scenarios 
+(and so a reference scenario provided) [to be confirmed]
+- Refactory of the very Simple Multiscenarios capability [to be confirmed]
+- Reintroduce the optional parameters of the scenario map [to be confirmed]
+- Allow to use the mode autogather = Yes [to be confirmed]
+- Remove the current small restrictions [to be confirmed]
+- Improve the maintainability of the test file
+- Update the code with the new the modifications of doe_eval introduced in core by the web/Api
+
+
+
+
+## Structure of Desc_in/Desc_out
+
+        |_ DESC_IN
+            |_ SUB_PROCESS_INPUTS (structuring)
+            |_ SCENARIO_MAP (structuring)            
+               |_ SCENARIO_MAP[INPUT_NAME] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local,
+                                                      structuring, dynamic: valid SCENARIO_MAP)
+        |_ DESC_OUT
+		
+##     Description of DESC parameters
+        |_ DESC_IN
+           |_ SUB_PROCESS_INPUTS:  All inputs for driver builder in the form of a dictionary of four keys
+                                   PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the driver.
+                                                         If 'None' then it uses the sos_processes python for driver creation.
+                                   PROCESS_NAME:         selected process name (in repository) to be nested inside the driver.
+                                                         If 'None' then it uses the sos_processes python for driver creation.
+                                   USECASE_NAME:         either empty or an available usecase of the sub_process
+                                   USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
+                                                         it is a temporary input: it will be put to None as soon as                                                                        
+                                                         its content is 'loaded' in the dm. We will have it has editable                                                                             
+                                   It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
+           |_ SCENARIO_MAP:        All inputs for driver builder in the form of a dictionary of four keys
+                                   INPUT_NAME:           name of the variable to scatter
+                                   INPUT_NS:             Optional key: namespace of the variable to scatter if the INPUT_NS key is this scenario map.
+                                                         If the key is not here then it is local to the driver.
+                                   OUTPUT_NAME:          name of the variable to overwrite
+                                   SCATTER_NS:           Optional key: Internal namespace associated to the scatter discipline
+                                                         it is a temporary input: its value is put to None as soon as scenario disciplines are instantiated
+                                   GATHER_NS:            Optional key: namespace of the gather discipline associated to the scatter discipline 
+                                                         (input_ns by default ) Only used if autogather = True
+                                   NS_TO_UPDATE:         list of namespaces depending on the scatter namespace
+                                                         (by default, we have the list of namespaces of the nested sub_process)   
+
+         |_ DESC_OUT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Documentation of the vs_MS (very simple Multi Scenarios) driver
 
@@ -76,7 +161,7 @@ xxxx
 
 - Introduction
 - GUI inputs: Selected example
-- What a very simple Multi Scenarios is? What/when do you need it?
+- What is a very simple Multi Scenarios ? What/when do you need it?
 	- The SoSTrades general description of a process
 	- SoSTrades trades-off or scenarios
 	- SoSTrades tree view as disciplines "per scenario nodes" (called as "coupling node")
@@ -115,7 +200,7 @@ It provides the capability to:
 
 ## GUI inputs: Selected example
 The selected example for this manual is a vs_MS applied to the "disc1_disc3" disciplines. There exists a SoSTrades process for this example and it can be selected as follows: 
-![Example of doe process](./sos_vs_MS_png/vs_MS_01.PNG)
+![Example of driver process](./sos_vs_MS_png/vs_MS_01.PNG)
 
 ![Study creation](./sos_vs_MS_png/vs_MS_02.PNG)
 
@@ -129,16 +214,19 @@ The user's inputs will be both:
 
 The input named as "Scenario List" may have its name customised by the user.
 
-## What a very simple Multi Scenarios is? What/when do you need it?
+## What is a very simple Multi Scenarios? What/when do you need it?
 
 ### General description of a process in SoSTrades
 We have a disciple that may be a SoS, i.e. be a structured set of disciplines 'Disk_j'.
 It results of a list of input variables 'x_k' that may be:
 - either shared (common to all disciplines) and in this case it has an associated namespace key that may have a selected value
 - or local to a discipline 'Disc_j'
+
 In this context, each variable will have a unique full name defined as a path in a tree view. 
 
 A variable that has the same full name and belongs to two disciplines with an input/output status, is a coupled variable.
+
+
 
 ### SoSTrades trades off or scenarios
 We want to create several scenarios, where a scenario is a set of 'x_k' coherent input values.
@@ -298,12 +386,12 @@ See the dedicated section.
 | Key           |  Optional ?   | Description                     |
 | ------------- |:-------------:|:-------------------------------:|
 | input_name    |  N            | name of the variable to scatter |
-| input_type    |  N            | type of the variable to scatter |
-| input_ns      |  N            | namespace of the variable to scatter |
-| output_name   |  N            | name of the variable to overwrite |
-| scatter_ns    |  N            | namespace associated to the scatter discipline |
+| input_type    |  Y            | type of the variable to scatter |
+| input_ns      |  Y            | namespace of the variable to scatter |
+| output_name   |  Y            | name of the variable to overwrite |
+| scatter_ns    |  Y            | namespace associated to the scatter discipline |
 | gather_ns     |  Y            | namespace of the gather discipline associated to the scatter discipline (input_ns by default) |
-| ns_to_update  |  Y            | list of namespaces depending on the scatter namespace|
+| ns_to_update  |  Y/N          | list of namespaces depending on the scatter namespace|
 
 ### Builder process:  About "ns_to_update"
  xxxx
