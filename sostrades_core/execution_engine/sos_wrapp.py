@@ -108,7 +108,7 @@ class SoSWrapp(object):
         Accessor for the inputs values as a list or dict.
 
         Arguments:
-            keys (List): the input short names list
+            keys (List): the input short or full names list (depending on value of full_name_keys)
             in_dict (bool): if output format is dict
             full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that True
                                    allows several variables to have same short name, whereas False gives spurious behaviour
@@ -141,7 +141,7 @@ class SoSWrapp(object):
         Accessor for the outputs values as a list or dict.
 
         Arguments:
-            keys (List): the output short names list
+            keys (List): the output short or full names list (depending on value of full_name_keys)
             in_dict (bool): if output format is dict
             full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that True
                                    allows several variables to have same short name, whereas False gives spurious behaviour
@@ -174,7 +174,7 @@ class SoSWrapp(object):
         Generic method to retrieve sos inputs and outputs
 
         Arguments:
-            keys (List[String]): the data names list
+            keys (List[String]): the data names list in short or full names (depending on value of full_name_keys)
             io_type (string): 'in' or 'out' [NOT USED]
             full_name_keys: if keys in args and returned dict are full names
         Returns:
