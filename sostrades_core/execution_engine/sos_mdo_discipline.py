@@ -85,7 +85,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp.local_data = self.local_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
         self.sos_wrapp.output_data_names = self.get_output_data_names()
-        self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
+        # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
@@ -117,34 +117,34 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
 
-    def create_io_full_name_map(self):
-        """
-        Create an io_full_name_map ainsi que des input_full_name_map and output_full_name_map for its sos_wrapp
-
-        Return:
-            input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
-            output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
-        Sets attribute:
-            self.io_full_name_map (Dict[Str]): union of the two above used for local data update
-        """
-
-        if self.output_full_name_map is None:
-            self.output_full_name_map = {}
-            for key in self.get_output_data_names():
-                short_name_key = self.io_full_name_to_short(key)
-                #FIXME: quick fix
-                if short_name_key not in self.output_full_name_map:
-                    self.output_full_name_map[short_name_key] = key
-
-        if self.input_full_name_map is None:
-            self.input_full_name_map = {}
-            for key in self.get_input_data_names():
-                short_name_key = self.io_full_name_to_short(key)
-                # FIXME: quick fix
-                if short_name_key not in self.input_full_name_map:
-                    self.input_full_name_map[short_name_key] = key
-
-        return self.input_full_name_map, self.output_full_name_map
+    # def create_io_full_name_map(self):
+    #     """
+    #     Create an io_full_name_map ainsi que des input_full_name_map and output_full_name_map for its sos_wrapp
+    #
+    #     Return:
+    #         input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
+    #         output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
+    #     Sets attribute:
+    #         self.io_full_name_map (Dict[Str]): union of the two above used for local data update
+    #     """
+    #
+    #     if self.output_full_name_map is None:
+    #         self.output_full_name_map = {}
+    #         for key in self.get_output_data_names():
+    #             short_name_key = self.io_full_name_to_short(key)
+    #             #FIXME: quick fix
+    #             if short_name_key not in self.output_full_name_map:
+    #                 self.output_full_name_map[short_name_key] = key
+    #
+    #     if self.input_full_name_map is None:
+    #         self.input_full_name_map = {}
+    #         for key in self.get_input_data_names():
+    #             short_name_key = self.io_full_name_to_short(key)
+    #             # FIXME: quick fix
+    #             if short_name_key not in self.input_full_name_map:
+    #                 self.input_full_name_map[short_name_key] = key
+    #
+    #     return self.input_full_name_map, self.output_full_name_map
 
     def io_full_name_to_short(self, full_name_key):
         return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]

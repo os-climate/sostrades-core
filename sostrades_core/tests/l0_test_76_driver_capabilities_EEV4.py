@@ -221,12 +221,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         """ Here we test a DoeEval of a DoeEval process on a single sub-discipline to check that the transition of the
         ProxyDisciplineDriver from working with short names to working with tuples of short names and namespace (of the
         discipline to the local data variable belongs) is implemented. It is really a test of driver of a driver using
-        DoeEval.
-
-        The test is commented given that, even though the desired treeview is "reached", since eval_in and eval_out of
-        the two different DoeEval are defined with the same doeeval namespace (see DESC_IN and DESC_OUT of ProxyDoeEval),
-        variables do not configure properly. The exec_eng.configure() is not passed so the assert of the treeview shall
-        not be taken into account (see treeview in console during debugging).
+        DoeEval. The test demonstrates the capability to use a driver of a driver.
         """
 
         dspace_dict_upper = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.b'],

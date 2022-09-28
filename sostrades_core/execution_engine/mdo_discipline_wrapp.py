@@ -139,8 +139,8 @@ class MDODisciplineWrapp(object):
     def _set_wrapper_attributes(self, proxy,wrapper):
         proxy.set_wrapper_attributes(wrapper)
 
-    def _set_discipline_attributes(self, proxy, discipline):
-        proxy.set_discipline_attributes(discipline)
+    # def _set_discipline_attributes(self, proxy, discipline):
+    #     proxy.set_discipline_attributes(discipline)
 
     def _init_grammar_with_keys(self, proxy):
         '''

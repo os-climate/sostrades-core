@@ -120,9 +120,9 @@ class SoSWrapp(object):
             # if no keys, get all discipline keys and force
             # output format as dict
             if full_name_keys:
-                keys = self.input_data_names
+                keys = self.input_data_names # discipline and subprocess
             else:
-                keys = list(self.input_full_name_map.keys())
+                keys = list(self.attributes['input_full_name_map'].keys()) # discipline only
             in_dict = True
         inputs = self._get_sosdisc_io(
             keys, io_type=self.IO_TYPE_IN, full_name_keys = full_name_keys)
@@ -153,9 +153,9 @@ class SoSWrapp(object):
             # if no keys, get all discipline keys and force
             # output format as dict
             if full_name_keys:
-                keys = self.output_data_names
+                keys = self.output_data_names # discipline and subprocess
             else:
-                keys = list(self.output_full_name_map.keys())
+                keys = list(self.attributes['output_full_name_map'].keys()) # discipline only
             in_dict = True
         outputs = self._get_sosdisc_io(
             keys, io_type=self.IO_TYPE_OUT, full_name_keys=full_name_keys)
@@ -193,9 +193,9 @@ class SoSWrapp(object):
             query_keys = keys
         else:
             if io_type == self.IO_TYPE_IN:
-                query_keys = [self.input_full_name_map[key] for key in keys]
+                query_keys = [self.attributes['input_full_name_map'][key] for key in keys]
             elif io_type == self.IO_TYPE_OUT:
-                query_keys = [self.output_full_name_map[key] for key in keys]
+                query_keys = [self.attributes['output_full_name_map'][key] for key in keys]
             else:
                 raise ValueError("Unknown io_type :" +
                                  str(io_type))
@@ -225,5 +225,5 @@ class SoSWrapp(object):
         if full_name_keys:
             self.local_data.update(dict_values) 
         else:
-            outputs = dict(zip(map(self.output_full_name_map.get, dict_values.keys()), dict_values.values()))
+            outputs = dict(zip(map(self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
             self.local_data.update(outputs)

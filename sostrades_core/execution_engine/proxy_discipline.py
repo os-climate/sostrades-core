@@ -1933,9 +1933,40 @@ class ProxyDiscipline(object):
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
         """
-        pass
+        # input_data_names = self.get_input_data_names()
+        # output_data_names = self.get_output_data_names()
+        input_full_name_map, output_full_name_map = self.create_io_full_name_map()
+        wrapper.attributes = {
+            # 'input_data_names' : input_data_names,
+            # 'output_data_names' : output_data_names,
+            'input_full_name_map' : input_full_name_map,
+            'output_full_name_map' : output_full_name_map
+        }
 
-    def set_discipline_attributes(self, discipline):
-        """ set the attribute attributes of mdo_discipline
+    # def set_discipline_attributes(self, discipline):
+    #     """ set the attribute attributes of mdo_discipline --> not needed if using SoSMDODisciplineDriver
+    #     """
+    #     pass
+
+    def create_io_full_name_map(self):
         """
-        pass
+        Create an io_full_name_map ainsi que des input_full_name_map and output_full_name_map for its sos_wrapp
+
+        Return:
+            input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
+            output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
+        Sets attribute:
+            self.io_full_name_map (Dict[Str]): union of the two above used for local data update
+        """
+
+        output_full_name_map = {}
+        data_out = self.get_data_out()
+        data_in = self.get_data_in()
+        for key in data_out:
+            output_full_name_map[key] = self.get_var_full_name(key, data_out)
+
+        input_full_name_map = {}
+        for key in data_in:
+            input_full_name_map[key] = self.get_var_full_name(key, data_in)
+
+        return input_full_name_map, output_full_name_map
