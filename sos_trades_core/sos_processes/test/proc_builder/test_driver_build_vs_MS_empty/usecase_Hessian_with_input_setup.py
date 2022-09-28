@@ -15,6 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sos_trades_core.study_manager.study_manager import StudyManager
+from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 import pandas as pd
 
 
@@ -31,11 +32,8 @@ class Study(StudyManager):
         # provide a process (with disciplines) to the driver
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         # provide an associated scenario_map to the driver
         scenario_map_name = 'scenario_list'
@@ -63,7 +61,7 @@ class Study(StudyManager):
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
-        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.vs_MS.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         dict_values[f'{self.study_name}.vs_MS.scenario_map'] = scenario_map
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
