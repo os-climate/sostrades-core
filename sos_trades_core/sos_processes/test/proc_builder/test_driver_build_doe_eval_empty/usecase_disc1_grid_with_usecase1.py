@@ -15,6 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sos_trades_core.study_manager.study_manager import StudyManager
+from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 import pandas as pd
 
 
@@ -44,11 +45,8 @@ class Study(StudyManager):
         anonymize_input_dict_from_usecase['<study_ph>.Disc1.h'] = 1.
         anonymize_input_dict_from_usecase['<study_ph>.Disc1.j'] = 1.
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'usecase1'
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase1')
+        process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
 
         ######### Numerical values   ####
         input_selection = {'selected_input': [True],
@@ -69,7 +67,7 @@ class Study(StudyManager):
 
         ######### Fill the dictionary for dm   ####
         values_dict = {}
-        values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         values_dict[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
         values_dict[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
         values_dict[f'{self.study_name}.DoE_Eval.design_space'] = dspace

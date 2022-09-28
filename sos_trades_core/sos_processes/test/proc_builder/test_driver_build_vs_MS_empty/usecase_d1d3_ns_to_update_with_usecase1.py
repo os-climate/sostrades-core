@@ -33,7 +33,17 @@ class Study(StudyManager):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc1_disc3_coupling'
 
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        usecase_name = 'usecase1'
+        anonymize_input_dict = {}
+        anonymize_input_dict['<study_ph>.a'] = 3.
+        anonymize_input_dict['<study_ph>.x'] = 2.
+        anonymize_input_dict['<study_ph>.Disc1.b'] = 4.
+        anonymize_input_dict['<study_ph>.Disc3.constant'] = 3.
+        anonymize_input_dict['<study_ph>.Disc3.power'] = 2
+        anonymize_input_dict['<study_ph>.Disc3.z'] = 1.2
+
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, usecase_name)
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         # provide an associated scenario_map to the driver
         scenario_map_name = 'scenario_list'
@@ -55,7 +65,8 @@ class Study(StudyManager):
         b1 = 4.0
         a2 = 6.0
         b2 = 2.0
-        scenario_list = ['scenario_1', 'scenario_2']
+        #scenario_list = ['scenario_1', 'scenario_2']
+        scenario_list = ['scenario_1', 'scenario_2', 'reference']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 

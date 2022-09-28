@@ -470,6 +470,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         annotation_upper_right={},
         compute_legend_title=False,
         compute_colors_details=False,
+        barmode='stack',
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -529,6 +530,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 ticksuffix=f'{ticksuffix}',
                 automargin=True,
             ),
+            barmode=barmode,
         )
 
         new_chart = None

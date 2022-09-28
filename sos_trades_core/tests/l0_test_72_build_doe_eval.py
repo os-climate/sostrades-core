@@ -18,22 +18,11 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-from numpy.testing import assert_array_equal
 from pandas._testing import assert_frame_equal
-import pprint
-import numpy as np
 import pandas as pd
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
-from os.path import join
-
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
-from sos_trades_core.sos_wrapping.analysis_discs.build_doe_eval import BuildDoeEval
-from copy import deepcopy
-from tempfile import gettempdir
-
 from sos_trades_core.sos_processes.processes_factory import SoSProcessFactory
+from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from importlib import import_module
 from os.path import dirname
 from os import listdir
@@ -134,11 +123,7 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
 
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         ######### Numerical values   ####
         x = 2.0
@@ -174,7 +159,7 @@ class TestBuildDoeEval(unittest.TestCase):
         ######### Fill the dictionary for dm   ####
         values_dict = {}
         if restricted == False:
-            values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter.to_data_manager_dict()
 
         values_dict[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection_xy
         values_dict[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection_z
@@ -202,18 +187,15 @@ class TestBuildDoeEval(unittest.TestCase):
         # SubProcess selection values
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_data'] = {}
+
+        process_builder_parameter = ProcessBuilderParameterType(mod_id, repo, my_usecase)
 
         if my_usecase != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, mod_id, my_usecase)
             anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
                                                                                                    sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+            process_builder_parameter.usecase_data = anonymize_input_dict_from_usecase
 
         ######### Numerical values   ####
 
@@ -241,7 +223,7 @@ class TestBuildDoeEval(unittest.TestCase):
         ######### Fill the dictionary for dm   ####
         values_dict = {}
         if restricted == False:
-            values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter.to_data_manager_dict()
 
         values_dict[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection_xy
         values_dict[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection_z
@@ -257,8 +239,10 @@ class TestBuildDoeEval(unittest.TestCase):
         """
         Define a set of data inputs with selected use_case
         """
-        ######### Numerical values   ####
+
         repo = 'sos_trades_core.sos_processes.test'
+        mod_id = ''
+
         if my_test == 1:
             # SubProcess selection values
             mod_id = 'test_disc_hessian'
@@ -268,12 +252,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 my_usecase = 'usecase2'
             elif my_usecase == 3:
                 my_usecase = 'usecase3'
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = repo
-            sub_process_inputs_dict['process_name'] = mod_id
-            sub_process_inputs_dict['usecase_name'] = my_usecase
-            # The import is factorized bellow for all my_test values
-            sub_process_inputs_dict['usecase_data'] = {}
+
             input_selection = {'selected_input': [True, True, False, False, False, False, False],
                                'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y',
                                              'DoE_Eval.Hessian.ax2', 'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx',
@@ -297,11 +276,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 my_usecase = 'usecase1_int'
             elif my_usecase == 2:
                 my_usecase = 'usecase2_float'
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = repo
-            sub_process_inputs_dict['process_name'] = mod_id
-            sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = {}
+
             input_selection = {'selected_input': [True, False],
                                'full_name': ['DoE_Eval.Disc0.r', 'DoE_Eval.Disc0.mod']}
             input_selection = pd.DataFrame(input_selection)
@@ -323,11 +298,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 my_usecase = 'usecase1'
             elif my_usecase == 2:
                 my_usecase = 'usecase2'
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = repo
-            sub_process_inputs_dict['process_name'] = mod_id
-            sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = {}
+
             input_selection = {'selected_input': [True],
                                'full_name': ['DoE_Eval.Disc1.x']}
             input_selection = pd.DataFrame(input_selection)
@@ -349,11 +320,7 @@ class TestBuildDoeEval(unittest.TestCase):
                 my_usecase = 'usecase1'
             elif my_usecase == 2:
                 my_usecase = 'usecase2'
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = repo
-            sub_process_inputs_dict['process_name'] = mod_id
-            sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = {}
+
             input_selection = {'selected_input': [True],
                                'full_name': ['DoE_Eval.Disc1.x']}
             input_selection = pd.DataFrame(input_selection)
@@ -374,11 +341,7 @@ class TestBuildDoeEval(unittest.TestCase):
             mod_id = 'test_disc1_disc2_coupling'
             if my_usecase == 1:
                 my_usecase = 'usecase_coupling_2_disc_test'
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = repo
-            sub_process_inputs_dict['process_name'] = mod_id
-            sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = {}
+
             input_selection = {'selected_input': [True],
                                'full_name': ['DoE_Eval.Disc1.a']}  # Disc1.a, Disc1.b, Disc2.constant, Disc2.power Coupled x(ns_ac) and y(ns_ac)
             input_selection = pd.DataFrame(input_selection)
@@ -398,11 +361,7 @@ class TestBuildDoeEval(unittest.TestCase):
             mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
             if my_usecase == 1:
                 my_usecase = 'usecase'
-            sub_process_inputs_dict = {}
-            sub_process_inputs_dict['process_repository'] = repo
-            sub_process_inputs_dict['process_name'] = mod_id
-            sub_process_inputs_dict['usecase_name'] = my_usecase
-            sub_process_inputs_dict['usecase_data'] = {}
+
             input_selection = {'selected_input': [True, True],
                                'full_name': ['DoE_Eval.SellarCoupling.x', 'DoE_Eval.SellarCoupling.z']}
             input_selection = pd.DataFrame(input_selection)
@@ -422,12 +381,15 @@ class TestBuildDoeEval(unittest.TestCase):
             n_samples = 4
             dspace = pd.DataFrame(dspace_dict)
 
-        if sub_process_inputs_dict['usecase_name'] != 'Empty':
+        process_builder_parameter = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+
+        if process_builder_parameter.usecase_name != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
-                repo, mod_id, sub_process_inputs_dict['usecase_name'])
+                repo, mod_id, process_builder_parameter.usecase_name)
             anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(exec_eng,
                                                                                                    sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict_from_usecase
+            process_builder_parameter.usecase_data = anonymize_input_dict_from_usecase
+
             if 0 == 1:
                 print('anonimized dict:')
                 print(anonymize_input_dict_from_usecase)
@@ -435,7 +397,7 @@ class TestBuildDoeEval(unittest.TestCase):
         ######### Fill the dictionary for dm   ####
         values_dict = {}
         if restricted == False:
-            values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            values_dict[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter.to_data_manager_dict()
 
         values_dict[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
         values_dict[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
@@ -608,12 +570,10 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -682,12 +642,9 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -710,13 +667,9 @@ class TestBuildDoeEval(unittest.TestCase):
         print('Step 1: provide a process (with disciplines) to the set doe')
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
         dict_values = {}
-        dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
@@ -762,12 +715,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_3 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_3.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -843,12 +792,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_4 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_4.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -961,12 +906,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -990,12 +931,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         dict_values = {}
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
-        dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
@@ -1041,12 +978,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_3 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_3.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -1123,12 +1056,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_4 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_4.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -1241,12 +1170,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -1315,12 +1240,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -1444,12 +1365,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -1520,12 +1437,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_1 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_1.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -1638,16 +1551,16 @@ class TestBuildDoeEval(unittest.TestCase):
             # load from usecase
             doe_disc = self.exec_eng.dm.get_disciplines_with_name(
                 f'{self.study_name}.DoE_Eval')[0]
-            sub_process_inputs_dict = doe_disc.get_data_io_from_key(
-                'in', 'sub_process_inputs')['value']
-            sub_process_inputs_dict['usecase_name'] = 'usecase1'
+            process_builder_parameter_type = ProcessBuilderParameterType.create(doe_disc.get_data_io_from_key(
+                'in', 'sub_process_inputs')['value'])
+            process_builder_parameter_type.usecase_name = 'usecase1'
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, 'test_disc_hessian', 'usecase1')
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+            process_builder_parameter_type.usecase_data = anonymize_input_dict
             dict_values = {}
-            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             print('load usecase file')
             study_dump.load_data(from_input_dict=dict_values)
 
@@ -1664,17 +1577,17 @@ class TestBuildDoeEval(unittest.TestCase):
         self.exec_eng = study_dump.ee
         doe_disc = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.study_name}.DoE_Eval')[0]
-        sub_process_inputs_dict = doe_disc.get_data_io_from_key(
-            'in', 'sub_process_inputs')['value']
-        sub_process_inputs_dict['usecase_name'] = 'usecase2'
+        process_builder_parameter_type = ProcessBuilderParameterType.create(doe_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value'])
+        process_builder_parameter_type.usecase_name = 'usecase2'
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, 'test_disc_hessian', 'usecase2')
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         print('load usecase2 file')
         study_dump.load_data(from_input_dict=dict_values)
         # check input values (and print) of Hessian discipline
@@ -1688,29 +1601,29 @@ class TestBuildDoeEval(unittest.TestCase):
             # In python we can provide 'usecase4'
             doe_disc = self.exec_eng.dm.get_disciplines_with_name(
                 f'{self.study_name}.DoE_Eval')[0]
-            sub_process_inputs_dict = doe_disc.get_data_io_from_key(
-                'in', 'sub_process_inputs')['value']
-            sub_process_inputs_dict['usecase_name'] = 'usecase4'
+            process_builder_parameter_type = ProcessBuilderParameterType.create(doe_disc.get_data_io_from_key(
+                'in', 'sub_process_inputs')['value'])
+            process_builder_parameter_type.usecase_name = 'usecase4'
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, 'test_disc_hessian', 'usecase4')
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+            process_builder_parameter_type.usecase_data = anonymize_input_dict
             dict_values = {}
-            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             print('load usecase4 file: does not exist!')
             study_dump.load_data(from_input_dict=dict_values)
             # Go on to finish study
-            sub_process_inputs_dict = doe_disc.get_data_io_from_key(
-                'in', 'sub_process_inputs')['value']
-            sub_process_inputs_dict['usecase_name'] = 'usecase2'
+            process_builder_parameter_type = ProcessBuilderParameterType.create(doe_disc.get_data_io_from_key(
+                'in', 'sub_process_inputs')['value'])
+            process_builder_parameter_type.usecase_name = 'usecase2'
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
                 repo, 'test_disc_hessian', 'usecase2')
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
-            sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+            process_builder_parameter_type.usecase_data = anonymize_input_dict
             dict_values = {}
-            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+            dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
             print('load usecase2 file')
             study_dump.load_data(from_input_dict=dict_values)
         study_dump.dump_data(dump_dir)
@@ -1788,12 +1701,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -1817,11 +1726,7 @@ class TestBuildDoeEval(unittest.TestCase):
         print('Step 1: provide a process (with disciplines)')
 
         mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
         coupling_name = "SellarCoupling"
         ns = f'{self.study_name}'
 
@@ -1846,7 +1751,7 @@ class TestBuildDoeEval(unittest.TestCase):
         ######### Fill the dictionary for dm   ####
 
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         # print(study_dump.ee.display_treeview_nodes(True))
 
@@ -1896,12 +1801,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_3 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_3.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -1994,12 +1895,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type_4 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type_4.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -2218,12 +2115,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = None
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -2248,11 +2141,7 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         my_usecase = 'usecase1'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = None
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
         x = 2.0
         y = 3.0
 
@@ -2292,7 +2181,7 @@ class TestBuildDoeEval(unittest.TestCase):
         print("\n")
         print("1.1 Provide repo")
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         # check multi-configure max 100 reached
         #
@@ -2336,12 +2225,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = None
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         self.check_discipline_values(
             doe_disc, target_values_dict, print_flag=print_flag)
 
@@ -2363,9 +2248,9 @@ class TestBuildDoeEval(unittest.TestCase):
 
         print("\n")
         print("1.2 Provide process name")
-        sub_process_inputs_dict['process_name'] = mod_id
+        process_builder_parameter_type.process_name = mod_id
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         ##
         ################ Start checks ##########################
@@ -2413,12 +2298,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'Empty'
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -2447,7 +2328,7 @@ class TestBuildDoeEval(unittest.TestCase):
 
         print("\n")
         print("1.3 Provide use case name")
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         if 0 == 0:  # directly provide anonymized dict
             anonymize_input_dict = {}
             anonymize_input_dict['<study_ph>.Hessian.ax2'] = 4.0
@@ -2462,10 +2343,10 @@ class TestBuildDoeEval(unittest.TestCase):
                 repo, mod_id, my_usecase)
             anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                       sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         ################ Start checks ##########################
         # print configuration state:
@@ -2513,13 +2394,9 @@ class TestBuildDoeEval(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.x'] = 2.0
         tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 3.0
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -2592,12 +2469,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = my_usecase
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -2719,20 +2592,20 @@ class TestBuildDoeEval(unittest.TestCase):
         self.exec_eng = study_dump.ee
         doe_disc = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.study_name}.DoE_Eval')[0]
-        sub_process_inputs_dict = doe_disc.get_data_io_from_key(
-            'in', 'sub_process_inputs')['value']
+        process_builder_parameter_type = ProcessBuilderParameterType.create(doe_disc.get_data_io_from_key(
+            'in', 'sub_process_inputs')['value'])
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         my_usecase = 'usecase1'
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         study_dump.dump_data(dump_dir)
         study_dump.run()
@@ -2747,15 +2620,12 @@ class TestBuildDoeEval(unittest.TestCase):
         #
         mod_id = 'test_proc_build_disc1_all_types'
         my_usecase = 'usecase1'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         input_selection = {'selected_input': [True],
                            'full_name': ['DoE_Eval.Disc1.x']}
         input_selection = pd.DataFrame(input_selection)
@@ -2772,7 +2642,7 @@ class TestBuildDoeEval(unittest.TestCase):
         n_samples = 4
         dspace = pd.DataFrame(dspace_dict)
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         dict_values[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
         dict_values[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
         dict_values[f'{self.study_name}.DoE_Eval.design_space'] = dspace
@@ -2817,13 +2687,8 @@ class TestBuildDoeEval(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.x'] = 5.5
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.x_dict'] = {}
         target_values_dict = {}
-        tv_sub_process_inputs_dict = {}
-        tv_sub_process_inputs_dict['process_repository'] = repo
-        tv_sub_process_inputs_dict['process_name'] = mod_id
-        tv_sub_process_inputs_dict['usecase_name'] = 'usecase1'
-        # None because we have empty the anonymized dictionary
-        tv_sub_process_inputs_dict['usecase_data'] = {}
-        target_values_dict['sub_process_inputs'] = tv_sub_process_inputs_dict
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase1')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -2873,15 +2738,12 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_5: update subprocess selection by changing test_disc_hessian to sellar')
         mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'usecase'
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase')
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id,  'usecase')
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         coupling_name = "SellarCoupling"
         ns = f'{self.study_name}'
 
@@ -2906,7 +2768,7 @@ class TestBuildDoeEval(unittest.TestCase):
         ######### Fill the dictionary for dm   ####
 
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         dict_values[f'{self.study_name}.DoE_Eval.eval_inputs'] = input_selection
         dict_values[f'{self.study_name}.DoE_Eval.eval_outputs'] = output_selection
         dict_values[f'{self.study_name}.DoE_Eval.design_space'] = dspace
@@ -2966,11 +2828,7 @@ class TestBuildDoeEval(unittest.TestCase):
 
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc10_setup_sos_discipline'
-        sub_process_inputs_dict = {}
-        sub_process_inputs_dict['process_repository'] = repo
-        sub_process_inputs_dict['process_name'] = mod_id
-        sub_process_inputs_dict['usecase_name'] = 'Empty'
-        sub_process_inputs_dict['usecase_data'] = {}
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
 
         my_usecase_1 = 'usecase_linear'
         my_usecase_2 = 'usecase_affine'
@@ -3012,7 +2870,7 @@ class TestBuildDoeEval(unittest.TestCase):
         dspace = pd.DataFrame(dspace_dict)
 
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
 
         study_dump.load_data(from_input_dict=dict_values)
         # study_dump.ee.configure()
@@ -3038,14 +2896,14 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_3.1: update with with data subprocess update from usecase_linear ')
         my_usecase = my_usecase_1
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
         # study_dump.ee.display_treeview_nodes(display_variables=True)
 
@@ -3061,15 +2919,14 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_3.2: update with with data subprocess update from usecase_affine ')
         my_usecase = my_usecase_2
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
 
         target_values_dict = {}
@@ -3084,15 +2941,14 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_3.3: update with with data subprocess update from usecase_polynomial ')
         my_usecase = my_usecase_3
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
 
         target_values_dict = {}
@@ -3127,15 +2983,14 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_3.5: update with with data subprocess update from usecase_linear ')
         my_usecase = my_usecase_1
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
 
         target_values_dict = {}
@@ -3150,15 +3005,14 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_3.6: update with with data subprocess update from usecase_polynomial ')
         my_usecase = my_usecase_3
-        sub_process_inputs_dict['usecase_name'] = my_usecase
-        sub_process_inputs_dict['usecase_name'] = my_usecase
+        process_builder_parameter_type.usecase_name = my_usecase
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
                                                                                   sub_process_usecase_full_name)
-        sub_process_inputs_dict['usecase_data'] = anonymize_input_dict
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
         dict_values = {}
-        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = sub_process_inputs_dict
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         study_dump.load_data(from_input_dict=dict_values)
 
         target_values_dict = {}
@@ -3245,10 +3099,13 @@ class TestBuildDoeEval(unittest.TestCase):
             f'{self.study_name}.DoE_Eval')[0]
         sub_process_inputs_dict = doe_disc.get_data_io_from_key(
             'in', 'sub_process_inputs')['value']
-        sub_process_repo = sub_process_inputs_dict['process_repository']
-        sub_process_name = sub_process_inputs_dict['process_name']
-        sub_process_usecase_name = sub_process_inputs_dict['usecase_name']
-        anonymize_input_dict = sub_process_inputs_dict['usecase_data']
+
+        process_builder_parameter_type = ProcessBuilderParameterType.create(sub_process_inputs_dict)
+        sub_process_repo = process_builder_parameter_type.process_repository
+        sub_process_name = process_builder_parameter_type.process_name
+        sub_process_usecase_name = process_builder_parameter_type.usecase_name
+        anonymize_input_dict = process_builder_parameter_type.usecase_data
+
         # 1. get the list of possible sub_processes in selected repo
         if sub_process_repo is not None:
             # Restricted list

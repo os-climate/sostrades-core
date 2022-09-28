@@ -1,5 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
+Copyright 2022 Airbus SA
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc1_disc3_vs_MS_from_proc process.
-    This process instantiates the multiscenario of (disc1_scenario, disc3_scenario).
+     the test_disc_hessian_vs_MS_from_proc process.
+    This process instantiates the multiscenario of a Hessian Discipline.
     '''
 
     def __init__(self, execution_engine=None):
@@ -31,16 +31,27 @@ class Study(StudyManager):
     def setup_usecase(self):
         # provide a process (with disciplines) to the driver
         repo = 'sos_trades_core.sos_processes.test'
-        mod_id = 'test_disc1_disc3_coupling'
+        mod_id = 'test_disc_hessian'
 
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        usecase_name = 'usecase3'
+        anonymize_input_dict = {}
+        anonymize_input_dict['<study_ph>.Hessian.ax2'] = 4.0
+        anonymize_input_dict['<study_ph>.Hessian.by2'] = 5.0
+        anonymize_input_dict['<study_ph>.Hessian.cx'] = 6.0
+        anonymize_input_dict['<study_ph>.Hessian.dy'] = 7.0
+        anonymize_input_dict['<study_ph>.Hessian.exy'] = 12.0
+        anonymize_input_dict['<study_ph>.Hessian.x'] = 2.0
+        anonymize_input_dict['<study_ph>.Hessian.y'] = 3.0
+
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, usecase_name)
+        process_builder_parameter_type.usecase_data = anonymize_input_dict
 
         # provide an associated scenario_map to the driver
         scenario_map_name = 'scenario_list'
         input_ns = 'ns_scatter_scenario'
         output_name = 'scenario_name'
         scatter_ns = 'ns_scenario'  # not used
-        ns_to_update = ['ns_data_ac', 'ns_ac', 'ns_disc3', 'ns_out_disc3']
+        ns_to_update = []
         scenario_map = {'input_name': scenario_map_name,
                         #'input_ns': input_ns,
                         #'output_name': output_name,
@@ -49,13 +60,16 @@ class Study(StudyManager):
                         'ns_to_update': ns_to_update}
 
         ######### Numerical values   ####
-        x1 = 2.0
-        x2 = 4.0
-        a1 = 3.0
-        b1 = 4.0
-        a2 = 6.0
-        b2 = 2.0
-        scenario_list = ['scenario_1', 'scenario_2']
+        x = 2.0
+        y = 3.0
+
+        ax2 = 4.0
+        by2 = 5.0
+        cx = 6.0
+        dy = 7.0
+        exy = 12.0
+        #scenario_list = ['scenario_1', 'scenario_2']
+        scenario_list = ['scenario_1', 'scenario_2', 'reference']
         ######### Fill the dictionary for dm   ####
         dict_values = {}
 
@@ -64,21 +78,25 @@ class Study(StudyManager):
 
         dict_values[f'{self.study_name}.vs_MS.scenario_list'] = scenario_list
 
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.a'] = a1
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.x'] = x1
+        scenario = scenario_list[0]
+        my_root = f'{self.study_name}' + '.vs_MS.' + scenario
+        dict_values[f'{my_root}' + '.Hessian.x'] = x
+        dict_values[f'{my_root}' + '.Hessian.y'] = y
+        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2
+        dict_values[f'{my_root}' + '.Hessian.by2'] = by2
+        dict_values[f'{my_root}' + '.Hessian.cx'] = cx
+        dict_values[f'{my_root}' + '.Hessian.dy'] = dy
+        dict_values[f'{my_root}' + '.Hessian.exy'] = exy
 
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.a'] = a2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.x'] = x2
-
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc1.b'] = b1
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.constant'] = 3
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.power'] = 1
-        dict_values[f'{self.study_name}.vs_MS.scenario_1.Disc3.z'] = 1.2
-
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc1.b'] = b2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.constant'] = 2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.power'] = 2
-        dict_values[f'{self.study_name}.vs_MS.scenario_2.Disc3.z'] = 1.2
+        scenario = scenario_list[1]
+        my_root = f'{self.study_name}' + '.vs_MS.' + scenario
+        dict_values[f'{my_root}' + '.Hessian.x'] = x + 10.
+        dict_values[f'{my_root}' + '.Hessian.y'] = y + 10.
+        dict_values[f'{my_root}' + '.Hessian.ax2'] = ax2 + 10.
+        dict_values[f'{my_root}' + '.Hessian.by2'] = by2 + 10.
+        dict_values[f'{my_root}' + '.Hessian.cx'] = cx + 10.
+        dict_values[f'{my_root}' + '.Hessian.dy'] = dy + 10.
+        dict_values[f'{my_root}' + '.Hessian.exy'] = exy + 10.
 
         return [dict_values]
 
@@ -86,6 +104,4 @@ class Study(StudyManager):
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.ee.display_treeview_nodes()
-    uc_cls.ee.display_treeview_nodes(True)
     uc_cls.run(for_test=True)

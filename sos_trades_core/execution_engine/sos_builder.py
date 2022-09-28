@@ -43,7 +43,7 @@ class SoSBuilder(object):
         # flag to determine if the associated discipline has a run method
         # (True by default)
         self._is_executable = is_executable
-        self.__associated_namespaces = []
+        self.__associated_namespaces_dict = {}
 
     @property
     def sos_name(self):
@@ -55,7 +55,7 @@ class SoSBuilder(object):
 
     @property
     def associated_namespaces(self):
-        return self.__associated_namespaces
+        return list(self.__associated_namespaces_dict.values())
 
     def set_builder_info(self, key_info, value_info):
         ''' Sets the arguments that will be needed to instantiate self.cls
@@ -74,28 +74,26 @@ class SoSBuilder(object):
         Associate namespaces to a builder, rule to instantiate the disciplines
         '''
         if isinstance(ns_list, str):
-            self.__associated_namespaces.append(ns_list)
+            self.add_namespace_list_in_associated_namespaces([ns_list])
         elif isinstance(ns_list, list):
-            self.__associated_namespaces.extend(ns_list)
+            self.add_namespace_list_in_associated_namespaces(ns_list)
         else:
             raise Exception(
                 'Should specify a list of strings or a string to associate namespaces')
-        self.__args['associated_namespaces'] = self.__associated_namespaces
+        #self.__args['associated_namespaces'] = self.__associated_namespaces
 
     def add_namespace_list_in_associated_namespaces(self, ns_list):
         '''
         Add a namespace in associated namespaces list but check if one already exists with the same name
-        If yes then the new one has the priority 
+        If yes then the new one has the priority : we do this with a dict for performances the update gives the priority to the new one
         '''
-        for ns in ns_list:
-            ns_name = ns.split(self.NS_NAME_SEPARATOR)[0]
-            existing_ns_withsame_name = [
-                as_ns for as_ns in self.associated_namespaces if as_ns.startswith(ns_name)]
-            if len(existing_ns_withsame_name) != 0:
-                self.__associated_namespaces = [
-                    as_ns for as_ns in self.associated_namespaces if as_ns not in existing_ns_withsame_name]
-            self.__associated_namespaces.append(ns)
-        self.__args['associated_namespaces'] = self.__associated_namespaces
+
+        new_ns_dict = {ns.split(self.NS_NAME_SEPARATOR)[
+            0]: ns for ns in ns_list}
+        self.__associated_namespaces_dict.update(new_ns_dict)
+
+        self.__args['associated_namespaces'] = list(
+            self.__associated_namespaces_dict.values())
 
     def build(self):
         ''' Instantiates the class self.cls
