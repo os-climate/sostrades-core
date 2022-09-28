@@ -219,6 +219,10 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         for builder in self.__builders:
             self.ee.ns_manager.set_current_disc_ns(
                 f'{local_namespace}.{name}')
+            if builder.associated_namespaces != []:
+                builder.add_namespace_list_in_associated_namespaces(
+                    self.associated_namespaces)
+
             builder.add_namespace_list_in_associated_namespaces(
                 ns_update_ids)
             disc = builder.build()
@@ -238,6 +242,10 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         '''
         old_builder_name = self.__builders.sos_name
         self.__builders.set_disc_name(name)
+        if self.__builders.associated_namespaces != []:
+            self.__builders.add_namespace_list_in_associated_namespaces(
+                self.associated_namespaces)
+
         self.__builders.add_namespace_list_in_associated_namespaces(
             ns_update_ids)
         disc = self.__builders.build()

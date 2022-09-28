@@ -283,7 +283,7 @@ class NamespaceManager:
                 self.all_ns_dict[ns].name for ns in disc.associated_namespaces]
             if len(get_ns_names) != len(set(get_ns_names)):
                 raise Exception(
-                    f'There is two namespaces with the same name in the associated namespace list of {disc.get_disc_full_name()}')
+                    f'There is two namespaces with the same name in the associated namespace list of {disc.sos_name}')
             others_ns = {
                 self.all_ns_dict[ns].name: self.all_ns_dict[ns] for ns in disc.associated_namespaces}
             # FIX to wait all process modifs
@@ -409,10 +409,15 @@ class NamespaceManager:
         '''
         Update the value of a list of namespaces with an extra namespace placed behind after_name
         '''
+        ns_ids = []
         if namespace_list is None:
             namespace_list = list(self.shared_ns_dict.values())
         for ns in deepcopy(namespace_list):
-            self.__update_namespace_with_extra_ns(ns, extra_ns, after_name)
+            ns_id = self.__update_namespace_with_extra_ns(
+                ns, extra_ns, after_name)
+            ns_ids.append(ns_id)
+
+        return ns_ids
 
     def update_all_shared_namespaces_by_name(self, extra_ns, shared_ns_name, after_name=None):
         '''
@@ -437,8 +442,9 @@ class NamespaceManager:
         # Add a new namespace (o or not if it exists already) but NEVER update
         # the value of a namespace without modifying the ordering of the
         # ns_manager
-        self.add_ns(old_ns_object.name, new_ns_value)
+        ns_id = self.add_ns(old_ns_object.name, new_ns_value)
         # old_ns_object.update_value(new_ns_value)
+        return ns_id
 
     def update_ns_value_with_extra_ns(self, ns_value, extra_ns, after_name=None):
         '''
