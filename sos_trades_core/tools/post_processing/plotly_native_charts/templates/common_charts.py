@@ -241,7 +241,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         self,
         data_df,
         chart_name,
-        currency=None,
+        ticksuffix=None,
     ):
         '''
         data_df : dataframe with data to plot
@@ -260,7 +260,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 )
                 if columns_info_dict[key].get('format', None) == 'currency':
                     columns_data.append(
-                        data.apply(format_currency_legend, args=(currency)).values
+                        data.apply(format_currency_legend, args=(ticksuffix)).values
                     )
                 elif columns_info_dict[key].get('format', None) == 'percent':
                     columns_data.append(
