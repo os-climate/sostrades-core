@@ -18,7 +18,6 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class SimpleCustomDriver(SoSWrapp):
-
     # ontology information
     _ontology_data = {
         'label': 'sostrades_core.sos_wrapping.test_discs.simple_custom_driver',
@@ -32,7 +31,6 @@ class SimpleCustomDriver(SoSWrapp):
         'icon': '',
         'version': '',
     }
-
     _maturity = 'Fake'
 
     DESC_IN = {
