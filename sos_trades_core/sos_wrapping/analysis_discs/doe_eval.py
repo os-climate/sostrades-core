@@ -305,6 +305,15 @@ class DoeEval(SoSEval):
                     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
                     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
+                # check if all eval_inputs are specified in design_space
+                if 'design_space' in self._data_in:
+                    design_space = self.get_sosdisc_inputs('design_space')
+                    if design_space is not None:
+                        if 'variable' in design_space:
+                            if not selected_inputs.isin(
+                               design_space['variable'].values.tolist()).all():
+                                raise Exception(
+                                    f"The design space does not contain all values specified in the eval inputs list {selected_inputs.values}, design space variables : {design_space[self.VARIABLES].values}")
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
@@ -360,8 +369,10 @@ class DoeEval(SoSEval):
             lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
             upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         else:
-            #variables = self.eval_in_list
 
+            # We filter only variables in the dpspace that are in the
+            # eval_input list (with short name because the column of a design
+            # space is not full_name but variable
             newdspace_df = dspace_df[dspace_df[self.VARIABLES].isin(
                 self.eval_in_base_list)]
             variables = [self.eval_in_dict[var]
