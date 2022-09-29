@@ -41,6 +41,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         add_cumulated: bool = False,
         column_val_cum_sum: str = None,
         showlegend: bool = True,
+        offsetgroup=None
+
+
     ) -> InstantiatedPlotlyNativeChart:
         """Generate a bar chart from data in a dataframe
 
@@ -83,6 +86,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                         xaxis='x',
                         yaxis='y',
                         visible=True,
+                        offsetgroup=offsetgroup
                     )
                 )
 
@@ -351,7 +355,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         return new_chart
 
-    def generate_pie(self, df, lab_column_name, val_column_name, title):
+    def generate_pie(
+        self,
+        df:pd.DataFrame,
+        lab_column_name:str,
+        val_column_name:str,
+        title:str = '',
+        annotation_upper_left:dict={}):
+
         fig = go.Figure()
 
         if (lab_column_name in df) & (val_column_name in df):
@@ -394,6 +405,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             # Create native plotly chart
             chart_name = title
             new_chart = InstantiatedPlotlyNativeChart(fig=fig, chart_name=chart_name)
+            new_chart.annotation_upper_left = annotation_upper_left 
 
             return new_chart
 
@@ -507,6 +519,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         compute_legend_title=False,
         compute_colors_details=False,
         barmode='stack',
+        annotations: list = [],
+        updatemenus: list = [],
+        offsetgroup=None
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -551,6 +566,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             xaxis='x',
                             yaxis='y',
                             visible=True,
+                            offsetgroup=offsetgroup
                         )
                     )
 
@@ -568,6 +584,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             ),
             barmode=barmode,
         )
+        
+        if len(annotations) != 0:
+            fig.update_layout(annotations=annotations[0])
+        if len(updatemenus) != 0:
+            fig.update_layout(updatemenus=updatemenus)
 
         new_chart = None
         if len(fig.data):
@@ -1048,6 +1069,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         mpax_ref: float,
         x_axis_title: str = '',
         y_axis_title: str = '',
+        layout: str = '',
         mode: str = 'markers+text',
         ticksuffix: str = '',
         chart_name: str = '',
@@ -1193,7 +1215,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             )
 
         return new_chart
-
+    
     def generate_columns_infos_table(self, info_df, in_dict=dict()):
         '''
         Function to make more understandable the variables' names
