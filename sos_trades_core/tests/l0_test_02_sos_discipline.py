@@ -353,52 +353,7 @@ class TestSoSDiscipline(unittest.TestCase):
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
 
-    def _test_11_check_simpy_formula(self):
-        '''
-        check simpy formula usage
-        '''
-        self.name = 'Test'
-        self.ee = ExecutionEngine(self.name)
-
-        disc1_builder = self.ee.factory.get_builder_from_module(
-            'Disc1', self.mod1_path)
-        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
-
-        self.ee.ns_manager.add_ns('ns_ac', self.name)
-        self.ee.configure()
-        x = 3.0
-        values_dict = {self.name + '.x': x,
-                       self.name + '.Disc1.a': 'formula:3*Test.x',
-                       self.name + '.Disc1.b': 'formula:2*Test.Disc1.a'}
-
-        self.ee.load_study_from_input_dict(values_dict)
-
-        self.ee.display_treeview_nodes()
-        self.ee.execute()
-
-        # check status DONE after execution
-        for disc_id in self.ee.dm.disciplines_dict.keys():
-            self.assertEqual(self.ee.dm.get_discipline(
-                disc_id).status, 'DONE')
-
-        self.ee.execute()
-
-        # check status DONE after execution
-        for disc_id in self.ee.dm.disciplines_dict.keys():
-            self.assertEqual(self.ee.dm.get_discipline(
-                disc_id).status, 'DONE')
-
-        # get post-processing of disc1
-        disc1 = self.ee.dm.get_disciplines_with_name('Test.Disc1')[0]
-        filter = disc1.get_chart_filter_list()
-        graph_list = disc1.get_post_processing_list(filter)
-        # graph_list[0].to_plotly().show()
-
-        y = self.ee.dm.get_value(self.name + '.y')
-
-        self.assertEqual(y, 45)
-
-    def _test_12_check_simpy_formula_with_df(self):
+    def test_11_check_simpy_formula_with_df(self):
         '''
         check simpy formula usage
         '''
@@ -427,6 +382,7 @@ class TestSoSDiscipline(unittest.TestCase):
 
         self.ee.display_treeview_nodes()
         self.ee.execute()
+        key = self.ee.dm.data_id_map[self.name + '.Disc11.test_df']
         y = self.ee.dm.get_value(self.name + '.y')
         out_string = self.ee.dm.get_value(self.name + '.Disc11.out_string')
 

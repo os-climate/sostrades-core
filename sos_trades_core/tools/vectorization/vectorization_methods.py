@@ -22,6 +22,7 @@ from logging import Logger
 
 import pandas as pd
 import numpy as np
+from copy import deepcopy
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 
 BREAKDOWN_COLUMN = 'PATH'
@@ -92,6 +93,7 @@ def get_inputs_for_path(
     PATH: str,
     parent_path_admissible: bool = False,
     unique_value: bool = False,
+    allow_empty_dataframe: bool = False,
     parameter_name: str = '',
 ):
     filtered_input_parameter = None
@@ -102,8 +104,11 @@ def get_inputs_for_path(
                     input_parameter[BREAKDOWN_COLUMN] == PATH
                 ]
             else:
+
                 if parent_path_admissible:
                     PATH = get_parent_path(PATH)
+                elif allow_empty_dataframe:
+                    filtered_input_parameter=pd.DataFrame(columns=input_parameter.columns)
                 else:
                     raise Exception(
                         f'the path {PATH} is not found for parameter {parameter_name} but is required for the calculation. Please update it.'
@@ -216,11 +221,14 @@ def compute_sum_df(
     not_sum : column name to not sum
     """
     # infer not summable columns in dataframe
+
+    df_dict=deepcopy(df_dict)
+    
     not_summable_nested_list = [
         df.convert_dtypes()
         .select_dtypes(exclude=[np.number, 'datetime'])
         .columns.to_list()
-        for df in df_dict.values()
+        for df in df_dict.values() if not df.empty
     ]
     not_summable = [l for sublist in not_summable_nested_list for l in sublist]
     if len(not_summable):
@@ -246,14 +254,16 @@ def compute_sum_df(
             raise Exception(
                 f'Children key {key} is not in specified dict of DataFrame to sum.'
             )
-
-        df_to_sum = df_dict[key]
-        in_columns = [col for col in df_to_sum.columns if col not in columns_not_to_sum]
-        filtered_df_to_sum = df_to_sum[in_columns]
-        if df_sum is None:
-            df_sum = filtered_df_to_sum.copy(deep=True)
-        else:
-            df_sum = df_sum.add(filtered_df_to_sum, fill_value=0.0)
+        if  df_dict[key].empty:
+            df_dict.pop(key)
+        else: 
+            df_to_sum = df_dict[key]
+            in_columns = [col for col in df_to_sum.columns if col not in columns_not_to_sum]
+            filtered_df_to_sum = df_to_sum[in_columns]
+            if df_sum is None:
+                df_sum = filtered_df_to_sum.copy(deep=True)
+            else:
+                df_sum = df_sum.add(filtered_df_to_sum, fill_value=0.0)
 
     # restore column not to sum in result sum df
     if columns_not_to_sum != []:

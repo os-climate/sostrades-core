@@ -47,7 +47,8 @@ class ProcessBuilder(BaseProcessBuilder):
                   'scatter_ns': 'ns_ac',
                   'gather_ns': gather_ns,
                   'ns_to_update': ['ns_data_ac']}
-        self.ee.smaps_manager.add_build_map(map_name, ac_map)
+        if map_name not in self.ee.smaps_manager.build_maps_dict:
+            self.ee.smaps_manager.add_build_map(map_name, ac_map)
 
         # shared namespace for scatter
         self.ee.ns_manager.add_ns(

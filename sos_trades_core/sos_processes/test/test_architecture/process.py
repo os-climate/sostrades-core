@@ -29,6 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
 
         mydict = {'input_name': 'AC_list',
@@ -36,7 +37,9 @@ class ProcessBuilder(BaseProcessBuilder):
                   'input_ns': 'ns_business',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.ee.smaps_manager.add_build_map('AC_list', mydict)
+        map_name = 'AC_list'
+        if map_name not in self.ee.smaps_manager.build_maps_dict:
+            self.ee.smaps_manager.add_build_map(map_name, mydict)
 
         vb_type_list = ['SumValueBlockDiscipline',
                         'ValueBlockDiscipline',
