@@ -20,6 +20,7 @@ STANDARD_LIST_TYPES = ['list', 'array']
 TEMPORARY_LIST_TYPES = ['float_list', 'string_list', 'int_list']
 POSSIBLE_VALUES_TYPES = ['int', 'float', 'string', 'bool']
 RANGE_TYPES = ['int', 'float']
+NEW_CHECK = False
 
 
 def check_variable_type_and_unit(var_name, var_data_dict, sosdisc_class):
@@ -65,7 +66,8 @@ def check_variable_value(var_name, var_data_dict, sosdisc_class):
 
         elif variable_value is not None:
             # FIRST check type of the value
-            if not isinstance(variable_value, sosdisc_class.VAR_TYPE_MAP[variable_type]):
+
+            if not isinstance(variable_value, sosdisc_class.VAR_TYPE_MAP[variable_type]) and NEW_CHECK:
                 check_integrity_msg = f'Variable: {var_name} : the value {variable_value} has not the type specified in datamanager which is {variable_type}'
             else:
                 if variable_range is not None:
@@ -75,7 +77,7 @@ def check_variable_value(var_name, var_data_dict, sosdisc_class):
                     check_integrity_msg = check_possible_values(
                         var_name, var_data_dict, sosdisc_class)
 
-                if variable_type == 'dataframe':
+                if variable_type == 'dataframe' and NEW_CHECK:
                     check_dataframe_descriptor(
                         var_name, var_data_dict, sosdisc_class)
     return check_integrity_msg
@@ -110,7 +112,9 @@ def check_variable_range(var_name, var_data_dict, sosdisc_class):
                 if check_integrity_msg == '':
                     for i, sub_value in enumerate(variable_value):
                         if not variable_range[0] <= sub_value <= variable_range[1]:
-                            check_integrity_msg += f'Variable: {var_name} : The value {variable_value} at index {i} is not in range {variable_range}'
+                            check_integrity_msg_range = f'Variable: {var_name} : The value {variable_value} at index {i} is not in range {variable_range}'
+                            add_msg_to_check_integrity_msg(
+                                check_integrity_msg, check_integrity_msg_range)
             else:
                 check_integrity_msg = f'Variable: {var_name} type {variable_type} does not support *range*'
         else:
@@ -158,23 +162,64 @@ def check_possible_values(var_name, var_data_dict, sosdisc_class):
 
 def check_dataframe_descriptor(var_name, var_data_dict, sosdisc_class):
     '''
-    Check dataframe descriptor of the data_dict vs the value
+    Check dataframe descriptor of the data_dict vs the value if the dataframe is unlocked
     '''
     check_integrity_msg = ''
     dataframe_descriptor = var_data_dict[sosdisc_class.DATAFRAME_DESCRIPTOR]
     dataframe_edition_locked = var_data_dict[sosdisc_class.DATAFRAME_EDITION_LOCKED]
+    variable_value = var_data_dict[sosdisc_class.VALUE]
     # Dataframe editable in GUI but no dataframe descriptor
     if dataframe_descriptor is None and not dataframe_edition_locked:
         check_integrity_msg = f'Variable: {var_name} has no dataframe descriptor set'
 
     elif not dataframe_edition_locked:
+
         for key in dataframe_descriptor:
+            df_descriptor_well_defined = True
             # Check column data well described
             if len(dataframe_descriptor[key]) != 3:
-                check_integrity_msg = f'Variable: {var_name} has a partial dataframe descriptor set up'
+                check_integrity_msg_df_descriptor = f'Variable: {var_name} has a partial dataframe descriptor set up'
+                df_descriptor_well_defined = False
             # Check column type authorised
-            if dataframe_descriptor[key][0] not in sosdisc_class.VAR_TYPE_MAP.keys():
-                check_integrity_msg = f'Variable: {var_name}, with dataframe descriptor has a column type ' \
+            elif dataframe_descriptor[key][0] not in sosdisc_class.VAR_TYPE_MAP.keys():
+                check_integrity_msg_df_descriptor = f'Variable: {var_name}, with dataframe descriptor has a column type ' \
                     f'{dataframe_descriptor[key][0]} not in allowed type {list(sosdisc_class.VAR_TYPE_MAP.keys())}'
+                df_descriptor_well_defined = False
+                add_msg_to_check_integrity_msg(
+                    check_integrity_msg, check_integrity_msg_df_descriptor)
+
+        if df_descriptor_well_defined:
+            for key in variable_value.columns:
+                if key not in dataframe_descriptor:
+                    check_integrity_msg_df_descriptor = f'Variable: {var_name}, the dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
+                    add_msg_to_check_integrity_msg(
+                        check_integrity_msg, check_integrity_msg_df_descriptor)
+                else:
+                    check_integrity_msg_column = check_dataframe_column_with_df_descriptor(
+                        variable_value[key], dataframe_descriptor[key], var_name, key, sosdisc_class)
+                    add_msg_to_check_integrity_msg(
+                        check_integrity_msg, check_integrity_msg_column)
+    return check_integrity_msg
+
+
+def add_msg_to_check_integrity_msg(check_integrity_msg, new_msg):
+    if new_msg != '':
+        check_integrity_msg += new_msg + '\n'
+
+
+def check_dataframe_column_with_df_descriptor(column, column_descriptor, var_name, key, sosdisc_class):
+    '''
+    Check the tuple of the column in the dataframe descriptor with the dataframe column value
+    ex : ('string', None, False)
+    '''
+    column_type = column_descriptor[0]
+    column_range = column_descriptor[1]
+    values_in_column = column.values
+    check_integrity_msg = ''
+    if not all(isinstance(item, sosdisc_class.VAR_TYPE_MAP[column_type]) for item in values_in_column):
+        check_integrity_msg = f'Variable: {var_name}, all dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
+    elif column_range is not None and len(column_range) == 2:
+        if not all(item < column_range[1] for item in values_in_column) and all(column_range[0] < item for item in values_in_column):
+            check_integrity_msg = f'Variable: {var_name}, all dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
 
     return check_integrity_msg
