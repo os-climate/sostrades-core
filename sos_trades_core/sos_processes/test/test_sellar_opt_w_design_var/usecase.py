@@ -46,21 +46,21 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         design_var_descriptor = {'x_in': {'out_name': 'x',
-                                      'out_type': 'dataframe',
-                                      'key': 'value',
-                                      'index': arange(0, 4, 1),
-                                      'index_name': 'index',
-                                      'namespace_in': 'ns_OptimSellar',
-                                      'namespace_out': 'ns_OptimSellar'
-                                      },
-                             'z_in': {'out_name': 'z',
-                                      'out_type': 'array',
-                                      'index': [0, 1],
-                                      'index_name': 'index',
-                                      'namespace_in': 'ns_OptimSellar',
-                                      'namespace_out': 'ns_OptimSellar'
-                                      }
-                             }
+                                          'out_type': 'dataframe',
+                                          'key': 'value',
+                                          'index': arange(0, 4, 1),
+                                          'index_name': 'index',
+                                          'namespace_in': 'ns_OptimSellar',
+                                          'namespace_out': 'ns_OptimSellar'
+                                          },
+                                 'z_in': {'out_name': 'z',
+                                          'out_type': 'array',
+                                          'index': [0, 1],
+                                          'index_name': 'index',
+                                          'namespace_in': 'ns_OptimSellar',
+                                          'namespace_out': 'ns_OptimSellar'
+                                          }
+                                 }
 
         disc_dict = {}
         disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.design_var_descriptor'] = design_var_descriptor
@@ -80,7 +80,7 @@ class Study(StudyManager):
         }
 
         # Sellar and design var inputs
-        disc_dict[f'{ns}.{self.optim_name}.x_in'] = [1., 1., 1., 1.]
+        disc_dict[f'{ns}.{self.optim_name}.x_in'] = array([1., 1., 1., 1.])
         disc_dict[f'{ns}.{self.optim_name}.y_1'] = 5.
         disc_dict[f'{ns}.{self.optim_name}.y_2'] = 1.
         disc_dict[f'{ns}.{self.optim_name}.z_in'] = array([5., 2.])

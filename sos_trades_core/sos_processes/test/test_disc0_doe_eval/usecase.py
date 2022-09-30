@@ -26,7 +26,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['DoE_Eval.Disc0.r'],
+        dspace_dict = {'variable': ['r'],
                        'lower_bnd': [-5.],
                        'upper_bnd': [+5.],
                        }

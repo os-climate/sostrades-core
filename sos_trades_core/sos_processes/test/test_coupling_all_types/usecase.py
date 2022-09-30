@@ -23,7 +23,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
-        
+
         AC_list = ['A' + str(i) for i in range(0, 100)]
         values_dict = {}
         values_dict[f'{ns}.Disc1.z'] = 1.
@@ -31,7 +31,7 @@ class Study(StudyManager):
         values_dict[f'{ns}.Disc1.a'] = 10
         values_dict[f'{ns}.Disc1.b'] = 2
         values_dict[f'{ns}.Disc1.name'] = 'A1'
-        values_dict[f'{ns}.Disc1.x_dict'] = {ac:1.6 for ac in AC_list}
+        values_dict[f'{ns}.Disc1.x_dict'] = {ac: 1.6 for ac in AC_list}
         values_dict[f'{ns}.Disc1.AC_list'] = AC_list
         values_dict[f'{ns}.cache_type'] = 'SimpleCache'
         values_dict[f'{ns}.cache_type'] = 'None'
