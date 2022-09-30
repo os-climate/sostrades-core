@@ -565,12 +565,20 @@ class ExecutionEngine:
         # -- Init execute, to fully initialize models in discipline
         if len(dict_to_load):
             self.update_from_dm()
-            self.check_inputs(raise_exception=False)
             self.__factory.init_execution()
             if update_status_configure:
                 self.update_status_configure()
 
         self.dm.treeview = None
+
+    def __check_data_integrity_msg(self):
+        full_integrity_msg = ''
+        for data_id, var_data_dict in self.dm.data_dict.items():
+            if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
+                full_integrity_msg += var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] + '\n'
+
+        if full_integrity_msg != '':
+            raise Exception(full_integrity_msg)
 
     def check_for_unutilized_inputs(self, data_cache, anonymize_function):
         ''' Method used in "load_study_from_dict" function
@@ -644,12 +652,6 @@ class ExecutionEngine:
                 variable_to_update = self.dm.data_dict[key]
                 variable_to_update[SoSDiscipline.CONNECTOR_DATA] = value
 
-    def check_inputs(self, raise_exception=True):
-        '''
-        Check the inputs in the DataManager
-        '''
-        self.dm.check_inputs(raise_exception)
-
     def set_debug_mode(self, mode=None, disc=None):
         ''' set recursively <disc> debug options of in SoSDiscipline
         '''
@@ -698,8 +700,7 @@ class ExecutionEngine:
         self.fill_data_in_with_connector()
         self.update_from_dm()
 
-        self.check_inputs(raise_exception=True)
-
+        self.__check_data_integrity_msg()
         # -- init execute
         self.__factory.init_execution()
 

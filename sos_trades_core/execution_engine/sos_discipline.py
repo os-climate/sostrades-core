@@ -18,6 +18,8 @@ from pandas import DataFrame
 
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from sos_trades_core.tools.controllers.simpy_formula import SympyFormula
+from sos_trades_core.tools.check_data_integrity.check_data_integrity import check_variable_value,\
+    check_variable_type_and_unit
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -106,7 +108,7 @@ class SoSDiscipline(MDODiscipline):
     FORMULA = 'formula'
     IS_FORMULA = 'is_formula'
     IS_EVAL = 'is_eval'
-
+    CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
     NO_UNIT_TYPES = ['bool', 'string', 'string_list']
@@ -537,19 +539,37 @@ class SoSDiscipline(MDODiscipline):
 
         self.reload_io()
 
-        self.__check_all_data_integrity()
-
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
         self.set_configure_status(True)
 
     def __check_all_data_integrity(self):
-        ##-- generic data integrrity_check
+        '''
+         generic data integrity_check where we call different generic function to check integrity 
+         + specific data integrity by discipline
+        '''
+        self.__generic_check_data_integrity()
         self.check_data_integrity()
-        
+
     def check_data_integrity(self):
         pass
+
+    def __generic_check_data_integrity(self):
+        '''
+        Generic check data integrity of the variables that you own ( the model origin of the variable is you)
+        '''
+
+        data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
+        for var_fullname in data_in_full_name:
+            var_data_dict = self.dm.get_data(var_fullname)
+            if var_data_dict['model_origin'] == self.disc_id:
+                #                 check_integrity_msg = check_variable_type_and_unit(
+                # var_fullname, var_data_dict, self.__class__)
+                check_integrity_msg = check_variable_value(
+                    var_fullname, var_data_dict, self.__class__)
+                self.dm.set_data(
+                    var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
 
     def set_numerical_parameters(self):
         '''
@@ -833,7 +853,8 @@ class SoSDiscipline(MDODiscipline):
             if self.STRUCTURING in data_keys and curr_data[self.STRUCTURING] is True:
                 self._structuring_variables[key] = None
                 del curr_data[self.STRUCTURING]
-
+            if self.CHECK_INTEGRITY_MSG not in data_keys:
+                curr_data[self.CHECK_INTEGRITY_MSG] = ''
         return data_dict
 
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name=False):
@@ -1668,6 +1689,8 @@ class SoSDiscipline(MDODiscipline):
         # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
+
+        self.__check_all_data_integrity()
 
     def update_dm_with_formula(self):
         """
