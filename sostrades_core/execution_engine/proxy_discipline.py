@@ -301,7 +301,9 @@ class ProxyDiscipline(object):
         self.inst_desc_out = None  # desc_out of instance used to add dynamic outputs
         self._data_in = None
         self._data_out = None
-        self._structuring_variables = None
+        self._data_in_ns_tuple = None
+        self._data_out_ns_tuple = None # used by ProxyCoupling, ProxyDisciplineDriver
+        self._structuring_variables = None # used by ProxyCoupling, ProxyDisciplineDriver
         self.reset_data()
         # -- Maturity attribute
         self._maturity = self.get_maturity()
@@ -856,6 +858,8 @@ class ProxyDiscipline(object):
         self.inst_desc_out = {}
         self._data_in = {}
         self._data_out = {}
+        self._data_in_ns_tuple = {}
+        self._data_out_ns_tuple = {}
         self._structuring_variables = {}
 
     def get_data_in(self):
