@@ -52,10 +52,10 @@ class ArchiBuilder(SoSDisciplineBuilder):
     }
     PARENT = 'Parent'
     CURRENT = 'Current'
-    TYPE = 'Type'
+    ARCHI_TYPE = 'Type'
     ACTION = 'Action'
     ACTIVATION = 'Activation'
-    ARCHI_COLUMNS = [PARENT, CURRENT, TYPE, ACTION, ACTIVATION]
+    ARCHI_COLUMNS = [PARENT, CURRENT, ARCHI_TYPE, ACTION, ACTIVATION]
     ROOT_NODE = '@root_node@'
     POSSIBLE_ACTIONS = {
         'standard': 'standard',
@@ -326,7 +326,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
                 # get the builder from factory even if row[self.TYPE] is a
                 # tuple (folder,class_name)
                 disc_builder = self.get_builder_from_factory(
-                    builder_name, row[self.TYPE])
+                    builder_name, row[self.ARCHI_TYPE])
 
                 if ns in builder_dict:
                     builder_dict[ns].append(disc_builder)

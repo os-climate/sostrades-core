@@ -578,7 +578,7 @@ class ExecutionEngine:
                 full_integrity_msg += var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] + '\n'
 
         if full_integrity_msg != '':
-            raise Exception(full_integrity_msg)
+            raise ValueError(full_integrity_msg)
 
     def check_for_unutilized_inputs(self, data_cache, anonymize_function):
         ''' Method used in "load_study_from_dict" function

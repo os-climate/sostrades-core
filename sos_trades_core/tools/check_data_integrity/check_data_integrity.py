@@ -16,6 +16,11 @@ limitations under the License.
 
 from numpy import can_cast
 
+STANDARD_LIST_TYPES = ['list', 'array']
+TEMPORARY_LIST_TYPES = ['float_list', 'string_list', 'int_list']
+POSSIBLE_VALUES_TYPES = ['int', 'float', 'string', 'bool']
+RANGE_TYPES = ['int', 'float']
+
 
 def check_variable_type_and_unit(var_name, var_data_dict, sosdisc_class):
     '''
@@ -48,7 +53,10 @@ def check_variable_value(var_name, var_data_dict, sosdisc_class):
     check_integrity_msg = ''
 
     variable_io_type = var_data_dict[sosdisc_class.IO_TYPE]
-    variable_type = var_data_dict[sosdisc_class.TYPE]
+    try:
+        variable_type = var_data_dict[sosdisc_class.TYPE]
+    except:
+        print('tt')
     variable_optional = var_data_dict[sosdisc_class.OPTIONAL]
     variable_value = var_data_dict[sosdisc_class.VALUE]
     variable_range = var_data_dict[sosdisc_class.RANGE]
@@ -85,7 +93,7 @@ def check_variable_range(var_name, var_data_dict, sosdisc_class):
     variable_value = var_data_dict[sosdisc_class.VALUE]
     variable_range = var_data_dict[sosdisc_class.RANGE]
 
-    if variable_type in ['int', 'float']:
+    if variable_type in RANGE_TYPES:
 
         # check type of range vs type of value
         check_integrity_msg = check_range_type_vs_value_type(
@@ -95,18 +103,22 @@ def check_variable_range(var_name, var_data_dict, sosdisc_class):
             if not variable_range[0] <= variable_value <= variable_range[1]:
                 check_integrity_msg = f'Variable: {var_name} : {variable_value} is not in range {variable_range}'
 
-    elif variable_type in ['list', 'array']:
-        variable_subtype = var_data_dict[sosdisc_class.SUBTYPE]
-        if variable_subtype['list'] in ['int', 'float']:
-            for sub_value in variable_value:
-                check_integrity_msg += check_range_type_vs_value_type(
-                    var_name, sub_value, variable_range)
-            if check_integrity_msg == '':
-                for i, sub_value in enumerate(variable_value):
-                    if not variable_range[0] <= sub_value <= variable_range[1]:
-                        check_integrity_msg += f'Variable: {var_name} : The value {variable_value} at index {i} is not in range {variable_range}'
+    elif variable_type in STANDARD_LIST_TYPES + TEMPORARY_LIST_TYPES:
+        if sosdisc_class.SUBTYPE in var_data_dict:
+            variable_subtype = var_data_dict[sosdisc_class.SUBTYPE]
+            if variable_subtype['list'] in RANGE_TYPES:
+                for sub_value in variable_value:
+                    check_integrity_msg += check_range_type_vs_value_type(
+                        var_name, sub_value, variable_range)
+                if check_integrity_msg == '':
+                    for i, sub_value in enumerate(variable_value):
+                        if not variable_range[0] <= sub_value <= variable_range[1]:
+                            check_integrity_msg += f'Variable: {var_name} : The value {variable_value} at index {i} is not in range {variable_range}'
+            else:
+                check_integrity_msg = f'Variable: {var_name} type {variable_type} does not support *range*'
         else:
-            check_integrity_msg = f'Variable: {var_name} type {variable_type} does not support *range*'
+            pass
+            # subtype should be declared in any way ?
     else:
         check_integrity_msg = f'Variable: {var_name} type {variable_type} does not support *range*'
 
@@ -134,10 +146,10 @@ def check_possible_values(var_name, var_data_dict, sosdisc_class):
     variable_value = var_data_dict[sosdisc_class.VALUE]
     variable_possible_values = var_data_dict[sosdisc_class.POSSIBLE_VALUES]
 
-    if variable_type in ['int', 'float', 'string', 'bool']:
+    if variable_type in POSSIBLE_VALUES_TYPES:
         if variable_value not in variable_possible_values:
             check_integrity_msg = f'Variable: {var_name} : {variable_value} not in *possible values* {variable_possible_values}'
-    elif variable_type in ['list', 'array']:
+    elif variable_type in STANDARD_LIST_TYPES + TEMPORARY_LIST_TYPES:
         for sub_value in variable_value:
             if sub_value not in variable_possible_values:
                 check_integrity_msg = f'Variable: {var_name} : {sub_value} in list {variable_value} not in *possible values* {variable_possible_values}'

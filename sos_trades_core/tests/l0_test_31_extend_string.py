@@ -75,7 +75,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = [3., 0.]
+        values_dict['EE.z'] = np.array([3., 0.])
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
         values_dict['EE.Disc5.an_input_1'] = 'value0'
         values_dict['EE.Disc5.an_input_2'] = ['value1', 'value2']
@@ -85,7 +85,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.execute()
 
         # check inputs
-        output_target = {'z': [3., 0.],
+        output_target = {'z': np.array([3., 0.]),
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'an_input_1': 'value0',
                          'an_input_2': ['value1', 'value2']}
@@ -142,7 +142,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = [3., 0.]
+        values_dict['EE.z'] = np.array([3., 0.])
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
         values_dict['EE.Disc5.an_input_1'] = 'STEPS-HEvbzeovbeo(-+=___________f roylgf'
         values_dict['EE.Disc5.an_input_2'] = ['STEPS-HE', 'eee']
@@ -162,7 +162,7 @@ class TestExtendString(unittest.TestCase):
             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_2': {
                 'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                    'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_22': {
                 'scenario1': ['AC1', 'AC2']}}]
         exec_eng.dm.set_values_from_dict(values_dict)
@@ -206,7 +206,7 @@ class TestExtendString(unittest.TestCase):
             self.dump_dir, ee2, DirectLoadDump())
 
         # check inputs
-        output_target = {'z': [3., 0.],
+        output_target = {'z': np.array([3., 0.]),
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
                          'an_input_2': ['STEPS-HE', 'eee'],
@@ -226,7 +226,7 @@ class TestExtendString(unittest.TestCase):
                              'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                              'key_2': {
                                  'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                                     'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                              'key_22': {
                                  'scenario1': ['AC1', 'AC2']}}]}
         disc5 = ee2.dm.get_disciplines_with_name('EE.Disc5')[0]
@@ -320,7 +320,7 @@ class TestExtendString(unittest.TestCase):
                            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                            'key_2': {
                                'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                           'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                                   'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                            'key_22': {
                                'scenario1': ['AC1', 'AC2']}}],
                        'dict_dict_dict_list_string': {'s1': {'key_1': {

@@ -50,7 +50,7 @@ class TestExtendDict(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = [3., 0.]
+        values_dict['EE.z'] = array([3., 0.])
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
 
         exec_eng.load_study_from_input_dict(values_dict)
@@ -187,7 +187,7 @@ class TestExtendDict(unittest.TestCase):
         df = DataFrame(data=df_data)
         values_dict = {f'{self.name}.dict_out': {
             'key1': {'key11': 0.5, 'key12': 0.5, 'key13': 8., 'key14': {'key141': df, 'key142': array([5])}},
-            'key2': 10.}, f'{self.name}.z': [3., 0.]}
+            'key2': 10.}, f'{self.name}.z': array([3., 0.])}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
@@ -353,7 +353,7 @@ class TestExtendDict(unittest.TestCase):
                                   '3': i + 3, '4': i + 4} for i in range(500)}
 
         values_dict = {f'{self.name}.dict_out': dict_multi,
-                       f'{self.name}.z': [3., 0.]}
+                       f'{self.name}.z': array([3., 0.])}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
