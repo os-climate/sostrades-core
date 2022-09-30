@@ -173,11 +173,6 @@ class ProxyDoeEval(ProxyEval):
         self.selected_inputs = []
         self.previous_algo_name = ""
 
-        # FIXME: use the builder to assign a driver_wrapper as custom_driver does, instead of crushing the default None
-        # mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
-        # cls_wrapper = ee.factory.get_disc_class_from_module(mod_path)
-        # self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_wrapper, wrapping_mode='SoSTrades')
-
     def setup_sos_disciplines(self):
         # TODO: move to wrapper as it was originally?
         """
@@ -332,7 +327,7 @@ class ProxyDoeEval(ProxyEval):
             and not a default variable
             an output variable must be any data from a data_out discipline
         '''
-
+        # FIXME: need to accommodate long names and subprocess variables
         poss_in_values_full = []
         poss_out_values_full = []
 
@@ -518,6 +513,7 @@ class ProxyDoeEval(ProxyEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
+        # FIXME: manipulating namespaces manually
         self.eval_in_base_list = [
             element.split(".")[-1] for element in in_list]
         self.eval_out_base_list = [

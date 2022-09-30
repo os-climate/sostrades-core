@@ -38,10 +38,22 @@ class ProxyDisciplineDriverException(Exception):
 
 
 class ProxyDisciplineDriver(ProxyDisciplineBuilder):
+    """
+    **ProxyDiscipline** is a proxy class for a  discipline driver on the SoSTrades side...
 
+    Attributes:
+
+    """
     def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None, associated_namespaces=[]):
         '''
         Constructor
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
+            cls_builder (List[SoSBuilder]): list of the sub proxy builders
+            driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
+            associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
         super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces)
         self.cls_builder = cls_builder #TODO: Move to ProxyDisciplineBuilder?
@@ -169,7 +181,10 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         # len(self.cls_builder) == 0)" added for proc build
 
     def get_desc_in_out(self, io_type):
+        """
+        get the desc_in or desc_out. if a wrapper exists get it from the wrapper, otherwise get it from the proxy class
+        """
         if self.mdo_discipline_wrapp.wrapper is not None:
-            return ProxyDiscipline.get_desc_in_out(self, io_type)
+            return ProxyDiscipline.get_desc_in_out(self, io_type) #ProxyDiscipline gets the DESC from the wrapper
         else:
-            return super().get_desc_in_out(io_type)
+            return super().get_desc_in_out(io_type) #ProxyDisciplineBuilder expects the DESC on the proxies

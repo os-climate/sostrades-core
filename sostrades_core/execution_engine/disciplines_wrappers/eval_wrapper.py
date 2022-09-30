@@ -347,32 +347,6 @@ class EvalWrapper(SoSWrapp):
                 self.samples[sample_i].append(
                     vars_to_update_dict[multiplied_var])
 
-    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        # if dict or dataframe to be multiplied
-        if '@' in multiplier_name:
-            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
-                0].split('@')[1]
-            if col_name_clean == 'allcolumns':
-                if isinstance(var_to_update, dict):
-                    float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
-                        var_to_update[dict_keys], float)]
-                elif isinstance(var_to_update, pd.DataFrame):
-                    float_cols_ids_list = [
-                        df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
-                for key in float_cols_ids_list:
-                    var_to_update[key] = multiplier_value * var_to_update[key]
-            else:
-                keys_clean = [self.clean_var_name(var)
-                              for var in var_to_update.keys()]
-                col_index = keys_clean.index(col_name_clean)
-                col_name = var_to_update.keys()[col_index]
-                var_to_update[col_name] = multiplier_value * \
-                    var_to_update[col_name]
-        # if float to be multiplied
-        else:
-            var_to_update = multiplier_value * var_to_update
-        return var_to_update
-
     def clean_var_name(self, var_name):
         return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
 

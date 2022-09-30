@@ -83,6 +83,7 @@ class ProxyEval(ProxyDisciplineDriver):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
+        # FIXME: mixing short names and full names
         self.eval_in_base_list = in_list
         self.eval_out_base_list = out_list
         self.eval_in_list = []
@@ -178,6 +179,8 @@ class ProxyEval(ProxyDisciplineDriver):
             Once all disciplines have been run through,
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
+        #FIXME: manipulating namespaces manually
+
         # the eval process to analyse is stored as the only child of SoSEval
         # (coupling chain of the eval process or single discipline)
         analyzed_disc = self.proxy_disciplines[0]
@@ -204,6 +207,7 @@ class ProxyEval(ProxyDisciplineDriver):
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
         '''
+        #FIXME: this involves recursive back and forths during configuration
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(

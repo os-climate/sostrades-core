@@ -92,6 +92,7 @@ class ProxyDiscipline(object):
         inst_desc_out (Dict[Dict]): desc_out of instance used to add dynamic outputs
         _data_in (Dict[Dict]): instance variable for input data handling
         _data_out (Dict[Dict]): instance variable for output data handling
+
         _structuring_variables (Dict[Any]): stored values of variables whose changes force revert of the configured status
         _maturity (string): maturity of the user-defined model
 
@@ -241,6 +242,7 @@ class ProxyDiscipline(object):
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
             cls_builder (Class): class constructor of the user-defined wrapper (or None)
+            associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
@@ -438,6 +440,8 @@ class ProxyDiscipline(object):
 
         Returns:
             (Dict(dict)) data_in or data_out
+        Raises:
+            Exception if io_type
         '''
         if io_type == self.IO_TYPE_IN:
             return self.get_data_in()
