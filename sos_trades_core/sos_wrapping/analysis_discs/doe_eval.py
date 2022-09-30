@@ -21,6 +21,7 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
+from copy import deepcopy
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -263,8 +264,9 @@ class DoeEval(SoSEval):
                         self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
                 else:
-
-                    default_design_space = pd.DataFrame({'variable': selected_inputs,
+                    short_selected_inputs = pd.Series([
+                        inp.split('.')[-1] for inp in selected_inputs])
+                    default_design_space = pd.DataFrame({'variable': short_selected_inputs,
 
                                                          'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
                                                                                                          'type') == 'array' else 0.0
@@ -304,6 +306,17 @@ class DoeEval(SoSEval):
                     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
                     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
                         dynamic_inputs.update(generic_multiplier_dynamic_input)
+                # check if all eval_inputs are specified in design_space
+                if 'design_space' in self._data_in:
+                    design_space = self.get_sosdisc_inputs('design_space')
+                    if design_space is not None:
+                        if 'variable' in design_space:
+                            short_selected_inputs = pd.Series([
+                                inp.split('.')[-1] for inp in selected_inputs])
+                            if not short_selected_inputs.isin(
+                               design_space['variable'].values.tolist()).all():
+                                raise Exception(
+                                    f"The design space does not contain all values specified in the eval inputs list {selected_inputs.values}, design space variables : {design_space[self.VARIABLES].values}")
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
@@ -356,16 +369,24 @@ class DoeEval(SoSEval):
         if 'full_name' in dspace_df:
             variables = dspace_df['full_name'].tolist()
             variables = [f'{self.ee.study_name}.{eval}' for eval in variables]
+            lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
+            upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         else:
-            variables = self.eval_in_list
 
-        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
-        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
+            # We filter only variables in the dpspace that are in the
+            # eval_input list (with short name because the column of a design
+            # space is not full_name but variable
+            newdspace_df = dspace_df[dspace_df[self.VARIABLES].isin(
+                self.eval_in_base_list)]
+            variables = [self.eval_in_dict[var]
+                         for var in newdspace_df[self.VARIABLES].values]
+            lower_bounds = newdspace_df[self.LOWER_BOUND].tolist()
+            upper_bounds = newdspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
-        enable_variables = [True for invar in self.eval_in_list]
+        enable_variables = [True] * len(values)
         # This won't work for an array with a dimension greater than 2
         activated_elems = [[True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True] for var in
-                           self.eval_in_list]
+                           variables]
         dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
                                             self.VALUES: values,
                                             self.LOWER_BOUND: lower_bounds,
@@ -919,12 +940,16 @@ class DoeEval(SoSEval):
         '''
         self.eval_in_base_list = [
             element.split(".")[-1] for element in in_list]
+
         self.eval_out_base_list = [
             element.split(".")[-1] for element in out_list]
         self.eval_in_list = [
             f'{self.ee.study_name}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.ee.study_name}.{element}' for element in out_list]
+
+        self.eval_in_dict = {base: full for base, full in zip(
+            self.eval_in_base_list, self.eval_in_list)}
 
     def check_eval_io(self, given_list, default_list, is_eval_input):
         """

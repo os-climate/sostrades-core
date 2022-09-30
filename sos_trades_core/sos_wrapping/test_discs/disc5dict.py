@@ -34,8 +34,8 @@ class Disc5(SoSDiscipline):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'z': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict','subtype_descriptor':{'dict':'float'}, 'visibility': 'Shared', 'namespace': 'ns_test'}
+        'z': {'type': 'list', 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'}, 'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {

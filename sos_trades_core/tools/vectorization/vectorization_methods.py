@@ -114,11 +114,14 @@ def get_inputs_for_path(
                     )
                 else:
                     raise Exception(
-                        f'the path {PATH} is not found for parameter {parameter_name} but is required for the calculation. Please update it.'
+                        (
+                            f'the path {PATH} is not found for parameter {parameter_name}'
+                            f' but is required for the calculation. Please update it.'
+                        )
                     )
     else:
         raise Exception(
-            f"The column {BREAKDOWN_COLUMN} is not found as an input_parameter column"
+            f"The column {BREAKDOWN_COLUMN} is not found as an input_parameter column in parameter {parameter_name}"
         )
     if filtered_input_parameter is None:
         raise Exception(
@@ -153,7 +156,7 @@ def check_aircraft_breakdown_in_inputs(
         if parameter is not None:
             if BREAKDOWN_COLUMN in parameter:
                 for aircraft_breakdown in aircraft_breakdown_list:
-                    if not aircraft_breakdown in parameter[BREAKDOWN_COLUMN].values:
+                    if aircraft_breakdown not in parameter[BREAKDOWN_COLUMN].values:
                         logger.warning(
                             f'Aircraft Breakdown {aircraft_breakdown} is missing for parameter {param_name} for discipline {sos_discipline.get_disc_full_name()}'
                         )

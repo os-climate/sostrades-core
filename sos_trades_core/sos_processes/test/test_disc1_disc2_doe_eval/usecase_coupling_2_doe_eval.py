@@ -26,9 +26,8 @@ class Study(StudyManager):
 
     def setup_usecase(self):
 
-
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['x', 'DoEEval.Disc1.a'],
+        dspace_dict = {'variable': ['x', 'a'],
 
                        'lower_bnd': [0., 50.],
                        'upper_bnd': [100., 200.],
@@ -40,8 +39,8 @@ class Study(StudyManager):
                                'full_name': ['x', 'DoEEval.Disc1.a']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
 
-        output_selection_z_z = {'selected_output': [True, True,False],
-                                'full_name': ['z', 'DoEEval.Disc1.z','DoEEval.Disc1.indicator']}
+        output_selection_z_z = {'selected_output': [True, True, False],
+                                'full_name': ['z', 'DoEEval.Disc1.z', 'DoEEval.Disc1.indicator']}
         output_selection_z_z = pd.DataFrame(output_selection_z_z)
 
         # private values AC model
