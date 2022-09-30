@@ -1,3 +1,4 @@
+from copy import deepcopy
 import plotly.graph_objects as go
 from sos_trades_core.tools.post_processing.post_processing_tools import (
     align_two_y_axes,
@@ -40,6 +41,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         add_cumulated: bool = False,
         column_val_cum_sum: str = None,
         showlegend: bool = True,
+        offsetgroup=None
+
+
     ) -> InstantiatedPlotlyNativeChart:
         """Generate a bar chart from data in a dataframe
 
@@ -82,6 +86,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                         xaxis='x',
                         yaxis='y',
                         visible=True,
+                        offsetgroup=offsetgroup
                     )
                 )
 
@@ -236,23 +241,55 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             new_chart.set_csv_data_from_dataframe(data_df)
         return new_chart
 
-    def generate_table_chart(self, data_df, chart_name):
+    def generate_table_chart(
+        self,
+        data_df,
+        chart_name,
+        ticksuffix=None,
+    ):
         '''
         data_df : dataframe with data to plot
         '''
         # Create figure
         fig = go.Figure()
 
+        infos = deepcopy(data_df)
+        columns_info_dict = self.generate_columns_infos_table(infos)
+        columns_names = []
+        columns_data = []
+        for (key, data) in infos.iteritems():
+            if key in columns_info_dict:
+                columns_names.append(
+                    f'<b>{columns_info_dict[key].get("label", key)}</b>'
+                )
+                if columns_info_dict[key].get('format', None) == 'currency':
+                    columns_data.append(
+                        data.apply(format_currency_legend, args=(ticksuffix)).values
+                    )
+                elif columns_info_dict[key].get('format', None) == 'percent':
+                    columns_data.append(
+                        data.apply(
+                            lambda x: "{0:.2f}%".format(x * 100)
+                            if not isinstance(x, str)
+                            else x
+                        ).values
+                    )
+                else:
+                    columns_data.append(data.values)
+            else:
+                columns_names.append(f'<b>{key}</b>')
+                columns_data.append(data.values)
+
         fig.add_trace(
             go.Table(
                 header=dict(
-                    values=data_df.columns.tolist(),
+                    values=columns_names,
                     fill_color='midnightblue',
                     align='center',
                     font_color='white',
                 ),
                 cells=dict(
-                    values=data_df.T.values.tolist(),
+                    values=columns_data,
                     fill_color='floralwhite',
                     align='center',
                 ),
@@ -318,7 +355,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         return new_chart
 
-    def generate_pie(self, df, lab_column_name, val_column_name, title):
+    def generate_pie(
+        self,
+        df:pd.DataFrame,
+        lab_column_name:str,
+        val_column_name:str,
+        title:str = '',
+        annotation_upper_left:dict={}):
+
         fig = go.Figure()
 
         if (lab_column_name in df) & (val_column_name in df):
@@ -361,6 +405,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             # Create native plotly chart
             chart_name = title
             new_chart = InstantiatedPlotlyNativeChart(fig=fig, chart_name=chart_name)
+            new_chart.annotation_upper_left = annotation_upper_left 
 
             return new_chart
 
@@ -387,9 +432,10 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         line=None,
         legendgroup=None,
         add_cumulated=False,
-        marker=dict(size=12,),
+        marker=dict(
+            size=12,
+        ),
         string_text=False,
-        
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -423,8 +469,10 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             stackgroup=stackgroup,
                             hoveron=hoveron,
                             line=line,
-                            text=f'{category}' if string_text else cf_df_by_cat[column].values.tolist() ,
-                            marker= marker,
+                            text=f'{category}'
+                            if string_text
+                            else cf_df_by_cat[column].values.tolist(),
+                            marker=marker,
                             textposition=textposition,
                             legendgroup=legendgroup,
                         )
@@ -471,6 +519,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         compute_legend_title=False,
         compute_colors_details=False,
         barmode='stack',
+        annotations: list = [],
+        updatemenus: list = [],
+        offsetgroup=None
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -515,6 +566,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             xaxis='x',
                             yaxis='y',
                             visible=True,
+                            offsetgroup=offsetgroup
                         )
                     )
 
@@ -532,6 +584,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             ),
             barmode=barmode,
         )
+        
+        if len(annotations) != 0:
+            fig.update_layout(annotations=annotations[0])
+        if len(updatemenus) != 0:
+            fig.update_layout(updatemenus=updatemenus)
 
         new_chart = None
         if len(fig.data):
@@ -850,9 +907,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         x_axis_title: str = '',
         y_axis_title: str = '',
         layout: str = '',
-        mode:str = 'markers+lines',
+        mode: str = 'markers+lines',
         ticksuffix: str = '',
-        chart_name: str ='',
+        chart_name: str = '',
         name=None,
         textposition="top center",
         fill=None,
@@ -862,13 +919,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         fillcolor=None,
         line=None,
         legendgroup=None,
-        add_cumulated:bool =False,
-        marker=dict(size=12,),
-        string_text:bool =False,
-        annotation_upper_left:dict ={},
-        annotation_upper_right:dict ={},
-
-    ):        
+        add_cumulated: bool = False,
+        marker=dict(
+            size=12,
+        ),
+        string_text: bool = False,
+        annotation_upper_left: dict = {},
+        annotation_upper_right: dict = {},
+    ):
         '''Generate a bar chart from data in a dataframe
 
         Args:
@@ -892,11 +950,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         Returns:
             InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data'''
-        
+
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
-        vis=True
+        vis = True
         for category in categories_list:
             cf_df_by_cat = data_df[data_df[column_with_categories] == category]
             for column in y_axis_column_list:
@@ -904,13 +962,15 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     if column == y_axis_column_list[0]:
                         vis = True
                     else:
-                        vis = False                    
+                        vis = False
                     fig.add_trace(
                         go.Scatter(
                             x=cf_df_by_cat[x_axis_column].values.tolist(),
-                            y=(cf_df_by_cat[column].cumsum().values.tolist()
-                            if add_cumulated
-                            else cf_df_by_cat[column].values.tolist()),
+                            y=(
+                                cf_df_by_cat[column].cumsum().values.tolist()
+                                if add_cumulated
+                                else cf_df_by_cat[column].values.tolist()
+                            ),
                             name=(name if name is not None else f'{category}'),
                             xaxis='x',
                             yaxis='y',
@@ -921,8 +981,10 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             stackgroup=stackgroup,
                             hoveron=hoveron,
                             line=line,
-                            text=f'{category}' if string_text else cf_df_by_cat[column].values.tolist() ,
-                            marker= marker,
+                            text=f'{category}'
+                            if string_text
+                            else cf_df_by_cat[column].values.tolist(),
+                            marker=marker,
                             textposition=textposition,
                             legendgroup=legendgroup,
                         )
@@ -931,10 +993,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         fig.update_layout(
             autosize=True,
             xaxis=dict(
-                title=x_axis_title,
-                titlefont_size=12,
-                tickfont_size=10,
-                automargin=True
+                title=x_axis_title, titlefont_size=12, tickfont_size=10, automargin=True
             ),
             yaxis=dict(
                 title=y_axis_title,
@@ -945,18 +1004,35 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             ),
             legend=None,
         )
-        
+
         fig.update_layout(
             updatemenus=[
                 dict(
-                    buttons=list([dict(
-                        args=[
-                            {'visible': [True if i == j else False for j in range(int(len(fig.data)/len(categories_list)))] * len(categories_list)},
-                            {'title': f'<b>{col_pretty_list[i]} for {layout} layout</b>'},
-                        ],
-                        label=col_pretty_list[i],
-                        method="update"
-                    ) for i in range(len(col_pretty_list))]),
+                    buttons=list(
+                        [
+                            dict(
+                                args=[
+                                    {
+                                        'visible': [
+                                            True if i == j else False
+                                            for j in range(
+                                                int(
+                                                    len(fig.data) / len(categories_list)
+                                                )
+                                            )
+                                        ]
+                                        * len(categories_list)
+                                    },
+                                    {
+                                        'title': f'<b>{col_pretty_list[i]} for {layout} layout</b>'
+                                    },
+                                ],
+                                label=col_pretty_list[i],
+                                method="update",
+                            )
+                            for i in range(len(col_pretty_list))
+                        ]
+                    ),
                     direction='down',
                     type='dropdown',
                     pad={"r": 0, "t": 0},
@@ -965,7 +1041,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     x=1.0,
                     y=1.01,
                     yanchor='bottom',
-                    xanchor='right'
+                    xanchor='right',
                 ),
             ]
         )
@@ -980,9 +1056,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             new_chart.annotation_upper_left = annotation_upper_left
             new_chart.annotation_upper_right = annotation_upper_right
             # new_chart.set_csv_data_from_dataframe(data_df)
-        
+
         return new_chart
-    
+
     def generate_marker_chart_by_category_with_isoline(
         self,
         data_df: pd.DataFrame,
@@ -994,34 +1070,30 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         x_axis_title: str = '',
         y_axis_title: str = '',
         layout: str = '',
-        mode:str = 'markers+text',
+        mode: str = 'markers+text',
         ticksuffix: str = '',
-        chart_name: str ='',
-        name=None,
-        textposition="top center",
-        marker=dict(size=12,),
-        string_text:bool =False,
-        annotation_upper_left:dict ={},
-        annotation_upper_right:dict ={},
-        ):
-    
+        chart_name: str = '',
+        marker=dict(
+            size=12,
+        ),
+    ):
+
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
-  
+
         for category in categories_list:
             cf_df_by_cat = data_df[data_df[column_with_categories] == category]
             # for column in y_axis_column_list:
             #     if column in data_df:
-                    
 
             coc_x = []
             cocs_y = []
             mpax_z = []
 
-            mpax = cf_df_by_cat[var_to_compare_ref].to_list()   
-            coc=cf_df_by_cat[var1_name].to_list()
-            cocs=cf_df_by_cat[var2_name].to_list()
+            mpax = cf_df_by_cat[var_to_compare_ref].to_list()
+            coc = cf_df_by_cat[var1_name].to_list()
+            cocs = cf_df_by_cat[var2_name].to_list()
 
             fig.add_trace(
                 go.Scatter(
@@ -1032,7 +1104,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     textposition='top right',
                     visible=True,
                     mode=mode,
-                    marker=marker)
+                    marker=marker,
+                )
             )
 
             coc_x += coc
@@ -1040,24 +1113,39 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             mpax_z += mpax
 
         # create isolines from min -10 to max + 10, with step 10
-        list_seat = [*range(math.trunc(min(mpax_z) / 10) * 10 - 10,
-                            math.ceil(max(mpax_z) / 10) * 10 + 20, 10)]
+        list_seat = [
+            *range(
+                math.trunc(min(mpax_z) / 10) * 10 - 10,
+                math.ceil(max(mpax_z) / 10) * 10 + 20,
+                10,
+            )
+        ]
 
         # select plot window
         range_x = [min(coc_x) - 10, max(coc_x) + 10]
         range_y = [min(cocs_y) - 10, max(cocs_y) + 10]
 
         # add text isoline
-        min_x_text = range_x[0] / 100 + 5 / \
-            100 * (range_x[1] - range_x[0]) / 100
-        min_y_text = range_y[0] / 100 + 5 / \
-            100 * (range_y[1] - range_y[0]) / 100
+        min_x_text = range_x[0] / 100 + 5 / 100 * (range_x[1] - range_x[0]) / 100
+        min_y_text = range_y[0] / 100 + 5 / 100 * (range_y[1] - range_y[0]) / 100
 
-        fig.add_shape(type='line', x0=0, x1=0,  y0=range_y[0], y1=range_y[1],
-                      line=dict(color='black'))
+        fig.add_shape(
+            type='line',
+            x0=0,
+            x1=0,
+            y0=range_y[0],
+            y1=range_y[1],
+            line=dict(color='black'),
+        )
 
-        fig.add_shape(type='line', x0=range_x[0], x1=range_x[1], y0=0, y1=0,
-                      line=dict(color='black'))
+        fig.add_shape(
+            type='line',
+            x0=range_x[0],
+            x1=range_x[1],
+            y0=0,
+            y1=0,
+            line=dict(color='black'),
+        )
 
         for i in list_seat:
             # isoline : y = m*x + p
@@ -1065,8 +1153,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             p_i = (mpax_ref - i) / i
             x0 = range_x[0] / 100
             x1 = range_x[1] / 100
-            y0 = (m_i * x0 + p_i)
-            y1 = (m_i * x1 + p_i)
+            y0 = m_i * x0 + p_i
+            y1 = m_i * x1 + p_i
 
             # text on isoline
             x_text = min_x_text
@@ -1076,16 +1164,23 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 y_text = min_y_text
                 x_text = (min_y_text - p_i) / m_i
 
-            fig.add_shape(type='line', opacity=0.1,
-                          x0=x0 * 100, x1=x1 * 100,
-                          y0=y0 * 100, y1=y1 * 100, )
+            fig.add_shape(
+                type='line',
+                opacity=0.1,
+                x0=x0 * 100,
+                x1=x1 * 100,
+                y0=y0 * 100,
+                y1=y1 * 100,
+            )
 
-            fig.add_annotation(x=x_text * 100,
-                               y=y_text * 100,
-                               text=str(i) + ' pax',
-                               textangle=-20,
-                               showarrow=False,
-                               opacity=0.6)
+            fig.add_annotation(
+                x=x_text * 100,
+                y=y_text * 100,
+                text=str(i) + ' pax',
+                textangle=-20,
+                showarrow=False,
+                opacity=0.6,
+            )
 
         fig.update_layout(
             autosize=True,
@@ -1097,7 +1192,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 automargin=True,
                 ticksuffix=ticksuffix,
                 dtick=5,
-                tick0=0
+                tick0=0,
             ),
             yaxis=dict(
                 range=range_y,
@@ -1107,7 +1202,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 automargin=True,
                 ticksuffix=ticksuffix,
                 dtick=5,
-                tick0=0
+                tick0=0,
             ),
             legend=self.default_legend,
         )
@@ -1116,7 +1211,140 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         if len(fig.data):
             # Create native plotly chart
             new_chart = InstantiatedPlotlyNativeChart(
-                fig=fig, chart_name=chart_name, default_legend=False)
+                fig=fig, chart_name=chart_name, default_legend=False
+            )
 
         return new_chart
     
+    def generate_columns_infos_table(self, info_df, in_dict=dict()):
+        '''
+        Function to make more understandable the variables' names
+        that appear in post-processing tables
+        '''
+
+        info_dict = deepcopy(in_dict)
+        columns_info = columns_info = {
+            'index': {'label': 'Name', 'format': None},
+            'scenario_id': {'label': 'Scenario', 'format': None},
+            'irr': {'label': 'Internal Rate of Return (IRR)', 'format': 'percent'},
+            'npv': {'label': 'Net Present Value (NPV)', 'format': 'currency'},
+            'year_break_even_cashflow': {
+                'label': 'Cashflow Breakeven Year',
+                'format': None,
+            },
+            'year_break_even_discounted_cashflow': {
+                'label': 'Discounted Cashflow Breakeven Year ',
+                'format': None,
+            },
+            'peak_exposure': {'label': 'Peak Exposure', 'format': 'currency'},
+            'total_free_cash_flow': {
+                'label': 'Total Free Cashflow',
+                'format': 'currency',
+            },
+        }
+
+        if ('last_year' in info_df) & ('year_start_escalation_nrc' in info_df):
+
+            last_year = int(info_df['last_year'].values[0])
+            year_start_escalation_nrc = int(
+                info_df['year_start_escalation_nrc'].values[0]
+            )
+
+            info_dict['total_cumul_nrc'] = {
+                'label': f'Total Cumulative NRC (ec {year_start_escalation_nrc})',
+                'format': 'currency',
+            }
+            info_dict['nrc_last_year'] = {
+                'label': f'NRC in {last_year}',
+                'format': 'currency',
+            }
+            del info_df['last_year']
+            # del info_df['year_start_escalation_rc']
+            del info_df['year_start_escalation_nrc']
+
+        key_info_list = list(info_df.columns)
+        for cle in key_info_list:
+            if cle.startswith('total_cumul_sales'):
+                if cle == 'total_cumul_sales':
+                    info_dict['total_cumul_sales'] = {
+                        'label': 'Total Cumulative Sales',
+                        'format': None,
+                    }
+                else:
+                    ac = cle.split('total_cumul_sales_')[-1]
+                    info_dict[f'total_cumul_sales_{ac}'] = {
+                        'label': f'Total Cumulative Sales {ac}',
+                        'format': None,
+                    }
+
+            elif cle.startswith('year_start_escalation_rc'):
+                if cle == 'year_start_escalation_rc':
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict['total_cumul_rc'] = {
+                        'label': f'Total Cumulative RC (ec {year_start_escalation_rc})',
+                        'format': 'currency',
+                    }
+                else:
+                    ac = cle.split('year_start_escalation_rc_')[-1]
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict[f'total_cumul_rc_{ac}'] = {
+                        'label': f'Total Cumulative RC (ec {year_start_escalation_rc}) for {ac}',
+                        'format': 'currency',
+                    }
+
+                del info_df[cle]
+
+            elif cle.startswith('rc_last_year'):
+                if cle == 'rc_last_year':
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict['rc_last_year'] = {
+                        'label': f'RC in {last_year}',
+                        'format': 'currency',
+                    }
+                else:
+                    ac = cle.split('rc_last_year_')[-1]
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict[f'rc_last_year_{ac}'] = {
+                        'label': f'RC in {last_year} for {ac}',
+                        'format': 'currency',
+                    }
+
+            elif cle.startswith('sale_price_last_year'):
+                if cle == 'sale_price_last_year':
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict['sale_price_last_year'] = {
+                        'label': f'Sale Price in {last_year}',
+                        'format': 'currency',
+                    }
+                else:
+                    ac = cle.split('sale_price_last_year_')[-1]
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict[f'sale_price_last_year_{ac}'] = {
+                        'label': f'Sale Price in {last_year} for {ac}',
+                        'format': 'currency',
+                    }
+
+            elif cle.startswith('contribution_margin_last_year'):
+                if cle == 'contribution_margin_last_year':
+                    info_dict['contribution_margin_last_year'] = {
+                        'label': f'Contribution Margin in {last_year}',
+                        'format': 'percent',
+                    }
+                else:
+                    ac = cle.split('contribution_margin_last_year_')[-1]
+                    info_dict[f'contribution_margin_last_year_{ac}'] = {
+                        'label': f'Contribution Margin in {last_year} for {ac}',
+                        'format': 'percent',
+                    }
+
+            else:
+                pass
+
+        if 'mean_contribution_margin_last_year' in info_df:
+            info_dict['mean_contribution_margin_last_year'] = {
+                'label': f'Average Contribution Margin in {last_year}',
+                'format': 'percent',
+            }
+
+        columns_info.update(info_dict)
+        return columns_info
