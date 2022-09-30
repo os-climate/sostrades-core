@@ -96,6 +96,7 @@ def get_inputs_for_path(
     allow_empty_dataframe: bool = False,
     parameter_name: str = '',
 ):
+    search_path = PATH
     filtered_input_parameter = None
     if BREAKDOWN_COLUMN in input_parameter:
         while filtered_input_parameter is None and len(PATH) > 0:
@@ -123,7 +124,9 @@ def get_inputs_for_path(
             f"The column {BREAKDOWN_COLUMN} is not found as an input_parameter column in parameter {parameter_name}"
         )
     if filtered_input_parameter is None:
-        raise Exception(f"Can not find parent path for parameter {parameter_name}")
+        raise Exception(
+            f"Can not find parent path of {search_path} for parameter {parameter_name}"
+        )
     else:
         filtered_input_parameter = filtered_input_parameter.drop(
             columns=['PATH']
