@@ -264,8 +264,9 @@ class DoeEval(SoSEval):
                         self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
                 else:
-
-                    default_design_space = pd.DataFrame({'variable': selected_inputs,
+                    short_selected_inputs = pd.Series([
+                        inp.split('.')[-1] for inp in selected_inputs])
+                    default_design_space = pd.DataFrame({'variable': short_selected_inputs,
 
                                                          'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
                                                                                                          'type') == 'array' else 0.0
@@ -310,7 +311,9 @@ class DoeEval(SoSEval):
                     design_space = self.get_sosdisc_inputs('design_space')
                     if design_space is not None:
                         if 'variable' in design_space:
-                            if not selected_inputs.isin(
+                            short_selected_inputs = pd.Series([
+                                inp.split('.')[-1] for inp in selected_inputs])
+                            if not short_selected_inputs.isin(
                                design_space['variable'].values.tolist()).all():
                                 raise Exception(
                                     f"The design space does not contain all values specified in the eval inputs list {selected_inputs.values}, design space variables : {design_space[self.VARIABLES].values}")
