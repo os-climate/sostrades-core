@@ -96,8 +96,8 @@ class TestExtendString(unittest.TestCase):
 
         # check outputs
         target = {
-            'EE.z': [
-                3.0, 0.0], 'EE.dict_out': [
+            'EE.z': np.array([
+                3.0, 0.0]), 'EE.dict_out': [
                 0.5, 0.5], 'EE.h': [
                 0.75, 0.75]}
 
@@ -237,8 +237,8 @@ class TestExtendString(unittest.TestCase):
 
         # check outputs
         target = {
-            'EE.z': [
-                3.0, 0.0], 'EE.dict_out': {'key1': 0.5, 'key2': 0.5}, 'EE.h': [
+            'EE.z': np.array([
+                3.0, 0.0]), 'EE.dict_out': {'key1': 0.5, 'key2': 0.5}, 'EE.h': [
                 0.75, 0.75],
             'EE.Disc5.an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
             'EE.Disc5.an_input_2': ['STEPS-HE', 'eee'],
