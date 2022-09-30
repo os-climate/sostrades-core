@@ -66,8 +66,7 @@ def check_variable_value(var_name, var_data_dict, sosdisc_class):
         elif variable_value is not None:
             # FIRST check type of the value
             if not isinstance(variable_value, sosdisc_class.VAR_TYPE_MAP[variable_type]):
-                pass
-                #check_integrity_msg = f'Variable: {var_name} : the value {variable_value} has not the type specified in datamanager which is {variable_type}'
+                check_integrity_msg = f'Variable: {var_name} : the value {variable_value} has not the type specified in datamanager which is {variable_type}'
             else:
                 if variable_range is not None:
                     check_integrity_msg = check_variable_range(
