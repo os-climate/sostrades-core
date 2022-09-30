@@ -50,7 +50,7 @@ class TestExtendDict(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = array([3., 0.])
+        values_dict['EE.z'] = [3., 0.]
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
 
         exec_eng.load_study_from_input_dict(values_dict)
@@ -149,7 +149,7 @@ class TestExtendDict(unittest.TestCase):
         exec_eng.configure()
 
         values_dict = {f'{self.name}.dict_out': {'key1': 3., 'key2': 4.},
-                       f'{self.name}.z': array([4., 5.]),
+                       f'{self.name}.z': [4., 5.],
                        f'{self.name}.h': array([8., 9.]),
                        f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}
                        }
@@ -353,7 +353,7 @@ class TestExtendDict(unittest.TestCase):
                                   '3': i + 3, '4': i + 4} for i in range(500)}
 
         values_dict = {f'{self.name}.dict_out': dict_multi,
-                       f'{self.name}.z': array([3., 0.])}
+                       f'{self.name}.z': [3., 0.]}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()

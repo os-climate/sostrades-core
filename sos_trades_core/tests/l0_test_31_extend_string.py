@@ -75,7 +75,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = np.array([3., 0.])
+        values_dict['EE.z'] = [3., 0.]
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
         values_dict['EE.Disc5.an_input_1'] = 'value0'
         values_dict['EE.Disc5.an_input_2'] = ['value1', 'value2']
@@ -85,7 +85,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.execute()
 
         # check inputs
-        output_target = {'z': np.array([3., 0.]),
+        output_target = {'z': [3., 0.],
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'an_input_1': 'value0',
                          'an_input_2': ['value1', 'value2']}
@@ -142,7 +142,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = np.array([3., 0.])
+        values_dict['EE.z'] = [3., 0.]
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
         values_dict['EE.Disc5.an_input_1'] = 'STEPS-HEvbzeovbeo(-+=___________f roylgf'
         values_dict['EE.Disc5.an_input_2'] = ['STEPS-HE', 'eee']
@@ -206,7 +206,7 @@ class TestExtendString(unittest.TestCase):
             self.dump_dir, ee2, DirectLoadDump())
 
         # check inputs
-        output_target = {'z': np.array([3., 0.]),
+        output_target = {'z': [3., 0.],
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
                          'an_input_2': ['STEPS-HE', 'eee'],
@@ -237,8 +237,8 @@ class TestExtendString(unittest.TestCase):
 
         # check outputs
         target = {
-            'EE.z': np.array([
-                3.0, 0.0]), 'EE.dict_out': {'key1': 0.5, 'key2': 0.5}, 'EE.h': [
+            'EE.z': [
+                3.0, 0.0], 'EE.dict_out': {'key1': 0.5, 'key2': 0.5}, 'EE.h': [
                 0.75, 0.75],
             'EE.Disc5.an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
             'EE.Disc5.an_input_2': ['STEPS-HE', 'eee'],
