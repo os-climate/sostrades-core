@@ -96,8 +96,8 @@ class TestExtendString(unittest.TestCase):
 
         # check outputs
         target = {
-            'EE.z': [
-                3.0, 0.0], 'EE.dict_out': [
+            'EE.z': np.array([
+                3.0, 0.0]), 'EE.dict_out': [
                 0.5, 0.5], 'EE.h': [
                 0.75, 0.75]}
 
@@ -162,7 +162,7 @@ class TestExtendString(unittest.TestCase):
             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_2': {
                 'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                    'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_22': {
                 'scenario1': ['AC1', 'AC2']}}]
         exec_eng.dm.set_values_from_dict(values_dict)
@@ -226,7 +226,7 @@ class TestExtendString(unittest.TestCase):
                              'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                              'key_2': {
                                  'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                                     'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                              'key_22': {
                                  'scenario1': ['AC1', 'AC2']}}]}
         disc5 = ee2.dm.get_disciplines_with_name('EE.Disc5')[0]
@@ -320,7 +320,7 @@ class TestExtendString(unittest.TestCase):
                            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                            'key_2': {
                                'scenario1': ['AC1', 'AC2']}}, {'key_11': {
-                           'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
+                                   'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                            'key_22': {
                                'scenario1': ['AC1', 'AC2']}}],
                        'dict_dict_dict_list_string': {'s1': {'key_1': {

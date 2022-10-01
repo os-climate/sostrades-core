@@ -41,9 +41,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         add_cumulated: bool = False,
         column_val_cum_sum: str = None,
         showlegend: bool = True,
-        offsetgroup=None
-
-
+        offsetgroup=None,
     ) -> InstantiatedPlotlyNativeChart:
         """Generate a bar chart from data in a dataframe
 
@@ -86,7 +84,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                         xaxis='x',
                         yaxis='y',
                         visible=True,
-                        offsetgroup=offsetgroup
+                        offsetgroup=offsetgroup,
                     )
                 )
 
@@ -241,6 +239,139 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             new_chart.set_csv_data_from_dataframe(data_df)
         return new_chart
 
+    def generate_columns_infos_table(self, info_df, in_dict=dict()):
+        '''
+        Function to make more understandable the variables' names
+        that appear in post-processing tables
+        '''
+
+        info_dict = deepcopy(in_dict)
+        columns_info = columns_info = {
+            'index': {'label': 'Name', 'format': None},
+            'scenario_id': {'label': 'Scenario', 'format': None},
+            'irr': {'label': 'Internal Rate of Return (IRR)', 'format': 'percent'},
+            'npv': {'label': 'Net Present Value (NPV)', 'format': 'currency'},
+            'year_break_even_cashflow': {
+                'label': 'Cashflow Breakeven Year',
+                'format': None,
+            },
+            'year_break_even_discounted_cashflow': {
+                'label': 'Discounted Cashflow Breakeven Year ',
+                'format': None,
+            },
+            'peak_exposure': {'label': 'Peak Exposure', 'format': 'currency'},
+            'total_free_cash_flow': {
+                'label': 'Total Free Cashflow',
+                'format': 'currency',
+            },
+        }
+
+        if ('last_year' in info_df) & ('year_start_escalation_nrc' in info_df):
+
+            last_year = int(info_df['last_year'].values[0])
+            year_start_escalation_nrc = int(
+                info_df['year_start_escalation_nrc'].values[0]
+            )
+
+            info_dict['total_cumul_nrc'] = {
+                'label': f'Total Cumulative NRC (ec {year_start_escalation_nrc})',
+                'format': 'currency',
+            }
+            info_dict['nrc_last_year'] = {
+                'label': f'NRC in {last_year}',
+                'format': 'currency',
+            }
+            del info_df['last_year']
+            # del info_df['year_start_escalation_rc']
+            del info_df['year_start_escalation_nrc']
+
+        key_info_list = list(info_df.columns)
+        for cle in key_info_list:
+            if cle.startswith('total_cumul_sales'):
+                if cle == 'total_cumul_sales':
+                    info_dict['total_cumul_sales'] = {
+                        'label': 'Total Cumulative Sales',
+                        'format': None,
+                    }
+                else:
+                    ac = cle.split('total_cumul_sales_')[-1]
+                    info_dict[f'total_cumul_sales_{ac}'] = {
+                        'label': f'Total Cumulative Sales {ac}',
+                        'format': None,
+                    }
+
+            elif cle.startswith('year_start_escalation_rc'):
+                if cle == 'year_start_escalation_rc':
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict['total_cumul_rc'] = {
+                        'label': f'Total Cumulative RC (ec {year_start_escalation_rc})',
+                        'format': 'currency',
+                    }
+                else:
+                    ac = cle.split('year_start_escalation_rc_')[-1]
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict[f'total_cumul_rc_{ac}'] = {
+                        'label': f'Total Cumulative RC (ec {year_start_escalation_rc}) for {ac}',
+                        'format': 'currency',
+                    }
+
+                del info_df[cle]
+
+            elif cle.startswith('rc_last_year'):
+                if cle == 'rc_last_year':
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict['rc_last_year'] = {
+                        'label': f'RC in {last_year}',
+                        'format': 'currency',
+                    }
+                else:
+                    ac = cle.split('rc_last_year_')[-1]
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict[f'rc_last_year_{ac}'] = {
+                        'label': f'RC in {last_year} for {ac}',
+                        'format': 'currency',
+                    }
+
+            elif cle.startswith('sale_price_last_year'):
+                if cle == 'sale_price_last_year':
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict['sale_price_last_year'] = {
+                        'label': f'Sale Price in {last_year}',
+                        'format': 'currency',
+                    }
+                else:
+                    ac = cle.split('sale_price_last_year_')[-1]
+                    year_start_escalation_rc = int(info_df[cle].values[0])
+                    info_dict[f'sale_price_last_year_{ac}'] = {
+                        'label': f'Sale Price in {last_year} for {ac}',
+                        'format': 'currency',
+                    }
+
+            elif cle.startswith('contribution_margin_last_year'):
+                if cle == 'contribution_margin_last_year':
+                    info_dict['contribution_margin_last_year'] = {
+                        'label': f'Contribution Margin in {last_year}',
+                        'format': 'percent',
+                    }
+                else:
+                    ac = cle.split('contribution_margin_last_year_')[-1]
+                    info_dict[f'contribution_margin_last_year_{ac}'] = {
+                        'label': f'Contribution Margin in {last_year} for {ac}',
+                        'format': 'percent',
+                    }
+
+            else:
+                pass
+
+        if 'mean_contribution_margin_last_year' in info_df:
+            info_dict['mean_contribution_margin_last_year'] = {
+                'label': f'Average Contribution Margin in {last_year}',
+                'format': 'percent',
+            }
+
+        columns_info.update(info_dict)
+        return columns_info
+
     def generate_table_chart(
         self,
         data_df,
@@ -357,11 +488,12 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
     def generate_pie(
         self,
-        df:pd.DataFrame,
-        lab_column_name:str,
-        val_column_name:str,
-        title:str = '',
-        annotation_upper_left:dict={}):
+        df: pd.DataFrame,
+        lab_column_name: str,
+        val_column_name: str,
+        title: str = '',
+        annotation_upper_left: dict = {},
+    ):
 
         fig = go.Figure()
 
@@ -405,7 +537,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             # Create native plotly chart
             chart_name = title
             new_chart = InstantiatedPlotlyNativeChart(fig=fig, chart_name=chart_name)
-            new_chart.annotation_upper_left = annotation_upper_left 
+            new_chart.annotation_upper_left = annotation_upper_left
 
             return new_chart
 
@@ -521,7 +653,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         barmode='stack',
         annotations: list = [],
         updatemenus: list = [],
-        offsetgroup=None
+        offsetgroup=None,
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -566,7 +698,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                             xaxis='x',
                             yaxis='y',
                             visible=True,
-                            offsetgroup=offsetgroup
+                            offsetgroup=offsetgroup,
                         )
                     )
 
@@ -584,7 +716,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             ),
             barmode=barmode,
         )
-        
+
         if len(annotations) != 0:
             fig.update_layout(annotations=annotations[0])
         if len(updatemenus) != 0:
@@ -1215,136 +1347,74 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             )
 
         return new_chart
-    
-    def generate_columns_infos_table(self, info_df, in_dict=dict()):
-        '''
-        Function to make more understandable the variables' names
-        that appear in post-processing tables
-        '''
 
-        info_dict = deepcopy(in_dict)
-        columns_info = columns_info = {
-            'index': {'label': 'Name', 'format': None},
-            'scenario_id': {'label': 'Scenario', 'format': None},
-            'irr': {'label': 'Internal Rate of Return (IRR)', 'format': 'percent'},
-            'npv': {'label': 'Net Present Value (NPV)', 'format': 'currency'},
-            'year_break_even_cashflow': {
-                'label': 'Cashflow Breakeven Year',
-                'format': None,
-            },
-            'year_break_even_discounted_cashflow': {
-                'label': 'Discounted Cashflow Breakeven Year ',
-                'format': None,
-            },
-            'peak_exposure': {'label': 'Peak Exposure', 'format': 'currency'},
-            'total_free_cash_flow': {
-                'label': 'Total Free Cashflow',
-                'format': 'currency',
-            },
-        }
+    def generate_waterfall_chart(
+        self, measure_dict, values_dict, text_dict, name, currency
+    ):
+        # Create figure
+        fig = go.Figure()
+        year_list = list(measure_dict.keys())
+        for y in year_list:
+            waterfall = go.Waterfall(
+                name=f'<b>{name} Year {y}</b>',
+                orientation='h',
+                measure=measure_dict[y],
+                x=list(values_dict[y].values()),
+                textposition='auto',
+                text=text_dict[y],
+                y=list(values_dict[y].keys()),
+                connector={
+                    "mode": "between",
+                    "line": {
+                        "width": 2,
+                        "color": "rgb(0, 0, 0)",
+                        "dash": "solid",
+                    },
+                },
+                visible=False,
+            )
+            fig.add_trace(waterfall)
+        if len(fig.data):
+            fig.data[-1].visible = True
 
-        if ('last_year' in info_df) & ('year_start_escalation_nrc' in info_df):
+            # Create and add slider
+            steps = []
+            for i in range(len(fig.data)):
+                step = dict(
+                    method='update',
+                    args=[
+                        {'visible': [False] * len(fig.data)},
+                        {'title': f'Profit and loss {name} Year {year_list[i]}'},
+                    ],  # layout attribute
+                    label=f'{year_list[i]}',
+                )
+                # Toggle i'th trace to 'visible'
+                step['args'][0]['visible'][i] = True
+                steps.append(step)
 
-            last_year = int(info_df['last_year'].values[0])
-            year_start_escalation_nrc = int(
-                info_df['year_start_escalation_nrc'].values[0]
+            sliders = [
+                dict(
+                    active=len(steps) - 1,
+                    currentvalue={'prefix': 'Select Year, currently: '},
+                    steps=steps,
+                )
+            ]
+
+            fig.update_layout(
+                sliders=sliders,
+                xaxis=dict(ticksuffix=currency, automargin=True),
+                yaxis=dict(automargin=True),
+                showlegend=False,
+                autosize=True,
             )
 
-            info_dict['total_cumul_nrc'] = {
-                'label': f'Total Cumulative NRC (ec {year_start_escalation_nrc})',
-                'format': 'currency',
-            }
-            info_dict['nrc_last_year'] = {
-                'label': f'NRC in {last_year}',
-                'format': 'currency',
-            }
-            del info_df['last_year']
-            # del info_df['year_start_escalation_rc']
-            del info_df['year_start_escalation_nrc']
+        new_chart = None
+        if len(fig.data):
 
-        key_info_list = list(info_df.columns)
-        for cle in key_info_list:
-            if cle.startswith('total_cumul_sales'):
-                if cle == 'total_cumul_sales':
-                    info_dict['total_cumul_sales'] = {
-                        'label': 'Total Cumulative Sales',
-                        'format': None,
-                    }
-                else:
-                    ac = cle.split('total_cumul_sales_')[-1]
-                    info_dict[f'total_cumul_sales_{ac}'] = {
-                        'label': f'Total Cumulative Sales {ac}',
-                        'format': None,
-                    }
+            # Create native plotly chart
+            chart_name = {name}
+            new_chart = InstantiatedPlotlyNativeChart(
+                fig=fig, chart_name=chart_name, default_legend=False
+            )
 
-            elif cle.startswith('year_start_escalation_rc'):
-                if cle == 'year_start_escalation_rc':
-                    year_start_escalation_rc = int(info_df[cle].values[0])
-                    info_dict['total_cumul_rc'] = {
-                        'label': f'Total Cumulative RC (ec {year_start_escalation_rc})',
-                        'format': 'currency',
-                    }
-                else:
-                    ac = cle.split('year_start_escalation_rc_')[-1]
-                    year_start_escalation_rc = int(info_df[cle].values[0])
-                    info_dict[f'total_cumul_rc_{ac}'] = {
-                        'label': f'Total Cumulative RC (ec {year_start_escalation_rc}) for {ac}',
-                        'format': 'currency',
-                    }
-
-                del info_df[cle]
-
-            elif cle.startswith('rc_last_year'):
-                if cle == 'rc_last_year':
-                    year_start_escalation_rc = int(info_df[cle].values[0])
-                    info_dict['rc_last_year'] = {
-                        'label': f'RC in {last_year}',
-                        'format': 'currency',
-                    }
-                else:
-                    ac = cle.split('rc_last_year_')[-1]
-                    year_start_escalation_rc = int(info_df[cle].values[0])
-                    info_dict[f'rc_last_year_{ac}'] = {
-                        'label': f'RC in {last_year} for {ac}',
-                        'format': 'currency',
-                    }
-
-            elif cle.startswith('sale_price_last_year'):
-                if cle == 'sale_price_last_year':
-                    year_start_escalation_rc = int(info_df[cle].values[0])
-                    info_dict['sale_price_last_year'] = {
-                        'label': f'Sale Price in {last_year}',
-                        'format': 'currency',
-                    }
-                else:
-                    ac = cle.split('sale_price_last_year_')[-1]
-                    year_start_escalation_rc = int(info_df[cle].values[0])
-                    info_dict[f'sale_price_last_year_{ac}'] = {
-                        'label': f'Sale Price in {last_year} for {ac}',
-                        'format': 'currency',
-                    }
-
-            elif cle.startswith('contribution_margin_last_year'):
-                if cle == 'contribution_margin_last_year':
-                    info_dict['contribution_margin_last_year'] = {
-                        'label': f'Contribution Margin in {last_year}',
-                        'format': 'percent',
-                    }
-                else:
-                    ac = cle.split('contribution_margin_last_year_')[-1]
-                    info_dict[f'contribution_margin_last_year_{ac}'] = {
-                        'label': f'Contribution Margin in {last_year} for {ac}',
-                        'format': 'percent',
-                    }
-
-            else:
-                pass
-
-        if 'mean_contribution_margin_last_year' in info_df:
-            info_dict['mean_contribution_margin_last_year'] = {
-                'label': f'Average Contribution Margin in {last_year}',
-                'format': 'percent',
-            }
-
-        columns_info.update(info_dict)
-        return columns_info
+        return new_chart

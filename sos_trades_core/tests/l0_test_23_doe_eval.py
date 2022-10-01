@@ -835,7 +835,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         with the same short name
         """
 
-        dspace_dict = {'variable': ['x', 'DoEEval.Disc1.a'],
+        dspace_dict = {'variable': ['x', 'a'],
 
                        'lower_bnd': [0., 50.],
                        'upper_bnd': [100., 200.],
@@ -1153,8 +1153,88 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_samples),
                          theoretical_fullfact_samples + 1)
 
+    def test_14_doe_eval_execution_lhs_on_multiple_var_with_wrong_order(self):
+        """ this test is a non regression test on doe eval
+            we run the doe_eval with lhs as sampling algorithm and
+            we check that outputs are as expected
+        """
+
+        dspace_dict_x = {'variable': ['y2', 'y_1', 'x', 'z'],
+
+                         'lower_bnd': [[0.], [10.], [20.], [30., 30.]],
+                         'upper_bnd': [[10.], [20.], [30.], [40., 40.]]
+
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        input_selection_x = {'selected_input': [True, True, True, True],
+                             'full_name': ['z', 'x',
+                                           'y_2', 'y_1'
+                                           ]}
+        input_selection_x = pd.DataFrame(input_selection_x)
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+
+        with self.assertRaises(Exception) as cm:
+            exec_eng.load_study_from_input_dict(disc_dict)
+        error_message = "The design space does not contain all values specified in the eval inputs list ['x' 'y_1' 'y_2' 'z'], design space variables : ['y2' 'y_1' 'x' 'z']"
+
+        print(cm.exception)
+        self.assertTrue(str(cm.exception).startswith(error_message))
+
+        dspace_dict_x = {'variable': ['y_2', 'y_1', 'x', 'z'],
+
+                         'lower_bnd': [[0.], [10.], [20.], [30., 30.]],
+                         'upper_bnd': [[10.], [20.], [30.], [40., 40.]]
+
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+        # array([1.])
+        values_dict[f'{self.ns}.x'] = array([21.])
+        values_dict[f'{self.ns}.y_1'] = array([11.])
+        values_dict[f'{self.ns}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.z'] = array([31., 31.])
+        values_dict[f'{self.ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+        doe_eval = exec_eng.root_process.sos_disciplines[0]
+        # check if samples are in bounds
+        for sample in doe_eval.samples:
+            # eval_in_list should be ordered the same than samples
+            for i in range(len(sample)):
+                for j in range(len(sample[i])):
+                    self.assertTrue(
+                        dspace_x[dspace_x['variable'] == doe_eval.eval_in_base_list[i]]['lower_bnd'].values[0][j] <= sample[i][j])
+                    self.assertTrue(
+                        dspace_x[dspace_x['variable'] == doe_eval.eval_in_base_list[i]]['upper_bnd'].values[0][j] >= sample[i][j])
+
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_13_sameusecase_name_as_doe_eval()
+    cls.test_14_doe_eval_execution_lhs_on_multiple_var_with_wrong_order()

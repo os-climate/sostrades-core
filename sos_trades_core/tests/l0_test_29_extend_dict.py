@@ -149,7 +149,7 @@ class TestExtendDict(unittest.TestCase):
         exec_eng.configure()
 
         values_dict = {f'{self.name}.dict_out': {'key1': 3., 'key2': 4.},
-                       f'{self.name}.z': array([4., 5.]),
+                       f'{self.name}.z': [4., 5.],
                        f'{self.name}.h': array([8., 9.]),
                        f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}
                        }
@@ -187,7 +187,7 @@ class TestExtendDict(unittest.TestCase):
         df = DataFrame(data=df_data)
         values_dict = {f'{self.name}.dict_out': {
             'key1': {'key11': 0.5, 'key12': 0.5, 'key13': 8., 'key14': {'key141': df, 'key142': array([5])}},
-            'key2': 10.}, f'{self.name}.z': [3., 0.]}
+            'key2': 10.}, f'{self.name}.z': array([3., 0.])}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()

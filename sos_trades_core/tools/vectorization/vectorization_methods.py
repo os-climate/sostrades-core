@@ -96,6 +96,7 @@ def get_inputs_for_path(
     allow_empty_dataframe: bool = False,
     parameter_name: str = '',
 ):
+    search_path = PATH
     filtered_input_parameter = None
     if BREAKDOWN_COLUMN in input_parameter:
         while filtered_input_parameter is None and len(PATH) > 0:
@@ -108,17 +109,24 @@ def get_inputs_for_path(
                 if parent_path_admissible:
                     PATH = get_parent_path(PATH)
                 elif allow_empty_dataframe:
-                    filtered_input_parameter=pd.DataFrame(columns=input_parameter.columns)
+                    filtered_input_parameter = pd.DataFrame(
+                        columns=input_parameter.columns
+                    )
                 else:
                     raise Exception(
-                        f'the path {PATH} is not found for parameter {parameter_name} but is required for the calculation. Please update it.'
+                        (
+                            f'the path {PATH} is not found for parameter {parameter_name}'
+                            f' but is required for the calculation. Please update it.'
+                        )
                     )
     else:
         raise Exception(
-            f"The column {BREAKDOWN_COLUMN} is not found as an input_parameter column"
+            f"The column {BREAKDOWN_COLUMN} is not found as an input_parameter column in parameter {parameter_name}"
         )
     if filtered_input_parameter is None:
-        raise Exception("Can not find parent path")
+        raise Exception(
+            f"Can not find parent path of {search_path} for parameter {parameter_name}"
+        )
     else:
         filtered_input_parameter = filtered_input_parameter.drop(
             columns=['PATH']
@@ -148,7 +156,7 @@ def check_aircraft_breakdown_in_inputs(
         if parameter is not None:
             if BREAKDOWN_COLUMN in parameter:
                 for aircraft_breakdown in aircraft_breakdown_list:
-                    if not aircraft_breakdown in parameter[BREAKDOWN_COLUMN].values:
+                    if aircraft_breakdown not in parameter[BREAKDOWN_COLUMN].values:
                         logger.warning(
                             f'Aircraft Breakdown {aircraft_breakdown} is missing for parameter {param_name} for discipline {sos_discipline.get_disc_full_name()}'
                         )
@@ -222,13 +230,14 @@ def compute_sum_df(
     """
     # infer not summable columns in dataframe
 
-    df_dict=deepcopy(df_dict)
-    
+    df_dict = deepcopy(df_dict)
+
     not_summable_nested_list = [
         df.convert_dtypes()
         .select_dtypes(exclude=[np.number, 'datetime'])
         .columns.to_list()
-        for df in df_dict.values() if not df.empty
+        for df in df_dict.values()
+        if not df.empty
     ]
     not_summable = [l for sublist in not_summable_nested_list for l in sublist]
     if len(not_summable):
@@ -254,11 +263,13 @@ def compute_sum_df(
             raise Exception(
                 f'Children key {key} is not in specified dict of DataFrame to sum.'
             )
-        if  df_dict[key].empty:
+        if df_dict[key].empty:
             df_dict.pop(key)
-        else: 
+        else:
             df_to_sum = df_dict[key]
-            in_columns = [col for col in df_to_sum.columns if col not in columns_not_to_sum]
+            in_columns = [
+                col for col in df_to_sum.columns if col not in columns_not_to_sum
+            ]
             filtered_df_to_sum = df_to_sum[in_columns]
             if df_sum is None:
                 df_sum = filtered_df_to_sum.copy(deep=True)

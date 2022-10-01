@@ -169,9 +169,9 @@ def configure_twice_all_usecases_and_compare_dm(processes_repo):
 
     """
 
-    if platform.system() == 'Windows':
-        raise OSError(
-            'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
+#     if platform.system() == 'Windows':
+#         raise OSError(
+#             'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
 
     usecase_dict = get_all_usecases(processes_repo)
     message_queue = Queue()
@@ -220,9 +220,9 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
                         unwanted_keys += [key]
                     if type(value) == dict:
                         if 'type_metadata' in value.keys():
-                            keys_to_none[key]='type_metadata'
+                            keys_to_none[key] = 'type_metadata'
                 for key, value in keys_to_none.items():
-                    dm_data_dict_1[key][value]=None
+                    dm_data_dict_1[key][value] = None
                 [dm_data_dict_1.pop(key) for key in unwanted_keys]
                 [dm_data_dict_2.pop(key) for key in unwanted_keys]
                 compare_dict(dm_data_dict_1,
@@ -254,9 +254,9 @@ def run_twice_all_usecases_and_compare_dm(processes_repo, force_run=False):
     :return: [str, str], [test status, error message list]
 
     """
-    if platform.system() == 'Windows':
-        raise OSError(
-            'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the resources consumption')
+#     if platform.system() == 'Windows':
+#         raise OSError(
+#             'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the resources consumption')
 
     usecase_dict = get_all_usecases(processes_repo)
     message_queue = Queue()
@@ -293,9 +293,11 @@ def get_all_usecases(processes_repo):
                     for usecase_py in listdir(process_directory):
                         if usecase_py.startswith('usecase'):
                             usecase = usecase_py.replace('.py', '')
-                            usecase_list.append('.'.join([repository, process, usecase]))
+                            usecase_list.append(
+                                '.'.join([repository, process, usecase]))
             except Exception as error:
-                print(f'An error occurs when trying to load {process_module}\n{error}')
+                print(
+                    f'An error occurs when trying to load {process_module}\n{error}')
     return usecase_list
 
 
