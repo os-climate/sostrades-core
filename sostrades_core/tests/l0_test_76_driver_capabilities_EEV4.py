@@ -164,13 +164,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.execute()
 
-        # exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
-        #                '|_ doe',
-        #                f'\t|_ DoEEval',
-        #                '\t\t|_ Sellar_Problem',
-        #                '\t\t|_ Sellar_2',
-        #                '\t\t|_ Sellar_1',
-        #                '\t\t|_ Simple_Disc']
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ Simple_Disc',
@@ -361,6 +354,50 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.Driver1.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.Disc1.linearization_mode', root_inputs)
 
+    def _test_io2_Coupling_of_Coupling_to_check_data_io(self):
+        """
+        """
 
+        study_name = 'root'
+
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        proc_name = "test_disc1_disc2_coupling_of_coupling"
+        coupling_of_coupling_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            coupling_of_coupling_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {study_name}',
+                       '|_ root',
+                       f'\t|_ UpperCoupling',
+                       '\t\t|_ LowerCoupling',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines
+        private_values = {
+            study_name + '.x': array([10.]),
+            study_name + '.UpperCoupling.LowerCoupling.Disc1.a': array([5.]),
+            study_name + '.UpperCoupling.LowerCoupling.Disc1.b': array([7.]),
+            study_name + '.y': array([4.]),
+            study_name + '.UpperCoupling.LowerCoupling.Disc2.power': array([3.]),
+            study_name + '.UpperCoupling.LowerCoupling.Disc2.constant': array([4.]),
+        }
+        exec_eng.load_study_from_input_dict(private_values)
+        exec_eng.execute()
+
+
+        io_ns_map_in = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0]._io_ns_map_in
+        for var in io_ns_map_in.keys():
+            identifier = io_ns_map_in.values()
+            var_tuple = (var, identifier)
+            self.AssertEqual(identifier, id(exec_eng.root_process._data_in_ns_tuple[var_tuple]['ns_reference']))  #TODO: to be changed by _data_in
 
 
