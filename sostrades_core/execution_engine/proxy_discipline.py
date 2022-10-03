@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import copy
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -521,24 +523,28 @@ class ProxyDiscipline(object):
         Create data_in and data_out from DESC_IN and DESC_OUT if empty
         """
         if self._data_in == {}:
-            self._data_in = self.get_desc_in_out(self.IO_TYPE_IN)
-            self.set_shared_namespaces_dependencies(self._data_in)
-            self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
+            desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
+            self.set_shared_namespaces_dependencies(desc_in)
+            desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
             # TODO: check if this have to be done during configuration or at
             # the very end of it
-            self.update_dm_with_data_dict(self._data_in)
-            inputs_var_ns_tuples = self._extract_var_ns_tuples(self._data_in)
-            self._update_io_ns_map(inputs_var_ns_tuples,self.IO_TYPE_IN)
+            self._data_in = desc_in #TODO: to remove
+            self.update_dm_with_data_dict(desc_in)
+            inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
+            self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
+            self._update_data_io(zip(inputs_var_ns_tuples,desc_in.values()), self.IO_TYPE_IN)
             # Deal with numerical parameters inside the sosdiscipline
             self.add_numerical_param_to_data_in()
 
         if self._data_out == {}:
-            self._data_out = self.get_desc_in_out(self.IO_TYPE_OUT)
-            self.set_shared_namespaces_dependencies(self._data_out)
-            self._data_out = self._prepare_data_dict(self.IO_TYPE_OUT)
-            self.update_dm_with_data_dict(self._data_out)
-            outputs_var_ns_tuples = self._extract_var_ns_tuples(self._data_out)
-            self._update_io_ns_map(outputs_var_ns_tuples,self.IO_TYPE_OUT)
+            desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
+            self.set_shared_namespaces_dependencies(desc_out)
+            desc_out = self._prepare_data_dict(self.IO_TYPE_OUT, desc_out)
+            self._data_out = desc_out #TODO: to remove
+            self.update_dm_with_data_dict(desc_out)
+            outputs_var_ns_tuples = self._extract_var_ns_tuples(desc_out)
+            self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
+            self._update_data_io(zip(outputs_var_ns_tuples,desc_out.values()), self.IO_TYPE_OUT)
 
     def get_desc_in_out(self, io_type):
         """
@@ -568,6 +574,21 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
+    def _update_data_io(self, data_dict, io_type, data_dict_in_short_names=False):
+        if io_type == self.IO_TYPE_IN:
+            data_io = self._data_in_ns_tuple #TODO: change by data_in
+        elif io_type == self.IO_TYPE_OUT:
+            data_io = self._data_out_ns_tuple #TODO: change by data_out
+        else:
+            raise Exception(
+                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
+
+        if data_dict_in_short_names:
+            data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type), # keys are ns tuples
+                               data_dict.values()))                             # values are values i.e. var dicts
+        else:
+            data_io.update(data_dict)
+
     def add_numerical_param_to_data_in(self):
         """
         Add numerical parameters to the data_in
@@ -575,10 +596,11 @@ class ProxyDiscipline(object):
         num_data_in = deepcopy(self.NUM_DESC_IN)
         num_data_in = self._prepare_data_dict(
             self.IO_TYPE_IN, data_dict=num_data_in)
-        self._data_in.update(num_data_in)
+        self._data_in.update(num_data_in) # TODO: to remove
         num_inputs_var_ns_tuples = self._extract_var_ns_tuples(num_data_in)
         self._update_io_ns_map(num_inputs_var_ns_tuples, self.IO_TYPE_IN)
         self.update_dm_with_data_dict(num_data_in)
+        self._update_data_io(zip(num_inputs_var_ns_tuples,num_data_in.values()), self.IO_TYPE_IN)
 
     def update_data_io_with_inst_desc_io(self):
         """
@@ -598,9 +620,10 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_IN, new_inputs)
             self.update_dm_with_data_dict(
                 completed_new_inputs)
-            self._data_in.update(completed_new_inputs)
+            self._data_in.update(completed_new_inputs) # TODO: to remove
             inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_inputs)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
+            self._update_data_io(zip(inputs_var_ns_tuples, completed_new_inputs.values()), self.IO_TYPE_IN)
 
         # add new outputs from inst_desc_out to data_out
         if len(new_outputs) > 0:
@@ -609,9 +632,10 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_OUT, new_outputs)
             self.update_dm_with_data_dict(
                 completed_new_outputs)
-            self._data_out.update(completed_new_outputs)
+            self._data_out.update(completed_new_outputs) # TODO: to remove
             outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_outputs)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
+            self._update_data_io(zip(outputs_var_ns_tuples, completed_new_outputs.values()), self.IO_TYPE_OUT)
 
     def get_built_disciplines_ids(self):
         """
@@ -889,6 +913,11 @@ class ProxyDiscipline(object):
         self._data_out = {}
         self._io_ns_map_in = {}
         self._io_ns_map_out = {}
+
+        #TODO: to remove
+        self._data_in_ns_tuple = {}
+        self._data_out_ns_tuple = {}
+
         self._structuring_variables = {}
 
     def get_data_in(self):
@@ -1020,7 +1049,7 @@ class ProxyDiscipline(object):
             dict_out_keys.append(namespaced_key)
         return dict_out_keys
 
-    def _prepare_data_dict(self, io_type, data_dict=None):
+    def _prepare_data_dict(self, io_type, data_dict):#=None):
         """
         Prepare the data_in/data_out with fields by default (and set _structuring_variables) for variables in data_dict.
         If data_dict is None, will prepare the current data_in/data_out.
@@ -1029,8 +1058,8 @@ class ProxyDiscipline(object):
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             data_dict (Dict[dict]): the data dict to prepare
         """
-        if data_dict is None:
-            data_dict = self.get_data_io_dict(io_type)
+        # if data_dict is None:
+        #     data_dict = self.get_data_io_dict(io_type)
         for key in data_dict.keys():
             curr_data = data_dict[key]
             data_keys = curr_data.keys()
