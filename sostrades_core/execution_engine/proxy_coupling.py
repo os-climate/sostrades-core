@@ -304,46 +304,47 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         (available preconditioners are different if petsc linear solvers are used)
         And set default value of max_mda_iter_gs according to sub_mda_class
         '''
+        disc_in = self.get_data_in()
         # set possible values of linear solver MDA preconditioner
-        if 'linear_solver_MDA' in self._data_in:
+        if 'linear_solver_MDA' in disc_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
                 if platform.system() == 'Windows':
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
-                self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
+                disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
-                        self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
-                    self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
+                        disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                    disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
             else:
-                self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
+                disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
                     'None', 'ilu']
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
-                        self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
-                    self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'None'
+                        disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                    disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'None'
 
         # set possible values of linear solver MDO preconditioner
-        if 'linear_solver_MDO' in self._data_in:
+        if 'linear_solver_MDO' in disc_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
                 if platform.system() == 'Windows':
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
-                self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
+                disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
-                        self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
-                    self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
+                        disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                    disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
             else:
-                self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
+                disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
                     'None', 'ilu']
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
-                        self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
-                    self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
+                        disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                    disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
 
             # set default value of max_mda_iter_gs
-            if 'max_mda_iter_gs' in self._data_in:
+            if 'max_mda_iter_gs' in disc_in:
                 if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
                     self.update_default_value(
                         'max_mda_iter_gs', self.IO_TYPE_IN, 200)
@@ -530,9 +531,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             var_name_out = None
             for a_disc in disc_list:
                 if in_or_out == 'in':
-                    data_io = a_disc._data_in
+                    data_io = a_disc.get_data_in()
                 else:
-                    data_io = a_disc._data_out
+                    data_io = a_disc.get_data_out()
 
                 if var_name_k in data_io.keys():
                     var_name_out = var_name_k

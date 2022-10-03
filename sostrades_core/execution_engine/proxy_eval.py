@@ -109,13 +109,13 @@ class ProxyEval(ProxyDisciplineDriver):
             and not a default variable
             an output variable must be any data from a data_out discipline
         '''
-
+        disc_in = disc.get_data_in()
         poss_in_values = []
         poss_out_values = []
-        for data_in_key in disc._data_in.keys():
-            is_float = disc._data_in[data_in_key][self.TYPE] == 'float'
+        for data_in_key in disc_in.keys():
+            is_float = disc_in[data_in_key][self.TYPE] == 'float'
             # structuring variables are excluded from possible values!!!
-            is_structuring = disc._data_in[data_in_key].get(
+            is_structuring = disc_in[data_in_key].get(
                 self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 ProxyCoupling.DESC_IN.keys())
@@ -126,7 +126,7 @@ class ProxyEval(ProxyDisciplineDriver):
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 poss_in_values.append(data_in_key)
-        for data_out_key in disc._data_out.keys():
+        for data_out_key in disc.get_data_out().keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
             poss_out_values.append(data_out_key.split(NS_SEP)[-1])

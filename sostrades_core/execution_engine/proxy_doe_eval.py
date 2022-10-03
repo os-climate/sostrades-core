@@ -186,10 +186,11 @@ class ProxyDoeEval(ProxyEval):
         dynamic_outputs = {}
         algo_name_has_changed = False
         selected_inputs_has_changed = False
-
+        disc_in = self.get_data_in()
+        
         # The setup of the discipline can begin once the algorithm we want to use to generate
         # the samples has been set
-        if self.ALGO in self._data_in:
+        if self.ALGO in disc_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             if self.previous_algo_name != algo_name:
                 algo_name_has_changed = True
@@ -235,9 +236,9 @@ class ProxyDoeEval(ProxyEval):
                         {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                                'dataframe_descriptor': dataframe_descriptor,
                                                'dataframe_edition_locked': False}})
-                    if 'custom_samples_df' in self._data_in and selected_inputs_has_changed:
-                        self._data_in['custom_samples_df']['value'] = default_custom_dataframe
-                        self._data_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                    if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
+                        disc_in['custom_samples_df']['value'] = default_custom_dataframe
+                        disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
                 else:
 
@@ -254,8 +255,8 @@ class ProxyDoeEval(ProxyEval):
                     dynamic_inputs.update(
                         {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
                                           }})
-                    if 'design_space' in self._data_in and selected_inputs_has_changed:
-                        self._data_in['design_space']['value'] = default_design_space
+                    if 'design_space' in disc_in and selected_inputs_has_changed:
+                        disc_in['design_space']['value'] = default_design_space
 
                 default_dict = self.get_algo_default_options(algo_name)
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
@@ -266,13 +267,13 @@ class ProxyDoeEval(ProxyEval):
                                                             self.VARIABLES: ('string', None, False),
                                                             self.VALUES: ('string', None, True)}}})
                 all_options = list(default_dict.keys())
-                if 'algo_options' in self._data_in and algo_name_has_changed:
-                    self._data_in['algo_options']['value'] = default_dict
-                if 'algo_options' in self._data_in and self._data_in['algo_options']['value'] is not None and list(
-                        self._data_in['algo_options']['value'].keys()) != all_options:
+                if 'algo_options' in disc_in and algo_name_has_changed:
+                    disc_in['algo_options']['value'] = default_dict
+                if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
+                        disc_in['algo_options']['value'].keys()) != all_options:
                     options_map = ChainMap(
-                        self._data_in['algo_options']['value'], default_dict)
-                    self._data_in['algo_options']['value'] = {
+                        disc_in['algo_options']['value'], default_dict)
+                    disc_in['algo_options']['value'] = {
                         key: options_map[key] for key in all_options}
 
                 # if multipliers in eval_in
@@ -330,20 +331,20 @@ class ProxyDoeEval(ProxyEval):
         # FIXME: need to accommodate long names and subprocess variables
         poss_in_values_full = []
         poss_out_values_full = []
-
-        for data_in_key in disc._data_in.keys():
-            is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
-            is_structuring = disc._data_in[data_in_key].get(
+        disc_in = disc.get_data_in()
+        for data_in_key in disc_in.keys():
+            is_input_type = disc_in[data_in_key][self.TYPE] in self.INPUT_TYPE
+            is_structuring = disc_in[data_in_key].get(
                 self.STRUCTURING, False)
             in_coupling_numerical = data_in_key in list(
                 ProxyCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(
-                data_in_key, disc._data_in)
+                data_in_key, disc_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
                                            ]['io_type'] == 'in'
-            is_input_multiplier_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-            is_editable = disc._data_in[data_in_key]['editable']
-            is_None = disc._data_in[data_in_key]['value'] is None
+            is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+            is_editable = disc_in[data_in_key]['editable']
+            is_None = disc_in[data_in_key]['value'] is None
             if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
@@ -358,14 +359,15 @@ class ProxyDoeEval(ProxyEval):
                         disc, full_id, data_in_key)
                     for val in poss_in_values_list:
                         poss_in_values_full.append(val)
-
-        for data_out_key in disc._data_out.keys():
+        
+        disc_out = disc.get_data_out()
+        for data_out_key in disc_out.keys():
             # Caution ! This won't work for variables with points in name
             # as for ac_model
             in_coupling_numerical = data_out_key in list(
                 ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
             full_id = disc.get_var_full_name(
-                data_out_key, disc._data_out)
+                data_out_key, disc_out)
             if not in_coupling_numerical:
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
@@ -377,10 +379,11 @@ class ProxyDoeEval(ProxyEval):
     def set_multipliers_values(self, disc, full_id, var_name):
         poss_in_values_list = []
         # if local var
-        if 'namespace' not in disc._data_in[var_name]:
-            origin_var_ns = disc._data_in[var_name]['ns_reference'].value
+        disc_in = disc.get_data_in()
+        if 'namespace' not in disc_in[var_name]:
+            origin_var_ns = disc_in[var_name]['ns_reference'].value
         else:
-            origin_var_ns = disc._data_in[var_name]['namespace']
+            origin_var_ns = disc_in[var_name]['namespace']
 
         disc_id = ('.').join(full_id.split('.')[:-1])
         ns_disc_id = ('__').join([origin_var_ns, disc_id])
@@ -390,16 +393,16 @@ class ProxyDoeEval(ProxyEval):
         else:
             full_id_ns = full_id
 
-        if disc._data_in[var_name][self.TYPE] == 'float':
+        if disc_in[var_name][self.TYPE] == 'float':
             multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
                 self.ee.study_name + ".", 1)[1]
             poss_in_values_list.append(multiplier_fullname)
 
         else:
-            df_var = disc._data_in[var_name]['value']
+            df_var = disc_in[var_name]['value']
             # if df_var is dict : transform dict to df
-            if disc._data_in[var_name][self.TYPE] == 'dict':
-                dict_var = disc._data_in[var_name]['value']
+            if disc_in[var_name][self.TYPE] == 'dict':
+                dict_var = disc_in[var_name]['value']
                 df_var = pd.DataFrame(
                     dict_var, index=list(dict_var.keys()))
             # check & create float columns list from df
