@@ -354,8 +354,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.Driver1.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.Disc1.linearization_mode', root_inputs)
 
-    def _test_io2_Coupling_of_Coupling_to_check_data_io(self):
+    def test_io2_Coupling_of_Coupling_to_check_data_io(self):
         """
+        TO BE COMPLETED
         """
 
         study_name = 'root'
@@ -394,10 +395,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
 
 
-        io_ns_map_in = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0]._io_ns_map_in
-        for var in io_ns_map_in.keys():
-            identifier = io_ns_map_in.values()
-            var_tuple = (var, identifier)
-            self.AssertEqual(identifier, id(exec_eng.root_process._data_in_ns_tuple[var_tuple]['ns_reference']))  #TODO: to be changed by _data_in
+        for disc in [exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0], # discipline with no coupled inputs
+                     exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0], exec_eng.root_process.proxy_disciplines[0], exec_eng.root_process] : # couplings
+            io_ns_map_in = disc._io_ns_map_in
+            for var, identifier in io_ns_map_in.items():
+                var_tuple = (var, identifier)
+                self.assertEqual(identifier, id(exec_eng.root_process._data_in_ns_tuple[var_tuple]['ns_reference']))  #TODO: to be changed by _data_in
 
 
