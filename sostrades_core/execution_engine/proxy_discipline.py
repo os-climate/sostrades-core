@@ -303,8 +303,8 @@ class ProxyDiscipline(object):
         self.inst_desc_out = None  # desc_out of instance used to add dynamic outputs
         self._data_in = None
         self._data_out = None
-        self._data_in_ns_tuple = None
-        self._data_out_ns_tuple = None # used by ProxyCoupling, ProxyDisciplineDriver
+        self._io_ns_map_in = None
+        self._io_ns_map_out = None # used by ProxyCoupling, ProxyDisciplineDriver
         self._structuring_variables = None # used by ProxyCoupling, ProxyDisciplineDriver
         self.reset_data()
         # -- Maturity attribute
@@ -523,7 +523,8 @@ class ProxyDiscipline(object):
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
             #TODO: check if this have to be done during configuration or at the very end of it
             self.update_dm_with_data_dict(self._data_in)
-
+            inputs_var_ns_tuples = self._extract_var_ns_tuples(self._data_in)
+            self._update_io_ns_map(inputs_var_ns_tuples,self.IO_TYPE_IN)
             # Deal with numerical parameters inside the sosdiscipline
             self.add_numerical_param_to_data_in()
 
@@ -532,6 +533,8 @@ class ProxyDiscipline(object):
             self.set_shared_namespaces_dependencies(self._data_out)
             self._data_out = self._prepare_data_dict(self.IO_TYPE_OUT)
             self.update_dm_with_data_dict(self._data_out)
+            outputs_var_ns_tuples = self._extract_var_ns_tuples(self._data_out)
+            self._update_io_ns_map(outputs_var_ns_tuples,self.IO_TYPE_OUT)
 
     def get_desc_in_out(self, io_type):
         """
@@ -549,6 +552,18 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
+    def _extract_var_ns_tuples(self, short_name_data_dict):
+        return zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()])
+
+    def _update_io_ns_map(self, var_ns_tuples, io_type):
+        if io_type == self.IO_TYPE_IN:
+            self._io_ns_map_in.update(var_ns_tuples)
+        elif io_type == self.IO_TYPE_OUT:
+            self._io_ns_map_out.update(var_ns_tuples)
+        else:
+            raise Exception(
+                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
+
     def add_numerical_param_to_data_in(self):
         """
         Add numerical parameters to the data_in
@@ -557,6 +572,8 @@ class ProxyDiscipline(object):
         num_data_in = self._prepare_data_dict(
             self.IO_TYPE_IN, data_dict=num_data_in)
         self._data_in.update(num_data_in)
+        num_inputs_var_ns_tuples = self._extract_var_ns_tuples(num_data_in)
+        self._update_io_ns_map(num_inputs_var_ns_tuples, self.IO_TYPE_IN)
         self.update_dm_with_data_dict(num_data_in)
 
     def update_data_io_with_inst_desc_io(self):
@@ -578,6 +595,8 @@ class ProxyDiscipline(object):
             self.update_dm_with_data_dict(
                 completed_new_inputs)
             self._data_in.update(completed_new_inputs)
+            inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_inputs)
+            self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
 
         # add new outputs from inst_desc_out to data_out
         if len(new_outputs) > 0:
@@ -587,6 +606,8 @@ class ProxyDiscipline(object):
             self.update_dm_with_data_dict(
                 completed_new_outputs)
             self._data_out.update(completed_new_outputs)
+            outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_outputs)
+            self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
 
     def get_built_disciplines_ids(self):
         """
@@ -862,8 +883,8 @@ class ProxyDiscipline(object):
         self.inst_desc_out = {}
         self._data_in = {}
         self._data_out = {}
-        self._data_in_ns_tuple = {}
-        self._data_out_ns_tuple = {}
+        self._io_ns_map_in = {}
+        self._io_ns_map_out = {}
         self._structuring_variables = {}
 
     def get_data_in(self):
