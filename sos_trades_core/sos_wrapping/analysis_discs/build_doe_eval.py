@@ -780,10 +780,15 @@ class BuildDoeEval(SoSEval):
             # we so replace
             # self.ee.dm.set_values_from_dict(input_dict_from_usecase) by the
             # following function
-            dyn_key_list = self.set_only_static_values_from_dict(
-                input_dict_from_usecase)
-            for key in dyn_key_list:
-                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
+            sub_dynamic_mod = False
+
+            if sub_dynamic_mod == False:
+                self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+            else:
+                dyn_key_list = self.set_only_static_values_from_dict(
+                    input_dict_from_usecase)
+                for key in dyn_key_list:
+                    self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
             # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
             sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
@@ -792,6 +797,7 @@ class BuildDoeEval(SoSEval):
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             self.previous_sub_process_usecase_data = {}
         # there are still dynamic variables put apart
+        # can be true only if sub_dynamic_mod == True
         elif len(self.dyn_var_sp_from_import_dict) != 0:
             self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
             # Is it also OK in case of a dynamic param of dynamic param ?
