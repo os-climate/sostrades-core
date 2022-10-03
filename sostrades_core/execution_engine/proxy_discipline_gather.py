@@ -44,7 +44,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None):
         '''
         Constructor
         '''
@@ -283,8 +283,8 @@ class ProxyDisciplineGather(ProxyDiscipline):
         """
         super().set_wrapper_attributes(wrapper)
         gather_attributes = {'input_name': self.get_var_full_name(self.sc_map.get_input_name(), self._data_in),
-                              'builder_cls': self.builder.cls,
-                              'var_gather': self.var_to_gather,
-                              'cls_gather': self.cls_gather,
-                              'gather_ns': self.ee.ns_manager.get_shared_namespace_value(self, self.sc_map.get_gather_ns())}
+                             'builder_cls': self.builder.cls,
+                             'var_gather': self.var_to_gather,
+                             'cls_gather': self.cls_gather,
+                             'gather_ns': self.ee.ns_manager.get_shared_namespace_value(self, self.sc_map.get_gather_ns())}
         wrapper.attributes.update(gather_attributes)

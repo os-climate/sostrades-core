@@ -152,13 +152,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'linear_solver_MDO': {ProxyDiscipline.TYPE: 'string',
                               ProxyDiscipline.DEFAULT: 'GMRES',
                               #                               ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
-                              #                               ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
+                              # ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
                               ProxyDiscipline.NUMERICAL: True,
                               ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDO_preconditioner': {ProxyDiscipline.TYPE: 'string',
                                              ProxyDiscipline.DEFAULT: 'None',
                                              #                                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
-                                             #                                              ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
+                                             # ProxyDiscipline.POSSIBLE_VALUES:
+                                             # POSSIBLE_VALUES_PRECONDITIONER,
                                              ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDO_options': {ProxyDiscipline.TYPE: 'dict',
                                       ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
@@ -168,13 +169,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'linear_solver_MDA': {ProxyDiscipline.TYPE: 'string',
                               ProxyDiscipline.DEFAULT: 'GMRES',
                               #                               ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
-                              #                               ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
+                              # ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
                               ProxyDiscipline.NUMERICAL: True,
                               ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDA_preconditioner': {ProxyDiscipline.TYPE: 'string',
                                              ProxyDiscipline.DEFAULT: 'None',
                                              #                                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
-                                             #                                              ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
+                                             # ProxyDiscipline.POSSIBLE_VALUES:
+                                             # POSSIBLE_VALUES_PRECONDITIONER,
                                              ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDA_options': {ProxyDiscipline.TYPE: 'dict',
                                       ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
@@ -186,7 +188,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'authorize_self_coupled_disciplines': {ProxyDiscipline.TYPE: 'bool',
                                                ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                               ProxyDiscipline.DEFAULT: False, 
+                                               ProxyDiscipline.DEFAULT: False,
                                                ProxyDiscipline.USER_LEVEL: 3,
                                                ProxyDiscipline.STRUCTURING: True}
     }
@@ -199,7 +201,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     eps0 = 1.0e-6
     has_chart = False
 
-    def __init__(self, sos_name, ee, cls_builder=None, with_data_io=False, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder=None, with_data_io=False, associated_namespaces=None):
         '''
         Constructor
 
@@ -210,7 +212,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         if cls_builder is None:
             cls_builder = []
-        self.cls_builder = cls_builder #TODO: Move to ProxyDisciplineBuilder?
+        self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Coupling')
 
@@ -229,7 +231,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
 
-    def _reload(self, sos_name, ee, associated_namespaces=[]):
+    def _reload(self, sos_name, ee, associated_namespaces=None):
         '''
         Reload ProxyCoupling with corresponding ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -238,9 +240,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
+        ProxyDiscipline._reload(
+            self, sos_name, ee, associated_namespaces=associated_namespaces)
 
-    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to reduce footprint in GEMSEO 
+    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
+    # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         '''
         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
@@ -249,18 +253,18 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if mda_chain.cache is not None:
             # store SoSCoupling cache in DM
             self._store_cache_with_hashed_uid(mda_chain)
-            
+
             # store mdo_chain cache in DM
             self._store_cache_with_hashed_uid(mda_chain.mdo_chain)
-        
+
             # store sub mdas cache recursively
             for mda in mda_chain.sub_mda_list:
                 self._set_sub_mda_dm_cache_map(mda)
-            
+
         # store children cache recursively
         for disc in self.proxy_disciplines:
             disc._set_dm_cache_map()
-            
+
     def _set_sub_mda_dm_cache_map(self, mda):
         '''
         Update cache_map disc in DM with mda cache and its sub_mdas recursively        
@@ -270,7 +274,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # store sub mda cache recursively
         if isinstance(mda, MDASequential):
             for sub_mda in mda.mda_sequence:
-                self._set_sub_mda_dm_cache_map(sub_mda)   
+                self._set_sub_mda_dm_cache_map(sub_mda)
 
     # def build(self):
     #     """
@@ -308,7 +312,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                          ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
                         self._data_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
@@ -327,7 +331,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                          ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
                         self._data_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     self._data_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
@@ -373,7 +377,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self._update_coupling_flags_in_dm()
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
-        # TODO: code is duplicated in driver and coupling... move to builder ? [discuss]
+        # TODO: code is duplicated in driver and coupling... move to builder ?
+        # [discuss]
         if io_type == self.IO_TYPE_IN:
             if as_namespaced_tuple:
                 return self._data_in_ns_tuple
@@ -396,38 +401,36 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """
         #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
         subprocess_data_in_ns_tuple, subprocess_data_out_ns_tuple = self.__compute_mdachain_gemseo_based_data_io()
-             
+
         #- data_i/o setup
         #- TODO: check if we can remove _data_in_with_full_name
         # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
         #                                 self._data_in.items()
-        #                                 if key in self.DESC_IN or key in self.NUM_DESC_IN}
+        # if key in self.DESC_IN or key in self.NUM_DESC_IN}
         self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
-                                        self._data_in.items()
-                                        if key in self.DESC_IN or key in self.NUM_DESC_IN}
+                                  self._data_in.items()
+                                  if key in self.DESC_IN or key in self.NUM_DESC_IN}
         self._data_in = {key: value for key, value in self._data_in.items(
         ) if
-                         key in self.DESC_IN or key in self.NUM_DESC_IN}
-        
+            key in self.DESC_IN or key in self.NUM_DESC_IN}
 
-        # add inputs - that are not outputs - of all children disciplines in data_in
+        # add inputs - that are not outputs - of all children disciplines in
+        # data_in
         self._data_in_ns_tuple.update(subprocess_data_in_ns_tuple)
         # for k_full in data_in:
         #     self._data_in_with_full_name[k_full] = data_in[k_full]
-            # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
-            #     self._data_in[k] = self.dm.get_data(k_full)
-
+        # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
+        #     self._data_in[k] = self.dm.get_data(k_full)
 
         # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
         #                                 self._data_out.items()
         #                                 if key in self.DESC_OUT}
         self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
-                                        self._data_out.items()
-                                        if key in self.DESC_OUT}
+                                   self._data_out.items()
+                                   if key in self.DESC_OUT}
         self._data_out = {key: value for key, value in self._data_out.items(
         ) if
-                         key in self.DESC_OUT}
-
+            key in self.DESC_OUT}
 
         # # keep residuals_history if in data_out
         # if self.RESIDUALS_HISTORY in self._data_out:
@@ -438,7 +441,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # else:
         #     self._data_out_with_full_name = {}
         #     self._data_out = {}
-        
+
         # add outputs of all children disciplines in data_out
         self._data_out_ns_tuple.update(subprocess_data_out_ns_tuple)
         # for k in data_out:
@@ -446,7 +449,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         #     self._data_out_with_full_name[k_full] = data_out[k]
         #     if not self.ee.dm.get_data(k_full, self.NUMERICAL):
         #         self._data_out[k] = self.dm.get_data(k_full)
-    
+
     def __compute_mdachain_gemseo_based_data_io(self):
         ''' mimics the definition of MDA i/o grammar
         '''
@@ -471,15 +474,18 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
             # data_out.update(d_data_out)
 
-            disc_in = d.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple = True)
-            disc_out = d.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple = True)
+            disc_in = d.get_data_io_with_full_name(
+                self.IO_TYPE_IN, as_namespaced_tuple=True)
+            disc_out = d.get_data_io_with_full_name(
+                self.IO_TYPE_OUT, as_namespaced_tuple=True)
             mda_outputs += disc_out
-            d_data_in = {key : value for key, value in disc_in.items() if key not in mda_outputs}
+            d_data_in = {key: value for key,
+                         value in disc_in.items() if key not in mda_outputs}
             data_in.update(d_data_in)
             data_out.update(disc_out)
 
         return data_in, data_out
-    
+
     # def get_input_data_names(self):
     #     '''
     #     Returns:
@@ -606,7 +612,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Return False if at least one sub discipline needs to be configured, True if not
         '''
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
-                self.get_disciplines_to_configure() == [])
+            self.get_disciplines_to_configure() == [])
 
     def prepare_execution(self):
         '''
@@ -618,9 +624,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc.prepare_execution()
             # Exclude non executable proxy Disciplines
             if disc.mdo_discipline_wrapp is not None:
-                sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
+                sub_mdo_disciplines.append(
+                    disc.mdo_discipline_wrapp.mdo_discipline)
 
-        # store cache and n_calls before MDAChain reset, if prepare_execution has already been called
+        # store cache and n_calls before MDAChain reset, if prepare_execution
+        # has already been called
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
             mda_chain_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
             mda_chain_n_calls = self.mdo_discipline_wrapp.mdo_discipline.n_calls
@@ -644,16 +652,19 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
             # TODO: pass cache to MDAChain init to avoid reset cache
-            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, cache_type, cache_file_path)
+            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline,
+                           cache_type, cache_file_path)
             self._reset_cache = False
         else:
             # reset stored cache and n_calls of MDAChain
             self.mdo_discipline_wrapp.mdo_discipline.cache = mda_chain_cache
             self.mdo_discipline_wrapp.mdo_discipline.n_calls = mda_chain_n_calls
 
-        # set cache of MDOChain with cache_type and cache_file_path inputs of ProxyCoupling
-        self.set_cache(self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, cache_type, cache_file_path)
-        
+        # set cache of MDOChain with cache_type and cache_file_path inputs of
+        # ProxyCoupling
+        self.set_cache(
+            self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, cache_type, cache_file_path)
+
         # set epsilon0 and cache of sub_mda_list
         for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
             self.set_epsilon0_and_cache(sub_mda)
@@ -688,7 +699,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                             # if unit is None in a dataframe check if there is a
                             # dataframe descriptor with unit in it
                             if from_disc_data[to_disc.TYPE] == 'dataframe':
-                                # if no dataframe descriptor and no unit warning
+                                # if no dataframe descriptor and no unit
+                                # warning
                                 if from_disc_data[to_disc.DATAFRAME_DESCRIPTOR] is None:
                                     self.logger.debug(
                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe')
@@ -750,11 +762,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             preconditioner = copy(self.get_sosdisc_inputs(
                 'linear_solver_MDA_preconditioner'))
             linear_solver_options_MDA['preconditioner_type'] = (
-                                                                       preconditioner != 'None') * preconditioner or None
+                preconditioner != 'None') * preconditioner or None
         else:
             # Scipy case / gmres
             linear_solver_options_MDA['use_ilu_precond'] = (
-                    copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
+                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
 
         num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
             'tol')
@@ -776,10 +788,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             preconditioner = self.get_sosdisc_inputs(
                 'linear_solver_MDO_preconditioner')
             linear_solver_options_MDO['preconditioner_type'] = (
-                                                                       preconditioner != 'None') * preconditioner or None
+                preconditioner != 'None') * preconditioner or None
         else:
             linear_solver_options_MDO['use_ilu_precond'] = (
-                    self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
+                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
 
         self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
         self.linear_solver_options_MDO = linear_solver_options_MDO
@@ -844,4 +856,3 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     subdisc, ordered_list)
 
         return ordered_list
-

@@ -234,7 +234,7 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         '''
         Constructor
 
@@ -265,7 +265,7 @@ class ProxyDiscipline(object):
         """
         self.father_executor = father_executor
 
-    def _reload(self, sos_name, ee, associated_namespaces=[]):
+    def _reload(self, sos_name, ee, associated_namespaces=None):
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -282,7 +282,10 @@ class ProxyDiscipline(object):
         self.sos_name = sos_name
         self.ee = ee
         self.dm = self.ee.dm
-        self.associated_namespaces = associated_namespaces
+        if associated_namespaces is None:
+            self.associated_namespaces = []
+        else:
+            self.associated_namespaces = associated_namespaces
         self.ee.ns_manager.create_disc_ns_info(self)
 
         if not hasattr(self, 'is_sos_coupling'):
@@ -521,7 +524,8 @@ class ProxyDiscipline(object):
             self._data_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(self._data_in)
             self._data_in = self._prepare_data_dict(self.IO_TYPE_IN)
-            #TODO: check if this have to be done during configuration or at the very end of it
+            # TODO: check if this have to be done during configuration or at
+            # the very end of it
             self.update_dm_with_data_dict(self._data_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(self._data_in)
             self._update_io_ns_map(inputs_var_ns_tuples,self.IO_TYPE_IN)
@@ -912,11 +916,14 @@ class ProxyDiscipline(object):
         data_io_short_name = self.get_data_io_dict(io_type)
 
         if as_namespaced_tuple:
-            dict_key = lambda v: (v, id(data_io_short_name[v][self.NS_REFERENCE]))
+            def dict_key(v): return (
+                v, id(data_io_short_name[v][self.NS_REFERENCE]))
         else:
-            dict_key = lambda v: self.get_var_full_name(v, data_io_short_name)
+            def dict_key(v): return self.get_var_full_name(
+                v, data_io_short_name)
 
-        data_io_full_name = {dict_key(var_name): value_dict for var_name, value_dict in data_io_short_name.items()}
+        data_io_full_name = {dict_key(
+            var_name): value_dict for var_name, value_dict in data_io_short_name.items()}
 
         return data_io_full_name
 
@@ -1119,9 +1126,10 @@ class ProxyDiscipline(object):
             # if no keys, get all discipline keys and force
             # output format as dict #TODO: force full_name_keys=True too?
             if full_name_keys:
-                keys = list(self.get_data_io_with_full_name(self.IO_TYPE_IN).keys())  #discipline and subprocess
+                keys = list(self.get_data_io_with_full_name(
+                    self.IO_TYPE_IN).keys())  # discipline and subprocess
             else:
-                keys = list(self.get_data_in().keys())  #discipline only
+                keys = list(self.get_data_in().keys())  # discipline only
             in_dict = True
         inputs = self._get_sosdisc_io(
             keys, io_type=self.IO_TYPE_IN, full_name_keys=full_name_keys)
@@ -1151,9 +1159,10 @@ class ProxyDiscipline(object):
             # if no keys, get all discipline keys and force
             # output format as dict #TODO: force full_name_keys=True too?
             if full_name_keys:
-                keys = list(self.get_data_io_with_full_name(self.IO_TYPE_OUT).keys())  #discipline and subprocess
+                keys = list(self.get_data_io_with_full_name(
+                    self.IO_TYPE_OUT).keys())  # discipline and subprocess
             else:
-                keys = list(self.get_data_out().keys())  #discipline only
+                keys = list(self.get_data_out().keys())  # discipline only
             # keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
             in_dict = True
         outputs = self._get_sosdisc_io(
@@ -1188,14 +1197,16 @@ class ProxyDiscipline(object):
         if full_name_keys:
             query_keys = keys
         else:
-            query_keys = self._convert_list_of_keys_to_namespace_name(keys, io_type)
+            query_keys = self._convert_list_of_keys_to_namespace_name(
+                keys, io_type)
 
         values_dict = {}
-        for key, q_key in zip(keys,query_keys):
+        for key, q_key in zip(keys, query_keys):
             if q_key not in self.dm.data_id_map:
                 raise Exception(
                     f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-            # get data in local_data during run or linearize steps #TODO: this should not be possible, should it?
+            # get data in local_data during run or linearize steps #TODO: this
+            # should not be possible, should it?
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
             # get data in data manager during configure step
@@ -1595,7 +1606,7 @@ class ProxyDiscipline(object):
 
     def namespaced_tuples_to_full_names(self, in_dict):
         out_dict = {}
-        for key,value in in_dict.items():
+        for key, value in in_dict.items():
             complete_var_name = key[0]
             ns_reference = self.ee.ns_manager.ns_object_map[key[1]]
             var_f_name = self.ee.ns_manager.compose_ns(
@@ -2012,8 +2023,8 @@ class ProxyDiscipline(object):
         wrapper.attributes = {
             # 'input_data_names' : input_data_names,
             # 'output_data_names' : output_data_names,
-            'input_full_name_map' : input_full_name_map,
-            'output_full_name_map' : output_full_name_map
+            'input_full_name_map': input_full_name_map,
+            'output_full_name_map': output_full_name_map
         }
 
     # def set_discipline_attributes(self, discipline):

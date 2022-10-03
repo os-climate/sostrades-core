@@ -60,11 +60,12 @@ class ProxyEval(ProxyDisciplineDriver):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         '''
         Constructor
         '''
-        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces)
+        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
+                         associated_namespaces=associated_namespaces)
         self.eval_in_base_list = None
         self.eval_in_list = None
         self.eval_out_base_list = None
@@ -179,7 +180,7 @@ class ProxyEval(ProxyDisciplineDriver):
             Once all disciplines have been run through,
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
-        #FIXME: manipulating namespaces manually
+        # FIXME: manipulating namespaces manually
 
         # the eval process to analyse is stored as the only child of SoSEval
         # (coupling chain of the eval process or single discipline)
@@ -207,7 +208,7 @@ class ProxyEval(ProxyDisciplineDriver):
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
         '''
-        #FIXME: this involves recursive back and forths during configuration
+        # FIXME: this involves recursive back and forths during configuration
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(
@@ -227,7 +228,7 @@ class ProxyEval(ProxyDisciplineDriver):
         for x_id in self.eval_in_list:
             x_val = self.dm.get_value(x_id)
             x0.append(x_val)
-        return x0 #Removed cast to array
+        return x0  # Removed cast to array
 
     def _set_eval_process_builder(self):
         '''
@@ -239,7 +240,8 @@ class ProxyEval(ProxyDisciplineDriver):
             # If eval process is a list of builders or a non executable builder,
             # then we build a coupling containing the eval process
             # In the case of a single sub-disc for sos_eval, although len(self.cls_builder) = 1 or it is an
-            # executable discipline, a coupling is also wanted to contain the eval process:
+            # executable discipline, a coupling is also wanted to contain the
+            # eval process:
             disc_builder = self.ee.factory.create_builder_coupling(
                 self.sos_name)
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
@@ -252,14 +254,14 @@ class ProxyEval(ProxyDisciplineDriver):
         # ProxyDisciplineDriver attributes (sub_mdo_discipline)
         super().set_wrapper_attributes(wrapper)
         eval_attributes = {'eval_in_list': self.eval_in_list,
-                          'eval_out_list': self.eval_out_list,
-                          'reference_scenario': self.get_x0(),
-                          'activated_elems_dspace_df': [[True, True]
-                                                        if self.ee.dm.get_data(var, 'type') == 'array' else [True]
-                                                        for var in self.eval_in_list], # TODO: Array dimensions greater than 2???
-                          'study_name': self.ee.study_name,
-                          'reduced_dm': self.ee.dm.reduced_dm, #for conversions
-                          }
+                           'eval_out_list': self.eval_out_list,
+                           'reference_scenario': self.get_x0(),
+                           'activated_elems_dspace_df': [[True, True]
+                                                         if self.ee.dm.get_data(var, 'type') == 'array' else [True]
+                                                         for var in self.eval_in_list],  # TODO: Array dimensions greater than 2???
+                           'study_name': self.ee.study_name,
+                           'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
+                           }
         wrapper.attributes.update(eval_attributes)
 
     # def set_discipline_attributes(self, discipline):

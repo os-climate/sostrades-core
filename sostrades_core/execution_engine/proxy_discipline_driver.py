@@ -33,6 +33,7 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
+
 class ProxyDisciplineDriverException(Exception):
     pass
 
@@ -44,7 +45,8 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     Attributes:
 
     """
-    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None, associated_namespaces=[]):
+
+    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None, associated_namespaces=None):
         '''
         Constructor
 
@@ -55,15 +57,17 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
             driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
-        super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces)
-        self.cls_builder = cls_builder #TODO: Move to ProxyDisciplineBuilder?
+        super().__init__(sos_name, ee, driver_wrapper_cls,
+                         associated_namespaces=associated_namespaces)
+        self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
 
-    def create_mdo_discipline_wrap(self,name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(
+            name, wrapper, wrapping_mode)
 
     def configure(self):
         '''
@@ -88,13 +92,16 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
         if len(self.get_disciplines_to_configure()) == 0:
             if len(self.proxy_disciplines) == 1:
-                self.update_data_io_with_subprocess_io() # only for 1 subcoupling, so not handling cases like driver of driver
+                # only for 1 subcoupling, so not handling cases like driver of
+                # driver
+                self.update_data_io_with_subprocess_io()
             else:
                 raise NotImplementedError
             self.set_children_cache_inputs()
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
-        # TODO: code is duplicated in driver and coupling... move to builder ? [discuss]
+        # TODO: code is duplicated in driver and coupling... move to builder ?
+        # [discuss]
         if io_type == self.IO_TYPE_IN:
             if as_namespaced_tuple:
                 return self._data_in_ns_tuple
@@ -114,12 +121,16 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         # self._data_in_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_in.keys()), self.IO_TYPE_IN), self._data_in.values()))
         # self._data_out_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_out.keys()), self.IO_TYPE_OUT), self._data_out.values()))
 
-        self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])) : value for key, value in self._data_in.items()}
-        self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])) : value for key, value in self._data_out.items()}
+        self._data_in_ns_tuple = {
+            (key, id(value[self.NS_REFERENCE])): value for key, value in self._data_in.items()}
+        self._data_out_ns_tuple = {
+            (key, id(value[self.NS_REFERENCE])): value for key, value in self._data_out.items()}
 
         for proxy_disc in self.proxy_disciplines:
-            self._data_in_ns_tuple.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True))
-            self._data_out_ns_tuple.update(proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True))
+            self._data_in_ns_tuple.update(proxy_disc.get_data_io_with_full_name(
+                self.IO_TYPE_IN, as_namespaced_tuple=True))
+            self._data_out_ns_tuple.update(proxy_disc.get_data_io_with_full_name(
+                self.IO_TYPE_OUT, as_namespaced_tuple=True))
 
     def configure_driver(self):
         """
@@ -133,7 +144,6 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     #     '''
     #     ProxyDiscipline.reload_io(self)
 
-
     def prepare_execution(self):
         '''
         Preparation of the GEMSEO process, including GEMSEO objects instanciation
@@ -143,9 +153,9 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
+        # TODO : cache mgmt of children necessary ? here or in
+        # SoSMDODisciplineDriver ?
         super().prepare_execution()
-
 
     # def get_input_data_names(self):
     #     '''
@@ -163,7 +173,8 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
     def set_wrapper_attributes(self, wrapper):
         super().set_wrapper_attributes(wrapper)
-        wrapper.attributes.update({'sub_mdo_disciplines': [proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines]})
+        wrapper.attributes.update({'sub_mdo_disciplines': [
+                                  proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines]})
 
     def is_configured(self):
         '''
@@ -185,6 +196,8 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         get the desc_in or desc_out. if a wrapper exists get it from the wrapper, otherwise get it from the proxy class
         """
         if self.mdo_discipline_wrapp.wrapper is not None:
-            return ProxyDiscipline.get_desc_in_out(self, io_type) #ProxyDiscipline gets the DESC from the wrapper
+            # ProxyDiscipline gets the DESC from the wrapper
+            return ProxyDiscipline.get_desc_in_out(self, io_type)
         else:
-            return super().get_desc_in_out(io_type) #ProxyDisciplineBuilder expects the DESC on the proxies
+            # ProxyDisciplineBuilder expects the DESC on the proxies
+            return super().get_desc_in_out(io_type)
