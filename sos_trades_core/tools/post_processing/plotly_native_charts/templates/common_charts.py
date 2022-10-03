@@ -1384,7 +1384,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     method='update',
                     args=[
                         {'visible': [False] * len(fig.data)},
-                        {'title': f'Profit and loss {name} Year {year_list[i]}'},
+                        {'title': f'{name} Year {year_list[i]}'},
                     ],  # layout attribute
                     label=f'{year_list[i]}',
                 )
@@ -1412,7 +1412,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         if len(fig.data):
 
             # Create native plotly chart
-            chart_name = {name}
+            chart_name = name
             new_chart = InstantiatedPlotlyNativeChart(
                 fig=fig, chart_name=chart_name, default_legend=False
             )
