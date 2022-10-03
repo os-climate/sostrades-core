@@ -54,7 +54,6 @@ class ProxyDoeEval(ProxyEval):
     }
     default_algo_options = {}
 
-
     # Design space dataframe headers
     VARIABLES = DoeEval.VARIABLES
     VALUES = DoeEval.VALUES
@@ -155,7 +154,7 @@ class ProxyDoeEval(ProxyEval):
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
 
-    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         '''
         Constructor
         '''
@@ -163,7 +162,8 @@ class ProxyDoeEval(ProxyEval):
         # namespace to store output dictionaries associated to eval_outputs
         if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
-        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces)
+        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
+                         associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
         self.design_space = None
@@ -420,7 +420,7 @@ class ProxyDoeEval(ProxyEval):
                         self.ee.study_name + ".", 1)[1]
                     poss_in_values_list.append(multiplier_fullname)
         return poss_in_values_list
-    
+
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
@@ -492,7 +492,7 @@ class ProxyDoeEval(ProxyEval):
         # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
                          self.POSSIBLE_VALUES, self.custom_order_possible_algorithms(self.doe_factory.algorithms))
-        
+
     def custom_order_possible_algorithms(self, algo_list):
         """ This algo sorts the possible algorithms list so that most used algorithms
         which are fullfact,lhs and CustomDOE appears at the top of the list
