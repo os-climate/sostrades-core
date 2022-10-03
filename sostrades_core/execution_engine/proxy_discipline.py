@@ -563,7 +563,7 @@ class ProxyDiscipline(object):
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
     def _extract_var_ns_tuples(self, short_name_data_dict):
-        return zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()])
+        return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
 
     def _update_io_ns_map(self, var_ns_tuples, io_type):
         if io_type == self.IO_TYPE_IN:
@@ -609,10 +609,10 @@ class ProxyDiscipline(object):
         new_inputs = {}
         new_outputs = {}
         for key, value in self.inst_desc_in.items():
-            if not key in self._data_in.keys():
+            if not key in self.get_data_in().keys():
                 new_inputs[key] = value
         for key, value in self.inst_desc_out.items():
-            if not key in self._data_out.keys():
+            if not key in self.get_data_out().keys():
                 new_outputs[key] = value
         if len(new_inputs) > 0:
             self.set_shared_namespaces_dependencies(new_inputs)
@@ -761,13 +761,21 @@ class ProxyDiscipline(object):
         for var_name in var_name_list:
             if io_type == self.IO_TYPE_IN:
                 self.ee.dm.remove_keys(
-                    self.disc_id, self.get_var_full_name(var_name, self._data_in))
-                del self._data_in[var_name]
+                    self.disc_id, self.get_var_full_name(var_name, self.get_data_in()))
+
+                del self._data_in_ns_tuple[(var_name, self._io_ns_map_in[var_name])]
+                del self._io_ns_map_in[var_name]
+                del self._data_in[var_name] #TODO: to remove
+
                 del self.inst_desc_in[var_name]
             elif io_type == self.IO_TYPE_OUT:
                 self.ee.dm.remove_keys(
-                    self.disc_id, self.get_var_full_name(var_name, self._data_out))
-                del self._data_out[var_name]
+                    self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
+
+                del self._data_out_ns_tuple[(var_name, self._io_ns_map_out[var_name])]
+                del self._io_ns_map_out[var_name]
+                del self._data_out[var_name] #TODO: to remove
+
                 del self.inst_desc_out[var_name]
             if var_name in self._structuring_variables:
                 del self._structuring_variables[var_name]
@@ -839,9 +847,10 @@ class ProxyDiscipline(object):
         set debug mode recursively to children with priority to parent
         """
         for disc in self.proxy_disciplines:
-            if ProxyDiscipline.DEBUG_MODE in disc._data_in:
+            disc_in = disc.get_data_in()
+            if ProxyDiscipline.DEBUG_MODE in disc_in:
                 self.dm.set_data(self.get_var_full_name(
-                    self.DEBUG_MODE, disc._data_in), self.VALUE, debug_mode, check_value=False)
+                    self.DEBUG_MODE, disc_in), self.VALUE, debug_mode, check_value=False)
                 disc.set_debug_mode_rec(debug_mode)
 
     def set_children_cache_inputs(self):
@@ -853,12 +862,13 @@ class ProxyDiscipline(object):
             cache_file_path = self.get_sosdisc_inputs(
                 ProxyDiscipline.CACHE_FILE_PATH)
             for disc in self.proxy_disciplines:
-                if ProxyDiscipline.CACHE_TYPE in disc._data_in:
+                disc_in = disc.get_data_in()
+                if ProxyDiscipline.CACHE_TYPE in disc_in:
                     self.dm.set_data(disc.get_var_full_name(
-                        ProxyDiscipline.CACHE_TYPE, disc._data_in), self.VALUE, cache_type, check_value=False)
+                        ProxyDiscipline.CACHE_TYPE, disc_in), self.VALUE, cache_type, check_value=False)
                     if cache_file_path is not None:
                         self.dm.set_data(disc.get_var_full_name(
-                            ProxyDiscipline.CACHE_FILE_PATH, disc._data_in), self.VALUE, cache_file_path,
+                            ProxyDiscipline.CACHE_FILE_PATH, disc_in), self.VALUE, cache_file_path,
                             check_value=False)
         if self._reset_debug_mode:
             self.set_debug_mode_rec(
@@ -881,10 +891,10 @@ class ProxyDiscipline(object):
         Arguments:
             default_values_dict (Dict[string]) : dict whose key is variable short name and value is the default value
         """
-
+        disc_in = self.get_data_in()
         for short_key, default_value in default_values_dict.items():
-            if short_key in self._data_in:
-                ns_key = self.get_var_full_name(short_key, self._data_in)
+            if short_key in disc_in:
+                ns_key = self.get_var_full_name(short_key, disc_in)
                 self.dm.no_check_default_variables.append(ns_key)
                 self.dm.set_data(ns_key, self.DEFAULT, default_value, False)
             else:
@@ -924,13 +934,14 @@ class ProxyDiscipline(object):
         """"
         _data_in getter
         """
-        return self._data_in
+        # return dict(zip(self._io_ns_map_in.keys(), map(self._data_in.__getitem__, self._io_ns_map_in.items())))
+        return {var_name: self._data_in_ns_tuple[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
 
     def get_data_out(self):
         """
         _data_out getter
         """
-        return self._data_out
+        return {var_name: self._data_out_ns_tuple[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
         """
@@ -1509,20 +1520,22 @@ class ProxyDiscipline(object):
         '''
         Update metadata of values not supported by GEMS (for cases where the data has been converted by the coupling)
         '''
-        for var_name in self._data_in.keys():
-            var_f_name = self.get_var_full_name(var_name, self._data_in)
+        disc_in = self.get_data_in()
+        for var_name in disc_in.keys():
+            var_f_name = self.get_var_full_name(var_name, disc_in)
             var_type = self.dm.get_data(var_f_name, self.VAR_TYPE_ID)
             if var_type in self.NEW_VAR_TYPE:
                 if self.dm.get_data(var_f_name, self.TYPE_METADATA) is not None:
-                    self._data_in[var_name][self.TYPE_METADATA] = self.dm.get_data(
+                    disc_in[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
-        for var_name in self._data_out.keys():
-            var_f_name = self.get_var_full_name(var_name, self._data_out)
+        disc_out = self.get_data_out()
+        for var_name in disc_out.keys():
+            var_f_name = self.get_var_full_name(var_name, disc_out)
             var_type = self.dm.get_data(var_f_name, self.VAR_TYPE_ID)
             if var_type in self.NEW_VAR_TYPE:
                 if self.dm.get_data(var_f_name, self.TYPE_METADATA) is not None:
-                    self._data_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
+                    disc_out[var_name][self.TYPE_METADATA] = self.dm.get_data(
                         var_f_name, self.TYPE_METADATA)
 
     def _update_study_ns_in_varname(self, names):
@@ -1552,7 +1565,7 @@ class ProxyDiscipline(object):
             update_dm (bool): whether to update datamanager too
         '''
         # fill data using data connector if needed
-        self._update_with_values(self._data_out, dict_values, update_dm)
+        self._update_with_values(self.get_data_out(), dict_values, update_dm)
 
     def update_meta_data_out(self, new_data_dict):
         """
@@ -1562,9 +1575,10 @@ class ProxyDiscipline(object):
             new_data_dict (Dict[dict]): contains the metadata to be updated
                                         in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
         """
+        disc_out = self.get_data_out()
         for key in new_data_dict.keys():
             for meta_data in new_data_dict[key].keys():
-                self._data_out[key][meta_data] = new_data_dict[key][meta_data]
+                disc_out[key][meta_data] = new_data_dict[key][meta_data]
                 if meta_data in self.DESC_OUT[key].keys():
                     self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
 
@@ -1647,20 +1661,20 @@ class ProxyDiscipline(object):
         """
         Update all disciplines with datamanager information
         """
-
-        for var_name in self._data_in.keys():
+        disc_in = self.get_data_in()
+        for var_name in disc_in.keys():
 
             try:
-                var_f_name = self.get_var_full_name(var_name, self._data_in)
+                var_f_name = self.get_var_full_name(var_name, disc_in)
                 default_val = self.dm.data_dict[self.dm.get_data_id(
                     var_f_name)][self.DEFAULT]
             except:
-                var_f_name = self.get_var_full_name(var_name, self._data_in)
+                var_f_name = self.get_var_full_name(var_name, disc_in)
             if self.dm.get_value(var_f_name) is None and default_val is not None:
-                self._data_in[var_name][self.VALUE] = default_val
+                disc_in[var_name][self.VALUE] = default_val
             else:
                 # update from dm for all proxy_disciplines to load all data
-                self._data_in[var_name][self.VALUE] = self.dm.get_value(
+                disc_in[var_name][self.VALUE] = self.dm.get_value(
                     var_f_name)
         # -- update sub-disciplines
         for discipline in self.proxy_disciplines:
@@ -1903,8 +1917,9 @@ class ProxyDiscipline(object):
         '''
         Store structuring variables values from dm in self._structuring_variables
         '''
+        disc_in = self.get_data_in()
         for struct_var in list(self._structuring_variables.keys()):
-            if struct_var in self._data_in:
+            if struct_var in disc_in:
                 self._structuring_variables[struct_var] = deepcopy(
                     self.get_sosdisc_inputs(struct_var))
 
@@ -2073,13 +2088,13 @@ class ProxyDiscipline(object):
         """
 
         output_full_name_map = {}
-        data_out = self.get_data_out()
-        data_in = self.get_data_in()
-        for key in data_out:
-            output_full_name_map[key] = self.get_var_full_name(key, data_out)
+        disc_out = self.get_data_out()
+        disc_in = self.get_data_in()
+        for key in disc_out:
+            output_full_name_map[key] = self.get_var_full_name(key, disc_out)
 
         input_full_name_map = {}
-        for key in data_in:
-            input_full_name_map[key] = self.get_var_full_name(key, data_in)
+        for key in disc_in:
+            input_full_name_map[key] = self.get_var_full_name(key, disc_in)
 
         return input_full_name_map, output_full_name_map
