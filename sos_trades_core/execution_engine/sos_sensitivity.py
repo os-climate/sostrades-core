@@ -42,7 +42,7 @@ class SoSSensitivity(SoSEval):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         super(SoSSensitivity, self).__init__(
             sos_name, ee, cls_builder, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Sensitivity')

@@ -102,7 +102,7 @@ class FunctionManagerDisc(SoSDiscipline):
                }
     DESC_OUT = {OPTIM_OUTPUT_DF: {'type': 'dataframe'}}
 
-    def __init__(self, sos_name, ee, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, associated_namespaces=None):
         '''
         constructor
         '''

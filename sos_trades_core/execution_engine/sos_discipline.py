@@ -193,7 +193,7 @@ class SoSDiscipline(MDODiscipline):
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
-    def __init__(self, sos_name, ee, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, associated_namespaces=None):
         '''
         Constructor
         '''
@@ -210,7 +210,7 @@ class SoSDiscipline(MDODiscipline):
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
 
-    def _reload(self, sos_name, ee, associated_namespaces=[]):
+    def _reload(self, sos_name, ee, associated_namespaces=None):
         ''' reload object, eventually with coupling_namespace
         '''
 
@@ -220,7 +220,10 @@ class SoSDiscipline(MDODiscipline):
         self.sos_name = sos_name
         self.ee = ee
         self.dm = self.ee.dm
-        self.associated_namespaces = associated_namespaces
+        if associated_namespaces is None:
+            self.associated_namespaces = []
+        else:
+            self.associated_namespaces = associated_namespaces
         self.ee.ns_manager.create_disc_ns_info(self)
 
         if not hasattr(self, 'is_sos_coupling'):

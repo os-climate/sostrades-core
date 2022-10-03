@@ -225,7 +225,7 @@ class GridSearchEval(DoeEval):
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         """
         Constructor
         """

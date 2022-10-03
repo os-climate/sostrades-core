@@ -121,7 +121,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
     DESC_OUT = {'design_space_out': {'type': 'dataframe'}
                 }
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         """
         Constructor
         """
