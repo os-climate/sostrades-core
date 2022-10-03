@@ -45,7 +45,7 @@ class SoSDisciplineGather(SoSDiscipline):
     }
     EE_PATH = 'sos_trades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None):
         '''
         Constructor
         '''

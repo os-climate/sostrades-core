@@ -114,7 +114,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     NS_IN_DF = 'ns_in_df'
 
-    default_process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+    default_process_builder_parameter_type = ProcessBuilderParameterType(
+        None, None, 'Empty')
 
     default_scenario_map = {}
     default_scenario_map[INPUT_NAME] = None
@@ -152,7 +153,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 #################### End: Constants and parameters #######################
 #################### Begin: Main methods ################################
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=None):
         '''
         Constructor
         '''
@@ -634,7 +635,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         if self.SUB_PROCESS_INPUTS in self._data_in:  # and self.sub_proc_build_status != 'Empty_SP'
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
-            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            sub_process_usecase_name = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
             sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
             self.set_sub_process_usecase_status_from_user_inputs(
                 sub_process_usecase_name, sub_process_usecase_data)
@@ -661,8 +663,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # 2.1 get anonymized dict
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
-            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
-            anonymize_input_dict_from_usecase = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
+            sub_process_usecase_name = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            anonymize_input_dict_from_usecase = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_DATA]
             # 2.2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
                 anonymize_input_dict_from_usecase)
@@ -688,7 +692,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # Set the status to No_SP_UC_Import' and empty the anonymized
             # dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {}
+            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
+            }
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             self.previous_sub_process_usecase_data = {}

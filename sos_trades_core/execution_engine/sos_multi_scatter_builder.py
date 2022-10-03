@@ -47,7 +47,7 @@ class SoSMultiScatterBuilder(SoSDisciplineBuilder):
     }
     ASSOCIATED_INPUTS = 'associated_inputs'
 
-    def __init__(self, sos_name, ee, associated_builder_list, own_map_name, child_map_name, autogather, builder_child_path=None, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, associated_builder_list, own_map_name, child_map_name, autogather, builder_child_path=None, associated_namespaces=None):
         '''
         Constructor
         '''

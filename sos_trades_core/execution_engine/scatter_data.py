@@ -43,7 +43,7 @@ class SoSScatterData(SoSDiscipline):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, parent=None, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, map_name, parent=None, associated_namespaces=None):
         '''
         CLass to scatter data
         '''

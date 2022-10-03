@@ -149,7 +149,8 @@ class BuildDoeEval(SoSEval):
     INPUT_MULTIPLIER_TYPE = []
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    default_process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+    default_process_builder_parameter_type = ProcessBuilderParameterType(
+        None, None, 'Empty')
 
     DESC_IN = {
         SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
@@ -243,7 +244,7 @@ class BuildDoeEval(SoSEval):
 #################### End: Constants and parameters #######################
 #################### Begin: Main methods ################################
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         '''
         Constructor
         '''
@@ -750,7 +751,8 @@ class BuildDoeEval(SoSEval):
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            sub_process_usecase_name = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
             sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
             self.set_sub_process_usecase_status_from_user_inputs(
                 sub_process_usecase_name, sub_process_usecase_data)
@@ -764,8 +766,10 @@ class BuildDoeEval(SoSEval):
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
-            anonymize_input_dict_from_usecase = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
+            sub_process_usecase_name = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            anonymize_input_dict_from_usecase = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_DATA]
             # 2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
                 anonymize_input_dict_from_usecase)
@@ -776,17 +780,24 @@ class BuildDoeEval(SoSEval):
             # we so replace
             # self.ee.dm.set_values_from_dict(input_dict_from_usecase) by the
             # following function
-            dyn_key_list = self.set_only_static_values_from_dict(
-                input_dict_from_usecase)
-            for key in dyn_key_list:
-                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
+            sub_dynamic_mod = False
+
+            if sub_dynamic_mod == False:
+                self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+            else:
+                dyn_key_list = self.set_only_static_values_from_dict(
+                    input_dict_from_usecase)
+                for key in dyn_key_list:
+                    self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
             # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {}
+            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
+            }
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             self.previous_sub_process_usecase_data = {}
         # there are still dynamic variables put apart
+        # can be true only if sub_dynamic_mod == True
         elif len(self.dyn_var_sp_from_import_dict) != 0:
             self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
             # Is it also OK in case of a dynamic param of dynamic param ?

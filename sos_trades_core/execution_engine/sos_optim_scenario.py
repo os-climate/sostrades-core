@@ -112,7 +112,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
     DESC_OUT = {}
     DESC_OUT.update(SoSScenario.DESC_OUT)
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         """
         Constructor
         """

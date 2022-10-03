@@ -83,7 +83,7 @@ class SoSMorphMatrixEval(SoSEval):
                'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
                }
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         '''
             Constructor
         '''

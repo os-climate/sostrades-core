@@ -68,7 +68,7 @@ class SoSEval(SoSDisciplineBuilder):
 
     }
 
-    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, cls_builder, associated_namespaces=None):
         '''
         Constructor
         '''

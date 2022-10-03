@@ -45,7 +45,7 @@ class SoSMultiScenario(SoSSimpleMultiScenario):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=None):
         '''
         Constructor
         '''
