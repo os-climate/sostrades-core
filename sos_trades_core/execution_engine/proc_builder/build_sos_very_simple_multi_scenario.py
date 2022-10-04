@@ -150,6 +150,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
     #DESC_OUT = {}
 
 #################### End: Constants and parameters #######################
+
 #################### Begin: Main methods ################################
 
     def __init__(self, sos_name, ee, map_name, cls_builder, autogather, gather_node, business_post_proc, associated_namespaces=[]):
@@ -191,6 +192,9 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     def set_cls_builder(self, value):
         self.__cls_builder = value
+        # update also in mother class as attribute has other name
+        # self.__builders
+        self.set_builders(value)
 
     def get_cls_builder(self):
         return self.__cls_builder
@@ -275,11 +279,11 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # structuring variable has changed and OK here even if empty proc or
         # map)
         if self.SCENARIO_MAP in self._data_in:
-            cls_builder = self.__cls_builder
             sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
             sc_map_name = sc_map_dict[self.INPUT_NAME]
             # print(sc_map_dict[self.INPUT_NAME])
             # print(sc_map_dict[self.NS_TO_UPDATE])
+            cls_builder = self.get_cls_builder()
             BuildSoSDisciplineScatter._associate_map_to_discipline(self,
                                                                    self.ee, sc_map_name, cls_builder)
             BuildSoSDisciplineScatter.build(self)
@@ -296,7 +300,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             It comes after build()
         """
 
-        # if self._data_in == {} or len(self.__cls_builder) == 0:
+        # if self._data_in == {} or len(self.get_cls_builder()) == 0:
 
         BuildSoSDisciplineScatter.configure(self)
 
@@ -367,6 +371,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
 
 #################### End: Main methods ################################
+
+
 ##################### Begin: Sub methods ################################
 # Remark: those sub methods should be private functions
 
@@ -458,25 +464,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             self.sc_map_build_status = 'Unchanged'
         return self.sc_map_build_status
 
-    def set_sub_process_status(self, sub_process_repo, sub_process_name):
-        '''
-            State subprocess CRUD status
-            The subprocess is defined by its name and repository
-            Function needed in build(self)
-        '''
-        # We come from outside driver process
-        if (sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo):
-            self.previous_sub_process_repo = sub_process_repo
-            self.previous_sub_process_name = sub_process_name
-        # driver process with provided sub process
-            if len(self.__cls_builder) == 0:
-                self.sub_proc_build_status = 'Create_SP'
-            else:
-                self.sub_proc_build_status = 'Replace_SP'
-        else:
-            self.sub_proc_build_status = 'Unchanged_SP'
-        return self.sub_proc_build_status
-
     def build_driver_subproc(self, sub_process_repo, sub_process_name):
         '''
             Get and build builder from sub_process of the driver
@@ -486,13 +473,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # 1. Clean if needed
         if (self.sub_proc_build_status == 'Replace_SP' and self.sc_map_build_status == 'Unchanged'):
             # clean the previous created map
-            self.clean_all_for_rebuild()
-            # Also reset input mat in desc_in to default map
-            driver_name = self.name
-            self.dm.set_data(f'{self.ee.study_name}.{driver_name}.{self.SCENARIO_MAP}',
-                             'value', self.default_scenario_map, check_value=False)
-            self.previous_sc_map_dict = None
-            self.previous_sc_map_name = None
+            self.clean_driver_before_rebuilt()
         # 2. Get and set the builder of subprocess
         cls_builder = self.get_nested_builders_from_sub_process(
             sub_process_repo, sub_process_name)
@@ -501,14 +482,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         self.set_nested_builders(cls_builder)
         # 3. Capture the input namespace specified at
         # building step
-        ns_of_driver = []
-        sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
-        if self.INPUT_NS in sc_map_dict.keys():
-            sc_map_ns = sc_map_dict[self.INPUT_NS]
-            if sc_map_ns is not None:
-                ns_of_driver = [sc_map_ns]
-            else:
-                ns_of_driver = []
+        ns_of_driver = self.get_ns_of_driver()
         ns_of_sub_proc = [
             key for key in self.ee.ns_manager.shared_ns_dict if key not in ns_of_driver]
         self.ns_of_sub_proc = ns_of_sub_proc
@@ -577,17 +551,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             repo=sub_process_repo, mod_id=sub_process_name)
         return cls_builder
 
-    def set_nested_builders(self, cls_builder):
-        """
-            Set nested builder to the driver process in case this driver process was instantiated with an empty nested builder. 
-            Function needed in build_driver_subproc(self)
-        """
-        self.set_cls_builder(cls_builder)
-        self.set_builders(cls_builder)  # update also in mother class
-
-        self.driver_process_builder = self._set_driver_process_builder()
-        return
-
     def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, driver_ns_list, after_name=None, namespace_list=None):
         '''
             Update the value of a list of namespaces with an extra namespace placed behind after_name
@@ -608,11 +571,10 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             Update of SCENARIO_MAP['input_name'] and NS_IN_DF
             Function needed in setup_sos_disciplines()
         """
-        # Remark: the dynamic input SCENARIO_MAP['input_name'] is initialy set in
-        # build_inst_desc_in_with_map() in __init__ of sos_discipline_scatter
-        scatter_desc_in = BuildSoSDisciplineScatter.build_inst_desc_in_with_map(
-            self)
-        dynamic_inputs.update(scatter_desc_in)
+        # Provide dynamic driver parameters triggered by the SP creation
+        desc_in_dict = self.setup_desc_in_dict_of_driver()
+        dynamic_inputs.update(desc_in_dict)
+
         self.sub_proc_build_status = 'Unchanged_SP'
         self.sc_map_build_status = 'Unchanged_SP'
 
@@ -699,40 +661,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             # Is it also OK in case of a dynamic param of dynamic param ?
             self.dyn_var_sp_from_import_dict = {}
 
-    def set_sub_process_usecase_status_from_user_inputs(self, sub_process_usecase_name, sub_process_usecase_data):
-        """
-            State subprocess usecase import status
-            The uscase is defined by its name and its anonimized dict
-            Function needed in manage_import_inputs_from_sub_process()
-        """
-        if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
-            self.previous_sub_process_usecase_name = sub_process_usecase_name
-            self.previous_sub_process_usecase_data = sub_process_usecase_data
-            # means it is not an empty dictionary
-            if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
-                self.sub_proc_import_usecase_status = 'SP_UC_Import'
-        else:
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-
-    def import_input_data_from_usecase_of_sub_process(self, sub_process_usecase_full_name):
-        """
-            Load data in anonymized form of the selected sub process usecase
-            Function needed in manage_import_inputs_from_sub_process()
-        """
-        # Get anonymized dict from sub_process_usecase_full_name
-        imported_module = import_module(sub_process_usecase_full_name)
-        study_tmp = getattr(imported_module, 'Study')(
-            execution_engine=self.ee)
-        anonymize_input_dict_from_usecase = {}
-        # Remark: see def anonymize_key in execution_engine
-        study_tmp.study_name = self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT
-        anonymize_usecase_data = study_tmp.setup_usecase()
-        if not isinstance(anonymize_usecase_data, list):
-            anonymize_usecase_data = [anonymize_usecase_data]
-        for uc_d in anonymize_usecase_data:
-            anonymize_input_dict_from_usecase.update(uc_d)
-        return anonymize_input_dict_from_usecase
-
     def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase):
         """
             Put_anonymized_input_dict in sub_process context
@@ -758,21 +686,80 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
 
-    def set_only_static_values_from_dict(self, values_dict, full_ns_keys=True):
-        ''' Set values in data_dict from dict with namespaced keys 
-            if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
-            Function needed in manage_import_inputs_from_sub_process()
-        '''
-        dyn_key_list = []
-        keys_to_map = self.ee.dm.data_id_map.keys(
-        ) if full_ns_keys else self.ee.dm.data_id_map.values()
-        for key, value in values_dict.items():
-            if not key in keys_to_map:
-                dyn_key_list += [key]
-            else:
-                k = self.ee.dm.get_data_id(key) if full_ns_keys else key
-                VALUE = SoSDiscipline.VALUE
-                self.ee.dm.data_dict[k][VALUE] = value
-        return dyn_key_list
 
 ##################### End: Sub methods for build #########################
+
+######### Begin: Sub methods for build to be specified in build #####
+
+    def set_ref_discipline_full_name(self):
+        '''
+            Specific function of the driver to define the full name of the reference disvcipline
+            Function needed in _init_ of the driver
+            Function to be specified per driver
+        '''
+        driver_name = self.name
+        self.ref_discipline_full_name = f'{self.ee.study_name}.{driver_name}.{self.REFERENCE}'
+
+        return
+
+    def clean_driver_before_rebuilt(self):  # come from build_driver_subproc
+        '''
+            Specific function of the driver to clean all instances before rebuild and reset any needed parameter
+            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
+            Function to be specified per driver
+        '''
+        self.clean_all_for_rebuild()
+        # Also reset input mat in desc_in to default map
+        driver_name = self.name
+        self.dm.set_data(f'{self.ee.study_name}.{driver_name}.{self.SCENARIO_MAP}',
+                         'value', self.default_scenario_map, check_value=False)
+        self.previous_sc_map_dict = None
+        self.previous_sc_map_name = None
+        # We "clean" also all dynamic inputs to be reloaded by
+        # the usecase
+        self.add_inputs({})  # is it needed ?
+        return
+
+    # come from build_driver_subproc# come from build_driver_subproc
+    def get_ns_of_driver(self):
+        '''
+            Specific function of the driver to get ns of driver
+            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
+            Function to be specified per driver
+        '''
+        sc_map_dict = self.get_sosdisc_inputs(self.SCENARIO_MAP)
+        if self.INPUT_NS in sc_map_dict.keys():
+            ns_of_driver = self.get_ns_of_driver()
+            sc_map_ns = sc_map_dict[self.INPUT_NS]
+            if sc_map_ns is not None:
+                ns_of_driver = [sc_map_ns]
+            else:
+                ns_of_driver = []
+        else:
+            ns_of_driver = []
+        return ns_of_driver
+
+    # come from setup_sos_disciplines_driver_inputs_depend_on_sc_map
+    def setup_desc_in_dict_of_driver(self):
+        """
+            Create desc_in_dict for dynamic inputs of the driver depending on sub process
+            Function needed in setup_sos_disciplines_driver_inputs_depend_on_sub_process()
+            Function to be specified per driver
+            Update of SCENARIO_MAP['input_name']
+        """
+        # Remark: the dynamic input SCENARIO_MAP['input_name'] is initially set in
+        # build_inst_desc_in_with_map() in __init__ of sos_discipline_scatter
+        desc_in_dict = BuildSoSDisciplineScatter.build_inst_desc_in_with_map(
+            self)
+        return desc_in_dict
+
+    def setup_sos_disciplines_driver_inputs_independent_on_sub_process(self, dynamic_inputs, dynamic_outputs):
+        """
+            setup_dynamic inputs when driver parameters depending on the SP selection are already set
+            Manage update of XXX,YYY parameters
+            Function needed in setup_sos_disciplines()
+            Function to be specified per driver
+        """
+        return dynamic_inputs, dynamic_outputs
+
+#####  End: Sub methods for build to be specified in build #####

@@ -29,13 +29,13 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.execution_engine.sos_eval import SoSEval
+from sos_trades_core.execution_engine.proc_builder.build_sos_eval import BuildSoSEval
 from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 import pandas as pd
 from collections import ChainMap
 
 
-class BuildDoeEval(SoSEval):
+class BuildDoeEval(BuildSoSEval):
     '''
     Generic DOE evaluation class
 
@@ -96,7 +96,7 @@ class BuildDoeEval(SoSEval):
         'validated_by': 'SoSTrades Project',
         'last_modification_date': '',
         'category': '',
-        'definition': 'DoE driver discipline that implements a Design of Experiment on a nested system (Implementation based on SoSEval driver discipline). Remark: the optimization "formulation" capability is not covered',
+        'definition': 'DoE driver discipline that implements a Design of Experiment on a nested system (Implementation based on BuildSoSEval driver discipline). Remark: the optimization "formulation" capability is not covered',
         #'icon': 'fas fa-grid-4 fa-fw',  # icon for doe driver
         'icon': 'fas fa-screwdriver-wrench fa-fw',  # icon for proc builder
         'version': ''
@@ -241,6 +241,7 @@ class BuildDoeEval(SoSEval):
                  "CustomDOE": default_algo_options_CustomDOE,
                  }
 #################### End: Constants and parameters #######################
+
 #################### Begin: Main methods ################################
 
     def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
@@ -276,7 +277,7 @@ class BuildDoeEval(SoSEval):
 
     def build(self):
         '''
-            Overloaded SoSEval method
+            Overloaded BuildSoSEval method
             Get and build builder from sub_process of doe_eval driver
             Added to provide proc builder capability
             Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
@@ -296,16 +297,16 @@ class BuildDoeEval(SoSEval):
                 if self.sub_proc_build_status == 'Create_SP' or self.sub_proc_build_status == 'Replace_SP':
                     self.build_eval_subproc(
                         sub_process_repo, sub_process_name)
-        SoSEval.build(self)
+        BuildSoSEval.build(self)
 
     def configure(self):
         """
-            Overloaded SoSEval method,k
+            Overloaded BuildSoSEval method,k
             Configuration of the BuildDoeEval
             Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
             It comes after build()
         """
-        SoSEval.configure(self)
+        BuildSoSEval.configure(self)
 
         # Treatment of dynamic subprocess inputs in case of change of usecase
         # of subprocess (Added to provide proc builder capability)
@@ -317,7 +318,7 @@ class BuildDoeEval(SoSEval):
     def setup_sos_disciplines(self):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
-        Reached from configure() of sos_discipline [SoSDiscipline.configure in config() of SoSEval]. 
+        Reached from configure() of sos_discipline [SoSDiscipline.configure in config() of BuildSoSEval]. 
         It is done upstream of set_eval_possible_values()
         Default desc_in are the algo name and its options
         In case of a CustomDOE', additional input is the custom sample (dataframe)
@@ -345,13 +346,13 @@ class BuildDoeEval(SoSEval):
 
     def set_eval_possible_values(self):
         '''
-            Overloaded SoSEval method : used in SoSEval.configure()
+            Overloaded BuildSoSEval method : used in BuildSoSEval.configure()
             It is done downstream of setup_sos_disciplines()
-            In fact: copy past of the SoSEval method --> not needed !
+            In fact: copy past of the BuildSoSEval method --> not needed !
             Once all disciplines have been "run" through,
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
-        # the eval process to analyse is stored as the only child of SoSEval
+        # the eval process to analyse is stored as the only child of BuildSoSEval
         # (coupling chain of the eval process or single discipline)
         analyzed_disc = self.sos_disciplines[0]
 
@@ -415,8 +416,8 @@ class BuildDoeEval(SoSEval):
 
     def run(self):
         '''
-            Overloaded SoSEval method
-            SoSEval has no specific run method
+            Overloaded BuildSoSEval method
+            BuildSoSEval has no specific run method
             The execution of the doe
         '''
 
@@ -498,25 +499,9 @@ class BuildDoeEval(SoSEval):
                     global_dict_output[dynamic_output]})
 
 #################### End: Main methods ################################
+
 ##################### Begin: Sub methods ################################
 # Remark: those sub methods should be private functions
-    def set_sub_process_status(self, sub_process_repo, sub_process_name):
-        '''
-            State subprocess CRUD status
-            The subprocess is defined by its name and repository
-            Function needed in build(self)
-        '''
-        # We come from outside driver process
-        if sub_process_name != self.previous_sub_process_name or sub_process_repo != self.previous_sub_process_repo:
-            self.previous_sub_process_repo = sub_process_repo
-            self.previous_sub_process_name = sub_process_name
-        # driver process with provided sub process
-            if len(self.cls_builder) == 0:
-                self.sub_proc_build_status = 'Create_SP'
-            else:
-                self.sub_proc_build_status = 'Replace_SP'
-        else:
-            self.sub_proc_build_status = 'Unchanged_SP'
 
     def build_eval_subproc(self, sub_process_repo, sub_process_name):
         '''
@@ -527,11 +512,7 @@ class BuildDoeEval(SoSEval):
         # 1. Clean if needed
         if self.sub_proc_build_status == 'Replace_SP':
             # clean all instances before rebuilt
-            self.sos_disciplines[0].clean()
-            self.sos_disciplines = []  # Should it be del self.sos_disciplines[0]?
-            # We "clean" also all dynamic inputs to be reloaded by
-            # the usecase
-            self.add_inputs({})
+            self.clean_driver_before_rebuilt()
         # 2. Get and set the builder of subprocess
         cls_builder = self.get_nested_builders_from_sub_process(
             sub_process_repo, sub_process_name)
@@ -540,6 +521,7 @@ class BuildDoeEval(SoSEval):
         self.set_nested_builders(cls_builder)
         # 3. Optional step : capture the input namespace specified at
         # building step
+        ns_of_driver = self.get_ns_of_driver()
         my_keys = [
             key for key in self.ee.ns_manager.shared_ns_dict if key != 'ns_doe']
         my_dict = {}
@@ -568,8 +550,12 @@ class BuildDoeEval(SoSEval):
             Set nested builder to the eval process in case this eval process was instantiated with an empty nested builder. 
             Function needed in build_eval_subproc(self)
         """
-        self.cls_builder = cls_builder
-        self.eval_process_builder = self._set_eval_process_builder()
+        self.set_cls_builder(cls_builder)
+        # function of build_doe_eval
+        # self.driver_process_builder = self._set_driver_process_builder()
+        # attribute self.driver_process_builder of mother class
+        self.driver_process_builder = self.set_driver_process_builder()
+
         return
 
     def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, after_name=None, namespace_list=None):
@@ -590,26 +576,10 @@ class BuildDoeEval(SoSEval):
             Update of SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS/NS_IN_DF
             Function needed in setup_sos_disciplines()
         """
-        dynamic_inputs.update({self.SAMPLING_ALGO: {'type': 'string',
-                                                    'possible_values': self.custom_order_possible_algorithms(self.doe_factory.algorithms),
-                                                    'structuring': True}
-                               })
-        dynamic_inputs.update({self.EVAL_INPUTS: {'type': 'dataframe',
-                                                  'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                                           'full_name': ('string', None, False)},
-                                                  'dataframe_edition_locked': False,
-                                                  'structuring': True,
-                                                  'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                                  'namespace': 'ns_doe_eval'}
-                               })
-        dynamic_inputs.update({self.EVAL_OUTPUTS: {'type': 'dataframe',
-                                                   'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                                            'full_name': ('string', None, False)},
-                                                   'dataframe_edition_locked': False,
-                                                   'structuring': True,
-                                                   'visibility': SoSDiscipline.SHARED_VISIBILITY,
-                                                   'namespace': 'ns_doe_eval'}
-                               })
+        # Provide dynamic driver parameters triggered by the SP creation
+        desc_in_dict = self.setup_desc_in_dict_of_driver()
+        dynamic_inputs.update(desc_in_dict)
+
         self.sub_proc_build_status = 'Unchanged_SP'
         # Also provide information about namespace variables provided at
         # building time
@@ -684,7 +654,7 @@ class BuildDoeEval(SoSEval):
                 self.logger.warning('Selected_outputs cannot be empty!')
             # 5. Manage update of EVAL_INPUTS/EVAL_OUTPUTS
             # we set the lists which will be used by the evaluation
-            # function of sosEval
+            # function of BuildSoSEval
             self.set_eval_in_out_lists(selected_inputs, selected_outputs)
             # 6. Manage update of multiplier
             # if multipliers in eval_in
@@ -849,51 +819,6 @@ class BuildDoeEval(SoSEval):
                 )
         return dynamic_inputs_list
 
-    def set_sub_process_usecase_status_from_user_inputs(self, sub_process_usecase_name, sub_process_usecase_data):
-        """
-            State subprocess usecase import status
-            The uscase is defined by its name and its anonimized dict
-            Function needed in manage_import_inputs_from_sub_process()
-        """
-        usecase_has_changed = False
-        if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
-            self.previous_sub_process_usecase_name = sub_process_usecase_name
-            self.previous_sub_process_usecase_data = sub_process_usecase_data
-            # means it is not an empty dictionary
-            if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
-                self.sub_proc_import_usecase_status = 'SP_UC_Import'
-        else:
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-
-    def get_sub_process_usecase_full_name(self, sub_process_repo, sub_process_name, sub_process_usecase_name):
-        """
-            Function that can be used in scripting mode. In GUI mode, this is provided in the GUI.
-        """
-        sub_process_usecase_repo = '.'.join(
-            [sub_process_repo, sub_process_name])
-        sub_process_usecase_full_name = '.'.join(
-            [sub_process_usecase_repo, sub_process_usecase_name])
-        return sub_process_usecase_full_name
-
-    def import_input_data_from_usecase_of_sub_process(self, sub_process_usecase_full_name):
-        """
-            Load data in anonymized form of the selected sub process usecase
-            Function needed in manage_import_inputs_from_sub_process()
-        """
-        # Get anonymized dict from sub_process_usecase_full_name
-        imported_module = import_module(sub_process_usecase_full_name)
-        study_tmp = getattr(imported_module, 'Study')(
-            execution_engine=self.ee)
-        anonymize_input_dict_from_usecase = {}
-        # Remark: see def anonymize_key in execution_engine
-        study_tmp.study_name = self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT
-        anonymize_usecase_data = study_tmp.setup_usecase()
-        if not isinstance(anonymize_usecase_data, list):
-            anonymize_usecase_data = [anonymize_usecase_data]
-        for uc_d in anonymize_usecase_data:
-            anonymize_input_dict_from_usecase.update(uc_d)
-        return anonymize_input_dict_from_usecase
-
     def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase):
         """
             Put_anonymized_input_dict in sub_process context
@@ -910,23 +835,6 @@ class BuildDoeEval(SoSEval):
             uc_d = {converted_key: value}
             input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
-
-    def set_only_static_values_from_dict(self, values_dict, full_ns_keys=True):
-        ''' Set values in data_dict from dict with namespaced keys 
-            if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
-            Function needed in manage_import_inputs_from_sub_process()
-        '''
-        dyn_key_list = []
-        keys_to_map = self.ee.dm.data_id_map.keys(
-        ) if full_ns_keys else self.ee.dm.data_id_map.values()
-        for key, value in values_dict.items():
-            if not key in keys_to_map:
-                dyn_key_list += [key]
-            else:
-                k = self.ee.dm.get_data_id(key) if full_ns_keys else key
-                VALUE = SoSDiscipline.VALUE
-                self.ee.dm.data_dict[k][VALUE] = value
-        return dyn_key_list
 
     def fill_possible_values(self, disc):
         '''
@@ -1377,3 +1285,94 @@ class BuildDoeEval(SoSEval):
         return [var_origin_name, column_name]
 
 ##################### End: Sub methods ################################
+
+
+######### Begin: Sub methods for build to be specified in build #####
+
+    def get_cls_builder(self):
+        '''
+            Specific function of the driver to get the cls_builder
+            Function needed in set_sub_process_status()
+            Function to be specified per driver
+        '''
+        cls_builder = self.cls_builder
+        return cls_builder
+
+    def set_cls_builder(self, value):
+        '''
+            Specific function of the driver to set the cls_builder with value
+            Function needed in set_nested_builders
+            Function to be specified per driver
+        '''
+        self.cls_builder = value
+
+    def set_ref_discipline_full_name(self):
+        '''
+            Specific function of the driver to define the full name of the reference disvcipline
+            Function needed in _init_ of the driver
+            Function to be specified per driver
+        '''
+        driver_name = self.name
+        self.ref_discipline_full_name = f'{self.ee.study_name}.{driver_name}'
+
+        return
+
+    def clean_driver_before_rebuilt(self):  # come from build_eval_subproc
+        '''
+            Specific function of the driver to clean all instances before rebuild and reset any needed parameter
+            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
+            Function to be specified per driver
+        '''
+        self.sos_disciplines[0].clean()
+        self.sos_disciplines = []  # Should it be del self.sos_disciplines[0]?
+        # We "clean" also all dynamic inputs to be reloaded by
+        # the usecase
+        self.add_inputs({})  # is it needed ?
+        return
+
+    def get_ns_of_driver(self):  # come from build_eval_subproc
+        '''
+            Specific function of the driver to get ns of driver
+            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
+            Function to be specified per driver
+        '''
+        ns_of_driver = []
+        return ns_of_driver
+
+    # come from setup_sos_disciplines_driver_inputs_depend_on_sub_process
+    def setup_desc_in_dict_of_driver(self):
+        """
+            Create desc_in_dict for dynamic inputs of the driver depending on sub process
+            Function needed in setup_sos_disciplines_driver_inputs_depend_on_sub_process()
+            Function to be specified per driver
+            Update of SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS
+        """
+        desc_in_dict = {}
+        desc_in_dict[self.SAMPLING_ALGO] = {'type': 'string',
+                                                    'possible_values': self.custom_order_possible_algorithms(self.doe_factory.algorithms),
+                                                    'structuring': True}
+        desc_in_dict[self.EVAL_INPUTS] = {'type': 'dataframe',
+                                          'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                                   'full_name': ('string', None, False)},
+                                                  'dataframe_edition_locked': False,
+                                                  'structuring': True,
+                                                  'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                  'namespace': 'ns_doe_eval'}
+        desc_in_dict[self.EVAL_OUTPUTS] = {'type': 'dataframe',
+                                           'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                                    'full_name': ('string', None, False)},
+                                                   'dataframe_edition_locked': False,
+                                                   'structuring': True,
+                                                   'visibility': SoSDiscipline.SHARED_VISIBILITY,
+                                                   'namespace': 'ns_doe_eval'}
+        return desc_in_dict
+
+    def setup_sos_disciplines_driver_inputs_independent_on_sub_process(self, dynamic_inputs, dynamic_outputs):
+        """
+            setup_dynamic inputs when driver parameters depending on the SP selection are already set
+            Manage update of XXX,YYY parameters
+            Function needed in setup_sos_disciplines()
+            Function to be specified per driver
+        """
+        return dynamic_inputs, dynamic_outputs
+#####  End: Sub methods for build to be specified in build #####
