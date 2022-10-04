@@ -2086,7 +2086,7 @@ class ProxyDiscipline(object):
         Sets attribute:
             self.io_full_name_map (Dict[Str]): union of the two above used for local data update
         """
-
+        #TODO: refactor with ns tuples
         output_full_name_map = {}
         disc_out = self.get_data_out()
         disc_in = self.get_data_in()

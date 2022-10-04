@@ -136,7 +136,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
                                                                                 ns_name)
 
         # remove all disciplines not in subproc_names
-        if input_name in self._data_in.keys():
+        if input_name in self.get_data_in().keys():
             sub_names = self.get_sosdisc_inputs(
                 input_name)  # [ac1, ac2, ...]
             if sub_names is not None:

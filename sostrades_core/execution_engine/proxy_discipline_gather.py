@@ -80,7 +80,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         '''
         var_to_gather_dict = {}
         for disc in self.builder.discipline_dict.values():
-            for out_var, out_dict in disc._data_out.items():
+            for out_var, out_dict in disc.get_data_out().items():
                 if out_var not in var_to_gather_dict:
                     # if the visibility is not defined it means that it is
                     # Local
@@ -108,7 +108,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         '''
         scatter_var_name = self.sc_map.get_input_name()  # ac_name_list
 
-        if scatter_var_name in self._data_in:
+        if scatter_var_name in self.get_data_in():
 
             gather_ns_in = self.sc_map.get_gather_ns_in()
             sub_names = self.get_sosdisc_inputs(
@@ -178,7 +178,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         - configure the discipline with completed inst_desc_in and inst_desc_out
         '''
 
-        if self.sc_map.get_input_name() not in self._data_in:
+        if self.sc_map.get_input_name() not in self.get_data_in():
             # update data_in/data_out with new inputs/outputs
             ProxyDiscipline.configure(self)
         else:
@@ -218,7 +218,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         '''
         Set user level of inputs to Expert
         '''
-        for key, value in self._data_in.items():
+        for key, value in self.get_data_in().items():
             if key != self.sc_map.get_input_name():
                 value[ProxyDiscipline.USER_LEVEL] = 3
 
@@ -230,33 +230,44 @@ class ProxyDisciplineGather(ProxyDiscipline):
         modified_inputs = {}
         modified_outputs = {}
 
+        disc_in = self.get_data_in()
+        disc_out = self.get_data_out()
+
         for key, value in self.inst_desc_in.items():
-            if key in self._data_in and self._data_in[key][self.NAMESPACE] != value[self.NAMESPACE]:
+            if key in disc_in and disc_in[key][self.NAMESPACE] != value[self.NAMESPACE]:
                 modified_inputs[key] = value
 
         for key, value in self.inst_desc_out.items():
-            if key in self._data_out and self._data_out[key][self.NAMESPACE] != value[self.NAMESPACE]:
+            if key in disc_out and disc_out[key][self.NAMESPACE] != value[self.NAMESPACE]:
                 modified_outputs[key] = value
 
         if len(modified_inputs) > 0:
             completed_modified_inputs = self._prepare_data_dict(
                 self.IO_TYPE_IN, modified_inputs)
-            self._data_in.update(completed_modified_inputs)
+            self._data_in.update(completed_modified_inputs) # TODO: to remove
+            inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_modified_inputs)
+            self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
+            self._update_data_io(zip(inputs_var_ns_tuples, completed_modified_inputs.values()), self.IO_TYPE_IN)
 
         if len(modified_outputs) > 0:
             completed_modified_outputs = self._prepare_data_dict(
                 self.IO_TYPE_OUT, modified_outputs)
-            self._data_out.update(completed_modified_outputs)
+            self._data_out.update(completed_modified_outputs) # TODO: to remove
+            outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_modified_outputs)
+            self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
+            self._update_data_io(zip(outputs_var_ns_tuples, completed_modified_outputs.values()), self.IO_TYPE_OUT)
+
 
     def clean_inst_desc_in_with_sub_names(self, sub_names):
         '''
         Clean the inst_desc_in with names that doesn't exist in the scatter anymore, 
         Update the gather function of scatter variables
         '''
+        disc_in = self.get_data_in()
         keys_to_delete = []
         for var_in in self.inst_desc_in:
             if NS_SEP in var_in:
-                full_key = self.get_var_full_name(var_in, self._data_in)
+                full_key = self.get_var_full_name(var_in, disc_in)
                 if var_in.split(NS_SEP)[0] not in sub_names or self.ee.dm.get_data(full_key, self.DISCIPLINES_DEPENDENCIES) == [self.disc_id]:
                     keys_to_delete.append(var_in)
 
@@ -282,7 +293,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         """ set the attribute attributes of wrapper
         """
         super().set_wrapper_attributes(wrapper)
-        gather_attributes = {'input_name': self.get_var_full_name(self.sc_map.get_input_name(), self._data_in),
+        gather_attributes = {'input_name': self.get_var_full_name(self.sc_map.get_input_name(), self.get_data_in()),
                              'builder_cls': self.builder.cls,
                              'var_gather': self.var_to_gather,
                              'cls_gather': self.cls_gather,
