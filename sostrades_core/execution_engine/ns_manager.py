@@ -405,6 +405,14 @@ class NamespaceManager:
 
         return result
 
+    def ns_tuple_to_full_name(self, ns_tuple):
+        """
+        get variable full name from a tuple('var_name', id(ns_ref))
+        """
+        var_name = ns_tuple[0]
+        ns_reference = self.ee.ns_manager.ns_object_map[ns_tuple[1]]
+        return self.ee.ns_manager.compose_ns([ns_reference.value, var_name])
+
     def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
         '''
         Update the value of a list of namespaces with an extra namespace placed behind after_name

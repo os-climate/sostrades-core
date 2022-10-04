@@ -377,22 +377,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # - Update coupling and editable flags in the datamanager for the GUI
             self._update_coupling_flags_in_dm()
 
-    def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
-        # TODO: code is duplicated in driver and coupling... move to builder ?
-        # [discuss]
-        if io_type == self.IO_TYPE_IN:
-            if as_namespaced_tuple:
-                return self._data_in_ns_tuple
-            else:
-                return self.namespaced_tuples_to_full_names(self._data_in_ns_tuple)
-        elif io_type == self.IO_TYPE_OUT:
-            if as_namespaced_tuple:
-                return self._data_out_ns_tuple
-            else:
-                return self.namespaced_tuples_to_full_names(self._data_out_ns_tuple)
-        else:
-            raise ValueError('Unknown io type')
-
     def _build_data_io(self):
         """
         Build data_in and data_out from sub proxies data_in and out

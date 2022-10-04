@@ -953,19 +953,30 @@ class ProxyDiscipline(object):
         Return:
             data_io_full_name (Dict[dict]): data_in/data_out with variable full names
         """
-        data_io_short_name = self.get_data_io_dict(io_type)
+        # data_io_short_name = self.get_data_io_dict(io_type)
+        # 
+        # if as_namespaced_tuple:
+        #     def dict_key(v): return (
+        #         v, id(data_io_short_name[v][self.NS_REFERENCE]))
+        # else:
+        #     def dict_key(v): return self.get_var_full_name(
+        #         v, data_io_short_name)
+        # 
+        # data_io_full_name = {dict_key(
+        #     var_name): value_dict for var_name, value_dict in data_io_short_name.items()}
 
-        if as_namespaced_tuple:
-            def dict_key(v): return (
-                v, id(data_io_short_name[v][self.NS_REFERENCE]))
+        if io_type == self.IO_TYPE_IN:
+            if as_namespaced_tuple:
+                return self._data_in_ns_tuple
+            else:
+                return self.ns_tuples_to_full_name_keys(self._data_in_ns_tuple)
+        elif io_type == self.IO_TYPE_OUT:
+            if as_namespaced_tuple:
+                return self._data_out_ns_tuple
+            else:
+                return self.ns_tuples_to_full_name_keys(self._data_out_ns_tuple)
         else:
-            def dict_key(v): return self.get_var_full_name(
-                v, data_io_short_name)
-
-        data_io_full_name = {dict_key(
-            var_name): value_dict for var_name, value_dict in data_io_short_name.items()}
-
-        return data_io_full_name
+            raise ValueError('Unknown io type')
 
     def get_data_with_full_name(self, io_type, full_name, data_name=None):
         """
@@ -1646,16 +1657,9 @@ class ProxyDiscipline(object):
         var_f_name = self.ee.ns_manager.compose_ns(
             [ns_reference.value, complete_var_name])
         return var_f_name
-
-    def namespaced_tuples_to_full_names(self, in_dict):
-        out_dict = {}
-        for key, value in in_dict.items():
-            complete_var_name = key[0]
-            ns_reference = self.ee.ns_manager.ns_object_map[key[1]]
-            var_f_name = self.ee.ns_manager.compose_ns(
-                [ns_reference.value, complete_var_name])
-            out_dict[var_f_name] = value
-        return out_dict
+    
+    def ns_tuples_to_full_name_keys(self, in_dict):
+        return {self.ee.ns_manager.ns_tuple_to_full_name(key) : value for key,value in in_dict.items()}
 
     def update_from_dm(self):
         """
@@ -2086,15 +2090,17 @@ class ProxyDiscipline(object):
         Sets attribute:
             self.io_full_name_map (Dict[Str]): union of the two above used for local data update
         """
-        #TODO: refactor with ns tuples
-        output_full_name_map = {}
-        disc_out = self.get_data_out()
-        disc_in = self.get_data_in()
-        for key in disc_out:
-            output_full_name_map[key] = self.get_var_full_name(key, disc_out)
+        # output_full_name_map = {}
+        # disc_out = self.get_data_out()
+        # disc_in = self.get_data_in()
+        # for key in disc_out:
+        #     output_full_name_map[key] = self.get_var_full_name(key, disc_out)
+        #
+        # input_full_name_map = {}
+        # for key in disc_in:
+        #     input_full_name_map[key] = self.get_var_full_name(key, disc_in)
+        #
+        # return input_full_name_map, output_full_name_map
 
-        input_full_name_map = {}
-        for key in disc_in:
-            input_full_name_map[key] = self.get_var_full_name(key, disc_in)
-
-        return input_full_name_map, output_full_name_map
+        return {key: self.ee.ns_manager.ns_tuple_to_full_name((key,value)) for key,value in self._io_ns_map_in.items()},\
+               {key: self.ee.ns_manager.ns_tuple_to_full_name((key,value)) for key,value in self._io_ns_map_out.items()}
