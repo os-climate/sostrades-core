@@ -147,7 +147,7 @@ def change_column_values_delimiter(
     data_df: pd.DataFrame,
     column_name: str = BREAKDOWN_COLUMN,
     old_delimiter: str = '.',
-    new_delimiter: str = ' -> ',
+    new_delimiter: str = ' ↦ ',
 ):
     for g in data_df[column_name].unique():
         data_df.loc[data_df[column_name] == g, column_name] = f'{new_delimiter}'.join(
