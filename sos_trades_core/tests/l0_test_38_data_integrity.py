@@ -299,9 +299,7 @@ class TestDataIntegrity(unittest.TestCase):
 
     def test_04_check_dataframe_descriptor(self):
         '''
-        Check the subtypes of different dataframe
-        1 a dataframe
-        2 a dataframe dict
+        Check the subtypes of a dataframe
         '''
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc1', self.mod_path_all_types)
@@ -348,11 +346,12 @@ class TestDataIntegrity(unittest.TestCase):
         self.assertEqual(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
-        a_df = pd.DataFrame({'variable': [5., 2.9, 0.7e-5, -19.],
-                             'c2': 4,
-                             'c3': 8,
-                             'str_df': ['5.**5', '-209.1', '3.1416', '6.6']})
-        correct_input_dict = {f'{self.exec_eng.study_name}.Disc1.df_in': a_df}
+        a_df_correct = pd.DataFrame({'variable': [5., 2.9, 0.7e-5, -19.],
+                                     'c2': 4,
+                                     'c3': 8,
+                                     'str_df': ['5.**5', '-209.1', '3.1416', '6.6']})
+        correct_input_dict = {
+            f'{self.exec_eng.study_name}.Disc1.df_in': a_df_correct}
         self.exec_eng.load_study_from_input_dict(correct_input_dict)
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, SoSDiscipline.CHECK_INTEGRITY_MSG)
@@ -364,4 +363,4 @@ class TestDataIntegrity(unittest.TestCase):
 if __name__ == "__main__":
     cls = TestDataIntegrity()
     cls.setUp()
-    cls.test_03_check_subtypes_dict_and_list()
+    cls.test_04_check_dataframe_descriptor()
