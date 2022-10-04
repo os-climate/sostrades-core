@@ -175,8 +175,8 @@ class TestProxyDiscipline(unittest.TestCase):
         
         # check namespaced input/output
         disc1 = self.ee.root_process.proxy_disciplines[0]
-        self.assertEqual(disc1.get_var_full_name('x', disc1._data_in), 'Test.x')
-        self.assertEqual(disc1.get_var_full_name('y', disc1._data_out), 'Test.y')
+        self.assertEqual(disc1.get_var_full_name('x', disc1.get_data_in()), 'Test.x')
+        self.assertEqual(disc1.get_var_full_name('y', disc1.get_data_out()), 'Test.y')
         
         # check values in dm
         self.assertEqual(self.ee.dm.get_value('Test.Disc1.a'), a)

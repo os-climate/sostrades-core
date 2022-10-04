@@ -434,12 +434,12 @@ class TestStructuringInputs(unittest.TestCase):
 
         # check numerical inputs of root_process coupling
         self.assertListEqual(list(coupling_inputs.keys()), list(
-            self.exec_eng.root_process._data_in.keys()))
+            self.exec_eng.root_process.get_data_in().keys()))
 
         for input_name, input_dict in coupling_inputs.items():
             for key, value in input_dict.items():
                 self.assertEqual(
-                    self.exec_eng.root_process._data_in[input_name][key], value)
+                    self.exec_eng.root_process.get_data_in()[input_name][key], value)
 
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.SellarOptimScenario.SellarCoupling.tolerance_gs', 'default'), 10.0)
@@ -475,12 +475,12 @@ class TestStructuringInputs(unittest.TestCase):
 
         # check numerical inputs of root_process coupling
         self.assertListEqual(list(coupling_inputs.keys()), list(
-            self.exec_eng.root_process._data_in.keys()))
+            self.exec_eng.root_process.get_data_in().keys()))
 
         for input_name, input_dict in coupling_inputs.items():
             for key, value in input_dict.items():
                 self.assertEqual(
-                    self.exec_eng.root_process._data_in[input_name][key], value)
+                    self.exec_eng.root_process.get_data_in()[input_name][key], value)
 
         coupling_sellar = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.SellarOptimScenario.SellarCoupling')[0]

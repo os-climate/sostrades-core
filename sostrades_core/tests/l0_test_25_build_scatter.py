@@ -509,33 +509,33 @@ class TestBuildScatter(unittest.TestCase):
             if isinstance(disc, ProxyDisciplineGather):
                 disc1_gather = disc
 
-        self.assertEqual(disc1_gather.get_var_full_name('name_1.y', disc1_gather._data_in),
-                         disc1_name1.get_var_full_name('y', disc1_name1._data_out))
+        self.assertEqual(disc1_gather.get_var_full_name('name_1.y', disc1_gather.get_data_in()),
+                         disc1_name1.get_var_full_name('y', disc1_name1.get_data_out()))
         self.assertEqual(self.exec_eng.dm.get_value('MyCase.name_1.y'), 10)
         # scatter output y is referenced in dm
         self.assertEqual(self.exec_eng.dm.get_data(
-            'MyCase.name_1.y'), disc1_name1._data_out['y'])
+            'MyCase.name_1.y'), disc1_name1.get_data_out()['y'])
         # gather input name_1.y is not referenced in dm
         self.assertNotEqual(self.exec_eng.dm.get_data(
-            'MyCase.name_1.y'), disc1_gather._data_in['name_1.y'])
+            'MyCase.name_1.y'), disc1_gather.get_data_in()['name_1.y'])
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.name_list'), disc1_gather._data_in['name_list']['value'])
+            'MyCase.name_list'), disc1_gather.get_data_in()['name_list']['value'])
         self.assertEqual(self.exec_eng.dm.get_data(
-            'MyCase.name_list'), disc2._data_in['name_list'])
+            'MyCase.name_list'), disc2.get_data_in()['name_list'])
 
         # check user_level of gather inputs
         self.assertEqual(self.exec_eng.dm.get_data(
             'MyCase.name_1.y', 'user_level'), 1)
         disc2_name_1 = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Disc2.name_1')[0]
-        self.assertEqual(disc2_name_1._data_in['y']['user_level'], 1)
+        self.assertEqual(disc2_name_1.get_data_in()['y']['user_level'], 1)
         disc1_name_1 = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Disc1.name_1')[0]
-        self.assertEqual(disc1_name_1._data_out['y']['user_level'], 1)
+        self.assertEqual(disc1_name_1.get_data_out()['y']['user_level'], 1)
         gather_disc1 = self.exec_eng.dm.get_disciplines_with_name('MyCase.Disc1')[
             1]
-        self.assertEqual(gather_disc1._data_in['name_1.y']['user_level'], 3)
+        self.assertEqual(gather_disc1.get_data_in()['name_1.y']['user_level'], 3)
 
     def test_06_build_scatter_of_scatter_of_coupling_of_scatter(self):
         # load process in GUI

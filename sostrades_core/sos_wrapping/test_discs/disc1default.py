@@ -45,7 +45,7 @@ class Disc1(SoSWrapp):
 
     def setup_sos_disciplines(self,proxy):
 
-        if 'a' in proxy._data_in:
+        if 'a' in proxy.get_data_in():
             a = proxy.get_sosdisc_inputs('a')
             proxy.set_dynamic_default_values({'b': 4 * a,
                                              'c': 4 * a})
