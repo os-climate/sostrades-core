@@ -18,8 +18,7 @@ from pandas import DataFrame
 
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from sos_trades_core.tools.controllers.simpy_formula import SympyFormula
-from sos_trades_core.tools.check_data_integrity.check_data_integrity import check_variable_value,\
-    check_variable_type_and_unit
+from sos_trades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -563,6 +562,8 @@ class SoSDiscipline(MDODiscipline):
         '''
         Generic check data integrity of the variables that you own ( the model origin of the variable is you)
         '''
+        check_data_integrity_cls = CheckDataIntegrity(
+            self.__class__, self.ee.data_check_integrity)
 
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
         for var_fullname in data_in_full_name:
@@ -570,8 +571,8 @@ class SoSDiscipline(MDODiscipline):
             if var_data_dict['model_origin'] == self.disc_id:
                 #                 check_integrity_msg = check_variable_type_and_unit(
                 # var_fullname, var_data_dict, self.__class__)
-                check_integrity_msg = check_variable_value(
-                    var_fullname, var_data_dict, self.__class__)
+                check_integrity_msg = check_data_integrity_cls.check_variable_value(
+                    var_fullname, var_data_dict)
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
 

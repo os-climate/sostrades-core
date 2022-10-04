@@ -74,6 +74,7 @@ class TestSerializeDF(unittest.TestCase):
         self.out_dir = join(dirname(__file__), 'data', 'test_output')
 
         self.h_data = array([0., 0., 0., 0.])
+        self.z_list = [0., 0., 0., 0.]
         self.dict_in_data = {'key0': 0., 'key1': 0.}
         self.df_in_data = DataFrame(array([[0.0, 1.0, 2.0], [0.1, 1.1, 2.1],
                                            [0.2, 1.2, 2.2], [-9., -8.7, 1e3]]),
@@ -86,7 +87,9 @@ class TestSerializeDF(unittest.TestCase):
                          columns=['key1', 'key2', 'key3', 'key4'])
         self.dict_of_df_in_data = {'key_C': a_df,
                                    'key_D': a_df * 3.1416}
-
+        self.dict_string_in = {'key_C': '1st string',
+                               'key_D': '2nd string'}
+        self.list_dict_string_in = [self.dict_string_in, self.dict_string_in]
         self.root_dir = gettempdir()
 
     def tearDown(self):
@@ -119,12 +122,17 @@ class TestSerializeDF(unittest.TestCase):
     def set_ee_data(self, exec_eng, st_name, proc_n):
         values_dict = {}
         values_dict[st_name + '.' + proc_n + '.h'] = self.h_data
+        values_dict[self.ns_test + '.z_list'] = self.z_list
         values_dict[st_name + '.' + proc_n + '.dict_in'] = self.dict_in_data
         values_dict[st_name + '.' + proc_n + '.df_in'] = self.df_in_data
         values_dict[st_name + '.' + proc_n +
                     '.dict_of_dict_in'] = self.dict_of_dict_in_data
         values_dict[st_name + '.' + proc_n +
                     '.dict_of_df_in'] = self.dict_of_df_in_data
+        values_dict[st_name + '.' + proc_n +
+                    '.dict_string_in'] = self.dict_string_in
+        values_dict[st_name + '.' + proc_n +
+                    '.list_dict_string_in'] = self.list_dict_string_in
         exec_eng.dm.set_values_from_dict(values_dict)
         return exec_eng
 
