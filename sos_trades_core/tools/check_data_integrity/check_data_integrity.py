@@ -80,6 +80,9 @@ def check_variable_value(var_name, var_data_dict, sosdisc_class):
                 if variable_type == 'dataframe' and NEW_CHECK:
                     check_dataframe_descriptor(
                         var_name, var_data_dict, sosdisc_class)
+                if variable_type in ['list', 'dict'] and NEW_CHECK:
+                    check_subtype_descriptor(
+                        var_name, var_data_dict, sosdisc_class)
     return check_integrity_msg
 
 
@@ -185,19 +188,19 @@ def check_dataframe_descriptor(var_name, var_data_dict, sosdisc_class):
                 check_integrity_msg_df_descriptor = f'Variable: {var_name}, with dataframe descriptor has a column type ' \
                     f'{dataframe_descriptor[key][0]} not in allowed type {list(sosdisc_class.VAR_TYPE_MAP.keys())}'
                 df_descriptor_well_defined = False
-                add_msg_to_check_integrity_msg(
+                check_integrity_msg = add_msg_to_check_integrity_msg(
                     check_integrity_msg, check_integrity_msg_df_descriptor)
 
         if df_descriptor_well_defined:
             for key in variable_value.columns:
                 if key not in dataframe_descriptor:
                     check_integrity_msg_df_descriptor = f'Variable: {var_name}, the dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
-                    add_msg_to_check_integrity_msg(
+                    check_integrity_msg = add_msg_to_check_integrity_msg(
                         check_integrity_msg, check_integrity_msg_df_descriptor)
                 else:
                     check_integrity_msg_column = check_dataframe_column_with_df_descriptor(
                         variable_value[key], dataframe_descriptor[key], var_name, key, sosdisc_class)
-                    add_msg_to_check_integrity_msg(
+                    check_integrity_msg = add_msg_to_check_integrity_msg(
                         check_integrity_msg, check_integrity_msg_column)
     return check_integrity_msg
 
@@ -205,6 +208,7 @@ def check_dataframe_descriptor(var_name, var_data_dict, sosdisc_class):
 def add_msg_to_check_integrity_msg(check_integrity_msg, new_msg):
     if new_msg != '':
         check_integrity_msg += new_msg + '\n'
+    return check_integrity_msg
 
 
 def check_dataframe_column_with_df_descriptor(column, column_descriptor, var_name, key, sosdisc_class):
@@ -221,5 +225,59 @@ def check_dataframe_column_with_df_descriptor(column, column_descriptor, var_nam
     elif column_range is not None and len(column_range) == 2:
         if not all(item < column_range[1] for item in values_in_column) and all(column_range[0] < item for item in values_in_column):
             check_integrity_msg = f'Variable: {var_name}, all dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
+
+    return check_integrity_msg
+
+
+def check_subtype_descriptor(var_name, var_data_dict, sosdisc_class):
+    '''
+    Check subtype descriptor of the data_dict vs the value for list and dict
+    '''
+    check_integrity_msg = ''
+    variable_value = var_data_dict[sosdisc_class.VALUE]
+    variable_type = var_data_dict[sosdisc_class.TYPE]
+    if sosdisc_class.SUBTYPE in var_data_dict:
+        variable_subtype = var_data_dict[sosdisc_class.SUBTYPE]
+        check_subtype(var_name, variable_subtype, variable_type,
+                      variable_value, sosdisc_class)
+
+    return check_integrity_msg
+
+
+def check_subtype(var_name, subtype, type_to_check, variable_value, sosdisc_class):
+    """This function checks that the subtype given to a list or dict is compliant
+    with the defined standard for subtype and the value is compliant with the defined subtype descriptor
+    """
+    check_integrity_msg = ''
+    if not isinstance(subtype, dict):
+        check_integrity_msg = f'Variable: {var_name} :  The subtype descriptor must be a dictionnary'
+    elif list(subtype.keys())[0] != type_to_check or len(subtype.keys()) != 1:
+        check_integrity_msg = f'Variable: {var_name} : The subtype descriptor should have as unique key the keyword {type_to_check} because the variable type is {type_to_check}'
+    elif isinstance(subtype[type_to_check], dict):
+        if isinstance(variable_value, dict):
+            for sub_value in variable_value.values():
+                check_integrity_msg_subtype = check_subtype(
+                    var_name, subtype[type_to_check], dict, sub_value, sosdisc_class)
+                check_integrity_msg = add_msg_to_check_integrity_msg(
+                    check_integrity_msg, check_integrity_msg_subtype)
+        elif isinstance(variable_value, list):
+            for value in variable_value:
+                check_integrity_msg_subtype = check_subtype(
+                    var_name, subtype[type_to_check], dict, value, sosdisc_class)
+                check_integrity_msg = add_msg_to_check_integrity_msg(
+                    check_integrity_msg, check_integrity_msg_subtype)
+    else:
+        if isinstance(variable_value, dict):
+            for sub_value in variable_value.values():
+                if not isinstance(sub_value, sosdisc_class.VAR_TYPE_MAP[subtype[type_to_check]]):
+                    check_integrity_msg_subtype = f'Variable: {var_name} : The value {sub_value} in {variable_value} should be a {subtype[type_to_check]} according to subtype descriptor {subtype}'
+                    check_integrity_msg = add_msg_to_check_integrity_msg(
+                        check_integrity_msg, check_integrity_msg_subtype)
+        elif isinstance(variable_value, list):
+            for sub_value in variable_value:
+                if not isinstance(sub_value, sosdisc_class.VAR_TYPE_MAP[subtype[type_to_check]]):
+                    check_integrity_msg_subtype = f'Variable: {var_name} : The value {sub_value} in {variable_value} should be a {subtype[type_to_check]} according to subtype descriptor {subtype}'
+                    check_integrity_msg = add_msg_to_check_integrity_msg(
+                        check_integrity_msg, check_integrity_msg_subtype)
 
     return check_integrity_msg

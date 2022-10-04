@@ -639,4 +639,4 @@ class TestScatterData(unittest.TestCase):
 if __name__ == "__main__":
     cls = TestScatterData()
     cls.setUp()
-    cls.test_03_scatter_data_with_dataframe()
+    cls.test_05_scatter_data_with_lists_in_map_and_subtypes()

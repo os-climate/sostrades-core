@@ -43,7 +43,7 @@ class ValueBlockDiscipline(SoSDiscipline):
                         'dataframe_descriptor', 'dataframe_edition_locked',
                         'default', 'optional', 'numerical']
 
-    def __init__(self, sos_name, ee, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, associated_namespaces=None):
 
         self.children_list = []
         super(ValueBlockDiscipline, self).__init__(
