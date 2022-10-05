@@ -26,12 +26,12 @@ import pandas as pd
 
 class AddSubProcToDriver(SoSDisciplineBuilder):
     '''
-    Generic DOE evaluation class
+    Generic Add SubProc To Driver class
 
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
-
+            |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
 
     2) Description of DESC parameters:
         |_ DESC_IN
@@ -48,6 +48,7 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
                                                                           it is a temporary input: it will be put to None as soon as
                                                                           its content is 'loaded' in the dm. We will have it has editable
                                                 It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
+            |_ NS_IN_DF :                       a map of ns name: value
     '''
 #################### Begin: Ontology of the discipline ###################
     # ontology information
@@ -112,19 +113,21 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
             Added to provide proc builder capability
             Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
             It comes before configuring()
+            Function needed in build(self)
         '''
-        if self.SUB_PROCESS_INPUTS in self._data_in:
+        if (self.SUB_PROCESS_INPUTS in self._data_in):
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
             sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
             sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            if sub_process_repo != None and sub_process_name != None:  # a sub_process_full_name is available
+            # a sub_process_full_name is available
+            if (sub_process_repo != None and sub_process_name != None):
                 # either Unchanged_SP or Create_SP or Replace_SP
                 # 1. set_sub_process_status
                 self.set_sub_process_status(
                     sub_process_repo, sub_process_name)
                 # 2 build_eval_subproc
-                if self.sub_proc_build_status == 'Create_SP' or self.sub_proc_build_status == 'Replace_SP':
+                if (self.sub_proc_build_status == 'Create_SP' or self.sub_proc_build_status == 'Replace_SP'):
                     self.build_driver_subproc(
                         sub_process_repo, sub_process_name)
 
@@ -172,6 +175,29 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
 ##################### Begin: Sub methods for build #######################
 # Remark: those sub methods should be private functions
 
+    def build_driver_subproc(self, sub_process_repo, sub_process_name):
+        '''
+            Get and build builder from sub_process of the driver
+            The subprocess is defined by its name and repository
+            Function needed in build_for_proc_builder(self)
+        '''
+        # 1. Clean if needed
+        if self.sub_proc_build_status == 'Replace_SP':
+            # clean all instances before rebuilt and and reset any needed
+            # parameter
+            self.clean_driver_before_rebuilt()
+        # 2. Get and set the builder of subprocess
+        cls_builder = self.get_nested_builders_from_sub_process(
+            sub_process_repo, sub_process_name)
+        self.set_nested_builders(cls_builder)
+        # 3. Capture the input namespace specified at
+        # building step
+        ns_of_driver = self.get_ns_of_driver()
+        self.capture_ns_of_sub_proc_and_associated_values(
+            ns_of_driver)
+        # 4. Put ns of subproc in driver context
+        self.put_ns_of_subproc_in_driver_context(ns_of_driver, assign_ns=False)
+
     def set_sub_process_status(self, sub_process_repo, sub_process_name):
         '''
             State subprocess CRUD status
@@ -191,28 +217,6 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
             self.sub_proc_build_status = 'Unchanged_SP'
 
         return self.sub_proc_build_status
-
-    def build_driver_subproc(self, sub_process_repo, sub_process_name):
-        '''
-            Get and build builder from sub_process of the driver
-            The subprocess is defined by its name and repository
-            Function needed in build_for_proc_builder(self)
-        '''
-        # 1. Clean if needed
-        if self.sub_proc_build_status == 'Replace_SP':
-            # clean all instances before rebuilt and and reset any needed
-            # parameter
-            self.clean_driver_before_rebuilt()
-        # 2. Get and set the builder of subprocess
-        cls_builder = self.get_nested_builders_from_sub_process(
-            sub_process_repo, sub_process_name)
-        self.set_nested_builders(cls_builder)
-        # 3. Capture the input namespace specified at
-        # building step
-        ns_of_driver = self.get_ns_of_driver()
-        self.capture_ns_of_sub_proc_and_associated_values(ns_of_driver)
-        # 4. Put ns of subproc in driver context
-        self.put_ns_of_subproc_in_driver_context(ns_of_driver, assign_ns=False)
 
     def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
         """
@@ -263,8 +267,8 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
             driver_name, ns_of_driver, after_name=self.ee.study_name)
         #   2 Then add ns keys to driver discipline
         if assign_ns == True:
-            for item in self.ns_of_sub_proc:
-                self.ee.ns_manager.update_others_ns_with_shared_ns(item)
+            for item in self.ns_of_sub_proc:  # or ns_of_sub_proc_dict.keys()
+                self.ee.ns_manager.update_others_ns_with_shared_ns(self, item)
         return
 
     def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, driver_ns_list, after_name=None, namespace_list=None):
@@ -284,15 +288,12 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
     def setup_sos_disciplines_driver_inputs_depend_on_sub_process(self, dynamic_inputs):
         """
             Update of dynamic inputs of the driver depending on sub process
-            Update of NS_IN_DF
+            Also update of NS_IN_DF
             Function needed in setup_sos_disciplines()
         """
         # Provide dynamic driver parameters triggered by the SP creation
         desc_in_dict = self.setup_desc_in_dict_of_driver()
         dynamic_inputs.update(desc_in_dict)
-
-        # Set status
-        self.sub_proc_build_status = 'Unchanged_SP'
 
         # Also provide information about namespace variables provided at
         # building time
@@ -312,65 +313,89 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
             Function needed in setup_sos_disciplines()
         """
         # Set sub_proc_import_usecase_status
+        self.set_sub_process_usecase_status_from_user_inputs()
+
+        # Treat the case of SP_UC_Import
+        if self.sub_proc_import_usecase_status == 'SP_UC_Import':
+            # 1. Add 'reference' (if not already existing) in data manager for
+            # usecase import
+            self.add_reference_instance()
+            # 2. Add data in data manager for this analysis'reference'
+            # 2.1 get anonymized dict
+            anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
+            # 2.2 put anonymized dict in context (unanonymize)
+            input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
+                anonymize_input_dict_from_usecase)
+            # print(input_dict_from_usecase)
+            # self.ee.display_treeview_nodes(True)
+            # 2.3 load data put in context in the dm (if possible) or put them
+            # in self.dyn_var_sp_from_import_dict
+            self.load_data_in_dm(input_dict_from_usecase, sub_dynamic_mod=True)
+            # 2.4 Update parameters
+            # Set the status to No_SP_UC_Import'
+            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+            # Empty the anonymized dict in
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
+            }
+            self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
+                             self.VALUES, sub_process_inputs_dict, check_value=False)
+            # Empty the previous_sub_process_usecase_data
+            self.previous_sub_process_usecase_data = {}
+        # there are still dynamic variables put apart
+        # The following elif can be true only if sub_dynamic_mod == True. It is
+        # the temporary treatment of dynamic subprocess
+        elif len(self.dyn_var_sp_from_import_dict) != 0:
+            # self.ee.display_treeview_nodes(True)
+            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
+            # Is it also OK in case of a dynamic param of dynamic param ?
+            self.dyn_var_sp_from_import_dict = {}
+
+    def load_data_in_dm(self, input_dict_from_usecase, sub_dynamic_mod=True):
+        """
+            Load usecase data (put in context) in the dm if possible
+            Function needed in manage_import_inputs_from_sub_process()
+            Remark: a example of dynamic subprocess is disc10_setup_sos_discipline.py. It is dynamic at one level. Here we have treated only one level.
+            Remark: an example of dynamic subprocess at n (for example 4) levels should also be created and tested
+            Remark: Elise told that there is already a dictionary of temporay storage of data that cannot be pushed in dm that is already available in the algorthm of SoSTrades
+            Remark: Here we already are in the "load data" loop of SoSTrades and cannot simply do a load data (a loop in the loop) !
+        """
+        if sub_dynamic_mod == False:
+            self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+            # will work only if all keys of the dynamic sub_process are all
+            # already in data_in
+        else:
+            # Load usecase data (put in context) in the dm if the key is
+            # already in data_in or (if not) put its key in dyn_key_list
+            dyn_key_list = self.set_only_static_values_from_dict(
+                input_dict_from_usecase)
+            # Create a dict dyn_var_sp_from_import_dict with all data from
+            # usecase not yet put in the dm
+            for key in dyn_key_list:
+                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
+
+    def set_sub_process_usecase_status_from_user_inputs(self):
+        """
+            State subprocess usecase import status
+            The uscase is defined by its name and its anonimized dict
+            Function needed in manage_import_inputs_from_sub_process()
+        """
         if self.SUB_PROCESS_INPUTS in self._data_in:  # and self.sub_proc_build_status != 'Empty_SP'
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
             sub_process_usecase_name = sub_process_inputs_dict[
                 ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
             sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
-            self.set_sub_process_usecase_status_from_user_inputs(
-                sub_process_usecase_name, sub_process_usecase_data)
-        else:
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-
-        # Treat the case of SP_UC_Import
-        if self.sub_proc_import_usecase_status == 'SP_UC_Import':
-            # 1 get anonymized dict
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_usecase_name = sub_process_inputs_dict[
-                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
-            anonymize_input_dict_from_usecase = sub_process_inputs_dict[
-                ProcessBuilderParameterType.USECASE_DATA]
-            # 2 put anonymized dict in context (unanonymize)
-            input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
-                anonymize_input_dict_from_usecase)
-            # 3. treat data because of dynamic keys not in dict
-            #    Added treatment for input_dict_from_usecase with dynamic keys
-            #   Find dynamic keys and redirect them in
-            #   self.dyn_var_sp_from_import_dict and removing from input_dict_from_usecase
-            # we so replace
-            # self.ee.dm.set_values_from_dict(input_dict_from_usecase) by the
-            # following function
-            dyn_key_list = self.set_only_static_values_from_dict(
-                input_dict_from_usecase)
-            for key in dyn_key_list:
-                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
-            # Set the status to No_SP_UC_Import' and empty the anonymized dict
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
-            }
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
-                             self.VALUES, sub_process_inputs_dict, check_value=False)
-            self.previous_sub_process_usecase_data = {}
-        # there are still dynamic variables put apart
-        elif len(self.dyn_var_sp_from_import_dict) != 0:
-            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
-            # Is it also OK in case of a dynamic param of dynamic param ?
-            self.dyn_var_sp_from_import_dict = {}
-
-    def set_sub_process_usecase_status_from_user_inputs(self, sub_process_usecase_name, sub_process_usecase_data):
-        """
-            State subprocess usecase import status
-            The uscase is defined by its name and its anonimized dict
-            Function needed in manage_import_inputs_from_sub_process()
-        """
-        if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
-            self.previous_sub_process_usecase_name = sub_process_usecase_name
-            self.previous_sub_process_usecase_data = sub_process_usecase_data
-            # means it is not an empty dictionary
-            if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
-                self.sub_proc_import_usecase_status = 'SP_UC_Import'
+            if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
+                self.previous_sub_process_usecase_name = sub_process_usecase_name
+                self.previous_sub_process_usecase_data = sub_process_usecase_data
+                # means it is not an empty dictionary
+                if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
+                    self.sub_proc_import_usecase_status = 'SP_UC_Import'
+            else:
+                self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
@@ -381,14 +406,9 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
         """
         # Get unanonymized dict (i.e. dict of subprocess in driver context)
         # from anonymized dict and context
-        # good prefix in context
-
-        #driver_name = self.name
-        # Following treatment of substitution of the new_study_placeholder of value self.ref_discipline_full_name is
-        # OK if variable is a variable with ns  in ns_to_update
-        # If not then we should shift only of f'{self.ee.study_name}.{driver_name}
-        # For this we need to find ns of each variable
-        # self.ee.ns_manager.get_shared_namespace(disc, var_ns)
+        # Following treatment of substitution of the new_study_placeholder of value self.ref_discipline_full_name
+        # may not to be done for all variables (see vsMS with ns_to_update that
+        # has not all the ns keys)
 
         input_dict_from_usecase = {}
         new_study_placeholder = self.ref_discipline_full_name
@@ -417,8 +437,32 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
                 self.ee.dm.data_dict[k][VALUE] = value
         return dyn_key_list
 
+    def set_driver_process_builder(self):
+        '''
+            Create the driver process builder
+            Function needed in set_nested_builders
+            Function that may need to be specified per driver
+        '''
+        disc_builder = self._set_driver_process_builder()
+        return disc_builder
+
 ##################### End: Sub methods for build #########################
 
+######### Begin: Main methods for build to be specified in build #####
+
+    def build(self):
+        '''
+            Overloaded Build method
+            Get and build builder from sub_process of doe_eval driver
+            Added to provide proc builder capability
+            Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
+            It comes before configuring()
+            Function to be specified per driver
+            Main method Added to provide proc builder capability
+        '''
+        self.build_for_proc_builder()
+
+######### End: Main methods for build to be specified in build #####
 
 ######### Begin: Sub methods for build to be specified in build #####
 
@@ -447,6 +491,7 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
                  f'{self.ee.study_name}.{driver_name}.{self.REFERENCE}' for vsMS
             Function needed in _init_ of the driver
             Function to be specified per driver
+            Main method to be added to provide proc builder capability
         '''
         driver_name = self.name
         # default value
@@ -479,16 +524,6 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
         # xxxx
         return ns_of_driver
 
-    def set_driver_process_builder(self):
-        '''
-            Create the driver process builder
-            Function needed in set_nested_builders
-            Function that may need to be specified per driver
-        '''
-        disc_builder = None
-        disc_builder = self._set_driver_process_builder()
-        return disc_builder
-
     def setup_desc_in_dict_of_driver(self):
         """
             Create desc_in_dict for dynamic inputs of the driver depending on sub process
@@ -509,5 +544,13 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
         # xxxx
         return dynamic_inputs, dynamic_outputs
 
+    def add_reference_instance(self):
+        """
+            Add a 'reference' discipline instance (if not already existing) in data manager to
+            allow to load data from usecase
+            Function needed in manage_import_inputs_from_sub_process()
+            Function to be specified per driver
+        """
+        pass
 
 #####  End: Sub methods for build to be specified in build #####

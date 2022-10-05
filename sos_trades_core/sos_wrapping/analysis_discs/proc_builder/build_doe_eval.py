@@ -41,7 +41,6 @@ class BuildDoeEval(BuildSoSEval):
 
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
-            |_ SUB_PROCESS_INPUTS (structuring)
                 |_ EVAL_INPUTS (namespace: 'ns_doe_eval', structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ EVAL_OUTPUTS (namespace: 'ns_doe_eval', structuring, dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ SAMPLING_ALGO (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP')
@@ -51,26 +50,12 @@ class BuildDoeEval(BuildSoSEval):
                         |_ <var multiplier name> (internal namespace: 'origin_var_ns', dynamic: almost one selected inputs with MULTIPLIER_PARTICULE ('__MULTIPLIER__) in its name, only used in grid_search_eval) 
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
-            |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
             |_ SAMPLES_INPUTS_DF (namespace: 'ns_doe_eval') 
             |_ <var>_dict (internal namspace 'ns_doe', dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
 
     2) Description of DESC parameters:
-        |_ DESC_IN
-           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
-                                                    PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
-                                                                          If 'None' then it uses the sos_processes python for doe creation.
-                                                    PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
-                                                                          If 'None' then it uses the sos_processes python for doe creation.
-                                                    USECASE_INFO:         either empty or an available data source of the sub_process
-                                                    USECASE_NAME:         children of USECASE_INFO that contains data source name (can be empty)
-                                                    USECASE_TYPE:         children of USECASE_INFO that contains data source type (can be empty)
-                                                    USECASE_IDENTIFIER:   children of USECASE_INFO that contains data source identifier (can be empty)
-                                                    USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
-                                                                          it is a temporary input: it will be put to None as soon as                                                                        
-                                                                          its content is 'loaded' in the dm. We will have it has editable                                                                             
-                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
+        |_ DESC_IN                                                                           
                     |_ EVAL_INPUTS:             selection of input variables to be used for the DoE
                     |_ EVAL_OUTPUTS:            selection of output variables to be used for the DoE (the selected observables)
                     |_ SAMPLING_ALGO:           method of defining the sampling input dataset for the variable chosen in self.EVAL_INPUTS
@@ -80,7 +65,6 @@ class BuildDoeEval(BuildSoSEval):
                         |_ <var multiplier name>: for each selected input with MULTIPLIER_PARTICULE in its name (only used in grid_search_eval)
             |_ N_PROCESSES:
             |_ WAIT_TIME_BETWEEN_FORK:
-            |_ NS_IN_DF :                       a map of ns name: value
          |_ DESC_OUT
             |_ SAMPLES_INPUTS_DF :              copy of the generated or provided input sample
             |_ <var observable name>_dict':     for each selected output observable doe result
@@ -149,7 +133,8 @@ class BuildDoeEval(BuildSoSEval):
     INPUT_MULTIPLIER_TYPE = []
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    default_process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+    default_process_builder_parameter_type = ProcessBuilderParameterType(
+        None, None, 'Empty')
 
     DESC_IN = {
         SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
@@ -277,43 +262,30 @@ class BuildDoeEval(BuildSoSEval):
 
     def build(self):
         '''
-            Overloaded BuildSoSEval method
+            Overloaded Build method
             Get and build builder from sub_process of doe_eval driver
-            Added to provide proc builder capability
-            Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
-            It comes before configuring()
+            Remark: Reached from __configure_io in ee.py: self.factory.build() is going from build to build starting from root
+            Remark: It comes before configuring()
+            Main method Added to provide proc builder capability
+
         '''
-        if self.SUB_PROCESS_INPUTS in self._data_in:
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            if sub_process_repo != None and sub_process_name != None:  # a sub_process_full_name is available
-                # either Unchanged_SP or Create_SP or Replace_SP
-                # 1. set_sub_process_status
-                self.set_sub_process_status(
-                    sub_process_repo, sub_process_name)
-                # 2 build_eval_subproc
-                if self.sub_proc_build_status == 'Create_SP' or self.sub_proc_build_status == 'Replace_SP':
-                    self.build_eval_subproc(
-                        sub_process_repo, sub_process_name)
+        self.build_for_proc_builder()
+
         BuildSoSEval.build(self)
 
     def configure(self):
         """
-            Overloaded BuildSoSEval method,k
+            Overloaded configure method
             Configuration of the BuildDoeEval
-            Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
-            It comes after build()
+            Remark: Reached from __configure_io in ee.py: self.root_process.configure_io() is going from confiure to configure starting from root
+            Remark: It comes after build()
+            Main method Added to provide proc builder capability
         """
         BuildSoSEval.configure(self)
 
         # Treatment of dynamic subprocess inputs in case of change of usecase
         # of subprocess (Added to provide proc builder capability)
-        if len(self.dyn_var_sp_from_import_dict) > 0:
-            self.set_configure_status(False)
-        else:
-            self.set_configure_status(True)
+        self.configure_for_proc_builder()
 
     def setup_sos_disciplines(self):
         """
@@ -323,6 +295,7 @@ class BuildDoeEval(BuildSoSEval):
         Default desc_in are the algo name and its options
         In case of a CustomDOE', additional input is the custom sample (dataframe)
         In other cases, additional inputs are the number of samples and the design space
+        Main method Added to provide proc builder capability
         """
 
         dynamic_inputs = {}
@@ -337,7 +310,7 @@ class BuildDoeEval(BuildSoSEval):
             # 1. provide driver inputs based on selected subprocess
             dynamic_inputs = self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
                 dynamic_inputs)
-            dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(
+            dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_independent_on_sub_process(
                 dynamic_inputs, dynamic_outputs)
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -503,11 +476,11 @@ class BuildDoeEval(BuildSoSEval):
 ##################### Begin: Sub methods ################################
 # Remark: those sub methods should be private functions
 
-    def build_eval_subproc(self, sub_process_repo, sub_process_name):
+    def build_driver_subproc(self, sub_process_repo, sub_process_name):
         '''
-            Get and build builder from sub_process of eval driver
+            Get and build builder from sub_process of the driver
             The subprocess is defined by its name and repository
-            Function needed in build(self)
+            Function needed in build_for_proc_builder(self)
         '''
         # 1. Clean if needed
         if self.sub_proc_build_status == 'Replace_SP':
@@ -530,237 +503,15 @@ class BuildDoeEval(BuildSoSEval):
             self.sub_process_ns_in_build = pd.DataFrame(
                 list(my_dict.items()), columns=['Name', 'Value'])
         # 4. Shift namespace due to the 'DoE_Eval' inserted
+        # self.update_namespace_list_with_extra_ns_except_driver(
+        #    'DoE_Eval', after_name=self.ee.study_name)
+        driver_name = 'DoE_Eval'
+        driver_ns_list = ['ns_doe_eval']
         self.update_namespace_list_with_extra_ns_except_driver(
-            'DoE_Eval', after_name=self.ee.study_name)
+            driver_name, driver_ns_list, after_name=self.ee.study_name)
         # Here we not shift doe_eval that is already in the namespace dictionary.
         # In a more general frame we would need to compare previous
         # namspace dict and only shift new created namespace keys
-
-    def get_nested_builders_from_sub_process(self, sub_process_repo, sub_process_name):
-        """
-            Create_nested builders from their nested process.
-            Function needed in build_eval_subproc(self)
-        """
-        cls_builder = self.ee.factory.get_builder_from_process(
-            repo=sub_process_repo, mod_id=sub_process_name)
-        return cls_builder
-
-    def set_nested_builders(self, cls_builder):
-        """
-            Set nested builder to the eval process in case this eval process was instantiated with an empty nested builder. 
-            Function needed in build_eval_subproc(self)
-        """
-        self.set_cls_builder(cls_builder)
-        # function of build_doe_eval
-        # self.driver_process_builder = self._set_driver_process_builder()
-        # attribute self.driver_process_builder of mother class
-        self.driver_process_builder = self.set_driver_process_builder()
-
-        return
-
-    def update_namespace_list_with_extra_ns_except_driver(self, extra_ns, after_name=None, namespace_list=None):
-        '''
-            Update the value of a list of namespaces with an extra namespace placed behind after_name
-            In our context, we do not want to shift ns_doe_eval and ns_doe already created before nested sub_process
-            Function needed in build_eval_subproc(self)
-        '''
-        if namespace_list is None:
-            namespace_list = self.ee.ns_manager.ns_list
-            namespace_list = [
-                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
-        self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_ns, after_name=after_name, namespace_list=namespace_list)
-
-    def setup_sos_disciplines_driver_inputs_depend_on_sub_process(self, dynamic_inputs):
-        """
-            Update of SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS/NS_IN_DF
-            Function needed in setup_sos_disciplines()
-        """
-        # Provide dynamic driver parameters triggered by the SP creation
-        desc_in_dict = self.setup_desc_in_dict_of_driver()
-        dynamic_inputs.update(desc_in_dict)
-
-        self.sub_proc_build_status = 'Unchanged_SP'
-        # Also provide information about namespace variables provided at
-        # building time
-        if self.sub_process_ns_in_build is not None:
-            dynamic_inputs.update({self.NS_IN_DF: {'type': 'dataframe',
-                                                   'unit': None,
-                                                   'editable': False,
-                                                   'default': self.sub_process_ns_in_build}})
-        return dynamic_inputs
-
-    def setup_sos_disciplines_driver_inputs_depend_on_sampling_algo(self, dynamic_inputs, dynamic_outputs):
-        """
-            setup_dynamic inputs when SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS are already set
-            Manage update of EVAL_INPUTS/EVAL_OUTPUTS
-            Create or update ALGO_OPTIONS
-            Create or update either CUSTOM_SAMPLES_DF or DESIGN_SPACE
-            Function needed in setup_sos_disciplines()
-        """
-        # Dealing with eval_inputs and eval_outputs
-        # we know that SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS keys are set at
-        # the same time
-        algo_name_has_changed = False
-        selected_inputs_has_changed = False
-        # we check that SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS are available
-        # evan if we test only self.Algo
-        if self.SAMPLING_ALGO in self._data_in:  # and sub_process_name != None
-            algo_name = self.get_sosdisc_inputs(self.SAMPLING_ALGO)
-            # 1. Manage update of SAMPLING_ALGO
-            if self.previous_algo_name != algo_name:
-                algo_name_has_changed = True
-                self.previous_algo_name = algo_name
-            # 2. Set ALGO_OPTIONS depending on the selected algo_name
-            if algo_name is not None:
-                default_dict = self.get_algo_default_options(algo_name)
-                dynamic_inputs.update({self.ALGO_OPTIONS: {'type': 'dict', self.DEFAULT: default_dict,
-                                                           'dataframe_edition_locked': False,
-                                                           'structuring': True,
-
-                                                           'dataframe_descriptor': {
-                                                               self.VARIABLES: ('string', None, False),
-                                                               self.VALUES: ('string', None, True)}}})
-                all_options = list(default_dict.keys())
-                if self.ALGO_OPTIONS in self._data_in and algo_name_has_changed:
-                    self._data_in[self.ALGO_OPTIONS]['value'] = default_dict
-                if self.ALGO_OPTIONS in self._data_in and self._data_in[self.ALGO_OPTIONS]['value'] is not None and list(
-                        self._data_in[self.ALGO_OPTIONS]['value'].keys()) != all_options:
-                    options_map = ChainMap(
-                        self._data_in[self.ALGO_OPTIONS]['value'], default_dict)
-                    self._data_in[self.ALGO_OPTIONS]['value'] = {
-                        key: options_map[key] for key in all_options}
-            # 3. Prepare update of selected_inputs and selected_outputs
-            eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            # we fetch the inputs and outputs selected by the user
-            if not eval_outputs is None:
-                selected_outputs = eval_outputs[eval_outputs['selected_output']
-                                                == True]['full_name']
-                self.selected_outputs = selected_outputs.tolist()
-            if not eval_inputs is None:
-                selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                              == True]['full_name']
-                if set(selected_inputs.tolist()) != set(self.selected_inputs):
-                    selected_inputs_has_changed = True
-                    self.selected_inputs = selected_inputs.tolist()
-            # 4. Manage empty selection in EVAL_INPUTS/EVAL_OUTPUTS
-            if algo_name is not None and len(selected_inputs) == 0:
-                # Warning: selected_inputs cannot be empty
-                # Problem: it is not None but it is an "empty dataframe" so has
-                # the meaning of None (i.e. Mandatory field)
-                self.logger.warning('Selected_inputs cannot be empty!')
-            if algo_name is not None and len(selected_outputs) == 0:
-                self.logger.warning('Selected_outputs cannot be empty!')
-            # 5. Manage update of EVAL_INPUTS/EVAL_OUTPUTS
-            # we set the lists which will be used by the evaluation
-            # function of BuildSoSEval
-            self.set_eval_in_out_lists(selected_inputs, selected_outputs)
-            # 6. Manage update of multiplier
-            # if multipliers in eval_in
-            if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
-                generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
-                for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
-                    dynamic_inputs.update(generic_multiplier_dynamic_input)
-            # 7. Manage different types of output dict tables depending on selected_outputs
-            # doe can be done only for selected outputs
-            if len(selected_outputs) > 0:
-                # setting dynamic outputs. One output of type dict per selected
-                # output
-                for out_var in self.eval_out_list:
-                    dynamic_outputs.update(
-                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
-                                                                                'namespace': 'ns_doe'}})
-            # 6. Manage different types of algo_names : CUSTOM_SAMPLES_DF or DESIGN_SPACE
-            # doe can be done only for selected inputs
-            if algo_name is not None and len(selected_inputs) > 0:
-                if algo_name == "CustomDOE":
-                    default_custom_dataframe = pd.DataFrame(
-                        [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-                    dataframe_descriptor = {}
-                    for i, key in enumerate(self.selected_inputs):
-                        cle = key
-                        var = tuple([self.ee.dm.get_data(
-                            self.eval_in_list[i], 'type'), None, True])
-                        dataframe_descriptor[cle] = var
-
-                    dynamic_inputs.update({self.CUSTOM_SAMPLES_DF: {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                                                    'dataframe_descriptor': dataframe_descriptor,
-                                                                    'dataframe_edition_locked': False
-                                                                    }})
-                    if self.CUSTOM_SAMPLES_DF in self._data_in and selected_inputs_has_changed:
-                        self._data_in[self.CUSTOM_SAMPLES_DF]['value'] = default_custom_dataframe
-                        self._data_in[self.CUSTOM_SAMPLES_DF]['dataframe_descriptor'] = dataframe_descriptor
-
-                else:
-
-                    default_design_space = pd.DataFrame({'variable': selected_inputs,
-
-                                                         'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
-                                                                                                         'type') == 'array' else 0.0
-                                                                       for var in self.eval_in_list],
-                                                         'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
-                                                                                                           'type') == 'array' else 10.0
-                                                                       for var in self.eval_in_list]
-                                                         })
-
-                    dynamic_inputs.update({self.DESIGN_SPACE: {'type': 'dataframe', self.DEFAULT: default_design_space
-                                                               }})
-                    if self.DESIGN_SPACE in self._data_in and selected_inputs_has_changed:
-                        self._data_in[self.DESIGN_SPACE]['value'] = default_design_space
-        return dynamic_inputs, dynamic_outputs
-
-    def manage_import_inputs_from_sub_process(self):
-        """
-            Function needed in setup_sos_disciplines()
-        """
-        # Set sub_proc_import_usecase_status
-        if self.SUB_PROCESS_INPUTS in self._data_in:  # and self.sub_proc_build_status != 'Empty_SP'
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
-            sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
-            self.set_sub_process_usecase_status_from_user_inputs(
-                sub_process_usecase_name, sub_process_usecase_data)
-        else:
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-
-        # Treat the case of SP_UC_Import
-        if self.sub_proc_import_usecase_status == 'SP_UC_Import':
-            # 1 get anonymized dict
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            sub_process_usecase_name = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
-            anonymize_input_dict_from_usecase = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
-            # 2 put anonymized dict in context (unanonymize)
-            input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
-                anonymize_input_dict_from_usecase)
-            # 3. treat data because of dynamic keys not in dict
-            #    Added treatment for input_dict_from_usecase with dynamic keys
-            #   Find dynamic keys and redirect them in
-            #   self.dyn_var_sp_from_import_dict and removing from input_dict_from_usecase
-            # we so replace
-            # self.ee.dm.set_values_from_dict(input_dict_from_usecase) by the
-            # following function
-            dyn_key_list = self.set_only_static_values_from_dict(
-                input_dict_from_usecase)
-            for key in dyn_key_list:
-                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
-            # Set the status to No_SP_UC_Import' and empty the anonymized dict
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {}
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
-                             self.VALUES, sub_process_inputs_dict, check_value=False)
-            self.previous_sub_process_usecase_data = {}
-        # there are still dynamic variables put apart
-        elif len(self.dyn_var_sp_from_import_dict) != 0:
-            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
-            # Is it also OK in case of a dynamic param of dynamic param ?
-            self.dyn_var_sp_from_import_dict = {}
 
     def custom_order_possible_algorithms(self, algo_list):
         """ This algo sorts the possible algorithms list so that most used algorithms
@@ -818,23 +569,6 @@ class BuildDoeEval(BuildSoSEval):
                     }
                 )
         return dynamic_inputs_list
-
-    def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase):
-        """
-            Put_anonymized_input_dict in sub_process context
-            Function needed in manage_import_inputs_from_sub_process()
-        """
-        # Get unanonymized dict (i.e. dict of subprocess in driver context)
-        # from anonymized dict and context
-        # good prefix in context
-        new_study_placeholder = f'{self.ee.study_name}.DoE_Eval'
-        input_dict_from_usecase = {}
-        for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
-            converted_key = key_to_unanonymize.replace(
-                self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)  # see def __unanonymize_key  in execution_engine
-            uc_d = {converted_key: value}
-            input_dict_from_usecase.update(uc_d)
-        return input_dict_from_usecase
 
     def fill_possible_values(self, disc):
         '''
@@ -1365,14 +1099,129 @@ class BuildDoeEval(BuildSoSEval):
                                                    'structuring': True,
                                                    'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                                    'namespace': 'ns_doe_eval'}
+        # Set status
+        self.sub_proc_build_status = 'Unchanged_SP'
         return desc_in_dict
 
     def setup_sos_disciplines_driver_inputs_independent_on_sub_process(self, dynamic_inputs, dynamic_outputs):
         """
-            setup_dynamic inputs when driver parameters depending on the SP selection are already set
-            Manage update of XXX,YYY parameters
+            setup_dynamic inputs when driver parameters depending on the SP selection are already set:
+            here SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS
+            Manage update of EVAL_INPUTS/EVAL_OUTPUTS
+            Create or update ALGO_OPTIONS
+            Create or update either CUSTOM_SAMPLES_DF or DESIGN_SPACE
             Function needed in setup_sos_disciplines()
             Function to be specified per driver
         """
+        # Dealing with eval_inputs and eval_outputs
+        # we know that SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS keys are set at
+        # the same time
+        algo_name_has_changed = False
+        selected_inputs_has_changed = False
+        # we check that SAMPLING_ALGO/EVAL_INPUTS/EVAL_OUTPUTS are available
+        # evan if we test only self.Algo
+        if self.SAMPLING_ALGO in self._data_in:  # and sub_process_name != None
+            algo_name = self.get_sosdisc_inputs(self.SAMPLING_ALGO)
+            # 1. Manage update of SAMPLING_ALGO
+            if self.previous_algo_name != algo_name:
+                algo_name_has_changed = True
+                self.previous_algo_name = algo_name
+            # 2. Set ALGO_OPTIONS depending on the selected algo_name
+            if algo_name is not None:
+                default_dict = self.get_algo_default_options(algo_name)
+                dynamic_inputs.update({self.ALGO_OPTIONS: {'type': 'dict', self.DEFAULT: default_dict,
+                                                           'dataframe_edition_locked': False,
+                                                           'structuring': True,
+
+                                                           'dataframe_descriptor': {
+                                                               self.VARIABLES: ('string', None, False),
+                                                               self.VALUES: ('string', None, True)}}})
+                all_options = list(default_dict.keys())
+                if self.ALGO_OPTIONS in self._data_in and algo_name_has_changed:
+                    self._data_in[self.ALGO_OPTIONS]['value'] = default_dict
+                if self.ALGO_OPTIONS in self._data_in and self._data_in[self.ALGO_OPTIONS]['value'] is not None and list(
+                        self._data_in[self.ALGO_OPTIONS]['value'].keys()) != all_options:
+                    options_map = ChainMap(
+                        self._data_in[self.ALGO_OPTIONS]['value'], default_dict)
+                    self._data_in[self.ALGO_OPTIONS]['value'] = {
+                        key: options_map[key] for key in all_options}
+            # 3. Prepare update of selected_inputs and selected_outputs
+            eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            # we fetch the inputs and outputs selected by the user
+            if not eval_outputs is None:
+                selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                                == True]['full_name']
+                self.selected_outputs = selected_outputs.tolist()
+            if not eval_inputs is None:
+                selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                              == True]['full_name']
+                if set(selected_inputs.tolist()) != set(self.selected_inputs):
+                    selected_inputs_has_changed = True
+                    self.selected_inputs = selected_inputs.tolist()
+            # 4. Manage empty selection in EVAL_INPUTS/EVAL_OUTPUTS
+            if algo_name is not None and len(selected_inputs) == 0:
+                # Warning: selected_inputs cannot be empty
+                # Problem: it is not None but it is an "empty dataframe" so has
+                # the meaning of None (i.e. Mandatory field)
+                self.logger.warning('Selected_inputs cannot be empty!')
+            if algo_name is not None and len(selected_outputs) == 0:
+                self.logger.warning('Selected_outputs cannot be empty!')
+            # 5. Manage update of EVAL_INPUTS/EVAL_OUTPUTS
+            # we set the lists which will be used by the evaluation
+            # function of BuildSoSEval
+            self.set_eval_in_out_lists(selected_inputs, selected_outputs)
+            # 6. Manage update of multiplier
+            # if multipliers in eval_in
+            if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
+                for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
+                    dynamic_inputs.update(generic_multiplier_dynamic_input)
+            # 7. Manage different types of output dict tables depending on selected_outputs
+            # doe can be done only for selected outputs
+            if len(selected_outputs) > 0:
+                # setting dynamic outputs. One output of type dict per selected
+                # output
+                for out_var in self.eval_out_list:
+                    dynamic_outputs.update(
+                        {f'{out_var.split(self.ee.study_name + ".")[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+                                                                                'namespace': 'ns_doe'}})
+            # 6. Manage different types of algo_names : CUSTOM_SAMPLES_DF or DESIGN_SPACE
+            # doe can be done only for selected inputs
+            if algo_name is not None and len(selected_inputs) > 0:
+                if algo_name == "CustomDOE":
+                    default_custom_dataframe = pd.DataFrame(
+                        [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+                    dataframe_descriptor = {}
+                    for i, key in enumerate(self.selected_inputs):
+                        cle = key
+                        var = tuple([self.ee.dm.get_data(
+                            self.eval_in_list[i], 'type'), None, True])
+                        dataframe_descriptor[cle] = var
+
+                    dynamic_inputs.update({self.CUSTOM_SAMPLES_DF: {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                                                    'dataframe_descriptor': dataframe_descriptor,
+                                                                    'dataframe_edition_locked': False
+                                                                    }})
+                    if self.CUSTOM_SAMPLES_DF in self._data_in and selected_inputs_has_changed:
+                        self._data_in[self.CUSTOM_SAMPLES_DF]['value'] = default_custom_dataframe
+                        self._data_in[self.CUSTOM_SAMPLES_DF]['dataframe_descriptor'] = dataframe_descriptor
+
+                else:
+
+                    default_design_space = pd.DataFrame({'variable': selected_inputs,
+
+                                                         'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
+                                                                                                         'type') == 'array' else 0.0
+                                                                       for var in self.eval_in_list],
+                                                         'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
+                                                                                                           'type') == 'array' else 10.0
+                                                                       for var in self.eval_in_list]
+                                                         })
+
+                    dynamic_inputs.update({self.DESIGN_SPACE: {'type': 'dataframe', self.DEFAULT: default_design_space
+                                                               }})
+                    if self.DESIGN_SPACE in self._data_in and selected_inputs_has_changed:
+                        self._data_in[self.DESIGN_SPACE]['value'] = default_design_space
         return dynamic_inputs, dynamic_outputs
 #####  End: Sub methods for build to be specified in build #####
