@@ -266,7 +266,6 @@ class BuildDoeEval(SoSEval):
         self.previous_sub_process_name = None
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
-        self.dyn_var_sp_from_import_dict = {}
         self.previous_algo_name = ""
         self.sub_process_ns_in_build = None
         # Possible values: 'Empty_SP', 'Create_SP', 'Replace_SP',
@@ -307,13 +306,6 @@ class BuildDoeEval(SoSEval):
             It comes after build()
         """
         SoSEval.configure(self)
-
-        # Treatment of dynamic subprocess inputs in case of change of usecase
-        # of subprocess (Added to provide proc builder capability)
-        if len(self.dyn_var_sp_from_import_dict) > 0:
-            self.set_configure_status(False)
-        else:
-            self.set_configure_status(True)
 
     def setup_sos_disciplines(self):
         """
@@ -773,23 +765,9 @@ class BuildDoeEval(SoSEval):
             # 2 put anonymized dict in context (unanonymize)
             input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
                 anonymize_input_dict_from_usecase)
-            # 3. treat data because of dynamic keys not in dict
-            #    Added treatment for input_dict_from_usecase with dynamic keys
-            #   Find dynamic keys and redirect them in
-            #   self.dyn_var_sp_from_import_dict and removing from input_dict_from_usecase
-            # we so replace
-            # self.ee.dm.set_values_from_dict(input_dict_from_usecase) by the
-            # following function
-            sub_dynamic_mod = False
+            # 2.3. load data in dm
+            self.ee.load_study_from_input_dict(input_dict_from_usecase)
 
-            if sub_dynamic_mod == False:
-                # self.ee.dm.set_values_from_dict(input_dict_from_usecase)
-                self.ee.load_study_from_input_dict(input_dict_from_usecase)
-            else:
-                dyn_key_list = self.set_only_static_values_from_dict(
-                    input_dict_from_usecase)
-                for key in dyn_key_list:
-                    self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
             # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
             sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
@@ -797,12 +775,6 @@ class BuildDoeEval(SoSEval):
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             self.previous_sub_process_usecase_data = {}
-        # there are still dynamic variables put apart
-        # can be true only if sub_dynamic_mod == True
-        elif len(self.dyn_var_sp_from_import_dict) != 0:
-            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
-            # Is it also OK in case of a dynamic param of dynamic param ?
-            self.dyn_var_sp_from_import_dict = {}
 
     def custom_order_possible_algorithms(self, algo_list):
         """ This algo sorts the possible algorithms list so that most used algorithms
