@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -111,14 +112,16 @@ class TestGradients(unittest.TestCase):
         gradients_output = self.exec_eng.dm.get_value(
             'EETests.GA.gradient_outputs')
         # check outputs equals local_data
-        self.assertDictEqual(gradients_output, self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs'])
+        self.assertDictEqual(
+            gradients_output, self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs'])
 
         self.exec_eng.execute()
 
         gradients_output_2 = self.exec_eng.dm.get_value(
             'EETests.GA.gradient_outputs')
         # check outputs equals local_data
-        self.assertDictEqual(gradients_output_2, self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs'])
+        self.assertDictEqual(
+            gradients_output_2, self.exec_eng.root_process.local_data['EETests.GA.gradient_outputs'])
 
         self.assertDictEqual(gradients_output, gradients_output_2,
                              'Two execute in a raw do not give the same result ')
@@ -167,7 +170,8 @@ class TestGradients(unittest.TestCase):
         disc = self.exec_eng.root_process.sos_disciplines[0]
 
         # -- run gradient with complex step and finite differences
-        dh_dx_ref = np.array([[0.5 - 0.5 / (2 * x[0] ** 2), 0.], [0., 0.5 - 0.5 / (2 * x[1] ** 2)]])
+        dh_dx_ref = np.array(
+            [[0.5 - 0.5 / (2 * x[0] ** 2), 0.], [0., 0.5 - 0.5 / (2 * x[1] ** 2)]])
 
         for approx_method in MDODiscipline.APPROX_MODES:
             print("\t Test with approximation mode ", approx_method)
@@ -261,7 +265,7 @@ class TestGradients(unittest.TestCase):
                                             'EETests.y vs EETests.SA.Disc1.b': 0.5,
                                             'EETests.z vs EETests.SA.Disc1.b': 16.25,
                                             'EETests.y vs EETests.SA.Disc2.constant': 0.0,
-                                            'EETests.z vs EETests.SA.Disc2.constant':-0.5}
+                                            'EETests.z vs EETests.SA.Disc2.constant': -0.5}
 
         self.assertDictEqual(sensitivity_output_ref_5_percent, sensitivity_output['+5.0%'],
                              'The comparison with the reference is not correct')
@@ -431,12 +435,12 @@ class TestGradients(unittest.TestCase):
                                             'EETests.SA.name_2.z vs EETests.SA.Disc1.name_2.b': 16.25,
                                             'EETests.SA.name_1.y vs EETests.SA.Disc2.name_1.constant': 0.0,
                                             'EETests.SA.name_2.y vs EETests.SA.Disc2.name_1.constant': 0.0,
-                                            'EETests.SA.name_1.z vs EETests.SA.Disc2.name_1.constant':-0.5,
+                                            'EETests.SA.name_1.z vs EETests.SA.Disc2.name_1.constant': -0.5,
                                             'EETests.SA.name_2.z vs EETests.SA.Disc2.name_1.constant': 0.0,
                                             'EETests.SA.name_1.y vs EETests.SA.Disc2.name_2.constant': 0.0,
                                             'EETests.SA.name_2.y vs EETests.SA.Disc2.name_2.constant': 0.0,
                                             'EETests.SA.name_1.z vs EETests.SA.Disc2.name_2.constant': 0.0,
-                                            'EETests.SA.name_2.z vs EETests.SA.Disc2.name_2.constant':-0.5}
+                                            'EETests.SA.name_2.z vs EETests.SA.Disc2.name_2.constant': -0.5}
 
         self.assertDictEqual(sensitivity_output_ref_5_percent, sensitivity_output['+5.0%'],
                              'The comparison with the reference is not correct')
@@ -532,14 +536,14 @@ class TestGradients(unittest.TestCase):
                                      'EETests.FORM.name_2.y vs EETests.FORM.Disc1.name_2.b': 0.4999999999988347,
                                      'EETests.FORM.name_1.z vs EETests.FORM.Disc1.name_2.b': 0.4999999999988347,
                                      'EETests.FORM.name_2.z vs EETests.FORM.Disc1.name_2.b': 0.4999999999988347,
-                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_1.constant':-0.0,
-                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_1.constant':-0.0,
-                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_1.constant':-0.0,
-                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_1.constant':-0.0,
-                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_2.constant':-0.0,
-                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_2.constant':-0.0,
-                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_2.constant':-0.0,
-                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_2.constant':-0.0}
+                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_1.constant': -0.0,
+                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_1.constant': -0.0,
+                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_1.constant': -0.0,
+                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_1.constant': -0.0,
+                                     'EETests.FORM.name_1.y vs EETests.FORM.Disc2.name_2.constant': -0.0,
+                                     'EETests.FORM.name_2.y vs EETests.FORM.Disc2.name_2.constant': -0.0,
+                                     'EETests.FORM.name_1.z vs EETests.FORM.Disc2.name_2.constant': -0.0,
+                                     'EETests.FORM.name_2.z vs EETests.FORM.Disc2.name_2.constant': -0.0}
 
         self.assertDictEqual(form_output_ref_5_percent, form_output['5.0%'],
                              'The comparison with the reference is not correct')
@@ -555,9 +559,11 @@ class TestGradients(unittest.TestCase):
         '''
             Compare a sensitivity analysis with the same execution
         '''
-        self.sub_proc = 'test_discall_types'
-        builder_list = self.exec_eng.factory.get_builder_from_process(repo=self.repo,
-                                                                      mod_id=self.sub_proc)
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.'
+        mods_dict = {'Disc1': disc_dir + 'disc_out_all_types.DiscOutAllTypes'}
+        proc_builder = BaseProcessBuilder(self.exec_eng)
+        builder_list = proc_builder.create_builder_list(
+            mods_dict, ns_dict={'ns_test': self.exec_eng.study_name})
 
         sa_builder = self.exec_eng.factory.create_evaluator_builder(
             'SA', 'sensitivity', builder_list)
@@ -606,9 +612,11 @@ class TestGradients(unittest.TestCase):
         '''
             Compare a sensitivity analysis with the same execution
         '''
-        self.sub_proc = 'test_discall_types'
-        builder_list = self.exec_eng.factory.get_builder_from_process(repo=self.repo,
-                                                                      mod_id=self.sub_proc)
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.'
+        mods_dict = {'Disc1': disc_dir + 'disc_out_all_types.DiscOutAllTypes'}
+        proc_builder = BaseProcessBuilder(self.exec_eng)
+        builder_list = proc_builder.create_builder_list(
+            mods_dict, ns_dict={'ns_test': self.exec_eng.study_name})
 
         sa_builder = self.exec_eng.factory.create_evaluator_builder(
             'FORM', 'FORM', builder_list)
@@ -658,9 +666,12 @@ class TestGradients(unittest.TestCase):
         '''
             Compare a sensitivity analysis with the same execution
         '''
-        self.sub_proc = 'test_discall_types'
-        builder_list = self.exec_eng.factory.get_builder_from_process(repo=self.repo,
-                                                                      mod_id=self.sub_proc)
+
+        disc_dir = 'sos_trades_core.sos_wrapping.test_discs.'
+        mods_dict = {'Disc1': disc_dir + 'disc_out_all_types.DiscOutAllTypes'}
+        proc_builder = BaseProcessBuilder(self.exec_eng)
+        builder_list = proc_builder.create_builder_list(
+            mods_dict, ns_dict={'ns_test': self.exec_eng.study_name})
 
         sa_builder = self.exec_eng.factory.create_evaluator_builder(
             'gradient', 'gradient', builder_list)
