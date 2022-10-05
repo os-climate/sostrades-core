@@ -173,7 +173,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
-        self.dyn_var_sp_from_import_dict = {}
 
         self.previous_algo_name = ""
 
@@ -300,13 +299,6 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         # if self._data_in == {} or len(self.__cls_builder) == 0:
 
         BuildSoSDisciplineScatter.configure(self)
-
-        # Treatment of dynamic subprocess inputs in case of change of usecase
-        # of subprocess (Added to provide proc builder capability)
-        if len(self.dyn_var_sp_from_import_dict) > 0:
-            self.set_configure_status(False)
-        else:
-            self.set_configure_status(True)
 
     def is_configured(self):
         '''
@@ -672,37 +664,17 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                 anonymize_input_dict_from_usecase)
             # print(input_dict_from_usecase)
             # self.ee.display_treeview_nodes(True)
-            # 2.2. treat data because of dynamic keys not in dict
-            #    Added treatment for input_dict_from_usecase with dynamic keys
-            #   Find dynamic keys and redirect them in
-            # self.dyn_var_sp_from_import_dict and removing from
-            # input_dict_from_usecase
 
-            # so we replace:
-            # self.ee.dm.set_values_from_dict(input_dict_from_usecase)
-            # by the following function:
+            # 2.3. load data in dm
+            self.ee.load_study_from_input_dict(input_dict_from_usecase)
 
-            #dyn_key_list = []
-            #dyn_key_list = input_dict_from_usecase.keys()
-
-            dyn_key_list = self.set_only_static_values_from_dict(
-                input_dict_from_usecase)
-            for key in dyn_key_list:
-                self.dyn_var_sp_from_import_dict[key] = input_dict_from_usecase[key]
-            # Set the status to No_SP_UC_Import' and empty the anonymized
-            # dict
+            # Set the status to No_SP_UC_Import' and empty the anonymized dict
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
             sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
             }
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             self.previous_sub_process_usecase_data = {}
-        # there are still dynamic variables put apart
-        elif len(self.dyn_var_sp_from_import_dict) != 0:
-            # self.ee.display_treeview_nodes(True)
-            self.ee.dm.set_values_from_dict(self.dyn_var_sp_from_import_dict)
-            # Is it also OK in case of a dynamic param of dynamic param ?
-            self.dyn_var_sp_from_import_dict = {}
 
     def set_sub_process_usecase_status_from_user_inputs(self, sub_process_usecase_name, sub_process_usecase_data):
         """
