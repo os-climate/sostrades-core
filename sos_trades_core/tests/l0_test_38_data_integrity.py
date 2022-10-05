@@ -75,12 +75,12 @@ class TestDataIntegrity(unittest.TestCase):
         for data_id, var_data_dict in self.exec_eng.dm.data_dict.items():
             full_name = self.exec_eng.dm.get_var_full_name(data_id)
             if full_name in wrong_input_dict.keys():
-                integrity_msg = f"Variable: {full_name} : the value {wrong_input_dict[full_name]} has not the type specified in datamanager which is {input_types[full_name]}"
+                integrity_msg = f"Value {wrong_input_dict[full_name]} has not the type specified in datamanager which is {input_types[full_name]}"
                 print(var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
                 self.assertEqual(
                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
             elif full_name in missing_input_list:
-                integrity_msg = f"Variable: {full_name} value is not set!"
+                integrity_msg = "Value is not set!"
                 print(var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
                 self.assertEqual(
                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
@@ -112,6 +112,19 @@ class TestDataIntegrity(unittest.TestCase):
                 self.assertEqual(
                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
 
+        with self.assertRaises(Exception) as cm:
+            self.exec_eng.execute()
+
+        not_set_variables_list = [f'{self.exec_eng.study_name}.z_list',
+                                  f'{self.exec_eng.study_name}.Disc1.dict_string_in',
+                                  f'{self.exec_eng.study_name}.Disc1.list_dict_string_in',
+                                  f'{self.exec_eng.study_name}.Disc1.dict_of_dict_in',
+                                  f'{self.exec_eng.study_name}.Disc1.dict_of_df_in']
+        error_message = '\n'.join(
+            [f'Variable {var} : Value is not set!' for var in not_set_variables_list])
+
+        self.assertEqual(str(cm.exception), error_message)
+
     def test_02_check_range_and_possible_values(self):
         '''
         Check the value range and possible values for :
@@ -140,14 +153,14 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg_z = self.exec_eng.dm.get_data(
             full_name_z, SoSDiscipline.CHECK_INTEGRITY_MSG)
         self.assertEqual(
-            integrity_msg_z, f"Variable: {full_name_z} : {wrong_input_dict[full_name_z]} is not in range [-10000.0, 10000.0]")
+            integrity_msg_z, f"Value {wrong_input_dict[full_name_z]} is not in range [-10000.0, 10000.0]")
 
         full_name_z_list = f'{self.exec_eng.study_name}.z_list'
         integrity_msg_z_list = self.exec_eng.dm.get_data(
             full_name_z_list, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_z_list = f'Variable: {full_name_z_list} : The value {wrong_input_dict[full_name_z_list]} at index 0 is not in range [-10000.0, 10000.0]'
+        correct_integrity_msg_z_list = f'Value {wrong_input_dict[full_name_z_list]} at index 0 is not in range [-10000.0, 10000.0]'
         correct_integrity_msg_z_list += '\n'
-        correct_integrity_msg_z_list += f'Variable: {full_name_z_list} : The value {wrong_input_dict[full_name_z_list]} at index 2 is not in range [-10000.0, 10000.0]'
+        correct_integrity_msg_z_list += f'Value {wrong_input_dict[full_name_z_list]} at index 2 is not in range [-10000.0, 10000.0]'
         self.assertEqual(
             integrity_msg_z_list, correct_integrity_msg_z_list)
 
@@ -155,14 +168,14 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg_weather = self.exec_eng.dm.get_data(
             full_name_weather, SoSDiscipline.CHECK_INTEGRITY_MSG)
         self.assertEqual(
-            integrity_msg_weather, f"Variable: {full_name_weather} : {wrong_input_dict[full_name_weather]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']")
+            integrity_msg_weather, f"Value {wrong_input_dict[full_name_weather]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']")
 
         full_name_weather_list = f'{self.exec_eng.study_name}.weather_list'
         integrity_msg_weather_list = self.exec_eng.dm.get_data(
             full_name_weather_list, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_weather_list = f"Variable: {full_name_weather_list} : cloudy in list {wrong_input_dict[full_name_weather_list]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']"
+        correct_integrity_msg_weather_list = f"Value cloudy in list {wrong_input_dict[full_name_weather_list]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']"
         correct_integrity_msg_weather_list += '\n'
-        correct_integrity_msg_weather_list += f"Variable: {full_name_weather_list} : weather in list {wrong_input_dict[full_name_weather_list]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']"
+        correct_integrity_msg_weather_list += f"Value weather in list {wrong_input_dict[full_name_weather_list]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']"
         self.assertEqual(
             integrity_msg_weather_list, correct_integrity_msg_weather_list)
 
@@ -200,9 +213,9 @@ class TestDataIntegrity(unittest.TestCase):
         full_name_dict_in = f'{self.exec_eng.study_name}.Disc1.dict_in'
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_dict_in = f"Variable: {full_name_dict_in} : The value wrong type in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
+        correct_integrity_msg_dict_in = f"Value wrong type in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
         correct_integrity_msg_dict_in += '\n'
-        correct_integrity_msg_dict_in += f"Variable: {full_name_dict_in} : The value {wrong_input_dict[full_name_dict_in]['key5']} in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
+        correct_integrity_msg_dict_in += f"Value {wrong_input_dict[full_name_dict_in]['key5']} in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
         self.assertEqual(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
@@ -228,13 +241,13 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg_z_list = self.exec_eng.dm.get_data(
             full_name_z_list, SoSDiscipline.CHECK_INTEGRITY_MSG)
 
-        correct_integrity_msg_z_list = f"Variable: {full_name_z_list} : The value wrong in {wrong_input_dict2[full_name_z_list]} should be a float according to subtype descriptor {{'list': 'float'}}"
+        correct_integrity_msg_z_list = f"Value wrong in {wrong_input_dict2[full_name_z_list]} should be a float according to subtype descriptor {{'list': 'float'}}"
         correct_integrity_msg_z_list += '\n'
-        correct_integrity_msg_z_list += f"Variable: {full_name_z_list} : The value {wrong_input_dict2[full_name_z_list][-1]} in {wrong_input_dict2[full_name_z_list]} should be a float according to subtype descriptor {{'list': 'float'}}"
+        correct_integrity_msg_z_list += f"Value {wrong_input_dict2[full_name_z_list][-1]} in {wrong_input_dict2[full_name_z_list]} should be a float according to subtype descriptor {{'list': 'float'}}"
         correct_integrity_msg_z_list += '\n'
-        correct_integrity_msg_z_list += f"Variable: {full_name_z_list}: The type of wrong ({type('wrong')}) not the same as the type of -10000.0 ({type(-10000.0)}) in range list"
+        correct_integrity_msg_z_list += f"Type of wrong ({type('wrong')}) not the same as the type of -10000.0 ({type(-10000.0)}) in range list"
         correct_integrity_msg_z_list += '\n'
-        correct_integrity_msg_z_list += f"Variable: {full_name_z_list}: The type of {wrong_input_dict2[full_name_z_list][-1]} ({type({'key': 1})}) not the same as the type of -10000.0 ({type(-10000.0)}) in range list"
+        correct_integrity_msg_z_list += f"Type of {wrong_input_dict2[full_name_z_list][-1]} ({type({'key': 1})}) not the same as the type of -10000.0 ({type(-10000.0)}) in range list"
         self.assertEqual(
             integrity_msg_z_list, correct_integrity_msg_z_list)
 
@@ -247,9 +260,9 @@ class TestDataIntegrity(unittest.TestCase):
         full_name = f'{self.exec_eng.study_name}.Disc1.list_dict_string_in'
         integrity_msg = self.exec_eng.dm.get_data(
             full_name, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg = f"Variable: {full_name} : The value 3.0 should be a dict according to subtype descriptor {{'dict': 'string'}}"
+        correct_integrity_msg = "Value 3.0 should be a dict according to subtype descriptor {'dict': 'string'}"
         correct_integrity_msg += '\n'
-        correct_integrity_msg += f"Variable: {full_name} : The value 1 in {wrong_input_dict[full_name][-1]} should be a string according to subtype descriptor {{'dict': 'string'}}"
+        correct_integrity_msg += f"Value 1 in {wrong_input_dict[full_name][-1]} should be a string according to subtype descriptor {{'dict': 'string'}}"
         self.assertEqual(
             integrity_msg, correct_integrity_msg)
 
@@ -268,7 +281,7 @@ class TestDataIntegrity(unittest.TestCase):
         full_name = f'{self.exec_eng.study_name}.Disc1.dict_of_df_in'
         integrity_msg = self.exec_eng.dm.get_data(
             full_name, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg = f"Variable: {full_name} : The value 3.1416 in {wrong_input_dict[full_name]} should be a dataframe according to subtype descriptor {{'dict': 'dataframe'}}"
+        correct_integrity_msg = f"Value 3.1416 in {wrong_input_dict[full_name]} should be a dataframe according to subtype descriptor {{'dict': 'dataframe'}}"
         self.assertEqual(
             integrity_msg, correct_integrity_msg)
 
@@ -314,7 +327,7 @@ class TestDataIntegrity(unittest.TestCase):
         full_name_dict_in = f'{self.exec_eng.study_name}.Disc1.df_in'
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_dict_in = f"Variable: {full_name_dict_in}, the dataframe value has a column key4 but the dataframe descriptor has not, df_descriptor keys : dict_keys(['variable', 'c2', 'c3', 'str_df'])"
+        correct_integrity_msg_dict_in = f"Dataframe value has a column key4 but the dataframe descriptor has not, df_descriptor keys : dict_keys(['variable', 'c2', 'c3', 'str_df'])"
         self.assertEqual(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
@@ -330,8 +343,8 @@ class TestDataIntegrity(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(wrong_input_dict)
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, SoSDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_dict_in = f"Variable: {full_name_dict_in}, all dataframe values in column variable are not in the range [-10000.0, 10000.0] requested in the dataframe descriptor\n"
-        correct_integrity_msg_dict_in += f"Variable: {full_name_dict_in}, all dataframe values in column str_df are not as type string requested in the dataframe descriptor"
+        correct_integrity_msg_dict_in = "Dataframe values in column variable are not in the range [-10000.0, 10000.0] requested in the dataframe descriptor\n"
+        correct_integrity_msg_dict_in += "Dataframe values in column str_df are not as type string requested in the dataframe descriptor"
 
         print(integrity_msg_dict_in)
         self.assertEqual(
@@ -354,4 +367,4 @@ class TestDataIntegrity(unittest.TestCase):
 if __name__ == "__main__":
     cls = TestDataIntegrity()
     cls.setUp()
-    cls.test_04_check_dataframe_descriptor()
+    cls.test_01_simple_type_vs_value()

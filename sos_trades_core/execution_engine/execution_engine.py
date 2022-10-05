@@ -574,12 +574,13 @@ class ExecutionEngine:
 
     def __check_data_integrity_msg(self):
         '''
-        Check if one data integrity mdg is not empty string to crash a value error 
+        Check if one data integrity msg is not empty string to crash a value error 
         as the old check_inputs in the dm juste before the execution
+        Add the name of the variable in the message
         '''
 
-        integrity_msg_list = [var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG]
-                              for var_data_dict in self.dm.data_dict.values() if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '']
+        integrity_msg_list = [f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG]}'
+                              for var_id, var_data_dict in self.dm.data_dict.items() if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '']
 
 #         for var_data_dict in self.dm.data_dict.values():
 #             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':

@@ -566,13 +566,12 @@ class SoSDiscipline(MDODiscipline):
             self.__class__, self.ee.data_check_integrity)
 
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
-        for var_fullname in data_in_full_name:
-            var_data_dict = self.dm.get_data(var_fullname)
+        for var_fullname, var_data_dict in data_in_full_name.items():
             if var_data_dict['model_origin'] == self.disc_id:
-                #                 check_integrity_msg = check_variable_type_and_unit(
-                # var_fullname, var_data_dict, self.__class__)
+
+                #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = check_data_integrity_cls.check_variable_value(
-                    var_fullname, var_data_dict)
+                    var_data_dict)
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
 
