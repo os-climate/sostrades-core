@@ -573,12 +573,21 @@ class ExecutionEngine:
         self.dm.treeview = None
 
     def __check_data_integrity_msg(self):
-        full_integrity_msg = ''
-        for data_id, var_data_dict in self.dm.data_dict.items():
-            if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
-                full_integrity_msg += var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] + '\n'
+        '''
+        Check if one data integrity mdg is not empty string to crash a value error 
+        as the old check_inputs in the dm juste before the execution
+        '''
 
-        if full_integrity_msg != '':
+        integrity_msg_list = [var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG]
+                              for var_data_dict in self.dm.data_dict.values() if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '']
+
+#         for var_data_dict in self.dm.data_dict.values():
+#             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
+#                 integrity_msg_list.append(
+#                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
+
+        if integrity_msg_list != []:
+            full_integrity_msg = '\n'.join(integrity_msg_list)
             raise ValueError(full_integrity_msg)
 
     def check_for_unutilized_inputs(self, data_cache, anonymize_function):
