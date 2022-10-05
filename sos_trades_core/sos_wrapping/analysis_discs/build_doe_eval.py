@@ -783,7 +783,8 @@ class BuildDoeEval(SoSEval):
             sub_dynamic_mod = False
 
             if sub_dynamic_mod == False:
-                self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+                # self.ee.dm.set_values_from_dict(input_dict_from_usecase)
+                self.ee.load_study_from_input_dict(input_dict_from_usecase)
             else:
                 dyn_key_list = self.set_only_static_values_from_dict(
                     input_dict_from_usecase)

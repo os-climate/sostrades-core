@@ -21,9 +21,8 @@ import pandas as pd
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc_hessian_doe_eval_from_disc process.
-    This process instantiates a DOE on the Hessian Discipline directly from the discipline.
-    It uses the 1 wrapped discipline : sos_trades_core.sos_wrapping.test_discs.disc_hessian.DiscHessian.
+     the test_disc10_setup_sos_discipline process.
+    This process instantiates a DOE on the Discipline directly from the discipline.
     '''
 
     def __init__(self, execution_engine=None):
@@ -32,40 +31,27 @@ class Study(StudyManager):
     def setup_usecase(self):
         # provide a process (with disciplines) to the set doe
         repo = 'sos_trades_core.sos_processes.test'
-        mod_id = 'test_disc_hessian'
-        my_usecase = 'usecase1'
-
+        mod_id = 'test_disc10_setup_sos_discipline'
         anonymize_input_dict_from_usecase = {}
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.x'] = 2.0
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 3.0
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.ax2'] = 4.0
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.by2'] = 5.0
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.cx'] = 6.0
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.dy'] = 7.0
-        anonymize_input_dict_from_usecase['<study_ph>.Hessian.exy'] = 12.0
+        anonymize_input_dict_from_usecase['<study_ph>.Disc10.Model_Type'] = 'Linear'
+        anonymize_input_dict_from_usecase['<study_ph>.Disc10.x'] = 2.0
 
-        # anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
-        #    repo, mod_id, my_usecase)
-
-        process_builder_parameter_type = ProcessBuilderParameterType(
-            mod_id, repo, 'usecase1')
+        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase_linear')
         process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
 
         ######### Numerical values   ####
 
-        input_selection = {'selected_input': [True, True, False, False, False, False, False],
-                           'full_name': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y',
-                                         'DoE_Eval.Hessian.ax2', 'DoE_Eval.Hessian.by2', 'DoE_Eval.Hessian.cx',
-                                         'DoE_Eval.Hessian.dy', 'DoE_Eval.Hessian.exy']}
+        input_selection = {'selected_input': [False, True],
+                           'full_name': ['DoE_Eval.Disc10.a', 'DoE_Eval.Disc10.x']}
         input_selection = pd.DataFrame(input_selection)
 
         output_selection = {'selected_output': [True],
-                            'full_name': ['DoE_Eval.Hessian.z']}
+                            'full_name': ['DoE_Eval.Disc10.y']}
         output_selection = pd.DataFrame(output_selection)
 
-        dspace_dict = {'variable': ['DoE_Eval.Hessian.x', 'DoE_Eval.Hessian.y'],
-                       'lower_bnd': [-5., -5.],
-                       'upper_bnd': [+5., +5.],
+        dspace_dict = {'variable': ['DoE_Eval.Disc10.x'],
+                       'lower_bnd': [-5.],
+                       'upper_bnd': [+5.],
                        }
         my_doe_algo = "lhs"
         n_samples = 4

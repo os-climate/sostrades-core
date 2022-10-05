@@ -69,12 +69,16 @@ class Study(StudyManager):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         my_usecase = 'usecase1'
-        sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
-            repo, mod_id, my_usecase)
-        anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(self.ee,
-                                                                                               sub_process_usecase_full_name)
+        # sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
+        #    repo, mod_id, my_usecase)
+        # anonymize_input_dict_from_usecase = self.import_input_data_from_usecase_of_sub_process(self.ee,
+        # sub_process_usecase_full_name)
 
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase1')
+        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
+            repo, mod_id, my_usecase)
+
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, 'usecase1')
         process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
 
         ######### Numerical values   ####
