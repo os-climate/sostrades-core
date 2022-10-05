@@ -72,7 +72,7 @@ class ArchiBuilder(SoSDisciplineBuilder):
 
     DEFAULT_VB_FOLDER_LIST = ['sos_trades_core.sos_wrapping']
 
-    def __init__(self, sos_name, ee, architecture_df, custom_vb_folder_list=None, associated_namespaces=[]):
+    def __init__(self, sos_name, ee, architecture_df, custom_vb_folder_list=None, associated_namespaces=None):
         """
         Constructor
         """

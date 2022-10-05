@@ -123,7 +123,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
 
-        process_builder_parameter = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
 
         ######### Numerical values   ####
         x = 2.0
@@ -188,7 +189,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
 
-        process_builder_parameter = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        process_builder_parameter = ProcessBuilderParameterType(
+            mod_id, repo, my_usecase)
 
         if my_usecase != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
@@ -381,7 +383,8 @@ class TestBuildDoeEval(unittest.TestCase):
             n_samples = 4
             dspace = pd.DataFrame(dspace_dict)
 
-        process_builder_parameter = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        process_builder_parameter = ProcessBuilderParameterType(
+            mod_id, repo, my_usecase)
 
         if process_builder_parameter.usecase_name != 'Empty':
             sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
@@ -571,9 +574,11 @@ class TestBuildDoeEval(unittest.TestCase):
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
 
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
 
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -642,9 +647,11 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
 
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -667,7 +674,8 @@ class TestBuildDoeEval(unittest.TestCase):
         print('Step 1: provide a process (with disciplines) to the set doe')
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
-        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         dict_values = {}
         dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -715,7 +723,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type_3 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_3 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_3.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -792,7 +801,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type_4 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_4 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_4.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -906,8 +916,10 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -931,7 +943,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         dict_values = {}
-        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         dict_values['MyStudy.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -978,7 +991,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type_3 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_3 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_3.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1056,7 +1070,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type_4 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_4 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_4.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1170,8 +1185,10 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -1240,7 +1257,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_2.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1365,8 +1383,10 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -1437,7 +1457,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        process_builder_parameter_type_1 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_1 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_1.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1701,8 +1722,10 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -1726,7 +1749,8 @@ class TestBuildDoeEval(unittest.TestCase):
         print('Step 1: provide a process (with disciplines)')
 
         mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
-        process_builder_parameter_type_2 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_2 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         coupling_name = "SellarCoupling"
         ns = f'{self.study_name}'
 
@@ -1801,7 +1825,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type_3 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_3 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_3.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -1895,7 +1920,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type_4 = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type_4 = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
         target_values_dict['sub_process_inputs'] = process_builder_parameter_type_4.to_data_manager_dict()
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
@@ -2115,8 +2141,10 @@ class TestBuildDoeEval(unittest.TestCase):
 
         # check input values (and print) of DoE_Eval discipline
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, None, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, None, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         self.check_discipline_values(
@@ -2141,7 +2169,8 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         my_usecase = 'usecase1'
-        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, repo, 'Empty')
         x = 2.0
         y = 3.0
 
@@ -2225,8 +2254,10 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(None, repo, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            None, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         self.check_discipline_values(
             doe_disc, target_values_dict, print_flag=print_flag)
 
@@ -2298,8 +2329,10 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -2395,8 +2428,10 @@ class TestBuildDoeEval(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Hessian.y'] = 3.0
         target_values_dict = {}
 
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = None
@@ -2469,8 +2504,10 @@ class TestBuildDoeEval(unittest.TestCase):
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc_hessian'
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, my_usecase)
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -2620,7 +2657,8 @@ class TestBuildDoeEval(unittest.TestCase):
         #
         mod_id = 'test_proc_build_disc1_all_types'
         my_usecase = 'usecase1'
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, my_usecase)
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, my_usecase)
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id, my_usecase)
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
@@ -2687,8 +2725,10 @@ class TestBuildDoeEval(unittest.TestCase):
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.x'] = 5.5
         tv_anonymize_input_dict_from_usecase['<study_ph>.Disc1.x_dict'] = {}
         target_values_dict = {}
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase1')
-        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, 'usecase1')
+        target_values_dict['sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict(
+        )
         target_values_dict['n_processes'] = 1
         target_values_dict['wait_time_between_fork'] = 0
         target_values_dict['sampling_algo'] = 'lhs'
@@ -2738,7 +2778,8 @@ class TestBuildDoeEval(unittest.TestCase):
         print(
             'STEP_5: update subprocess selection by changing test_disc_hessian to sellar')
         mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'usecase')
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, 'usecase')
         sub_process_usecase_full_name = self.get_sub_process_usecase_full_name(
             repo, mod_id,  'usecase')
         anonymize_input_dict = self.import_input_data_from_usecase_of_sub_process(self.exec_eng,
@@ -2796,6 +2837,7 @@ class TestBuildDoeEval(unittest.TestCase):
         from shutil import rmtree
         rmtree(dump_dir)
 
+    @unittest.skip("dynamic subprocess not supported temporarly")
     def test_11_test_uscase_update_with_dynamic_subprocess(self):
         '''
         Test the replacemenent of the usecase in case of a dynamic subprocess 
@@ -2828,7 +2870,8 @@ class TestBuildDoeEval(unittest.TestCase):
 
         repo = 'sos_trades_core.sos_processes.test'
         mod_id = 'test_disc10_setup_sos_discipline'
-        process_builder_parameter_type = ProcessBuilderParameterType(mod_id, repo, 'Empty')
+        process_builder_parameter_type = ProcessBuilderParameterType(
+            mod_id, repo, 'Empty')
 
         my_usecase_1 = 'usecase_linear'
         my_usecase_2 = 'usecase_affine'
@@ -3100,7 +3143,8 @@ class TestBuildDoeEval(unittest.TestCase):
         sub_process_inputs_dict = doe_disc.get_data_io_from_key(
             'in', 'sub_process_inputs')['value']
 
-        process_builder_parameter_type = ProcessBuilderParameterType.create(sub_process_inputs_dict)
+        process_builder_parameter_type = ProcessBuilderParameterType.create(
+            sub_process_inputs_dict)
         sub_process_repo = process_builder_parameter_type.process_repository
         sub_process_name = process_builder_parameter_type.process_name
         sub_process_usecase_name = process_builder_parameter_type.usecase_name
