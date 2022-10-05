@@ -65,8 +65,8 @@ class SimpleDisc2(SoSWrapp):
     """
     _maturity = 'Fake'
     DESC_IN = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                     'namespace': 'ns_doe_eval'}
+               'y_1_dict': {'type': 'dict', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                            'namespace': 'ns_OptimSellar'}
                }
 
     DESC_OUT = {'out_simple2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -75,15 +75,16 @@ class SimpleDisc2(SoSWrapp):
         """ Discipline 2 execution
         """
         c_1 = self.get_sosdisc_inputs(['c_1'])
-        samples_inputs_df = self.get_sosdisc_inputs('samples_inputs_df')
+        y_1_dict = self.get_sosdisc_inputs('y_1_dict')
 
-        out_simple2 = self.compute_out_simple2(c_1, samples_inputs_df)
+        out_simple2 = self.compute_out_simple2(c_1, y_1_dict)
         out = {'out_simple2': out_simple2}
         self.store_sos_outputs_values(out)
 
     @staticmethod
-    def compute_out_simple2(c_1, samples_inputs_df):
+    def compute_out_simple2(c_1, y_1_dict):
         """ Computes the output of the simple discipline in array form
         """
-        out = c_1 * std(samples_inputs_df.x[:-1])
+        values_dict = list(y_1_dict.values())
+        out = c_1 * std(values_dict[:-1])
         return out

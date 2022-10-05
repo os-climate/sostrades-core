@@ -390,9 +390,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         values_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         values_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
-        columns = ['scenario', 'x']
-        samples_all_row = [['scenario_1', array([1.])], ['scenario_2', array([2.])], ['scenario_3', array([3.])],
-                           ['scenario_4', array([4.])]]
+        # columns = ['scenario', 'x']
+        # samples_all_row = [['scenario_1', array([1.])], ['scenario_2', array([2.])], ['scenario_3', array([3.])],
+        #                    ['scenario_4', array([4.])]]
         # disc_dict[f'{self.ns}.DoEEval.samples_inputs_df'] = pd.DataFrame(samples_all_row, columns=columns)  #Input of SimpleDisc2
         # exec_eng.load_study_from_input_dict(disc_dict)
 
