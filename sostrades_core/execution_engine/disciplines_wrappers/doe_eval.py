@@ -355,7 +355,11 @@ class DoeEval(EvalWrapper):
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
-        # saving outputs in the dm
+        #save data of last execution i.e. reference values #FIXME: do this better in refacto doe
+        subprocess_ref_outputs = {key:self.attributes['sub_mdo_disciplines'][0].local_data[key]
+                                  for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
+        self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
+        #save doeeval outputs
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe})
         for dynamic_output in self.attributes['eval_out_list']:

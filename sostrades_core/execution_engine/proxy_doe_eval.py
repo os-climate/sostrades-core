@@ -209,7 +209,8 @@ class ProxyDoeEval(ProxyEval):
             self.selected_outputs = selected_outputs.tolist()
 
             # doe can be done only for selected inputs and outputs
-            if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
+            # if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
+            if len(selected_inputs) > 0 and len(selected_outputs) > 0:
                 # we set the lists which will be used by the evaluation
                 # function of sosEval
                 self.set_eval_in_out_lists(selected_inputs, selected_outputs)
