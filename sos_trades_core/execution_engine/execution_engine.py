@@ -86,6 +86,7 @@ class ExecutionEngine:
         self.root_builder_ist = None
 
         self.__connector_container = PersistentConnectorContainer()
+        self.data_check_integrity = False
 
     @property
     def factory(self):
@@ -572,12 +573,22 @@ class ExecutionEngine:
         self.dm.treeview = None
 
     def __check_data_integrity_msg(self):
-        full_integrity_msg = ''
-        for data_id, var_data_dict in self.dm.data_dict.items():
-            if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
-                full_integrity_msg += var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] + '\n'
+        '''
+        Check if one data integrity msg is not empty string to crash a value error 
+        as the old check_inputs in the dm juste before the execution
+        Add the name of the variable in the message
+        '''
 
-        if full_integrity_msg != '':
+        integrity_msg_list = [f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG]}'
+                              for var_id, var_data_dict in self.dm.data_dict.items() if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '']
+
+#         for var_data_dict in self.dm.data_dict.values():
+#             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
+#                 integrity_msg_list.append(
+#                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
+
+        if integrity_msg_list != []:
+            full_integrity_msg = '\n'.join(integrity_msg_list)
             raise ValueError(full_integrity_msg)
 
     def check_for_unutilized_inputs(self, data_cache, anonymize_function):
@@ -682,9 +693,11 @@ class ExecutionEngine:
             if isinstance(disc, SoSCoupling):
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
+        elif mode == 'data_check_integrity':
+            self.data_check_integrity = True
         else:
             avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_grad", "min_max_couplings"]
+                           "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
             raise ValueError("Debug mode %s is not among %s" %
                              (mode, str(avail_debug)))
         # set debug modes of subdisciplines

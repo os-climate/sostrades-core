@@ -17,6 +17,7 @@ limitations under the License.
 #-- Generate test 2 process
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
@@ -26,8 +27,10 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         disc_dir = 'sos_trades_core.sos_wrapping.test_discs.'
-        mods_dict = {'Disc1': disc_dir + 'disc_out_all_types.DiscOutAllTypes'}
-        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_test': self.ee.study_name})
+        mods_dict = {'Disc1': disc_dir + 'disc_all_types.DiscAllTypes'}
+        builder_list = self.create_builder_list(
+            mods_dict, ns_dict={'ns_test': self.ee.study_name})
         return builder_list

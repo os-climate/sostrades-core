@@ -493,25 +493,29 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         val_column_name: str,
         title: str = '',
         annotation_upper_left: dict = {},
+        ticksuffix: str = '',
+        threshold_to_show:float =1, 
+
     ):
 
         fig = go.Figure()
+        threshold=threshold_to_show/100.
 
         if (lab_column_name in df) & (val_column_name in df):
 
             df.sort_values(by=val_column_name, axis=0, ascending=False, inplace=True)
             df['percent'] = df[val_column_name] / df[val_column_name].sum()
-            df_to_show = df.loc[df['percent'] > 0.01]
+            df_to_show = df.loc[df['percent'] >= threshold]
 
             other_value = 0
             pie_labels = df_to_show[lab_column_name].values.tolist()
             pie_values = df_to_show[val_column_name].values.tolist()
 
-            other_value = df.loc[df['percent'] <= 0.01, val_column_name].sum()
+            other_value = df.loc[df['percent'] <= threshold, val_column_name].sum()
             if other_value > 0:
-                pie_labels.append('Other (< 1% each)')
+                pie_labels.append(f'Other (< {threshold_to_show} % each)')
                 pie_values.append(other_value)
-            pie_text = [f'{round(val,1)}' for val in pie_values]
+            pie_text = [f'{round(val,2)} {ticksuffix}' for val in pie_values]
 
             fig.add_trace(
                 go.Pie(
