@@ -28,7 +28,7 @@ unit test for doe scenario
 """
 
 import unittest
-from numpy import array
+from numpy import array, std
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 import os
@@ -385,16 +385,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict = {}
         # DoE inputs
         n_samples = 10
-        #disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
         values_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
         values_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
         values_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         values_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
-        # columns = ['scenario', 'x']
-        # samples_all_row = [['scenario_1', array([1.])], ['scenario_2', array([2.])], ['scenario_3', array([3.])],
-        #                    ['scenario_4', array([4.])]]
-        # disc_dict[f'{self.ns}.DoEEval.samples_inputs_df'] = pd.DataFrame(samples_all_row, columns=columns)  #Input of SimpleDisc2
-        # exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
         local_dv = 10.
@@ -421,6 +415,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         # assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
+
+        z = exec_eng.dm.get_value('doe.z')
+        if z[0] > 0.5:
+            self.assertEqual(exec_eng.dm.get_value('doe.DoEEval.sampling_algo'), "lhs")
+        else:
+            self.assertEqual(exec_eng.dm.get_value('doe.DoEEval.sampling_algo'), "fullfact")
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
             'samples_inputs_df')
@@ -455,6 +455,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+
+        self.assertEqual(exec_eng.dm.get_value('doe.out_simple2'),
+                         exec_eng.dm.get_value('doe.c_1')*std(list(exec_eng.dm.get_value('doe.y_1_dict').values())[:-1]))
     def test_io2_Coupling_of_Coupling_to_check_data_io(self):
         """
         TO BE COMPLETED
