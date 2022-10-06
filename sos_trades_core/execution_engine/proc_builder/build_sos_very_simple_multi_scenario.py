@@ -150,6 +150,9 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
             self, sos_name, ee, map_name, cls_builder, associated_namespaces=associated_namespaces)
         self._maturity = ''
 
+        self.previous_sc_map_dict = None
+        self.previous_sc_map_name = None
+
         # Possible values: 'Empty', 'Create', 'Replace', 'Unchanged'
         self.sc_map_build_status = 'Empty'
 
@@ -559,4 +562,13 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         """
         ready_to_import_usecase = self.sc_map is not None and self.sub_proc_build_status != 'Empty_SP' and self.sc_map.get_input_name() in self._data_in
         return ready_to_import_usecase
+
+    def check_if_need_for_cleaning(self):
+        """
+            Functions to check if need for cleaning
+            Function needed in build_driver_subproc()
+            Function to be specified per driver
+        """
+        need_for_cleaning = self.sub_proc_build_status == 'Replace_SP' and self.sc_map_build_status == 'Unchanged'
+        return need_for_cleaning
 #### End: Sub methods for proc builder to be specified in specific driver ####

@@ -279,6 +279,15 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
         """
         ready_to_import_usecase = self.sub_proc_build_status != 'Empty_SP'
         return ready_to_import_usecase
+
+    def check_if_need_for_cleaning(self):
+        """
+            Functions to check if need for cleaning
+            Function needed in build_driver_subproc()
+            Function to be specified per driver
+        """
+        need_for_cleaning = self.sub_proc_build_status == 'Replace_SP'
+        return need_for_cleaning
 #### End: Sub methods for proc builder to be specified in specific driver ####
 
 
@@ -311,7 +320,8 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
             Function needed in build(self)
         '''
         # 1. Clean if needed
-        if self.sub_proc_build_status == 'Replace_SP':
+
+        if self.check_if_need_for_cleaning():
             # clean all instances before rebuilt and and reset any needed
             # parameter
             self.clean_driver_before_rebuilt()
