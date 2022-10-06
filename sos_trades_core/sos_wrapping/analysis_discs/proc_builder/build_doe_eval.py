@@ -29,6 +29,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sos_trades_core.api import get_sos_logger
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
+from sos_trades_core.execution_engine.proc_builder.sos_add_subproc_to_driver import AddSubProcToDriver
 from sos_trades_core.execution_engine.proc_builder.build_sos_eval import BuildSoSEval
 from sos_trades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 import pandas as pd
@@ -227,6 +228,12 @@ class BuildDoeEval(BuildSoSEval):
                  }
 #################### End: Constants and parameters #######################
 
+# Begin: Main methods for proc builder to be specified in specific driver
+# ####
+
+
+### End: Main methods for proc builder to be specified in specific driver ####
+
 #################### Begin: Main methods ################################
 
     def __init__(self, sos_name, ee, cls_builder, associated_namespaces=[]):
@@ -247,18 +254,8 @@ class BuildDoeEval(BuildSoSEval):
         self.dict_desactivated_elem = {}
         self.selected_outputs = []
         self.selected_inputs = []
-        self.previous_sub_process_repo = None
-        self.previous_sub_process_name = None
-        self.previous_sub_process_usecase_name = 'Empty'
-        self.previous_sub_process_usecase_data = {}
-        self.dyn_var_sp_from_import_dict = {}
+
         self.previous_algo_name = ""
-        self.sub_process_ns_in_build = None
-        # Possible values: 'Empty_SP', 'Create_SP', 'Replace_SP',
-        # 'Unchanged_SP'
-        self.sub_proc_build_status = 'Empty_SP'
-        # Possible values: 'No_SP_UC_Import', 'SP_UC_Import'
-        self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
     def build(self):
         '''
@@ -269,7 +266,7 @@ class BuildDoeEval(BuildSoSEval):
             Main method Added to provide proc builder capability
 
         '''
-        self.build_for_proc_builder()
+        AddSubProcToDriver.build(self)
 
         BuildSoSEval.build(self)
 
@@ -282,40 +279,6 @@ class BuildDoeEval(BuildSoSEval):
             Main method Added to provide proc builder capability
         """
         BuildSoSEval.configure(self)
-
-        # Treatment of dynamic subprocess inputs in case of change of usecase
-        # of subprocess (Added to provide proc builder capability)
-        self.configure_for_proc_builder()
-
-    def setup_sos_disciplines(self):
-        """
-        Overload setup_sos_disciplines to create a dynamic desc_in
-        Reached from configure() of sos_discipline [SoSDiscipline.configure in config() of BuildSoSEval]. 
-        It is done upstream of set_eval_possible_values()
-        Default desc_in are the algo name and its options
-        In case of a CustomDOE', additional input is the custom sample (dataframe)
-        In other cases, additional inputs are the number of samples and the design space
-        Main method Added to provide proc builder capability
-        """
-
-        dynamic_inputs = {}
-        dynamic_outputs = {}
-        # Remark: in case of 'Unchanged_SP', it will do a refresh of available
-        # subprocesses
-        if self.sub_proc_build_status != 'Empty_SP':
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_repo = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_REPOSITORY]
-            sub_process_name = sub_process_inputs_dict[ProcessBuilderParameterType.PROCESS_NAME]
-            # 1. provide driver inputs based on selected subprocess
-            dynamic_inputs = self.setup_sos_disciplines_driver_inputs_depend_on_sub_process(
-                dynamic_inputs)
-            dynamic_inputs, dynamic_outputs = self.setup_sos_disciplines_driver_inputs_independent_on_sub_process(
-                dynamic_inputs, dynamic_outputs)
-            self.add_inputs(dynamic_inputs)
-            self.add_outputs(dynamic_outputs)
-            # 2. import data from selected sub_process_usecase
-            self.manage_import_inputs_from_sub_process()
 
     def set_eval_possible_values(self):
         '''
@@ -475,43 +438,6 @@ class BuildDoeEval(BuildSoSEval):
 
 ##################### Begin: Sub methods ################################
 # Remark: those sub methods should be private functions
-
-    def build_driver_subproc(self, sub_process_repo, sub_process_name):
-        '''
-            Get and build builder from sub_process of the driver
-            The subprocess is defined by its name and repository
-            Function needed in build_for_proc_builder(self)
-        '''
-        # 1. Clean if needed
-        if self.sub_proc_build_status == 'Replace_SP':
-            # clean all instances before rebuilt
-            self.clean_driver_before_rebuilt()
-        # 2. Get and set the builder of subprocess
-        cls_builder = self.get_nested_builders_from_sub_process(
-            sub_process_repo, sub_process_name)
-        if not isinstance(cls_builder, list):
-            cls_builder = [cls_builder]
-        self.set_nested_builders(cls_builder)
-        # 3. Optional step : capture the input namespace specified at
-        # building step
-        ns_of_driver = self.get_ns_of_driver()
-        my_keys = [
-            key for key in self.ee.ns_manager.shared_ns_dict if key != 'ns_doe']
-        my_dict = {}
-        for item in my_keys:
-            my_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value()
-            self.sub_process_ns_in_build = pd.DataFrame(
-                list(my_dict.items()), columns=['Name', 'Value'])
-        # 4. Shift namespace due to the 'DoE_Eval' inserted
-        # self.update_namespace_list_with_extra_ns_except_driver(
-        #    'DoE_Eval', after_name=self.ee.study_name)
-        driver_name = 'DoE_Eval'
-        driver_ns_list = ['ns_doe_eval']
-        self.update_namespace_list_with_extra_ns_except_driver(
-            driver_name, driver_ns_list, after_name=self.ee.study_name)
-        # Here we not shift doe_eval that is already in the namespace dictionary.
-        # In a more general frame we would need to compare previous
-        # namspace dict and only shift new created namespace keys
 
     def custom_order_possible_algorithms(self, algo_list):
         """ This algo sorts the possible algorithms list so that most used algorithms
@@ -1020,59 +946,7 @@ class BuildDoeEval(BuildSoSEval):
 
 ##################### End: Sub methods ################################
 
-
-######### Begin: Sub methods for build to be specified in build #####
-
-    def get_cls_builder(self):
-        '''
-            Specific function of the driver to get the cls_builder
-            Function needed in set_sub_process_status()
-            Function to be specified per driver
-        '''
-        cls_builder = self.cls_builder
-        return cls_builder
-
-    def set_cls_builder(self, value):
-        '''
-            Specific function of the driver to set the cls_builder with value
-            Function needed in set_nested_builders
-            Function to be specified per driver
-        '''
-        self.cls_builder = value
-
-    def set_ref_discipline_full_name(self):
-        '''
-            Specific function of the driver to define the full name of the reference disvcipline
-            Function needed in _init_ of the driver
-            Function to be specified per driver
-        '''
-        driver_name = self.name
-        self.ref_discipline_full_name = f'{self.ee.study_name}.{driver_name}'
-
-        return
-
-    def clean_driver_before_rebuilt(self):  # come from build_eval_subproc
-        '''
-            Specific function of the driver to clean all instances before rebuild and reset any needed parameter
-            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
-            Function to be specified per driver
-        '''
-        self.sos_disciplines[0].clean()
-        self.sos_disciplines = []  # Should it be del self.sos_disciplines[0]?
-        # We "clean" also all dynamic inputs to be reloaded by
-        # the usecase
-        self.add_inputs({})  # is it needed ?
-        return
-
-    def get_ns_of_driver(self):  # come from build_eval_subproc
-        '''
-            Specific function of the driver to get ns of driver
-            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
-            Function to be specified per driver
-        '''
-        ns_of_driver = []
-        return ns_of_driver
-
+### Begin: Sub methods for proc builder to wrap specific driver dynamic inputs ####
     # come from setup_sos_disciplines_driver_inputs_depend_on_sub_process
     def setup_desc_in_dict_of_driver(self):
         """
@@ -1099,8 +973,6 @@ class BuildDoeEval(BuildSoSEval):
                                                    'structuring': True,
                                                    'visibility': SoSDiscipline.SHARED_VISIBILITY,
                                                    'namespace': 'ns_doe_eval'}
-        # Set status
-        self.sub_proc_build_status = 'Unchanged_SP'
         return desc_in_dict
 
     def setup_sos_disciplines_driver_inputs_independent_on_sub_process(self, dynamic_inputs, dynamic_outputs):
@@ -1224,4 +1096,58 @@ class BuildDoeEval(BuildSoSEval):
                     if self.DESIGN_SPACE in self._data_in and selected_inputs_has_changed:
                         self._data_in[self.DESIGN_SPACE]['value'] = default_design_space
         return dynamic_inputs, dynamic_outputs
-#####  End: Sub methods for build to be specified in build #####
+# End: Sub methods for proc builder  to wrap specific driver dynamic
+# inputs ####
+
+### Begin: Sub methods for proc builder to be specified in specific driver ####
+
+    def get_cls_builder(self):
+        '''
+            Specific function of the driver to get the cls_builder
+            Function needed in set_sub_process_status()
+            Function to be specified per driver
+        '''
+        cls_builder = self.cls_builder
+        return cls_builder
+
+    def set_cls_builder(self, value):
+        '''
+            Specific function of the driver to set the cls_builder with value
+            Function needed in set_nested_builders
+            Function to be specified per driver
+        '''
+        self.cls_builder = value
+
+    def set_ref_discipline_full_name(self):
+        '''
+            Specific function of the driver to define the full name of the reference disvcipline
+            Function needed in _init_ of the driver
+            Function to be specified per driver
+        '''
+        driver_name = self.name
+        self.ref_discipline_full_name = f'{self.ee.study_name}.{driver_name}'
+
+        return
+
+    def clean_driver_before_rebuilt(self):  # come from build_eval_subproc
+        '''
+            Specific function of the driver to clean all instances before rebuild and reset any needed parameter
+            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
+            Function to be specified per driver
+        '''
+        self.sos_disciplines[0].clean()
+        self.sos_disciplines = []  # Should it be del self.sos_disciplines[0]?
+        # We "clean" also all dynamic inputs to be reloaded by
+        # the usecase
+        self.add_inputs({})  # is it needed ?
+        return
+
+    def get_ns_of_driver(self):  # come from build_eval_subproc
+        '''
+            Specific function of the driver to get ns of driver
+            Function needed in build_driver_subproc(self, sub_process_repo, sub_process_name)
+            Function to be specified per driver
+        '''
+        ns_of_driver = ['ns_doe', 'ns_doe_eval']
+        return ns_of_driver
+#### End: Sub methods for proc builder to be specified in specific driver ####
