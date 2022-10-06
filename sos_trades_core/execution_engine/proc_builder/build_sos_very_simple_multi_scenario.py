@@ -543,7 +543,7 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
         """
         # update status
         self.sub_proc_build_status = 'Unchanged_SP'
-        self.sc_map_build_status = 'Unchanged_SP'
+        self.sc_map_build_status = 'Unchanged'
 
     def check_if_ready_to_provide_driver_inputs(self):
         """
