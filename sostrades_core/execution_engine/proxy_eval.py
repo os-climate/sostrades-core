@@ -243,7 +243,7 @@ class ProxyEval(ProxyDisciplineDriver):
             # executable discipline, a coupling is also wanted to contain the
             # eval process:
             disc_builder = self.ee.factory.create_builder_coupling(
-                self.sos_name)
+                self.sos_name+'.subprocess')
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
 
         return disc_builder

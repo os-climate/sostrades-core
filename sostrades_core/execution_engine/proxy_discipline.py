@@ -933,13 +933,14 @@ class ProxyDiscipline(object):
     def get_data_in(self):
         """"
         _data_in getter
+        #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
-        # return dict(zip(self._io_ns_map_in.keys(), map(self._data_in.__getitem__, self._io_ns_map_in.items())))
         return {var_name: self._data_in_ns_tuple[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
 
     def get_data_out(self):
         """
         _data_out getter
+        #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
         return {var_name: self._data_out_ns_tuple[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
 
@@ -1172,7 +1173,7 @@ class ProxyDiscipline(object):
         Returns:
             The inputs values list or dict
         """
-
+        #TODO: refactor
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict #TODO: force full_name_keys=True too?
@@ -1206,6 +1207,7 @@ class ProxyDiscipline(object):
         Returns:
             The outputs values list or dict
         """
+        #TODO: refactor
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict #TODO: force full_name_keys=True too?
@@ -1242,6 +1244,7 @@ class ProxyDiscipline(object):
         Raises:
             Exception if query key is not in the data manager
         """
+        #TODO: refactor
         if isinstance(keys, str):
             keys = [keys]
 
@@ -1659,7 +1662,7 @@ class ProxyDiscipline(object):
         return var_f_name
     
     def ns_tuples_to_full_name_keys(self, in_dict):
-        return {self.ee.ns_manager.ns_tuple_to_full_name(key) : value for key,value in in_dict.items()}
+        return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple) : value for var_ns_tuple,value in in_dict.items()}
 
     def update_from_dm(self):
         """

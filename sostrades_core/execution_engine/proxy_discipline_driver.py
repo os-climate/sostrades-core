@@ -106,15 +106,16 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         # self._data_out_with_full_name = dict(zip(self._convert_list_of_keys_to_namespace_name(list(self._data_out.keys()), self.IO_TYPE_OUT), self._data_out.values()))
 
         self._data_in_ns_tuple = {
-            (key, id(value[self.NS_REFERENCE])): value for key, value in self._data_in.items()}
+            (key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
         self._data_out_ns_tuple = {
-            (key, id(value[self.NS_REFERENCE])): value for key, value in self._data_out.items()}
+            (key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
 
+        #TODO: working because no two different discs share a local ns
         for proxy_disc in self.proxy_disciplines:
-            self._data_in_ns_tuple.update(proxy_disc.get_data_io_with_full_name(
-                self.IO_TYPE_IN, as_namespaced_tuple=True))
-            self._data_out_ns_tuple.update(proxy_disc.get_data_io_with_full_name(
-                self.IO_TYPE_OUT, as_namespaced_tuple=True))
+            subprocess_data_in = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True)
+            subprocess_data_out = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True)
+            self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
+            self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
 
     def configure_driver(self):
         """
