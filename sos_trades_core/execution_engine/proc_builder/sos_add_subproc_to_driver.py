@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from win32gui import BringWindowToTop
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
