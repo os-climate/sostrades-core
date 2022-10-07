@@ -42,6 +42,7 @@ class BuildDoeEval(BuildSoSEval):
 
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
+            |_ SUB_PROCESS_INPUTS (structuring)
                 |_ EVAL_INPUTS (namespace: 'ns_doe_eval', structuring,dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ EVAL_OUTPUTS (namespace: 'ns_doe_eval', structuring, dynamic : self.sub_proc_build_status != 'Empty_SP') NB: Mandatory not to be empty (If not then warning)
                 |_ SAMPLING_ALGO (structuring,dynamic : self.sub_proc_build_status != 'Empty_SP')
@@ -49,6 +50,7 @@ class BuildDoeEval(BuildSoSEval):
                         |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!="CustomDOE") NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty") And Algo
                         |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
                         |_ <var multiplier name> (internal namespace: 'origin_var_ns', dynamic: almost one selected inputs with MULTIPLIER_PARTICULE ('__MULTIPLIER__) in its name, only used in grid_search_eval) 
+               |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
             |_ N_PROCESSES
             |_ WAIT_TIME_BETWEEN_FORK
         |_ DESC_OUT
@@ -56,7 +58,8 @@ class BuildDoeEval(BuildSoSEval):
             |_ <var>_dict (internal namspace 'ns_doe', dynamic: sampling_algo!='None' and eval_inputs not empty and eval_outputs not empty, for <var> in eval_outputs)
 
     2) Description of DESC parameters:
-        |_ DESC_IN                                                                           
+        |_ DESC_IN
+           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type                                                                           
                     |_ EVAL_INPUTS:             selection of input variables to be used for the DoE
                     |_ EVAL_OUTPUTS:            selection of output variables to be used for the DoE (the selected observables)
                     |_ SAMPLING_ALGO:           method of defining the sampling input dataset for the variable chosen in self.EVAL_INPUTS
@@ -64,6 +67,7 @@ class BuildDoeEval(BuildSoSEval):
                         |_ DESIGN_SPACE:        provided design space
                         |_ ALGO_OPTIONS:        options depending on the choice of self.SAMPLING_ALGO
                         |_ <var multiplier name>: for each selected input with MULTIPLIER_PARTICULE in its name (only used in grid_search_eval)
+                    |_ NS_IN_DF :                a map of ns name: value
             |_ N_PROCESSES:
             |_ WAIT_TIME_BETWEEN_FORK:
          |_ DESC_OUT
@@ -138,12 +142,6 @@ class BuildDoeEval(BuildSoSEval):
         None, None, 'Empty')
 
     DESC_IN = {
-        SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
-                             'structuring': True,
-                             'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                             'user_level': 1,
-                             'optional': False
-                             },
         N_PROCESSES: {'type': 'int',
                       'numerical': True,
                       'default': 1},
@@ -151,6 +149,8 @@ class BuildDoeEval(BuildSoSEval):
                                  'numerical': True,
                                  'default': 0.0},
     }
+
+    DESC_IN.update(AddSubProcToDriver.DESC_IN)
 
     DESC_OUT = {
         SAMPLES_INPUTS_DF: {'type': 'dataframe',
@@ -228,11 +228,6 @@ class BuildDoeEval(BuildSoSEval):
                  }
 #################### End: Constants and parameters #######################
 
-# Begin: Main methods for proc builder to be specified in specific driver
-# ####
-
-
-### End: Main methods for proc builder to be specified in specific driver ####
 
 #################### Begin: Main methods ################################
 

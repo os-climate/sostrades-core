@@ -31,7 +31,7 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
             |_ SUB_PROCESS_INPUTS (structuring)
-            |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
+                |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
 
     2) Description of DESC parameters:
         |_ DESC_IN
@@ -48,7 +48,7 @@ class AddSubProcToDriver(SoSDisciplineBuilder):
                                                                           it is a temporary input: it will be put to None as soon as
                                                                           its content is 'loaded' in the dm. We will have it has editable
                                                 It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
-            |_ NS_IN_DF :                       a map of ns name: value
+                |_ NS_IN_DF :                     a map of ns name: value
     '''
 #################### Begin: Ontology of the discipline ###################
     # ontology information

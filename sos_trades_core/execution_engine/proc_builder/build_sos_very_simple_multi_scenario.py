@@ -36,12 +36,15 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
 
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
+            |_ SUB_PROCESS_INPUTS (structuring)
             |_ SCENARIO_MAP (structuring)            
                |_ SCENARIO_MAP[INPUT_NAME] (namespace: INPUT_NS if INPUT_NS in SCENARIO_MAP keys / if not then  local, structuring, dynamic : SCENARIO_MAP[INPUT_NAME] != '' or is not None)
+               |_ NS_IN_DF (dynamic: if sub_process_ns_in_build is not None)
         |_ DESC_OUT
 
     2) Description of DESC parameters:
         |_ DESC_IN
+           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
            |_ SCENARIO_MAP:                     All inputs for driver builder in the form of a dictionary of four keys
                                                     INPUT_NAME:           name of the variable to scatter
                                                     INPUT_NS:             Optional key: namespace of the variable to scatter if the INPUT_NS key is this scenario map. 
@@ -53,7 +56,8 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
                                                                           (input_ns by default). Only used if autogather = True
                                                     NS_TO_UPDATE:         list of namespaces depending on the scatter namespace 
                                                                           (by default, we have the list of namespaces of the nested sub_process)                                                                                                                                          
-
+                |_ SCENARIO_MAP[INPUT_NAME]     select your list of scenario names
+                |_ NS_IN_DF :                   a map of ns name: value
          |_ DESC_OUT
     '''
 
@@ -119,19 +123,14 @@ class BuildSoSVerySimpleMultiScenario(BuildSoSDisciplineScatter):
     default_full_scenario_map[NS_TO_UPDATE] = []
 
     DESC_IN = {
-        SUB_PROCESS_INPUTS: {'type': SoSDiscipline.PROC_BUILDER_MODAL,
-                             'structuring': True,
-                             'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                             'user_level': 1,
-                             'optional': False
-                             },
         SCENARIO_MAP: {'type': 'dict',
                        'structuring': True,
                        'default': default_scenario_map,
                        'user_level': 1,
                        'optional': False
-                       }
-    }
+                       }}
+
+    DESC_IN.update(AddSubProcToDriver.DESC_IN)
 
     #DESC_OUT = {}
 
