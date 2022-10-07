@@ -44,6 +44,8 @@ from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWr
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from gemseo.core.chain import MDOChain
+from sostrades_core.tools.controllers.simpy_formula import SympyFormula
+from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 
 
 class ProxyDisciplineException(Exception):
@@ -141,6 +143,10 @@ class ProxyDiscipline(object):
     CONNECTOR_DATA = SoSWrapp.CONNECTOR_DATA
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
+    FORMULA = 'formula'
+    IS_FORMULA = 'is_formula'
+    IS_EVAL = 'is_eval'
+    CHECK_INTEGRITY_MSG = 'check_integrity_msg'
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -310,9 +316,9 @@ class ProxyDiscipline(object):
         self._data_in = None
         self._data_out = None
         self._io_ns_map_in = None
-        self._io_ns_map_out = None # used by ProxyCoupling, ProxyDisciplineDriver
+        self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDisciplineDriver
 
-        self._structuring_variables = None # used by ProxyCoupling, ProxyDisciplineDriver
+        self._structuring_variables = None  # used by ProxyCoupling, ProxyDisciplineDriver
         self.reset_data()
         # -- Maturity attribute
         self._maturity = self.get_maturity()
@@ -528,11 +534,13 @@ class ProxyDiscipline(object):
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(desc_in)
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
-            # TODO: check if this have to be done during configuration or at the very end of it (dynamic ns)
+            # TODO: check if this have to be done during configuration or at
+            # the very end of it (dynamic ns)
             self.update_dm_with_data_dict(desc_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
-            self._update_data_io(zip(inputs_var_ns_tuples,desc_in.values()), self.IO_TYPE_IN)
+            self._update_data_io(
+                zip(inputs_var_ns_tuples, desc_in.values()), self.IO_TYPE_IN)
             # Deal with numerical parameters inside the sosdiscipline
             self.add_numerical_param_to_data_in()
 
@@ -543,7 +551,8 @@ class ProxyDiscipline(object):
             self.update_dm_with_data_dict(desc_out)
             outputs_var_ns_tuples = self._extract_var_ns_tuples(desc_out)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
-            self._update_data_io(zip(outputs_var_ns_tuples,desc_out.values()), self.IO_TYPE_OUT)
+            self._update_data_io(
+                zip(outputs_var_ns_tuples, desc_out.values()), self.IO_TYPE_OUT)
 
     def get_desc_in_out(self, io_type):
         """
@@ -573,7 +582,7 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
-    def _restart_data_io_to_disc_io(self, io_type = None):
+    def _restart_data_io_to_disc_io(self, io_type=None):
         io_types = []
         if io_type is None:
             io_types = [self.IO_TYPE_IN, self.IO_TYPE_OUT]
@@ -583,9 +592,11 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
         if self.IO_TYPE_IN in io_types:
-            self._data_in = {(key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
+            self._data_in = {(key, id(
+                value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
         if self.IO_TYPE_OUT in io_types:
-            self._data_out = {(key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
+            self._data_out = {(key, id(
+                value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
 
     def _update_data_io(self, data_dict, io_type, data_dict_in_short_names=False):
         if io_type == self.IO_TYPE_IN:
@@ -597,7 +608,7 @@ class ProxyDiscipline(object):
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
         if data_dict_in_short_names:
-            data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type), # keys are ns tuples
+            data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
                                data_dict.values()))                             # values are values i.e. var dicts
         else:
             data_io.update(data_dict)
@@ -612,7 +623,8 @@ class ProxyDiscipline(object):
         num_inputs_var_ns_tuples = self._extract_var_ns_tuples(num_data_in)
         self._update_io_ns_map(num_inputs_var_ns_tuples, self.IO_TYPE_IN)
         self.update_dm_with_data_dict(num_data_in)
-        self._update_data_io(zip(num_inputs_var_ns_tuples,num_data_in.values()), self.IO_TYPE_IN)
+        self._update_data_io(zip(num_inputs_var_ns_tuples,
+                                 num_data_in.values()), self.IO_TYPE_IN)
 
     def update_data_io_with_inst_desc_io(self):
         """
@@ -632,9 +644,11 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_IN, new_inputs)
             self.update_dm_with_data_dict(
                 completed_new_inputs)
-            inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_inputs)
+            inputs_var_ns_tuples = self._extract_var_ns_tuples(
+                completed_new_inputs)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
-            self._update_data_io(zip(inputs_var_ns_tuples, completed_new_inputs.values()), self.IO_TYPE_IN)
+            self._update_data_io(
+                zip(inputs_var_ns_tuples, completed_new_inputs.values()), self.IO_TYPE_IN)
 
         # add new outputs from inst_desc_out to data_out
         if len(new_outputs) > 0:
@@ -643,9 +657,11 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_OUT, new_outputs)
             self.update_dm_with_data_dict(
                 completed_new_outputs)
-            outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_outputs)
+            outputs_var_ns_tuples = self._extract_var_ns_tuples(
+                completed_new_outputs)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
-            self._update_data_io(zip(outputs_var_ns_tuples, completed_new_outputs.values()), self.IO_TYPE_OUT)
+            self._update_data_io(
+                zip(outputs_var_ns_tuples, completed_new_outputs.values()), self.IO_TYPE_OUT)
 
     def get_built_disciplines_ids(self):
         """
@@ -822,6 +838,36 @@ class ProxyDiscipline(object):
 
         self.set_configure_status(True)
 
+    def __check_all_data_integrity(self):
+        '''
+         generic data integrity_check where we call different generic function to check integrity 
+         + specific data integrity by discipline
+        '''
+        self.__generic_check_data_integrity()
+        self.check_data_integrity()
+
+    def check_data_integrity(self):
+        pass
+
+    def __generic_check_data_integrity(self):
+        '''
+        Generic check data integrity of the variables that you own ( the model origin of the variable is you)
+        '''
+        self.check_data_integrity_cls = CheckDataIntegrity(
+            self.__class__, self.dm, self.ee.data_check_integrity)
+
+        data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
+        for var_fullname in data_in_full_name:
+            var_data_dict = self.dm.get_data(var_fullname)
+
+            if var_data_dict['model_origin'] == self.disc_id:
+
+                #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
+                check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
+                    var_data_dict)
+                self.dm.set_data(
+                    var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
+
     def set_numerical_parameters(self):
         '''
         Set numerical parameters of the ProxyDiscipline defined in the NUM_DESC_IN
@@ -939,14 +985,14 @@ class ProxyDiscipline(object):
         _data_in getter
         #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
-        return {var_name: self._data_in[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
+        return {var_name: self._data_in[(var_name, id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
 
     def get_data_out(self):
         """
         _data_out getter
         #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
-        return {var_name: self._data_out[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
+        return {var_name: self._data_out[(var_name, id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
         """
@@ -959,16 +1005,17 @@ class ProxyDiscipline(object):
             data_io_full_name (Dict[dict]): data_in/data_out with variable full names
         """
         # data_io_short_name = self.get_data_io_dict(io_type)
-        # 
+        #
         # if as_namespaced_tuple:
         #     def dict_key(v): return (
         #         v, id(data_io_short_name[v][self.NS_REFERENCE]))
         # else:
         #     def dict_key(v): return self.get_var_full_name(
         #         v, data_io_short_name)
-        # 
+        #
         # data_io_full_name = {dict_key(
-        #     var_name): value_dict for var_name, value_dict in data_io_short_name.items()}
+        # var_name): value_dict for var_name, value_dict in
+        # data_io_short_name.items()}
 
         if io_type == self.IO_TYPE_IN:
             if as_namespaced_tuple:
@@ -1076,7 +1123,7 @@ class ProxyDiscipline(object):
             dict_out_keys.append(namespaced_key)
         return dict_out_keys
 
-    def _prepare_data_dict(self, io_type, data_dict):#=None):
+    def _prepare_data_dict(self, io_type, data_dict):  # =None):
         """
         Prepare the data_in/data_out with fields by default (and set _structuring_variables) for variables in data_dict.
         If data_dict is None, will prepare the current data_in/data_out.
@@ -1162,6 +1209,16 @@ class ProxyDiscipline(object):
             if self.STRUCTURING in data_keys and curr_data[self.STRUCTURING] is True:
                 self._structuring_variables[key] = None
                 del curr_data[self.STRUCTURING]
+            if self.CHECK_INTEGRITY_MSG not in data_keys:
+                curr_data[self.CHECK_INTEGRITY_MSG] = ''
+
+            # initialize formula
+            if self.FORMULA not in data_keys:
+                curr_data[self.FORMULA] = None
+            if self.IS_FORMULA not in data_keys:
+                curr_data[self.IS_FORMULA] = False
+            if self.IS_EVAL not in data_keys:
+                curr_data[self.IS_EVAL] = False
 
         return data_dict
 
@@ -1263,7 +1320,8 @@ class ProxyDiscipline(object):
             if q_key not in self.dm.data_id_map:
                 raise Exception(
                     f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-            # get data in local_data during run or linearize steps #TODO: this should not be possible, should it?
+            # get data in local_data during run or linearize steps #TODO: this
+            # should not be possible, should it?
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
             # get data in data manager during configure step
@@ -1663,14 +1721,17 @@ class ProxyDiscipline(object):
         var_f_name = self.ee.ns_manager.compose_ns(
             [ns_reference.value, complete_var_name])
         return var_f_name
-    
+
     def ns_tuples_to_full_name_keys(self, in_dict):
-        return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple) : value for var_ns_tuple,value in in_dict.items()}
+        return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()}
 
     def update_from_dm(self):
         """
         Update all disciplines with datamanager information
         """
+
+        self.__check_all_data_integrity()
+
         disc_in = self.get_data_in()
         for var_name in disc_in.keys():
 
@@ -2108,5 +2169,6 @@ class ProxyDiscipline(object):
         #
         # return input_full_name_map, output_full_name_map
 
-        return {key: self.ee.ns_manager.ns_tuple_to_full_name((key,value)) for key,value in self._io_ns_map_in.items()},\
-               {key: self.ee.ns_manager.ns_tuple_to_full_name((key,value)) for key,value in self._io_ns_map_out.items()}
+        return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()},\
+               {key: self.ee.ns_manager.ns_tuple_to_full_name(
+                   (key, value)) for key, value in self._io_ns_map_out.items()}

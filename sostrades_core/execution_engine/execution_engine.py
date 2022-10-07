@@ -73,13 +73,13 @@ class ExecutionEngine:
                               ns_manager=self.ns_manager,
                               logger=get_sos_logger(f'{self.logger.name}.DataManager'))
         self.smaps_manager = ScatterMapsManager(
-             name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
+            name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
         self.__factory = SosFactory(
             self, self.study_name)
 
         self.root_process = None
         self.root_builder_ist = None
-
+        self.data_check_integrity = False
         self.__connector_container = PersistentConnectorContainer()
 
     @property
@@ -162,7 +162,7 @@ class ExecutionEngine:
 
         # create DM treenode to be able to populate it from GUI
         self.dm.treeview = None
-        
+
     def prepare_execution(self):
         '''
         loop on proxy disciplines and execute prepare execution
@@ -208,7 +208,7 @@ class ExecutionEngine:
 
     def update_from_dm(self):
         self.root_process.update_from_dm()
-        
+
     def build_cache_map(self):
         '''
         Build cache map with all gemseo disciplines cache
@@ -216,7 +216,7 @@ class ExecutionEngine:
         self.dm.cache_map = {}
         self.dm.gemseo_disciplines_id_map = {}
         self.root_process._set_dm_cache_map()
-        
+
     def get_cache_map_to_dump(self):
         '''
         Build if necessary and return data manager cache map
@@ -224,7 +224,7 @@ class ExecutionEngine:
         if self.dm.cache_map is None:
             self.build_cache_map()
         return self.dm.cache_map
-        
+
     def load_cache_from_map(self, cache_map):
         '''
         Load disciplines cache from cache_map
@@ -459,11 +459,13 @@ class ExecutionEngine:
             if key in convert_data_cache:
                 # check if the key is an output variable
                 is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
-                # check if this is a strongly coupled input necessary to initialize a MDA
-                is_init_coupling_var = (value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING])
+                # check if this is a strongly coupled input necessary to
+                # initialize a MDA
+                is_init_coupling_var = (
+                    value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING])
                 if is_output_var or is_init_coupling_var:
                     value['value'] = convert_data_cache[key]['value']
-                    
+
         if self.__yield_method is not None:
             self.__yield_method()
 
@@ -473,7 +475,6 @@ class ExecutionEngine:
         if len(dict_to_load):
             self.update_from_dm()
             self.dm.create_reduced_dm()
-            self.check_inputs(raise_exception=False)
             self.__factory.init_execution()
             if update_status_configure:
                 self.update_status_configure()
@@ -481,6 +482,25 @@ class ExecutionEngine:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None
+
+    def __check_data_integrity_msg(self):
+        '''
+        Check if one data integrity msg is not empty string to crash a value error 
+        as the old check_inputs in the dm juste before the execution
+        Add the name of the variable in the message
+        '''
+
+        integrity_msg_list = [f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
+                              for var_id, var_data_dict in self.dm.data_dict.items() if var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG] != '']
+
+#         for var_data_dict in self.dm.data_dict.values():
+#             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
+#                 integrity_msg_list.append(
+#                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
+
+        if integrity_msg_list != []:
+            full_integrity_msg = '\n'.join(integrity_msg_list)
+            raise ValueError(full_integrity_msg)
 
     def load_connectors_from_dict(self, connectors_to_load):
         '''
@@ -499,12 +519,6 @@ class ExecutionEngine:
             if key in self.dm.data_dict.keys():
                 variable_to_update = self.dm.data_dict[key]
                 variable_to_update[ProxyDiscipline.CONNECTOR_DATA] = value
-
-    def check_inputs(self, raise_exception=True):
-        '''
-        Check the inputs in the DataManager
-        '''
-        self.dm.check_inputs(raise_exception)
 
     def set_debug_mode(self, mode=None, disc=None):
         ''' set recursively <disc> debug options of in ProxyDiscipline
@@ -537,15 +551,18 @@ class ExecutionEngine:
             if isinstance(disc, ProxyCoupling):
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
+        elif mode == 'data_check_integrity':
+            self.data_check_integrity = True
+
         else:
             avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_grad", "min_max_couplings"]
-            raise ValueError("Debug mode %s is not among %s" % 
+                           "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
+            raise ValueError("Debug mode %s is not among %s" %
                              (mode, str(avail_debug)))
         # set debug modes of subdisciplines
-        for disc in disc.sos_disciplines:
+        for disc in disc.proxy_disciplines:
             self.set_debug_mode(mode, disc)
-            
+
     def get_input_data_for_gemseo(self, proxy_coupling):
         '''
         Get values of mdo_discipline input_grammar from data manager
@@ -576,25 +593,27 @@ class ExecutionEngine:
         self.fill_data_in_with_connector()
         self.update_from_dm()
 
-        self.check_inputs(raise_exception=True)
+        self.__check_data_integrity_msg()
 
         # -- init execute
         self.__factory.init_execution()
-        
+
         # -- prepare execution
         self.prepare_execution()
 
         # -- execution with input data from DM
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
-        ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(input_data=input_data)
+        ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
+            input_data=input_data)
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())
-        
+
         # -- store local data in datamanager
-        self.update_dm_with_local_data(ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
-        
+        self.update_dm_with_local_data(
+            ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
+
         # -- update all proxy statuses
         ex_proc.set_status_from_mdo_discipline()
 
