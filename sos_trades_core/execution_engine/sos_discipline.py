@@ -163,7 +163,7 @@ class SoSDiscipline(MDODiscipline):
     POS_IN_MODE = ['value', 'list', 'dict']
 
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
+                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all", 'data_check_integrity']
 
     # -- status section
 
@@ -203,8 +203,6 @@ class SoSDiscipline(MDODiscipline):
         self.model = None
         self.father_builder = None
         self.father_executor = None
-        self.formula_dict = {}
-        self.data_integrity = {}
 
     def set_father_executor(self, father_executor):
         self.father_executor = father_executor
@@ -230,7 +228,7 @@ class SoSDiscipline(MDODiscipline):
         self.is_optim_scenario = False
         self.is_parallel = False
         self.is_specific_driver = False
-
+        self.data_check_integrity = False
         # -- Sub-disciplines attributes
         self.built_sos_disciplines = []
         self.in_checkjac = False
@@ -563,7 +561,7 @@ class SoSDiscipline(MDODiscipline):
         Generic check data integrity of the variables that you own ( the model origin of the variable is you)
         '''
         self.check_data_integrity_cls = CheckDataIntegrity(
-            self.__class__, self.dm, self.ee.data_check_integrity)
+            self.__class__, self.dm, self.data_check_integrity)
 
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
         for var_fullname in data_in_full_name:
@@ -609,6 +607,8 @@ class SoSDiscipline(MDODiscipline):
                 self.check_linearize_data_changes = True
                 self.check_min_max_gradients = True
                 self.check_min_max_couplings = True
+            elif debug_mode == 'data_check_integrity':
+                self.data_check_integrity = True
             if debug_mode != "":
                 if debug_mode == "all":
                     for mode in self.AVAILABLE_DEBUG_MODE:

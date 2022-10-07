@@ -86,7 +86,6 @@ class ExecutionEngine:
         self.root_builder_ist = None
 
         self.__connector_container = PersistentConnectorContainer()
-        self.data_check_integrity = False
 
     @property
     def factory(self):
@@ -694,7 +693,7 @@ class ExecutionEngine:
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
         elif mode == 'data_check_integrity':
-            self.data_check_integrity = True
+            disc.data_check_integrity = True
         else:
             avail_debug = ["nan", "input_change",
                            "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
