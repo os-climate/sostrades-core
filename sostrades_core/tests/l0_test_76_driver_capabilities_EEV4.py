@@ -592,6 +592,6 @@ class TestSoSDOEScenario(unittest.TestCase):
             io_ns_map_in = disc._io_ns_map_in
             for var, identifier in io_ns_map_in.items():
                 var_tuple = (var, identifier)
-                self.assertEqual(identifier, id(exec_eng.root_process._data_in_ns_tuple[var_tuple]['ns_reference']))  #TODO: to be changed by _data_in
+                self.assertEqual(identifier, id(exec_eng.root_process._data_in[var_tuple]['ns_reference']))
 
 

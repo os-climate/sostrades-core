@@ -306,10 +306,12 @@ class ProxyDiscipline(object):
         # -- disciplinary data attributes
         self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
         self.inst_desc_out = None  # desc_out of instance used to add dynamic outputs
-        # self._data_in = None
-        # self._data_out = None
+
+        self._data_in = None
+        self._data_out = None
         self._io_ns_map_in = None
         self._io_ns_map_out = None # used by ProxyCoupling, ProxyDisciplineDriver
+
         self._structuring_variables = None # used by ProxyCoupling, ProxyDisciplineDriver
         self.reset_data()
         # -- Maturity attribute
@@ -522,13 +524,11 @@ class ProxyDiscipline(object):
         """
         Create data_in and data_out from DESC_IN and DESC_OUT if empty
         """
-        if self._data_in_ns_tuple == {}:
+        if self._data_in == {}:
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(desc_in)
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
-            # TODO: check if this have to be done during configuration or at
-            # the very end of it
-            # self._data_in = desc_in #TODO: to remove
+            # TODO: check if this have to be done during configuration or at the very end of it (dynamic ns)
             self.update_dm_with_data_dict(desc_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
@@ -536,11 +536,10 @@ class ProxyDiscipline(object):
             # Deal with numerical parameters inside the sosdiscipline
             self.add_numerical_param_to_data_in()
 
-        if self._data_out_ns_tuple == {}:
+        if self._data_out == {}:
             desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
             self.set_shared_namespaces_dependencies(desc_out)
             desc_out = self._prepare_data_dict(self.IO_TYPE_OUT, desc_out)
-            # self._data_out = desc_out #TODO: to remove
             self.update_dm_with_data_dict(desc_out)
             outputs_var_ns_tuples = self._extract_var_ns_tuples(desc_out)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
@@ -574,11 +573,25 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
+    def _restart_data_io_to_disc_io(self, io_type = None):
+        io_types = []
+        if io_type is None:
+            io_types = [self.IO_TYPE_IN, self.IO_TYPE_OUT]
+        elif io_type == self.IO_TYPE_IN or io_type == self.IO_TYPE_OUT:
+            io_types = [io_type]
+        else:
+            raise Exception(
+                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
+        if self.IO_TYPE_IN in io_types:
+            self._data_in = {(key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
+        if self.IO_TYPE_OUT in io_types:
+            self._data_out = {(key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
+
     def _update_data_io(self, data_dict, io_type, data_dict_in_short_names=False):
         if io_type == self.IO_TYPE_IN:
-            data_io = self._data_in_ns_tuple #TODO: change by data_in
+            data_io = self._data_in
         elif io_type == self.IO_TYPE_OUT:
-            data_io = self._data_out_ns_tuple #TODO: change by data_out
+            data_io = self._data_out
         else:
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
@@ -596,7 +609,6 @@ class ProxyDiscipline(object):
         num_data_in = deepcopy(self.NUM_DESC_IN)
         num_data_in = self._prepare_data_dict(
             self.IO_TYPE_IN, data_dict=num_data_in)
-        # self._data_in.update(num_data_in) # TODO: to remove
         num_inputs_var_ns_tuples = self._extract_var_ns_tuples(num_data_in)
         self._update_io_ns_map(num_inputs_var_ns_tuples, self.IO_TYPE_IN)
         self.update_dm_with_data_dict(num_data_in)
@@ -620,7 +632,6 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_IN, new_inputs)
             self.update_dm_with_data_dict(
                 completed_new_inputs)
-            # self._data_in.update(completed_new_inputs) # TODO: to remove
             inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_inputs)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
             self._update_data_io(zip(inputs_var_ns_tuples, completed_new_inputs.values()), self.IO_TYPE_IN)
@@ -632,7 +643,6 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_OUT, new_outputs)
             self.update_dm_with_data_dict(
                 completed_new_outputs)
-            # self._data_out.update(completed_new_outputs) # TODO: to remove
             outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_outputs)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
             self._update_data_io(zip(outputs_var_ns_tuples, completed_new_outputs.values()), self.IO_TYPE_OUT)
@@ -763,18 +773,16 @@ class ProxyDiscipline(object):
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_in()))
 
-                del self._data_in_ns_tuple[(var_name, self._io_ns_map_in[var_name])]
+                del self._data_in[(var_name, self._io_ns_map_in[var_name])]
                 del self._io_ns_map_in[var_name]
-                # del self._data_in[var_name] #TODO: to remove
 
                 del self.inst_desc_in[var_name]
             elif io_type == self.IO_TYPE_OUT:
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
 
-                del self._data_out_ns_tuple[(var_name, self._io_ns_map_out[var_name])]
+                del self._data_out[(var_name, self._io_ns_map_out[var_name])]
                 del self._io_ns_map_out[var_name]
-                # del self._data_out[var_name] #TODO: to remove
 
                 del self.inst_desc_out[var_name]
             if var_name in self._structuring_variables:
@@ -818,7 +826,7 @@ class ProxyDiscipline(object):
         '''
         Set numerical parameters of the ProxyDiscipline defined in the NUM_DESC_IN
         '''
-        if self._data_in_ns_tuple != {}:
+        if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
 
@@ -919,14 +927,10 @@ class ProxyDiscipline(object):
         """
         self.inst_desc_in = {}
         self.inst_desc_out = {}
-        # self._data_in = {}
-        # self._data_out = {}
+        self._data_in = {}
+        self._data_out = {}
         self._io_ns_map_in = {}
         self._io_ns_map_out = {}
-
-        #TODO: to remove
-        self._data_in_ns_tuple = {}
-        self._data_out_ns_tuple = {}
 
         self._structuring_variables = {}
 
@@ -935,14 +939,14 @@ class ProxyDiscipline(object):
         _data_in getter
         #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
-        return {var_name: self._data_in_ns_tuple[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
+        return {var_name: self._data_in[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
 
     def get_data_out(self):
         """
         _data_out getter
         #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
-        return {var_name: self._data_out_ns_tuple[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
+        return {var_name: self._data_out[(var_name,id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
         """
@@ -968,14 +972,14 @@ class ProxyDiscipline(object):
 
         if io_type == self.IO_TYPE_IN:
             if as_namespaced_tuple:
-                return self._data_in_ns_tuple
+                return self._data_in
             else:
-                return self.ns_tuples_to_full_name_keys(self._data_in_ns_tuple)
+                return self.ns_tuples_to_full_name_keys(self._data_in)
         elif io_type == self.IO_TYPE_OUT:
             if as_namespaced_tuple:
-                return self._data_out_ns_tuple
+                return self._data_out
             else:
-                return self.ns_tuples_to_full_name_keys(self._data_out_ns_tuple)
+                return self.ns_tuples_to_full_name_keys(self._data_out)
         else:
             raise ValueError('Unknown io type')
 
@@ -1176,7 +1180,7 @@ class ProxyDiscipline(object):
         #TODO: refactor
         if keys is None:
             # if no keys, get all discipline keys and force
-            # output format as dict #TODO: force full_name_keys=True too?
+            # output format as dict
             if full_name_keys:
                 keys = list(self.get_data_io_with_full_name(
                     self.IO_TYPE_IN).keys())  # discipline and subprocess
@@ -1210,7 +1214,7 @@ class ProxyDiscipline(object):
         #TODO: refactor
         if keys is None:
             # if no keys, get all discipline keys and force
-            # output format as dict #TODO: force full_name_keys=True too?
+            # output format as dict
             if full_name_keys:
                 keys = list(self.get_data_io_with_full_name(
                     self.IO_TYPE_OUT).keys())  # discipline and subprocess
@@ -1259,8 +1263,7 @@ class ProxyDiscipline(object):
             if q_key not in self.dm.data_id_map:
                 raise Exception(
                     f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-            # get data in local_data during run or linearize steps #TODO: this
-            # should not be possible, should it?
+            # get data in local_data during run or linearize steps #TODO: this should not be possible, should it?
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
             # get data in data manager during configure step
