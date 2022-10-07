@@ -562,8 +562,8 @@ class SoSDiscipline(MDODiscipline):
         '''
         Generic check data integrity of the variables that you own ( the model origin of the variable is you)
         '''
-        check_data_integrity_cls = CheckDataIntegrity(
-            self.__class__, self.ee.data_check_integrity)
+        self.check_data_integrity_cls = CheckDataIntegrity(
+            self.__class__, self.dm, self.ee.data_check_integrity)
 
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
         for var_fullname in data_in_full_name:
@@ -572,7 +572,7 @@ class SoSDiscipline(MDODiscipline):
             if var_data_dict['model_origin'] == self.disc_id:
 
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
-                check_integrity_msg = check_data_integrity_cls.check_variable_value(
+                check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
                     var_data_dict)
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
@@ -830,7 +830,7 @@ class SoSDiscipline(MDODiscipline):
             if self.FORMULA not in data_keys:
                 curr_data[self.FORMULA] = None
             if self.IS_FORMULA not in data_keys:
-                curr_data[self.FORMULA] = False
+                curr_data[self.IS_FORMULA] = False
             if self.IS_EVAL not in data_keys:
                 curr_data[self.IS_EVAL] = False
 
@@ -939,211 +939,70 @@ class SoSDiscipline(MDODiscipline):
             # get data in local_data during run or linearize steps
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE] and namespaced_key in self.local_data:
 
-                if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
-                    values_dict = self.use_formula(
-                        namespaced_key, new_key, values_dict)
-
-                else:
-                    values_dict[new_key] = self.local_data[namespaced_key]
+                #                 if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
+                #                     values_dict = self.use_formula(
+                #                         namespaced_key, new_key, values_dict)
+                #
+                #                 else:
+                values_dict[new_key] = self.local_data[namespaced_key]
             # get data in data manager during configure step
             else:
-                if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
-                    values_dict = self.use_formula(
-                        namespaced_key, new_key, values_dict)
-                else:
-                    values_dict[new_key] = self.dm.get_value(namespaced_key)
+                #                 if self.dm.get_data(namespaced_key, self.IS_FORMULA) == True:
+                #                     values_dict = self.use_formula(
+                #                         namespaced_key, new_key, values_dict)
+                #                 else:
+                values_dict[new_key] = self.dm.get_value(namespaced_key)
 
         return values_dict
 
-    def use_formula(self, namespaced_key, new_key, values_dict):
+    def apply_formula(self, namespaced_key):
 
-        id_key = self.dm.data_id_map[namespaced_key]
-        if self.dm.data_dict[id_key][self.IS_EVAL] == False:
-            self.dm.data_dict[id_key][self.FORMULA] = self.dm.get_value(
+        var_data_dict = self.dm.get_data(namespaced_key)
+
+        if not var_data_dict[self.IS_EVAL]:
+            full_formula = self.dm.get_value(
                 namespaced_key)
-        values_dict[new_key] = self.dm.data_dict[id_key][self.FORMULA]
-        if self.dm.get_data(namespaced_key, self.TYPE) == 'dataframe':
-            for el in self.dm.get_value(namespaced_key).keys():
-                # for dataframe, it is considered to have only 1
-                # element in each column
-                if type(values_dict[new_key][el][0]) == type('str') and values_dict[new_key][el][0].startswith('formula:'):
-                    formula = self.dm.data_dict[id_key][self.FORMULA][el].values[0].split(':')[
-                        1]
-                    try:
-                        self.formula_dict = self.fill_formula_dict(
-                            formula)
-                        self.check_formula_dict()
-                    except:
-                        wrong_formula = SympyFormula(formula)
-                        token_list = wrong_formula.get_token_list()
-                        msg = f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists'
-                        self.logger.error(msg)
-                        self.data_integrity[namespaced_key] = msg
-                    values_dict[new_key][el] = self.get_value_from_formula(
-                        formula)
+            self.dm.set_data(namespaced_key, self.FORMULA,
+                             full_formula, check_value=False)
+        if var_data_dict[self.TYPE] == 'dataframe':
+            old_df = var_data_dict[self.VALUE]
+            for column in old_df.columns:
+                column_value = var_data_dict[self.FORMULA][column].values[0]
+                if isinstance(column_value, str) and column_value.startswith('formula:'):
+                    split_formula_list = var_data_dict[self.FORMULA][column].values[0].split(
+                        'formula:')
+                    if len(split_formula_list) == 2:
+                        column_formula = split_formula_list[1]
+                        column_value = self.get_value_from_formula(
+                            column_formula)
+                        old_df[column] = column_value
+                # else is treated in check normally
 
-        elif self.dm.get_data(namespaced_key, self.TYPE) == 'dict':
-            for el in self.dm.get_value(namespaced_key).keys():
-                if type(values_dict[new_key][el]) == type('str') and values_dict[new_key][el].startswith('formula:'):
-                    formula = self.dm.data_dict[id_key][self.FORMULA][el].split(':')[
+        elif var_data_dict[self.TYPE] == 'dict':
+            old_dict = var_data_dict[self.VALUE]
+            for key, value in old_dict.items():
+                if isinstance(value, str) and value.startswith('formula:'):
+                    formula = var_data_dict[self.FORMULA][key].split('formula:')[
                         1]
-                    try:
-                        self.formula_dict = self.fill_formula_dict(
-                            formula)
-                        self.check_formula_dict()
-                    except:
-
-                        wrong_formula = SympyFormula(formula)
-                        token_list = wrong_formula.get_token_list()
-                        msg = f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists'
-                        self.data_integrity[namespaced_key] = msg
-                        self.logger.error(msg)
-                    value = self.get_value_from_formula(formula)
-                    values_dict[new_key][el] = value
-                    self.dm.data_dict[id_key][self.VALUE][el] = value
+                    new_value = self.get_value_from_formula(formula)
+                    old_dict[key] = new_value
 
         else:
-            if type(values_dict[new_key]) == type('str'):
-                try:
-                    formula = self.dm.data_dict[id_key][self.FORMULA].split(':')[
-                        1]
-                    self.formula_dict = self.fill_formula_dict(
-                        formula)
-                    self.check_formula_dict()
-                except:
-                    formula_test = self.dm.data_dict[id_key][self.FORMULA].split(
-                        ':')
-                    if len(formula_test) < 2:
-                        msg = f'formula for {namespaced_key} have to starts with "formula:"'
-                        self.data_integrity[namespaced_key] = msg
-                    wrong_formula = SympyFormula(formula)
-                    token_list = wrong_formula.get_token_list()
-                    msg = f'error in formula of variable {namespaced_key}. Check that parameter in {token_list} exists'
-                    self.data_integrity[namespaced_key] = msg
-                    self.logger.error(msg)
-            else:
-                msg = f'{namespaced_key} is referenced as formula, but no formula is given'
-                self.logger.error(msg)
-            value = self.get_value_from_formula(
+
+            formula = var_data_dict[self.FORMULA].split('formula:')[
+                1]
+
+            new_value = self.get_value_from_formula(
                 formula)
-            values_dict[new_key] = value
-            self.dm.data_dict[id_key][self.VALUE] = value
-        self.dm.data_dict[id_key][self.IS_EVAL] = True
-
-        return values_dict
-
-    def fill_formula_dict(self, formula):
-        """
-        build dict with all formulas and parameters to evaluate :formula given
-        """
-        filled_dict = {}
-        sympy_formula = SympyFormula(formula)
-        parameter_list = sympy_formula.get_token_list()
-        # look at each parameter of the formula
-        for parameter in parameter_list:
-            # if parameter is a variable in dm, check if it s a formula or not.
-            # If formula, keep the exploitable part
-            if parameter in self.dm.data_id_map:
-                if isinstance(self.dm.get_value(parameter), str):
-                    filled_dict[parameter] = self.dm.get_value(
-                        parameter).split(':')[1]
-                else:
-                    filled_dict[parameter] = self.dm.get_value(
-                        parameter)
-            # if parameter not in dm, then it s a key of dict or df
-            else:
-                # first identify in which df/dict the parameter is
-                splitted_parameter = parameter.split('.')
-                el_key = splitted_parameter[-1]
-                el_name_space = self.reform_full_namespace(splitted_parameter)
-                try:
-                    el_id = self.dm.data_id_map[el_name_space]
-                except:
-                    # retrieve the variable with the wrong formula
-                    formula_element = list(self.formula_dict.keys(
-                    ))[list(self.formula_dict.values()).index(formula)]
-                    msg = f'parameter {parameter} does not exist in the formula of {formula_element}'
-                    self.logger.error(msg)
-                    self.data_integrity[formula_element] = msg
-                # dataframe case
-                if self.dm.data_dict[el_id][self.TYPE] == 'dataframe':
-                    if isinstance(self.dm.get_value(el_name_space)[
-                            el_key].values[0], str):
-                        filled_dict[parameter] = self.dm.get_value(
-                            el_name_space)[el_key].values[0].split(':')[1]
-                    else:
-                        filled_dict[parameter] = self.dm.get_value(el_name_space)[
-                            el_key].values[0]
-                # dict case
-                elif self.dm.data_dict[el_id][self.TYPE] == 'dict':
-                    if isinstance(self.dm.get_value(el_name_space)[
-                            el_key], str):
-                        filled_dict[parameter] = self.dm.get_value(el_name_space)[
-                            el_key].split(':')[1]
-                    else:
-                        filled_dict[parameter] = self.dm.get_value(el_name_space)[
-                            el_key]
-                else:
-                    no_supp_type = self.dm.data_dict[el_id][self.TYPE]
-                    raise Exception(
-                        f'{no_supp_type} is not supported for formula at the moment')
-        return filled_dict
-
-    def check_formula_dict(self):
-        """
-        check if all parameter are in formula_dict. If not, fill in formula_dict
-        twin_dict is created and updated. If twin_dict is different from formula_dict, formula_dict is updated and a new check is performed
-        if twin_dict and formula_dict are the same, there is no more parameter to add.
-        """
-        twin_dict = deepcopy(self.formula_dict)
-        for key in self.formula_dict.keys():
-            # if it is a string, this is a formula to check
-            if isinstance(self.formula_dict[key], str):
-                sympy_formula = SympyFormula(
-                    self.formula_dict[key])
-                parameter_list = sympy_formula.get_token_list()
-                # look at if each parameter are referenced
-                for parameter in parameter_list:
-                    if parameter not in self.formula_dict.keys():
-                        filled_dict = self.fill_formula_dict(
-                            self.formula_dict[key])
-                        self.update_dict(twin_dict, filled_dict)
-        # if updates were made, a new check is performed. else, all parameter
-        # needed are known
-        if twin_dict != self.formula_dict:
-            self.formula_dict = deepcopy(twin_dict)
-            self.check_formula_dict()
-
-    def update_dict(self, dict_to_update, filled_dict):
-        """
-        complete dict_to_update with the key : value of filled_dict if not possessed
-        """
-        for key, value in filled_dict.items():
-            if key not in dict_to_update.keys():
-                dict_to_update[key] = value
-
-    def clean_formula_dict(self):
-        """
-        reset self.formula_dict
-        """
-        self.formula_dict = {}
-
-    def reform_full_namespace(self, splitted_name):
-        """
-        """
-        splitted_name.pop()
-        full_name_space = splitted_name.pop(0)
-        for el in splitted_name:
-            full_name_space += '.' + el
-        #full_name_space = full_name_space[:-1]
-        return full_name_space
+            self.dm.set_data(namespaced_key, self.VALUE, new_value)
+        self.dm.set_data(namespaced_key, self.IS_EVAL, True)
 
     def get_value_from_formula(self, formula):
         """
         evaluate formula using SympyFormula and self.formula_dict
         """
         sympy_formula = SympyFormula(formula)
-        sympy_formula.evaluate(self.formula_dict)
+        sympy_formula.evaluate(self.check_data_integrity_cls.formula_dict)
         return sympy_formula.get_value()
 
     # -- execute/runtime section
@@ -1608,8 +1467,13 @@ class SoSDiscipline(MDODiscipline):
         Update all disciplines with datamanager information
         """
         self.fill_subtype_descriptor()
-        for var_name in self._data_in.keys():
 
+        self.__check_all_data_integrity()
+
+        for var_name in self._data_in.keys():
+            var_f_name = self.get_var_full_name(var_name, self._data_in)
+            if self.dm.get_data(var_f_name, self.IS_FORMULA) == True and self.dm.get_data(var_f_name, self.CHECK_INTEGRITY_MSG) == '':
+                self.apply_formula(var_f_name)
             try:
                 var_f_name = self.get_var_full_name(var_name, self._data_in)
                 default_val = self.dm.data_dict[self.dm.get_data_id(
@@ -1625,82 +1489,6 @@ class SoSDiscipline(MDODiscipline):
         # -- update sub-disciplines
         for discipline in self.sos_disciplines:
             discipline.update_from_dm()
-
-        self.__check_all_data_integrity()
-
-    def update_dm_with_formula(self):
-        """
-        Update dm with the value of formula if variable is defined by a formula
-        """
-        # dict {parameter_name : value}
-        value_dict = {}
-        # dict : {parameter_name : key in variable}
-        corresp_dict = {}
-        for key in self._data_in.keys():
-            if type(self._data_in[key]) == type(DataFrame()):
-                if len(self._data_in[key]) > 0:
-                    for key_df in self._data_in[key].keys():
-                        value_dict[f'{key}.{key_df}'] = self._data_in[key][key_df].values[0]
-                        corresp_dict[f'{key}.{key_df}'] = [key, key_df]
-            elif type(self._data_in[key]) == type({}):
-                for key_df in self._data_in[key].keys():
-                    value_dict[f'{key}.{key_df}'] = self._data_in[key][key_df]
-                    corresp_dict[f'{key}.{key_df}'] = [key, key_df]
-
-            else:
-                value_dict[key] = self._data_in[key]
-                corresp_dict[key] = key
-
-        for key in value_dict.keys():
-
-            # variable is a float, and depends on other float from same disc
-            if type(value_dict[key]) == type('string'):
-                # store formula in dm.data_dict
-                if key in self._data_in.keys():
-                    try:
-                        id_in_dm = self.dm.get_data_id(key)
-                        info_data_dict = self.dm.data_dict[id_in_dm]
-                        if info_data_dict['formula'] is None:
-                            self.dm.data_dict[id_in_dm]['formula'] = self._data_in[key]
-                    except:
-                        pass
-                else:
-                    try:
-                        input_item = corresp_dict[key][0]
-                        id_in_dm = self.dm.get_data_id(input_item)
-                        info_data_dict = self.dm.data_dict[id_in_dm]
-                        if info_data_dict['formula'] is None:
-                            self.dm.data_dict[id_in_dm]['formula'] = deepcopy(
-                                self._data_in[input_item])
-                    except:
-                        pass
-                try:
-                    if type(corresp_dict[key]) == type([]):
-                        in_el_key = corresp_dict[key][1]
-                        if self.dm.data_dict[id_in_dm]['type'] == 'dict':
-                            sympy_formula = SympyFormula(
-                                self.dm.data_dict[id_in_dm]['formula'][in_el_key])
-                        elif self.dm.data_dict[id_in_dm]['type'] == 'dataframe':
-                            sympy_formula = SympyFormula(
-                                self.dm.data_dict[id_in_dm]['formula'][in_el_key].values[0])
-                    else:
-                        sympy_formula = SympyFormula(
-                            self.dm.data_dict[id_in_dm]['formula'])
-                    sympy_formula.evaluate(value_dict)
-                    if corresp_dict[key] == key:
-                        id_in_dm = self.dm.get_data_id(key)
-                        self.dm.data_dict[id_in_dm]['value'] = sympy_formula.get_value(
-                        )
-                        value_dict[key] = sympy_formula.get_value()
-                    else:
-                        df_name = corresp_dict[key][0]
-                        df_key = corresp_dict[key][1]
-                        id_in_dm = self.dm.get_data_id(key)
-                        self.dm.data_dict[id_in_dm]['value'][df_key] = sympy_formula.get_value(
-                        )
-                        value_dict[key] = sympy_formula.get_value()
-                except:
-                    pass
 
     def fill_subtype_descriptor(self):
         """This method is used to fill the subtype descriptor of scatter and gather data

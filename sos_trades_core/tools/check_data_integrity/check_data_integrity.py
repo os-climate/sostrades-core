@@ -15,6 +15,9 @@ limitations under the License.
 '''
 
 from numpy import can_cast
+from sos_trades_core.tools.controllers.simpy_formula import SympyFormula
+from copy import deepcopy
+
 
 STANDARD_LIST_TYPES = ['list', 'array']
 TEMPORARY_LIST_TYPES = ['float_list', 'string_list', 'int_list']
@@ -26,10 +29,11 @@ class CheckDataIntegrity():
     '''CheckDataIntegrity class is here to check the data integrity of a variable regarding its type or variable descriptor associated
     '''
 
-    def __init__(self, sos_disc_class, new_check=True):
+    def __init__(self, sos_disc_class, dm, new_check=True):
         '''
         Constructor
         '''
+        self.dm = dm
         self.new_check = new_check
         self.check_integrity_msg_list = []
         self.sos_disc_class = sos_disc_class
@@ -46,6 +50,11 @@ class CheckDataIntegrity():
         self.POSSIBLE_VALUES = self.sos_disc_class.POSSIBLE_VALUES
         self.DATAFRAME_DESCRIPTOR = self.sos_disc_class.DATAFRAME_DESCRIPTOR
         self.DATAFRAME_EDITION_LOCKED = self.sos_disc_class.DATAFRAME_EDITION_LOCKED
+        self.IS_FORMULA = self.sos_disc_class.IS_FORMULA
+        self.IS_EVAL = self.sos_disc_class.IS_EVAL
+        self.FORMULA = self.sos_disc_class.FORMULA
+
+        self.formula_dict = {}
 
     def check_variable_type_and_unit(self, var_data_dict):
         '''
@@ -87,21 +96,29 @@ class CheckDataIntegrity():
                 check_integrity_msg = f'Value is not set!'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             elif self.variable_value is not None:
-                # FIRST check type of the value
-
-                if not isinstance(self.variable_value, self.VAR_TYPE_MAP[self.variable_type]) and self.new_check:
-                    check_integrity_msg = f'Value {self.variable_value} has not the type specified in datamanager which is {self.variable_type}'
-                    self.__add_msg_to_check_integrity_msg_list(
-                        check_integrity_msg)
+                # Do not check type of the value if the value is a formula
+                if var_data_dict[self.IS_FORMULA]:
+                    if var_data_dict[self.IS_EVAL]:
+                        variable_formula = var_data_dict[self.FORMULA]
+                    else:
+                        variable_formula = self.variable_value
+                    self.__check_formulas_in_variable(
+                        var_data_dict, variable_formula)
                 else:
-                    if self.variable_type in ['list', 'dict'] and self.new_check:
-                        self.__check_subtype_descriptor(var_data_dict)
-                    if self.variable_type == 'dataframe' and self.new_check:
-                        self.__check_dataframe_descriptor(var_data_dict)
-                    if self.variable_range is not None:
-                        self.__check_variable_range(var_data_dict)
-                    if self.variable_possible_values is not None:
-                        self.__check_possible_values()
+                    # FIRST check type of the value
+                    if not isinstance(self.variable_value, self.VAR_TYPE_MAP[self.variable_type]) and self.new_check:
+                        check_integrity_msg = f'Value {self.variable_value} has not the type specified in datamanager which is {self.variable_type}'
+                        self.__add_msg_to_check_integrity_msg_list(
+                            check_integrity_msg)
+                    else:
+                        if self.variable_type in ['list', 'dict'] and self.new_check:
+                            self.__check_subtype_descriptor(var_data_dict)
+                        if self.variable_type == 'dataframe' and self.new_check:
+                            self.__check_dataframe_descriptor(var_data_dict)
+                        if self.variable_range is not None:
+                            self.__check_variable_range(var_data_dict)
+                        if self.variable_possible_values is not None:
+                            self.__check_possible_values()
 
         return '\n'.join(self.check_integrity_msg_list)
 
@@ -286,3 +303,158 @@ class CheckDataIntegrity():
                     check_integrity_msg_subtype = f'Value {variable_value} should be a {type_to_check} according to subtype descriptor {subtype}'
                     self.__add_msg_to_check_integrity_msg_list(
                         check_integrity_msg_subtype)
+
+    def __check_formulas_in_variable(self, var_data_dict, variable_formula):
+
+        if self.variable_type == 'dataframe':
+            for column in variable_formula.columns:
+                # if string that should be a formula but error on the typo of formula cannot be raise as error
+                # because maybe the string is not a formula but only a string
+                if type(variable_formula[column][0]) == type('str') and variable_formula[column][0].startswith('formula:'):
+                    formula = variable_formula[column].values[0].split(':')[
+                        1]
+                    self.__check_formula(formula)
+
+        elif var_data_dict[self.TYPE] == 'dict':
+            for key, value in variable_formula.items():
+                if type(value) == type('str') and value.startswith('formula:'):
+                    formula = variable_formula[key].split(':')[
+                        1]
+                    self.__check_formula(formula)
+        else:
+            if isinstance(variable_formula, str):
+                variable_split_list = variable_formula.split(':')
+                if len(variable_split_list) != 2:
+                    formula_error_msg = 'Formula has to start with "formula:"'
+                    self.__add_msg_to_check_integrity_msg_list(
+                        formula_error_msg)
+                else:
+                    formula = variable_split_list[
+                        1]
+                    self.__check_formula(formula)
+            else:
+                formula_error_msg = f'Variable is referenced as formula, but no formula is given'
+                self.__add_msg_to_check_integrity_msg_list(
+                    formula_error_msg)
+
+    def __check_formula(self, formula):
+        '''
+        Check a single formula 
+        '''
+        err_msg = None
+        try:
+            sympy_formula = SympyFormula(formula)
+        except Exception as e:
+            err_msg = str(e)
+            self.__add_msg_to_check_integrity_msg_list(str(err_msg))
+        if err_msg is None:
+            self.__fill_formula_dict(
+                sympy_formula)
+            self.__check_formula_dict()
+
+    def __fill_formula_dict(self, sympy_formula):
+        """
+        build dict with all formulas and parameters to evaluate :formula given
+        """
+
+        parameter_list = sympy_formula.get_token_list()
+        parameter_list.sort()
+        # look at each parameter of the formula
+        for parameter in parameter_list:
+            # if parameter is a variable in dm, check if it s a formula or not.
+            # If formula, keep the exploitable part
+            if parameter in self.dm.data_id_map:
+                if self.dm.get_data(parameter, self.IS_FORMULA):
+                    self.formula_dict[parameter] = self.dm.get_value(
+                        parameter).split(':')[1]
+                else:
+                    self.formula_dict[parameter] = self.dm.get_value(
+                        parameter)
+            # if parameter not in dm, then it s a key of dict or df
+            else:
+                # first identify in which df/dict the parameter is
+                splitted_parameter = parameter.split('.')
+                el_key = splitted_parameter.pop()
+                el_name_space = '.'.join(splitted_parameter)
+                if el_name_space not in self.dm.data_id_map:
+                    formula_error_msg = f'Parameter {parameter} does not exist in the formula'
+                    self.__add_msg_to_check_integrity_msg_list(
+                        formula_error_msg)
+                # dataframe case
+                else:
+                    parameter_type = self.dm.get_data(el_name_space, self.TYPE)
+                    parameter_value = self.dm.get_value(el_name_space)
+                    if parameter_type == 'dataframe':
+                        if el_key not in parameter_value.columns:
+                            formula_error_msg = f'Column {el_key} does not exist in dataframe {el_name_space} as mentioned by {parameter}'
+                            self.__add_msg_to_check_integrity_msg_list(
+                                formula_error_msg)
+                        else:
+                            if isinstance(parameter_value[
+                                    el_key].values[0], str):
+                                self.formula_dict[parameter] = self.dm.get_value(
+                                    el_name_space)[el_key].values[0].split(':')[1]
+                            else:
+                                self.formula_dict[parameter] = parameter_value[
+                                    el_key].values[0]
+                    # dict case
+                    elif parameter_type == 'dict':
+                        if el_key not in parameter_value.keys():
+                            formula_error_msg = f'Key {el_key} does not exist in dict {el_name_space} as mentioned by {parameter}'
+                            self.__add_msg_to_check_integrity_msg_list(
+                                formula_error_msg)
+                        else:
+                            if isinstance(parameter_value[
+                                    el_key], str):
+                                self.formula_dict[parameter] = parameter_value[
+                                    el_key].split(':')[1]
+                            else:
+                                self.formula_dict[parameter] = parameter_value[
+                                    el_key]
+                    else:
+                        formula_error_msg = f'Type {parameter_type} for a parameter in a formula is not supported for formula at the moment'
+                        self.__add_msg_to_check_integrity_msg_list(
+                            formula_error_msg)
+
+    def __check_formula_dict(self):
+        """
+        check if all parameter are in formula_dict. If not, fill in formula_dict
+        twin_dict is created and updated. If twin_dict is different from formula_dict, formula_dict is updated and a new check is performed
+        if twin_dict and formula_dict are the same, there is no more parameter to add.
+        """
+        twin_dict = deepcopy(self.formula_dict)
+        for key in self.formula_dict.keys():
+            # if it is a string, this is a formula to check
+            if isinstance(self.formula_dict[key], str):
+                sympy_formula = SympyFormula(
+                    self.formula_dict[key])
+                parameter_list = sympy_formula.get_token_list()
+                # look at if each parameter are referenced
+                for parameter in parameter_list:
+                    if parameter not in self.formula_dict.keys():
+                        sympy_formula = SympyFormula(self.formula_dict[key])
+                        filled_dict = self.__fill_formula_dict(sympy_formula)
+                        self.__update_dict(twin_dict, filled_dict)
+        # if updates were made, a new check is performed. else, all parameter
+        # needed are known
+        if twin_dict != self.formula_dict:
+            self.formula_dict = deepcopy(twin_dict)
+            self.__check_formula_dict()
+
+    def __reform_full_namespace(self, splitted_name):
+        """
+        """
+        splitted_name.pop()
+        full_name_space = splitted_name.pop(0)
+        for el in splitted_name:
+            full_name_space += '.' + el
+        #full_name_space = full_name_space[:-1]
+        return full_name_space
+
+    def __update_dict(self, dict_to_update, filled_dict):
+        """
+        complete dict_to_update with the key : value of filled_dict if not possessed
+        """
+        for key, value in filled_dict.items():
+            if key not in dict_to_update.keys():
+                dict_to_update[key] = value

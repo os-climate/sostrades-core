@@ -367,16 +367,56 @@ class TestSoSDiscipline(unittest.TestCase):
         self.ee.ns_manager.add_ns('ns_ac', self.name)
         self.ee.configure()
         x = 3.0
+
+        test_df = pd.DataFrame()
+        test_df['a'] = ['formula:3*Test.x1']
+        test_df['b'] = ['formula:2*Test.Disc11.test_df.a1']
+        c_dict = {}
+        c_dict['c'] = 'formula:a + b'
+        test_string = '3+1'
+        test_string_formula = '3@1'
+        wrong_values_dict = {self.name + '.x': x,
+                             self.name + '.Disc11.test_df': test_df,
+                             self.name + '.Disc11.c_dict': c_dict,
+                             self.name + '.Disc11.test_string': test_string,
+                             self.name + '.Disc11.test_string_formula': test_string_formula, }
+
+        self.ee.load_study_from_input_dict(wrong_values_dict)
+
+        correct_integrity_msg_dict = {self.name + '.Disc11.test_df': 'Parameter Test.x1 does not exist in the formula\nColumn a1 does not exist in dataframe Test.Disc11.test_df as mentioned by Test.Disc11.test_df.a1',
+                                      self.name + '.Disc11.test_string_formula': 'Formula has to start with "formula:"',
+                                      self.name + '.Disc11.c_dict': 'Parameter a does not exist in the formula\nParameter b does not exist in the formula',
+                                      }
+        for key, value in correct_integrity_msg_dict.items():
+            integrity_msg = self.ee.dm.get_data(
+                key, SoSDiscipline.CHECK_INTEGRITY_MSG)
+            print(key, integrity_msg)
+            self.assertEqual(value, integrity_msg)
+
+        test_string_formula = 'formula:3@1'
+        wrong_values_dict = {
+            self.name + '.Disc11.test_string_formula': test_string_formula, }
+
+        self.ee.load_study_from_input_dict(wrong_values_dict)
+        correct_integrity_msg_dict = {
+            self.name + '.Disc11.test_string_formula': "unsupported operand type(s) for @: 'Integer' and 'One'", }
+        for key, value in correct_integrity_msg_dict.items():
+            integrity_msg = self.ee.dm.get_data(
+                key, SoSDiscipline.CHECK_INTEGRITY_MSG)
+            print(key, integrity_msg)
+            self.assertEqual(value, integrity_msg)
+
         test_df = pd.DataFrame()
         test_df['a'] = ['formula:3*Test.x']
         test_df['b'] = ['formula:2*Test.Disc11.test_df.a']
         c_dict = {}
         c_dict['c'] = 'formula:Test.Disc11.test_df.a + Test.Disc11.test_df.b'
-        test_string = '3+1'
+        test_string = 'formula:3+1'
         values_dict = {self.name + '.x': x,
                        self.name + '.Disc11.test_df': test_df,
                        self.name + '.Disc11.c_dict': c_dict,
-                       self.name + '.Disc11.test_string': test_string, }
+                       self.name + '.Disc11.test_string': test_string,
+                       self.name + '.Disc11.test_string_formula': test_string, }
 
         self.ee.load_study_from_input_dict(values_dict)
 
@@ -385,6 +425,14 @@ class TestSoSDiscipline(unittest.TestCase):
         key = self.ee.dm.data_id_map[self.name + '.Disc11.test_df']
         y = self.ee.dm.get_value(self.name + '.y')
         out_string = self.ee.dm.get_value(self.name + '.Disc11.out_string')
-
+        out_string_formula = self.ee.dm.get_value(
+            self.name + '.Disc11.test_string_formula')
         self.assertEqual(y, 72)
-        self.assertEqual(out_string, '3+1')
+        self.assertEqual(out_string, 'formula:3+1')
+        self.assertEqual(out_string_formula, 4)
+
+
+if '__main__' == __name__:
+    cls = TestSoSDiscipline()
+    cls.setUp()
+    cls.test_11_check_simpy_formula_with_df()
