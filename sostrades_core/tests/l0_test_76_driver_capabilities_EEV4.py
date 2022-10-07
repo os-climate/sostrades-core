@@ -458,6 +458,94 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertEqual(exec_eng.dm.get_value('doe.out_simple2'),
                          exec_eng.dm.get_value('doe.c_1')*std(list(exec_eng.dm.get_value('doe.y_1_dict').values())[:-1]))
+
+
+    def test_6_simple_disc_DoeEval_check_num_in_grammar_and_root_process(self):
+        """
+        This test checks that the coupling between the output of a simple discipline and the input of a driver
+        subprocess works. The doe_eval will be made sith a lhs on x.
+        """
+
+        dspace_dict_x = {'variable': ['x'],
+
+                         'lower_bnd': [0.],
+                         'upper_bnd': [10.],
+
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_simple_sellar_doe_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
+        disc_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.x'] = array([1.])
+        values_dict[f'{self.ns}.y_1'] = array([1.])
+        values_dict[f'{self.ns}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.z_in'] = 2 * array([1., 1.])
+        values_dict[f'{self.ns}.DoEEval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ Simple_Disc',
+                       f'\t|_ DoEEval',
+                       '\t\t|_ subprocess',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        proxy_disc2 = exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].proxy_disciplines[1]
+        ns_id_cache_disc2_own_data_structure = proxy_disc2._io_ns_map_in['cache_type']
+        ns_id_cache_disc2_ns_manager = id(exec_eng.ns_manager.get_local_namespace(proxy_disc2))
+        self.assertEqual(ns_id_cache_disc2_own_data_structure, ns_id_cache_disc2_ns_manager)
+
+        data_in_proxy_disc2 = proxy_disc2._data_in_ns_tuple
+        var_dict_dm_in = exec_eng.dm.get_data('doe.DoEEval.subprocess.Sellar_2.cache_type')
+        var_dict_data_in = data_in_proxy_disc2[('cache_type', ns_id_cache_disc2_own_data_structure)]
+        var_dict_data_in_root = exec_eng.root_process._data_in_ns_tuple[('cache_type', ns_id_cache_disc2_own_data_structure)]
+        self.assertEqual(var_dict_dm_in, var_dict_data_in)
+        self.assertEqual(var_dict_dm_in, var_dict_data_in_root)
+
+
+        proxy_disc_sellar_problem = exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].proxy_disciplines[0]
+        ns_id_cache_disc_sellar_problem_own_data_structure = proxy_disc_sellar_problem._io_ns_map_out['c_1']
+        ns_id_cache_disc_sellar_problem_ns_manager = id(exec_eng.ns_manager.get_shared_ns_dict()['ns_OptimSellar'])
+        self.assertEqual(ns_id_cache_disc_sellar_problem_own_data_structure, ns_id_cache_disc_sellar_problem_ns_manager)
+
+        data_out_proxy_disc_sellar_problem = proxy_disc_sellar_problem._data_out_ns_tuple
+        var_dict_dm_out = exec_eng.dm.get_data('doe.c_1')
+        var_dict_data_out = data_out_proxy_disc_sellar_problem[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
+        var_dict_data_out_root = exec_eng.root_process._data_out_ns_tuple[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
+        self.assertEqual(var_dict_dm_out, var_dict_data_out)
+        self.assertEqual(var_dict_dm_out, var_dict_data_out_root)
+
     def test_io2_Coupling_of_Coupling_to_check_data_io(self):
         """
         TO BE COMPLETED
@@ -500,7 +588,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
 
         for disc in [exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0], # discipline with no coupled inputs
-                     exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0], exec_eng.root_process.proxy_disciplines[0], exec_eng.root_process] : # couplings
+                     exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0], exec_eng.root_process.proxy_disciplines[0], exec_eng.root_process]: # couplings
             io_ns_map_in = disc._io_ns_map_in
             for var, identifier in io_ns_map_in.items():
                 var_tuple = (var, identifier)
