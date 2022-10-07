@@ -306,8 +306,8 @@ class ProxyDiscipline(object):
         # -- disciplinary data attributes
         self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
         self.inst_desc_out = None  # desc_out of instance used to add dynamic outputs
-        self._data_in = None
-        self._data_out = None
+        # self._data_in = None
+        # self._data_out = None
         self._io_ns_map_in = None
         self._io_ns_map_out = None # used by ProxyCoupling, ProxyDisciplineDriver
         self._structuring_variables = None # used by ProxyCoupling, ProxyDisciplineDriver
@@ -522,13 +522,13 @@ class ProxyDiscipline(object):
         """
         Create data_in and data_out from DESC_IN and DESC_OUT if empty
         """
-        if self._data_in == {}:
+        if self._data_in_ns_tuple == {}:
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(desc_in)
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
             # TODO: check if this have to be done during configuration or at
             # the very end of it
-            self._data_in = desc_in #TODO: to remove
+            # self._data_in = desc_in #TODO: to remove
             self.update_dm_with_data_dict(desc_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
@@ -536,11 +536,11 @@ class ProxyDiscipline(object):
             # Deal with numerical parameters inside the sosdiscipline
             self.add_numerical_param_to_data_in()
 
-        if self._data_out == {}:
+        if self._data_out_ns_tuple == {}:
             desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
             self.set_shared_namespaces_dependencies(desc_out)
             desc_out = self._prepare_data_dict(self.IO_TYPE_OUT, desc_out)
-            self._data_out = desc_out #TODO: to remove
+            # self._data_out = desc_out #TODO: to remove
             self.update_dm_with_data_dict(desc_out)
             outputs_var_ns_tuples = self._extract_var_ns_tuples(desc_out)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
@@ -596,7 +596,7 @@ class ProxyDiscipline(object):
         num_data_in = deepcopy(self.NUM_DESC_IN)
         num_data_in = self._prepare_data_dict(
             self.IO_TYPE_IN, data_dict=num_data_in)
-        self._data_in.update(num_data_in) # TODO: to remove
+        # self._data_in.update(num_data_in) # TODO: to remove
         num_inputs_var_ns_tuples = self._extract_var_ns_tuples(num_data_in)
         self._update_io_ns_map(num_inputs_var_ns_tuples, self.IO_TYPE_IN)
         self.update_dm_with_data_dict(num_data_in)
@@ -620,7 +620,7 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_IN, new_inputs)
             self.update_dm_with_data_dict(
                 completed_new_inputs)
-            self._data_in.update(completed_new_inputs) # TODO: to remove
+            # self._data_in.update(completed_new_inputs) # TODO: to remove
             inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_inputs)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
             self._update_data_io(zip(inputs_var_ns_tuples, completed_new_inputs.values()), self.IO_TYPE_IN)
@@ -632,7 +632,7 @@ class ProxyDiscipline(object):
                 self.IO_TYPE_OUT, new_outputs)
             self.update_dm_with_data_dict(
                 completed_new_outputs)
-            self._data_out.update(completed_new_outputs) # TODO: to remove
+            # self._data_out.update(completed_new_outputs) # TODO: to remove
             outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_new_outputs)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
             self._update_data_io(zip(outputs_var_ns_tuples, completed_new_outputs.values()), self.IO_TYPE_OUT)
@@ -765,7 +765,7 @@ class ProxyDiscipline(object):
 
                 del self._data_in_ns_tuple[(var_name, self._io_ns_map_in[var_name])]
                 del self._io_ns_map_in[var_name]
-                del self._data_in[var_name] #TODO: to remove
+                # del self._data_in[var_name] #TODO: to remove
 
                 del self.inst_desc_in[var_name]
             elif io_type == self.IO_TYPE_OUT:
@@ -774,7 +774,7 @@ class ProxyDiscipline(object):
 
                 del self._data_out_ns_tuple[(var_name, self._io_ns_map_out[var_name])]
                 del self._io_ns_map_out[var_name]
-                del self._data_out[var_name] #TODO: to remove
+                # del self._data_out[var_name] #TODO: to remove
 
                 del self.inst_desc_out[var_name]
             if var_name in self._structuring_variables:
@@ -818,7 +818,7 @@ class ProxyDiscipline(object):
         '''
         Set numerical parameters of the ProxyDiscipline defined in the NUM_DESC_IN
         '''
-        if self._data_in != {}:
+        if self._data_in_ns_tuple != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
 
@@ -919,8 +919,8 @@ class ProxyDiscipline(object):
         """
         self.inst_desc_in = {}
         self.inst_desc_out = {}
-        self._data_in = {}
-        self._data_out = {}
+        # self._data_in = {}
+        # self._data_out = {}
         self._io_ns_map_in = {}
         self._io_ns_map_out = {}
 

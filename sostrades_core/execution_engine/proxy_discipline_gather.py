@@ -244,7 +244,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         if len(modified_inputs) > 0:
             completed_modified_inputs = self._prepare_data_dict(
                 self.IO_TYPE_IN, modified_inputs)
-            self._data_in.update(completed_modified_inputs) # TODO: to remove
+            # self._data_in.update(completed_modified_inputs) # TODO: to remove
             inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_modified_inputs)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
             self._update_data_io(zip(inputs_var_ns_tuples, completed_modified_inputs.values()), self.IO_TYPE_IN)
@@ -252,7 +252,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         if len(modified_outputs) > 0:
             completed_modified_outputs = self._prepare_data_dict(
                 self.IO_TYPE_OUT, modified_outputs)
-            self._data_out.update(completed_modified_outputs) # TODO: to remove
+            # self._data_out.update(completed_modified_outputs) # TODO: to remove
             outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_modified_outputs)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
             self._update_data_io(zip(outputs_var_ns_tuples, completed_modified_outputs.values()), self.IO_TYPE_OUT)

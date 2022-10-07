@@ -77,7 +77,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         for disc in self.get_disciplines_to_configure():
             disc.configure()
 
-        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
+        if self._data_in_ns_tuple == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
             # Explanation:
             # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
             # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
