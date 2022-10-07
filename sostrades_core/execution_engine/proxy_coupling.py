@@ -386,10 +386,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """
         #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
         subprocess_data_in, subprocess_data_out = self.__compute_mdachain_gemseo_based_data_io()
-        self._data_in_ns_tuple = {
-            (key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
-        self._data_out_ns_tuple = {
-            (key, id(value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
+        self._restart_data_io_to_disc_io()
         self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
         self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
 
