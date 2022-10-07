@@ -526,10 +526,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         ns_id_cache_disc2_ns_manager = id(exec_eng.ns_manager.get_local_namespace(proxy_disc2))
         self.assertEqual(ns_id_cache_disc2_own_data_structure, ns_id_cache_disc2_ns_manager)
 
-        data_in_proxy_disc2 = proxy_disc2._data_in_ns_tuple
+        data_in_proxy_disc2 = proxy_disc2._data_in
         var_dict_dm_in = exec_eng.dm.get_data('doe.DoEEval.subprocess.Sellar_2.cache_type')
         var_dict_data_in = data_in_proxy_disc2[('cache_type', ns_id_cache_disc2_own_data_structure)]
-        var_dict_data_in_root = exec_eng.root_process._data_in_ns_tuple[('cache_type', ns_id_cache_disc2_own_data_structure)]
+        var_dict_data_in_root = exec_eng.root_process._data_in[('cache_type', ns_id_cache_disc2_own_data_structure)]
         self.assertEqual(var_dict_dm_in, var_dict_data_in)
         self.assertEqual(var_dict_dm_in, var_dict_data_in_root)
 
@@ -539,10 +539,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         ns_id_cache_disc_sellar_problem_ns_manager = id(exec_eng.ns_manager.get_shared_ns_dict()['ns_OptimSellar'])
         self.assertEqual(ns_id_cache_disc_sellar_problem_own_data_structure, ns_id_cache_disc_sellar_problem_ns_manager)
 
-        data_out_proxy_disc_sellar_problem = proxy_disc_sellar_problem._data_out_ns_tuple
+        data_out_proxy_disc_sellar_problem = proxy_disc_sellar_problem._data_out
         var_dict_dm_out = exec_eng.dm.get_data('doe.c_1')
         var_dict_data_out = data_out_proxy_disc_sellar_problem[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
-        var_dict_data_out_root = exec_eng.root_process._data_out_ns_tuple[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
+        var_dict_data_out_root = exec_eng.root_process._data_out[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
         self.assertEqual(var_dict_dm_out, var_dict_data_out)
         self.assertEqual(var_dict_dm_out, var_dict_data_out_root)
 
