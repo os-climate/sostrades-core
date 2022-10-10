@@ -43,17 +43,40 @@ class Study(StudyManager):
         z_list = [0., 0., 0., 0.]
         dict_in_data = {'key0': 0., 'key1': 0.}
         dict_string_in_data = {'key0': 'key0', 'key1': 'key1'}
-        df_in_data = pd.DataFrame(array([[0.0, 1.0, 2.0], [0.1, 1.1, 2.1],
-                                         [0.2, 1.2, 2.2], [-9., -8.7, 1e3]]),
-                                  columns=['variable', 'c2', 'c3'])
+        df_in_data = pd.DataFrame({'variable': [5., 2.9, 0.7e-5, -19.],
+                                   'c2': 4,
+                                   'c3': 8,
+                                   'str_df': ['5.**5', '-209.1', '3.1416', '6.6']})
         weather_data = 'sunny'
-        dict_of_dict_in_data = {'key_A': {'subKey1': 0.1234, 'subKey2': 111.111, 'subKey3': 2036},
+        weather_list = [weather_data]
+        dict_of_dict_in_data = {'key_A': {'subKey1': 2, 'subKey2': 111.111, 'subKey3': 2036},
                                 'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036}}
         a_df = pd.DataFrame(array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
                                    [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['key1', 'key2', 'key3', 'key4'])
         dict_of_df_in_data = {'key_C': a_df,
                               'key_D': a_df * 3.1416}
+
+#        WRONG INPUTS FOR DEMO
+#         h_data = array([0., 0., 0., 0.])
+#         z_list = array([0., 0., 0., 0.])
+#         dict_in_data = {'key0': 0., 'key1': 0.}
+#         dict_string_in_data = {'key0': 'key0', 'key1': 'key1'}
+#         df_in_data = pd.DataFrame({'variable': [5., 2.9, 0.7e-5, -19.],
+#                                    'c2': '4',
+#                                    'c3': 8,
+#                                    'str_df': [5.**5, '-209.1', '3.1416', '6.6']})
+#         weather_data = 'sunny'
+#         weather_list = [weather_data, 'wrong_weather']
+#         dict_of_dict_in_data = {'key_A': {'subKey1': 2, 'subKey2': 111.111, 'subKey3': 2036, 'subKeywrong': 'str'},
+#                                 'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036},
+#                                 'key_wrong_dict': 2}
+#         a_df = pd.DataFrame(array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+#                                    [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
+#                             columns=['key1', 'key2', 'key3', 'key4'])
+#         dict_of_df_in_data = {'key_C': a_df,
+#                               'key_D': a_df * 3.1416,
+#                               'key_wrong': 2}
 
         values_dict[f'{ns}.z'] = 1.
         values_dict[f'{ns}.Disc1.h'] = h_data
@@ -64,10 +87,10 @@ class Study(StudyManager):
         values_dict[f'{ns}.Disc1.dict_in'] = dict_in_data
         values_dict[f'{ns}.Disc1.df_in'] = df_in_data
         values_dict[f'{ns}.weather'] = weather_data
-        values_dict[f'{ns}.weather_list'] = [weather_data]
+        values_dict[f'{ns}.weather_list'] = weather_list
         values_dict[f'{ns}.Disc1.dict_of_dict_in'] = dict_of_dict_in_data
         values_dict[f'{ns}.Disc1.dict_of_df_in'] = dict_of_df_in_data
-
+        values_dict[f'{ns}.Disc1.debug_mode'] = 'data_check_integrity'
         return [values_dict]
 
 

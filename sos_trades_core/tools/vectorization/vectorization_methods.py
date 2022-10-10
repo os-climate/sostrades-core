@@ -37,7 +37,9 @@ def get_parent_path(PATH):
         return path_list
 
 
-def merge_df_dict_with_path(df_dict: dict) -> pd.DataFrame:
+def merge_df_dict_with_path(
+    df_dict: dict, path_name: str = BREAKDOWN_COLUMN
+) -> pd.DataFrame:
     """Method to merge a dictionary of dataframe into a single dataframe.
     A new column for the aircraft_breakdown is created and the dictionary key is used as the value for the resulting dataframe
 
@@ -51,7 +53,7 @@ def merge_df_dict_with_path(df_dict: dict) -> pd.DataFrame:
     for key, df in df_dict.items():
         # dict of dict
         df_copy = df.copy(deep=True)
-        df_copy.insert(0, BREAKDOWN_COLUMN, key)
+        df_copy.insert(0, path_name, key)
         df_with_path = df_with_path.append(df_copy, ignore_index=True)
 
     return df_with_path.fillna(0.0)
@@ -145,14 +147,15 @@ def get_inputs_for_path(
 
 def change_column_values_delimiter(
     data_df: pd.DataFrame,
-    column_name: str = BREAKDOWN_COLUMN,
+    column_name: list = [BREAKDOWN_COLUMN],
     old_delimiter: str = '.',
     new_delimiter: str = ' ↦ ',
 ):
-    for g in data_df[column_name].unique():
-        data_df.loc[data_df[column_name] == g, column_name] = f'{new_delimiter}'.join(
-            g.split(old_delimiter)
-        )
+    for col in column_name:
+        for g in data_df[col].unique():
+            data_df.loc[data_df[col] == g, col] = f'{new_delimiter}'.join(
+                g.split(old_delimiter)
+            )
     return data_df
 
 

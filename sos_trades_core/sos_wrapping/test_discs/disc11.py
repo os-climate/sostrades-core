@@ -38,6 +38,7 @@ class Disc11(SoSDiscipline):
         'x': {'type': 'float', 'unit': '-', 'visibility': SoSDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'test_df': {'type': 'dataframe', 'unit': '-', 'is_formula': True},
         'c_dict': {'type': 'dict', 'unit': '-', 'is_formula': True},
+        'test_string_formula': {'type': 'string', 'unit': '-', 'is_formula': True},
         'test_string': {'type': 'string', 'unit': '-'}
     }
     DESC_OUT = {
