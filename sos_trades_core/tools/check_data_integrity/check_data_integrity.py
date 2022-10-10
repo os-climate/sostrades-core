@@ -29,12 +29,12 @@ class CheckDataIntegrity():
     '''CheckDataIntegrity class is here to check the data integrity of a variable regarding its type or variable descriptor associated
     '''
 
-    def __init__(self, sos_disc_class, dm, new_check=True):
+    def __init__(self, sos_disc_class, dm):
         '''
         Constructor
         '''
         self.dm = dm
-        self.new_check = new_check
+        self.new_check = False
         self.check_integrity_msg_list = []
         self.sos_disc_class = sos_disc_class
         self.TYPE = self.sos_disc_class.TYPE
@@ -74,9 +74,10 @@ class CheckDataIntegrity():
 
         return check_integrity_msg
 
-    def check_variable_value(self, var_data_dict):
+    def check_variable_value(self, var_data_dict, data_check_integrity=False):
         '''
         Check the value of a data
+        Oth : Check if formulas
         1st : Check the type of the value vs the type specified in the dm 
         2nd : Check if the value is in the range 
         3rd : Check if the value is in possible values
@@ -84,6 +85,7 @@ class CheckDataIntegrity():
         5th : CHeck the subtype of the value if there is subtypes
         '''
         self.check_integrity_msg_list = []
+        self.new_check = data_check_integrity
         self.variable_io_type = var_data_dict[self.IO_TYPE]
         self.variable_type = var_data_dict[self.TYPE]
         self.variable_optional = var_data_dict[self.OPTIONAL]
