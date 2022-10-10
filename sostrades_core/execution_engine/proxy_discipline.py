@@ -331,6 +331,9 @@ class ProxyDiscipline(object):
         # configure)
         self._set_dm_disc_info()
 
+        # Instantiate check_data_integrity class to check data after dm save
+        self.check_data_integrity_cls = CheckDataIntegrity(
+            self.__class__, self.dm)
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
@@ -896,8 +899,6 @@ class ProxyDiscipline(object):
         '''
         Generic check data integrity of the variables that you own ( the model origin of the variable is you)
         '''
-        self.check_data_integrity_cls = CheckDataIntegrity(
-            self.__class__, self.dm, self.ee.data_check_integrity)
 
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
         for var_fullname in data_in_full_name:
@@ -907,7 +908,7 @@ class ProxyDiscipline(object):
 
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
-                    var_data_dict)
+                    var_data_dict, self.ee.data_check_integrity)
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
 
