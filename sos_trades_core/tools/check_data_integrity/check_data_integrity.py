@@ -352,11 +352,15 @@ class CheckDataIntegrity():
                 sympy_formula)
             self.__check_formula_dict()
 
-    def __fill_formula_dict(self, sympy_formula):
+    def __fill_formula_dict(self, sympy_formula, new_dict=False):
         """
         build dict with all formulas and parameters to evaluate :formula given
         """
 
+        if not new_dict:
+            filled_dict = self.formula_dict
+        else:
+            filled_dict = {}
         parameter_list = sympy_formula.get_token_list()
         parameter_list.sort()
         # look at each parameter of the formula
@@ -365,10 +369,10 @@ class CheckDataIntegrity():
             # If formula, keep the exploitable part
             if parameter in self.dm.data_id_map:
                 if self.dm.get_data(parameter, self.IS_FORMULA):
-                    self.formula_dict[parameter] = self.dm.get_value(
+                    filled_dict[parameter] = self.dm.get_value(
                         parameter).split(':')[1]
                 else:
-                    self.formula_dict[parameter] = self.dm.get_value(
+                    filled_dict[parameter] = self.dm.get_value(
                         parameter)
             # if parameter not in dm, then it s a key of dict or df
             else:
@@ -392,10 +396,10 @@ class CheckDataIntegrity():
                         else:
                             if isinstance(parameter_value[
                                     el_key].values[0], str):
-                                self.formula_dict[parameter] = self.dm.get_value(
+                                filled_dict[parameter] = self.dm.get_value(
                                     el_name_space)[el_key].values[0].split(':')[1]
                             else:
-                                self.formula_dict[parameter] = parameter_value[
+                                filled_dict[parameter] = parameter_value[
                                     el_key].values[0]
                     # dict case
                     elif parameter_type == 'dict':
@@ -406,15 +410,16 @@ class CheckDataIntegrity():
                         else:
                             if isinstance(parameter_value[
                                     el_key], str):
-                                self.formula_dict[parameter] = parameter_value[
+                                filled_dict[parameter] = parameter_value[
                                     el_key].split(':')[1]
                             else:
-                                self.formula_dict[parameter] = parameter_value[
+                                filled_dict[parameter] = parameter_value[
                                     el_key]
                     else:
                         formula_error_msg = f'Type {parameter_type} for a parameter in a formula is not supported for formula at the moment'
                         self.__add_msg_to_check_integrity_msg_list(
                             formula_error_msg)
+        return filled_dict
 
     def __check_formula_dict(self):
         """
@@ -433,7 +438,8 @@ class CheckDataIntegrity():
                 for parameter in parameter_list:
                     if parameter not in self.formula_dict.keys():
                         sympy_formula = SympyFormula(self.formula_dict[key])
-                        filled_dict = self.__fill_formula_dict(sympy_formula)
+                        filled_dict = self.__fill_formula_dict(
+                            sympy_formula, new_dict=True)
                         self.__update_dict(twin_dict, filled_dict)
         # if updates were made, a new check is performed. else, all parameter
         # needed are known
