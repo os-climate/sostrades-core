@@ -38,7 +38,8 @@ class Study(StudyManager):
             self.study_name + '.Disc11.c_dict': c_dict,
             self.study_name + '.Disc2.constant': 3.1416,
             self.study_name + '.Disc2.power': 2,
-            self.study_name + '.Disc11.test_string': '3+1'}
+            self.study_name + '.Disc11.test_string': '3+1',
+            self.study_name + '.Disc11.test_string_formula': 'formula:3+1'}
         setup_data_list.append(private_values)
         return setup_data_list
 
