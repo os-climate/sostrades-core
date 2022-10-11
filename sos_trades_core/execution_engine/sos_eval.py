@@ -125,7 +125,11 @@ class SoSEval(SoSDisciplineBuilder):
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
             for full_id in full_id_list:
-                self.eval_out_list.append(full_id)
+                if not inside_evaluator:
+                    self.eval_out_list.append(full_id)
+                else:
+                    if full_id.startswith(self.get_disc_full_name()):
+                        self.eval_out_list.append(full_id)
 
     def fill_possible_values(self, disc):
         '''

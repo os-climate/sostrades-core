@@ -21,7 +21,7 @@ import pandas as pd
 class Study(StudyManager):
 
     def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine)
+        super().__init__(__file__, execution_engine=execution_engine, run_usecase=False)
 
     def setup_usecase(self):
         setup_data_list = []
@@ -38,7 +38,8 @@ class Study(StudyManager):
             self.study_name + '.Disc11.c_dict': c_dict,
             self.study_name + '.Disc2.constant': 3.1416,
             self.study_name + '.Disc2.power': 2,
-            self.study_name + '.Disc11.test_string': '3+1'}
+            self.study_name + '.Disc11.test_string': '3+1',
+            self.study_name + '.Disc11.test_string_formula': 'formula:3+1'}
         setup_data_list.append(private_values)
         return setup_data_list
 
@@ -46,4 +47,4 @@ class Study(StudyManager):
 if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.run()
+    uc_cls.run(run_usecase=True)
