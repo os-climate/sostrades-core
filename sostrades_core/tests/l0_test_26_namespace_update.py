@@ -183,78 +183,79 @@ class TestNamespaceManagement(unittest.TestCase):
         self.assertListEqual(
             [], [ns.name for ns in self.ee.ns_manager.ns_list])
 
-    def _test_05_update_shared_namespace_with_extra_ns(self):
-        """
-        The aim of this test is to configure and execute with ns_ac, and then change the namespace and configure
-        and execute again to check that the update of the namespace is properly made, not leading to variable duplicity.
-        """
-        ns_dict = {'ns_ac': f'{self.ns_test}'}
-
-        self.ee.ns_manager.add_ns_def(ns_dict)
-        disc1_builder = self.factory.get_builder_from_module(
-            'Disc1', self.mod1_path)
-        disc2_builder = self.factory.get_builder_from_module(
-            'Disc2', self.mod2_path)
-        self.factory.set_builders_to_coupling_builder(
-            [disc1_builder, disc2_builder])
-
-        self.ee.configure()
-
-        self.ee.display_treeview_nodes()
-        a = 1.0
-        b = 3.0
-        x = 99.0
-        values_dict = {self.ns_test + '.x': x,
-                       self.ns_test + '.Disc1.a': a,
-                       self.ns_test + '.Disc1.b': b,
-                       self.ns_test + '.Disc2.constant': 1.5,
-                       self.ns_test + '.Disc2.power': 2}
-
-        self.ee.load_study_from_input_dict(values_dict)
-
-        # Now that the complete use case is set, we change the local namespace
-
-        self.ee.display_treeview_nodes()
-
-        self.assertListEqual(['Test', 'Test.Disc1', 'Test.Disc2'], list(
-            self.ee.dm.disciplines_id_map.keys()))
-
-        self.ee.execute()
-
-        res = self.ee.dm.get_value(self.ns_test + '.y')
-
-        self.assertEqual(res, a * x + b)
-        self.assertEqual(self.ee.dm.get_value(
-            self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
-
-        # Now that the complete use case is set we change the local namespace
-        extra_ns = 'extraNS'
-        new_study_name = f'{extra_ns}.{self.ns_test}'
-        self.ee.ns_manager.update_all_shared_namespaces_by_name(
-            extra_ns, 'ns_ac')
-
-        # self.ee.root_process.proxy_disciplines[0].reset_data()
-        # self.ee.root_process.proxy_disciplines[1].reset_data()
-
-        self.ee.configure()
-        self.ee.display_treeview_nodes()
-
-        values_dict = {new_study_name + '.x': x,
-                       self.ns_test + '.Disc1.a': a,
-                       self.ns_test + '.Disc1.b': b,
-                       self.ns_test + '.Disc2.constant': 1.5,
-                       self.ns_test + '.Disc2.power': 2}
-        self.ee.load_study_from_input_dict(values_dict)
-
-        self.assertListEqual(['Test', 'Test.Disc1', 'Test.Disc2'], list(
-            self.ee.dm.disciplines_id_map.keys()))
-
-        self.ee.execute()
-
-        res = self.ee.dm.get_value(new_study_name + '.y')
-
-        self.assertEqual(res, a * x + b)
-        self.assertEqual(self.ee.dm.get_value(new_study_name + '.x'), values_dict[new_study_name + '.x'])
+    # def _test_05_update_shared_namespace_with_extra_ns(self):
+    #     """
+    #     The aim of this test is to configure and execute with ns_ac, and then change the namespace and configure
+    #     and execute again to check that the update of the namespace is properly made, not leading to variable duplicity.
+    #     /!\ DOES NOT REPRESENT CURRENT TARGET BEHAVIOR
+    #     """
+    #     ns_dict = {'ns_ac': f'{self.ns_test}'}
+    #
+    #     self.ee.ns_manager.add_ns_def(ns_dict)
+    #     disc1_builder = self.factory.get_builder_from_module(
+    #         'Disc1', self.mod1_path)
+    #     disc2_builder = self.factory.get_builder_from_module(
+    #         'Disc2', self.mod2_path)
+    #     self.factory.set_builders_to_coupling_builder(
+    #         [disc1_builder, disc2_builder])
+    #
+    #     self.ee.configure()
+    #
+    #     self.ee.display_treeview_nodes()
+    #     a = 1.0
+    #     b = 3.0
+    #     x = 99.0
+    #     values_dict = {self.ns_test + '.x': x,
+    #                    self.ns_test + '.Disc1.a': a,
+    #                    self.ns_test + '.Disc1.b': b,
+    #                    self.ns_test + '.Disc2.constant': 1.5,
+    #                    self.ns_test + '.Disc2.power': 2}
+    #
+    #     self.ee.load_study_from_input_dict(values_dict)
+    #
+    #     # Now that the complete use case is set, we change the local namespace
+    #
+    #     self.ee.display_treeview_nodes()
+    #
+    #     self.assertListEqual(['Test', 'Test.Disc1', 'Test.Disc2'], list(
+    #         self.ee.dm.disciplines_id_map.keys()))
+    #
+    #     self.ee.execute()
+    #
+    #     res = self.ee.dm.get_value(self.ns_test + '.y')
+    #
+    #     self.assertEqual(res, a * x + b)
+    #     self.assertEqual(self.ee.dm.get_value(
+    #         self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
+    #
+    #     # Now that the complete use case is set we change the local namespace
+    #     extra_ns = 'extraNS'
+    #     new_study_name = f'{extra_ns}.{self.ns_test}'
+    #     self.ee.ns_manager.update_all_shared_namespaces_by_name(
+    #         extra_ns, 'ns_ac')
+    #
+    #     # self.ee.root_process.proxy_disciplines[0].reset_data()
+    #     # self.ee.root_process.proxy_disciplines[1].reset_data()
+    #
+    #     self.ee.configure()
+    #     self.ee.display_treeview_nodes()
+    #
+    #     values_dict = {new_study_name + '.x': x,
+    #                    self.ns_test + '.Disc1.a': a,
+    #                    self.ns_test + '.Disc1.b': b,
+    #                    self.ns_test + '.Disc2.constant': 1.5,
+    #                    self.ns_test + '.Disc2.power': 2}
+    #     self.ee.load_study_from_input_dict(values_dict)
+    #
+    #     self.assertListEqual(['Test', 'Test.Disc1', 'Test.Disc2'], list(
+    #         self.ee.dm.disciplines_id_map.keys()))
+    #
+    #     self.ee.execute()
+    #
+    #     res = self.ee.dm.get_value(new_study_name + '.y')
+    #
+    #     self.assertEqual(res, a * x + b)
+    #     self.assertEqual(self.ee.dm.get_value(new_study_name + '.x'), values_dict[new_study_name + '.x'])
 
     def test_06_update_shared_namespaces_and_builders_with_extra_name(self):
 

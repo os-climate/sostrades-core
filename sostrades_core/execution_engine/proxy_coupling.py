@@ -385,55 +385,68 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         in sub proxies
         """
         #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
-        subprocess_data_in_ns_tuple, subprocess_data_out_ns_tuple = self.__compute_mdachain_gemseo_based_data_io()
+        subprocess_data_in, subprocess_data_out = self.__compute_mdachain_gemseo_based_data_io()
+        self._restart_data_io_to_disc_io()
+        self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
+        self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
 
-        #- data_i/o setup
-        #- TODO: check if we can remove _data_in_with_full_name
-        # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
-        #                                 self._data_in.items()
-        # if key in self.DESC_IN or key in self.NUM_DESC_IN}
-        self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
-                                  self._data_in.items()
-                                  if key in self.DESC_IN or key in self.NUM_DESC_IN}
-        self._data_in = {key: value for key, value in self._data_in.items(
-        ) if
-            key in self.DESC_IN or key in self.NUM_DESC_IN}
-
-        # add inputs - that are not outputs - of all children disciplines in
-        # data_in
-        self._data_in_ns_tuple.update(subprocess_data_in_ns_tuple)
-        # for k_full in data_in:
-        #     self._data_in_with_full_name[k_full] = data_in[k_full]
-        # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
-        #     self._data_in[k] = self.dm.get_data(k_full)
-
-        # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
-        #                                 self._data_out.items()
-        #                                 if key in self.DESC_OUT}
-        self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
-                                   self._data_out.items()
-                                   if key in self.DESC_OUT}
-        self._data_out = {key: value for key, value in self._data_out.items(
-        ) if
-            key in self.DESC_OUT}
-
-        # # keep residuals_history if in data_out
-        # if self.RESIDUALS_HISTORY in self._data_out:
-        #     self._data_out_with_full_name = {
-        #         f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
-        #     self._data_out = {
-        #         self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
-        # else:
-        #     self._data_out_with_full_name = {}
-        #     self._data_out = {}
-
-        # add outputs of all children disciplines in data_out
-        self._data_out_ns_tuple.update(subprocess_data_out_ns_tuple)
-        # for k in data_out:
-        #     k_full = self.get_var_full_name(k, data_out)
-        #     self._data_out_with_full_name[k_full] = data_out[k]
-        #     if not self.ee.dm.get_data(k_full, self.NUMERICAL):
-        #         self._data_out[k] = self.dm.get_data(k_full)
+    # def _build_data_io(self):
+    #     """
+    #     Build data_in and data_out from sub proxies data_in and out
+    #     we build also data_in_with_full_name and data_out_with_full_name
+    #     to be able to retrieve inputs and outputs with same short name
+    #     in sub proxies
+    #     """
+    #     #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
+    #     subprocess_data_in_ns_tuple, subprocess_data_out_ns_tuple = self.__compute_mdachain_gemseo_based_data_io()
+    #
+    #     #- data_i/o setup
+    #     #- TODO: check if we can remove _data_in_with_full_name
+    #     # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+    #     #                                 self._data_in.items()
+    #     # if key in self.DESC_IN or key in self.NUM_DESC_IN}
+    #     self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
+    #                               self._data_in.items()
+    #                               if key in self.DESC_IN or key in self.NUM_DESC_IN}
+    #     self._data_in = {key: value for key, value in self._data_in.items(
+    #     ) if
+    #         key in self.DESC_IN or key in self.NUM_DESC_IN}
+    #
+    #     # add inputs - that are not outputs - of all children disciplines in
+    #     # data_in
+    #     self._data_in_ns_tuple.update(subprocess_data_in_ns_tuple)
+    #     # for k_full in data_in:
+    #     #     self._data_in_with_full_name[k_full] = data_in[k_full]
+    #     # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
+    #     #     self._data_in[k] = self.dm.get_data(k_full)
+    #
+    #     # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
+    #     #                                 self._data_out.items()
+    #     #                                 if key in self.DESC_OUT}
+    #     self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
+    #                                self._data_out.items()
+    #                                if key in self.DESC_OUT}
+    #     self._data_out = {key: value for key, value in self._data_out.items(
+    #     ) if
+    #         key in self.DESC_OUT}
+    #
+    #     # # keep residuals_history if in data_out
+    #     # if self.RESIDUALS_HISTORY in self._data_out:
+    #     #     self._data_out_with_full_name = {
+    #     #         f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
+    #     #     self._data_out = {
+    #     #         self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
+    #     # else:
+    #     #     self._data_out_with_full_name = {}
+    #     #     self._data_out = {}
+    #
+    #     # add outputs of all children disciplines in data_out
+    #     self._data_out_ns_tuple.update(subprocess_data_out_ns_tuple)
+    #     # for k in data_out:
+    #     #     k_full = self.get_var_full_name(k, data_out)
+    #     #     self._data_out_with_full_name[k_full] = data_out[k]
+    #     #     if not self.ee.dm.get_data(k_full, self.NUMERICAL):
+    #     #         self._data_out[k] = self.dm.get_data(k_full)
 
     def __compute_mdachain_gemseo_based_data_io(self):
         ''' mimics the definition of MDA i/o grammar

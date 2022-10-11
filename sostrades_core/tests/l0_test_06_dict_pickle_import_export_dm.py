@@ -73,10 +73,14 @@ class TestSerializeDF(unittest.TestCase):
         self.out_dir = join(dirname(__file__), 'data', 'test_output')
 
         self.h_data = array([0., 0., 0., 0.])
+        self.z_list = [0., 0., 0., 0.]
         self.dict_in_data = {'key0': 0., 'key1': 0.}
         self.df_in_data = DataFrame(array([[0.0, 1.0, 2.0], [0.1, 1.1, 2.1],
                                            [0.2, 1.2, 2.2], [-9., -8.7, 1e3]]),
                                     columns=['variable', 'c2', 'c3'])
+        self.dict_string_in = {'key_C': '1st string',
+                               'key_D': '2nd string'}
+        self.list_dict_string_in = [self.dict_string_in, self.dict_string_in]
 
         self.dict_of_dict_in_data = {'key_A': {'subKey1': 0.1234, 'subKey2': 111.111, 'subKey3': 2036},
                                      'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036}}
@@ -118,12 +122,18 @@ class TestSerializeDF(unittest.TestCase):
     def set_ee_data(self, exec_eng, st_name, proc_n):
         values_dict = {}
         values_dict[st_name + '.' + proc_n + '.h'] = self.h_data
+        values_dict[self.ns_test + '.z_list'] = self.z_list
         values_dict[st_name + '.' + proc_n + '.dict_in'] = self.dict_in_data
         values_dict[st_name + '.' + proc_n + '.df_in'] = self.df_in_data
-        values_dict[st_name + '.' + proc_n + 
+        values_dict[st_name + '.' + proc_n +
                     '.dict_of_dict_in'] = self.dict_of_dict_in_data
-        values_dict[st_name + '.' + proc_n + 
+        values_dict[st_name + '.' + proc_n +
                     '.dict_of_df_in'] = self.dict_of_df_in_data
+        values_dict[st_name + '.' + proc_n +
+                    '.dict_string_in'] = self.dict_string_in
+        values_dict[st_name + '.' + proc_n +
+                    '.list_dict_string_in'] = self.list_dict_string_in
+
         exec_eng.load_study_from_input_dict(values_dict)
         return exec_eng
 
@@ -290,25 +300,25 @@ class TestSerializeDF(unittest.TestCase):
         self.name = 'MyCase'
         self.repo = 'sostrades_core.sos_processes.test'
         self.exec_eng = ExecutionEngine(self.name)
-    
+
         builders = self.exec_eng.factory.get_builder_from_process(
             repo=self.repo, mod_id='test_coupling_of_scatter')
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
-    
+
         self.exec_eng.configure()
-    
+
         # User fill in the fields in the GUI
         dict_values = {self.name +
                        '.name_list': ['name_1', 'name_2']}
         self.exec_eng.load_study_from_input_dict(dict_values)
-    
+
         self.exec_eng.display_treeview_nodes()
-    
+
         constant1 = 10
         constant2 = 20
         power1 = 2
         power2 = 3
-    
+
         private_val = {}
         private_val[self.name +
                     '.Disc2.name_1.constant'] = constant1
@@ -316,7 +326,7 @@ class TestSerializeDF(unittest.TestCase):
         private_val[self.name +
                     '.Disc2.name_2.constant'] = constant2
         private_val[self.name + '.Disc2.name_2.power'] = power2
-    
+
         x1 = 2
         a1 = 3
         b1 = 4
@@ -330,44 +340,44 @@ class TestSerializeDF(unittest.TestCase):
         private_val[self.name + '.Disc1.name_1.b'] = b1
         private_val[self.name + '.Disc1.name_2.b'] = b2
         self.exec_eng.load_study_from_input_dict(private_val)
-    
+
         self.exec_eng.execute()
-    
+
         y1 = self.exec_eng.dm.get_value(self.name + '.name_1.y')
         y2 = self.exec_eng.dm.get_value(self.name + '.name_2.y')
         self.assertEqual(y1, a1 * x1 + b1)
         self.assertEqual(y2, a2 * x2 + b2)
-    
+
         z1 = self.exec_eng.dm.get_value(self.name + '.name_1.z')
         z2 = self.exec_eng.dm.get_value(self.name + '.name_2.z')
         self.assertEqual(z1, constant1 + y1 ** power1)
         self.assertEqual(z2, constant2 + y2 ** power2)
-    
+
         z_dict = self.exec_eng.dm.get_value(
             self.name + '.z_dict')
         # Check gather disciplines
         self.assertDictEqual(z_dict, {'name_1': z1, 'name_2': z2})
-    
+
         y_dict = self.exec_eng.dm.get_value(
             self.name + '.y_dict')
         # Check gather disciplines
         self.assertDictEqual(y_dict, {'name_1': y1, 'name_2': y2})
-    
+
         dump_dir = join(self.root_dir, self.name)
-    
+
         BaseStudyManager.static_dump_data(
             dump_dir, self.exec_eng, DirectLoadDump())
-    
+
         exec_eng2 = ExecutionEngine(self.name)
         builders = exec_eng2.factory.get_builder_from_process(
             repo=self.repo, mod_id='test_coupling_of_scatter')
         exec_eng2.factory.set_builders_to_coupling_builder(builders)
-    
+
         exec_eng2.configure()
-    
+
         BaseStudyManager.static_load_data(
             dump_dir, exec_eng2, DirectLoadDump())
-    
+
         y1 = exec_eng2.dm.get_value(self.name + '.name_1.y')
         y2 = exec_eng2.dm.get_value(self.name + '.name_2.y')
         self.assertEqual(exec_eng2.dm.get_value(

@@ -83,7 +83,7 @@ class DataManager:
         self.treeview = None
         self.reduced_dm = None
         self.reset()
-
+        self.data_check_integrity = False
         if logger is None:
             self.logger = get_sos_logger('SoS.EE.DataManager')
         else:
@@ -196,7 +196,8 @@ class DataManager:
                 data[TYPE_METADATA][fname] = self.get_data(
                     fname, TYPE_METADATA)
             # local data update
-            data["local_data"].update(d.mdo_discipline_wrapp.mdo_discipline.local_data)
+            data["local_data"].update(
+                d.mdo_discipline_wrapp.mdo_discipline.local_data)
         return data
 
     def get_value(self, var_f_name):
@@ -367,9 +368,10 @@ class DataManager:
                 if val in self.disciplines_dict:
                     converted_dict[key].append(self.disciplines_dict[val])
         return converted_dict
-    
+
     def create_reduced_dm(self):
-        self.reduced_dm = self.get_data_dict_list_attr([ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA, ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING, ProxyDiscipline.CONNECTOR_DATA])
+        self.reduced_dm = self.get_data_dict_list_attr([ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA,
+                                                        ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING, ProxyDiscipline.CONNECTOR_DATA])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):
         ''' Convert dict keys with ids to full_names or full_names to ids
@@ -701,111 +703,6 @@ class DataManager:
             return self.disciplines_dict[disc_id][ProxyDiscipline.NS_REFERENCE].value
         else:
             return None
-
-    # -- Check if datamanager is usable or not
-
-    def check_inputs(self, raise_exeption=True):
-        '''Check if all inputs are filled
-        '''
-        errors_in_dm_msg = None
-        for var_id in self.data_dict.keys():
-            var_f_name = self.get_var_full_name(var_id)
-            io_type = self.data_dict[var_id][IO_TYPE]
-            unit = self.data_dict[var_id][UNIT]
-            vtype = self.data_dict[var_id][TYPE]
-            optional = self.data_dict[var_id][OPTIONAL]
-            value = self.data_dict[var_id][VALUE]
-            prange = self.data_dict[var_id][RANGE]
-            possible_values = self.data_dict[var_id][POSSIBLE_VALUES]
-            coupling = self.data_dict[var_id][COUPLING]
-            if vtype not in ProxyDiscipline.VAR_TYPE_MAP.keys():
-                errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} not in allowed type {list(ProxyDiscipline.VAR_TYPE_MAP.keys())}'
-                self.logger.error(errors_in_dm_msg)
-
-            # check that the variable has a unit
-            if unit is None and vtype not in ProxyDiscipline.NO_UNIT_TYPES:
-                self.logger.debug(
-                    f"The variable {var_f_name} is used in {self.get_discipline(self.data_dict[var_id]['model_origin']).__class__} and unit is not defined")
-
-            # check if data is and input and is not optional
-            if io_type == IO_TYPE_IN and not optional:
-                if value is None:
-                    errors_in_dm_msg = f'Variable: {var_f_name} value is not set!'
-                    self.logger.error(errors_in_dm_msg)
-                else:
-                    if prange is not None:
-                        check_range = True
-                        if vtype in ['int', 'float', 'string']:
-
-                            if not can_cast(type(value), type(prange[0])):
-                                errors_in_dm_msg = f'Variable: {var_f_name}: {value} ({type(value)}) not the same as {prange[0]} ({type(prange[0])})'
-                                check_range = False
-                                self.logger.error(errors_in_dm_msg)
-                            if not can_cast(type(value), type(prange[1])):
-                                errors_in_dm_msg = f'Variable: {var_f_name}: {value} ({type(value)}) not the same as {prange[0]} ({type(prange[1])})'
-                                check_range = False
-                                self.logger.error(errors_in_dm_msg)
-                            if check_range:
-                                if prange[0] <= value <= prange[1]:
-                                    pass
-                                else:
-                                    errors_in_dm_msg = f'Variable: {var_f_name} : {value} is not in range {prange}'
-                                    self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list', 'list']:
-                            for sub_value in value:
-                                if not can_cast(type(sub_value), type(prange[0])):
-                                    errors_in_dm_msg = f'Variable: {var_f_name}: {sub_value} ({type(sub_value)}) in list {value} not the same as {prange[0]} ({type(prange[0])})'
-                                    check_range = False
-                                    self.logger.error(errors_in_dm_msg)
-                                if not can_cast(type(sub_value), type(prange[1])):
-                                    errors_in_dm_msg = f'Variable: {var_f_name}: {sub_value} ({type(sub_value)}) in list {value} not the same as {prange[0]} ({type(prange[0])})'
-                                    check_range = False
-                                    self.logger.error(errors_in_dm_msg)
-                                if check_range:
-                                    if prange[0] <= sub_value <= prange[1]:
-                                        pass
-                                    else:
-                                        errors_in_dm_msg = f'Variable: {var_f_name} : {sub_value} in list {value} is not in range {prange}'
-                                        self.logger.error(errors_in_dm_msg)
-                        else:
-                            errors_in_dm_msg = f'Variable: {var_f_name} type {vtype} does not support *range*'
-                            self.logger.error(errors_in_dm_msg)
-                    if possible_values is not None:
-                        if vtype in ['int', 'float', 'string', 'bool']:
-                            if value not in possible_values:
-                                errors_in_dm_msg = f'Variable: {var_f_name} : {value} not in *possible values* {possible_values}'
-                                self.logger.error(errors_in_dm_msg)
-                        elif vtype in ['string_list', 'float_list', 'int_list', 'list']:
-                            for sub_value in value:
-                                if sub_value not in possible_values:
-                                    errors_in_dm_msg = f'Variable: {var_f_name} : {sub_value} in list {value} not in *possible values* {possible_values}'
-                                    self.logger.error(errors_in_dm_msg)
-                        else:
-                            errors_in_dm_msg = f'Variable: {var_f_name}: type {vtype} does not support *possible values*'
-                            self.logger.error(errors_in_dm_msg)
-                    if vtype in ['array', 'dict', 'dataframe']:
-                        dataframe_descriptor = self.data_dict[var_id][DATAFRAME_DESCRIPTOR]
-                        dataframe_edition_locked = self.data_dict[var_id][DATAFRAME_EDITION_LOCKED]
-                        # Dataframe editable in GUI but no dataframe descriptor
-                        if dataframe_descriptor is None and not dataframe_edition_locked:
-                            errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} has no dataframe descriptor set'
-                            self.logger.error(errors_in_dm_msg)
-                        elif not dataframe_edition_locked:
-                            for key in dataframe_descriptor:
-                                # Check column data well described
-                                if len(dataframe_descriptor[key]) != 3:
-                                    errors_in_dm_msg = f'Variable: {var_f_name} of type {vtype} has a partial dataframe descriptor set up'
-                                    self.logger.error(errors_in_dm_msg)
-                                # Check column type authorised
-                                if dataframe_descriptor[key][0] not in ProxyDiscipline.VAR_TYPE_MAP.keys():
-                                    errors_in_dm_msg = f'Variable: {var_f_name}, with dataframe descriptor has a column type ' \
-                                                       f'{dataframe_descriptor[key][0]} not in allowed type {list(ProxyDiscipline.VAR_TYPE_MAP.keys())}'
-                                    self.logger.error(errors_in_dm_msg)
-        has_errors_in_dm = errors_in_dm_msg is not None
-        if has_errors_in_dm and raise_exeption:
-            raise ValueError(
-                f'DataManager contains *value errors*: {errors_in_dm_msg}')
-        return has_errors_in_dm
 
     def check_var_data_input_mismatch(self, var_name, var_f_name, var_id, data1, data2):
         '''
