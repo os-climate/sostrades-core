@@ -94,8 +94,11 @@ class ProxyDiscipline(object):
 
         inst_desc_in (Dict[Dict]): desc_in of instance used to add dynamic inputs
         inst_desc_out (Dict[Dict]): desc_out of instance used to add dynamic outputs
-        _data_in (Dict[Dict]): instance variable for input data handling
-        _data_out (Dict[Dict]): instance variable for output data handling
+        _data_in (Dict[Dict]): instance variable for input data handling containing description of variables in disc and subprocess
+        _data_out (Dict[Dict]): instance variable for output data handling containing description of variables in disc and subprocess
+
+        _io_ns_map_in(Dict[int]): map of short names to namespace object id of discipline DESC_IN+NUM_DESC_IN+inst_desc_in
+        _io_ns_map_out(Dict[int]): map of short names to namespace object id of discipline DESC_OUT+inst_desc_out
 
         _structuring_variables (Dict[Any]): stored values of variables whose changes force revert of the configured status
         _maturity (string): maturity of the user-defined model
@@ -280,6 +283,7 @@ class ProxyDiscipline(object):
         Arguments:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
+            associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         """
         self.proxy_disciplines = []
         self._status = None
@@ -389,7 +393,7 @@ class ProxyDiscipline(object):
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
-        Instantiate and set cache for disc if cache_type is not 'None'
+        Instanciate and set cache for disc if cache_type is not 'None'
 
         Arguments:
             disc (MDODiscipline): GEMSEO object to set cache
@@ -446,7 +450,7 @@ class ProxyDiscipline(object):
 
     def get_data_io_dict(self, io_type):
         '''
-        Get the data_in or the data_out depending on the io_type
+        Get the DESC_IN+NUM_DESC_IN+inst_desc_in or the DESC_OUT+inst_desc_out depending on the io_type
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
@@ -466,7 +470,7 @@ class ProxyDiscipline(object):
 
     def get_data_io_dict_keys(self, io_type):
         '''
-        Get the data_in or the data_out keys depending on the io_type
+        Get the DESC_IN+NUM_DESC_IN+inst_desc_in or the DESC_OUT+inst_desc_out keys depending on the io_type
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
@@ -484,7 +488,7 @@ class ProxyDiscipline(object):
 
     def get_data_io_from_key(self, io_type, var_name):
         '''
-        Return the namespace and the data_in/data_out of a single variable
+        Return the namespace and the data_in/data_out of a single variable (short name)
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
@@ -560,7 +564,7 @@ class ProxyDiscipline(object):
         To be overloaded by special proxies ( coupling, scatter,...)
 
         Argument:
-                io_type : 'string' . indicates whether we are interested in desc_in or desc_out
+            io_type : 'string' . indicates whether we are interested in desc_in or desc_out
         """
         if io_type == self.IO_TYPE_IN:
             return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
@@ -571,9 +575,30 @@ class ProxyDiscipline(object):
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
     def _extract_var_ns_tuples(self, short_name_data_dict):
+        """
+        Exctracts tuples in the form (var_name, id(ns_ref)) for the variables in a complete data dictionary with variable
+        short name as keys and variable description dictionary as values (i.e. like the DESC_IN etc. after calling
+        _prepare_data_dict).
+
+        Arguments:
+            short_name_data_dict (Dict[Dict]): data dictionary as described above
+
+        Returns:
+            list[tuple] : [(var_short_name, id(ns_ref)), ...]
+        """
         return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
 
     def _update_io_ns_map(self, var_ns_tuples, io_type):
+        """
+        Updates the variable _io_ns_map_in/_io_ns_map_out in the form {'var_short_name': id(ns_ref)}.
+
+        Arguments:
+            var_ns_tuples (list[tuple]): the tuples (var_short_name, id(ns_ref)) for the variables to add
+            io_type (string) : IO_TYPE_IN or IO_TYPE_OUT
+
+        Raises:
+            Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
+        """
         if io_type == self.IO_TYPE_IN:
             self._io_ns_map_in.update(var_ns_tuples)
         elif io_type == self.IO_TYPE_OUT:
@@ -583,6 +608,15 @@ class ProxyDiscipline(object):
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
     def _restart_data_io_to_disc_io(self, io_type=None):
+        """
+        Restarts the _data_in/_data_out to contain only the variables referenced in short names in _io_ns_map_in/_io_ns_map_out.
+
+        Arguments:
+            io_type (string) : IO_TYPE_IN or IO_TYPE_OUT
+
+        Raises:
+            Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
+        """
         io_types = []
         if io_type is None:
             io_types = [self.IO_TYPE_IN, self.IO_TYPE_OUT]
@@ -599,6 +633,17 @@ class ProxyDiscipline(object):
                 value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
 
     def _update_data_io(self, data_dict, io_type, data_dict_in_short_names=False):
+        """
+        Updates the _data_in/_data_out with the variables described in the data_dict.
+
+        Arguments:
+            data_dict (dict[dict]): description of the variables to update with
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            data_dict_in_short_names (bool): whether the keys of the data_dict are strings var_short_name (True) or tuples
+                                            (var_short_name, id(ns_ref)) as in the _data_in/_data_out.
+        Raises:
+            Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
+        """
         if io_type == self.IO_TYPE_IN:
             data_io = self._data_in
         elif io_type == self.IO_TYPE_OUT:
@@ -1723,6 +1768,15 @@ class ProxyDiscipline(object):
         return var_f_name
 
     def ns_tuples_to_full_name_keys(self, in_dict):
+        """
+        Converts the keys of the input dictionary from tuples (var_short_name, id(ns_ref)) to strings var_full_name.
+
+        Arguments:
+            in_dict (dict[Any]): the input dictionary whose keys are tuples (var_short_name, id(ns_ref))
+
+        Returns:
+            dict[Any]: the dictionary with same values and full name keys
+        """
         return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()}
 
     def update_from_dm(self):
@@ -1787,7 +1841,7 @@ class ProxyDiscipline(object):
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
 
         Return:
-            variables (???): the list of varaible namespace name
+            variables (list[string]): the list of varaible namespace name
         """
         # Refactor  variables keys with namespace
         if isinstance(keys, list):
@@ -1807,7 +1861,7 @@ class ProxyDiscipline(object):
                 key (string): variable name
 
             Return:
-                (???) the variable namespace name
+                (string) the variable namespace name
         '''
 
         # Refactor  variables keys with namespace
@@ -2130,14 +2184,13 @@ class ProxyDiscipline(object):
         self.ee.factory.remove_sos_discipline(self)
 
     def set_wrapper_attributes(self, wrapper):
-        """ set the attribute attributes of wrapper
         """
-        # input_data_names = self.get_input_data_names()
-        # output_data_names = self.get_output_data_names()
+        set the attribute attributes of wrapper which is used to provide the wrapper with information that is
+        figured out at configuration time. the input and output full name map allow the wrappers to work with
+        short names whereas the GEMSEO objects use variable full names in their data structures.
+        """
         input_full_name_map, output_full_name_map = self.create_io_full_name_map()
         wrapper.attributes = {
-            # 'input_data_names' : input_data_names,
-            # 'output_data_names' : output_data_names,
             'input_full_name_map': input_full_name_map,
             'output_full_name_map': output_full_name_map
         }
@@ -2149,26 +2202,12 @@ class ProxyDiscipline(object):
 
     def create_io_full_name_map(self):
         """
-        Create an io_full_name_map ainsi que des input_full_name_map and output_full_name_map for its sos_wrapp
+        Create an io_full_name_map as wel ass input_full_name_map and output_full_name_map for its sos_wrapp
 
         Return:
             input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
             output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
-        Sets attribute:
-            self.io_full_name_map (Dict[Str]): union of the two above used for local data update
         """
-        # output_full_name_map = {}
-        # disc_out = self.get_data_out()
-        # disc_in = self.get_data_in()
-        # for key in disc_out:
-        #     output_full_name_map[key] = self.get_var_full_name(key, disc_out)
-        #
-        # input_full_name_map = {}
-        # for key in disc_in:
-        #     input_full_name_map[key] = self.get_var_full_name(key, disc_in)
-        #
-        # return input_full_name_map, output_full_name_map
 
         return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()},\
-               {key: self.ee.ns_manager.ns_tuple_to_full_name(
-                   (key, value)) for key, value in self._io_ns_map_out.items()}
+               {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_out.items()}
