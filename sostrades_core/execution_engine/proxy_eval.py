@@ -90,33 +90,33 @@ class ProxyEval(ProxyAbstractEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        # # FIXME: mixing short names and full names
-        # self.eval_in_base_list = in_list
-        # self.eval_out_base_list = out_list
-        # self.eval_in_list = []
-        # for v_id in in_list:
-        #     full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-        #     for full_id in full_id_list:
-        #         if not inside_evaluator:
-        #             self.eval_in_list.append(full_id)
-        #         else:
-        #             if full_id.startswith(self.get_disc_full_name()):
-        #                 self.eval_in_list.append(full_id)
-        # self.eval_out_list = []
-        # for v_id in out_list:
-        #     full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-        #     for full_id in full_id_list:
-        #         self.eval_out_list.append(full_id)
+        # FIXME: mixing short names and full names
+        self.eval_in_base_list = in_list
+        self.eval_out_base_list = out_list
+        self.eval_in_list = []
+        for v_id in in_list:
+            full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
+            for full_id in full_id_list:
+                if not inside_evaluator:
+                    self.eval_in_list.append(full_id)
+                else:
+                    if full_id.startswith(self.get_disc_full_name()):
+                        self.eval_in_list.append(full_id)
+        self.eval_out_list = []
+        for v_id in out_list:
+            full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
+            for full_id in full_id_list:
+                self.eval_out_list.append(full_id)
 
         # FIXME: manipulating namespaces manually
-        self.eval_in_base_list = [
-            element.split(".")[-1] for element in in_list]
-        self.eval_out_base_list = [
-            element.split(".")[-1] for element in out_list]
-        self.eval_in_list = [
-            f'{self.ee.study_name}.{element}' for element in in_list]
-        self.eval_out_list = [
-            f'{self.ee.study_name}.{element}' for element in out_list]
+        # self.eval_in_base_list = [
+        #     element.split(".")[-1] for element in in_list]
+        # self.eval_out_base_list = [
+        #     element.split(".")[-1] for element in out_list]
+        # self.eval_in_list = [
+        #     f'{self.ee.study_name}.{element}' for element in in_list]
+        # self.eval_out_list = [
+        #     f'{self.ee.study_name}.{element}' for element in out_list]
 
     def fill_possible_values(self, disc):
         '''
@@ -300,34 +300,34 @@ class ProxyEval(ProxyAbstractEval):
                              'value', default_in_dataframe, check_value=False)
         # check if the eval_inputs need to be updated after a subprocess
         # configure
-        # elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-        #     self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-        #                        is_eval_input=True)
-        # default_dataframe = copy.deepcopy(default_in_dataframe)
-        # already_set_names = eval_input_new_dm['full_name'].tolist()
-        # already_set_values = eval_input_new_dm['selected_input'].tolist()
-        # for index, name in enumerate(already_set_names):
-        #     default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-        #         index]
-        # self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-        #                  'value', default_dataframe, check_value=False)
+        elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                               is_eval_input=True)
+            default_dataframe = copy.deepcopy(default_in_dataframe)
+            already_set_names = eval_input_new_dm['full_name'].tolist()
+            already_set_values = eval_input_new_dm['selected_input'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
+                    index]
+            self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
+                             'value', default_dataframe, check_value=False)
 
         if eval_output_new_dm is None:
             self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
                              'value', default_out_dataframe, check_value=False)
         # check if the eval_inputs need to be updated after a subprocess
         # configure
-        # elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-        #     self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
-        #                        is_eval_input=False)
-        # default_dataframe = copy.deepcopy(default_out_dataframe)
-        # already_set_names = eval_output_new_dm['full_name'].tolist()
-        # already_set_values = eval_output_new_dm['selected_output'].tolist()
-        # for index, name in enumerate(already_set_names):
-        #     default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
-        #         index]
-        # self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-        #                  'value', default_dataframe, check_value=False)
+        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                               is_eval_input=False)
+            default_dataframe = copy.deepcopy(default_out_dataframe)
+            already_set_names = eval_output_new_dm['full_name'].tolist()
+            already_set_values = eval_output_new_dm['selected_output'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
+                    index]
+            self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
+                             'value', default_dataframe, check_value=False)
 
     def check_eval_io(self, given_list, default_list, is_eval_input):
         """
