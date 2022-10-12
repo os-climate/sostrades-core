@@ -533,8 +533,9 @@ class BuildDoeEval(SoSEval):
         self.set_nested_builders(cls_builder)
         # 3. Optional step : capture the input namespace specified at
         # building step
+        driver_ns = ['ns_doe']  # we do not display it as it is internal ns
         my_keys = [
-            key for key in self.ee.ns_manager.shared_ns_dict if key != 'ns_doe']
+            key for key in self.ee.ns_manager.shared_ns_dict if key not in driver_ns]
         my_dict = {}
         for item in my_keys:
             my_dict[item] = self.ee.ns_manager.shared_ns_dict[item].get_value()
@@ -572,11 +573,12 @@ class BuildDoeEval(SoSEval):
             Function needed in build_eval_subproc(self)
         '''
         if namespace_list is None:
-            namespace_list = self.ee.ns_manager.ns_list
-            namespace_list = [
-                elem for elem in namespace_list if elem.__dict__['name'] != 'ns_doe_eval']
+            namespace_list = list(self.ee.ns_manager.shared_ns_dict.values())
+            driver_ns_list = ['ns_doe_eval', 'ns_doe']
+            namespace_list = [elem for elem in namespace_list if elem.__dict__[
+                'name'] not in driver_ns_list]
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_ns, after_name=after_name, namespace_list=namespace_list)
+            extra_ns, after_name, namespace_list=namespace_list)
 
     def setup_sos_disciplines_driver_inputs_depend_on_sub_process(self, dynamic_inputs):
         """
