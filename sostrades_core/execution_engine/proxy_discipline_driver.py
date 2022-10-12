@@ -134,8 +134,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
 
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in
-        # SoSMDODisciplineDriver ?
+        # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
         super().prepare_execution()
 
     # def get_input_data_names(self):

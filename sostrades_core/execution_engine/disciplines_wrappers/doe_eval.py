@@ -75,7 +75,6 @@ class DoeEval(EvalWrapper):
     INPUT_TYPE = ['float', 'array', 'int', 'string']
     INPUT_MULTIPLIER_TYPE = []
 
-    #TODO: n_procsses in doe eval DESC_IN is same as in coupling DESC_IN => value crush as both proxies are built with same namespace
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),

@@ -86,8 +86,7 @@ class ProxyDoeEval(ProxyEval):
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     # We define here the different default algo options in a case of a DOE
-    # TODO Implement a generic get_options functions to retrieve the default
-    # options using directly the DoeFactory
+    # TODO: Implement a generic get_options functions to retrieve the default options using directly the DoeFactory (todo since EEV3)
 
     # Default values of algorithms
     default_algo_options = {

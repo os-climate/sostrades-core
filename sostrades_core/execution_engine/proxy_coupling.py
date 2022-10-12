@@ -243,8 +243,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ProxyDiscipline._reload(
             self, sos_name, ee, associated_namespaces=associated_namespaces)
 
-    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
-    # reduce footprint in GEMSEO
+    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         '''
         Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively

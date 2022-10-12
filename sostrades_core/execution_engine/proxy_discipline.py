@@ -371,8 +371,7 @@ class ProxyDiscipline(object):
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
         else:
-            # TODO : this should only be necessary when changes in structuring
-            # variables happened?
+            # TODO : this should only be necessary when changes in structuring variables happened?
             self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
 
             if self._reset_cache:
@@ -538,8 +537,7 @@ class ProxyDiscipline(object):
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(desc_in)
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
-            # TODO: check if this have to be done during configuration or at
-            # the very end of it (dynamic ns)
+            # TODO: check if it is OK to update dm during config. rather than at the very end of it (dynamic ns)
             self.update_dm_with_data_dict(desc_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
@@ -1365,8 +1363,8 @@ class ProxyDiscipline(object):
             if q_key not in self.dm.data_id_map:
                 raise Exception(
                     f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-            # get data in local_data during run or linearize steps #TODO: this
-            # should not be possible, should it?
+            # get data in local_data during run or linearize steps
+            # #TODO: this should not be possible in command line mode, is it possible in the GUI?
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
             # get data in data manager during configure step

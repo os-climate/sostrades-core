@@ -406,7 +406,7 @@ class ProxyEval(ProxyAbstractEval):
                            'reference_scenario': self.get_x0(),
                            'activated_elems_dspace_df': [[True, True]
                                                          if self.ee.dm.get_data(var, 'type') == 'array' else [True]
-                                                         for var in self.eval_in_list],  # TODO: Array dimensions greater than 2???
+                                                         for var in self.eval_in_list],  # TODO: Array dimensions greater than 2??? TEST
                            'study_name': self.ee.study_name,
                            'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
                            'selected_inputs': self.selected_inputs,

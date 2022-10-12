@@ -51,7 +51,6 @@ class AbstractEvalWrapper(SoSWrapp):
 
     _maturity = 'Fake'
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
-    #TODO: n_processes in eval DESC_IN is same as in coupling DESC_IN => value crush as both proxies are built with same namespace
     DESC_IN = {
         'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
         'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
