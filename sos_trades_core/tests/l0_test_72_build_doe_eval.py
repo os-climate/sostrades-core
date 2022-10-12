@@ -3255,7 +3255,7 @@ class TestBuildDoeEval(unittest.TestCase):
             repo_proc_builder, mod_id_empty_doe, 'MyStudy')
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()  # configure
-        study_dump.dump_data(dump_dir)
+        # study_dump.dump_data(dump_dir)
 
         with_uc_import = True
 
@@ -3328,16 +3328,6 @@ class TestBuildDoeEval(unittest.TestCase):
                        f'\t\t|_ Hessian']
         self.check_created_tree_structure(exp_tv_list)
 
-        # create session with empty DoE
-        print(
-            '################################################################################')
-        print('STEP_1: create session with empty DoE')
-        study_dump = BaseStudyManager(
-            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
-        study_dump.set_dump_directory(dump_dir)
-        study_dump.load_data()  # configure
-        study_dump.dump_data(dump_dir)
-
         print(
             '################################################################################')
         print(
@@ -3364,6 +3354,9 @@ class TestBuildDoeEval(unittest.TestCase):
 
         study_dump.load_data(from_input_dict=dict_values)
 
+        study_dump.ee.display_treeview_nodes()
+        # study_dump.ee.display_treeview_nodes(True)
+
         # check created tree structure
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ MyStudy',
@@ -3374,7 +3367,7 @@ class TestBuildDoeEval(unittest.TestCase):
                        f'\t\t\t|_ Sellar_Problem']
         self.check_created_tree_structure(exp_tv_list)
 
-        study_dump.ee.display_treeview_nodes(True)
+        study_dump.ee.display_treeview_nodes()
 
 
 if '__main__' == __name__:
