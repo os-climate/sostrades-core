@@ -294,8 +294,10 @@ def compute_sum_df(
 
     # restore column not to sum in result sum df
     if columns_not_to_sum != []:
-        # df_restore_base = list(df_dict.values())[0]
-        df_restore_base = df_dict[children_keys[0]]
+        if children_keys[0] in df_dict:
+            df_restore_base = df_dict[children_keys[0]]
+        else:
+            df_restore_base = list(df_dict.values())[0]
         restore_columns = [
             col for col in df_restore_base.columns if col in columns_not_to_sum
         ]
