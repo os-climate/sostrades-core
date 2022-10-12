@@ -3232,10 +3232,147 @@ class TestBuildDoeEval(unittest.TestCase):
             print(anonymize_input_dict_from_usecase)
             print('\n')
 
+    def test_13_sequence_of_rebuild(self):
+        '''
+        Test the clean/ rebuild capability on a new sequence: check of tree view 
+        '''
+        print('test_13_sequence_of_rebuild')
+        from os.path import join, dirname
+        from sos_trades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        repo = 'sos_trades_core.sos_processes.test'
+        repo_proc_builder = 'sos_trades_core.sos_processes.test.proc_builder'
+        mod_id_empty_doe = 'test_driver_build_doe_eval_empty'
+        self.study_name = 'MyStudy'
+
+        # create session with empty DoE
+        print(
+            '################################################################################')
+        print('STEP_1: create session with empty DoE')
+        study_dump = BaseStudyManager(
+            repo_proc_builder, mod_id_empty_doe, 'MyStudy')
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()  # configure
+        # study_dump.dump_data(dump_dir)
+
+        with_uc_import = True
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_1: input sellar subprocess with usecase')
+        mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
+
+        if with_uc_import:
+            my_usecase = 'usecase'
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            anonymize_input_dict = study_dump.static_load_raw_usecase_data(
+                repo, mod_id, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict
+        else:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, 'Empty')
+
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+
+        ######### Fill the dictionary for dm   ####
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ DoE_Eval',
+                       f'\t\t|_ SellarCoupling',
+                       f'\t\t\t|_ Sellar_2',
+                       f'\t\t\t|_ Sellar_1',
+                       f'\t\t\t|_ Sellar_Problem']
+        self.check_created_tree_structure(exp_tv_list)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_2: input hessian subprocess with usecase')
+        mod_id = 'test_disc_hessian'  # here we have namespace and a coupling
+
+        if with_uc_import:
+            my_usecase = 'usecase1'
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            anonymize_input_dict = study_dump.static_load_raw_usecase_data(
+                repo, mod_id, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict
+        else:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, 'Empty')
+
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+
+        ######### Fill the dictionary for dm   ####
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ DoE_Eval',
+                       f'\t\t|_ Hessian']
+        self.check_created_tree_structure(exp_tv_list)
+
+        print(
+            '################################################################################')
+        print(
+            'STEP_3: input sellar subprocess with usecase')
+        mod_id = 'test_sellar_coupling'  # here we have namespace and a coupling
+
+        if with_uc_import:
+            my_usecase = 'usecase'
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            anonymize_input_dict = study_dump.static_load_raw_usecase_data(
+                repo, mod_id, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict
+        else:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, 'Empty')
+
+        self.ns = f'{self.study_name}'
+        self.exec_eng = study_dump.ee
+
+        ######### Fill the dictionary for dm   ####
+        dict_values = {}
+        dict_values[f'{self.study_name}.DoE_Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+
+        study_dump.load_data(from_input_dict=dict_values)
+
+        study_dump.ee.display_treeview_nodes()
+        # study_dump.ee.display_treeview_nodes(True)
+
+        # check created tree structure
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ MyStudy',
+                       f'\t|_ DoE_Eval',
+                       f'\t\t|_ SellarCoupling',
+                       f'\t\t\t|_ Sellar_2',
+                       f'\t\t\t|_ Sellar_1',
+                       f'\t\t\t|_ Sellar_Problem']
+        self.check_created_tree_structure(exp_tv_list)
+
+        study_dump.ee.display_treeview_nodes()
+
 
 if '__main__' == __name__:
     my_test = TestBuildDoeEval()
-    test_selector = 9
+    test_selector = 13
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_doe_eval_with_empty_disc()
@@ -3264,3 +3401,5 @@ if '__main__' == __name__:
         my_test.test_11_test_uscase_update_with_dynamic_subprocess()
     elif test_selector == 12:
         my_test.test_12_specific_scripting_functions()
+    elif test_selector == 13:
+        my_test.test_13_sequence_of_rebuild()
