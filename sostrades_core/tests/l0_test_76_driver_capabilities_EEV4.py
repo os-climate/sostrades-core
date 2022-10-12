@@ -508,7 +508,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_dict = {'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.Eval.custom_samples_df'] = samples_df
+        disc_dict[f'{ns}.Eval.samples_inputs_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -533,12 +533,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         doe_disc = exec_eng.dm.get_disciplines_with_name('root.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
 
-        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+        doe_disc_samples = doe_disc.get_sosdisc_inputs(
             'samples_inputs_df')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
-        self.assertEqual(len(doe_disc_samples), 6)
+        self.assertEqual(len(doe_disc_samples), 5)
         self.assertEqual(len(doe_disc_obj), 6)
         reference_dict_doe_disc_y1 = {'scenario_1': array([15.102817691025274]),
                                       'scenario_2': array([15.000894464408367]),

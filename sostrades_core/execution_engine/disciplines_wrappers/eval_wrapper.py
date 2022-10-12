@@ -57,12 +57,12 @@ class EvalWrapper(AbstractEvalWrapper):
         'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
+        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                              'namespace': 'ns_eval'}
 
     }
 
     DESC_OUT = {
-        'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                              'namespace': 'ns_eval'}
     }
 
     INPUT_MULTIPLIER_TYPE = []
@@ -422,15 +422,15 @@ class EvalWrapper(AbstractEvalWrapper):
 
         # construction of a dataframe of generated samples
         # columns are selected inputs
-        columns = ['scenario']
-        columns.extend(self.attributes['selected_inputs'])
-        samples_all_row = []
-        for (scenario, scenario_sample) in dict_sample.items():
-            samples_row = [scenario]
-            for generated_input in scenario_sample.values():
-                samples_row.append(generated_input)
-            samples_all_row.append(samples_row)
-        samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
+        # columns = ['scenario']
+        # columns.extend(self.attributes['selected_inputs'])
+        # samples_all_row = []
+        # for (scenario, scenario_sample) in dict_sample.items():
+        #     samples_row = [scenario]
+        #     for generated_input in scenario_sample.values():
+        #         samples_row.append(generated_input)
+        #     samples_all_row.append(samples_row)
+        # samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
 
         # construction of a dictionary of dynamic outputs
         # The key is the output name and the value a dictionary of results
@@ -445,8 +445,9 @@ class EvalWrapper(AbstractEvalWrapper):
                                   for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
-        self.store_sos_outputs_values(
-            {'samples_inputs_df': samples_dataframe})
+        # self.store_sos_outputs_values(
+        #     {'samples_inputs_df': samples_dataframe})
+
         for dynamic_output in self.attributes['eval_out_list']:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
@@ -455,7 +456,7 @@ class EvalWrapper(AbstractEvalWrapper):
     def take_samples(self):
         """Generating samples for the Eval
         """
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df').copy()
+        self.customed_samples = self.get_sosdisc_inputs('samples_inputs_df').copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():
