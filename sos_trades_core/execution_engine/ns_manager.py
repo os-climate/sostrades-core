@@ -452,14 +452,8 @@ class NamespaceManager:
             new_ns_value = self.compose_ns([extra_ns,
                                             ns_value])
         elif f'{after_name}' in ns_value:
-            old_ns_value_split = ns_value.split(self.NS_SEP)
-            new_ns_value_split = []
-            for item in old_ns_value_split:
-                new_ns_value_split.append(item)
-                if item == after_name.split('.')[-1]:
-                    new_ns_value_split.append(extra_ns)
-            new_ns_value = self.compose_ns(
-                new_ns_value_split)
+            new_ns_value = ns_value.replace(
+                after_name, f'{after_name}{self.NS_SEP}{extra_ns}')
         else:
             new_ns_value = self.compose_ns([ns_value, extra_ns])
 

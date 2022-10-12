@@ -161,7 +161,7 @@ class SoSDisciplineScatter(SoSDisciplineBuilder):
         self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
 
         self.sc_map.update_ns(
-            old_ns_to_update, name, self.sos_name)
+            old_ns_to_update, name, self.get_disc_full_name())
 
         if name in new_sub_names:
 
