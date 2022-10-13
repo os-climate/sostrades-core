@@ -36,7 +36,7 @@ from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.proc_builder.sos_add_subproc_to_driver import AddSubProcToDriver
 
 
-class BuildBuildSoSEvalException(Exception):
+class BuildSoSEvalException(Exception):
     pass
 
 
