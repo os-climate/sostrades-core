@@ -463,7 +463,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.dm.get_value('doe.out_simple2'),
                          exec_eng.dm.get_value('doe.c_1')*std(list(exec_eng.dm.get_value('doe.y_1_dict').values())[:-1]))
 
-    def test_5_Eval_CustomDoE(self):
+    def test_5_Eval_User_Defined_samples(self):
         """
         This test checks that the custom samples applied to an Eval driver delivers expected outputs
         It is a non regression test
@@ -492,7 +492,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
                      f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
-        # DoE inputs
+        # Eval inputs
 
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
                     array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
@@ -535,10 +535,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_samples = doe_disc.get_sosdisc_inputs(
             'samples_inputs_df')
+        reference_of_samples = pd.DataFrame([[values_dict[f'{ns}.z'], values_dict[f'{ns}.x']]], columns=['z','x'])
+        doe_disc_samples = doe_disc_samples.append(reference_of_samples, ignore_index=True)
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
         doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
-        self.assertEqual(len(doe_disc_samples), 5)
+        self.assertEqual(len(doe_disc_samples), 6)
         self.assertEqual(len(doe_disc_obj), 6)
         reference_dict_doe_disc_y1 = {'scenario_1': array([15.102817691025274]),
                                       'scenario_2': array([15.000894464408367]),
@@ -641,6 +643,82 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(var_dict_dm_out, var_dict_data_out)
         self.assertEqual(var_dict_dm_out, var_dict_data_out_root)
 
+    def test_7_Eval_User_Defined_samples_variables_not_in_root_process(self):
+        """
+        This test checks that the custom samples applied to an Eval driver delivers expected outputs. The user_defined
+        sampling is applied to variables that are not in the root process, to check that namespacing work properly.
+        It is a non regression test
+        """
+
+        study_name = 'root'
+        ns = study_name
+
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        proc_name = "test_disc1_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {ns}',
+                       '|_ root',
+                       f'\t|_ Eval',
+                       '\t\t|_ subprocess',
+                       '\t\t\t|_ Disc1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        assert exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+
+        # -- Eval inputs
+        input_selection_a = {'selected_input': [False, True, False],
+                             'full_name': ['x', 'Eval.subprocess.Disc1.a', 'Eval.subprocess.Disc1.b']}
+        input_selection_a = pd.DataFrame(input_selection_a)
+
+        output_selection_y = {'selected_output': [True, False],
+                              'full_name': ['y', 'subprocess.Disc1.indicator']}
+        output_selection_y = pd.DataFrame(output_selection_y)
+
+        disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
+                     f'{ns}.Eval.eval_outputs': output_selection_y}
+
+        a_values = [array([2.0]), array([4.0]), array([6.0]), array([8.0]), array([10.0])]
+
+        samples_dict = {'Eval.subprocess.Disc1.a': a_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{ns}.Eval.samples_inputs_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # -- Discipline inputs
+        private_values = {
+            f'{ns}.x': array([10.]),
+            f'{ns}.Eval.subprocess.Disc1.a': array([5.]),
+            f'{ns}.Eval.subprocess.Disc1.b': array([25431.]),
+            f'{ns}.y': array([4.])}
+        exec_eng.load_study_from_input_dict(private_values)
+
+        exec_eng.execute()
+
+        eval_disc = exec_eng.dm.get_disciplines_with_name(study_name + '.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+
+        eval_disc_samples = eval_disc.get_sosdisc_inputs(
+            'samples_inputs_df')
+        reference_of_samples = pd.DataFrame([[private_values[f'{ns}.Eval.subprocess.Disc1.a']]], columns=['Eval.subprocess.Disc1.a'])
+        eval_disc_samples = eval_disc_samples.append(reference_of_samples, ignore_index=True)
+        eval_disc_y = eval_disc.get_sosdisc_outputs('y_dict')
+
+        self.assertEqual(len(eval_disc_y), 6)
+        i = 0
+        for key in eval_disc_y.keys():
+            self.assertAlmostEqual(eval_disc_y[key], private_values[f'{ns}.Eval.subprocess.Disc1.b']
+                                   + private_values[f'{ns}.x']*eval_disc_samples['Eval.subprocess.Disc1.a'][i][0])
+            i += 1
     def test_io2_Coupling_of_Coupling_to_check_data_io(self):
         """
         TO BE COMPLETED
