@@ -73,6 +73,21 @@ class EvalWrapper(AbstractEvalWrapper):
         self.samples = None
         self.input_data_for_disc = None
 
+    def _init_input_data(self):
+        #TODO: deepcopy option? [discuss]
+        self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][0])
+        # self.input_data_for_disc = [self.get_input_data_for_gems(disc) for disc in self.attributes['sub_mdo_disciplines']]
+
+    def _get_input_data(self, delta_dict):
+        #TODO: deepcopy option? [discuss]
+        self.input_data_for_disc.update(delta_dict)
+        return self.input_data_for_disc
+
+    def _select_output_data(self, raw_data, eval_out_data_names):
+        output_data_dict = {key: value for key,value in raw_data.items()
+                          if key in eval_out_data_names}
+        return output_data_dict
+
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
 
         '''This function executes a parallel execution of the function sample_evaluation
@@ -80,7 +95,7 @@ class EvalWrapper(AbstractEvalWrapper):
         on a sequential or parallel way over the list of samples to evaluate
         '''
 
-        self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][0])
+        self._init_input_data()
 
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
@@ -154,7 +169,7 @@ class EvalWrapper(AbstractEvalWrapper):
 
             except:
                 self.proxy_disciplines[0]._update_status_recursive(
-                    self.STATUS_FAILED)
+                    self.STATUS_FAILED) # FIXME: This won't work
 
 
     def evaluation(self, x, scenario_name=None, convert_to_array=True, completed_eval_in_list=None):
@@ -164,7 +179,7 @@ class EvalWrapper(AbstractEvalWrapper):
         '''
         # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
         # self.attributes['sub_mdo_discipline'].clear_cache() # FIXME: cache management?
-
+        # TODO: x should already be a dictionary.
         values_dict = {}
         eval_in = self.attributes['eval_in_list']
         if completed_eval_in_list is not None:
@@ -186,10 +201,8 @@ class EvalWrapper(AbstractEvalWrapper):
         # else:
         # input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'])
         # local_data = self.attributes['sub_mdo_discipline'].execute(input_data_for_disc)
-        self.input_data_for_disc.update(values_dict)
-        local_data = self.attributes['sub_mdo_disciplines'][0].execute(self.input_data_for_disc)
-        out_local_data = {key: value for key,value in local_data.items()
-                          if key in self.attributes['eval_out_list']}
+        local_data = self.attributes['sub_mdo_disciplines'][0].execute(self._get_input_data(values_dict))
+        out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])
 
         # needed for gradient computation
         # TODO: manage data flow for gradient computation ?
