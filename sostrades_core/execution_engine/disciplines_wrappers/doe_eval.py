@@ -263,6 +263,7 @@ class DoeEval(EvalWrapper):
         """ We that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
+        #FIXME: these set operations might be at the root of the "ordering" problem
         if not set(self.attributes['selected_inputs']).issubset(set(self.customed_samples.columns.to_list())):
             missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
                 self.customed_samples.columns.to_list())) - set(self.customed_samples.columns.to_list())
