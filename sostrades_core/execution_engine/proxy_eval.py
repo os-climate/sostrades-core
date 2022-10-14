@@ -90,13 +90,11 @@ class ProxyEval(ProxyAbstractEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        # FIXME: mixing short names and full names
         self.eval_in_base_list = in_list
         self.eval_out_base_list = out_list
         self.eval_in_list = []
         for v_id in in_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-            # full_id_list = [v_id]  #FIXME: quick fix so that eval works with full names
             for full_id in full_id_list:
                 if not inside_evaluator:
                     self.eval_in_list.append(full_id)
@@ -106,11 +104,10 @@ class ProxyEval(ProxyAbstractEval):
         self.eval_out_list = []
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-            # full_id_list = [v_id] #FIXME: quick fix so that eval works with full names
             for full_id in full_id_list:
                 self.eval_out_list.append(full_id)
 
-        # FIXME: manipulating namespaces manually
+        # _FIXME: manipulating namespaces manually
         # self.eval_in_base_list = [
         #     element.split(".")[-1] for element in in_list]
         # self.eval_out_base_list = [
@@ -468,24 +465,24 @@ class ProxyEval(ProxyAbstractEval):
                                                                                    'visibility': 'Shared',
                                                                                    'namespace': 'ns_eval'}})
 
-                default_custom_dataframe = pd.DataFrame(
-                    [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-                dataframe_descriptor = {}
-                for i, key in enumerate(self.selected_inputs):
-                    cle = key
-                    var = tuple([self.ee.dm.get_data(
-                        self.eval_in_list[i], 'type'), None, True])
-                    dataframe_descriptor[cle] = var
+                # default_custom_dataframe = pd.DataFrame(
+                #     [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+                # dataframe_descriptor = {}
+                # for i, key in enumerate(self.selected_inputs):
+                #     cle = key
+                #     var = tuple([self.ee.dm.get_data(
+                #         self.eval_in_list[i], 'type'), None, True])
+                #     dataframe_descriptor[cle] = var
 
-                dynamic_inputs.update(
-                    {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                           'dataframe_descriptor': dataframe_descriptor,
-                                           'dataframe_edition_locked': False}})
-                if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
-                    disc_in['custom_samples_df']['value'] = default_custom_dataframe
-                    disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                # dynamic_inputs.update(
+                #     {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                #                            'dataframe_descriptor': dataframe_descriptor,
+                #                            'dataframe_edition_locked': False}})
+                # if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
+                #     disc_in['custom_samples_df']['value'] = default_custom_dataframe
+                #     disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
-        self.add_inputs(dynamic_inputs)
+        # self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         # if (len(self.selected_inputs) > 0) and (
         #     any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):

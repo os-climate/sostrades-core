@@ -538,7 +538,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
-        doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_inputs(
             'samples_inputs_df')
