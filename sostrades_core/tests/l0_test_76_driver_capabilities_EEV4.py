@@ -484,10 +484,15 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.configure()
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['Eval.Sellar_Problem.local_dv', 'x', 'y_1',
-                                             'y_2',
-                                             'z']}
+                               'full_name': [f'{ns}.Eval.Sellar_Problem.local_dv', f'{ns}.x', f'{ns}.y_1',
+                                             f'{ns}.y_2',
+                                             f'{ns}.z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
+                                      'full_name': [f'{ns}.c_1', f'{ns}.c_2', f'{ns}.obj', f'{ns}.y_1', f'{ns}.y_2']}
+        self.output_selection_obj_y1_y2 = pd.DataFrame(
+            output_selection_obj_y1_y2)
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
@@ -505,7 +510,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         wrong_values = 5 * [0.0]
 
         # samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
-        samples_dict = {'z': z_values, 'x': x_values,
+        samples_dict = {f'{ns}.z': z_values, f'{ns}.x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_inputs_df'] = samples_df
@@ -531,11 +536,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
-        doe_disc = exec_eng.dm.get_disciplines_with_name('root.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
 
         doe_disc_samples = doe_disc.get_sosdisc_inputs(
             'samples_inputs_df')
-        reference_of_samples = pd.DataFrame([[values_dict[f'{ns}.z'], values_dict[f'{ns}.x']]], columns=['z','x'])
+        reference_of_samples = pd.DataFrame([[values_dict[f'{ns}.z'], values_dict[f'{ns}.x']]], columns=[f'{ns}.z',f'{ns}.x'])
         doe_disc_samples = doe_disc_samples.append(reference_of_samples, ignore_index=True)
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
         doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_dict')
@@ -656,11 +661,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
         proc_name = "test_disc1_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
-            doe_eval_builder)
+            eval_builder)
 
         exec_eng.configure()
 
@@ -677,11 +682,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- Eval inputs
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.subprocess.Disc1.a', 'Eval.subprocess.Disc1.b']}
+                             'full_name': [f'{ns}.x', f'{ns}.Eval.subprocess.Disc1.a', f'{ns}.Eval.subprocess.Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_y = {'selected_output': [True, False],
-                              'full_name': ['y', 'subprocess.Disc1.indicator']}
+                              'full_name': [f'{ns}.y', f'{ns}.subprocess.Disc1.indicator']}
         output_selection_y = pd.DataFrame(output_selection_y)
 
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
@@ -689,7 +694,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         a_values = [array([2.0]), array([4.0]), array([6.0]), array([8.0]), array([10.0])]
 
-        samples_dict = {'Eval.subprocess.Disc1.a': a_values}
+        samples_dict = {f'{ns}.Eval.subprocess.Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_inputs_df'] = samples_df
 
@@ -709,7 +714,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         eval_disc_samples = eval_disc.get_sosdisc_inputs(
             'samples_inputs_df')
-        reference_of_samples = pd.DataFrame([[private_values[f'{ns}.Eval.subprocess.Disc1.a']]], columns=['Eval.subprocess.Disc1.a'])
+        reference_of_samples = pd.DataFrame([[private_values[f'{ns}.Eval.subprocess.Disc1.a']]], columns=[f'{ns}.Eval.subprocess.Disc1.a'])
         eval_disc_samples = eval_disc_samples.append(reference_of_samples, ignore_index=True)
         eval_disc_y = eval_disc.get_sosdisc_outputs('y_dict')
 
@@ -717,7 +722,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         i = 0
         for key in eval_disc_y.keys():
             self.assertAlmostEqual(eval_disc_y[key], private_values[f'{ns}.Eval.subprocess.Disc1.b']
-                                   + private_values[f'{ns}.x']*eval_disc_samples['Eval.subprocess.Disc1.a'][i][0])
+                                   + private_values[f'{ns}.x']*eval_disc_samples[f'{ns}.Eval.subprocess.Disc1.a'][i][0])
             i += 1
     def test_io2_Coupling_of_Coupling_to_check_data_io(self):
         """

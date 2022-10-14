@@ -96,6 +96,7 @@ class ProxyEval(ProxyAbstractEval):
         self.eval_in_list = []
         for v_id in in_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
+            # full_id_list = [v_id]  #FIXME: quick fix so that eval works with full names
             for full_id in full_id_list:
                 if not inside_evaluator:
                     self.eval_in_list.append(full_id)
@@ -105,6 +106,7 @@ class ProxyEval(ProxyAbstractEval):
         self.eval_out_list = []
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
+            # full_id_list = [v_id] #FIXME: quick fix so that eval works with full names
             for full_id in full_id_list:
                 self.eval_out_list.append(full_id)
 
@@ -173,8 +175,9 @@ class ProxyEval(ProxyAbstractEval):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 if is_input_type:
-                    poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".", 1)[1])
+                    # poss_in_values_full.append(
+                    #     full_id.split(self.ee.study_name + ".", 1)[1])
+                    poss_in_values_full.append(full_id)
 
                 # if is_input_multiplier_type and not is_None:
                 #     poss_in_values_list = self.set_multipliers_values(
@@ -193,8 +196,9 @@ class ProxyEval(ProxyAbstractEval):
             if not in_coupling_numerical:
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
-                poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".", 1)[1])
+                # poss_out_values_full.append(
+                #     full_id.split(self.ee.study_name + ".", 1)[1])
+                poss_out_values_full.append(full_id)
 
         return poss_in_values_full, poss_out_values_full
 
