@@ -274,7 +274,7 @@ class ProxyEval(ProxyAbstractEval):
         analyzed_disc = self.proxy_disciplines[0]
 
         # possible_in_values, possible_out_values = self.fill_possible_values(
-        possible_in_values_full, possible_out_values_full=self.fill_possible_values(analyzed_disc)
+        possible_in_values_full, possible_out_values_full = self.fill_possible_values(analyzed_disc)
 
         # possible_in_values, possible_out_values = self.find_possible_values(
         #     analyzed_disc, possible_in_values, possible_out_values)
@@ -388,12 +388,12 @@ class ProxyEval(ProxyAbstractEval):
         '''
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
+        elif len(self.cls_builder) == 1:
+            disc_builder = self.cls_builder[0]
         else:
             # If eval process is a list of builders or a non executable builder,
             # then we build a coupling containing the eval process
-            # In the case of a single sub-disc for sos_eval, although len(self.cls_builder) = 1 or it is an
-            # executable discipline, a coupling is also wanted to contain the
-            # eval process:
+
             disc_builder = self.ee.factory.create_builder_coupling(
                 self.sos_name+'.subprocess')
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
