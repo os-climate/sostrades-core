@@ -420,51 +420,6 @@ class ProxyEval(ProxyAbstractEval):
     #     # TODO : attribute has been added to SoSMDODiscipline __init__, use sos_disciplines rather ?
     #     discipline.disciplines = [self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline]
 
-#     def prepare_execution(self):
-#         '''
-#         Preparation of the GEMSEO process, including GEMSEO objects instanciation
-#         '''
-#         # prepare_execution of proxy_disciplines as in coupling
-#         # TODO: move to builder ?
-#         sub_mdo_disciplines = []
-#         for disc in self.proxy_disciplines:
-#             disc.prepare_execution()
-#             # Exclude non executable proxy Disciplines
-#             if disc.mdo_discipline_wrapp is not None:
-#                 sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
-#
-#         # FIXME : cache mgmt?
-#         super().prepare_execution()
-# #         '''
-# #         GEMSEO objects instanciation
-# #         '''
-# #         if self.mdo_discipline_wrapp.mdo_discipline is None:
-# #             # init gemseo discipline if it has not been created yet
-# #             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
-# #                                                                reduced_dm=self.ee.dm.reduced_dm,
-# #                                                                cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
-# #                                                                cache_file_path=self.get_sosdisc_inputs(
-# #                                                                    self.CACHE_FILE_PATH),
-# #                                                                disciplines=sub_mdo_disciplines)
-# #
-# #         else:
-# #             # TODO : this should only be necessary when changes in structuring variables happened?
-# #             self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
-# #
-# #             if self._reset_cache:
-# #                 # set new cache when cache_type have changed (self._reset_cache == True)
-# #                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
-# #                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-# # #             if self._reset_debug_mode:
-# # #                 # update default values when changing debug modes between executions
-# # #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
-# # #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
-# #             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
-# #             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
-# #         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
-# #         self._reset_cache = False
-# #         self._reset_debug_mode = False
-
     def setup_sos_disciplines(self):
         # TODO: move to wrapper as it was originally?
         """
@@ -502,7 +457,7 @@ class ProxyEval(ProxyAbstractEval):
 
                 # setting dynamic outputs. One output of type dict per selected
                 # output
-
+                #TODO: dirty namespacing
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
                         {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
