@@ -33,7 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict_2 = {'Disc1': disc_dir + 'disc1.Disc1'}
         builder_list_2 = self.create_builder_list(mods_dict_2, ns_dict={'ns_ac': self.ee.study_name})
 
-        ns_lower_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoEEvalUpper.subprocess.DoEEvalLower')
+        ns_lower_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoEEvalUpper.DoEEvalLower')
         doe_eval_builder_lower = self.ee.factory.create_evaluator_builder(
             'DoEEvalLower', 'doe_eval', builder_list_2)
         doe_eval_builder_lower.associate_namespaces(ns_lower_doe_eval)
