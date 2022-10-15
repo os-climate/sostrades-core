@@ -29,7 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        mod_path = 'sos_trades_core.sos_wrapping.analysis_discs.build_doe_eval.BuildDoeEval'
+        mod_path = 'sos_trades_core.sos_wrapping.analysis_discs.proc_builder.build_doe_eval.BuildDoeEval'
         disc_name = 'DoE_Eval'  # In usecase we should have the same spelling
         self.ee.ns_manager.add_ns(
             'ns_doe_eval', f'{self.ee.study_name}.{disc_name}')

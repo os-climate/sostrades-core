@@ -458,7 +458,7 @@ class GridSearchEval(DoeEval):
         else:
             # Cannot make a call to ontology so set default data
             conversion_full_ontology = {
-                parameter: parameter for parameter in parameter_list
+                parameter: [parameter, None] for parameter in parameter_list
             }
 
         # replace ontology val for column df/dict var
@@ -481,8 +481,8 @@ class GridSearchEval(DoeEval):
                 else:
                     col_name = ' Multiplier'
             val = self.get_names_from_multiplier(val)[0]
-            # var_name = conversion_full_ontology[val.split(".")[-1]][0]
-            var_name = conversion_full_ontology[val.split(".")[-1]]
+            var_name = conversion_full_ontology[val.split(".")[-1]][0]
+            # var_name = conversion_full_ontology[val.split(".")[-1]]
             var_name_origin = " " + "-".join(
                 self.conversion_full_short[val].split(".")[:-1]
             )
