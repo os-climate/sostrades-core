@@ -462,8 +462,11 @@ class EvalWrapper(AbstractEvalWrapper):
         #     {'samples_inputs_df': samples_dataframe})
 
         for dynamic_output in self.attributes['eval_out_list']:
+            # self.store_sos_outputs_values({
+            #     f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
+            #         global_dict_output[dynamic_output]})
             self.store_sos_outputs_values({
-                f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
+                f'{dynamic_output.split(".")[-1]}_dict':
                     global_dict_output[dynamic_output]})
 
     def take_samples(self):

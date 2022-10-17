@@ -68,6 +68,9 @@ class ProxyEval(ProxyAbstractEval):
         '''
         Constructor
         '''
+
+        if 'ns_root' not in ee.ns_manager.shared_ns_dict.keys():
+            ee.ns_manager.add_ns('ns_root', ee.study_name)
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
         self.eval_in_base_list = None
@@ -84,6 +87,7 @@ class ProxyEval(ProxyAbstractEval):
         self.eval_process_disc = None
         self.selected_outputs = []
         self.selected_inputs = []
+
 
     def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
         '''
@@ -509,9 +513,12 @@ class ProxyEval(ProxyAbstractEval):
 
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
-                        {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
-                                                                                   'visibility': 'Shared',
-                                                                                   'namespace': 'ns_eval'}})
+                        {f'{out_var.split(".")[-1]}_dict': {'type': 'dict',
+                                                            'visibility': 'Shared',
+                                                            'namespace': 'ns_root'}})
+                        # {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
+                        #                                                            'visibility': 'Shared',
+                        #                                                            'namespace': 'ns_eval'}})
 
                 default_custom_dataframe = pd.DataFrame(
                     [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
