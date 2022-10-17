@@ -52,6 +52,7 @@ class GSPureNewtonMDA(MDASequential):
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         linear_solver_options=None,  # type: Mapping[str,Any]
         log_convergence=False,  # type: bool
+        gauss_seidel_execution=False,
         **newton_mda_options  # type: float,  # type: Mapping[str,Any]
     ):
         """
@@ -81,6 +82,7 @@ class GSPureNewtonMDA(MDASequential):
             log_convergence=log_convergence,
             linear_solver_options=linear_solver_options,
             linear_solver_tolerance=linear_solver_tolerance,
+            gauss_seidel_execution=gauss_seidel_execution,
             ** newton_mda_options
         )
 
