@@ -94,13 +94,11 @@ class ProxyEval(ProxyAbstractEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        # FIXME: mixing short names and full names
         self.eval_in_base_list = in_list
         self.eval_out_base_list = out_list
         self.eval_in_list = []
         for v_id in in_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-            # full_id_list = [v_id]  #FIXME: quick fix so that eval works with full names
             for full_id in full_id_list:
                 if not inside_evaluator:
                     self.eval_in_list.append(full_id)
@@ -110,11 +108,10 @@ class ProxyEval(ProxyAbstractEval):
         self.eval_out_list = []
         for v_id in out_list:
             full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-            # full_id_list = [v_id] #FIXME: quick fix so that eval works with full names
             for full_id in full_id_list:
                 self.eval_out_list.append(full_id)
 
-        # FIXME: manipulating namespaces manually
+        # _FIXME: manipulating namespaces manually
         # self.eval_in_base_list = [
         #     element.split(".")[-1] for element in in_list]
         # self.eval_out_base_list = [
@@ -428,51 +425,6 @@ class ProxyEval(ProxyAbstractEval):
     #     # TODO : attribute has been added to SoSMDODiscipline __init__, use sos_disciplines rather ?
     #     discipline.disciplines = [self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline]
 
-#     def prepare_execution(self):
-#         '''
-#         Preparation of the GEMSEO process, including GEMSEO objects instanciation
-#         '''
-#         # prepare_execution of proxy_disciplines as in coupling
-#         # TODO: move to builder ?
-#         sub_mdo_disciplines = []
-#         for disc in self.proxy_disciplines:
-#             disc.prepare_execution()
-#             # Exclude non executable proxy Disciplines
-#             if disc.mdo_discipline_wrapp is not None:
-#                 sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
-#
-#         # FIXME : cache mgmt?
-#         super().prepare_execution()
-# #         '''
-# #         GEMSEO objects instanciation
-# #         '''
-# #         if self.mdo_discipline_wrapp.mdo_discipline is None:
-# #             # init gemseo discipline if it has not been created yet
-# #             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
-# #                                                                reduced_dm=self.ee.dm.reduced_dm,
-# #                                                                cache_type=self.get_sosdisc_inputs(self.CACHE_TYPE),
-# #                                                                cache_file_path=self.get_sosdisc_inputs(
-# #                                                                    self.CACHE_FILE_PATH),
-# #                                                                disciplines=sub_mdo_disciplines)
-# #
-# #         else:
-# #             # TODO : this should only be necessary when changes in structuring variables happened?
-# #             self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
-# #
-# #             if self._reset_cache:
-# #                 # set new cache when cache_type have changed (self._reset_cache == True)
-# #                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
-# #                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-# # #             if self._reset_debug_mode:
-# # #                 # update default values when changing debug modes between executions
-# # #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
-# # #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
-# #             # set the status to pending on GEMSEO side (so that it does not stay on DONE from last execution)
-# #             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
-# #         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
-# #         self._reset_cache = False
-# #         self._reset_debug_mode = False
-
     def setup_sos_disciplines(self):
         # TODO: move to wrapper as it was originally?
         """
@@ -510,7 +462,7 @@ class ProxyEval(ProxyAbstractEval):
 
                 # setting dynamic outputs. One output of type dict per selected
                 # output
-
+                #TODO: dirty namespacing
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
                         {f'{out_var.split(".")[-1]}_dict': {'type': 'dict',
@@ -520,24 +472,24 @@ class ProxyEval(ProxyAbstractEval):
                         #                                                            'visibility': 'Shared',
                         #                                                            'namespace': 'ns_eval'}})
 
-                default_custom_dataframe = pd.DataFrame(
-                    [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-                dataframe_descriptor = {}
-                for i, key in enumerate(self.selected_inputs):
-                    cle = key
-                    var = tuple([self.ee.dm.get_data(
-                        self.eval_in_list[i], 'type'), None, True])
-                    dataframe_descriptor[cle] = var
+                # default_custom_dataframe = pd.DataFrame(
+                #     [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+                # dataframe_descriptor = {}
+                # for i, key in enumerate(self.selected_inputs):
+                #     cle = key
+                #     var = tuple([self.ee.dm.get_data(
+                #         self.eval_in_list[i], 'type'), None, True])
+                #     dataframe_descriptor[cle] = var
 
-                dynamic_inputs.update(
-                    {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                           'dataframe_descriptor': dataframe_descriptor,
-                                           'dataframe_edition_locked': False}})
-                if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
-                    disc_in['custom_samples_df']['value'] = default_custom_dataframe
-                    disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                # dynamic_inputs.update(
+                #     {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                #                            'dataframe_descriptor': dataframe_descriptor,
+                #                            'dataframe_edition_locked': False}})
+                # if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
+                #     disc_in['custom_samples_df']['value'] = default_custom_dataframe
+                #     disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
-        self.add_inputs(dynamic_inputs)
+        # self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         # if (len(self.selected_inputs) > 0) and (
         #     any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):

@@ -544,7 +544,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.y_1_dict', root_outputs)
         self.assertIn('root.y_2_dict', root_outputs)
 
-        doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
+
 
         doe_disc_samples = doe_disc.get_sosdisc_inputs(
             'samples_inputs_df')

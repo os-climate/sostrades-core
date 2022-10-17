@@ -462,9 +462,13 @@ class EvalWrapper(AbstractEvalWrapper):
         #     {'samples_inputs_df': samples_dataframe})
 
         for dynamic_output in self.attributes['eval_out_list']:
+
             # self.store_sos_outputs_values({
             #     f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
             #         global_dict_output[dynamic_output]})
+
+            #TODO: dirty namespacing
+
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(".")[-1]}_dict':
                     global_dict_output[dynamic_output]})
@@ -486,6 +490,7 @@ class EvalWrapper(AbstractEvalWrapper):
         """ We that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
+        # TODO: these set operations might be at the root of the "ordering" issue
         if not set(self.attributes['selected_inputs']).issubset(set(self.customed_samples.columns.to_list())):
             missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
                 self.customed_samples.columns.to_list())) - set(self.customed_samples.columns.to_list())

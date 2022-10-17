@@ -259,29 +259,6 @@ class DoeEval(EvalWrapper):
             samples_custom.append(ordered_sample)
         return samples_custom
 
-    def check_customed_samples(self):
-        """ We that the columns of the dataframe are the same  that  the selected inputs
-        We also check that they are of the same type
-        """
-        #FIXME: these set operations might be at the root of the "ordering" problem
-        if not set(self.attributes['selected_inputs']).issubset(set(self.customed_samples.columns.to_list())):
-            missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
-                self.customed_samples.columns.to_list())) - set(self.customed_samples.columns.to_list())
-            msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
-            # To do: provide also the list of missing eval_in variables:
-            LOGGER.error(msg)
-            raise ValueError(msg)
-        else:
-            not_relevant_columns = set(
-                self.customed_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
-            msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
-            LOGGER.warning(msg)
-            if len(not_relevant_columns) != 0:
-                self.customed_samples.drop(
-                    not_relevant_columns, axis=1, inplace=True)
-            self.attributes['selected_inputs'].sort()
-            self.customed_samples = self.customed_samples[self.attributes['selected_inputs']]
-
     def run(self):
         '''
             Overloaded SoSEval method

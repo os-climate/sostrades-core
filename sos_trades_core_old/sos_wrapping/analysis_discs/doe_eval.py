@@ -183,6 +183,8 @@ class DoeEval(SoSEval):
         '''
         # if 'ns_doe' does not exist in ns_manager, we create this new
         # namespace to store output dictionaries associated to eval_outputs
+        # and we set it equal to root_process so var_dict appears to be in
+        # same node as var for all var in eval_outputs
         if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super(DoeEval, self).__init__(sos_name, ee, cls_builder)
@@ -245,7 +247,7 @@ class DoeEval(SoSEval):
 
                 if algo_name == "CustomDOE":
                     default_custom_dataframe = pd.DataFrame(
-                        [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+                        [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
                     dataframe_descriptor = {}
                     for i, key in enumerate(self.selected_inputs):
                         cle = key
