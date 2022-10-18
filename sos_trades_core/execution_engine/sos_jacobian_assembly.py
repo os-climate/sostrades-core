@@ -104,7 +104,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                     # block Jacobian
                     jac = residual_jac.get(variable, None)
                     if jac is not None:
-                        jac = jac.tocoo()
+                        coo_jac = jac.tocoo()
 
                         n_i, n_j = jac.shape
                         assert n_i == residual_size
@@ -112,12 +112,12 @@ class SoSJacobianAssembly(JacobianAssembly):
                         # Fill the sparse Jacobian block
                         #dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
                         dict.update(dres_dvar,
-                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(jac.row, jac.col, jac.data)})
+                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(coo_jac.row, coo_jac.col, coo_jac.data)})
                 # Shift the column by block width
                 out_j += variable_size
             # Shift the row by block height
             out_i += residual_size
-        return dres_dvar.real
+        return dres_dvar.tocsr()
 
     def dres_dvar(
         self,
@@ -417,7 +417,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         # exec_before_linearize is set to False, if you want to come back to old NewtonRaphson
         # put the flag to True
         self.linearize_all_disciplines(in_data, exec_before_linearize=False)
-        
+
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
 
