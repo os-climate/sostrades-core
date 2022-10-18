@@ -721,7 +721,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.indicator_dict', root_outputs)
+        self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(study_name + '.Eval')[0]
 
@@ -729,7 +729,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             'samples_inputs_df')
         reference_of_samples = pd.DataFrame([[private_values[f'{ns}.Eval.Disc1.a']]], columns=[f'{ns}.Eval.Disc1.a'])
         eval_disc_samples = eval_disc_samples.append(reference_of_samples, ignore_index=True)
-        eval_disc_ind = eval_disc.get_sosdisc_outputs('indicator_dict')
+
+        eval_disc_ind = eval_disc.get_sosdisc_outputs('Eval.Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 6)
         i = 0

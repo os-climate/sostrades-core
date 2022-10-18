@@ -463,15 +463,15 @@ class EvalWrapper(AbstractEvalWrapper):
 
         for dynamic_output in self.attributes['eval_out_list']:
 
-            # self.store_sos_outputs_values({
-            #     f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
-            #         global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({
+                f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
+                    global_dict_output[dynamic_output]})
 
             #TODO: dirty namespacing
 
-            self.store_sos_outputs_values({
-                f'{dynamic_output.split(".")[-1]}_dict':
-                    global_dict_output[dynamic_output]})
+            # self.store_sos_outputs_values({
+            #     f'{dynamic_output.split(".")[-1]}_dict':
+            #         global_dict_output[dynamic_output]})
 
     def take_samples(self):
         """Generating samples for the Eval

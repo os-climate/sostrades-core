@@ -1234,17 +1234,17 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.study_name + '.DoEEval.Disc1.b': array([25431.]),
             self.study_name + '.y': array([4.])}
         exec_eng.load_study_from_input_dict(private_values)
-        input_selection_x = {'selected_input': [True, False, False],
+        input_selection_a = {'selected_input': [False, True, False],
                                'full_name': ['x', 'DoEEval.Disc1.a', 'DoEEval.Disc1.b']}
-        input_selection_x = pd.DataFrame(input_selection_x)
+        input_selection_a = pd.DataFrame(input_selection_a)
 
-        output_selection_y = {'selected_output': [True, False],
-                                'full_name': ['y', 'Disc1.indicator']}
-        output_selection_y = pd.DataFrame(output_selection_y)
+        output_selection_ind = {'selected_output': [False, True],
+                                'full_name': ['y', 'DoEEval.Disc1.indicator']}
+        output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{self.ns}.DoEEval.sampling_algo': "lhs",
-                     f'{self.ns}.DoEEval.eval_inputs': input_selection_x,
-                     f'{self.ns}.DoEEval.eval_outputs': output_selection_y}
+                     f'{self.ns}.DoEEval.eval_inputs': input_selection_a,
+                     f'{self.ns}.DoEEval.eval_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
         disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
@@ -1257,13 +1257,13 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
             'samples_inputs_df')
-        doe_disc_y = doe_disc.get_sosdisc_outputs('y_dict')
+        doe_disc_ind = doe_disc.get_sosdisc_outputs('DoEEval.Disc1.indicator_dict')
 
-        self.assertEqual(len(doe_disc_y), 11)
+        self.assertEqual(len(doe_disc_ind), 11)
         i = 0
-        for key in doe_disc_y.keys():
-            self.assertAlmostEqual(doe_disc_y[key], private_values[self.study_name + '.DoEEval.Disc1.b']
-                                   + private_values[self.study_name + '.DoEEval.Disc1.a']*doe_disc_samples.x[i][0])
+        for key in doe_disc_ind.keys():
+            self.assertAlmostEqual(doe_disc_ind[key],
+                                   private_values[self.study_name + '.DoEEval.Disc1.b'] * doe_disc_samples['DoEEval.Disc1.a'][i][0])
             i += 1
 
 if '__main__' == __name__:
