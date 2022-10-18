@@ -3080,7 +3080,7 @@ class TestBuildVerySimpleMultiScenario(unittest.TestCase):
 
 if '__main__' == __name__:
     my_test = TestBuildVerySimpleMultiScenario()
-    test_selector = 6
+    test_selector = 4
     if test_selector == 1:
         my_test.setUp()
         my_test.test_01_build_vs_MS_with_nested_proc_selection_through_process_driver_Hessian_subproc()

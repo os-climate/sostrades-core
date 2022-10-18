@@ -19,14 +19,14 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import numpy as np
 
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
-from sos_trades_core.execution_engine.sos_discipline_builder import SoSDisciplineBuilder
+from sos_trades_core.execution_engine.proc_builder.sos_add_subproc_to_driver import AddSubProcToDriver
 
 
 class BuildSoSDisciplineScatterException(Exception):
     pass
 
 
-class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
+class BuildSoSDisciplineScatter(AddSubProcToDriver):
     '''
     Class that build disciplines using a builder and a map containing data to scatter
     '''
@@ -49,7 +49,8 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
         '''
         Constructor
         '''
-        SoSDisciplineBuilder.__init__(
+
+        AddSubProcToDriver.__init__(
             self, sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.__factory = ee.factory
@@ -138,7 +139,7 @@ class BuildSoSDisciplineScatter(SoSDisciplineBuilder):
             if self.sc_map.INPUT_NS in self.sc_map.get_map():
                 scatter_desc_in = {input_name: {
                     SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.SHARED_VISIBILITY,
-                    SoSDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
+                    AddSubProcToDriver.NAMESPACE: self.sc_map.get_input_ns(), SoSDiscipline.STRUCTURING: True}}
             else:
                 scatter_desc_in = {input_name: {
                     SoSDiscipline.TYPE: input_type, SoSDiscipline.SUBTYPE: input_subtype_descriptor, SoSDiscipline.VISIBILITY: SoSDiscipline.LOCAL_VISIBILITY,
