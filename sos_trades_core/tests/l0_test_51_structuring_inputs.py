@@ -389,6 +389,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
                            'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
+                           'gauss_seidel_execution': {'type': 'bool', 'default': False},
                            'epsilon0': {'type': 'float', 'default': 1e-06, 'possible_values': None},
                            'linear_solver_MDO': {'type': 'string'},
                            'linear_solver_MDO_preconditioner': {'type': 'string'},
