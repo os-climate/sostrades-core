@@ -19,6 +19,7 @@ import pandas as pd
 from copy import deepcopy
 
 from _functools import reduce
+from sos_trades_core.api import get_sos_logger
 
 
 class toolboxsum(object):
@@ -32,6 +33,7 @@ class toolboxsum(object):
         '''
         self.sum_df = None
         self.sum_dict_dict = None
+        self.logger = get_sos_logger('ToolBoxSum')
 
     def compute_sum_df(self, list_df, not_sum=None):
         """
@@ -39,8 +41,12 @@ class toolboxsum(object):
         not_sum : column name to not sum
         """
         # infer not summable columns in dataframe
-        not_summable = list_df[0].convert_dtypes().select_dtypes(
-            exclude=[np.number, 'datetime']).columns.to_list()
+        not_summable = (
+            list_df[0]
+            .convert_dtypes()
+            .select_dtypes(exclude=[np.number, 'datetime'])
+            .columns.to_list()
+        )
         if len(not_summable):
             if not_sum is None:
                 not_sum = not_summable
@@ -51,28 +57,35 @@ class toolboxsum(object):
         if not_sum is not None:
 
             # existing columns in dataframe
-            in_columns = [
-                col for col in not_sum if col in list(list_df[0].columns)]
+            in_columns = [col for col in not_sum if col in list(list_df[0].columns)]
             restored_df = list_df[0][in_columns]
             list_df_copy = deepcopy(list_df)
-            list_df_wo_columns = [df.drop(columns=in_columns)
-                                  for df in list_df_copy]
-        sum_df = reduce(lambda x, y: x.add(
-            y, fill_value=0), list_df_wo_columns)
+            list_df_wo_columns = [df.drop(columns=in_columns) for df in list_df_copy]
+        for df in list_df_wo_columns:
+            for col, val in df.items():
+                if any(val == 'NA'):
+                    self.logger.warning(f'WARNING NAN IN COL {col}')
+                    df.replace('NA', np.nan, inplace=True)
+                if val.isnull().any():
+                    self.logger.warning(f'WARNING NAN IN COL {col}')
+                    df.fillna(0, inplace=True)
+        sum_df = reduce(lambda x, y: x.add(y, fill_value=0), list_df_wo_columns)
         if not_sum is not None:
             # sum_df = sum_df.join(restored_df)
             sum_df = restored_df.join(sum_df)
 
-        sum_abs_df = reduce(lambda x, y: abs(x).add(
-            abs(y), fill_value=0), list_df_wo_columns)
+        sum_abs_df = reduce(
+            lambda x, y: abs(x).add(abs(y), fill_value=0), list_df_wo_columns
+        )
 
         resource_percent = pd.DataFrame(columns=['years'])
 
         if 'cash_in' in sum_df:
             resource_percent['years'] = sum_df['years']
             for i in range(len(list_df)):
-                resource_percent['resource_' +
-                                 str(i)] = (abs(list_df[i]['cash_in']) / sum_abs_df['cash_in'] * 100.).fillna(0)
+                resource_percent['resource_' + str(i)] = (
+                    abs(list_df[i]['cash_in']) / sum_abs_df['cash_in'] * 100.0
+                ).fillna(0)
 
         return sum_df, resource_percent
 
