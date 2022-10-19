@@ -127,6 +127,8 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                          SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         'relax_factor': {SoSDiscipline.TYPE: 'float', SoSDiscipline.RANGE: [0.0, 1.0], SoSDiscipline.DEFAULT: 0.99,
                          SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
+        'gauss_seidel_execution': {SoSDiscipline.TYPE: 'bool', SoSDiscipline.DEFAULT: False,
+                                   SoSDiscipline.NUMERICAL: True, SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
         # NUMERICAL PARAMETERS OUT OF INIT
         'epsilon0': {SoSDiscipline.TYPE: 'float', SoSDiscipline.DEFAULT: 1.0e-6, SoSDiscipline.NUMERICAL: True,
                      SoSDiscipline.STRUCTURING: True, SoSDiscipline.UNIT: '-'},
@@ -511,7 +513,10 @@ class SoSCoupling(SoSDisciplineBuilder, MDAChain):
                                          'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
+        if num_data['sub_mda_class'] in ['PureNewtonRaphson', 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA']:
 
+            num_data['gauss_seidel_execution'] = self.get_sosdisc_inputs(
+                'gauss_seidel_execution')
         # linear solver options MDA
         num_data['linear_solver'] = copy(self.get_sosdisc_inputs(
             'linear_solver_MDA'))
