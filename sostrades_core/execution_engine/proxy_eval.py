@@ -69,8 +69,8 @@ class ProxyEval(ProxyAbstractEval):
         Constructor
         '''
 
-        if 'ns_root' not in ee.ns_manager.shared_ns_dict.keys():
-            ee.ns_manager.add_ns('ns_root', ee.study_name)
+        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
+            ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
         self.eval_in_base_list = None
@@ -176,9 +176,9 @@ class ProxyEval(ProxyAbstractEval):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 if is_input_type:
-                    # poss_in_values_full.append(
-                    #     full_id.split(self.ee.study_name + ".", 1)[1])
-                    poss_in_values_full.append(full_id)
+                    poss_in_values_full.append(
+                        full_id.split(self.ee.study_name + ".", 1)[1])
+                    # poss_in_values_full.append(full_id)
 
                 # if is_input_multiplier_type and not is_None:
                 #     poss_in_values_list = self.set_multipliers_values(
@@ -197,9 +197,9 @@ class ProxyEval(ProxyAbstractEval):
             if not in_coupling_numerical:
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
-                # poss_out_values_full.append(
-                #     full_id.split(self.ee.study_name + ".", 1)[1])
-                poss_out_values_full.append(full_id)
+                poss_out_values_full.append(
+                    full_id.split(self.ee.study_name + ".", 1)[1])
+                # poss_out_values_full.append(full_id)
 
         return poss_in_values_full, poss_out_values_full
 
@@ -470,26 +470,26 @@ class ProxyEval(ProxyAbstractEval):
                         #                                     'namespace': 'ns_root'}})
                         {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
                                                                                    'visibility': 'Shared',
-                                                                                   'namespace': 'ns_root'}})
+                                                                                   'namespace': 'ns_doe'}})
 
-                # default_custom_dataframe = pd.DataFrame(
-                #     [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-                # dataframe_descriptor = {}
-                # for i, key in enumerate(self.selected_inputs):
-                #     cle = key
-                #     var = tuple([self.ee.dm.get_data(
-                #         self.eval_in_list[i], 'type'), None, True])
-                #     dataframe_descriptor[cle] = var
+                default_custom_dataframe = pd.DataFrame(
+                    [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+                dataframe_descriptor = {}
+                for i, key in enumerate(self.selected_inputs):
+                    cle = key
+                    var = tuple([self.ee.dm.get_data(
+                        self.eval_in_list[i], 'type'), None, True])
+                    dataframe_descriptor[cle] = var
 
-                # dynamic_inputs.update(
-                #     {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                #                            'dataframe_descriptor': dataframe_descriptor,
-                #                            'dataframe_edition_locked': False}})
-                # if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
-                #     disc_in['custom_samples_df']['value'] = default_custom_dataframe
-                #     disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                dynamic_inputs.update(
+                    {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                           'dataframe_descriptor': dataframe_descriptor,
+                                           'dataframe_edition_locked': False}})
+                if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
+                    disc_in['custom_samples_df']['value'] = default_custom_dataframe
+                    disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
 
-        # self.add_inputs(dynamic_inputs)
+        self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         # if (len(self.selected_inputs) > 0) and (
         #     any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
