@@ -515,7 +515,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_dict = {'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.Eval.custom_samples_df'] = samples_df
+        disc_dict[f'{ns}.Eval.doe_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -670,7 +670,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         factory = exec_eng.factory
         proc_name = "test_disc1_eval"
         eval_builder = factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id=proc_name)
+                                                        mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             eval_builder)
@@ -703,7 +703,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         samples_dict = {'Eval.Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.Eval.custom_samples_df'] = samples_df
+        disc_dict[f'{ns}.Eval.doe_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 

@@ -82,8 +82,8 @@ class ProxyDoeEval(ProxyEval):
     _VARIABLES_SIZES = "variables_sizes"
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
-    INPUT_MULTIPLIER_TYPE = []
-    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
+    # INPUT_MULTIPLIER_TYPE = []
+    # MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     # We define here the different default algo options in a case of a DOE
     # TODO: Implement a generic get_options functions to retrieve the default options using directly the DoeFactory (todo since EEV3)
@@ -157,10 +157,6 @@ class ProxyDoeEval(ProxyEval):
         '''
         Constructor
         '''
-        # if 'ns_doe' does not exist in ns_manager, we create this new
-        # namespace to store output dictionaries associated to eval_outputs
-        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
-            ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
@@ -280,40 +276,42 @@ class ProxyDoeEval(ProxyEval):
                         key: options_map[key] for key in all_options}
 
                 # if multipliers in eval_in
-                if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
-                    generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
-                    for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
-                        dynamic_inputs.update(generic_multiplier_dynamic_input)
+                #MULTIPLIER
+                # if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+                #     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
+                #     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
+                #         dynamic_inputs.update(generic_multiplier_dynamic_input)
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def create_generic_multipliers_dynamic_input(self):
-        dynamic_inputs_list = []
-        for selected_in in self.selected_inputs:
-            if self.MULTIPLIER_PARTICULE in selected_in:
-                multiplier_name = selected_in.split('.')[-1]
-                origin_var_name = multiplier_name.split('.')[0].split('@')[0]
-                # if
-                if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
-                    self.logger.exception(
-                        'Multiplier name selected already exists!')
-                origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
-                    0]
-                origin_var_ns = self.ee.dm.get_data(
-                    origin_var_fullname, 'namespace')
-                dynamic_inputs_list.append(
-                    {
-                        f'{multiplier_name}': {
-                            'type': 'float',
-                            'visibility': 'Shared',
-                            'namespace': origin_var_ns,
-                            'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
-                            'default': 100
-                        }
-                    }
-                )
-        return dynamic_inputs_list
+    #MULTIPLIER
+    # def create_generic_multipliers_dynamic_input(self):
+    #     dynamic_inputs_list = []
+    #     for selected_in in self.selected_inputs:
+    #         if self.MULTIPLIER_PARTICULE in selected_in:
+    #             multiplier_name = selected_in.split('.')[-1]
+    #             origin_var_name = multiplier_name.split('.')[0].split('@')[0]
+    #             # if
+    #             if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
+    #                 self.logger.exception(
+    #                     'Multiplier name selected already exists!')
+    #             origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
+    #                 0]
+    #             origin_var_ns = self.ee.dm.get_data(
+    #                 origin_var_fullname, 'namespace')
+    #             dynamic_inputs_list.append(
+    #                 {
+    #                     f'{multiplier_name}': {
+    #                         'type': 'float',
+    #                         'visibility': 'Shared',
+    #                         'namespace': origin_var_ns,
+    #                         'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
+    #                         'default': 100
+    #                     }
+    #                 }
+    #             )
+    #     return dynamic_inputs_list
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
@@ -345,7 +343,7 @@ class ProxyDoeEval(ProxyEval):
                 data_in_key, disc_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
                                            ]['io_type'] == 'in'
-            is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+            # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc_in[data_in_key]['editable']
             is_None = disc_in[data_in_key]['value'] is None
             if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
@@ -357,11 +355,11 @@ class ProxyDoeEval(ProxyEval):
                     poss_in_values_full.append(
                         full_id.split(self.ee.study_name + ".", 1)[1])
 
-                if is_input_multiplier_type and not is_None:
-                    poss_in_values_list = self.set_multipliers_values(
-                        disc, full_id, data_in_key)
-                    for val in poss_in_values_list:
-                        poss_in_values_full.append(val)
+                # if is_input_multiplier_type and not is_None:
+                #     poss_in_values_list = self.set_multipliers_values(
+                #         disc, full_id, data_in_key)
+                #     for val in poss_in_values_list:
+                #         poss_in_values_full.append(val)
         
         disc_out = disc.get_data_out()
         for data_out_key in disc_out.keys():
@@ -379,53 +377,54 @@ class ProxyDoeEval(ProxyEval):
 
         return poss_in_values_full, poss_out_values_full
 
-    def set_multipliers_values(self, disc, full_id, var_name):
-        poss_in_values_list = []
-        # if local var
-        disc_in = disc.get_data_in()
-        if 'namespace' not in disc_in[var_name]:
-            origin_var_ns = disc_in[var_name]['ns_reference'].value
-        else:
-            origin_var_ns = disc_in[var_name]['namespace']
-
-        disc_id = ('.').join(full_id.split('.')[:-1])
-        ns_disc_id = ('__').join([origin_var_ns, disc_id])
-        if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
-            full_id_ns = ('.').join(
-                [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name])
-        else:
-            full_id_ns = full_id
-
-        if disc_in[var_name][self.TYPE] == 'float':
-            multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
-                self.ee.study_name + ".", 1)[1]
-            poss_in_values_list.append(multiplier_fullname)
-
-        else:
-            df_var = disc_in[var_name]['value']
-            # if df_var is dict : transform dict to df
-            if disc_in[var_name][self.TYPE] == 'dict':
-                dict_var = disc_in[var_name]['value']
-                df_var = pd.DataFrame(
-                    dict_var, index=list(dict_var.keys()))
-            # check & create float columns list from df
-            columns = df_var.columns
-            float_cols_list = [col_name for col_name in columns if (
-                df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
-            # if df with float columns
-            if len(float_cols_list) > 0:
-                for col_name in float_cols_list:
-                    col_name_clean = self.clean_var_name(col_name)
-                    multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
-                        self.ee.study_name + ".", 1)[1]
-                    poss_in_values_list.append(multiplier_fullname)
-                # if df with more than one float column, create multiplier for all
-                # columns also
-                if len(float_cols_list) > 1:
-                    multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
-                        self.ee.study_name + ".", 1)[1]
-                    poss_in_values_list.append(multiplier_fullname)
-        return poss_in_values_list
+    #MULTIPLIER
+    # def set_multipliers_values(self, disc, full_id, var_name):
+    #     poss_in_values_list = []
+    #     # if local var
+    #     disc_in = disc.get_data_in()
+    #     if 'namespace' not in disc_in[var_name]:
+    #         origin_var_ns = disc_in[var_name]['ns_reference'].value
+    #     else:
+    #         origin_var_ns = disc_in[var_name]['namespace']
+    #
+    #     disc_id = ('.').join(full_id.split('.')[:-1])
+    #     ns_disc_id = ('__').join([origin_var_ns, disc_id])
+    #     if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
+    #         full_id_ns = ('.').join(
+    #             [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name])
+    #     else:
+    #         full_id_ns = full_id
+    #
+    #     if disc_in[var_name][self.TYPE] == 'float':
+    #         multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
+    #             self.ee.study_name + ".", 1)[1]
+    #         poss_in_values_list.append(multiplier_fullname)
+    #
+    #     else:
+    #         df_var = disc_in[var_name]['value']
+    #         # if df_var is dict : transform dict to df
+    #         if disc_in[var_name][self.TYPE] == 'dict':
+    #             dict_var = disc_in[var_name]['value']
+    #             df_var = pd.DataFrame(
+    #                 dict_var, index=list(dict_var.keys()))
+    #         # check & create float columns list from df
+    #         columns = df_var.columns
+    #         float_cols_list = [col_name for col_name in columns if (
+    #             df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+    #         # if df with float columns
+    #         if len(float_cols_list) > 0:
+    #             for col_name in float_cols_list:
+    #                 col_name_clean = self.clean_var_name(col_name)
+    #                 multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
+    #                     self.ee.study_name + ".", 1)[1]
+    #                 poss_in_values_list.append(multiplier_fullname)
+    #             # if df with more than one float column, create multiplier for all
+    #             # columns also
+    #             if len(float_cols_list) > 1:
+    #                 multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+    #                     self.ee.study_name + ".", 1)[1]
+    #                 poss_in_values_list.append(multiplier_fullname)
+    #     return poss_in_values_list
 
     def set_eval_possible_values(self):
         '''
@@ -514,20 +513,20 @@ class ProxyDoeEval(ProxyEval):
         sorted_algorithms.insert(0, "fullfact")
         return sorted_algorithms
 
-    def set_eval_in_out_lists(self, in_list, out_list):
-        '''
-        Set the evaluation variable list (in and out) present in the DM
-        which fits with the eval_in_base_list filled in the usecase or by the user
-        '''
-        # FIXME: manipulating namespaces manually
-        self.eval_in_base_list = [
-            element.split(".")[-1] for element in in_list]
-        self.eval_out_base_list = [
-            element.split(".")[-1] for element in out_list]
-        self.eval_in_list = [
-            f'{self.ee.study_name}.{element}' for element in in_list]
-        self.eval_out_list = [
-            f'{self.ee.study_name}.{element}' for element in out_list]
+    # def set_eval_in_out_lists(self, in_list, out_list):
+    #     '''
+    #     Set the evaluation variable list (in and out) present in the DM
+    #     which fits with the eval_in_base_list filled in the usecase or by the user
+    #     '''
+    #     # FIXME: manipulating namespaces manually
+    #     self.eval_in_base_list = [
+    #         element.split(".")[-1] for element in in_list]
+    #     self.eval_out_base_list = [
+    #         element.split(".")[-1] for element in out_list]
+    #     self.eval_in_list = [
+    #         f'{self.ee.study_name}.{element}' for element in in_list]
+    #     self.eval_out_list = [
+    #         f'{self.ee.study_name}.{element}' for element in out_list]
 
     def check_eval_io(self, given_list, default_list, is_eval_input):
         """
@@ -555,11 +554,6 @@ class ProxyDoeEval(ProxyEval):
         super().set_wrapper_attributes(wrapper)
         # specific to ProxyDoeEval
         doeeval_attributes = {'dict_desactivated_elem': self.dict_desactivated_elem,
-                              'doe_factory': self.doe_factory,
-                              'selected_inputs': self.selected_inputs,
-                              'selected_outputs': self.selected_outputs,
-                              'eval_in_list': self.eval_in_list,
-                              'eval_out_list': self.eval_out_list,
-                              'study_name': self.ee.study_name,
+                              'doe_factory': self.doe_factory
                               }
         wrapper.attributes.update(doeeval_attributes)

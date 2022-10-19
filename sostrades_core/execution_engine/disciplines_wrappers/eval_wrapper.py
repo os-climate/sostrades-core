@@ -53,18 +53,27 @@ class EvalWrapper(AbstractEvalWrapper):
     _maturity = 'Fake'
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
-        'eval_inputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
-        'eval_outputs': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': None, 'structuring': True},
+        'eval_inputs': {'type': 'dataframe',
+                               'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                        'full_name': ('string', None, False)},
+                               'dataframe_edition_locked': False,
+                               'structuring': True,
+                               'visibility': SoSWrapp.SHARED_VISIBILITY,
+                               'namespace': 'ns_eval'},
+               'eval_outputs': {'type': 'dataframe',
+                                'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                         'full_name': ('string', None, False)},
+                                'dataframe_edition_locked': False,
+                                'structuring': True, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                'namespace': 'ns_eval'},
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
     }
 
     DESC_OUT = {
         'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                              'namespace': 'ns_eval'}
+                                 'namespace': 'ns_eval'}
     }
-
-    INPUT_MULTIPLIER_TYPE = []
 
     def __init__(self, sos_name):
 
@@ -236,24 +245,26 @@ class EvalWrapper(AbstractEvalWrapper):
 
         return input_data
 
-    def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
-        col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
-            0].split('@')[1]
-        if any(char.isdigit() for char in col_index):
-            col_index = re.findall(r'\d+', col_index)[0]
-            cols_list = var_to_update.columns.to_list()
-            key = cols_list[int(col_index)]
-            var_to_update[key] = multiplier_value * var_to_update[key]
-        else:
-            if isinstance(var_to_update, dict):
-                float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
-                    var_to_update[dict_keys], float)]
-            elif isinstance(var_to_update, pd.DataFrame):
-                float_cols_ids_list = [
-                    df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
-            for key in float_cols_ids_list:
-                var_to_update[key] = multiplier_value * var_to_update[key]
-        return var_to_update
+    # MULTIPLIER
+    #
+    # def apply_muliplier(self, multiplier_name, multiplier_value, var_to_update):
+    #     col_index = multiplier_name.split(self.MULTIPLIER_PARTICULE)[
+    #         0].split('@')[1]
+    #     if any(char.isdigit() for char in col_index):
+    #         col_index = re.findall(r'\d+', col_index)[0]
+    #         cols_list = var_to_update.columns.to_list()
+    #         key = cols_list[int(col_index)]
+    #         var_to_update[key] = multiplier_value * var_to_update[key]
+    #     else:
+    #         if isinstance(var_to_update, dict):
+    #             float_cols_ids_list = [dict_keys for dict_keys in var_to_update if isinstance(
+    #                 var_to_update[dict_keys], float)]
+    #         elif isinstance(var_to_update, pd.DataFrame):
+    #             float_cols_ids_list = [
+    #                 df_keys for df_keys in var_to_update if var_to_update[df_keys].dtype == 'float']
+    #         for key in float_cols_ids_list:
+    #             var_to_update[key] = multiplier_value * var_to_update[key]
+    #     return var_to_update
 
     # def convert_output_results_toarray(self):
     #     #unused???
@@ -332,52 +343,55 @@ class EvalWrapper(AbstractEvalWrapper):
     #     for sub_disc in disc.sos_disciplines:
     #         self.update_default_inputs(sub_disc)
 
-    def create_origin_vars_to_update_dict(self):
-        origin_vars_to_update_dict = {}
-        for select_in in self.attributes['eval_in_list']:
-            if self.MULTIPLIER_PARTICULE in select_in:
-                var_origin_f_name = self.get_names_from_multiplier(select_in)[
-                    0]
-                if var_origin_f_name not in origin_vars_to_update_dict:
-                    # origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
-                    #     self.attributes['dm'].get_data(var_origin_f_name)['value'])
-                    origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
-                        self.get_sosdisc_inputs(var_origin_f_name, full_name_keys=True))
-        return origin_vars_to_update_dict
+    #MULTIPLIER
+    # def create_origin_vars_to_update_dict(self):
+    #     origin_vars_to_update_dict = {}
+    #     for select_in in self.attributes['eval_in_list']:
+    #         if self.MULTIPLIER_PARTICULE in select_in:
+    #             var_origin_f_name = self.get_names_from_multiplier(select_in)[
+    #                 0]
+    #             if var_origin_f_name not in origin_vars_to_update_dict:
+    #                 # origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
+    #                 #     self.attributes['dm'].get_data(var_origin_f_name)['value'])
+    #                 origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
+    #                     self.get_sosdisc_inputs(var_origin_f_name, full_name_keys=True))
+    #     return origin_vars_to_update_dict
 
-    def add_multiplied_var_to_samples(self, multipliers_samples, origin_vars_to_update_dict):
-        for sample_i in range(len(multipliers_samples)):
-            x = multipliers_samples[sample_i]
-            vars_to_update_dict = {}
-            for multiplier_i, x_id in enumerate(self.attributes['eval_in_list']):
-                # for grid search multipliers inputs
-                var_name = x_id.split(self.ee.study_name + '.', 1)[-1]
-                if self.MULTIPLIER_PARTICULE in var_name:
-                    var_origin_f_name = '.'.join(
-                        [self.attributes["study_name"], self.get_names_from_multiplier(var_name)[0]])
-                    if var_origin_f_name in vars_to_update_dict:
-                        var_to_update = vars_to_update_dict[var_origin_f_name]
-                    else:
-                        var_to_update = copy.deepcopy(
-                            origin_vars_to_update_dict[var_origin_f_name])
-                    vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
-                        multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100.0, var_to_update=var_to_update)
-            for multiplied_var in vars_to_update_dict:
-                self.samples[sample_i].append(
-                    vars_to_update_dict[multiplied_var])
+    #MULTIPLIER
+    # def add_multiplied_var_to_samples(self, multipliers_samples, origin_vars_to_update_dict):
+    #     for sample_i in range(len(multipliers_samples)):
+    #         x = multipliers_samples[sample_i]
+    #         vars_to_update_dict = {}
+    #         for multiplier_i, x_id in enumerate(self.attributes['eval_in_list']):
+    #             # for grid search multipliers inputs
+    #             var_name = x_id.split(self.ee.study_name + '.', 1)[-1]
+    #             if self.MULTIPLIER_PARTICULE in var_name:
+    #                 var_origin_f_name = '.'.join(
+    #                     [self.attributes["study_name"], self.get_names_from_multiplier(var_name)[0]])
+    #                 if var_origin_f_name in vars_to_update_dict:
+    #                     var_to_update = vars_to_update_dict[var_origin_f_name]
+    #                 else:
+    #                     var_to_update = copy.deepcopy(
+    #                         origin_vars_to_update_dict[var_origin_f_name])
+    #                 vars_to_update_dict[var_origin_f_name] = self.apply_muliplier(
+    #                     multiplier_name=var_name, multiplier_value=x[multiplier_i] / 100.0, var_to_update=var_to_update)
+    #         for multiplied_var in vars_to_update_dict:
+    #             self.samples[sample_i].append(
+    #                 vars_to_update_dict[multiplied_var])
 
     def clean_var_name(self, var_name):
         return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
 
-    def get_names_from_multiplier(self, var_name):
-        column_name = None
-        var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
-            0].split('@')[0]
-        if '@' in var_name:
-            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
-                0].split('@')[1]
-
-        return [var_origin_name, column_name]
+    #MULTIPLIER
+    # def get_names_from_multiplier(self, var_name):
+    #     column_name = None
+    #     var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+    #         0].split('@')[0]
+    #     if '@' in var_name:
+    #         column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+    #             0].split('@')[1]
+    #
+    #     return [var_origin_name, column_name]
 
     def run(self):
         '''
@@ -399,13 +413,6 @@ class EvalWrapper(AbstractEvalWrapper):
         self.samples.append(self.attributes['reference_scenario'])
         reference_scenario_id = len(self.samples)
         eval_in_with_multiplied_var = None
-        if self.INPUT_MULTIPLIER_TYPE != []:
-            origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
-            multipliers_samples = copy.deepcopy(self.samples)
-            self.add_multiplied_var_to_samples(
-                multipliers_samples, origin_vars_to_update_dict)
-            eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
-                                          list(origin_vars_to_update_dict.keys())
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
@@ -475,7 +482,7 @@ class EvalWrapper(AbstractEvalWrapper):
     def take_samples(self):
         """Generating samples for the Eval
         """
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df').copy()
+        self.customed_samples = self.get_sosdisc_inputs('doe_df').copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():

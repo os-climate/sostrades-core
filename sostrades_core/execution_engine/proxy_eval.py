@@ -68,7 +68,8 @@ class ProxyEval(ProxyAbstractEval):
         '''
         Constructor
         '''
-
+        # if 'ns_doe' does not exist in ns_manager, we create this new
+        # namespace to store output dictionaries associated to eval_outputs
         if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
@@ -94,32 +95,32 @@ class ProxyEval(ProxyAbstractEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        self.eval_in_base_list = in_list
-        self.eval_out_base_list = out_list
-        self.eval_in_list = []
-        for v_id in in_list:
-            full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-            for full_id in full_id_list:
-                if not inside_evaluator:
-                    self.eval_in_list.append(full_id)
-                else:
-                    if full_id.startswith(self.get_disc_full_name()):
-                        self.eval_in_list.append(full_id)
-        self.eval_out_list = []
-        for v_id in out_list:
-            full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
-            for full_id in full_id_list:
-                self.eval_out_list.append(full_id)
+        # self.eval_in_base_list = in_list
+        # self.eval_out_base_list = out_list
+        # self.eval_in_list = []
+        # for v_id in in_list:
+        #     full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
+        #     for full_id in full_id_list:
+        #         if not inside_evaluator:
+        #             self.eval_in_list.append(full_id)
+        #         else:
+        #             if full_id.startswith(self.get_disc_full_name()):
+        #                 self.eval_in_list.append(full_id)
+        # self.eval_out_list = []
+        # for v_id in out_list:
+        #     full_id_list = self.dm.get_all_namespaces_from_var_name(v_id)
+        #     for full_id in full_id_list:
+        #         self.eval_out_list.append(full_id)
 
         # _FIXME: manipulating namespaces manually
         # self.eval_in_base_list = [
         #     element.split(".")[-1] for element in in_list]
         # self.eval_out_base_list = [
         #     element.split(".")[-1] for element in out_list]
-        # self.eval_in_list = [
-        #     f'{self.ee.study_name}.{element}' for element in in_list]
-        # self.eval_out_list = [
-        #     f'{self.ee.study_name}.{element}' for element in out_list]
+        self.eval_in_list = [
+            f'{self.ee.study_name}.{element}' for element in in_list]
+        self.eval_out_list = [
+            f'{self.ee.study_name}.{element}' for element in out_list]
 
     def fill_possible_values(self, disc):
         '''
@@ -434,6 +435,9 @@ class ProxyEval(ProxyAbstractEval):
         In other cases, additionnal inputs are the number of samples and the design space
         """
 
+        # 'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+        #                       'namespace': 'ns_eval'}
+
         dynamic_inputs = {}
         dynamic_outputs = {}
         selected_inputs_has_changed = False
@@ -482,12 +486,12 @@ class ProxyEval(ProxyAbstractEval):
                     dataframe_descriptor[cle] = var
 
                 dynamic_inputs.update(
-                    {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                    {'doe_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                            'dataframe_descriptor': dataframe_descriptor,
                                            'dataframe_edition_locked': False}})
-                if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
-                    disc_in['custom_samples_df']['value'] = default_custom_dataframe
-                    disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                if 'doe_df' in disc_in and selected_inputs_has_changed:
+                    disc_in['doe_df']['value'] = default_custom_dataframe
+                    disc_in['doe_df']['dataframe_descriptor'] = dataframe_descriptor
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)

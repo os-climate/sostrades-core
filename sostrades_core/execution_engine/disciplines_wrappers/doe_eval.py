@@ -73,8 +73,10 @@ class DoeEval(EvalWrapper):
     _VARIABLES_SIZES = "variables_sizes"
     NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
-    INPUT_MULTIPLIER_TYPE = []
+    # INPUT_MULTIPLIER_TYPE = []
 
+    # TODO: refactor as DESC_IN = copy.deepcopy(EvalWrapp.DESC_IN).update(DoeWrapp.DESC_IN) or similar,
+    #  when DoeWrapp and EvalWrapp are fixed
     DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
@@ -279,13 +281,13 @@ class DoeEval(EvalWrapper):
         self.samples.append(self.attributes['reference_scenario'])
         reference_scenario_id = len(self.samples)
         eval_in_with_multiplied_var = None
-        if self.INPUT_MULTIPLIER_TYPE != []:
-            origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
-            multipliers_samples = copy.deepcopy(self.samples)
-            self.add_multiplied_var_to_samples(
-                multipliers_samples, origin_vars_to_update_dict)
-            eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
-                list(origin_vars_to_update_dict.keys())
+        # if self.INPUT_MULTIPLIER_TYPE != []:
+        #     origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
+        #     multipliers_samples = copy.deepcopy(self.samples)
+        #     self.add_multiplied_var_to_samples(
+        #         multipliers_samples, origin_vars_to_update_dict)
+        #     eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
+        #         list(origin_vars_to_update_dict.keys())
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
