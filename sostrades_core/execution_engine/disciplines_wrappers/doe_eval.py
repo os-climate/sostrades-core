@@ -251,7 +251,7 @@ class DoeEval(EvalWrapper):
     def create_samples_from_custom_df(self):
         """Generation of the samples in case of a customed DOE
         """
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df').copy()
+        self.customed_samples = self.get_sosdisc_inputs('doe_df').copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():

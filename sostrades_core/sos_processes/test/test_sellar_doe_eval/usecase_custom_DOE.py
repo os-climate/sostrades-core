@@ -53,7 +53,7 @@ class Study(StudyManager):
 
         samples_dict = {'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.DoEEval.custom_samples_df'] = samples_df
+        disc_dict[f'{ns}.DoEEval.doe_df'] = samples_df
 
         # Sellar inputs
         local_dv = 10.

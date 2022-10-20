@@ -168,6 +168,52 @@ class ProxyDoeEval(ProxyEval):
         self.selected_inputs = []
         self.previous_algo_name = ""
 
+    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
+        algo_name_has_changed = False
+        algo_name = self.get_sosdisc_inputs(self.ALGO)
+        if self.previous_algo_name != algo_name:
+            algo_name_has_changed = True
+            self.previous_algo_name = algo_name
+        dynamic_inputs = {}
+        if algo_name == 'CustomDOE':
+            dynamic_inputs.update(super()._get_dynamic_inputs_doe(disc_in, selected_inputs_has_changed))
+        else:
+
+            default_design_space = pd.DataFrame({'variable': self.selected_inputs,
+
+                                                 'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
+                                                                                                 'type') == 'array' else 0.0
+                                                               for var in self.eval_in_list],
+                                                 'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
+                                                                                                   'type') == 'array' else 10.0
+                                                               for var in self.eval_in_list]
+                                                 })
+
+            dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+                                  }})
+            if 'design_space' in disc_in and selected_inputs_has_changed:
+                disc_in['design_space']['value'] = default_design_space
+
+        default_dict = self.get_algo_default_options(algo_name)
+        dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
+                                                'dataframe_edition_locked': False,
+                                                'structuring': True,
+
+                                                'dataframe_descriptor': {
+                                                    self.VARIABLES: ('string', None, False),
+                                                    self.VALUES: ('string', None, True)}}})
+        all_options = list(default_dict.keys())
+        if 'algo_options' in disc_in and algo_name_has_changed:
+            disc_in['algo_options']['value'] = default_dict
+        if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
+                disc_in['algo_options']['value'].keys()) != all_options:
+            options_map = ChainMap(
+                disc_in['algo_options']['value'], default_dict)
+            disc_in['algo_options']['value'] = {
+                key: options_map[key] for key in all_options}
+        return dynamic_inputs
+
+
     def setup_sos_disciplines(self):
         # TODO: move to wrapper as it was originally?
         """
@@ -176,142 +222,157 @@ class ProxyDoeEval(ProxyEval):
         In case of a CustomDOE', additionnal input is the customed sample ( dataframe)
         In other cases, additionnal inputs are the number of samples and the design space
         """
+        if self.ALGO in self.get_data_in():
+            super().setup_sos_disciplines()
 
-        dynamic_inputs = {}
-        dynamic_outputs = {}
-        algo_name_has_changed = False
-        selected_inputs_has_changed = False
-        disc_in = self.get_data_in()
-        
-        # The setup of the discipline can begin once the algorithm we want to use to generate
-        # the samples has been set
-        if self.ALGO in disc_in:
-            algo_name = self.get_sosdisc_inputs(self.ALGO)
-            if self.previous_algo_name != algo_name:
-                algo_name_has_changed = True
-                self.previous_algo_name = algo_name
-            eval_outputs = self.get_sosdisc_inputs('eval_outputs')
-            eval_inputs = self.get_sosdisc_inputs('eval_inputs')
 
-            # we fetch the inputs and outputs selected by the user
-            selected_outputs = eval_outputs[eval_outputs['selected_output']
-                                            == True]['full_name']
-            selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                          == True]['full_name']
-            if set(selected_inputs.tolist()) != set(self.selected_inputs):
-                selected_inputs_has_changed = True
-                self.selected_inputs = selected_inputs.tolist()
-            self.selected_outputs = selected_outputs.tolist()
-
-            # doe can be done only for selected inputs and outputs
-            # if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
-            if len(selected_inputs) > 0 and len(selected_outputs) > 0:
-                # we set the lists which will be used by the evaluation
-                # function of sosEval
-                self.set_eval_in_out_lists(selected_inputs, selected_outputs)
-
-                # setting dynamic outputs. One output of type dict per selected
-                # output
-
-                for out_var in self.eval_out_list:
-                    dynamic_outputs.update(
-                        # {f'{out_var.split(".")[-1]}_dict': {'type': 'dict',
-                        #                                     'visibility': 'Shared',
-                        #                                     'namespace': 'ns_doe'}})
-                        {f'{out_var.split(self.ee.study_name + ".",1)[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
-                                                                                  'namespace': 'ns_doe'}})
-
-                if algo_name == "CustomDOE":
-                    default_custom_dataframe = pd.DataFrame(
-                        [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-                    dataframe_descriptor = {}
-                    for i, key in enumerate(self.selected_inputs):
-                        cle = key
-                        var = tuple([self.ee.dm.get_data(
-                            self.eval_in_list[i], 'type'), None, True])
-                        dataframe_descriptor[cle] = var
-
-                    dynamic_inputs.update(
-                        {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                               'dataframe_descriptor': dataframe_descriptor,
-                                               'dataframe_edition_locked': False}})
-                    if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
-                        disc_in['custom_samples_df']['value'] = default_custom_dataframe
-                        disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
-
-                else:
-
-                    default_design_space = pd.DataFrame({'variable': selected_inputs,
-
-                                                         'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
-                                                                                                         'type') == 'array' else 0.0
-                                                                       for var in self.eval_in_list],
-                                                         'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
-                                                                                                           'type') == 'array' else 10.0
-                                                                       for var in self.eval_in_list]
-                                                         })
-
-                    dynamic_inputs.update(
-                        {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                          }})
-                    if 'design_space' in disc_in and selected_inputs_has_changed:
-                        disc_in['design_space']['value'] = default_design_space
-
-                default_dict = self.get_algo_default_options(algo_name)
-                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
-                                                        'dataframe_edition_locked': False,
-                                                        'structuring': True,
-
-                                                        'dataframe_descriptor': {
-                                                            self.VARIABLES: ('string', None, False),
-                                                            self.VALUES: ('string', None, True)}}})
-                all_options = list(default_dict.keys())
-                if 'algo_options' in disc_in and algo_name_has_changed:
-                    disc_in['algo_options']['value'] = default_dict
-                if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
-                        disc_in['algo_options']['value'].keys()) != all_options:
-                    options_map = ChainMap(
-                        disc_in['algo_options']['value'], default_dict)
-                    disc_in['algo_options']['value'] = {
-                        key: options_map[key] for key in all_options}
-
-                # if multipliers in eval_in
-                #MULTIPLIER
-                # if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
-                #     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
-                #     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
-                #         dynamic_inputs.update(generic_multiplier_dynamic_input)
-
-        self.add_inputs(dynamic_inputs)
-        self.add_outputs(dynamic_outputs)
-
-    #MULTIPLIER
-    # def create_generic_multipliers_dynamic_input(self):
-    #     dynamic_inputs_list = []
-    #     for selected_in in self.selected_inputs:
-    #         if self.MULTIPLIER_PARTICULE in selected_in:
-    #             multiplier_name = selected_in.split('.')[-1]
-    #             origin_var_name = multiplier_name.split('.')[0].split('@')[0]
-    #             # if
-    #             if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
-    #                 self.logger.exception(
-    #                     'Multiplier name selected already exists!')
-    #             origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
-    #                 0]
-    #             origin_var_ns = self.ee.dm.get_data(
-    #                 origin_var_fullname, 'namespace')
-    #             dynamic_inputs_list.append(
-    #                 {
-    #                     f'{multiplier_name}': {
-    #                         'type': 'float',
-    #                         'visibility': 'Shared',
-    #                         'namespace': origin_var_ns,
-    #                         'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
-    #                         'default': 100
-    #                     }
-    #                 }
-    #             )
-    #     return dynamic_inputs_list
+    # def __setup_sos_disciplines(self):
+    #     # TODO: move to wrapper as it was originally?
+    #     """
+    #     Overload setup_sos_disciplines to create a dynamic desc_in
+    #     default descin are the algo name and its options
+    #     In case of a CustomDOE', additionnal input is the customed sample ( dataframe)
+    #     In other cases, additionnal inputs are the number of samples and the design space
+    #     """
+    #
+    #     dynamic_inputs = {}
+    #     dynamic_outputs = {}
+    #     algo_name_has_changed = False
+    #     selected_inputs_has_changed = False
+    #     disc_in = self.get_data_in()
+    #
+    #     # The setup of the discipline can begin once the algorithm we want to use to generate
+    #     # the samples has been set
+    #     if self.ALGO in disc_in:
+    #         algo_name = self.get_sosdisc_inputs(self.ALGO)
+    #         if self.previous_algo_name != algo_name:
+    #             algo_name_has_changed = True
+    #             self.previous_algo_name = algo_name
+    #
+    #         eval_outputs = self.get_sosdisc_inputs('eval_outputs')
+    #         eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+    #
+    #         # we fetch the inputs and outputs selected by the user
+    #         selected_outputs = eval_outputs[eval_outputs['selected_output']
+    #                                         == True]['full_name']
+    #         selected_inputs = eval_inputs[eval_inputs['selected_input']
+    #                                       == True]['full_name']
+    #         if set(selected_inputs.tolist()) != set(self.selected_inputs):
+    #             selected_inputs_has_changed = True
+    #             self.selected_inputs = selected_inputs.tolist()
+    #         self.selected_outputs = selected_outputs.tolist()
+    #
+    #         # doe can be done only for selected inputs and outputs
+    #         # if algo_name is not None and len(selected_inputs) > 0 and len(selected_outputs) > 0:
+    #         if len(selected_inputs) > 0 and len(selected_outputs) > 0:
+    #             # we set the lists which will be used by the evaluation
+    #             # function of sosEval
+    #             self.set_eval_in_out_lists(selected_inputs, selected_outputs)
+    #
+    #             # setting dynamic outputs. One output of type dict per selected
+    #             # output
+    #
+    #             for out_var in self.eval_out_list:
+    #                 dynamic_outputs.update(
+    #                     # {f'{out_var.split(".")[-1]}_dict': {'type': 'dict',
+    #                     #                                     'visibility': 'Shared',
+    #                     #                                     'namespace': 'ns_doe'}})
+    #                     {f'{out_var.split(self.ee.study_name + ".",1)[1]}_dict': {'type': 'dict', 'visibility': 'Shared',
+    #                                                                               'namespace': 'ns_doe'}})
+    #
+    #
+    #
+    #             # if algo_name == "CustomDOE":
+    #             #     default_custom_dataframe = pd.DataFrame(
+    #             #         [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+    #             #     dataframe_descriptor = {}
+    #             #     for i, key in enumerate(self.selected_inputs):
+    #             #         cle = key
+    #             #         var = tuple([self.ee.dm.get_data(
+    #             #             self.eval_in_list[i], 'type'), None, True])
+    #             #         dataframe_descriptor[cle] = var
+    #             #
+    #             #     dynamic_inputs.update(
+    #             #         {'custom_samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+    #             #                                'dataframe_descriptor': dataframe_descriptor,
+    #             #                                'dataframe_edition_locked': False}})
+    #             #     if 'custom_samples_df' in disc_in and selected_inputs_has_changed:
+    #             #         disc_in['custom_samples_df']['value'] = default_custom_dataframe
+    #             #         disc_in['custom_samples_df']['dataframe_descriptor'] = dataframe_descriptor
+    #             #
+    #             # else:
+    #             #
+    #             #     default_design_space = pd.DataFrame({'variable': selected_inputs,
+    #             #
+    #             #                                          'lower_bnd': [[0.0, 0.0] if self.ee.dm.get_data(var,
+    #             #                                                                                          'type') == 'array' else 0.0
+    #             #                                                        for var in self.eval_in_list],
+    #             #                                          'upper_bnd': [[10.0, 10.0] if self.ee.dm.get_data(var,
+    #             #                                                                                            'type') == 'array' else 10.0
+    #             #                                                        for var in self.eval_in_list]
+    #             #                                          })
+    #             #
+    #             #     dynamic_inputs.update(
+    #             #         {'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+    #             #                           }})
+    #             #     if 'design_space' in disc_in and selected_inputs_has_changed:
+    #             #         disc_in['design_space']['value'] = default_design_space
+    #
+    #             default_dict = self.get_algo_default_options(algo_name)
+    #             dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
+    #                                                     'dataframe_edition_locked': False,
+    #                                                     'structuring': True,
+    #
+    #                                                     'dataframe_descriptor': {
+    #                                                         self.VARIABLES: ('string', None, False),
+    #                                                         self.VALUES: ('string', None, True)}}})
+    #             all_options = list(default_dict.keys())
+    #             if 'algo_options' in disc_in and algo_name_has_changed:
+    #                 disc_in['algo_options']['value'] = default_dict
+    #             if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
+    #                     disc_in['algo_options']['value'].keys()) != all_options:
+    #                 options_map = ChainMap(
+    #                     disc_in['algo_options']['value'], default_dict)
+    #                 disc_in['algo_options']['value'] = {
+    #                     key: options_map[key] for key in all_options}
+    #
+    #             # if multipliers in eval_in
+    #             #MULTIPLIER
+    #             # if (len(self.selected_inputs) > 0) and (any([self.MULTIPLIER_PARTICULE in val for val in self.selected_inputs])):
+    #             #     generic_multipliers_dynamic_inputs_list = self.create_generic_multipliers_dynamic_input()
+    #             #     for generic_multiplier_dynamic_input in generic_multipliers_dynamic_inputs_list:
+    #             #         dynamic_inputs.update(generic_multiplier_dynamic_input)
+    #
+    #     self.add_inputs(dynamic_inputs)
+    #     self.add_outputs(dynamic_outputs)
+    #
+    # #MULTIPLIER
+    # # def create_generic_multipliers_dynamic_input(self):
+    # #     dynamic_inputs_list = []
+    # #     for selected_in in self.selected_inputs:
+    # #         if self.MULTIPLIER_PARTICULE in selected_in:
+    # #             multiplier_name = selected_in.split('.')[-1]
+    # #             origin_var_name = multiplier_name.split('.')[0].split('@')[0]
+    # #             # if
+    # #             if len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)) > 1:
+    # #                 self.logger.exception(
+    # #                     'Multiplier name selected already exists!')
+    # #             origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(origin_var_name)[
+    # #                 0]
+    # #             origin_var_ns = self.ee.dm.get_data(
+    # #                 origin_var_fullname, 'namespace')
+    # #             dynamic_inputs_list.append(
+    # #                 {
+    # #                     f'{multiplier_name}': {
+    # #                         'type': 'float',
+    # #                         'visibility': 'Shared',
+    # #                         'namespace': origin_var_ns,
+    # #                         'unit': self.ee.dm.get_data(origin_var_fullname).get('unit', '-'),
+    # #                         'default': 100
+    # #                     }
+    # #                 }
+    # #             )
+    # #     return dynamic_inputs_list
 
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm

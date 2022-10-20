@@ -426,6 +426,26 @@ class ProxyEval(ProxyAbstractEval):
     #     # TODO : attribute has been added to SoSMDODiscipline __init__, use sos_disciplines rather ?
     #     discipline.disciplines = [self.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline]
 
+    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
+        default_custom_dataframe = pd.DataFrame(
+            [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+        dataframe_descriptor = {}
+        for i, key in enumerate(self.selected_inputs):
+            cle = key
+            var = tuple([self.ee.dm.get_data(
+                self.eval_in_list[i], 'type'), None, True])
+            dataframe_descriptor[cle] = var
+
+        dynamic_inputs = {'doe_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                   'dataframe_descriptor': dataframe_descriptor,
+                                   'dataframe_edition_locked': False}}
+
+        if 'doe_df' in disc_in and selected_inputs_has_changed:
+            disc_in['doe_df']['value'] = default_custom_dataframe
+            disc_in['doe_df']['dataframe_descriptor'] = dataframe_descriptor
+        return dynamic_inputs
+
+
     def setup_sos_disciplines(self):
         # TODO: move to wrapper as it was originally?
         """
@@ -475,24 +495,24 @@ class ProxyEval(ProxyAbstractEval):
                         {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
                                                                                    'visibility': 'Shared',
                                                                                    'namespace': 'ns_doe'}})
-
-                default_custom_dataframe = pd.DataFrame(
-                    [[NaN for input in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-                dataframe_descriptor = {}
-                for i, key in enumerate(self.selected_inputs):
-                    cle = key
-                    var = tuple([self.ee.dm.get_data(
-                        self.eval_in_list[i], 'type'), None, True])
-                    dataframe_descriptor[cle] = var
-
-                dynamic_inputs.update(
-                    {'doe_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                           'dataframe_descriptor': dataframe_descriptor,
-                                           'dataframe_edition_locked': False}})
-                if 'doe_df' in disc_in and selected_inputs_has_changed:
-                    disc_in['doe_df']['value'] = default_custom_dataframe
-                    disc_in['doe_df']['dataframe_descriptor'] = dataframe_descriptor
-
+                dynamic_inputs = self._get_dynamic_inputs_doe(disc_in, selected_inputs_has_changed)
+        #        default_custom_dataframe = pd.DataFrame(
+        #             [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+        #         dataframe_descriptor = {}
+        #         for i, key in enumerate(self.selected_inputs):
+        #             cle = key
+        #             var = tuple([self.ee.dm.get_data(
+        #                 self.eval_in_list[i], 'type'), None, True])
+        #             dataframe_descriptor[cle] = var
+        #
+        #         dynamic_inputs.update(
+        #             {'doe_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+        #                                    'dataframe_descriptor': dataframe_descriptor,
+        #                                    'dataframe_edition_locked': False}})
+        #         if 'doe_df' in disc_in and selected_inputs_has_changed:
+        #             disc_in['doe_df']['value'] = default_custom_dataframe
+        #             disc_in['doe_df']['dataframe_descriptor'] = dataframe_descriptor
+        #
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         # if (len(self.selected_inputs) > 0) and (
