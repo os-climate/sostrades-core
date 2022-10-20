@@ -162,7 +162,6 @@ class ProxyDoeEval(ProxyEval):
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DOE')
         self.doe_factory = DOEFactory()
         self.design_space = None
-        self.customed_samples = None
         self.dict_desactivated_elem = {}
         self.selected_outputs = []
         self.selected_inputs = []

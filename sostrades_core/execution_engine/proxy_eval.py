@@ -290,12 +290,14 @@ class ProxyEval(ProxyAbstractEval):
         # possible_out_values = list(set(possible_out_values))
         possible_in_values = list(set(possible_in_values_full))
         possible_out_values = list(set(possible_out_values_full))
+
+        # these sorts are just for aesthetics
         possible_in_values.sort()
         possible_out_values.sort()
 
-        default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values],
+        default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
                                              'full_name': possible_in_values})
-        default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values],
+        default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
                                               'full_name': possible_out_values})
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
@@ -363,7 +365,7 @@ class ProxyEval(ProxyAbstractEval):
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
         '''
-        # FIXME: this involves recursive back and forths during configuration
+        # TODO: does this involve avoidable, recursive back and forths during configuration ?
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(
@@ -379,11 +381,8 @@ class ProxyEval(ProxyAbstractEval):
         '''
         Get initial values for input values decided in the evaluation
         '''
-        x0 = []
-        for x_id in self.eval_in_list:
-            x_val = self.dm.get_value(x_id)
-            x0.append(x_val)
-        return x0  # Removed cast to array
+        return dict(zip(self.eval_in_list,
+                        map(self.dm.get_value, self.eval_in_list)))
 
     def _set_eval_process_builder(self):
         '''
@@ -480,10 +479,10 @@ class ProxyEval(ProxyAbstractEval):
                 self.selected_inputs = selected_inputs.tolist()
             self.selected_outputs = selected_outputs.tolist()
 
-            if len(selected_inputs) > 0 and len(selected_outputs) > 0:
+            if len(selected_inputs) > 0 and len(selected_outputs) > 0: # TODO: might want an eval without outputs ?
                 # we set the lists which will be used by the evaluation
                 # function of sosEval
-                self.set_eval_in_out_lists(selected_inputs, selected_outputs)
+                self.set_eval_in_out_lists(self.selected_inputs, self.selected_outputs)
 
                 # setting dynamic outputs. One output of type dict per selected
                 # output

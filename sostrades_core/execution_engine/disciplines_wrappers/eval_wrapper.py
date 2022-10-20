@@ -76,9 +76,9 @@ class EvalWrapper(AbstractEvalWrapper):
     }
 
     def __init__(self, sos_name):
-
         super().__init__(sos_name)
-        self.samples = None
+        self.custom_samples = None  # input samples dataframe
+        self.samples = None         # samples to evaluate as list[list[Any]] or ndarray
         self.input_data_for_disc = None
 
     def _init_input_data(self):
@@ -187,13 +187,12 @@ class EvalWrapper(AbstractEvalWrapper):
         '''
         # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
         # self.attributes['sub_mdo_discipline'].clear_cache() # FIXME: cache management?
-        # TODO: x should already be a dictionary.
-        values_dict = {}
-        eval_in = self.attributes['eval_in_list']
-        if completed_eval_in_list is not None:
+
+        if completed_eval_in_list is None:
+            eval_in = self.attributes['eval_in_list']
+        else:
             eval_in = completed_eval_in_list
-        for i, x_id in enumerate(eval_in):
-            values_dict[x_id] = x[i]
+        values_dict = dict(zip(eval_in, x)) #TODO: to discuss whether this is OK or a dict should arrive here
 
         # Because we use set_data instead of load_data_from_inputs_dict it isn't possible
         # to run  soseval on a structuring variable. Therefore structuring variables are
@@ -379,8 +378,9 @@ class EvalWrapper(AbstractEvalWrapper):
     #             self.samples[sample_i].append(
     #                 vars_to_update_dict[multiplied_var])
 
-    def clean_var_name(self, var_name):
-        return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
+    #MULTIPLIER
+    # def clean_var_name(self, var_name):
+    #     return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
 
     #MULTIPLIER
     # def get_names_from_multiplier(self, var_name):
@@ -408,9 +408,10 @@ class EvalWrapper(AbstractEvalWrapper):
         # We first begin by sample generation
         self.samples = self.take_samples()
 
-        # Then add the reference scenario (initial point ) to the generated
-        # samples
-        self.samples.append(self.attributes['reference_scenario'])
+        # Then add the reference scenario (initial point ) to the input samples
+        self.samples.append([self.attributes['reference_scenario'][var_to_eval]
+                             for var_to_eval in self.attributes['eval_in_list']])
+
         reference_scenario_id = len(self.samples)
         eval_in_with_multiplied_var = None
         # if self.INPUT_MULTIPLIER_TYPE != []:
@@ -480,44 +481,30 @@ class EvalWrapper(AbstractEvalWrapper):
                 f'{dynamic_output.split(self.attributes["study_name"] + ".", 1)[1]}_dict':
                     global_dict_output[dynamic_output]})
 
-            #TODO: dirty namespacing
-
-            # self.store_sos_outputs_values({
-            #     f'{dynamic_output.split(".")[-1]}_dict':
-            #         global_dict_output[dynamic_output]})
-
     def take_samples(self):
         """Generating samples for the Eval
         """
-        self.customed_samples = self.get_sosdisc_inputs('doe_df').copy()
-        self.check_customed_samples()
-        samples_custom = []
-        for index, rows in self.customed_samples.iterrows():
-            ordered_sample = []
-            for col in rows:
-                ordered_sample.append(col)
-            samples_custom.append(ordered_sample)
-        return samples_custom
+        self.custom_samples = self.get_sosdisc_inputs('doe_df').copy()
+        self.check_custom_samples()
+        return self.custom_samples.values.tolist()
 
-    def check_customed_samples(self):
+    def check_custom_samples(self):
         """ We that the columns of the dataframe are the same  that  the selected inputs
         We also check that they are of the same type
         """
-        # TODO: these set operations might be at the root of the "ordering" issue
-        if not set(self.attributes['selected_inputs']).issubset(set(self.customed_samples.columns.to_list())):
+        if not set(self.attributes['selected_inputs']).issubset(set(self.custom_samples.columns.to_list())):
             missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
-                self.customed_samples.columns.to_list())) - set(self.customed_samples.columns.to_list())
+                self.custom_samples.columns.to_list())) - set(self.custom_samples.columns.to_list())
             msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
             # To do: provide also the list of missing eval_in variables:
             LOGGER.error(msg)
             raise ValueError(msg)
         else:
             not_relevant_columns = set(
-                self.customed_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
+                self.custom_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
             msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
             LOGGER.warning(msg)
             if len(not_relevant_columns) != 0:
-                self.customed_samples.drop(
+                self.custom_samples.drop(
                     not_relevant_columns, axis=1, inplace=True)
-            self.attributes['selected_inputs'].sort()
-            self.customed_samples = self.customed_samples[self.attributes['selected_inputs']]
+            self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]

@@ -121,15 +121,14 @@ class DoeEval(EvalWrapper):
 
         if 'full_name' in dspace_df:
             variables = dspace_df['full_name'].tolist()
-            variables = [f'{self.attributes["study_name"]}.{eval}' for eval in variables]
+            variables = [f'{self.attributes["study_name"]}.{var_to_eval}' for var_to_eval in variables]
         else:
             variables = self.attributes['eval_in_list']
 
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
-        enable_variables = [True for invar in self.attributes['eval_in_list']]
-        # This won't work for an array with a dimension greater than 2
+        enable_variables = [True for _ in self.attributes['eval_in_list']]
         dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
                                             self.VALUES: values,
                                             self.LOWER_BOUND: lower_bounds,
@@ -240,7 +239,7 @@ class DoeEval(EvalWrapper):
         return self.prepare_samples()
 
     def prepare_samples(self):
-        #TODO: necessary ?
+        #TODO: inefficient ! necessary ? check
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
