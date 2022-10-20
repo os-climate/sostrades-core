@@ -240,6 +240,7 @@ class DoeEval(EvalWrapper):
         return self.prepare_samples()
 
     def prepare_samples(self):
+        #TODO: necessary ?
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
@@ -264,89 +265,89 @@ class DoeEval(EvalWrapper):
     #         samples_custom.append(ordered_sample)
     #     return samples_custom
 
-    def __run(self):
-        '''
-            Overloaded SoSEval method
-            The execution of the doe
-        '''
-        # upadte default inputs of children with dm values
-        # TODO: Ask whether it is necessary to update default values.
-        # self.update_default_inputs(self.attributes['sub_mdo_disciplines'])
-
-        dict_sample = {}
-        dict_output = {}
-
-        # We first begin by sample generation
-        self.samples = self.take_samples()
-
-        # Then add the reference scenario (initial point ) to the generated
-        # samples
-        self.samples.append(self.attributes['reference_scenario'])
-        reference_scenario_id = len(self.samples)
-        eval_in_with_multiplied_var = None
-        # if self.INPUT_MULTIPLIER_TYPE != []:
-        #     origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
-        #     multipliers_samples = copy.deepcopy(self.samples)
-        #     self.add_multiplied_var_to_samples(
-        #         multipliers_samples, origin_vars_to_update_dict)
-        #     eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
-        #         list(origin_vars_to_update_dict.keys())
-
-        # evaluation of the samples through a call to samples_evaluation
-        evaluation_outputs = self.samples_evaluation(
-            self.samples, convert_to_array=False, completed_eval_in_list=eval_in_with_multiplied_var)
-
-        # we loop through the samples evaluated to build dictionnaries needed
-        # for output generation
-        reference_scenario = f'scenario_{reference_scenario_id}'
-
-        for (scenario_name, evaluated_samples) in evaluation_outputs.items():
-
-            # generation of the dictionnary of samples used
-            dict_one_sample = {}
-            current_sample = evaluated_samples[0]
-            scenario_naming = scenario_name if scenario_name != reference_scenario else 'reference'
-            for idx, f_name in enumerate(self.attributes['eval_in_list']):
-                dict_one_sample[f_name] = current_sample[idx]
-            dict_sample[scenario_naming] = dict_one_sample
-
-            # generation of the dictionnary of outputs
-            dict_one_output = {}
-            current_output = evaluated_samples[1]
-            for idx, values in enumerate(current_output):
-                dict_one_output[self.attributes['eval_out_list'][idx]] = values
-            dict_output[scenario_naming] = dict_one_output
-
-        # construction of a dataframe of generated samples
-        # columns are selected inputs
-        columns = ['scenario']
-        columns.extend(self.attributes['selected_inputs'])
-        samples_all_row = []
-        for (scenario, scenario_sample) in dict_sample.items():
-            samples_row = [scenario]
-            for generated_input in scenario_sample.values():
-                samples_row.append(generated_input)
-            samples_all_row.append(samples_row)
-        samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
-
-        # construction of a dictionnary of dynamic outputs
-        # The key is the output name and the value a dictionnary of results
-        # with scenarii as keys
-        global_dict_output = {key: {} for key in self.attributes['eval_out_list']}
-        for (scenario, scenario_output) in dict_output.items():
-            for full_name_out in scenario_output.keys():
-                global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
-
-        #save data of last execution i.e. reference values #FIXME: do this better in refacto doe
-        subprocess_ref_outputs = {key:self.attributes['sub_mdo_disciplines'][0].local_data[key]
-                                  for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
-        self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
-        #save doeeval outputs
-        self.store_sos_outputs_values(
-            {'samples_inputs_df': samples_dataframe})
-        for dynamic_output in self.attributes['eval_out_list']:
-            self.store_sos_outputs_values({
-                # f'{dynamic_output.split(".")[-1]}_dict':
-                #     global_dict_output[dynamic_output]})
-                f'{dynamic_output.split(self.attributes["study_name"] + ".",1)[1]}_dict':
-                    global_dict_output[dynamic_output]})
+    # def run(self):
+    #     '''
+    #         Overloaded SoSEval method
+    #         The execution of the doe
+    #     '''
+    #     # upadte default inputs of children with dm values
+    #     # TODO: Ask whether it is necessary to update default values.
+    #     # self.update_default_inputs(self.attributes['sub_mdo_disciplines'])
+    #
+    #     dict_sample = {}
+    #     dict_output = {}
+    #
+    #     # We first begin by sample generation
+    #     self.samples = self.take_samples()
+    #
+    #     # Then add the reference scenario (initial point ) to the generated
+    #     # samples
+    #     self.samples.append(self.attributes['reference_scenario'])
+    #     reference_scenario_id = len(self.samples)
+    #     eval_in_with_multiplied_var = None
+    #     # if self.INPUT_MULTIPLIER_TYPE != []:
+    #     #     origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
+    #     #     multipliers_samples = copy.deepcopy(self.samples)
+    #     #     self.add_multiplied_var_to_samples(
+    #     #         multipliers_samples, origin_vars_to_update_dict)
+    #     #     eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
+    #     #         list(origin_vars_to_update_dict.keys())
+    #
+    #     # evaluation of the samples through a call to samples_evaluation
+    #     evaluation_outputs = self.samples_evaluation(
+    #         self.samples, convert_to_array=False, completed_eval_in_list=eval_in_with_multiplied_var)
+    #
+    #     # we loop through the samples evaluated to build dictionnaries needed
+    #     # for output generation
+    #     reference_scenario = f'scenario_{reference_scenario_id}'
+    #
+    #     for (scenario_name, evaluated_samples) in evaluation_outputs.items():
+    #
+    #         # generation of the dictionnary of samples used
+    #         dict_one_sample = {}
+    #         current_sample = evaluated_samples[0]
+    #         scenario_naming = scenario_name if scenario_name != reference_scenario else 'reference'
+    #         for idx, f_name in enumerate(self.attributes['eval_in_list']):
+    #             dict_one_sample[f_name] = current_sample[idx]
+    #         dict_sample[scenario_naming] = dict_one_sample
+    #
+    #         # generation of the dictionnary of outputs
+    #         dict_one_output = {}
+    #         current_output = evaluated_samples[1]
+    #         for idx, values in enumerate(current_output):
+    #             dict_one_output[self.attributes['eval_out_list'][idx]] = values
+    #         dict_output[scenario_naming] = dict_one_output
+    #
+    #     # construction of a dataframe of generated samples
+    #     # columns are selected inputs
+    #     columns = ['scenario']
+    #     columns.extend(self.attributes['selected_inputs'])
+    #     samples_all_row = []
+    #     for (scenario, scenario_sample) in dict_sample.items():
+    #         samples_row = [scenario]
+    #         for generated_input in scenario_sample.values():
+    #             samples_row.append(generated_input)
+    #         samples_all_row.append(samples_row)
+    #     samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
+    #
+    #     # construction of a dictionnary of dynamic outputs
+    #     # The key is the output name and the value a dictionnary of results
+    #     # with scenarii as keys
+    #     global_dict_output = {key: {} for key in self.attributes['eval_out_list']}
+    #     for (scenario, scenario_output) in dict_output.items():
+    #         for full_name_out in scenario_output.keys():
+    #             global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
+    #
+    #     #save data of last execution i.e. reference values #FIXME: do this better in refacto doe
+    #     subprocess_ref_outputs = {key:self.attributes['sub_mdo_disciplines'][0].local_data[key]
+    #                               for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
+    #     self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
+    #     #save doeeval outputs
+    #     self.store_sos_outputs_values(
+    #         {'samples_inputs_df': samples_dataframe})
+    #     for dynamic_output in self.attributes['eval_out_list']:
+    #         self.store_sos_outputs_values({
+    #             # f'{dynamic_output.split(".")[-1]}_dict':
+    #             #     global_dict_output[dynamic_output]})
+    #             f'{dynamic_output.split(self.attributes["study_name"] + ".",1)[1]}_dict':
+    #                 global_dict_output[dynamic_output]})
