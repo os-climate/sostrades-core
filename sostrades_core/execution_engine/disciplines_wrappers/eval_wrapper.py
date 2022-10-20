@@ -504,7 +504,7 @@ class EvalWrapper(AbstractEvalWrapper):
                 self.custom_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
             msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
             LOGGER.warning(msg)
-            if len(not_relevant_columns) != 0:
-                self.custom_samples.drop(
-                    not_relevant_columns, axis=1, inplace=True)
-            self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
+            # if len(not_relevant_columns) != 0:
+            #     self.custom_samples.drop(
+            #         not_relevant_columns, axis=1, inplace=True)
+            self.custom_samples = self.custom_samples[self.attributes['selected_inputs']] # drop irrelevant + reorder
