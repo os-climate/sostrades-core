@@ -35,7 +35,8 @@ class TreeNode:
     MARKDOWN_DOCUMENTATION_KEY = 'documentation'
 
     needed_variables = [SoSDiscipline.TYPE, SoSDiscipline.USER_LEVEL, SoSDiscipline.EDITABLE,
-                        SoSDiscipline.COUPLING, SoSDiscipline.VALUE, SoSDiscipline.NUMERICAL, SoSDiscipline.OPTIONAL]
+                        SoSDiscipline.COUPLING, SoSDiscipline.VALUE, SoSDiscipline.NUMERICAL, SoSDiscipline.OPTIONAL,
+                        SoSDiscipline.CHECK_INTEGRITY_MSG]
 
     def __init__(self, name):
         """ class constructor
