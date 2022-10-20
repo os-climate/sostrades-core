@@ -192,49 +192,52 @@ class DoeEval(EvalWrapper):
                     name, size, var_type, l_b, u_b, value)
         return design_space
 
-    def generate_samples_from_doe_factory(self):
-        """Generating samples for the Doe using the Doe Factory
-        """
+    def take_samples(self):
         algo_name = self.get_sosdisc_inputs(self.ALGO)
         if algo_name == 'CustomDOE':
-            return self.create_samples_from_custom_df()
+            return super().take_samples()
         else:
-            self.design_space = self.create_design_space()
-            options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-            filled_options = {}
-            for algo_option in options:
-                if options[algo_option] != 'default':
-                    filled_options[algo_option] = options[algo_option]
+            return self.generate_samples_from_doe_factory(algo_name)
 
-            if self.N_SAMPLES not in options:
-                LOGGER.warning("N_samples is not defined; pay attention you use fullfact algo "
-                                    "and that levels are well defined")
+    def generate_samples_from_doe_factory(self, algo_name):
+        """Generating samples for the Doe using the Doe Factory
+        """
+        self.design_space = self.create_design_space()
+        options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
+        filled_options = {}
+        for algo_option in options:
+            if options[algo_option] != 'default':
+                filled_options[algo_option] = options[algo_option]
 
-            LOGGER.info(filled_options)
-            # TODO : logging from module ?
+        if self.N_SAMPLES not in options:
+            LOGGER.warning("N_samples is not defined; pay attention you use fullfact algo "
+                                "and that levels are well defined")
 
-            filled_options[self.DIMENSION] = self.design_space.dimension
-            filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
-            filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
-            # filled_options['n_processes'] = int(filled_options['n_processes'])
-            filled_options['n_processes'] = self.get_sosdisc_inputs(
-                'n_processes')
-            filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs(
-                'wait_time_between_fork')
-            algo = self.attributes['doe_factory'].create(algo_name)
+        LOGGER.info(filled_options)
+        # TODO : logging from module ?
 
-            self.samples = algo._generate_samples(**filled_options)
+        filled_options[self.DIMENSION] = self.design_space.dimension
+        filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
+        filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
+        # filled_options['n_processes'] = int(filled_options['n_processes'])
+        filled_options['n_processes'] = self.get_sosdisc_inputs(
+            'n_processes')
+        filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs(
+            'wait_time_between_fork')
+        algo = self.attributes['doe_factory'].create(algo_name)
 
-            unnormalize_vect = self.design_space.unnormalize_vect
-            round_vect = self.design_space.round_vect
-            samples = []
-            for sample in self.samples:
-                x_sample = round_vect(unnormalize_vect(sample))
-                self.design_space.check_membership(x_sample)
-                samples.append(x_sample)
-            self.samples = samples
+        self.samples = algo._generate_samples(**filled_options)
 
-            return self.prepare_samples()
+        unnormalize_vect = self.design_space.unnormalize_vect
+        round_vect = self.design_space.round_vect
+        samples = []
+        for sample in self.samples:
+            x_sample = round_vect(unnormalize_vect(sample))
+            self.design_space.check_membership(x_sample)
+            samples.append(x_sample)
+        self.samples = samples
+
+        return self.prepare_samples()
 
     def prepare_samples(self):
         samples = []
@@ -248,20 +251,20 @@ class DoeEval(EvalWrapper):
             samples.append(ordered_sample)
         return samples
 
-    def create_samples_from_custom_df(self):
-        """Generation of the samples in case of a customed DOE
-        """
-        self.customed_samples = self.get_sosdisc_inputs('doe_df').copy()
-        self.check_customed_samples()
-        samples_custom = []
-        for index, rows in self.customed_samples.iterrows():
-            ordered_sample = []
-            for col in rows:
-                ordered_sample.append(col)
-            samples_custom.append(ordered_sample)
-        return samples_custom
+    # def create_samples_from_custom_df(self):
+    #     """Generation of the samples in case of a customed DOE
+    #     """
+    #     self.customed_samples = self.get_sosdisc_inputs('doe_df').copy()
+    #     self.check_customed_samples()
+    #     samples_custom = []
+    #     for index, rows in self.customed_samples.iterrows():
+    #         ordered_sample = []
+    #         for col in rows:
+    #             ordered_sample.append(col)
+    #         samples_custom.append(ordered_sample)
+    #     return samples_custom
 
-    def run(self):
+    def __run(self):
         '''
             Overloaded SoSEval method
             The execution of the doe
@@ -274,7 +277,7 @@ class DoeEval(EvalWrapper):
         dict_output = {}
 
         # We first begin by sample generation
-        self.samples = self.generate_samples_from_doe_factory()
+        self.samples = self.take_samples()
 
         # Then add the reference scenario (initial point ) to the generated
         # samples
