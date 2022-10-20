@@ -54,8 +54,9 @@ class GSPureNewtonorGSMDA(MDASequential):
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         linear_solver_options=None,  # type: Mapping[str,Any]
         log_convergence=False,  # type: bool
+        gauss_seidel_execution=False,
         **newton_mda_options  # type: float,  # type: Mapping[str,Any]
-):
+    ):
         """
         Constructor
 
@@ -98,14 +99,15 @@ class GSPureNewtonorGSMDA(MDASequential):
         mda_gs.tolerance = tolerance
 
         mda_newton = create_mda(
-            'GSPureNewtonMDA',disciplines,  max_mda_iter=max_mda_iter,
-                                 name=None, grammar_type=grammar_type,
-                                 linear_solver=linear_solver,
-                                 linear_solver_options=linear_solver_options,
-                                 tolerance_gs=tolerance_gs,
-                                 use_lu_fact=use_lu_fact, tolerance=tolerance,
-                                 relax_factor=relax_factor,
-                                 ** newton_mda_options
+            'GSPureNewtonMDA', disciplines,  max_mda_iter=max_mda_iter,
+            name=None, grammar_type=grammar_type,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
+            tolerance_gs=tolerance_gs,
+            use_lu_fact=use_lu_fact, tolerance=tolerance,
+            relax_factor=relax_factor,
+            gauss_seidel_execution=gauss_seidel_execution,
+            ** newton_mda_options
         )
 
         # mda_newton = GSPureNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
