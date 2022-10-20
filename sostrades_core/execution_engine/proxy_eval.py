@@ -74,9 +74,9 @@ class ProxyEval(ProxyAbstractEval):
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
-        self.eval_in_base_list = None
+        # self.eval_in_base_list = None
         self.eval_in_list = None
-        self.eval_out_base_list = None
+        # self.eval_out_base_list = None
         self.eval_out_list = None
         # Needed to reconstruct objects from flatten list
         self.eval_out_type = []
@@ -89,6 +89,8 @@ class ProxyEval(ProxyAbstractEval):
         self.selected_outputs = []
         self.selected_inputs = []
 
+    def _get_disc_shared_ns_value(self):
+        return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value()
 
     def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
         '''
@@ -298,8 +300,7 @@ class ProxyEval(ProxyAbstractEval):
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
-        my_ns_eval_path = self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value(
-        )
+        my_ns_eval_path = self._get_disc_shared_ns_value()
 
         if eval_input_new_dm is None:
             self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',

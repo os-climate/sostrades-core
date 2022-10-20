@@ -168,6 +168,9 @@ class ProxyDoeEval(ProxyEval):
         self.selected_inputs = []
         self.previous_algo_name = ""
 
+    def _get_disc_shared_ns_value(self):
+        return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_doe_eval'].get_value()
+
     def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
         algo_name_has_changed = False
         algo_name = self.get_sosdisc_inputs(self.ALGO)
@@ -383,177 +386,178 @@ class ProxyDoeEval(ProxyEval):
         else:
             return self.default_algo_options
 
-    def fill_possible_values(self, disc):
-        '''
-            Fill possible values lists for eval inputs and outputs
-            an input variable must be a float coming from a data_in of a discipline in all the process
-            and not a default variable
-            an output variable must be any data from a data_out discipline
-        '''
-        # FIXME: need to accommodate long names and subprocess variables
-        poss_in_values_full = []
-        poss_out_values_full = []
-        disc_in = disc.get_data_in()
-        for data_in_key in disc_in.keys():
-            is_input_type = disc_in[data_in_key][self.TYPE] in self.INPUT_TYPE
-            is_structuring = disc_in[data_in_key].get(
-                self.STRUCTURING, False)
-            in_coupling_numerical = data_in_key in list(
-                ProxyCoupling.DESC_IN.keys())
-            full_id = disc.get_var_full_name(
-                data_in_key, disc_in)
-            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
-            # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-            is_editable = disc_in[data_in_key]['editable']
-            is_None = disc_in[data_in_key]['value'] is None
-            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
-                # Caution ! This won't work for variables with points in name
-                # as for ac_model
-                # we remove the study name from the variable full  name for a
-                # sake of simplicity
-                if is_input_type:
-                    poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".", 1)[1])
-
-                # if is_input_multiplier_type and not is_None:
-                #     poss_in_values_list = self.set_multipliers_values(
-                #         disc, full_id, data_in_key)
-                #     for val in poss_in_values_list:
-                #         poss_in_values_full.append(val)
-        
-        disc_out = disc.get_data_out()
-        for data_out_key in disc_out.keys():
-            # Caution ! This won't work for variables with points in name
-            # as for ac_model
-            in_coupling_numerical = data_out_key in list(
-                ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
-            full_id = disc.get_var_full_name(
-                data_out_key, disc_out)
-            if not in_coupling_numerical:
-                # we remove the study name from the variable full  name for a
-                # sake of simplicity
-                poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".", 1)[1])
-
-        return poss_in_values_full, poss_out_values_full
-
-    #MULTIPLIER
-    # def set_multipliers_values(self, disc, full_id, var_name):
-    #     poss_in_values_list = []
-    #     # if local var
+    # def fill_possible_values(self, disc):
+    #     '''
+    #         Fill possible values lists for eval inputs and outputs
+    #         an input variable must be a float coming from a data_in of a discipline in all the process
+    #         and not a default variable
+    #         an output variable must be any data from a data_out discipline
+    #     '''
+    #     # FIXME: need to accommodate long names and subprocess variables
+    #     poss_in_values_full = []
+    #     poss_out_values_full = []
     #     disc_in = disc.get_data_in()
-    #     if 'namespace' not in disc_in[var_name]:
-    #         origin_var_ns = disc_in[var_name]['ns_reference'].value
-    #     else:
-    #         origin_var_ns = disc_in[var_name]['namespace']
+    #     for data_in_key in disc_in.keys():
+    #         is_input_type = disc_in[data_in_key][self.TYPE] in self.INPUT_TYPE
+    #         is_structuring = disc_in[data_in_key].get(
+    #             self.STRUCTURING, False)
+    #         in_coupling_numerical = data_in_key in list(
+    #             ProxyCoupling.DESC_IN.keys())
+    #         full_id = disc.get_var_full_name(
+    #             data_in_key, disc_in)
+    #         is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+    #                                        ]['io_type'] == 'in'
+    #         # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+    #         is_editable = disc_in[data_in_key]['editable']
+    #         is_None = disc_in[data_in_key]['value'] is None
+    #         if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
+    #             # Caution ! This won't work for variables with points in name
+    #             # as for ac_model
+    #             # we remove the study name from the variable full  name for a
+    #             # sake of simplicity
+    #             if is_input_type:
+    #                 poss_in_values_full.append(
+    #                     full_id.split(self.ee.study_name + ".", 1)[1])
     #
-    #     disc_id = ('.').join(full_id.split('.')[:-1])
-    #     ns_disc_id = ('__').join([origin_var_ns, disc_id])
-    #     if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
-    #         full_id_ns = ('.').join(
-    #             [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name])
-    #     else:
-    #         full_id_ns = full_id
+    #             # if is_input_multiplier_type and not is_None:
+    #             #     poss_in_values_list = self.set_multipliers_values(
+    #             #         disc, full_id, data_in_key)
+    #             #     for val in poss_in_values_list:
+    #             #         poss_in_values_full.append(val)
     #
-    #     if disc_in[var_name][self.TYPE] == 'float':
-    #         multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
-    #             self.ee.study_name + ".", 1)[1]
-    #         poss_in_values_list.append(multiplier_fullname)
+    #     disc_out = disc.get_data_out()
+    #     for data_out_key in disc_out.keys():
+    #         # Caution ! This won't work for variables with points in name
+    #         # as for ac_model
+    #         in_coupling_numerical = data_out_key in list(
+    #             ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
+    #         full_id = disc.get_var_full_name(
+    #             data_out_key, disc_out)
+    #         if not in_coupling_numerical:
+    #             # we remove the study name from the variable full  name for a
+    #             # sake of simplicity
+    #             poss_out_values_full.append(
+    #                 full_id.split(self.ee.study_name + ".", 1)[1])
     #
-    #     else:
-    #         df_var = disc_in[var_name]['value']
-    #         # if df_var is dict : transform dict to df
-    #         if disc_in[var_name][self.TYPE] == 'dict':
-    #             dict_var = disc_in[var_name]['value']
-    #             df_var = pd.DataFrame(
-    #                 dict_var, index=list(dict_var.keys()))
-    #         # check & create float columns list from df
-    #         columns = df_var.columns
-    #         float_cols_list = [col_name for col_name in columns if (
-    #             df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
-    #         # if df with float columns
-    #         if len(float_cols_list) > 0:
-    #             for col_name in float_cols_list:
-    #                 col_name_clean = self.clean_var_name(col_name)
-    #                 multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
-    #                     self.ee.study_name + ".", 1)[1]
-    #                 poss_in_values_list.append(multiplier_fullname)
-    #             # if df with more than one float column, create multiplier for all
-    #             # columns also
-    #             if len(float_cols_list) > 1:
-    #                 multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
-    #                     self.ee.study_name + ".", 1)[1]
-    #                 poss_in_values_list.append(multiplier_fullname)
-    #     return poss_in_values_list
+    #     return poss_in_values_full, poss_out_values_full
+    #
+    # #MULTIPLIER
+    # # def set_multipliers_values(self, disc, full_id, var_name):
+    # #     poss_in_values_list = []
+    # #     # if local var
+    # #     disc_in = disc.get_data_in()
+    # #     if 'namespace' not in disc_in[var_name]:
+    # #         origin_var_ns = disc_in[var_name]['ns_reference'].value
+    # #     else:
+    # #         origin_var_ns = disc_in[var_name]['namespace']
+    # #
+    # #     disc_id = ('.').join(full_id.split('.')[:-1])
+    # #     ns_disc_id = ('__').join([origin_var_ns, disc_id])
+    # #     if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
+    # #         full_id_ns = ('.').join(
+    # #             [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name])
+    # #     else:
+    # #         full_id_ns = full_id
+    # #
+    # #     if disc_in[var_name][self.TYPE] == 'float':
+    # #         multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
+    # #             self.ee.study_name + ".", 1)[1]
+    # #         poss_in_values_list.append(multiplier_fullname)
+    # #
+    # #     else:
+    # #         df_var = disc_in[var_name]['value']
+    # #         # if df_var is dict : transform dict to df
+    # #         if disc_in[var_name][self.TYPE] == 'dict':
+    # #             dict_var = disc_in[var_name]['value']
+    # #             df_var = pd.DataFrame(
+    # #                 dict_var, index=list(dict_var.keys()))
+    # #         # check & create float columns list from df
+    # #         columns = df_var.columns
+    # #         float_cols_list = [col_name for col_name in columns if (
+    # #             df_var[col_name].dtype == 'float' and not all(df_var[col_name].isna()))]
+    # #         # if df with float columns
+    # #         if len(float_cols_list) > 0:
+    # #             for col_name in float_cols_list:
+    # #                 col_name_clean = self.clean_var_name(col_name)
+    # #                 multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
+    # #                     self.ee.study_name + ".", 1)[1]
+    # #                 poss_in_values_list.append(multiplier_fullname)
+    # #             # if df with more than one float column, create multiplier for all
+    # #             # columns also
+    # #             if len(float_cols_list) > 1:
+    # #                 multiplier_fullname = f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+    # #                     self.ee.study_name + ".", 1)[1]
+    # #                 poss_in_values_list.append(multiplier_fullname)
+    # #     return poss_in_values_list
 
     def set_eval_possible_values(self):
         '''
             Once all disciplines have been run through,
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
-        # the eval process to analyse is stored as the only child of SoSEval
-        # (coupling chain of the eval process or single discipline)
-        analyzed_disc = self.proxy_disciplines[0]
-
-        possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-            analyzed_disc)
-
-        possible_in_values_full, possible_out_values_full = self.find_possible_values(
-            analyzed_disc, possible_in_values_full, possible_out_values_full)
-
-        # Take only unique values in the list
-        possible_in_values_full = list(set(possible_in_values_full))
-        possible_out_values_full = list(set(possible_out_values_full))
-
-        # Fill the possible_values of eval_inputs
-
-        possible_in_values_full.sort()
-        possible_out_values_full.sort()
-
-        default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full],
-                                             'full_name': possible_in_values_full})
-        default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
-                                              'full_name': possible_out_values_full})
-
-        eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
-        eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
-        my_ns_doe_eval_path = self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_doe_eval'].get_value(
-        )
-        if eval_input_new_dm is None:
-            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
-                             'value', default_in_dataframe, check_value=False)
-
-        # check if the eval_inputs need to be updtated after a subprocess
-        # configure
-        elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                               is_eval_input=True)
-            default_dataframe = copy.deepcopy(default_in_dataframe)
-            already_set_names = eval_input_new_dm['full_name'].tolist()
-            already_set_values = eval_input_new_dm['selected_input'].tolist()
-            for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                    index]
-            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
-                             'value', default_dataframe, check_value=False)
-
-        if eval_output_new_dm is None:
-            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
-                             'value', default_out_dataframe, check_value=False)
-            # check if the eval_inputs need to be updtated after a subprocess
-            # configure
-        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
-                               is_eval_input=False)
-            default_dataframe = copy.deepcopy(default_out_dataframe)
-            already_set_names = eval_output_new_dm['full_name'].tolist()
-            already_set_values = eval_output_new_dm['selected_output'].tolist()
-            for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
-                    index]
-            self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
-                             'value', default_dataframe, check_value=False)
+        super().set_eval_possible_values()
+        # # the eval process to analyse is stored as the only child of SoSEval
+        # # (coupling chain of the eval process or single discipline)
+        # analyzed_disc = self.proxy_disciplines[0]
+        #
+        # possible_in_values_full, possible_out_values_full = self.fill_possible_values(
+        #     analyzed_disc)
+        #
+        # possible_in_values_full, possible_out_values_full = self.find_possible_values(
+        #     analyzed_disc, possible_in_values_full, possible_out_values_full)
+        #
+        # # Take only unique values in the list
+        # possible_in_values_full = list(set(possible_in_values_full))
+        # possible_out_values_full = list(set(possible_out_values_full))
+        #
+        # # Fill the possible_values of eval_inputs
+        #
+        # possible_in_values_full.sort()
+        # possible_out_values_full.sort()
+        #
+        # default_in_dataframe = pd.DataFrame({'selected_input': [False for invar in possible_in_values_full],
+        #                                      'full_name': possible_in_values_full})
+        # default_out_dataframe = pd.DataFrame({'selected_output': [False for invar in possible_out_values_full],
+        #                                       'full_name': possible_out_values_full})
+        #
+        # eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
+        # eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
+        # my_ns_doe_eval_path = self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_doe_eval'].get_value(
+        # )
+        # if eval_input_new_dm is None:
+        #     self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
+        #                      'value', default_in_dataframe, check_value=False)
+        #
+        # # check if the eval_inputs need to be updtated after a subprocess
+        # # configure
+        # elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+        #     self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+        #                        is_eval_input=True)
+        #     default_dataframe = copy.deepcopy(default_in_dataframe)
+        #     already_set_names = eval_input_new_dm['full_name'].tolist()
+        #     already_set_values = eval_input_new_dm['selected_input'].tolist()
+        #     for index, name in enumerate(already_set_names):
+        #         default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
+        #             index]
+        #     self.dm.set_data(f'{my_ns_doe_eval_path}.eval_inputs',
+        #                      'value', default_dataframe, check_value=False)
+        #
+        # if eval_output_new_dm is None:
+        #     self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
+        #                      'value', default_out_dataframe, check_value=False)
+        #     # check if the eval_inputs need to be updtated after a subprocess
+        #     # configure
+        # elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+        #     self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+        #                        is_eval_input=False)
+        #     default_dataframe = copy.deepcopy(default_out_dataframe)
+        #     already_set_names = eval_output_new_dm['full_name'].tolist()
+        #     already_set_values = eval_output_new_dm['selected_output'].tolist()
+        #     for index, name in enumerate(already_set_names):
+        #         default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
+        #             index]
+        #     self.dm.set_data(f'{my_ns_doe_eval_path}.eval_outputs',
+        #                      'value', default_dataframe, check_value=False)
 
         # filling possible values for sampling algorithm name
         self.dm.set_data(f'{self.get_disc_full_name()}.sampling_algo',
@@ -574,41 +578,26 @@ class ProxyDoeEval(ProxyEval):
         sorted_algorithms.insert(0, "fullfact")
         return sorted_algorithms
 
-    # def set_eval_in_out_lists(self, in_list, out_list):
-    #     '''
+    # def check_eval_io(self, given_list, default_list, is_eval_input):
+    #     """
     #     Set the evaluation variable list (in and out) present in the DM
     #     which fits with the eval_in_base_list filled in the usecase or by the user
-    #     '''
-    #     # FIXME: manipulating namespaces manually
-    #     self.eval_in_base_list = [
-    #         element.split(".")[-1] for element in in_list]
-    #     self.eval_out_base_list = [
-    #         element.split(".")[-1] for element in out_list]
-    #     self.eval_in_list = [
-    #         f'{self.ee.study_name}.{element}' for element in in_list]
-    #     self.eval_out_list = [
-    #         f'{self.ee.study_name}.{element}' for element in out_list]
-
-    def check_eval_io(self, given_list, default_list, is_eval_input):
-        """
-        Set the evaluation variable list (in and out) present in the DM
-        which fits with the eval_in_base_list filled in the usecase or by the user
-        """
-
-        for given_io in given_list:
-            if given_io not in default_list:
-                if is_eval_input:
-                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
-                                f'input of the subprocess with the correct full name (without study name at the ' \
-                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
-                                f'be created. '
-
-                else:
-                    error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
-                                f'output of the subprocess with the correct full name (without study name at the ' \
-                                f'beginning). Dynamic inputs might  not be created. '
-
-                self.logger.warning(error_msg)
+    #     """
+    #
+    #     for given_io in given_list:
+    #         if given_io not in default_list:
+    #             if is_eval_input:
+    #                 error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+    #                             f'input of the subprocess with the correct full name (without study name at the ' \
+    #                             f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
+    #                             f'be created. '
+    #
+    #             else:
+    #                 error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+    #                             f'output of the subprocess with the correct full name (without study name at the ' \
+    #                             f'beginning). Dynamic inputs might  not be created. '
+    #
+    #             self.logger.warning(error_msg)
 
     def set_wrapper_attributes(self, wrapper):
         # ProxyEval attributes
