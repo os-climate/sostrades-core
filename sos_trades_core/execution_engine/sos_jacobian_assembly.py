@@ -98,7 +98,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 #                     dres_dvar[
 # out_i: out_i + variable_size, out_j: out_j + variable_size] = diag_mat
                     dict.update(dres_dvar,
-                                {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(diag_mat.row, diag_mat.col, diag_mat.data)})
+                                {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(diag_mat.row.astype(float), diag_mat.col.astype(float), diag_mat.data)})
 
                 else:
                     # block Jacobian
