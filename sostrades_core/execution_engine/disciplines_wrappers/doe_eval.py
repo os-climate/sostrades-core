@@ -33,6 +33,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import DoeWrapper
 import pandas as pd
 from collections import ChainMap
 
@@ -99,6 +100,15 @@ class DoeEval(EvalWrapper):
         'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
                               'namespace': 'ns_doe_eval'}
     }
+
+
+    def take_samples(self):
+        algo_name = self.get_sosdisc_inputs(self.ALGO)
+        if algo_name == 'CustomDOE':
+            return super().take_samples()
+        else:
+            return self.generate_samples_from_doe_factory(algo_name)
+            # return DoeWrapper(self.sos_name).generate_samples_from_doe_factory(algo_name)
 
     def create_design_space(self):
         """
@@ -190,13 +200,6 @@ class DoeEval(EvalWrapper):
                 design_space.add_variable(
                     name, size, var_type, l_b, u_b, value)
         return design_space
-
-    def take_samples(self):
-        algo_name = self.get_sosdisc_inputs(self.ALGO)
-        if algo_name == 'CustomDOE':
-            return super().take_samples()
-        else:
-            return self.generate_samples_from_doe_factory(algo_name)
 
     def generate_samples_from_doe_factory(self, algo_name):
         """Generating samples for the Doe using the Doe Factory

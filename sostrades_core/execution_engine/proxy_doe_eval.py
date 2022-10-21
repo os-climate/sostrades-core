@@ -30,6 +30,7 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.proxy_eval import ProxyEval
 from sostrades_core.execution_engine.disciplines_wrappers.doe_eval import DoeEval
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import DoeWrapper
 import pandas as pd
 from collections import ChainMap
 
@@ -197,6 +198,7 @@ class ProxyDoeEval(ProxyEval):
                 disc_in['design_space']['value'] = default_design_space
 
         default_dict = self.get_algo_default_options(algo_name)
+        # default_dict = DoeWrapper.get_algo_default_options(algo_name)
         dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                 'dataframe_edition_locked': False,
                                                 'structuring': True,
