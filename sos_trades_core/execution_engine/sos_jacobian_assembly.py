@@ -112,7 +112,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                         # Fill the sparse Jacobian block
                         #dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
                         dict.update(dres_dvar,
-                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(coo_jac.row, coo_jac.col, coo_jac.data)})
+                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(coo_jac.row.astype(float), coo_jac.col.astype(float), coo_jac.data)})
                 # Shift the column by block width
                 out_j += variable_size
             # Shift the row by block height
