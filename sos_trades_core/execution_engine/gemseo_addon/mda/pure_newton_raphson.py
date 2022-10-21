@@ -51,6 +51,7 @@ class PureNewtonRaphson(MDARoot):
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False,  # type:bool
         linear_solver_options=None,  # type: Mapping[str,Any]
+        gauss_seidel_execution=False,
             n_processes=1
     ):
         """
@@ -77,6 +78,7 @@ class PureNewtonRaphson(MDARoot):
         self.relax_factor = self.__check_relax_factor(relax_factor)
         self.linear_solver = linear_solver
 
+        self.gauss_seidel_execution = gauss_seidel_execution
         # break the object link before update the dict object
         self.linear_solver_options = copy(self.linear_solver_options)
         self.linear_solver_options.update(
@@ -124,10 +126,12 @@ class PureNewtonRaphson(MDARoot):
         # store initial residual
         current_iter = 1
         self.reset_disciplines_statuses()
-        
-        # build current_couplings: concatenated strong couplings, converted into arrays
-        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True, update_dm=True)
-        
+
+        # build current_couplings: concatenated strong couplings, converted
+        # into arrays
+        current_couplings, old_x_array = self._current_strong_couplings(
+            return_converted_dict=True, update_dm=True)
+
         while not self._termination(current_iter):
 
             # Set coupling variables as differentiated variables for gradient
@@ -136,12 +140,15 @@ class PureNewtonRaphson(MDARoot):
                 self.strong_couplings, self.strong_couplings, self.strong_couplings)
 
             # Compute all discipline gradients df(x)/dx with x
-            self.assembly.linearize_all_disciplines(self.local_data, force_no_exec=True)
+            self.assembly.linearize_all_disciplines(
+                self.local_data, force_no_exec=True)
 
             # compute coupling_variables(x+k) for the residuals
-            self.execute_all_disciplines(self.local_data)
+            self.execute_all_disciplines(
+                self.local_data, gauss_seidel_execution=self.gauss_seidel_execution)
 
-            # build new_couplings after execution: concatenated strong couplings, converted into arrays
+            # build new_couplings after execution: concatenated strong
+            # couplings, converted into arrays
             new_couplings = self._current_strong_couplings(update_dm=True)
 
             # res = coupling_variables(x+k) - coupling_variables(x)
@@ -174,10 +181,12 @@ class PureNewtonRaphson(MDARoot):
             for c_var, c_step in newton_step_dict.items():
                 old_x_array[c_var] += c_step.real  # SoSTrades fix (.real)
 
-            # convert old_x_array into SoSTrades types and store it into local_data for next execution
+            # convert old_x_array into SoSTrades types and store it into
+            # local_data for next execution
             self.local_data.update(self.disciplines[0]._convert_array_into_new_type(
                 old_x_array))
 
-            # store current_couplings for residual computation of next iteration
+            # store current_couplings for residual computation of next
+            # iteration
             current_couplings = np.hstack(list(old_x_array.values()))
             current_iter += 1

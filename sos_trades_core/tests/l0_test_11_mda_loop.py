@@ -1011,6 +1011,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.tolerance'] = 1.e-13
 
         values_dict['EE.max_mda_iter'] = 100
+        values_dict['EE.gauss_seidel_execution'] = True
         values_dict['EE.sub_mda_class'] = 'PureNewtonRaphson'
         values_dict['EE.linear_solver_MDA_options'] = {
             'max_iter': 5000,
@@ -1120,4 +1121,4 @@ class TestMDALoop(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_06_mda_loop_with_discipline_grouping()
+    cls.test_15_mda_numerical_options_PureNR()
