@@ -332,6 +332,7 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
         get the corresponding lagrangian formulation of a given
         optimization scenario
         """
+        # todo: refactoring for scenario name not defined in if (crash for design variable in two namespaces)
         from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
         list_coupl = self.ee.root_process.sos_disciplines
         for i in list_coupl:
