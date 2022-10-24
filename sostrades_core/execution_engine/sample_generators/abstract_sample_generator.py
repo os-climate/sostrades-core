@@ -18,8 +18,10 @@ from builtins import NotImplementedError
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+
 class SampleTypeError(TypeError):
     pass
+
 
 class AbstractSampleGenerator(object):
     '''
@@ -31,7 +33,7 @@ class AbstractSampleGenerator(object):
         Constructor
         '''
         self.name = generator_name
-        
+
     def generate_samples(self, **kwargs):
         '''
         Method that generate samples and checks the output formating
@@ -42,26 +44,27 @@ class AbstractSampleGenerator(object):
         samples = self._generate_samples(**kwargs)
         # check sample formatting
         self._check_samples(samples)
-        
+
         return samples
-        
+
     def _generate_samples(self, **kwargs):
         '''
         Method that generate samples
         To be overloaded by subclass
         '''
-        raise NotImplementedError
-        
+        pass
+
     def _check_samples(self, samples):
         '''
         Method that checks the sample output type
         '''
         if not(type(samples) is list):
             msg = "Expected sampling output type should be <list>, "
-            msg += "however sampling type of sampling generator <%s> "%str(self.__class__.__name__)
-            msg += "is <%s> "%str(type(samples))
+            msg += "however sampling type of sampling generator <%s> " % str(
+                self.__class__.__name__)
+            msg += "is <%s> " % str(type(samples))
             raise SampleTypeError()
-        
+
     def get_options(self):
         '''
         Returns the Sample Generator expected inputs (as DESC_IN format)
@@ -69,11 +72,10 @@ class AbstractSampleGenerator(object):
         To be overloaded by subclass
         '''
         raise NotImplementedError
-    
+
     def _check_options(self, **kwargs):
         '''
         Check provided options before sample generation
         To be overloaded by subclass
         '''
         pass
-    

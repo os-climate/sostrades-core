@@ -37,6 +37,8 @@ from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import Doe
 import pandas as pd
 from collections import ChainMap
 
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
+
 # get module logger not sos logger
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -116,7 +118,26 @@ class DoeEval(EvalWrapper):
             design_space = self.create_design_space()
             self.design_space = design_space
 
-            return self.generate_samples(algo_name, algo_options, n_processes, wait_time_between_fork,  eval_in_list, design_space)
+            # algo_options keys are dependent on algo_name and values set by
+            # user
+
+            generator_name = 'doe_generator'
+            sample_generator = DoeSampleGenerator('doe_generator')
+
+            print(list(sample_generator.get_options(algo_name).keys()))
+            # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
+
+            samples = sample_generator.generate_samples(
+                algo_name, algo_options, n_processes, wait_time_between_fork, eval_in_list, design_space)
+
+            # samples = self.generate_samples(
+            # algo_name, algo_options, n_processes, wait_time_between_fork,
+            # eval_in_list, design_space)
+
+            prepared_samples = sample_generator.prepare_samples_for_evaluation(
+                samples, eval_in_list, design_space)
+
+            return prepared_samples
             # return
             # DoeWrapper(self.sos_name).generate_samples_from_doe_factory(algo_name)
 
@@ -213,92 +234,6 @@ class DoeEval(EvalWrapper):
                 design_space.add_variable(
                     name, size, var_type, l_b, u_b, value)
         return design_space
-
-
-##################################
-
-    def generate_samples(self, algo_name, algo_options, n_processes, wait_time_between_fork,  eval_in_list, design_space):
-        """Generating samples for the Doe using the Doe Factory
-        """
-        filled_options = self.generate_filled_options_for_sample_generation(
-            algo_name, algo_options, n_processes, wait_time_between_fork, design_space)
-
-        samples = self.generate_samples_from_doe_factory(
-            algo_name, **filled_options)  # call to gemseo
-
-        prepared_samples = self.prepare_samples_for_evaluation(
-            samples, design_space, eval_in_list)
-
-        return prepared_samples
-
-    def generate_filled_options_for_sample_generation(self, algo_name, algo_options, n_processes, wait_time_between_fork, design_space):
-        """Generating samples for the Doe using the Doe Factory
-        """
-
-        filled_options = {}
-        for algo_option in algo_options:
-            if algo_options[algo_option] != 'default':
-                filled_options[algo_option] = algo_options[algo_option]
-
-        if self.N_SAMPLES not in algo_options:
-            LOGGER.warning("N_samples is not defined; pay attention you use fullfact algo "
-                           "and that levels are well defined")
-
-        LOGGER.info(filled_options)
-        # TODO : logging from module ?
-
-        filled_options[self.DIMENSION] = design_space.dimension
-        filled_options[self._VARIABLES_NAMES] = design_space.variables_names
-        filled_options[self._VARIABLES_SIZES] = design_space.variables_sizes
-        # filled_options['n_processes'] = int(filled_options['n_processes'])
-        filled_options['n_processes'] = n_processes
-        filled_options['wait_time_between_samples'] = wait_time_between_fork
-        return filled_options
-
-    def generate_samples_from_doe_factory(self, algo_name, **filled_options):
-        """
-        """
-        from gemseo.algos.doe.doe_factory import DOEFactory
-        doe_factory = DOEFactory()
-        algo = doe_factory.create(algo_name)
-        samples = algo._generate_samples(**filled_options)
-        return samples
-
-    def prepare_samples_for_evaluation(self, samples, design_space, eval_in_list):
-        """
-        """
-        updated_samples = self.update_samples_from_design_space(
-            samples, design_space)
-        prepared_samples = self.reformat_samples(
-            updated_samples, design_space, eval_in_list)
-        return prepared_samples
-
-    def update_samples_from_design_space(self, samples, design_space):
-        """
-        """
-        unnormalize_vect = design_space.unnormalize_vect
-        round_vect = design_space.round_vect
-        updated_samples = []
-        for sample in samples:
-            x_sample = round_vect(unnormalize_vect(sample))
-            design_space.check_membership(x_sample)
-            updated_samples.append(x_sample)
-        return updated_samples
-
-    def reformat_samples(self, updated_samples, design_space, eval_in_list):
-        """
-
-        """
-        prepared_samples = []
-        for sample in updated_samples:
-            sample_dict = design_space.array_to_dict(sample)
-            # FIXME : are conversions needed here?
-            # sample_dict = self._convert_array_into_new_type(sample_dict)
-            ordered_sample = []
-            for in_variable in eval_in_list:
-                ordered_sample.append(sample_dict[in_variable])
-            prepared_samples.append(ordered_sample)
-        return prepared_samples
 
 
 ##################################
