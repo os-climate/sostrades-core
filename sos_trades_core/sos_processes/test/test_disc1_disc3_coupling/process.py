@@ -27,7 +27,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test (Disc1_scenario, Disc2_scenario) Coupling Process',
+        'label': 'Core Test (Disc1_scenario, Disc3_scenario) Coupling Process',
         'description': '',
         'category': '',
         'version': '',
