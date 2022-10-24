@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from builtins import NotImplementedError
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -35,6 +36,8 @@ class AbstractSampleGenerator(object):
         '''
         Method that generate samples and checks the output formating
         '''
+        # check options
+        self._check_options(**kwargs)
         # generate the sampling by subclass
         samples = self._generate_samples(**kwargs)
         # check sample formatting
@@ -45,7 +48,7 @@ class AbstractSampleGenerator(object):
     def _generate_samples(self, **kwargs):
         '''
         Method that generate samples
-        To be overloaded by subclasses
+        To be overloaded by subclass
         '''
         raise NotImplementedError
         
@@ -61,7 +64,16 @@ class AbstractSampleGenerator(object):
         
     def get_options(self):
         '''
-        Returns the Sample Generator Options
+        Returns the Sample Generator expected inputs (as DESC_IN format)
         (to be provided to proxy i/o grammars)
+        To be overloaded by subclass
         '''
         raise NotImplementedError
+    
+    def _check_options(self, **kwargs):
+        '''
+        Check provided options before sample generation
+        To be overloaded by subclass
+        '''
+        pass
+    
