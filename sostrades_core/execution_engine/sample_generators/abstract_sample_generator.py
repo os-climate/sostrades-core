@@ -58,3 +58,10 @@ class AbstractSampleGenerator(object):
             msg += "however sampling type of sampling generator <%s> "%str(self.__class__.__name__)
             msg += "is <%s> "%str(type(samples))
             raise SampleTypeError()
+        
+    def get_options(self):
+        '''
+        Returns the Sample Generator Options
+        (to be provided to proxy i/o grammars)
+        '''
+        raise NotImplementedError
