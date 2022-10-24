@@ -169,34 +169,7 @@ class TestTreeviewAndData(unittest.TestCase):
                 for node_data in child_node.disc_data.values():
                     self.assertFalse(node_data[SoSDiscipline.EDITABLE])
 
-    def test_04_treeview_root_process_documentation(self):
-
-        # retrieve treeview
-        study_case_manager = BaseStudyManager(
-            self.repo, self.sub_proc, self.study_name)
-
-        # retrieve treeview
-        treeview = study_case_manager.execution_engine.get_treeview()
-
-        # check root process documentation
-        root_process_documentation = treeview.root.markdown_documentation
-
-        self.assertEqual(len(root_process_documentation), 1,
-                         'Root node process documentation must contain one item')
-
-        root_documentation = root_process_documentation[0]
-
-        self.assertTrue(TreeNode.MARKDOWN_NAME_KEY in root_documentation,
-                        f'Missing key {TreeNode.MARKDOWN_NAME_KEY} in markdown dict ')
-        self.assertTrue(TreeNode.MARKDOWN_DOCUMENTATION_KEY in root_documentation,
-                        f'Missing key {TreeNode.MARKDOWN_DOCUMENTATION_KEY} in markdown dict ')
-        self.assertTrue(TreeView.PROCESS_DOCUMENTATION ==
-                        root_documentation[TreeNode.MARKDOWN_NAME_KEY], f'Root markdown does not have the process documentation tag')
-        self.assertTrue(len(
-            root_documentation[TreeNode.MARKDOWN_DOCUMENTATION_KEY]) > 0, 'Markdown string must not be empty')
-
-        self.assertEqual('# Test disc 1 disc 2 coupling',
-                         root_documentation[TreeNode.MARKDOWN_DOCUMENTATION_KEY], 'Markdown string is not the intended one')
+### 24-10-2022- mgueylard: remove test test_04_treeview_root_process_documentation because there is no more documentation in the treeview
 
     def test_05_treeview_multiscenario_postproc_node_without_data(self):
 

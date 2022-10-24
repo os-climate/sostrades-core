@@ -31,8 +31,6 @@ class TreeNode:
     Class to build tree node from data manager
     """
     STATUS_INPUT_DATA = 'INPUT_DATA'
-    MARKDOWN_NAME_KEY = 'name'
-    MARKDOWN_DOCUMENTATION_KEY = 'documentation'
 
     needed_variables = [SoSDiscipline.TYPE, SoSDiscipline.USER_LEVEL, SoSDiscipline.EDITABLE,
                         SoSDiscipline.COUPLING, SoSDiscipline.VALUE, SoSDiscipline.NUMERICAL, SoSDiscipline.OPTIONAL,
@@ -73,8 +71,6 @@ class TreeNode:
         # Data at discipline level (not namespace level => cf. self.data
         self.disc_data = {}  # to be able to show all variable at each discipline level
 
-        # Treenode documentation (markdown format)
-        self.markdown_documentation = []
 
         # List of models present at current treenode
         self.models_full_path_list = []
@@ -118,10 +114,6 @@ class TreeNode:
 
         # Serialize models_full_path_list attribute
         dict_obj.update({'models_full_path_list': self.models_full_path_list})
-
-        # Serialize markdown_documentation
-        dict_obj.update(
-            {'markdown_documentation': self.markdown_documentation})
 
         # Serialize children attribute
         dict_child = []
@@ -202,10 +194,6 @@ class TreeNode:
             s_mat = ''
         self.maturity = s_mat
 
-        # Manage markdown documentation
-        filepath = inspect.getfile(discipline.__class__)
-        markdown_data = TreeNode.get_markdown_documentation(filepath)
-        self.add_markdown_documentation(markdown_data, discipline.__module__)
 
     def create_data_key(self, disc_name, io_type, variable_name):
         io_type = io_type.lower()
@@ -232,85 +220,6 @@ class TreeNode:
             if discipline.__module__ not in self.disc_data[namespace][SoSDiscipline.DISCIPLINES_FULL_PATH_LIST]:
                 self.disc_data[namespace][SoSDiscipline.DISCIPLINES_FULL_PATH_LIST].append(
                     discipline.__module__)
-
-    def add_markdown_documentation(self, markdown_data, key):
-        """ Add a markdon documentation to the treenode
-
-        :params: markdown_data, markdown documenation to set
-        :type: str
-
-        :params: key, associated key (used to manage multiple documentation into the same treenode
-        :type: key 
-        """
-
-        if markdown_data is not None and markdown_data != "":
-            self.markdown_documentation.append({
-                TreeNode.MARKDOWN_NAME_KEY: key,
-                TreeNode.MARKDOWN_DOCUMENTATION_KEY: markdown_data
-            })
-
-    @staticmethod
-    def get_markdown_documentation(filepath):
-        # Manage markdown documentation
-
-        doc_folder_path = join(dirname(filepath), 'documentation')
-        filename = os.path.basename(filepath).split('.')[0]
-        markdown_data = ""
-        if isdir(doc_folder_path):
-            # look for markdown file with extension .markdown or .md
-            markdown_list = [join(doc_folder_path, md_file) for md_file in listdir(doc_folder_path) if ((
-                md_file.endswith(r".markdown") or md_file.endswith(r".md")) and md_file.startswith(filename))]
-
-            if len(markdown_list) > 0:
-                # build file path
-                markdown_filepath = markdown_list[0]
-
-                if isfile(markdown_filepath):
-                    markdown_data = ''
-
-                    with open(markdown_filepath, 'r+t', encoding='utf-8') as f:
-                        markdown_data = f.read()
-
-                    # Find file reference in markdown file
-                    place_holder = f'!\\[(.*)\\]\\((.*)\\)'
-                    matches = re.finditer(place_holder, markdown_data)
-
-                    images_base_64 = {}
-                    base64_image_tags = []
-
-                    for matche in matches:
-                        # Format:
-                        # (0) => full matche line
-                        # (1) => first group (place holder name)
-                        # (2) => second group (image path/name)
-
-                        image_name = matche.group(2)
-
-                        # Convert markdown image link to link to base64 image
-                        image_filepath = join(doc_folder_path, image_name)
-
-                        if isfile(image_filepath):
-                            image_data = open(image_filepath, 'r+b').read()
-                            encoded = base64.b64encode(
-                                image_data).decode('utf-8')
-
-                            images_base_64.update({image_name: encoded})
-
-                            # first replace the matches
-                            matche_value = matche.group(1)
-                            matches_replace = f'![{matche_value}]({image_name})'
-                            matches_replace_by = f'![{matche_value}][{image_name}]'
-
-                            base64_image_tag = f'[{image_name}]:data:image/png;base64,{images_base_64[image_name]}'
-                            base64_image_tags.append(base64_image_tag)
-
-                            markdown_data = markdown_data.replace(
-                                matches_replace, matches_replace_by)
-
-                    for image_tag in base64_image_tags:
-                        markdown_data = f'{markdown_data}\n\n{image_tag}'
-
-        return markdown_data
 
     def __str__(self):
         children_str = ''.join([str(c) for c in self.children])
