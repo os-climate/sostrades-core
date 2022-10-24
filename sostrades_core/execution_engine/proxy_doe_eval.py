@@ -87,7 +87,8 @@ class ProxyDoeEval(ProxyEval):
     # MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     # We define here the different default algo options in a case of a DOE
-    # TODO: Implement a generic get_options functions to retrieve the default options using directly the DoeFactory (todo since EEV3)
+    # TODO: Implement a generic get_options functions to retrieve the default
+    # options using directly the DoeFactory (todo since EEV3)
 
     # Default values of algorithms
     default_algo_options = {
@@ -179,7 +180,8 @@ class ProxyDoeEval(ProxyEval):
             self.previous_algo_name = algo_name
         dynamic_inputs = {}
         if algo_name == 'CustomDOE':
-            dynamic_inputs.update(super()._get_dynamic_inputs_doe(disc_in, selected_inputs_has_changed))
+            dynamic_inputs.update(super()._get_dynamic_inputs_doe(
+                disc_in, selected_inputs_has_changed))
         else:
 
             default_design_space = pd.DataFrame({'variable': self.selected_inputs,
@@ -193,12 +195,12 @@ class ProxyDoeEval(ProxyEval):
                                                  })
 
             dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                  }})
+                                                    }})
             if 'design_space' in disc_in and selected_inputs_has_changed:
                 disc_in['design_space']['value'] = default_design_space
 
-        default_dict = self.get_algo_default_options(algo_name)
-        # default_dict = DoeWrapper.get_algo_default_options(algo_name)
+        #default_dict = self.get_algo_default_options(algo_name)
+        default_dict = DoeWrapper.get_algo_default_options(algo_name)
         dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                 'dataframe_edition_locked': False,
                                                 'structuring': True,
@@ -217,7 +219,6 @@ class ProxyDoeEval(ProxyEval):
                 key: options_map[key] for key in all_options}
         return dynamic_inputs
 
-
     def setup_sos_disciplines(self):
         # TODO: move to wrapper as it was originally?
         """
@@ -228,7 +229,6 @@ class ProxyDoeEval(ProxyEval):
         """
         if self.ALGO in self.get_data_in():
             super().setup_sos_disciplines()
-
 
     # def __setup_sos_disciplines(self):
     #     # TODO: move to wrapper as it was originally?

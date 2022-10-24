@@ -40,6 +40,7 @@ from collections import ChainMap
 import logging
 LOGGER = logging.getLogger(__name__)
 
+
 class DoeWrapper(SoSWrapp):
     '''
     Generic DOE evaluation class
@@ -97,7 +98,7 @@ class DoeWrapper(SoSWrapp):
 
     DESC_OUT = {
         'doe_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                              'namespace': 'ns_doe_eval'}
+                   'namespace': 'ns_doe_eval'}
     }
 
     default_algo_options = {
@@ -182,7 +183,8 @@ class DoeWrapper(SoSWrapp):
 
         if 'full_name' in dspace_df:
             variables = dspace_df['full_name'].tolist()
-            variables = [f'{self.attributes["study_name"]}.{var_to_eval}' for var_to_eval in variables]
+            variables = [
+                f'{self.attributes["study_name"]}.{var_to_eval}' for var_to_eval in variables]
         else:
             variables = self.attributes['eval_in_list']
 
@@ -264,7 +266,7 @@ class DoeWrapper(SoSWrapp):
 
         if self.N_SAMPLES not in options:
             LOGGER.warning("N_samples is not defined; pay attention you use fullfact algo "
-                                "and that levels are well defined")
+                           "and that levels are well defined")
 
         LOGGER.info(filled_options)
         # TODO : logging from module ?
@@ -293,7 +295,7 @@ class DoeWrapper(SoSWrapp):
         return self.prepare_samples()
 
     def prepare_samples(self):
-        #TODO: inefficient ! necessary ? check
+        # TODO: inefficient ! necessary ? check
         samples = []
         for sample in self.samples:
             sample_dict = self.design_space.array_to_dict(sample)
@@ -304,4 +306,3 @@ class DoeWrapper(SoSWrapp):
                 ordered_sample.append(sample_dict[in_variable])
             samples.append(ordered_sample)
         return samples
-
