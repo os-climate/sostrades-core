@@ -110,9 +110,6 @@ class DoeEval(EvalWrapper):
             return super().take_samples()
         else:
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-            n_processes = self.get_sosdisc_inputs('n_processes')
-            wait_time_between_fork = self.get_sosdisc_inputs(
-                'wait_time_between_fork')
             eval_in_list = self.attributes['eval_in_list']
 
             design_space = self.create_design_space()
@@ -124,11 +121,13 @@ class DoeEval(EvalWrapper):
             generator_name = 'doe_generator'
             sample_generator = DoeSampleGenerator('doe_generator')
 
-            print(list(sample_generator.get_options(algo_name).keys()))
-            # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
+            default_options_dict, options_descr_dict = sample_generator.get_options(
+                algo_name)
+            # print(default_options_dict)
+            # print(options_descr_dict)
 
             samples = sample_generator.generate_samples(
-                algo_name, algo_options, n_processes, wait_time_between_fork, eval_in_list, design_space)
+                algo_name, algo_options, eval_in_list, design_space)
 
             # samples = self.generate_samples(
             # algo_name, algo_options, n_processes, wait_time_between_fork,
