@@ -65,9 +65,9 @@ class AbstractSampleGenerator(object):
             msg += "is <%s> " % str(type(samples))
             raise SampleTypeError()
 
-    def get_options(self):
+    def get_options_desc_in(self, algo_name):
         '''
-        Returns the Sample Generator expected inputs (as DESC_IN format)
+        Returns the Sample Generator expected inputs (as DESC_IN format) for the algo options of the selected algorithm
         (to be provided to proxy i/o grammars)
         To be overloaded by subclass
         '''

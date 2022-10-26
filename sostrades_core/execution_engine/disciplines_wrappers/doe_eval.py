@@ -119,25 +119,22 @@ class DoeEval(EvalWrapper):
             # user
 
             generator_name = 'doe_generator'
-            sample_generator = DoeSampleGenerator('doe_generator')
+            sample_generator = DoeSampleGenerator(generator_name)
 
-            default_options_dict, options_descr_dict = sample_generator.get_options(
+            # Not needed here: to be put in config to set the desc_in instead
+            # of the hard coded default dicts of EEV3...
+            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
                 algo_name)
-            # print(default_options_dict)
-            # print(options_descr_dict)
+
+            print(algo_name)
+            print(algo_options)
+            print(eval_in_list)
+            print(design_space)
 
             samples = sample_generator.generate_samples(
                 algo_name, algo_options, eval_in_list, design_space)
 
-            # samples = self.generate_samples(
-            # algo_name, algo_options, n_processes, wait_time_between_fork,
-            # eval_in_list, design_space)
-
-            prepared_samples = sample_generator.prepare_samples_for_evaluation(
-                samples, eval_in_list, design_space)
-
-            return prepared_samples
-            # return
+            return samples
             # DoeWrapper(self.sos_name).generate_samples_from_doe_factory(algo_name)
 
 ###############
