@@ -544,6 +544,64 @@ class SosFactory:
 
         return list_builder
 
+    def create_very_simple_multi_scenario_driver(
+        self,
+        sos_name,
+        map_name,
+        cls_builder,
+        autogather=False,
+        gather_node=None,
+        business_post_proc=False,
+    ):
+        """
+        create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
+        """
+        # builder(s) of the original subprocess(es)
+        builder_list = self.convert_builder_to_list(cls_builder)
+
+        # builder of the driver-evaluator proxy
+        mod_path = (f'{self.EE_PATH}.proxy_abstract_eval.ProxyAbstractEval')
+        cls = self.get_disc_class_from_module(mod_path)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+
+        # builder of the driver wrapper
+        driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.abstract_eval_wrapper.AbstractEvalWrapper'
+        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod_path)
+        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+
+        # builder of the composition scatter #TODO: to review if this should be here or in init or what
+        proxy_scatter_mod_path = (f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter')
+        proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)
+        scatter_builder = SoSBuilder('scatter_temp', self.__execution_engine, proxy_scatter_cls)
+        scatter_builder.set_builder_info('map_name', map_name)
+        scatter_builder.set_builder_info('cls_builder', builder_list)
+
+        builder.set_builder_info('cls_builder', [scatter_builder])
+        # builder.set_builder_info('autogather', autogather) #TODO: not adressed
+        # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
+        # builder.set_builder_info('business_post_proc', business_post_proc) #TODO: not adressed
+
+        list_builder = [builder]
+
+        if autogather:
+            # TODO: multiscatter..
+            # mod_path_multi_scatter = (
+            #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
+            # )
+            # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            for sub_builder in builder_list:
+                if sub_builder.cls is not proxy_scatter_cls: # not in [cls_scatter, cls_multi_scatter]:
+                    if gather_node is None:
+                        complete_name = sub_builder.sos_name
+                    else:
+                        complete_name = f'{gather_node}.{sub_builder.sos_name}'
+                    gather = self.create_gather_builder(
+                        complete_name, map_name, sub_builder
+                    )
+                    list_builder.append(gather)
+        return list_builder
+
+
     def create_scatter_data_builder(self, sos_name, map_name):
         """
         create a builder defined by a scatter data type SoSScatterData

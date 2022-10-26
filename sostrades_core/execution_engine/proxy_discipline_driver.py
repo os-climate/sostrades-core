@@ -91,12 +91,13 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
             self.configure_driver()
 
         if len(self.get_disciplines_to_configure()) == 0:
-            if len(self.proxy_disciplines) == 1:
+            self.update_data_io_with_subprocess_io()
+            # if len(self.proxy_disciplines) == 1:
                 # only for 1 subcoupling, so not handling cases like driver of
                 # driver
-                self.update_data_io_with_subprocess_io()
-            else:
-                raise NotImplementedError
+                # self.update_data_io_with_subprocess_io()
+            # else:
+            #     raise NotImplementedError
             self.set_children_cache_inputs()
 
     def update_data_io_with_subprocess_io(self):
