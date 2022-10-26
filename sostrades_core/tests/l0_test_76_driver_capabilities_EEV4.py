@@ -782,4 +782,64 @@ class TestSoSDOEScenario(unittest.TestCase):
                 var_tuple = (var, identifier)
                 self.assertEqual(identifier, id(exec_eng.root_process._data_in[var_tuple]['ns_reference']))
 
+    def test_8_doe_execution_fullfact(self):
+        """
+        """
 
+        input_selection_x_z = {'selected_input': [False, True, False, False, True],
+                               'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
+        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        dspace_dict_eval = {'variable': ['x', 'z'],
+                            'lower_bnd': [[0.], [-10., 0.]],
+                            'upper_bnd': [[10.], [10., 10.]]
+                            }
+        self.dspace_eval = pd.DataFrame(dspace_dict_eval)
+
+        exec_eng = ExecutionEngine(self.study_name)
+
+        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
+        doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
+        exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [doe_builder])
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        # DoE inputs
+        disc_dict = {}
+        n_samples = 10
+        disc_dict[f'{self.ns}.DoE.sampling_algo'] = "fullfact"
+        disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.DoE.algo_options'] = {
+            'n_samples': n_samples, 'fake_option': 'fake_option'}
+        disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoE']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        doe_disc = exec_eng.dm.get_disciplines_with_name(
+            'doe.DoE')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'doe_df')
+
+        dimension = sum([len(sublist) if isinstance(
+            sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
+
+        theoretical_fullfact_levels = int(n_samples ** (1.0 / dimension))
+
+        theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
+        self.assertEqual(len(doe_disc_samples),
+                         theoretical_fullfact_samples)
