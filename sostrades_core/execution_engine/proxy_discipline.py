@@ -168,6 +168,7 @@ class ProxyDiscipline(object):
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
     FLOAT_MAP = (float, np_float64, np_complex128)
+    PROC_BUILDER_MODAL = 'proc_builder_modal'
     VAR_TYPE_MAP = {
         # an integer cannot be a float
         'int': INT_MAP,
@@ -374,7 +375,8 @@ class ProxyDiscipline(object):
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
         else:
-            # TODO : this should only be necessary when changes in structuring variables happened?
+            # TODO : this should only be necessary when changes in structuring
+            # variables happened?
             self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
 
             if self._reset_cache:
@@ -540,7 +542,8 @@ class ProxyDiscipline(object):
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(desc_in)
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
-            # TODO: check if it is OK to update dm during config. rather than at the very end of it (dynamic ns)
+            # TODO: check if it is OK to update dm during config. rather than
+            # at the very end of it (dynamic ns)
             self.update_dm_with_data_dict(desc_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
@@ -2209,4 +2212,5 @@ class ProxyDiscipline(object):
         """
 
         return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()},\
-               {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_out.items()}
+               {key: self.ee.ns_manager.ns_tuple_to_full_name(
+                   (key, value)) for key, value in self._io_ns_map_out.items()}
