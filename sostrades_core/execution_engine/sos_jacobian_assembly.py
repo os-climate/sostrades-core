@@ -21,7 +21,7 @@ Coupled derivatives calculations
 from collections import defaultdict
 from numpy import empty, ones, zeros
 from scipy.sparse import dia_matrix
-from scipy.sparse.lil import lil_matrix
+from scipy.sparse.dok import dok_matrix
 from copy import deepcopy
 from multiprocessing import Pool
 import platform
@@ -32,6 +32,7 @@ from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
+
 
 def none_factory():
     """Returns None...
@@ -71,7 +72,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param n_variables: number of variables
         """
         # SoSTrades modif
-        dres_dvar = lil_matrix((n_residuals, n_variables))
+        dres_dvar = dok_matrix((n_residuals, n_variables))
         # end of SoSTrades modif
 
         out_i = 0
@@ -89,16 +90,17 @@ class SoSJacobianAssembly(JacobianAssembly):
                     # residual Yi-Yi: put -I in the Jacobian
                     ones_mat = (ones(variable_size), 0)
                     shape = (variable_size, variable_size)
-                    diag_mat = -dia_matrix(ones_mat, shape=shape)
+                    diag_mat = -dia_matrix(ones_mat, shape=shape).tocoo()
 
                     if self.coupling_structure.is_self_coupled(discipline):
                         jac = residual_jac.get(variable, None)
                         if jac is not None:
                             diag_mat += jac
-                    dres_dvar[
-                        out_i: out_i + variable_size, out_j: out_j + variable_size
-                    ] = diag_mat
-
+#                     dres_dvar[
+#                         out_i: out_i + variable_size, out_j: out_j + variable_size
+#                     ] = diag_mat
+                    dict.update(dres_dvar,
+                                {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(diag_mat.row.astype(float), diag_mat.col.astype(float), diag_mat.data)})
                 else:
                     # block Jacobian
                     jac = residual_jac.get(variable, None)
@@ -106,13 +108,17 @@ class SoSJacobianAssembly(JacobianAssembly):
                         n_i, n_j = jac.shape
                         assert n_i == residual_size
                         assert n_j == variable_size
+                        jac = jac.tocoo()
                         # Fill the sparse Jacobian block
-                        dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                        #dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                        dict.update(dres_dvar,
+                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(jac.row.astype(float), jac.col.astype(float), jac.data)})
+
                 # Shift the column by block width
                 out_j += variable_size
             # Shift the row by block height
             out_i += residual_size
-        return dres_dvar.real
+        return dres_dvar.tocsr()
 
     def dres_dvar(
         self,
@@ -412,7 +418,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         # exec_before_linearize is set to False, if you want to come back to old NewtonRaphson
         # put the flag to True
         self.linearize_all_disciplines(in_data, exec_before_linearize=False)
-        
+
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)
 
@@ -428,7 +434,8 @@ class SoSJacobianAssembly(JacobianAssembly):
         )
         # form the residuals
         # convert into array to compute residuals
-        in_data = convert_new_type_into_array(in_data, self.coupling_structure.disciplines[0].reduced_dm)
+        in_data = convert_new_type_into_array(
+            in_data, self.coupling_structure.disciplines[0].reduced_dm)
         res = self.residuals(in_data, couplings)
         # solve the linear system
         factory = LinearSolversFactory()
@@ -548,7 +555,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                     )
                     self.n_linear_resolutions += 1
                     jac[fun][fun_component, :] = (
-                        dfunction_dx[fun_component, :] + 
+                        dfunction_dx[fun_component, :] +
                         (dres_dx.T.dot(adjoint)).T
                     )
         return jac
@@ -578,10 +585,10 @@ class SoSJacobianAssembly(JacobianAssembly):
         if unknown_dvars:
             raise ValueError(
                 "Some of the specified variables are not "
-                +"inputs of the disciplines: "
-                +str(unknown_dvars)
-                +" possible inputs are: "
-                +str(
+                + "inputs of the disciplines: "
+                + str(unknown_dvars)
+                + " possible inputs are: "
+                + str(
                     [
                         disc.get_input_data_names()
                         for disc in self.coupling_structure.disciplines
@@ -592,9 +599,9 @@ class SoSJacobianAssembly(JacobianAssembly):
         if unknown_outs:
             raise ValueError(
                 "Some outputs are not computed by the disciplines:"
-                +str(unknown_outs)
-                +" available outputs are: "
-                +str(
+                + str(unknown_outs)
+                + " available outputs are: "
+                + str(
                     [
                         disc.get_output_data_names()
                         for disc in self.coupling_structure.disciplines
@@ -605,23 +612,23 @@ class SoSJacobianAssembly(JacobianAssembly):
         for coupling in set(couplings) & set(variables):
             raise ValueError(
                 "Variable "
-                +str(coupling)
-                +" is both a coupling and a design variable"
+                + str(coupling)
+                + " is both a coupling and a design variable"
             )
 
         if matrix_type not in self.AVAILABLE_MAT_TYPES:
             raise ValueError(
                 "Unknown matrix type "
-                +str(matrix_type)
-                +", available ones are "
-                +str(self.AVAILABLE_MAT_TYPES)
+                + str(matrix_type)
+                + ", available ones are "
+                + str(self.AVAILABLE_MAT_TYPES)
             )
 
         if use_lu_fact and matrix_type == self.LINEAR_OPERATOR:
             raise ValueError(
                 "Unsupported LU factorization for "
-                +"LinearOperators! Please use Sparse matrices"
-                +" instead"
+                + "LinearOperators! Please use Sparse matrices"
+                + " instead"
             )
 
     def linearize_all_disciplines(

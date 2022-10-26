@@ -168,6 +168,7 @@ class ProxyDiscipline(object):
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
     FLOAT_MAP = (float, np_float64, np_complex128)
+    PROC_BUILDER_MODAL = 'proc_builder_modal'
     VAR_TYPE_MAP = {
         # an integer cannot be a float
         'int': INT_MAP,
@@ -331,6 +332,9 @@ class ProxyDiscipline(object):
         # configure)
         self._set_dm_disc_info()
 
+        # Instantiate check_data_integrity class to check data after dm save
+        self.check_data_integrity_cls = CheckDataIntegrity(
+            self.__class__, self.dm)
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
@@ -371,7 +375,8 @@ class ProxyDiscipline(object):
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
         else:
-            # TODO : this should only be necessary when changes in structuring variables happened?
+            # TODO : this should only be necessary when changes in structuring
+            # variables happened?
             self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
 
             if self._reset_cache:
@@ -537,7 +542,8 @@ class ProxyDiscipline(object):
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
             self.set_shared_namespaces_dependencies(desc_in)
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
-            # TODO: check if it is OK to update dm during config. rather than at the very end of it (dynamic ns)
+            # TODO: check if it is OK to update dm during config. rather than
+            # at the very end of it (dynamic ns)
             self.update_dm_with_data_dict(desc_in)
             inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
@@ -896,8 +902,6 @@ class ProxyDiscipline(object):
         '''
         Generic check data integrity of the variables that you own ( the model origin of the variable is you)
         '''
-        self.check_data_integrity_cls = CheckDataIntegrity(
-            self.__class__, self.dm, self.ee.data_check_integrity)
 
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
         for var_fullname in data_in_full_name:
@@ -907,7 +911,7 @@ class ProxyDiscipline(object):
 
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
-                    var_data_dict)
+                    var_data_dict, self.ee.data_check_integrity)
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
 
@@ -2208,4 +2212,5 @@ class ProxyDiscipline(object):
         """
 
         return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()},\
-               {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_out.items()}
+               {key: self.ee.ns_manager.ns_tuple_to_full_name(
+                   (key, value)) for key, value in self._io_ns_map_out.items()}
