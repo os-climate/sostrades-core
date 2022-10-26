@@ -282,16 +282,16 @@ class DoeWrapper(SoSWrapp):
         else:
             pass
 
-        print(list(self.sample_generator.get_options(algo_name).keys()))
+        # print(list(self.sample_generator.get_options(algo_name).keys()))
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
         samples = self.sample_generator.generate_samples(
-            algo_name, algo_options, n_processes, wait_time_between_fork, eval_in_list, design_space)
+            algo_name, algo_options, eval_in_list, design_space)
 
-        prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
-            samples, eval_in_list, design_space)
+        # prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
+        #     samples, eval_in_list, design_space)
 
-        self.store_sos_outputs_values({'doe_df': prepared_samples})
+        self.store_sos_outputs_values({'doe_df': samples})
 
     def setup_sos_disciplines(self, proxy):
 
