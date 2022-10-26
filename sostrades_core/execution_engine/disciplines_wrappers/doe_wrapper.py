@@ -171,19 +171,18 @@ class DoeWrapper(SoSWrapp):
         """
         create_design_space
         """
-        dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         design_space = None
-        if dspace is not None:
-            design_space = self.set_design_space()
+        if dspace_df is not None:
+            design_space = self.set_design_space(self.eval_in_list, dspace_df)
 
         return design_space
 
-    def set_design_space(self):
+    def set_design_space(self, eval_in_list, dspace_df):
         """
         reads design space (set_design_space)
         """
 
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         # variables = self.attributes['eval_in_list']
 
         if 'full_name' in dspace_df:
@@ -191,19 +190,20 @@ class DoeWrapper(SoSWrapp):
             variables = [
                 f'{self.attributes["study_name"]}.{var_to_eval}' for var_to_eval in variables]
         else:
-            variables = self.eval_in_list
+            variables = eval_in_list
 
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
-        enable_variables = [True for _ in self.eval_in_list]
+        enable_variables = [True for _ in eval_in_list]
         dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
                                             self.VALUES: values,
                                             self.LOWER_BOUND: lower_bounds,
                                             self.UPPER_BOUND: upper_bounds,
                                             self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: [[True]]*len(self.eval_in_list)})
-                                            #TODO: Hardcoded as in EEV3, but not differenciating between array or not.
+                                            self.LIST_ACTIVATED_ELEM: [[True]] * len(eval_in_list)})
+        # TODO: Hardcoded as in EEV3, but not differenciating between array or
+        # not.
 
         design_space = self.read_from_dataframe(dspace_dict_updated)
 
@@ -338,14 +338,20 @@ class DoeWrapper(SoSWrapp):
 
             default_design_space = pd.DataFrame({'variable': selected_inputs,
 
-                                                 'lower_bnd': [None]*len(selected_inputs), #FIXME: Ask about this default setup
-                                                     # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
-                                                     #                                              'type') == 'array' else 0.0
-                                                     #           for var in self.eval_in_list],
-                                                 'upper_bnd': [None]*len(selected_inputs) #FIXME: Ask about this default setup
-                                                     # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
-                                                     #                                                'type') == 'array' else 10.0
-                                                     #           for var in self.eval_in_list]
+                                                 # FIXME: Ask about this
+                                                 # default setup
+                                                 'lower_bnd': [None] * len(selected_inputs),
+                                                 # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
+                                                 #                                              'type') == 'array' else 0.0
+                                                 # for var in
+                                                 # self.eval_in_list],
+                                                 # FIXME: Ask about this
+                                                 # default setup
+                                                 'upper_bnd': [None] * len(selected_inputs)
+                                                 # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
+                                                 #                                                'type') == 'array' else 10.0
+                                                 # for var in
+                                                 # self.eval_in_list]
                                                  })
 
             dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
@@ -355,4 +361,3 @@ class DoeWrapper(SoSWrapp):
 
         proxy.add_inputs(dynamic_inputs)
         proxy.add_outputs(dynamic_outputs)
-
