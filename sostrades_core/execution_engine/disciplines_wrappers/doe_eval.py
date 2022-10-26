@@ -104,15 +104,16 @@ class DoeEval(EvalWrapper):
                               'namespace': 'ns_doe_eval'}
     }
 
+    def __init__(self, sos_name):
+        super().__init__(sos_name)
+        self.sample_generator = None
+
     def take_samples(self):
         algo_name = self.get_sosdisc_inputs(self.ALGO)
         if algo_name == 'CustomDOE':
             return super().take_samples()
         else:
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-            n_processes = self.get_sosdisc_inputs('n_processes')
-            wait_time_between_fork = self.get_sosdisc_inputs(
-                'wait_time_between_fork')
             eval_in_list = self.attributes['eval_in_list']
 
             design_space = self.create_design_space()
@@ -122,23 +123,21 @@ class DoeEval(EvalWrapper):
             # user
 
             generator_name = 'doe_generator'
-            sample_generator = DoeSampleGenerator('doe_generator')
 
-            print(list(sample_generator.get_options(algo_name).keys()))
-            # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
+            if self.sample_generator == None:
+                self.sample_generator = DoeSampleGenerator(generator_name)
+            else:
+                pass
 
-            samples = sample_generator.generate_samples(
-                algo_name, algo_options, n_processes, wait_time_between_fork, eval_in_list, design_space)
+            # Not needed here: to be put in config to set the desc_in instead
+            # of the hard coded default dicts of EEV3...
+            algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_desc_in(
+                algo_name)
 
-            # samples = self.generate_samples(
-            # algo_name, algo_options, n_processes, wait_time_between_fork,
-            # eval_in_list, design_space)
+            samples = self.sample_generator.generate_samples(
+                algo_name, algo_options, eval_in_list, design_space)
 
-            prepared_samples = sample_generator.prepare_samples_for_evaluation(
-                samples, eval_in_list, design_space)
-
-            return prepared_samples
-            # return
+            return samples
             # DoeWrapper(self.sos_name).generate_samples_from_doe_factory(algo_name)
 
 ###############
