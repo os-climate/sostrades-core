@@ -155,7 +155,8 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     def set_wrapper_attributes(self, wrapper):
         super().set_wrapper_attributes(wrapper)
         wrapper.attributes.update({'sub_mdo_disciplines': [
-                                  proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines]})
+                                  proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
+                                  if proxy.mdo_discipline_wrapp is not None]})
 
     def is_configured(self):
         '''

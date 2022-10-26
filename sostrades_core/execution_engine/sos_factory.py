@@ -575,6 +575,7 @@ class SosFactory:
         scatter_builder = SoSBuilder('scatter_temp', self.__execution_engine, proxy_scatter_cls)
         scatter_builder.set_builder_info('map_name', map_name)
         scatter_builder.set_builder_info('cls_builder', builder_list)
+        scatter_builder.set_builder_info('coupling_per_scatter', True) #TODO: is hardcoded also in VerySimpleMS/SimpleMS
 
         builder.set_builder_info('cls_builder', [scatter_builder])
         # builder.set_builder_info('autogather', autogather) #TODO: not adressed
