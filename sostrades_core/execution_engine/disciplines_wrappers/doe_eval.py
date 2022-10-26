@@ -104,6 +104,10 @@ class DoeEval(EvalWrapper):
                               'namespace': 'ns_doe_eval'}
     }
 
+    def __init__(self, sos_name):
+        super().__init__(sos_name)
+        self.sample_generator = None
+
     def take_samples(self):
         algo_name = self.get_sosdisc_inputs(self.ALGO)
         if algo_name == 'CustomDOE':
@@ -122,19 +126,22 @@ class DoeEval(EvalWrapper):
             # user
 
             generator_name = 'doe_generator'
-            sample_generator = DoeSampleGenerator('doe_generator')
+            if self.sample_generator == None:
+                self.sample_generator = DoeSampleGenerator('doe_generator')
+            else:
+                pass
 
-            print(list(sample_generator.get_options(algo_name).keys()))
+            print(list(self.sample_generator.get_options(algo_name).keys()))
             # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
-            samples = sample_generator.generate_samples(
+            samples = self.sample_generator.generate_samples(
                 algo_name, algo_options, n_processes, wait_time_between_fork, eval_in_list, design_space)
 
             # samples = self.generate_samples(
             # algo_name, algo_options, n_processes, wait_time_between_fork,
             # eval_in_list, design_space)
 
-            prepared_samples = sample_generator.prepare_samples_for_evaluation(
+            prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
                 samples, eval_in_list, design_space)
 
             return prepared_samples
