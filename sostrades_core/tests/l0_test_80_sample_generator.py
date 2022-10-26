@@ -143,7 +143,9 @@ class TestSampleGenerator(unittest.TestCase):
         design_space = self.dspace_eval
 
         #doe_eval = DoeEval
-        #design_space = self.set_design_space(dspace_df)
+        # dspace_df = ??
+        # design_space = self.set_design_space(dspace_df) How to call set_design_space as DoE_Eval has no init !
+        # why do we have a design_space function creation in doe_eval !!!
 
         # samples = sample_generator.generate_samples(
         #    sampling_algo, algo_options, eval_in_list, design_space)
