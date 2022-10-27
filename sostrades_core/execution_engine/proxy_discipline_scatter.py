@@ -45,7 +45,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None):
+    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None, coupling_per_scatter=False):
         '''
         Constructor
         '''
@@ -58,7 +58,7 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
 
         self._maturity = ''
 
-        self.coupling_per_scatter = False
+        self.coupling_per_scatter = coupling_per_scatter
         # associate map to discipline
         self.map_name = map_name
         self.sc_map = ee.smaps_manager.get_build_map(self.map_name)

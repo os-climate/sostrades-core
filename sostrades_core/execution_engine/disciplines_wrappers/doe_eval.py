@@ -123,16 +123,14 @@ class DoeEval(EvalWrapper):
             # user
 
             generator_name = 'doe_generator'
-
             if self.sample_generator == None:
-                self.sample_generator = DoeSampleGenerator(generator_name)
-            else:
-                pass
+                if generator_name == 'doe_generator':
+                    self.sample_generator = DoeSampleGenerator(self)
 
             # Not needed here: to be put in config to set the desc_in instead
             # of the hard coded default dicts of EEV3...
-            algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_desc_in(
-                sampling_algo_name)
+            # algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_desc_in(
+            #     sampling_algo_name)
 
             samples = self.sample_generator.generate_samples(
                 sampling_algo_name, algo_options, eval_in_list, design_space)

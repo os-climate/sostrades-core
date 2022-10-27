@@ -30,6 +30,7 @@ import numpy as np
 from pandas.core.frame import DataFrame
 
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
+from sostrades_core.execution_engine.proxy_discipline_gather import ProxyDisciplineGather
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
@@ -91,12 +92,13 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
             self.configure_driver()
 
         if len(self.get_disciplines_to_configure()) == 0:
-            if len(self.proxy_disciplines) == 1:
+            self.update_data_io_with_subprocess_io()
+            # if len(self.proxy_disciplines) == 1:
                 # only for 1 subcoupling, so not handling cases like driver of
                 # driver
-                self.update_data_io_with_subprocess_io()
-            else:
-                raise NotImplementedError
+                # self.update_data_io_with_subprocess_io()
+            # else:
+            #     raise NotImplementedError
             self.set_children_cache_inputs()
 
     def update_data_io_with_subprocess_io(self):
@@ -108,6 +110,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         self._restart_data_io_to_disc_io()
         #TODO: working because no two different discs share a local ns
         for proxy_disc in self.proxy_disciplines:
+            # if not isinstance(proxy_disc, ProxyDisciplineGather):
             subprocess_data_in = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True)
             subprocess_data_out = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True)
             self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
@@ -154,7 +157,8 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
     def set_wrapper_attributes(self, wrapper):
         super().set_wrapper_attributes(wrapper)
         wrapper.attributes.update({'sub_mdo_disciplines': [
-                                  proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines]})
+                                  proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
+                                  if proxy.mdo_discipline_wrapp is not None]})
 
     def is_configured(self):
         '''

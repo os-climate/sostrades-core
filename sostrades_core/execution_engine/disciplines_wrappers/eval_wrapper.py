@@ -51,7 +51,7 @@ class EvalWrapper(AbstractEvalWrapper):
     '''
 
     _maturity = 'Fake'
-    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
+    # MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
         'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
@@ -75,26 +75,26 @@ class EvalWrapper(AbstractEvalWrapper):
                                  'namespace': 'ns_eval'}
     }
 
-    def __init__(self, sos_name):
-        super().__init__(sos_name)
-        self.custom_samples = None  # input samples dataframe
-        self.samples = None         # samples to evaluate as list[list[Any]] or ndarray
-        self.input_data_for_disc = None
+    # def __init__(self, sos_name):
+    #     super().__init__(sos_name)
+        # self.custom_samples = None  # input samples dataframe
+        # self.samples = None         # samples to evaluate as list[list[Any]] or ndarray
+        # self.input_data_for_disc = None
 
-    def _init_input_data(self):
-        #TODO: deepcopy option? [discuss]
-        self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][0])
-        # self.input_data_for_disc = [self.get_input_data_for_gems(disc) for disc in self.attributes['sub_mdo_disciplines']]
+    # def _init_input_data(self):
+    #     #TODO: deepcopy option? [discuss]
+    #     self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][0])
+    #     # self.input_data_for_disc = [self.get_input_data_for_gems(disc) for disc in self.attributes['sub_mdo_disciplines']]
 
-    def _get_input_data(self, delta_dict):
-        #TODO: deepcopy option? [discuss]
-        self.input_data_for_disc.update(delta_dict)
-        return self.input_data_for_disc
+    # def _get_input_data(self, delta_dict):
+    #     #TODO: deepcopy option? [discuss]
+    #     self.input_data_for_disc.update(delta_dict)
+    #     return self.input_data_for_disc
 
-    def _select_output_data(self, raw_data, eval_out_data_names):
-        output_data_dict = {key: value for key,value in raw_data.items()
-                          if key in eval_out_data_names}
-        return output_data_dict
+    # def _select_output_data(self, raw_data, eval_out_data_names):
+    #     output_data_dict = {key: value for key,value in raw_data.items()
+    #                       if key in eval_out_data_names}
+    #     return output_data_dict
 
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
 
@@ -231,18 +231,15 @@ class EvalWrapper(AbstractEvalWrapper):
 
         return out_values
 
-    def get_input_data_for_gems(self, disc):
-        '''
-        Get input_data for linearize sosdiscipline
-        '''
-        input_data = {}
-        input_data_names = disc.input_grammar.get_data_names()
-        if len(input_data_names) > 0:
-            input_data = self.get_sosdisc_inputs(keys=input_data_names, in_dict=True, full_name_keys=True)
-            # for data_name in input_data_names:
-            #     input_data[data_name] = self.attributes['dm'].get_value(data_name)
-
-        return input_data
+    # def get_input_data_for_gems(self, disc):
+    #     '''
+    #     Get input_data for linearize sosdiscipline
+    #     '''
+    #     input_data = {}
+    #     input_data_names = disc.input_grammar.get_data_names()
+    #     if len(input_data_names) > 0:
+    #         input_data = self.get_sosdisc_inputs(keys=input_data_names, in_dict=True, full_name_keys=True)
+    #     return input_data
 
     # MULTIPLIER
     #
@@ -408,6 +405,12 @@ class EvalWrapper(AbstractEvalWrapper):
         # We first begin by sample generation
         self.samples = self.take_samples()
 
+        # Before, for User-defined samples, Eval received a dataframe and transformed it into list in take_samples
+        # above. For DoE sampling generation Eval received a list.
+        # Now, for User-defined samples and DoE sampling generation, Eval receives a dataframe in both cases and
+        # transforms it in list.
+        self.samples = self.samples.values.tolist()
+
         # Then add the reference scenario (initial point ) to the input samples
         self.samples.append([self.attributes['reference_scenario'][var_to_eval]
                              for var_to_eval in self.attributes['eval_in_list']])
@@ -486,7 +489,7 @@ class EvalWrapper(AbstractEvalWrapper):
         """
         self.custom_samples = self.get_sosdisc_inputs('doe_df').copy()
         self.check_custom_samples()
-        return self.custom_samples.values.tolist()
+        return self.custom_samples
 
     def check_custom_samples(self):
         """ We that the columns of the dataframe are the same  that  the selected inputs

@@ -51,11 +51,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    def __init__(self, generator_name):
-        '''
-        Constructor
-        '''
-        self.name = generator_name
+    # def __init__(self, generator_name):
+    #     '''
+    #     Constructor
+    #     '''
+    #     self.name = generator_name
 
     def get_available_algo_names(self):
         '''
@@ -105,6 +105,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         doe_factory = DOEFactory()
         algo_lib = doe_factory.create(sampling_algo_name)
 
+        # Remark: The following lines of code should be in gemseo
+        # We should use only one line or two provided by gemseo
         fn = algo_lib.__class__._get_options
 
         algo_options_descr_dict = get_options_doc(fn)
@@ -136,7 +138,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         pass
 
-    def generate_samples(self, sampling_algo_name, algo_options, eval_in_list, design_space):
+    def generate_samples(self, sampling_algo_name, algo_options, selected_inputs, design_space):
         '''
         Method that generate samples in a design space for a selected algorithm with its options 
         The method also checks the output formating
@@ -145,23 +147,23 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             sampling_algo_name (string): name of the numerical algorithm
             algo_options (dict): provides the selected value of each option of the algorithm 
-            eval_in_list (list): list of selected variables
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs)
             design_space (gemseo DesignSpace): Design Space
 
         Returns:
-            samples () :               
+            samples_df (dataframe) : generated samples              
         '''
         # check options
         self._check_options(sampling_algo_name, algo_options)
 
         # generate the sampling by subclass
-        samples = self._generate_samples(
-            sampling_algo_name, algo_options, eval_in_list, design_space)
+        samples_df = self._generate_samples(
+            sampling_algo_name, algo_options, selected_inputs, design_space)
 
         # check sample formatting
         # self._check_samples(samples)
 
-        return samples
+        return samples_df
 
     def _check_samples(self, samples):
         '''
@@ -178,25 +180,29 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             msg += "is <%s> " % str(type(samples))
             raise SampleTypeError()
 
-    def _generate_samples(self, sampling_algo_name, algo_options, eval_in_list, design_space):
+    def _generate_samples(self, sampling_algo_name, algo_options, selected_inputs, design_space):
         '''
         Method that generate samples
 
         Arguments:
             sampling_algo_name (string): name of the numerical algorithm
             algo_options (dict): provides the selected value of each option of the algorithm
-            eval_in_list (list): list of selected variables
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs)
             design_space (gemseo DesignSpace): Design Space
 
         Returns:
-            samples () : 
+            samples_df (dataframe) : generated samples
         '''
         normalized_samples = self._generate_normalized_samples(
             sampling_algo_name, algo_options, design_space)
-        samples = self.prepare_samples_for_evaluation(
-            normalized_samples, eval_in_list, design_space)
+        unnormalized_samples = self.unnormalized_samples_from_design_space(
+            normalized_samples, design_space)
+        samples = self.reformat_samples_from_design_space(
+            unnormalized_samples, selected_inputs, design_space)
+        samples_df = self.put_samples_in_df_format(samples, selected_inputs)
 
-        return samples
+        # return samples
+        return samples_df
 
     def _generate_normalized_samples(self, sampling_algo_name, algo_options, design_space):
         '''
@@ -268,7 +274,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                     It has also variables_names, and variables_sizes (for DiagonalDOE algo)
 
         Returns:
-            samples (numpy.ndarray) :  matrix of n raws  (each raw is an input point to be evaluated)   
+            normalized_samples (numpy.ndarray) :  matrix of n raws  (each raw is an input point to be evaluated)  
+                                                  any variable of dim m will be in m columns of the matrix 
 
         """
         doe_factory = DOEFactory()
@@ -276,81 +283,92 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         normalized_samples = algo._generate_samples(**gemseo_options)
         return normalized_samples
 
-
-####################################
-    def prepare_samples_for_evaluation(self, normalized_samples, eval_in_list, design_space):
+    def unnormalized_samples_from_design_space(self, normalized_samples, design_space):
         """
-        xxxx
+        Un-normalized sample from design space lower and upper bound
+        Check whether the variables satisfy the design space requirements
+        It uses methods from gemseo Design Space
 
         Arguments:
-            samples () : 
-            eval_in_list (list): list of selected variables
+            normalized_samples () : 
             design_space (gemseo DesignSpace): Design Space
 
         Returns:
-            prepared_samples () :
+            samples () : unnormalized samples
 
+        Raises:
+            ValueError: Either if the dimension of the values vector is wrong,
+                if the values are not specified as an array or a dictionary,
+                if the values are outside the bounds of the variables or
+                if the component of an integer variable is an integer.
         """
-        updated_samples = self.update_samples_from_design_space(
-            normalized_samples, design_space)
-        prepared_samples = self.reformat_samples(
-            updated_samples, eval_in_list, design_space)
-        return prepared_samples
-
-    def update_samples_from_design_space(self, normalized_samples, design_space):
-        """
-        xxxx
-
-        Arguments:
-            samples () : 
-            design_space (gemseo DesignSpace): Design Space
-
-        Returns:
-            updated_sampless () :
-
-        """
-        # the provided samples are normalised as bounds of design space where not
+        # the provided samples are normalized as bounds of design space where not
         # used yet
         unnormalize_vect = design_space.unnormalize_vect
         round_vect = design_space.round_vect
-        updated_samples = []
+        samples = []
         for sample in normalized_samples:  # To be vectorized
             x_sample = round_vect(unnormalize_vect(sample))
             design_space.check_membership(x_sample)
-            updated_samples.append(x_sample)
-        return updated_samples
+            samples.append(x_sample)
+        return samples
 
-    def reformat_samples(self, samples, eval_in_list, design_space):
+    def reformat_samples_from_design_space(self, samples, selected_inputs, design_space):
         """
-        xxxx
+        Reformat samples based on the design space to take into account variables with dim >1
+        It uses methods from gemseo Design Space
 
         Arguments:
-            samples () : 
-            eval_in_list (list): list of selected variables
+            samples () : unnormalized samples
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs)
             design_space (gemseo DesignSpace): Design Space
 
         Returns:
-            reformated_samples () :
+            reformated_samples () : Reformated samples that takes into account variables with dim >1
         """
         reformated_samples = []
-        for sample in samples:  # To be vectorized
-            sample_dict = design_space.array_to_dict(sample)
+        for current_point in samples:  # To be vectorized
+            # Current point  is an array with variables ordered as in selected_inputs
+            # Find the dictionary version of the current point sample
+            current_point_dict = design_space.array_to_dict(current_point)
+
             # FIXME : are conversions needed here?
             # sample_dict = self._convert_array_into_new_type(sample_dict)
-            ordered_sample = []
-            for in_variable in eval_in_list:
-                ordered_sample.append(sample_dict[in_variable])
-            reformated_samples.append(ordered_sample)
+
+            # We reconstruct the current point as an array with variables
+            # ordered as in selected_inputs
+            reformated_current_point = []
+            for in_variable in selected_inputs:
+                reformated_current_point.append(
+                    current_point_dict[in_variable])
+            reformated_samples.append(reformated_current_point)
+
         return reformated_samples
 
-    def put_samples_in_df_format(self, samples, eval_in_list):
+    def put_samples_in_df_format(self, samples, selected_inputs):
         """
         construction of a dataframe of the generated samples
         # To be vectorized
 
         Arguments:
             samples () : 
-            eval_in_list (list): list of selected variables
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs)
+
+        Returns:
+            samples_df (data_frame) :
+        """
+        samples_df = pd.DataFrame(data=samples,
+                                  columns=selected_inputs)
+        return samples_df
+
+    def put_samples_in_df_format_old(self, samples, selected_inputs):
+        """
+        construction of a dataframe of the generated samples
+        # To be vectorized
+
+        Arguments:
+            samples () : 
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs)
 
         Returns:
             samples_df (data_frame) :
@@ -369,14 +387,13 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             dict_one_sample = {}
             #current_sample = evaluated_samples[0]
             current_sample = evaluated_samples
-            for idx, f_name in enumerate(eval_in_list):
+            for idx, f_name in enumerate(selected_inputs):
                 dict_one_sample[f_name] = current_sample[idx]
             dict_sample[scenario_name] = dict_one_sample
         # 3. construction of a dataframe of generated samples
         # columns are selected inputs
         columns = ['scenario']
-        # columns.extend(selected_inputs)
-        columns.extend(eval_in_list)
+        columns.extend(selected_inputs)
         samples_all_row = []
         for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]

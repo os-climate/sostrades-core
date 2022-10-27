@@ -23,7 +23,7 @@ import importlib
 from os.path import join, dirname, isfile
 
 from sostrades_core.api import get_sos_logger
-# from sostrades_core.execution_engine.sos_discipline_gather import SoSDisciplineGather
+from sostrades_core.execution_engine.proxy_discipline_gather import ProxyDisciplineGather
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import \
     InstantiatedParetoFrontOptimalChart
@@ -297,14 +297,14 @@ class PostProcessingFactory:
         #######################################################################
         # Load definition from module file
 
-        if isinstance(discipline, SoSDisciplineGather):
+        if isinstance(discipline, ProxyDisciplineGather):
             # Use the associated discipline for gather disicplines
 
             try:
 
-                if isinstance(discipline.builder.disc, SoSDisciplineGather):
-                    if isinstance(discipline.builder.disc.builder.disc, SoSDisciplineGather):
-                        if isinstance(discipline.builder.disc.builder.disc.builder.disc, SoSDisciplineGather):
+                if isinstance(discipline.builder.disc, ProxyDisciplineGather):
+                    if isinstance(discipline.builder.disc.builder.disc, ProxyDisciplineGather):
+                        if isinstance(discipline.builder.disc.builder.disc.builder.disc, ProxyDisciplineGather):
                             linked_builder_class = discipline.builder.disc.builder.disc.builder.disc.builder.cls
                         else:
                             linked_builder_class = discipline.builder.disc.builder.disc.builder.cls
@@ -372,11 +372,12 @@ class PostProcessingFactory:
         ###############################################################
         # Load definition from module file
 
-        if isinstance(discipline, SoSDisciplineGather):
+        if isinstance(discipline, ProxyDisciplineGather):
+            # TODO: recursive check for lines below?
             # Use the associated discipline for gather disicplines
-            if isinstance(discipline.builder.disc, SoSDisciplineGather):
-                if isinstance(discipline.builder.disc.builder.disc, SoSDisciplineGather):
-                    if isinstance(discipline.builder.disc.builder.disc.builder.disc, SoSDisciplineGather):
+            if isinstance(discipline.builder.disc, ProxyDisciplineGather):
+                if isinstance(discipline.builder.disc.builder.disc, ProxyDisciplineGather):
+                    if isinstance(discipline.builder.disc.builder.disc.builder.disc, ProxyDisciplineGather):
                         linked_builder_class = discipline.builder.disc.builder.disc.builder.disc.builder.cls
                     else:
                         linked_builder_class = discipline.builder.disc.builder.disc.builder.cls
