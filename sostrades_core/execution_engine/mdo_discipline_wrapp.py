@@ -54,6 +54,8 @@ class MDODisciplineWrapp(object):
         self.mdo_discipline = None
         if wrapper is not None:
             self.wrapper = wrapper(name)
+        else:
+            self.wrapper = None
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """
@@ -96,6 +98,8 @@ class MDODisciplineWrapp(object):
         """
         if self.wrapper is not None:
             return self.wrapper.get_chart_filter_list()
+        else:
+            return []
 
     def get_post_processing_list(self, filters=None):
         """
@@ -109,6 +113,8 @@ class MDODisciplineWrapp(object):
         """
         if self.wrapper is not None:
             return self.wrapper.get_post_processing_list(filters)
+        else:
+            return []
 
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
         """

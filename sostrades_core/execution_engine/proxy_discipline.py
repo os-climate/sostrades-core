@@ -1977,7 +1977,10 @@ class ProxyDiscipline(object):
 
         Returns: List[ChartFilter]
         """
-        return self.mdo_discipline_wrapp.get_chart_filter_list()
+        if self.mdo_discipline_wrapp is not None:
+            return self.mdo_discipline_wrapp.get_chart_filter_list()
+        else:
+            return []
 
     def get_post_processing_list(self, filters=None):
         """
@@ -1989,8 +1992,10 @@ class ProxyDiscipline(object):
         Returns:
             post processing instance list
         """
-
-        return self.mdo_discipline_wrapp.get_post_processing_list(filters)
+        if self.mdo_discipline_wrapp is not None:
+            return self.mdo_discipline_wrapp.get_post_processing_list(filters)
+        else:
+            return []
 
     def set_configure_status(self, is_configured):
         """
@@ -2214,3 +2219,15 @@ class ProxyDiscipline(object):
         return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()},\
                {key: self.ee.ns_manager.ns_tuple_to_full_name(
                    (key, value)) for key, value in self._io_ns_map_out.items()}
+
+    # useful for debugging
+    def display_proxy_subtree(self):
+        proxy_subtree = []
+        self.get_proxy_subtree_rec(proxy_subtree)
+        return '\n'.join(proxy_subtree)
+
+    def get_proxy_subtree_rec(self, proxy_subtree, indent=0):
+        proxy_subtree.append('    '*indent + '|_ ' + self.ee.ns_manager.get_local_namespace_value(self)
+                             + '  (' + self.__class__.__name__ + ')')
+        for disc in self.proxy_disciplines:
+            disc.get_proxy_subtree_rec(proxy_subtree, indent+1)

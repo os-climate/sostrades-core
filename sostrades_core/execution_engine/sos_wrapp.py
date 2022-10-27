@@ -226,3 +226,22 @@ class SoSWrapp(object):
         else:
             outputs = dict(zip(map(self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
             self.local_data.update(outputs)
+
+    def get_chart_filter_list(self):
+        """ Return a list of ChartFilter instance base on the inherited
+        class post processing filtering capabilities
+
+        :return: ChartFilter[]
+        """
+        return []
+
+    def get_post_processing_list(self, filters=None):
+        """ Return a list of post processing instance using the ChartFilter list given
+        as parameter, to be overload in subclasses
+
+        :params: chart_fiters : filter to apply during post processing making
+        :type: ChartFilter[]
+
+        :return post processing instance list
+        """
+        return []
