@@ -1730,8 +1730,9 @@ class ProxyDiscipline(object):
         '''
         Update cache_map dict in DM with cache and its children recursively
         '''
+
         mdo_discipline = self.mdo_discipline_wrapp.mdo_discipline
-        if mdo_discipline.cache is not None:
+        if mdo_discipline is not None and mdo_discipline.cache is not None:
             self._store_cache_with_hashed_uid(mdo_discipline)
         # store children cache recursively
         for disc in self.proxy_disciplines:
@@ -1912,6 +1913,7 @@ class ProxyDiscipline(object):
         self.status = self.get_status_after_configure()
 
     def get_status_after_configure(self):
+        print('toto')
         return self.mdo_discipline_wrapp.mdo_discipline.status
 
     def _check_status_before_run(self):
