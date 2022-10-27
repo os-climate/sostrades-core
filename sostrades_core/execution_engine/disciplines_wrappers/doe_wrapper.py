@@ -167,30 +167,39 @@ class DoeWrapper(SoSWrapp):
         else:
             return cls.default_algo_options
 
-    def create_design_space(self):
+    def create_design_space(self, eval_in_list, dspace_df):
         """
         create_design_space
         """
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         design_space = None
         if dspace_df is not None:
-            design_space = self.set_design_space(self.eval_in_list, dspace_df)
+            design_space = self.set_design_space(eval_in_list, dspace_df)
 
         return design_space
+
+    def update_eval_in_list(self, eval_in_list, dspace_df, study_name):
+        """
+        use variables from dspace_df instead of selected_inputs to generate eval_in_list
+
+        """
+        if 'full_name' in dspace_df:
+            variables = dspace_df['full_name'].tolist()
+            variables = [
+                f'{study_name}.{var_to_eval}' for var_to_eval in variables]
+        else:
+            variables = eval_in_list
+        return variables
 
     def set_design_space(self, eval_in_list, dspace_df):
         """
         reads design space (set_design_space)
         """
 
-        # variables = self.attributes['eval_in_list']
+        # study_name = self.attributes["study_name"]
+        # variables = self.update_eval_in_list(eval_in_list, dspace_df, study_name)
+        # Removed (only for gridsearch and seems useless even in gridsearch)
 
-        if 'full_name' in dspace_df:
-            variables = dspace_df['full_name'].tolist()
-            variables = [
-                f'{self.attributes["study_name"]}.{var_to_eval}' for var_to_eval in variables]
-        else:
-            variables = eval_in_list
+        variables = eval_in_list
 
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
@@ -268,9 +277,10 @@ class DoeWrapper(SoSWrapp):
         n_processes = self.get_sosdisc_inputs('n_processes')
         wait_time_between_fork = self.get_sosdisc_inputs(
             'wait_time_between_fork')
+        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         eval_in_list = self.eval_in_list
 
-        design_space = self.create_design_space()
+        design_space = self.create_design_space(eval_in_list, dspace_df)
         self.design_space = design_space
 
         # algo_options keys are dependent on algo_name and values set by

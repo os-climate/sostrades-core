@@ -162,20 +162,20 @@ class TestSampleGenerator(unittest.TestCase):
 
         dspace_df = self.dspace_eval  # data_manager design space in df format
 
+        selected_inputs = self.selected_inputs
+
         doe_wrapper = DoeWrapper(self.study_name)
         design_space = doe_wrapper.set_design_space(
-            eval_in_list, dspace_df)  # gemseo DesignSpace
+            selected_inputs, dspace_df)  # gemseo DesignSpace
         # why do we have a design_space function creation in doe_wrapper ?
 
-        samples = sample_generator.generate_samples(
-            sampling_algo_name, algo_options, eval_in_list, design_space)
+        samples_df = sample_generator.generate_samples(
+            sampling_algo_name, algo_options, selected_inputs, design_space)
 
-        print(samples)
-        # check versus self.target_samples
-
-        samples_df = sample_generator.put_samples_in_df_format(
-            samples, eval_in_list)
         print(samples_df)
+
+        # check versus self.target_samples_df
+
         # add assert
 
 
