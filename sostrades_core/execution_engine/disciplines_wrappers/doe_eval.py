@@ -109,8 +109,8 @@ class DoeEval(EvalWrapper):
         self.sample_generator = None
 
     def take_samples(self):
-        algo_name = self.get_sosdisc_inputs(self.ALGO)
-        if algo_name == 'CustomDOE':
+        sampling_algo_name = self.get_sosdisc_inputs(self.ALGO)
+        if sampling_algo_name == 'CustomDOE':
             return super().take_samples()
         else:
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
@@ -132,10 +132,10 @@ class DoeEval(EvalWrapper):
             # Not needed here: to be put in config to set the desc_in instead
             # of the hard coded default dicts of EEV3...
             algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_desc_in(
-                algo_name)
+                sampling_algo_name)
 
             samples = self.sample_generator.generate_samples(
-                algo_name, algo_options, eval_in_list, design_space)
+                sampling_algo_name, algo_options, eval_in_list, design_space)
 
             return samples
             # DoeWrapper(self.sos_name).generate_samples_from_doe_factory(algo_name)

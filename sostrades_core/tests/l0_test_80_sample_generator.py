@@ -33,7 +33,7 @@ import os
 from os.path import dirname, join
 
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.disciplines_wrappers.doe_eval import DoeEval
+from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import DoeWrapper
 
 
 class UnitTestHandler(Handler):
@@ -55,6 +55,7 @@ class TestSampleGenerator(unittest.TestCase):
     """
 
     def setUp(self):
+        self.study_name = 'doe'
         self.generator_name = 'doe_generator'
         self.sampling_algo = 'fullfact'
 
@@ -102,10 +103,25 @@ class TestSampleGenerator(unittest.TestCase):
                                              'y_2',
                                              'z']}
 
-        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+        self.eval_inputs = pd.DataFrame(input_selection_x_z)
+        # from eval_inputs to selected_inputs and eval_in_list
+        self.selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']
+                                                == True]['full_name']
+        self.selected_inputs = self.selected_inputs.tolist()
+        self.eval_in_list = [
+            f'{self.study_name}.{element}' for element in self.selected_inputs]
+        #self.eval_in_list = ['doe.x', 'doe.z']
+        ##########################
 
-        eval_in_list_x_z = ['doe.x', 'doe.z']
-        self.eval_in_list = eval_in_list_x_z
+        target_samples = [[array([0.]), array([-10., 0.])],
+                          [array([10.]), array([-10., 0.])],
+                          [array([0.]), array([10., 0.])],
+                          [array([10.]), array([10., 0.])],
+                          [array([0.]), array([-10., 10.])],
+                          [array([10.]), array([-10., 10.])],
+                          [array([0.]), array([10., 10.])],
+                          [array([10.]), array([10., 10.])]]
+        self.target_samples = target_samples
 
     def test_01_check_get_options_desc_in(self):
         '''
@@ -117,9 +133,9 @@ class TestSampleGenerator(unittest.TestCase):
         algo_names_list = sample_generator.get_available_algo_names()
         print(algo_names_list)
 
-        algo_name = 'fullfact'
+        sampling_algo_name = 'fullfact'
         algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
-            algo_name)
+            sampling_algo_name)
 
         print(algo_options_desc_in)
         print(algo_options_descr_dict)
@@ -130,6 +146,8 @@ class TestSampleGenerator(unittest.TestCase):
         # check set of algo_options_desc_in.keys() equal set of algo_options_descr_dict without 'kwargs'
         # test the error message in case of algo_name = 'toto'
 
+        # test it works with all algo samples names
+
     def test_02_check_generate_samples(self):
         '''
         Test that checks generate_samples for DoeSampleGenerator
@@ -137,20 +155,28 @@ class TestSampleGenerator(unittest.TestCase):
         generator_name = 'doe_generator'
         sample_generator = DoeSampleGenerator(generator_name)
 
-        sampling_algo = self.sampling_algo
+        sampling_algo_name = self.sampling_algo
         algo_options = self.algo_options
+
         eval_in_list = self.eval_in_list
-        design_space = self.dspace_eval
 
-        #doe_eval = DoeEval
-        # dspace_df = ??
-        # design_space = self.set_design_space(dspace_df) How to call set_design_space as DoE_Eval has no init !
-        # why do we have a design_space function creation in doe_eval !!!
+        dspace_df = self.dspace_eval  # data_manager design space in df format
 
-        # samples = sample_generator.generate_samples(
-        #    sampling_algo, algo_options, eval_in_list, design_space)
+        doe_wrapper = DoeWrapper(self.study_name)
+        design_space = doe_wrapper.set_design_space(
+            eval_in_list, dspace_df)  # gemseo DesignSpace
+        # why do we have a design_space function creation in doe_wrapper ?
 
-        # print(samples)
+        samples = sample_generator.generate_samples(
+            sampling_algo_name, algo_options, eval_in_list, design_space)
+
+        print(samples)
+        # check versus self.target_samples
+
+        samples_df = sample_generator.put_samples_in_df_format(
+            samples, eval_in_list)
+        print(samples_df)
+        # add assert
 
 
 if '__main__' == __name__:
