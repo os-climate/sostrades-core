@@ -60,7 +60,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 rmtree(dir_to_del)
         sleep(0.5)
 
-    def _test_01_multi_scenario_of_scatter(self):
+    def test_01_multi_scenario_of_scatter(self):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
@@ -104,7 +104,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                                                              mod_id='test_disc1_scenario')
 
         scatter_list = self.exec_eng.factory.create_multi_scatter_builder_from_list(
-            'name_list', builder_list=builder_list, autogather=True)
+            'name_list', builder_list=builder_list, autogather=False) # TODO: manage autogather input order and set to True...
 
         mod_list = f'{self.base_path}.disc3_scenario.Disc3'
         disc3_builder = self.exec_eng.factory.get_builder_from_module(
@@ -171,37 +171,38 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         y2 = a2 * x2 + b2
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.name_1.y'), y1)
+            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
 
-        gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Post-processing.Disc1')[0]
-        self.assertListEqual([key for key in list(gather_disc1._data_in.keys()) if key not in gather_disc1.NUM_DESC_IN], [
-            'scenario_list', 'scenario_1.y_dict', 'scenario_2.y_dict'])
-        self.assertListEqual(list(gather_disc1._data_out.keys()), ['y_dict'])
-        self.assertDictEqual(gather_disc1._data_out['y_dict']['value'], {
-                             'scenario_1.name_1': y1, 'scenario_1.name_2': y2, 'scenario_2.name_1': y1, 'scenario_2.name_2': y2})
+        # gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.Post-processing.Disc1')[0]
+        # self.assertListEqual([key for key in list(gather_disc1._data_in.keys()) if key not in gather_disc1.NUM_DESC_IN], [
+        #     'scenario_list', 'scenario_1.y_dict', 'scenario_2.y_dict'])
+        # self.assertListEqual(list(gather_disc1.get_data_out().keys()), ['y_dict'])
+        # self.assertDictEqual(gather_disc1.get_data_out()['y_dict']['value'], {
+        #                      'scenario_1.name_1': y1, 'scenario_1.name_2': y2, 'scenario_2.name_1': y1, 'scenario_2.name_2': y2})
 
         gather_disc3 = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Post-processing.Disc3')[0]
-        self.assertListEqual([key for key in list(gather_disc3._data_in.keys())if key not in ProxyDiscipline.NUM_DESC_IN], [
+        self.assertListEqual([key for key in list(gather_disc3.get_data_in().keys())if key not in ProxyDiscipline.NUM_DESC_IN], [
             'scenario_list', 'scenario_1.o', 'scenario_2.o'])
-        self.assertListEqual(list(gather_disc3._data_out.keys()), ['o_dict'])
+        self.assertListEqual(list(gather_disc3.get_data_out().keys()), ['o_dict'])
 
         # test load filters and graphs of autogather multi-scenario
         ppf = PostProcessingFactory()
-        gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Post-processing.Disc1')[0]
-        filters = ppf.get_post_processing_filters_by_discipline(gather_disc1)
-        charts = ppf.get_post_processing_by_discipline(
-            gather_disc1, filters, as_json=False)
-#         for chart in charts:
-#             chart.to_plotly().show()
+
+#         gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
+#             'MyCase.Post-processing.Disc1')[0]
+#         filters = ppf.get_post_processing_filters_by_discipline(gather_disc1)
+#         charts = ppf.get_post_processing_by_discipline(
+#             gather_disc1, filters, as_json=False)
+# #         for chart in charts:
+# #             chart.to_plotly().show()
 
         # get post-processing by namespace
         filters_by_namespace = ppf.get_post_processing_filters_by_namespace(
@@ -642,16 +643,16 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
                 'MyCase.Post-processing.Disc1')[0]
-            self.assertListEqual(sorted([key for key in list(gather_disc1._data_in.keys()) if key not in gather_disc1.NUM_DESC_IN]), [
+            self.assertListEqual(sorted([key for key in list(gather_disc1.get_data_in().keys()) if key not in gather_disc1.NUM_DESC_IN]), [
                 'scenario_1.y_dict', 'scenario_2.y_dict', 'scenario_list'])
             self.assertListEqual(
-                list(gather_disc1._data_out.keys()), ['y_dict'])
-            self.assertDictEqual(gather_disc1._data_out['y_dict']['value'], {
+                list(gather_disc1.get_data_out().keys()), ['y_dict'])
+            self.assertDictEqual(gather_disc1.get_data_out()['y_dict']['value'], {
                                  'scenario_1.name_1': y1, 'scenario_1.name_2': y2, 'scenario_2.name_1': y1, 'scenario_2.name_2': y2})
 
             gather_disc3 = self.exec_eng.dm.get_disciplines_with_name(
                 'MyCase.Post-processing.Disc3')[0]
-            self.assertListEqual(sorted([key for key in list(gather_disc3._data_in.keys())if key not in ProxyDiscipline.NUM_DESC_IN]), [
+            self.assertListEqual(sorted([key for key in list(gather_disc3.get_data_in().keys())if key not in ProxyDiscipline.NUM_DESC_IN]), [
                 'scenario_1.o', 'scenario_2.o', 'scenario_list'])
             self.assertListEqual(
-                list(gather_disc3._data_out.keys()), ['o_dict'])
+                list(gather_disc3.get_data_out().keys()), ['o_dict'])
