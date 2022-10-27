@@ -207,9 +207,11 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_10': array([4.488887520686984]),
                                       'reference': array([3.5155494421403515])}
         for key in doe_disc_y1.keys():
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
         for key in doe_disc_y2.keys():
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
     def test_2_DoeEval_of_DoeEval(self):
         """ Here we test a DoeEval of a DoeEval process on a single sub-discipline to check that the transition of the
@@ -220,17 +222,17 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         dspace_dict_upper = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.b'],
 
-                               'lower_bnd': [50.],
-                               'upper_bnd': [200.],
+                             'lower_bnd': [50.],
+                             'upper_bnd': [200.],
 
-                               }
+                             }
         dspace_upper = pd.DataFrame(dspace_dict_upper)
         dspace_dict_lower = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.a'],
 
-                               'lower_bnd': [50.],
-                               'upper_bnd': [200.],
+                             'lower_bnd': [50.],
+                             'upper_bnd': [200.],
 
-                               }
+                             }
         dspace_lower = pd.DataFrame(dspace_dict_lower)
 
         exec_eng = ExecutionEngine(self.study_name)
@@ -265,13 +267,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(private_values)
 
         input_selection_upper_b = {'selected_input': [False, False, True],
-                               'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a',
-                                             'DoEEvalUpper.DoEEvalLower.Disc1.b']}
+                                   'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a',
+                                                 'DoEEvalUpper.DoEEvalLower.Disc1.b']}
         input_selection_upper_b = pd.DataFrame(input_selection_upper_b)
         output_selection_upper_y_dict = {'selected_output': [True, False, True],
-                                'full_name': ['y_dict', 'DoEEvalUpper.DoEEvalLower.Disc1.indicator',
-                                              'DoEEvalUpper.DoEEvalLower.samples_inputs_df']}
-        output_selection_upper_y_dict = pd.DataFrame(output_selection_upper_y_dict)
+                                         'full_name': ['y_dict', 'DoEEvalUpper.DoEEvalLower.Disc1.indicator',
+                                                       'DoEEvalUpper.DoEEvalLower.samples_inputs_df']}
+        output_selection_upper_y_dict = pd.DataFrame(
+            output_selection_upper_y_dict)
 
         input_selection_lower_a = {'selected_input': [False, True, False],
                                    'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a',
@@ -288,7 +291,6 @@ class TestSoSDOEScenario(unittest.TestCase):
                      f'{self.ns}.DoEEvalUpper.DoEEvalLower.eval_inputs': input_selection_lower_a,
                      f'{self.ns}.DoEEvalUpper.DoEEvalLower.eval_outputs': output_selection_lower_y}
 
-
         n_samples = 3
         exec_eng.load_study_from_input_dict(disc_dict)
         disc_dict = {'doe.DoEEvalUpper.algo_options': {'n_samples': n_samples, 'face': 'faced'},
@@ -303,18 +305,22 @@ class TestSoSDOEScenario(unittest.TestCase):
         for var in ['doe.y_dict_dict', 'doe.y_dict', 'doe.y']:
             self.assertIn(var, exec_eng.root_process.get_output_data_names())
 
-        proxy_disc = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0]
+        proxy_disc = exec_eng.root_process.proxy_disciplines[
+            0].proxy_disciplines[0].proxy_disciplines[0]
         mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
         reference_local_data = copy.deepcopy(mdo_disc.local_data)
 
         keys_upper = list(exec_eng.dm.get_value('doe.y_dict_dict').keys())
         i_upper = 0
         for b in exec_eng.dm.get_value('doe.DoEEvalUpper.samples_inputs_df')['DoEEvalUpper.DoEEvalLower.Disc1.b']:
-            keys_lower = list(exec_eng.dm.get_value('doe.y_dict_dict')[keys_upper[i_upper]].keys())
+            keys_lower = list(exec_eng.dm.get_value(
+                'doe.y_dict_dict')[keys_upper[i_upper]].keys())
             i_lower = 0
-            samples_input_dataframe = exec_eng.dm.get_value('doe.DoEEvalUpper.DoEEvalLower.samples_inputs_df_dict')[keys_upper[i_upper]]
+            samples_input_dataframe = exec_eng.dm.get_value(
+                'doe.DoEEvalUpper.DoEEvalLower.samples_inputs_df_dict')[keys_upper[i_upper]]
             for a in samples_input_dataframe['DoEEvalUpper.DoEEvalLower.Disc1.a']:
-                y_output = exec_eng.dm.get_value('doe.y_dict_dict')[keys_upper[i_upper]][keys_lower[i_lower]]
+                y_output = exec_eng.dm.get_value('doe.y_dict_dict')[
+                    keys_upper[i_upper]][keys_lower[i_lower]]
 
                 in_local_data = copy.deepcopy(reference_local_data)
                 in_local_data['doe.DoEEvalUpper.DoEEvalLower.Disc1.a'] = a
@@ -334,7 +340,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         factory = exec_eng.factory
         proc_name = "test_disc1_custom_driver"
         driver_builder = factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id=proc_name)
+                                                          mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             driver_builder)
@@ -350,9 +356,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check expected output from execution
         exec_eng.execute()
-        self.assertEqual(exec_eng.dm.get_value('root.Driver1.output_squared'),array([649281361.]))
+        self.assertEqual(exec_eng.dm.get_value(
+            'root.Driver1.output_squared'), array([649281361.]))
 
-        # check that the root process knows all the numerical inputs of the entire subprocess
+        # check that the root process knows all the numerical inputs of the
+        # entire subprocess
         root_inputs = exec_eng.root_process.get_input_data_names()
         self.assertIn('root.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.linearization_mode', root_inputs)
@@ -377,7 +385,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         proc_name = "test_simple1_simple2_sellar_doe_eval"
         builders = factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id=proc_name)
+                                                    mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             builders)
@@ -389,7 +397,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         values_dict[f'{self.ns}.DoEEval.design_space'] = dspace_x
-        values_dict[f'{self.ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
+        values_dict[f'{self.ns}.DoEEval.algo_options'] = {
+            'n_samples': n_samples}
         values_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         values_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
 
@@ -400,8 +409,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.y_1'] = array([1.])
         values_dict[f'{self.ns}.y_2'] = array([1.])
         values_dict[f'{self.ns}.DoEEval.subprocess.Sellar_Problem.local_dv'] = local_dv
-        values_dict[f'{self.ns}.z_in'] = 2 * array([1., 1.])   #Input of SimpleDisc1
-        # values_dict[f'{self.ns}.c_1'] = array([1.])            #Input of SimpleDisc2
+        values_dict[f'{self.ns}.z_in'] = 2 * \
+            array([1., 1.])  # Input of SimpleDisc1
+        # values_dict[f'{self.ns}.c_1'] = array([1.])            #Input of
+        # SimpleDisc2
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
@@ -424,9 +435,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         z = exec_eng.dm.get_value('doe.z')
         if z[0] > 0.5:
-            self.assertEqual(exec_eng.dm.get_value('doe.DoEEval.sampling_algo'), "lhs")
+            self.assertEqual(exec_eng.dm.get_value(
+                'doe.DoEEval.sampling_algo'), "lhs")
         else:
-            self.assertEqual(exec_eng.dm.get_value('doe.DoEEval.sampling_algo'), "fullfact")
+            self.assertEqual(exec_eng.dm.get_value(
+                'doe.DoEEval.sampling_algo'), "fullfact")
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
             'samples_inputs_df')
@@ -458,12 +471,14 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_10': array([4.488887520686984]),
                                       'reference': array([3.5155494421403515])}
         for key in doe_disc_y1.keys():
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
         for key in doe_disc_y2.keys():
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
         self.assertEqual(exec_eng.dm.get_value('doe.out_simple2'),
-                         exec_eng.dm.get_value('doe.c_1')*std(list(exec_eng.dm.get_value('doe.y_1_dict').values())[:-1]))
+                         exec_eng.dm.get_value('doe.c_1') * std(list(exec_eng.dm.get_value('doe.y_1_dict').values())[:-1]))
 
     def test_5_Eval_User_Defined_samples(self):
         """
@@ -547,7 +562,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
 
-
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
             'samples_inputs_df')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
@@ -566,9 +580,11 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_4': array([7.644306621667905]),
                                       'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
         for key in doe_disc_y2.keys():
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
     def test_6_simple_disc_DoeEval_check_num_in_grammar_and_root_process(self):
         """
@@ -631,28 +647,39 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
-        proxy_disc2 = exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].proxy_disciplines[1]
+        proxy_disc2 = exec_eng.root_process.proxy_disciplines[
+            1].proxy_disciplines[0].proxy_disciplines[1]
         ns_id_cache_disc2_own_data_structure = proxy_disc2._io_ns_map_in['cache_type']
-        ns_id_cache_disc2_ns_manager = id(exec_eng.ns_manager.get_local_namespace(proxy_disc2))
-        self.assertEqual(ns_id_cache_disc2_own_data_structure, ns_id_cache_disc2_ns_manager)
+        ns_id_cache_disc2_ns_manager = id(
+            exec_eng.ns_manager.get_local_namespace(proxy_disc2))
+        self.assertEqual(ns_id_cache_disc2_own_data_structure,
+                         ns_id_cache_disc2_ns_manager)
 
         data_in_proxy_disc2 = proxy_disc2._data_in
-        var_dict_dm_in = exec_eng.dm.get_data('doe.DoEEval.subprocess.Sellar_2.cache_type')
-        var_dict_data_in = data_in_proxy_disc2[('cache_type', ns_id_cache_disc2_own_data_structure)]
-        var_dict_data_in_root = exec_eng.root_process._data_in[('cache_type', ns_id_cache_disc2_own_data_structure)]
+        var_dict_dm_in = exec_eng.dm.get_data(
+            'doe.DoEEval.subprocess.Sellar_2.cache_type')
+        var_dict_data_in = data_in_proxy_disc2[(
+            'cache_type', ns_id_cache_disc2_own_data_structure)]
+        var_dict_data_in_root = exec_eng.root_process._data_in[(
+            'cache_type', ns_id_cache_disc2_own_data_structure)]
         self.assertEqual(var_dict_dm_in, var_dict_data_in)
         self.assertEqual(var_dict_dm_in, var_dict_data_in_root)
 
-
-        proxy_disc_sellar_problem = exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].proxy_disciplines[0]
-        ns_id_cache_disc_sellar_problem_own_data_structure = proxy_disc_sellar_problem._io_ns_map_out['c_1']
-        ns_id_cache_disc_sellar_problem_ns_manager = id(exec_eng.ns_manager.get_shared_ns_dict()['ns_OptimSellar'])
-        self.assertEqual(ns_id_cache_disc_sellar_problem_own_data_structure, ns_id_cache_disc_sellar_problem_ns_manager)
+        proxy_disc_sellar_problem = exec_eng.root_process.proxy_disciplines[
+            1].proxy_disciplines[0].proxy_disciplines[0]
+        ns_id_cache_disc_sellar_problem_own_data_structure = proxy_disc_sellar_problem._io_ns_map_out[
+            'c_1']
+        ns_id_cache_disc_sellar_problem_ns_manager = id(
+            exec_eng.ns_manager.get_shared_ns_dict()['ns_OptimSellar'])
+        self.assertEqual(ns_id_cache_disc_sellar_problem_own_data_structure,
+                         ns_id_cache_disc_sellar_problem_ns_manager)
 
         data_out_proxy_disc_sellar_problem = proxy_disc_sellar_problem._data_out
         var_dict_dm_out = exec_eng.dm.get_data('doe.c_1')
-        var_dict_data_out = data_out_proxy_disc_sellar_problem[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
-        var_dict_data_out_root = exec_eng.root_process._data_out[('c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
+        var_dict_data_out = data_out_proxy_disc_sellar_problem[(
+            'c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
+        var_dict_data_out_root = exec_eng.root_process._data_out[(
+            'c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
         self.assertEqual(var_dict_dm_out, var_dict_data_out)
         self.assertEqual(var_dict_dm_out, var_dict_data_out_root)
 
@@ -699,7 +726,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
                      f'{ns}.Eval.eval_outputs': output_selection_ind}
 
-        a_values = [array([2.0]), array([4.0]), array([6.0]), array([8.0]), array([10.0])]
+        a_values = [array([2.0]), array([4.0]), array(
+            [6.0]), array([8.0]), array([10.0])]
 
         samples_dict = {'Eval.Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -721,19 +749,22 @@ class TestSoSDOEScenario(unittest.TestCase):
         root_outputs = exec_eng.root_process.get_output_data_names()
         self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
 
-        eval_disc = exec_eng.dm.get_disciplines_with_name(study_name + '.Eval')[0]
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
 
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
 
-        eval_disc_ind = eval_disc.get_sosdisc_outputs('Eval.Disc1.indicator_dict')
+        eval_disc_ind = eval_disc.get_sosdisc_outputs(
+            'Eval.Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 6)
         i = 0
         for key in eval_disc_ind.keys():
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b']*eval_disc_samples['Eval.Disc1.a'][i][0])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
             i += 1
+
     def test_io2_Coupling_of_Coupling_to_check_data_io(self):
         """
         TO BE COMPLETED
@@ -745,7 +776,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         factory = exec_eng.factory
         proc_name = "test_disc1_disc2_coupling_of_coupling"
         coupling_of_coupling_builder = factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id=proc_name)
+                                                                        mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             coupling_of_coupling_builder)
@@ -774,13 +805,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(private_values)
         exec_eng.execute()
 
-
-        for disc in [exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0], # discipline with no coupled inputs
-                     exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0], exec_eng.root_process.proxy_disciplines[0], exec_eng.root_process]: # couplings
+        for disc in [exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0],  # discipline with no coupled inputs
+                     exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0], exec_eng.root_process.proxy_disciplines[0], exec_eng.root_process]:  # couplings
             io_ns_map_in = disc._io_ns_map_in
             for var, identifier in io_ns_map_in.items():
                 var_tuple = (var, identifier)
-                self.assertEqual(identifier, id(exec_eng.root_process._data_in[var_tuple]['ns_reference']))
+                self.assertEqual(identifier, id(
+                    exec_eng.root_process._data_in[var_tuple]['ns_reference']))
 
     def test_8_doe_execution_fullfact(self):
         """
@@ -843,3 +874,23 @@ class TestSoSDOEScenario(unittest.TestCase):
         theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
         self.assertEqual(len(doe_disc_samples),
                          theoretical_fullfact_samples)
+
+        # print(doe_disc_samples)
+        # test output 'doe_df' sample dataframe
+        self.eval_inputs = self.input_selection_x_z
+        selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']
+                                           == True]['full_name']
+        selected_inputs = selected_inputs.tolist()
+        target_samples = [[array([0.]), array([-10., 0.])],
+                          [array([10.]), array([-10., 0.])],
+                          [array([0.]), array([10., 0.])],
+                          [array([10.]), array([10., 0.])],
+                          [array([0.]), array([-10., 10.])],
+                          [array([10.]), array([-10., 10.])],
+                          [array([0.]), array([10., 10.])],
+                          [array([10.]), array([10., 10.])]]
+
+        target_samples_df = pd.DataFrame(data=target_samples,
+                                         columns=selected_inputs)
+
+        assert_frame_equal(doe_disc_samples, target_samples_df)

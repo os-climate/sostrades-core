@@ -181,7 +181,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_samples),
                          theoretical_fullfact_samples + 1)
 
-    def test_2_doe_eval_CustomDoE(self):
+    def _test_2_doe_eval_CustomDoE(self):
         """ this test checks that the doe_eval delivers expected outputs
         It is a non regression test
         """
@@ -495,7 +495,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face}}
+        disc_dict = {'doe.DoEEval.algo_options': {
+            'n_samples': n_samples, 'face': face}}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertEqual(exec_eng.dm.get_value(
             'doe.DoEEval.algo_options')['n_samples'], n_samples)
@@ -508,12 +509,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         # self.assertDictEqual(exec_eng.dm.get_value(
         #     'doe.DoEEval.algo_options'), default_algo_options_fullfact)
-        assert exec_eng.dm.get_value('doe.DoEEval.eval_outputs').equals(self.output_selection_obj_y1_y2)
+        assert exec_eng.dm.get_value('doe.DoEEval.eval_outputs').equals(
+            self.output_selection_obj_y1_y2)
         df1 = self.input_selection_x_z
         df2 = exec_eng.dm.get_value('doe.DoEEval.eval_inputs')
         df_all = df1.merge(df2, on=['selected_input', 'full_name'],
                            how='left', indicator=True)
-        assert df_all[['selected_input', 'full_name']].equals(self.input_selection_x_z)
+        assert df_all[['selected_input', 'full_name']].equals(
+            self.input_selection_x_z)
         self.assertTrue(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True)['variable'].equals(
             dspace_x_z.reset_index(drop=True)['variable']))
 
@@ -530,7 +533,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                            dspace_eval.reset_index(drop=True), check_dtype=False)
         # exec_eng.execute()
 
-    def test_5_doe_eval_CustomDoE_reconfiguration(self):
+    def _test_5_doe_eval_CustomDoE_reconfiguration(self):
         """ different configurations of custom doe are tested here
         The aim is to assert that doe_eval configuration runs as intended
         Different inputs are modified and we check that the dm contains the expected values afterward
@@ -717,7 +720,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z[:-1]))
 
-    def test_7_doe_eval_CustomDoE_reconfiguration_after_execution(self):
+    def _test_7_doe_eval_CustomDoE_reconfiguration_after_execution(self):
         """ This tests aims at proving the ability of the doe_eval to
         be reconfigured after execution
         """
@@ -1063,7 +1066,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(doe_disc_samples),
                          theoretical_fullfact_samples + 1)
 
-    def test_12_doe_eval_CustomDoE_non_alpha_order(self):
+    def _test_12_doe_eval_CustomDoE_non_alpha_order(self):
         """ this test checks that the doe_eval delivers expected outputs in case of invertion of x, z in eval_inputs
         It is a non regression test
         """

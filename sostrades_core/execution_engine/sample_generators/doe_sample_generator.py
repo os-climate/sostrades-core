@@ -81,6 +81,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         if sampling_algo_name not in algo_names_list:
             raise Exception(
                 f"The provided algorithm name {sampling_algo_name} is not in the available algorithm list : {algo_names_list}")
+        elif sampling_algo_name == 'CustomDOE':
+            raise Exception(
+                f"The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator")
 
     def get_options_desc_in(self, sampling_algo_name):
         '''
@@ -359,46 +362,4 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         samples_df = pd.DataFrame(data=samples,
                                   columns=selected_inputs)
-        return samples_df
-
-    def put_samples_in_df_format_old(self, samples, selected_inputs):
-        """
-        construction of a dataframe of the generated samples
-        # To be vectorized
-
-        Arguments:
-            samples () : 
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs)
-
-        Returns:
-            samples_df (data_frame) :
-        """
-
-        # 1. add scenario column
-        samples_sc = {}
-        for i in tqdm(range(len(samples)), ncols=100, position=0):
-            x = samples[i]
-            scenario_name = "scenario_" + str(i + 1)
-            samples_sc[scenario_name] = x
-        # 2. build dictionary
-        dict_sample = {}
-        for (scenario_name, evaluated_samples) in samples_sc.items():
-            # generation of the dictionary of samples used
-            dict_one_sample = {}
-            #current_sample = evaluated_samples[0]
-            current_sample = evaluated_samples
-            for idx, f_name in enumerate(selected_inputs):
-                dict_one_sample[f_name] = current_sample[idx]
-            dict_sample[scenario_name] = dict_one_sample
-        # 3. construction of a dataframe of generated samples
-        # columns are selected inputs
-        columns = ['scenario']
-        columns.extend(selected_inputs)
-        samples_all_row = []
-        for (scenario, scenario_sample) in dict_sample.items():
-            samples_row = [scenario]
-            for generated_input in scenario_sample.values():
-                samples_row.append(generated_input)
-            samples_all_row.append(samples_row)
-        samples_df = pd.DataFrame(samples_all_row, columns=columns)
         return samples_df

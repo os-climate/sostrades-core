@@ -155,6 +155,7 @@ class DoeWrapper(SoSWrapp):
         super().__init__(sos_name)
         self.sample_generator = None
         self.previous_algo_name = ""
+        self.selected_inputs = None
         self.eval_in_list = None
         self.dict_desactivated_elem = {}
 
@@ -171,55 +172,36 @@ class DoeWrapper(SoSWrapp):
         # In get_options_desc_in, it is already checked whether the algo_name belongs to the list of possible Gemseo
         # DoE algorithms
         if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator(cls).get_options_desc_in(algo_name)
+            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator(
+                cls).get_options_desc_in(algo_name)
             return algo_options_desc_in
         else:
             return cls.default_algo_options
 
-    def create_design_space(self, eval_in_list, dspace_df):
+    def create_design_space(self, selected_inputs, dspace_df):
         """
         create_design_space
         """
         design_space = None
         if dspace_df is not None:
-            design_space = self.set_design_space(eval_in_list, dspace_df)
+            design_space = self.set_design_space(selected_inputs, dspace_df)
 
         return design_space
 
-    def update_eval_in_list(self, eval_in_list, dspace_df, study_name):
-        """
-        use variables from dspace_df instead of selected_inputs to generate eval_in_list
-
-        """
-        if 'full_name' in dspace_df:
-            variables = dspace_df['full_name'].tolist()
-            variables = [
-                f'{study_name}.{var_to_eval}' for var_to_eval in variables]
-        else:
-            variables = eval_in_list
-        return variables
-
-    def set_design_space(self, eval_in_list, dspace_df):
+    def set_design_space(self, selected_inputs, dspace_df):
         """
         reads design space (set_design_space)
         """
-
-        # study_name = self.attributes["study_name"]
-        # variables = self.update_eval_in_list(eval_in_list, dspace_df, study_name)
-        # Removed (only for gridsearch and seems useless even in gridsearch)
-
-        variables = eval_in_list
-
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
-        enable_variables = [True for _ in eval_in_list]
-        dspace_dict_updated = pd.DataFrame({self.VARIABLES: variables,
+        enable_variables = [True for _ in selected_inputs]
+        dspace_dict_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
                                             self.VALUES: values,
                                             self.LOWER_BOUND: lower_bounds,
                                             self.UPPER_BOUND: upper_bounds,
                                             self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: [[True]] * len(eval_in_list)})
+                                            self.LIST_ACTIVATED_ELEM: [[True]] * len(selected_inputs)})
         # TODO: Hardcoded as in EEV3, but not differenciating between array or
         # not.
 
@@ -283,17 +265,13 @@ class DoeWrapper(SoSWrapp):
 
         algo_name = self.get_sosdisc_inputs(self.ALGO)
         algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-        n_processes = self.get_sosdisc_inputs('n_processes')
-        wait_time_between_fork = self.get_sosdisc_inputs(
-            'wait_time_between_fork')
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        eval_in_list = self.eval_in_list
 
-        design_space = self.create_design_space(eval_in_list, dspace_df)
+        selected_inputs = self.selected_inputs
+        #eval_in_list = self.eval_in_list
+
+        design_space = self.create_design_space(selected_inputs, dspace_df)
         self.design_space = design_space
-
-        # algo_options keys are dependent on algo_name and values set by
-        # user
 
         generator_name = 'doe_generator'
         if self.sample_generator == None:
@@ -304,10 +282,7 @@ class DoeWrapper(SoSWrapp):
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
         samples = self.sample_generator.generate_samples(
-            algo_name, algo_options, eval_in_list, design_space)
-
-        # prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
-        #     samples, eval_in_list, design_space)
+            algo_name, algo_options, selected_inputs, design_space)
 
         self.store_sos_outputs_values({'doe_df': samples})
 
@@ -351,6 +326,7 @@ class DoeWrapper(SoSWrapp):
             eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
             selected_inputs = eval_inputs[eval_inputs['selected_input']
                                           == True]['full_name'].tolist()
+            self.selected_inputs = selected_inputs
             self.eval_in_list = [
                 f'{proxy.ee.study_name}.{element}' for element in selected_inputs]
 

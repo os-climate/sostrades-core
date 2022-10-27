@@ -121,13 +121,14 @@ class TestSampleGenerator(unittest.TestCase):
                           [array([10.]), array([-10., 10.])],
                           [array([0.]), array([10., 10.])],
                           [array([10.]), array([10., 10.])]]
-        self.target_samples = target_samples
+
+        self.target_samples_df = pd.DataFrame(data=target_samples,
+                                              columns=self.selected_inputs)
 
     def test_01_check_get_options_desc_in(self):
         '''
         Test that checks get_options_desc_in for DoeSampleGenerator
         '''
-        generator_name = 'doe_generator'
         sample_generator = DoeSampleGenerator(self)
 
         algo_names_list = sample_generator.get_available_algo_names()
@@ -137,28 +138,56 @@ class TestSampleGenerator(unittest.TestCase):
         algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
             sampling_algo_name)
 
-        print(algo_options_desc_in)
-        print(algo_options_descr_dict)
+        # print(algo_options_desc_in)
+        # print(algo_options_descr_dict)
 
+        # check algo_options_desc_in
         targ_algo_options_desc_in = self.algo_options_desc_in
+        self.assertDictEqual(self.algo_options_desc_in, targ_algo_options_desc_in,
+                             "coupling algo_options_desc_in doesn't match")
 
-        # check algo_options_desc_in equal targ_algo_options_desc_in
-        # check set of algo_options_desc_in.keys() equal set of algo_options_descr_dict without 'kwargs'
-        # test the error message in case of algo_name = 'toto'
+        # check keys of algo_options_desc_in.keys()
+        target_algo_options_descr_dict_keys = [
+            elem for elem in algo_options_descr_dict.keys() if elem not in ['kwargs']]
+        self.assertSetEqual(set(algo_options_desc_in.keys()), set(
+            target_algo_options_descr_dict_keys))
 
         # test it works with all algo samples names
+        print('\n')
+        for sampling_algo_name in algo_names_list:
+            if sampling_algo_name not in ['CustomDOE']:
+                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+                    sampling_algo_name)
+                print(sampling_algo_name)
+                print(algo_options_desc_in)
+                print('\n')
+
+        # test the error message in case of wrong algo_name
+        sampling_algo_name = 'toto'
+        with self.assertRaises(Exception) as cm:
+            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+                sampling_algo_name)
+
+        error_message = f'The provided algorithm name {sampling_algo_name} is not in the available algorithm list : {algo_names_list}'
+        self.assertEqual(str(cm.exception), error_message)
+
+        # test the error message in case of 'CustomDOE' algo_name
+        sampling_algo_name = 'CustomDOE'
+        with self.assertRaises(Exception) as cm:
+            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+                sampling_algo_name)
+
+        error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'
+        self.assertEqual(str(cm.exception), error_message)
 
     def test_02_check_generate_samples(self):
         '''
         Test that checks generate_samples for DoeSampleGenerator
         '''
-        generator_name = 'doe_generator'
         sample_generator = DoeSampleGenerator(self)
 
         sampling_algo_name = self.sampling_algo
         algo_options = self.algo_options
-
-        eval_in_list = self.eval_in_list
 
         dspace_df = self.dspace_eval  # data_manager design space in df format
 
@@ -167,16 +196,11 @@ class TestSampleGenerator(unittest.TestCase):
         doe_wrapper = DoeWrapper(self.study_name)
         design_space = doe_wrapper.set_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
-        # why do we have a design_space function creation in doe_wrapper ?
 
         samples_df = sample_generator.generate_samples(
             sampling_algo_name, algo_options, selected_inputs, design_space)
 
-        print(samples_df)
-
-        # check versus self.target_samples_df
-
-        # add assert
+        assert_frame_equal(samples_df, self.target_samples_df)
 
 
 if '__main__' == __name__:
