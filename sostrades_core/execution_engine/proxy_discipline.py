@@ -1918,6 +1918,10 @@ class ProxyDiscipline(object):
         else:
             return self._status
 
+    def add_status_observer(self):
+        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer()
+
     def _check_status_before_run(self):
         """
         Check discipline status is ok before run and throw ValueError otherwise.
