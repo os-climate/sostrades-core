@@ -1977,7 +1977,10 @@ class ProxyDiscipline(object):
 
         Returns: List[ChartFilter]
         """
-        return self.mdo_discipline_wrapp.get_chart_filter_list()
+        if self.mdo_discipline_wrapp is not None:
+            return self.mdo_discipline_wrapp.get_chart_filter_list()
+        else:
+            return []
 
     def get_post_processing_list(self, filters=None):
         """
