@@ -1913,8 +1913,10 @@ class ProxyDiscipline(object):
         self.status = self.get_status_after_configure()
 
     def get_status_after_configure(self):
-        print('toto')
-        return self.mdo_discipline_wrapp.mdo_discipline.status
+        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+            return self.mdo_discipline_wrapp.mdo_discipline.status
+        else:
+            return self._status
 
     def _check_status_before_run(self):
         """
@@ -2229,7 +2231,7 @@ class ProxyDiscipline(object):
         return '\n'.join(proxy_subtree)
 
     def get_proxy_subtree_rec(self, proxy_subtree, indent=0):
-        proxy_subtree.append('    '*indent + '|_ ' + self.ee.ns_manager.get_local_namespace_value(self)
+        proxy_subtree.append('    ' * indent + '|_ ' + self.ee.ns_manager.get_local_namespace_value(self)
                              + '  (' + self.__class__.__name__ + ')')
         for disc in self.proxy_disciplines:
-            disc.get_proxy_subtree_rec(proxy_subtree, indent+1)
+            disc.get_proxy_subtree_rec(proxy_subtree, indent + 1)
