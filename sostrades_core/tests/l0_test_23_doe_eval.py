@@ -30,6 +30,7 @@ import unittest
 from numpy import array
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 import os
 from os.path import dirname, join
 
@@ -384,33 +385,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         contains the expected values afterward
         """
 
-        default_algo_options_lhs = {
-            'n_samples': 'default',
-            'alpha': 'orthogonal',
-            'eval_jac': False,
-            'face': 'faced',
-            'iterations': 5,
-            'max_time': 0,
-            'seed': 1,
-            'center_bb': 'default',
-            'center_cc': 'default',
-            'criterion': 'default',
-            'levels': 'default'
-        }
-        algo_full_options = {
-            'n_samples': 10,
-            'alpha': 'orthogonal',
-            'eval_jac': False,
-            'face': 'faced',
-            'iterations': 5,
-            'max_time': 0,
-            'seed': 1,
-            'center_bb': 'default',
-            'center_cc': 'default',
-            'criterion': 'default',
-            'levels': 'default'
-        }
-
         dspace_dict_x = {'variable': ['x'],
 
                          'lower_bnd': [[0.]],
@@ -479,11 +453,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         # configure disciplines with the algo lhs
+        algo_name = "lhs"
         disc_dict = {}
-        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.DoEEval.sampling_algo'] = algo_name
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
+
+        default_algo_options_lhs, algo_options_descr_dict = DoeSampleGenerator(self).get_options_desc_in(
+            algo_name)
+
         self.assertDictEqual(exec_eng.dm.get_value(
             'doe.DoEEval.algo_options'), default_algo_options_lhs)
         # WARNING: default design space with array is built with 2-elements arrays : [0., 0.]
@@ -492,42 +471,59 @@ class TestSoSDOEScenario(unittest.TestCase):
         # dspace_x.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after options and design space changes
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
+        n_samples = 10
+        face = 'faced'
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face},
                      'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.algo_options'), algo_full_options)
+        self.assertEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.algo_options')['n_samples'], n_samples)
+        self.assertEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.algo_options')['face'], face)
+
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after algo name change
-        disc_dict = {'doe.DoEEval.sampling_algo': "fullfact"}
+        algo_name = "fullfact"
+        disc_dict = {'doe.DoEEval.sampling_algo': algo_name}
         exec_eng.load_study_from_input_dict(disc_dict)
+        default_algo_options_fullfact, algo_options_descr_dict = DoeSampleGenerator(self).get_options_desc_in(
+            algo_name)
         self.assertDictEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.algo_options'), default_algo_options_lhs)
+            'doe.DoEEval.algo_options'), default_algo_options_fullfact)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
-        disc_dict = {'doe.DoEEval.algo_options': {
-            'n_samples': 10, 'face': 'faced'}}
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face}}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.algo_options'), algo_full_options)
+        self.assertEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.algo_options')['n_samples'], n_samples)
+        self.assertEqual(exec_eng.dm.get_value(
+            'doe.DoEEval.algo_options')['face'], face)
 
         # trigger a reconfiguration after eval_inputs and eval_outputs changes
         disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertDictEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.algo_options'), algo_full_options)
+        # self.assertDictEqual(exec_eng.dm.get_value(
+        #     'doe.DoEEval.algo_options'), default_algo_options_fullfact)
+        assert exec_eng.dm.get_value('doe.DoEEval.eval_outputs').equals(self.output_selection_obj_y1_y2)
+        df1 = self.input_selection_x_z
+        df2 = exec_eng.dm.get_value('doe.DoEEval.eval_inputs')
+        df_all = df1.merge(df2, on=['selected_input', 'full_name'],
+                           how='left', indicator=True)
+        assert df_all[['selected_input', 'full_name']].equals(self.input_selection_x_z)
         self.assertTrue(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True)['variable'].equals(
             dspace_x_z.reset_index(drop=True)['variable']))
 
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': 10, 'face': 'faced'},
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
-        algo_full_options.update({'n_samples': 10})
+        algo_full_options = default_algo_options_fullfact
+        algo_full_options.update({'n_samples': n_samples, 'face': face})
+
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'),
                              algo_full_options)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),

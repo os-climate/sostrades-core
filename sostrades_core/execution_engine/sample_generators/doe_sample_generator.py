@@ -51,11 +51,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    def __init__(self, generator_name):
-        '''
-        Constructor
-        '''
-        self.name = generator_name
+    # def __init__(self, generator_name):
+    #     '''
+    #     Constructor
+    #     '''
+    #     self.name = generator_name
 
     def get_available_algo_names(self):
         '''
@@ -201,6 +201,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             unnormalized_samples, selected_inputs, design_space)
         samples_df = self.put_samples_in_df_format(samples, selected_inputs)
 
+        # return samples
         return samples_df
 
     def _generate_normalized_samples(self, sampling_algo_name, algo_options, design_space):

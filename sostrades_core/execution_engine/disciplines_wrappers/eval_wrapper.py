@@ -405,6 +405,12 @@ class EvalWrapper(AbstractEvalWrapper):
         # We first begin by sample generation
         self.samples = self.take_samples()
 
+        # Before, for User-defined samples, Eval received a dataframe and transformed it into list in take_samples
+        # above. For DoE sampling generation Eval received a list.
+        # Now, for User-defined samples and DoE sampling generation, Eval receives a dataframe in both cases and
+        # transforms it in list.
+        self.samples = self.samples.values.tolist()
+
         # Then add the reference scenario (initial point ) to the input samples
         self.samples.append([self.attributes['reference_scenario'][var_to_eval]
                              for var_to_eval in self.attributes['eval_in_list']])
@@ -483,7 +489,7 @@ class EvalWrapper(AbstractEvalWrapper):
         """
         self.custom_samples = self.get_sosdisc_inputs('doe_df').copy()
         self.check_custom_samples()
-        return self.custom_samples.values.tolist()
+        return self.custom_samples
 
     def check_custom_samples(self):
         """ We that the columns of the dataframe are the same  that  the selected inputs

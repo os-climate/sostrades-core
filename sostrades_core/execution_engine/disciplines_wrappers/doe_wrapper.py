@@ -36,6 +36,7 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 import pandas as pd
 from collections import ChainMap
+from gemseo.api import get_available_doe_algorithms
 
 # get module logger not sos logger
 import logging
@@ -116,39 +117,39 @@ class DoeWrapper(SoSWrapp):
         'levels': 'default'
     }
 
-    default_algo_options_lhs = {
-        'n_samples': 'default',
-        'alpha': 'orthogonal',
-        'eval_jac': False,
-        'face': 'faced',
-        'iterations': 5,
-        'max_time': 0,
-        'seed': 1,
-        'center_bb': 'default',
-        'center_cc': 'default',
-        'criterion': 'default',
-        'levels': 'default'
-    }
+    # default_algo_options_lhs = {
+    #     'n_samples': 'default',
+    #     'alpha': 'orthogonal',
+    #     'eval_jac': False,
+    #     'face': 'faced',
+    #     'iterations': 5,
+    #     'max_time': 0,
+    #     'seed': 1,
+    #     'center_bb': 'default',
+    #     'center_cc': 'default',
+    #     'criterion': 'default',
+    #     'levels': 'default'
+    # }
+    #
+    # default_algo_options_fullfact = {
+    #     'n_samples': 'default',
+    #     'alpha': 'orthogonal',
+    #     'eval_jac': False,
+    #     'face': 'faced',
+    #     'iterations': 5,
+    #     'max_time': 0,
+    #     'seed': 1,
+    #     'center_bb': 'default',
+    #     'center_cc': 'default',
+    #     'criterion': 'default',
+    #     'levels': 'default'
+    # }
+    # d = {'col1': [1, 2], 'col2': [3, 4]}
+    # X_pd = pd.DataFrame(data=d)
 
-    default_algo_options_fullfact = {
-        'n_samples': 'default',
-        'alpha': 'orthogonal',
-        'eval_jac': False,
-        'face': 'faced',
-        'iterations': 5,
-        'max_time': 0,
-        'seed': 1,
-        'center_bb': 'default',
-        'center_cc': 'default',
-        'criterion': 'default',
-        'levels': 'default'
-    }
-    d = {'col1': [1, 2], 'col2': [3, 4]}
-    X_pd = pd.DataFrame(data=d)
-
-    algo_dict = {"lhs": default_algo_options_lhs,
-                 "fullfact": default_algo_options_fullfact,
-                 }
+    # algo_dict = {"lhs": default_algo_options_lhs,
+    #              "fullfact": default_algo_options_fullfact,
+    #              }
 
     def __init__(self, sos_name):
         super().__init__(sos_name)
@@ -162,8 +163,16 @@ class DoeWrapper(SoSWrapp):
         """This algo generate the default options to set for a given doe algorithm
         """
 
-        if algo_name in cls.algo_dict.keys():
-            return cls.algo_dict[algo_name]
+        # if algo_name in cls.algo_dict.keys():
+        #     return cls.algo_dict[algo_name]
+        # else:
+        #     return cls.default_algo_options
+
+        # In get_options_desc_in, it is already checked whether the algo_name belongs to the list of possible Gemseo
+        # DoE algorithms
+        if algo_name in get_available_doe_algorithms():
+            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator(cls).get_options_desc_in(algo_name)
+            return algo_options_desc_in
         else:
             return cls.default_algo_options
 
@@ -288,9 +297,8 @@ class DoeWrapper(SoSWrapp):
 
         generator_name = 'doe_generator'
         if self.sample_generator == None:
-            self.sample_generator = DoeSampleGenerator('doe_generator')
-        else:
-            pass
+            if generator_name == 'doe_generator':
+                self.sample_generator = DoeSampleGenerator(self)
 
         # print(list(self.sample_generator.get_options(algo_name).keys()))
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact

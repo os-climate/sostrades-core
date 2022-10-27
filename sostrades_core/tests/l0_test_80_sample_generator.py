@@ -128,7 +128,7 @@ class TestSampleGenerator(unittest.TestCase):
         Test that checks get_options_desc_in for DoeSampleGenerator
         '''
         generator_name = 'doe_generator'
-        sample_generator = DoeSampleGenerator(generator_name)
+        sample_generator = DoeSampleGenerator(self)
 
         algo_names_list = sample_generator.get_available_algo_names()
         print(algo_names_list)
@@ -153,7 +153,7 @@ class TestSampleGenerator(unittest.TestCase):
         Test that checks generate_samples for DoeSampleGenerator
         '''
         generator_name = 'doe_generator'
-        sample_generator = DoeSampleGenerator(generator_name)
+        sample_generator = DoeSampleGenerator(self)
 
         sampling_algo_name = self.sampling_algo
         algo_options = self.algo_options
