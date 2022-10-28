@@ -999,3 +999,215 @@ class TestSoSDOEScenario(unittest.TestCase):
                                          columns=selected_inputs)
 
         assert_frame_equal(doe_disc_samples, target_samples_df)
+
+    def test_9_Eval_User_defined_samples_reconfiguration(self):
+        """ different configurations of user-defined samples are tested here
+        The aim is to assert that eval configuration runs as intended
+        Different inputs are modified and we check that the dm contains the expected values afterward
+        At the end of the test we check that the generated samples are the ones expected and that
+        the dm contains initial values after doe_eval run
+        """
+
+        input_selection_x = {'selected_input': [False, True, False, False, False],
+                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                           'y_2',
+                                           'z']}
+        self.input_selection_x = pd.DataFrame(input_selection_x)
+
+        input_selection_x_z = {'selected_input': [False, True, False, False, True],
+                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
+        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        input_selection_local_dv_x = {'selected_input': [True, True, False, False, False],
+                                      'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                    'y_2',
+                                                    'z']}
+        self.input_selection_local_dv_x = pd.DataFrame(
+            input_selection_local_dv_x)
+
+        input_selection_local_dv = {'selected_input': [True, False, False, False, False],
+                                    'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                  'y_2',
+                                                  'z']}
+        self.input_selection_local_dv = pd.DataFrame(input_selection_local_dv)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_eval"
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            eval_builder)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ Eval',
+                       '\t\t|_ subprocess',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x,
+                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj}
+        # DoE inputs
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertListEqual(exec_eng.dm.get_value(
+            'doe.Eval.doe_df').columns.tolist(), ['x'])
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertListEqual(exec_eng.dm.get_value('doe.Eval.doe_df').columns.tolist(),
+                             ['Eval.subprocess.Sellar_Problem.local_dv', 'x'])
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertListEqual(exec_eng.dm.get_value('doe.Eval.doe_df').columns.tolist(),
+                             ['Eval.subprocess.Sellar_Problem.local_dv'])
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        x_values = [array([9.379763880395856]), array([8.88644794300546]),
+                    array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
+        z_values = [array([1.515949043849158, 5.6317362409322165]),
+                    array([-1.1962705421254114, 6.523436208612142]),
+                    array([-1.9947578026244557, 4.822570933860785]
+                          ), array([1.7490668861813, 3.617234050834533]),
+                    array([-9.316161097119341, 9.918161285133076])]
+
+        samples_dict = {'x': x_values, 'z': z_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{self.ns}.Eval.doe_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
+                       f'{self.ns}.z': array([1., 1.]), f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
+
+        eval_disc_samples = eval_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+
+        # check that the generated samples are the ones expected (custom sample
+        # + reference value)
+        expected_eval_disc_samples = pd.DataFrame(
+            {'scenario': ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'reference'],
+             'x': x_values + [1.000000], 'z': z_values + [array([1.0, 1.0])]})
+        assert_frame_equal(
+            eval_disc_samples, expected_eval_disc_samples, check_dtype=False)
+
+        # check that at the end of doe eval dm still contains initial
+        # (reference) point
+        self.assertEqual(exec_eng.dm.get_value('doe.x'), 1.0)
+        self.assertEqual(exec_eng.dm.get_value(
+            'doe.z').tolist(), array([1., 1.]).tolist())
+
+    def test_10_Eval_User_defined_samples_reconfiguration_after_execution(self):
+        """ This tests aims at proving the ability of the doe_eval to
+        be reconfigured after execution
+        """
+
+        input_selection_x = {'selected_input': [False, True, False, False, False],
+                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                           'y_2',
+                                           'z']}
+        self.input_selection_x = pd.DataFrame(input_selection_x)
+
+        input_selection_x_z = {'selected_input': [False, True, False, False, True],
+                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
+        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        input_selection_local_dv_x = {'selected_input': [True, True, False, False, False],
+                                      'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                    'y_2',
+                                                    'z']}
+        self.input_selection_local_dv_x = pd.DataFrame(
+            input_selection_local_dv_x)
+
+        input_selection_local_dv = {'selected_input': [True, False, False, False, False],
+                                    'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                  'y_2',
+                                                  'z']}
+        self.input_selection_local_dv = pd.DataFrame(input_selection_local_dv)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_eval"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_local_dv_x,
+                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
+        # DoE inputs
+
+        x_values = [array([9.379763880395856]), array([8.88644794300546]),
+                    array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
+        local_dv_values = x_values
+
+        samples_dict = {'x': x_values,
+                        'Eval.subprocess.Sellar_Problem.local_dv': local_dv_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{self.ns}.Eval.doe_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
+                       f'{self.ns}.z': array([1., 1.]),
+                       f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ Eval',
+                       '\t\t|_ subprocess',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
+
+        eval_disc_samples = eval_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        eval_disc_obj = eval_disc.get_sosdisc_outputs('obj_dict')
+        eval_disc_y1 = eval_disc.get_sosdisc_outputs('y_1_dict')
+        eval_disc_y2 = eval_disc.get_sosdisc_outputs('y_2_dict')
+        self.assertEqual(len(eval_disc_samples), 6)
+        self.assertEqual(len(eval_disc_obj), 6)
+        self.assertEqual(len(eval_disc_y1), 6)
+        self.assertEqual(len(eval_disc_y2), 6)
+
+        disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        self.assertEqual(len(eval_disc_samples), 6)
+        self.assertEqual(len(eval_disc_obj), 6)
+        self.assertEqual(len(eval_disc_y1), 6)
+        self.assertEqual(len(eval_disc_y2), 6)
