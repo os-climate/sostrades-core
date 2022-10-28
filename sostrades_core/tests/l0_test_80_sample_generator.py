@@ -59,7 +59,7 @@ class TestSampleGenerator(unittest.TestCase):
         self.generator_name = 'doe_generator'
         self.sampling_algo = 'fullfact'
 
-        full_fact_algo_options_desc_in = {
+        full_fact_algo_options_desc_in = {  # default options
             'alpha': 'orthogonal',
             'face': 'faced',
             'criterion': None,
@@ -77,18 +77,29 @@ class TestSampleGenerator(unittest.TestCase):
         self.algo_options_desc_in = full_fact_algo_options_desc_in
 
         n_samples = 10
-        user_fullfact_algo_options = {
-            'n_samples': n_samples,
-            'alpha': 'orthogonal',
-            'eval_jac': False,
-            'face': 'faced',
-            'iterations': 5,
-            'max_time': 0,
-            'seed': 1,
-            'center_bb': 'default',
-                         'center_cc': 'default',
-                         'criterion': 'default',
-                         'levels': 'default'}
+
+        #======================================================================
+        # user_fullfact_algo_options = {
+        #     'n_samples': n_samples,
+        #     'alpha': 'orthogonal',
+        #     'eval_jac': False,
+        #     'face': 'faced',
+        #     'iterations': 5,
+        #     'max_time': 0,
+        #     'seed': 1,
+        #     'center_bb': 'default',
+        #     'center_cc': 'default',
+        #     'criterion': 'default',
+        #     'levels': 'default'}
+        #======================================================================
+
+        # it is better to always explicit default options values and not use
+        # the 'default' input !!
+
+        # update only default n_samples in default options
+        user_fullfact_algo_options = full_fact_algo_options_desc_in
+        user_fullfact_algo_options['n_samples'] = n_samples
+
         self.algo_options = user_fullfact_algo_options
 
         dspace_dict_eval = {'variable': ['x', 'z'],
@@ -113,16 +124,16 @@ class TestSampleGenerator(unittest.TestCase):
         #self.eval_in_list = ['doe.x', 'doe.z']
         ##########################
 
-        target_samples = [[array([0.]), array([-10., 0.])],
-                          [array([10.]), array([-10., 0.])],
-                          [array([0.]), array([10., 0.])],
-                          [array([10.]), array([10., 0.])],
-                          [array([0.]), array([-10., 10.])],
-                          [array([10.]), array([-10., 10.])],
-                          [array([0.]), array([10., 10.])],
-                          [array([10.]), array([10., 10.])]]
+        target_samples_fullfact = [[array([0.]), array([-10., 0.])],
+                                   [array([10.]), array([-10., 0.])],
+                                   [array([0.]), array([10., 0.])],
+                                   [array([10.]), array([10., 0.])],
+                                   [array([0.]), array([-10., 10.])],
+                                   [array([10.]), array([-10., 10.])],
+                                   [array([0.]), array([10., 10.])],
+                                   [array([10.]), array([10., 10.])]]
 
-        self.target_samples_df = pd.DataFrame(data=target_samples,
+        self.target_samples_df = pd.DataFrame(data=target_samples_fullfact,
                                               columns=self.selected_inputs)
 
     def test_01_check_get_options_desc_in(self):
@@ -184,7 +195,6 @@ class TestSampleGenerator(unittest.TestCase):
         '''
         Test that checks generate_samples for DoeSampleGenerator: it is tested on sampling_algo = 'fullfact'
         '''
-        sample_generator = DoeSampleGenerator(self)
 
         sampling_algo_name = self.sampling_algo
         algo_options = self.algo_options
@@ -197,17 +207,161 @@ class TestSampleGenerator(unittest.TestCase):
         design_space = doe_wrapper.create_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
 
+        sample_generator = DoeSampleGenerator(self)
         samples_df = sample_generator.generate_samples(
             sampling_algo_name, algo_options, selected_inputs, design_space)
 
         print(samples_df)
-        print(type(samples_df))
 
         assert_frame_equal(samples_df, self.target_samples_df)
 
-    def test_03_check_generate_samples_all_algo_names(self):
+    def test_03_check_generate_samples_pydoe_algo_names(self):
         '''
-        Test that checks generate_samples for DoeSampleGenerator: it is tested on all algo names
+        Test that checks generate_samples for DoeSampleGenerator: it is tested on pyDOE algo names
+        '''
+
+        pydoe_list_of_algo_names = ['fullfact', 'ff2n',
+                                    'pbdesign', 'bbdesign',
+                                    'ccdesign', 'lhs']
+
+        pydoe_algo_options_desc_in = {  # default options
+            'alpha': 'orthogonal',
+            'face': 'faced',
+            'criterion': None,
+            'iterations': 5,
+            'eval_jac': False,
+            'center_bb': None,
+            'center_cc': None,
+            'n_samples': None,
+            'levels': None,
+            'n_processes': 1,
+            'wait_time_between_samples': 0.0,
+            'seed': 1,
+            'max_time': 0}
+
+        # update only default n_samples in default options
+        n_samples = 10
+        user_pydoe_algo_options = pydoe_algo_options_desc_in
+        user_pydoe_algo_options['n_samples'] = n_samples
+
+        #list_of_algo_names = [algo_names for algo_names in pydoe_list_of_algo_names if algo_names not in []]
+        list_of_algo_names = pydoe_list_of_algo_names
+
+        for sampling_algo_name in list_of_algo_names:
+            print('\n')
+            print(sampling_algo_name)
+
+            algo_options = user_pydoe_algo_options
+
+            #################################################################
+            # 'ccdesign' gemseo : center_cc : tuple[int, int] | None, optional !
+            # 'ccdesign' pydoe : center is a 2-tuple of center points (one for the factorial block, one for the star block, default (4, 4)) !
+            # Problem in gemseo !:
+            #          The default of 'ccdesign' in doc and provided default values should be (4, 4) and not None
+            #          Should we provide this default value ?
+            # or should we give a warning to the user in case of 'ccdesign'?
+            if sampling_algo_name == 'ccdesign':
+                algo_options['center_cc'] = (4, 4)
+
+            dspace_df = self.dspace_eval  # data_manager design space in df format
+            #################################################################
+
+            selected_inputs = self.selected_inputs
+
+            doe_wrapper = DoeWrapper(self.study_name)
+            design_space = doe_wrapper.create_design_space(
+                selected_inputs, dspace_df)  # gemseo DesignSpace
+
+            sample_generator = DoeSampleGenerator(self)
+            samples_df = sample_generator.generate_samples(
+                sampling_algo_name, algo_options, selected_inputs, design_space)
+
+            print(samples_df)
+
+            #assert_frame_equal(samples_df, self.target_samples_df)
+
+    def test_04_check_generate_samples_openturns_algo_names(self):
+        '''
+        Test that checks generate_samples for DoeSampleGenerator: it is tested on openturns algo names
+        '''
+
+        openturns_list_of_algo_names = ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON',
+                                        'OT_FAURE', 'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL',
+                                        'OT_OPT_LHS', 'OT_LHS', 'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
+
+        #list_of_algo_names = [algo_names for algo_names in openturns_list_of_algo_names if algo_names not in []]
+        list_of_algo_names = openturns_list_of_algo_names
+
+        openturns_algo_options_desc_in = {  # default options
+            'levels': None,
+            'centers': None,
+            'eval_jac': False,
+            'n_samples': None,
+            'n_processes': 1,
+            'wait_time_between_samples': 0.0,
+            'criterion': 'C2',
+            'temperature': 'Geometric',
+            'annealing': True,
+            'n_replicates': 1000,
+            'seed': 1,
+            'max_time': 0}
+
+        # update only default n_samples in default options
+        n_samples = 10
+        user_openturns_algo_options = openturns_algo_options_desc_in
+        user_openturns_algo_options['n_samples'] = n_samples
+
+        for sampling_algo_name in list_of_algo_names:
+            print('\n')
+            print(sampling_algo_name)
+
+            algo_options = openturns_algo_options_desc_in
+
+            #################################################################
+            # 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL' gemseo : int | Sequence[int] | None, optional !
+            # 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL' openturns :
+            #         It has two constructors Factorial(center, levels) and Factorial(dimension, levels)
+            #         How do gemseo choose between those two constructors? Does he choose Factorial(center, levels)?
+            #         levels: The discretisation of directions (the same for each one), without any consideration of unit.
+            # center: enter of the design of experiments. If not specified, the
+            # design of experiments is centered on 0 of R^n
+            # Problem in gemseo !:
+            #          Levels and centers are not optionals in openturns !
+            #          Should we provide this default value ?
+            #          or should we give a warning to the user in case of
+            #          'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL' ?
+            if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
+                algo_options['levels'] = [0.1]
+                algo_options['centers'] = (0, 0, 0)
+                # Problem in SoSTrades !
+                # Levels must belong to [0, 1] has we have a normalized sample !!
+                # We create a normalized samples in SoSTrades that we unnormalized but what if user provide unnormalized input options !!!
+            #################################################################
+
+            dspace_df = self.dspace_eval  # data_manager design space in df format
+
+            selected_inputs = self.selected_inputs
+
+            doe_wrapper = DoeWrapper(self.study_name)
+            design_space = doe_wrapper.create_design_space(
+                selected_inputs, dspace_df)  # gemseo DesignSpace
+
+            sample_generator = DoeSampleGenerator(self)
+            samples_df = sample_generator.generate_samples(
+                sampling_algo_name, algo_options, selected_inputs, design_space)
+            print(samples_df)
+
+            #assert_frame_equal(samples_df, self.target_samples_df)
+
+            #################################################################
+            if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
+                algo_options['levels'] = None
+                algo_options['centers'] = None
+            #################################################################
+
+    def test_05_check_test_big_n_samples(self):
+        '''
+        Test to check big values of n_samples and associated performances
         '''
         pass
 
