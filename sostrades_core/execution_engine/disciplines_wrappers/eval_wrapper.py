@@ -54,18 +54,18 @@ class EvalWrapper(DriverEvaluatorWrapper):
     # MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     DESC_IN = {
         'eval_inputs': {'type': 'dataframe',
-                               'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
                                                         'full_name': ('string', None, False)},
-                               'dataframe_edition_locked': False,
-                               'structuring': True,
-                               'visibility': SoSWrapp.SHARED_VISIBILITY,
-                               'namespace': 'ns_eval'},
-               'eval_outputs': {'type': 'dataframe',
-                                'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                         'full_name': ('string', None, False)},
                                 'dataframe_edition_locked': False,
-                                'structuring': True, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                'structuring': True,
+                                'visibility': SoSWrapp.SHARED_VISIBILITY,
                                 'namespace': 'ns_eval'},
+        'eval_outputs': {'type': 'dataframe',
+                                 'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                     'full_name': ('string', None, False)},
+                                 'dataframe_edition_locked': False,
+                                 'structuring': True, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                 'namespace': 'ns_eval'},
         'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
         'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
     }
