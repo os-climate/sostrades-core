@@ -17,6 +17,7 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
+
 class Disc1(SoSWrapp):
 
     # ontology information
@@ -62,7 +63,7 @@ class Disc1(SoSWrapp):
 
         return chart_filters
 
-    def get_post_processing_list(self, filters=None):
+    def get_post_processing_list(self, proxy, filters=None):
 
         instanciated_charts = []
 
@@ -76,8 +77,8 @@ class Disc1(SoSWrapp):
 
             chart_name = 'y vs x'
 
-            y = self.get_sosdisc_outputs('y')
-            x = self.get_sosdisc_inputs('x')
+            y = proxy.get_sosdisc_outputs('y')
+            x = proxy.get_sosdisc_inputs('x')
             print(y, x)
             new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
                                                  chart_name=chart_name)

@@ -235,7 +235,7 @@ class SoSWrapp(object):
         """
         return []
 
-    def get_post_processing_list(self, filters=None):
+    def get_post_processing_list(self, proxy, filters=None):
         """ Return a list of post processing instance using the ChartFilter list given
         as parameter, to be overload in subclasses
 

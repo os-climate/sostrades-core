@@ -101,22 +101,23 @@ class MDODisciplineWrapp(object):
         else:
             return []
 
-    def get_post_processing_list(self, filters=None):
-        """
-        Return a list of post processing instance using the ChartFilter list given as parameter
+#     def get_post_processing_list(self, filters=None):
+#         """
+#         Return a list of post processing instance using the ChartFilter list given as parameter
+#
+#         Arguments:
+#             filters: filters to apply during post processing making
+#
+#         Returns:
+#             post processing instance list
+#         """
+#         if self.wrapper is not None:
+#             return self.wrapper.get_post_processing_list(self, filters)
+#         else:
+#             return []
 
-        Arguments:
-            filters: filters to apply during post processing making
-
-        Returns:
-            post processing instance list
-        """
-        if self.wrapper is not None:
-            return self.wrapper.get_post_processing_list(filters)
-        else:
-            return []
-
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
+    # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
         """
         SoSMDODiscipline instanciation.
 
@@ -142,7 +143,7 @@ class MDODisciplineWrapp(object):
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
-    def _set_wrapper_attributes(self, proxy,wrapper):
+    def _set_wrapper_attributes(self, proxy, wrapper):
         proxy.set_wrapper_attributes(wrapper)
 
     # def _set_discipline_attributes(self, proxy, discipline):
@@ -158,13 +159,15 @@ class MDODisciplineWrapp(object):
         input_names = proxy.get_input_data_names()
         grammar = self.mdo_discipline.input_grammar
         grammar.clear()
-        grammar.initialize_from_base_dict({input: None for input in input_names})
+        grammar.initialize_from_base_dict(
+            {input: None for input in input_names})
 
         output_names = proxy.get_output_data_names()
         grammar = self.mdo_discipline.output_grammar
         grammar.clear()
-        grammar.initialize_from_base_dict({output: None for output in output_names})
-        
+        grammar.initialize_from_base_dict(
+            {output: None for output in output_names})
+
 #    def _update_all_default_values(self, input_data):
 #        '''
 #        Store all input grammar data names' values from input data in default values of mdo_discipline
@@ -201,16 +204,16 @@ class MDODisciplineWrapp(object):
         """
         if self.wrapping_mode == 'SoSTrades':
             mdo_discipline = SoSMDAChain(
-                                          disciplines=sub_mdo_disciplines,
-                                          name=proxy.get_disc_full_name(),
-                                          grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                          ** proxy._get_numerical_inputs(),
-                                          authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
-            
+                disciplines=sub_mdo_disciplines,
+                name=proxy.get_disc_full_name(),
+                grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                ** proxy._get_numerical_inputs(),
+                authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
+
             self.mdo_discipline = mdo_discipline
 
             self.__update_gemseo_grammar(proxy, mdo_discipline)
-            
+
             # set linear solver options (todo after call to _get_numerical_inputs() )
             # TODO: check with IRT how to handle it
             mdo_discipline.linear_solver_MDA = proxy.linear_solver_MDA
@@ -219,12 +222,14 @@ class MDODisciplineWrapp(object):
             mdo_discipline.linear_solver_MDO = proxy.linear_solver_MDO
             mdo_discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
             mdo_discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
-            
+
             # set other additional options (SoSTrades)
-            mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines')
-                    
+            mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
+                'authorize_self_coupled_disciplines')
+
 #             self._init_grammar_with_keys(proxy)
-#             self._update_all_default_values(input_data) # TODO: check why/if it is really needed
+# self._update_all_default_values(input_data) # TODO: check why/if it is
+# really needed
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':
@@ -242,22 +247,22 @@ class MDODisciplineWrapp(object):
         soscoupling_inputs = set(proxy.get_input_data_names())
         mdachain_inputs = set(mdachain.get_input_data_names())
         missing_inputs = soscoupling_inputs - mdachain_inputs
-        
+
         soscoupling_outputs = set(proxy.get_output_data_names())
         mdachain_outputs = set(mdachain.get_output_data_names())
         missing_outputs = soscoupling_outputs - mdachain_outputs
-        
+
         # i/o grammars update with SoSTrades i/o
         for names, grammar in zip([missing_inputs, missing_outputs], [mdachain.input_grammar, mdachain.output_grammar]):
             # fake data dict with NoneType
             data_dict = dict.fromkeys(names, None)
-            # This works since (for now) this method (for SimpleGrammar only) does not clear the existing grammar of MDAChain
+            # This works since (for now) this method (for SimpleGrammar only)
+            # does not clear the existing grammar of MDAChain
             grammar.initialize_from_base_dict(data_dict)
-        
 
     def execute(self, input_data):
         """
         Discipline execution delegated to the GEMSEO objects.
-	    """
+            """
 
         return self.mdo_discipline.execute(input_data)

@@ -288,6 +288,7 @@ class ProxyDiscipline(object):
         """
         self.proxy_disciplines = []
         self._status = None
+        self.status_observers = []
 
         # -- Base disciplinary attributes
         self.jac_boundaries = {}
@@ -374,6 +375,7 @@ class ProxyDiscipline(object):
                                                                    self.CACHE_TYPE),
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
+            self.add_status_observers_to_gemseo_disc()
         else:
             # TODO : this should only be necessary when changes in structuring
             # variables happened?
@@ -394,6 +396,15 @@ class ProxyDiscipline(object):
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
         self._reset_debug_mode = False
+
+    def add_status_observers_to_gemseo_disc(self):
+        '''
+        Add all observers that have been addes when gemseo discipline was not instanciated
+        '''
+
+        for observer in self.status_observers:
+            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
+                observer)
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
@@ -1918,17 +1929,21 @@ class ProxyDiscipline(object):
         else:
             return self._status
 
-    #TODO observer has to be set BEFORE launching an execution
-    #Make sure MDODisciplines is accessible or ADAPT the mecanism
+    # TODO observer has to be set BEFORE launching an execution
+    # Make sure MDODisciplines is accessible or ADAPT the mecanism
     def add_status_observer(self, observer):
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
-            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(observer)
+            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
+                observer)
+        else:
+            self.status_observers.append(observer)
 
     # TODO observer has to be unset AFTER an execution is finished
     # Make sure MDODisciplines is accessible or ADAPT the mecanism
     def remove_status_observer(self, observer):
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
-            self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(observer)
+            self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
+                observer)
 
     def _check_status_before_run(self):
         """
@@ -2008,8 +2023,9 @@ class ProxyDiscipline(object):
         Returns:
             post processing instance list
         """
-        if self.mdo_discipline_wrapp is not None:
-            return self.mdo_discipline_wrapp.get_post_processing_list(filters)
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+            return self.mdo_discipline_wrapp.wrapper.get_post_processing_list(self, filters)
+
         else:
             return []
 
