@@ -15,6 +15,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+import time
 
 
 class Disc2(SoSWrapp):
@@ -46,6 +47,7 @@ class Disc2(SoSWrapp):
         y = self.get_sosdisc_inputs('y')
         constant = self.get_sosdisc_inputs('constant')
         power = self.get_sosdisc_inputs('power')
+        time.sleep(constant)
 #         info = self.get_sosdisc_inputs('info')
         dict_values = {'z': constant + y ** power}
         # put new field value in data_out
