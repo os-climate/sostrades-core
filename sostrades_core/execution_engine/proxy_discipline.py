@@ -1929,18 +1929,26 @@ class ProxyDiscipline(object):
         else:
             return self._status
 
-    # TODO observer has to be set BEFORE launching an execution
-    # Make sure MDODisciplines is accessible or ADAPT the mecanism
     def add_status_observer(self, observer):
+        '''
+        Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist. 
+        We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
+        '''
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
             self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                 observer)
-        else:
+
+        if observer in self.status_observers:
             self.status_observers.append(observer)
 
-    # TODO observer has to be unset AFTER an execution is finished
-    # Make sure MDODisciplines is accessible or ADAPT the mecanism
     def remove_status_observer(self, observer):
+        '''
+        Remove the observer from the status_observers list
+        And normally the mdodiscipline has already been instanciated and we can remove it. 
+        If not the case the mdodiscipline does not exist such as the observer
+        '''
+        if observer in self.status_observers:
+            self.status_observers.remove(observer)
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
             self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
                 observer)
