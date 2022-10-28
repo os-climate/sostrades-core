@@ -37,13 +37,14 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_driver import ProxyDisciplineDriver
 from sostrades_core.execution_engine.proxy_abstract_eval import ProxyAbstractEval
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from numpy import NaN
 
 class ProxyEvalException(Exception):
     pass
 
 
-class ProxyEval(ProxyAbstractEval):
+class ProxyEval(ProxyDriverEvaluator):
     '''
         SOSEval class which creates a sub process to evaluate
         with different methods (Gradient,FORM,Sensitivity ANalysis, DOE, ...)
@@ -156,7 +157,6 @@ class ProxyEval(ProxyAbstractEval):
         #
         # return poss_in_values, poss_out_values
 
-        # FIXME: need to accommodate long names and subprocess variables
         # FIXME: need to accommodate long names and subprocess variables
         poss_in_values_full = []
         poss_out_values_full = []
@@ -483,7 +483,8 @@ class ProxyEval(ProxyAbstractEval):
                 self.selected_inputs = selected_inputs.tolist()
             self.selected_outputs = selected_outputs.tolist()
 
-            if len(selected_inputs) > 0 and len(selected_outputs) > 0: # TODO: might want an eval without outputs ?
+            if len(selected_inputs) > 0 and len(selected_outputs) > 0:
+                # TODO: is it OK that it crashes with empty input ? also, might want an eval without outputs ?
                 # we set the lists which will be used by the evaluation
                 # function of sosEval
                 self.set_eval_in_out_lists(self.selected_inputs, self.selected_outputs)

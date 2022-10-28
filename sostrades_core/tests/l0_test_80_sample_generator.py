@@ -152,15 +152,14 @@ class TestSampleGenerator(unittest.TestCase):
         self.assertSetEqual(set(algo_options_desc_in.keys()), set(
             target_algo_options_descr_dict_keys))
 
-        # test it works with all algo samples names
+        # test if it works with all algo samples names
         print('\n')
         for sampling_algo_name in algo_names_list:
-            if sampling_algo_name not in ['CustomDOE']:
-                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
-                    sampling_algo_name)
-                print(sampling_algo_name)
-                print(algo_options_desc_in)
-                print('\n')
+            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+                sampling_algo_name)
+            print(sampling_algo_name)
+            print(algo_options_desc_in)
+            print('\n')
 
         # test the error message in case of wrong algo_name
         sampling_algo_name = 'toto'
@@ -171,18 +170,19 @@ class TestSampleGenerator(unittest.TestCase):
         error_message = f'The provided algorithm name {sampling_algo_name} is not in the available algorithm list : {algo_names_list}'
         self.assertEqual(str(cm.exception), error_message)
 
-        # test the error message in case of 'CustomDOE' algo_name
-        sampling_algo_name = 'CustomDOE'
-        with self.assertRaises(Exception) as cm:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
-                sampling_algo_name)
+        # test the error message in case of 'CustomDOE' and 'DiagonalDOE'
+        # algo_names
+        for sampling_algo_name in ['CustomDOE', 'DiagonalDOE']:
+            with self.assertRaises(Exception) as cm:
+                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+                    sampling_algo_name)
 
-        error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'
-        self.assertEqual(str(cm.exception), error_message)
+            error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'
+            self.assertEqual(str(cm.exception), error_message)
 
-    def test_02_check_generate_samples(self):
+    def test_02_check_generate_samples_fullfact(self):
         '''
-        Test that checks generate_samples for DoeSampleGenerator
+        Test that checks generate_samples for DoeSampleGenerator: it is tested on sampling_algo = 'fullfact'
         '''
         sample_generator = DoeSampleGenerator(self)
 
@@ -194,13 +194,22 @@ class TestSampleGenerator(unittest.TestCase):
         selected_inputs = self.selected_inputs
 
         doe_wrapper = DoeWrapper(self.study_name)
-        design_space = doe_wrapper.set_design_space(
+        design_space = doe_wrapper.create_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
 
         samples_df = sample_generator.generate_samples(
             sampling_algo_name, algo_options, selected_inputs, design_space)
 
+        print(samples_df)
+        print(type(samples_df))
+
         assert_frame_equal(samples_df, self.target_samples_df)
+
+    def test_03_check_generate_samples_all_algo_names(self):
+        '''
+        Test that checks generate_samples for DoeSampleGenerator: it is tested on all algo names
+        '''
+        pass
 
 
 if '__main__' == __name__:

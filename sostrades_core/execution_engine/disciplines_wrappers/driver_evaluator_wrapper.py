@@ -44,7 +44,7 @@ from gemseo.core.parallel_execution import ParallelExecution
 import logging
 LOGGER = logging.getLogger(__name__)
 
-class AbstractEvalWrapper(SoSWrapp):
+class DriverEvaluatorWrapper(SoSWrapp):
     '''
     Generic Wrapper with SoSEval functions
     '''

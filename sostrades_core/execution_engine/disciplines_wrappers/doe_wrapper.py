@@ -181,47 +181,67 @@ class DoeWrapper(SoSWrapp):
 
     def create_design_space(self, selected_inputs, dspace_df):
         """
-        create_design_space
+        create_design_space with variables names based on selected_inputs (if dspace_df is not None)
+
+        Arguments:
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
+            dspace_df (dataframe): design space in Desc_in format     
+
+        Returns:
+             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
         """
+
         design_space = None
         if dspace_df is not None:
-            design_space = self.set_design_space(selected_inputs, dspace_df)
-
+            dspace_df_updated = self.update_design_space(
+                selected_inputs, dspace_df)
+            design_space = self.create_gemseo_dspace_from_dspace_df(
+                dspace_df_updated)
         return design_space
 
-    def set_design_space(self, selected_inputs, dspace_df):
+    def update_design_space(self, selected_inputs, dspace_df):
         """
-        reads design space (set_design_space)
+        update dspace_df (design space in Desc_in format)   
+
+        Arguments:
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
+            dspace_df (dataframe): design space in Desc_in format     
+
+        Returns:
+             dspace_df_updated (dataframe): updated dspace_df        
+
         """
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
         enable_variables = [True for _ in selected_inputs]
-        dspace_dict_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
-                                            self.VALUES: values,
-                                            self.LOWER_BOUND: lower_bounds,
-                                            self.UPPER_BOUND: upper_bounds,
-                                            self.ENABLE_VARIABLE_BOOL: enable_variables,
-                                            self.LIST_ACTIVATED_ELEM: [[True]] * len(selected_inputs)})
+        dspace_df_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
+                                          self.VALUES: values,
+                                          self.LOWER_BOUND: lower_bounds,
+                                          self.UPPER_BOUND: upper_bounds,
+                                          self.ENABLE_VARIABLE_BOOL: enable_variables,
+                                          self.LIST_ACTIVATED_ELEM: [[True]] * len(selected_inputs)})
         # TODO: Hardcoded as in EEV3, but not differenciating between array or
         # not.
+        return dspace_df_updated
 
-        design_space = self.read_from_dataframe(dspace_dict_updated)
-
-        return design_space
-
-    def read_from_dataframe(self, df):
-        """Parses a DataFrame to read the DesignSpace
-
-        :param df : design space df
-        :returns:  the design space
+    def create_gemseo_dspace_from_dspace_df(self, dspace_df):
         """
-        names = list(df[self.VARIABLES])
-        values = list(df[self.VALUES])
-        l_bounds = list(df[self.LOWER_BOUND])
-        u_bounds = list(df[self.UPPER_BOUND])
-        enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
-        list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
+        Create gemseo dspace from sostrades updated dspace_df 
+        It parses the dspace_df DataFrame to create the gemseo DesignSpace
+
+        Arguments:
+            dspace_df (dataframe): updated dspace_df     
+
+        Returns:
+            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
+        """
+        names = list(dspace_df[self.VARIABLES])
+        values = list(dspace_df[self.VALUES])
+        l_bounds = list(dspace_df[self.LOWER_BOUND])
+        u_bounds = list(dspace_df[self.UPPER_BOUND])
+        enabled_variable = list(dspace_df[self.ENABLE_VARIABLE_BOOL])
+        list_activated_elem = list(dspace_df[self.LIST_ACTIVATED_ELEM])
         design_space = DesignSpace()
         for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem,
                                                             enabled_variable):
