@@ -140,11 +140,15 @@ class TreeNode:
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
         if discipline.mdo_discipline_wrapp is not None and discipline.mdo_discipline_wrapp.wrapper is not None:
-            self.model_name_full_path = discipline.mdo_discipline_wrapp.wrapper.__module__
+            disc_module = discipline.mdo_discipline_wrapp.wrapper.__module__
+            self.model_name_full_path = disc_module.replace(
+                'sostrades_core', 'sos_trades_core')
         else:
             # for discipline not associated to wrapper (proxycoupling for
             # example)
-            self.model_name_full_path = discipline.__module__
+            disc_module = discipline.__module__
+            self.model_name_full_path = disc_module.replace(
+                'sostrades_core', 'sos_trades_core')
 
         self.models_full_path_list.append(self.model_name_full_path)
 
