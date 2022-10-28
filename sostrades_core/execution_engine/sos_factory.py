@@ -560,12 +560,12 @@ class SosFactory:
         builder_list = self.convert_builder_to_list(cls_builder)
 
         # builder of the driver-evaluator proxy
-        mod_path = (f'{self.EE_PATH}.proxy_abstract_eval.ProxyAbstractEval')
+        mod_path = (f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator')
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
 
         # builder of the driver wrapper
-        driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.abstract_eval_wrapper.AbstractEvalWrapper'
+        driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
         driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod_path)
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 

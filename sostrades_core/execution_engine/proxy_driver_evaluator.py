@@ -36,11 +36,11 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_driver import ProxyDisciplineDriver
 
 
-class ProxyAbstractEvalException(Exception):
+class ProxyDriverEvaluatorException(Exception):
     pass
 
 
-class ProxyAbstractEval(ProxyDisciplineDriver):
+class ProxyDriverEvaluator(ProxyDisciplineDriver):
     '''
         SOSEval class which creates a sub process to evaluate
         with different methods (Gradient,FORM,Sensitivity ANalysis, DOE, ...)
