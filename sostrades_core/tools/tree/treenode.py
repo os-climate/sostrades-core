@@ -139,11 +139,15 @@ class TreeNode:
         self.identifier = discipline.disc_id
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
-        self.model_name_full_path = discipline.__module__
-        self.models_full_path_list.append(discipline.__module__)
+        if discipline.mdo_discipline_wrapp is not None and discipline.mdo_discipline_wrapp.wrapper is not None:
+            self.model_name_full_path = discipline.mdo_discipline_wrapp.wrapper.__module__
+        else:
+            # for discipline not associated to wrapper (proxycoupling for
+            # example)
+            self.model_name_full_path = discipline.__module__
 
-        if self.node_type != 'SoSCoupling':
-            self.model_name = discipline.__module__.split('.')[-2]
+        self.models_full_path_list.append(self.model_name_full_path)
+
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
         # I/O type : 'in' for data_in and 'out' for data_out
