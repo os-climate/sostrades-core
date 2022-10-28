@@ -2260,7 +2260,23 @@ class ProxyDiscipline(object):
                {key: self.ee.ns_manager.ns_tuple_to_full_name(
                    (key, value)) for key, value in self._io_ns_map_out.items()}
 
+    def get_module(self):
+        '''
+        Obtain the module of the wrapper if it exists. useful for postprocessing factory and treenode
+        '''
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+            disc_module = self.mdo_discipline_wrapp.wrapper.__module__
+
+        else:
+            # for discipline not associated to wrapper (proxycoupling for
+            # example)
+            disc_module = self.__module__
+        # return the replace sostrades_core just for documentation (linked
+        # ontology is the one from integration)
+        return disc_module.replace(
+            'sostrades_core', 'sos_trades_core')
     # useful for debugging
+
     def display_proxy_subtree(self):
         proxy_subtree = []
         self.get_proxy_subtree_rec(proxy_subtree)
