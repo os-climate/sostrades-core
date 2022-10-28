@@ -1729,8 +1729,8 @@ class ProxyDiscipline(object):
         disc_dict_info = {}
         disc_dict_info['reference'] = self
         disc_dict_info['classname'] = self.__class__.__name__
-        disc_dict_info['model_name'] = self.__module__.split('.')[-2]
-        disc_dict_info['model_name_full_path'] = self.__module__
+#         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
+        disc_dict_info['model_name_full_path'] = self.get_module()
         disc_dict_info['treeview_order'] = 'no'
         disc_dict_info[self.NS_REFERENCE] = self.ee.ns_manager.get_local_namespace(
             self)
