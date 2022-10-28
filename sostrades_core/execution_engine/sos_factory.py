@@ -585,7 +585,7 @@ class SosFactory:
         list_builder = [builder]
 
         if autogather:
-            # TODO: multiscatter..
+            # TODO: multiscatter?
             # mod_path_multi_scatter = (
             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             # )

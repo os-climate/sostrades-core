@@ -170,6 +170,7 @@ class ProxyDoeEval(ProxyEval):
         self.previous_algo_name = ""
 
     def _get_disc_shared_ns_value(self):
+        # TODO: better factorization
         return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_doe_eval'].get_value()
 
     def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):

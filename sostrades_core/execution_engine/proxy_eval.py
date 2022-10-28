@@ -74,22 +74,19 @@ class ProxyEval(ProxyDriverEvaluator):
             ee.ns_manager.add_ns('ns_doe', ee.study_name)
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
-        # self.eval_in_base_list = None
+
         self.eval_in_list = None
-        # self.eval_out_base_list = None
         self.eval_out_list = None
+        self.selected_outputs = []
+        self.selected_inputs = []
+
         # Needed to reconstruct objects from flatten list
         self.eval_out_type = []
         self.eval_out_list_size = []
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Eval')
-        # self.cls_builder = cls_builder
-        # Create the eval process builder associated to SoSEval
-        self.eval_process_builder = self._set_eval_process_builder()
-        self.eval_process_disc = None
-        self.selected_outputs = []
-        self.selected_inputs = []
 
     def _get_disc_shared_ns_value(self):
+        # TODO: better factorization
         return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value()
 
     def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
@@ -156,7 +153,6 @@ class ProxyEval(ProxyDriverEvaluator):
         # return poss_in_values, poss_out_values
 
         # FIXME: need to accommodate long names and subprocess variables
-        # FIXME: need to accommodate long names and subprocess variables
         poss_in_values_full = []
         poss_out_values_full = []
         disc_in = disc.get_data_in()
@@ -207,41 +203,7 @@ class ProxyEval(ProxyDriverEvaluator):
         return poss_in_values_full, poss_out_values_full
 
     def build(self):
-        '''
-        Method copied from SoSCoupling: build and store disciplines in sos_disciplines
-        '''
-        # set current_discipline to self to build and store eval process in the
-        # children of SoSEval
-        old_current_discipline = self.ee.factory.current_discipline
-        self.ee.factory.current_discipline = self
-
-        # if we want to build an eval coupling containing eval process,
-        # we have to remove SoSEval name in current_ns to build eval coupling
-        # at the same node as SoSEval
-        if len(self.cls_builder) == 0:  # added condition for proc build
-            pass
-        elif self.cls_builder[0] != self.eval_process_builder:
-            current_ns = self.ee.ns_manager.current_disc_ns
-            self.ee.ns_manager.set_current_disc_ns(
-                current_ns.split(f'.{self.sos_name}')[0])
-            self.build_eval_process()
-            # reset current_ns after build
-            self.ee.ns_manager.set_current_disc_ns(current_ns)
-        else:
-            self.build_eval_process()
-
-        # If the old_current_discipline is None that means that it is the first build of a coupling then self is the high
-        # level coupling and we do not have to restore the current_discipline
-        if old_current_discipline is not None:
-            self.ee.factory.current_discipline = old_current_discipline
-
-    def build_eval_process(self):
-        # build coupling containing eval process if self.cls_builder[0] != self.eval_process_builder
-        # or build and store eval process in the children of SoSEval
-        self.eval_process_disc = self.eval_process_builder.build()
-        # store coupling in the children of SoSEval
-        if self.eval_process_disc not in self.proxy_disciplines:
-            self.ee.factory.add_discipline(self.eval_process_disc)
+        super().mono_instance_build()
 
     def configure_driver(self):
         # Extract variables for eval analysis
