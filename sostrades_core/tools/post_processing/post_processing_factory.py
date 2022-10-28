@@ -78,12 +78,12 @@ class PostProcessingFactory:
                 all_post_processings_bundle[discipline_full_name] = []
 
             found_bundles = list(
-                filter(lambda b: b.name == discipline.__module__, all_post_processings_bundle[discipline_full_name]))
+                filter(lambda b: b.name == discipline.get_module(), all_post_processings_bundle[discipline_full_name]))
 
             current_bundle = None
             if len(found_bundles) == 0:
                 current_bundle = PostProcessingBundle(
-                    discipline.__module__, [], [])
+                    discipline.get_module(), [], [])
                 all_post_processings_bundle[discipline_full_name].append(
                     current_bundle)
             else:

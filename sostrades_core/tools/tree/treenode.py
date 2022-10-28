@@ -139,11 +139,11 @@ class TreeNode:
         self.identifier = discipline.disc_id
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
-        self.model_name_full_path = discipline.__module__
-        self.models_full_path_list.append(discipline.__module__)
 
-        if self.node_type != 'SoSCoupling':
-            self.model_name = discipline.__module__.split('.')[-2]
+        self.model_name_full_path = discipline.get_module()
+
+        self.models_full_path_list.append(self.model_name_full_path)
+
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
         # I/O type : 'in' for data_in and 'out' for data_out
@@ -202,7 +202,7 @@ class TreeNode:
         # Manage markdown documentation
         filepath = inspect.getfile(discipline.__class__)
         markdown_data = TreeNode.get_markdown_documentation(filepath)
-        self.add_markdown_documentation(markdown_data, discipline.__module__)
+        self.add_markdown_documentation(markdown_data, discipline.get_module())
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
@@ -218,13 +218,13 @@ class TreeNode:
         if namespace not in self.disc_data:
             self.disc_data[namespace] = new_disc_data
             self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [
-                discipline.__module__]
+                discipline.get_module()]
         else:
             for key, value in new_disc_data.items():
                 self.disc_data[namespace][key] = value
-            if discipline.__module__ not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
+            if discipline.get_module() not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
                 self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(
-                    discipline.__module__)
+                    discipline.get_module())
 
     def add_markdown_documentation(self, markdown_data, key):
         """ Add a markdon documentation to the treenode
