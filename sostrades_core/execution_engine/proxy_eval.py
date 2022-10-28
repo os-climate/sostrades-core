@@ -35,7 +35,6 @@ from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_driver import ProxyDisciplineDriver
-from sostrades_core.execution_engine.proxy_abstract_eval import ProxyAbstractEval
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from numpy import NaN
