@@ -259,7 +259,7 @@ class ExecutionEngine:
         self.logger.info(tv_to_display)
         return tv_to_display
 
-    def __anonymize_key(self, key_to_anonymize):
+    def anonymize_key(self, key_to_anonymize):
         base_namespace = f'{self.study_name}.{self.root_process.sos_name}'
         converted_key = key_to_anonymize
 
@@ -328,7 +328,7 @@ class ExecutionEngine:
             # dictionary to load
             if target_key not in disciplines_status_dict:
                 # If not convert basic key to an anonimized key
-                target_key = self.__anonymize_key(target_key)
+                target_key = self.anonymize_key(target_key)
 
             if target_key in disciplines_status_dict:
                 status_to_load = disciplines_status_dict[target_key]
@@ -353,7 +353,7 @@ class ExecutionEngine:
 
         for discipline_key in dict_to_convert.keys():
 
-            converted_key = self.__anonymize_key(discipline_key)
+            converted_key = self.anonymize_key(discipline_key)
             converted_dict[converted_key] = dict_to_convert[discipline_key]
 
         return converted_dict
@@ -376,7 +376,7 @@ class ExecutionEngine:
         dict_to_convert = self.dm.convert_data_dict_with_full_name()
 
         for key in dict_to_convert.keys():
-            new_key = self.__anonymize_key(key)
+            new_key = self.anonymize_key(key)
             converted_dict[new_key] = dict_to_convert[key]
 
         return converted_dict
