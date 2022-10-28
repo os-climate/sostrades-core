@@ -570,11 +570,7 @@ class SosFactory:
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
         # builder of the composition scatter #TODO: to review if this should be here or in init or what
-        proxy_scatter_mod_path = (f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter')
-        proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)
-        scatter_builder = SoSBuilder('scatter_temp', self.__execution_engine, proxy_scatter_cls)
-        scatter_builder.set_builder_info('map_name', map_name)
-        scatter_builder.set_builder_info('cls_builder', builder_list)
+        scatter_builder = self.create_scatter_builder('scatter_temp', map_name, builder_list)
         scatter_builder.set_builder_info('coupling_per_scatter', True) #TODO: is hardcoded also in VerySimpleMS/SimpleMS
 
         builder.set_builder_info('cls_builder', [scatter_builder])
@@ -585,6 +581,8 @@ class SosFactory:
         list_builder = [builder]
 
         if autogather:
+            proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
+            proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)
             # TODO: multiscatter?
             # mod_path_multi_scatter = (
             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'

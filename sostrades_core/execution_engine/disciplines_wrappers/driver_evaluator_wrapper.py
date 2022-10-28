@@ -51,6 +51,12 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     _maturity = 'Fake'
 
+    DESC_IN = {
+            'builder_mode': {'type': 'string',
+                             'default': 'multi_instance',
+                             'possible_values': ['multi_instance', 'custom'], #TODO: complete
+                             'structuring': True}
+     }
 
     def __init__(self, sos_name):
         super().__init__(sos_name)

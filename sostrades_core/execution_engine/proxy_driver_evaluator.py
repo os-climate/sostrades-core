@@ -66,7 +66,7 @@ class ProxyDriverEvaluator(ProxyDisciplineDriver):
         self.eval_process_builder = self._set_eval_process_builder()
 
     def _set_eval_process_builder(self):
-        return self.cls_builder #TODO : to include mono instance case within this class not daughter etc.
+        return self.cls_builder #TODO : to include mono instance case within this class
 
     # MONO INSTANCE STUFF
     def mono_instance_build(self):
@@ -105,3 +105,15 @@ class ProxyDriverEvaluator(ProxyDisciplineDriver):
         # store coupling in the children of SoSEval
         if eval_process_disc not in self.proxy_disciplines:
             self.ee.factory.add_discipline(eval_process_disc)
+
+    def build(self):
+        if 'builder_mode' in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs('builder_mode')
+            if builder_mode == 'multi_instance':
+                super().build() #TODO: use scatter options here
+            elif builder_mode == 'mono_instance':
+                self.mono_instance_build()
+            elif builder_mode == 'custom':
+                super().build()
+        else:
+            pass
