@@ -1918,9 +1918,17 @@ class ProxyDiscipline(object):
         else:
             return self._status
 
-    def add_status_observer(self):
+    #TODO observer has to be set BEFORE launching an execution
+    #Make sure MDODisciplines is accessible or ADAPT the mecanism
+    def add_status_observer(self, observer):
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
-            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer()
+            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(observer)
+
+    # TODO observer has to be unset AFTER an execution is finished
+    # Make sure MDODisciplines is accessible or ADAPT the mecanism
+    def remove_status_observer(self, observer):
+        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+            self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(observer)
 
     def _check_status_before_run(self):
         """
