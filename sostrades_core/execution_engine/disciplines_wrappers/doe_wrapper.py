@@ -157,6 +157,7 @@ class DoeWrapper(SoSWrapp):
         self.previous_algo_name = ""
         self.selected_inputs = None
         self.eval_in_list = None
+        self.selected_inputs = None
         self.dict_desactivated_elem = {}
 
     @classmethod
@@ -267,10 +268,7 @@ class DoeWrapper(SoSWrapp):
         algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
 
-        selected_inputs = self.selected_inputs
-        #eval_in_list = self.eval_in_list
-
-        design_space = self.create_design_space(selected_inputs, dspace_df)
+        design_space = self.create_design_space(self.selected_inputs, dspace_df)
         self.design_space = design_space
 
         generator_name = 'doe_generator'
@@ -281,8 +279,10 @@ class DoeWrapper(SoSWrapp):
         # print(list(self.sample_generator.get_options(algo_name).keys()))
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
-        samples = self.sample_generator.generate_samples(
-            algo_name, algo_options, selected_inputs, design_space)
+        samples = self.sample_generator.generate_samples(algo_name, algo_options, self.selected_inputs, design_space)
+
+        # prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
+        #     samples, eval_in_list, design_space)
 
         self.store_sos_outputs_values({'doe_df': samples})
 
@@ -324,24 +324,24 @@ class DoeWrapper(SoSWrapp):
 
             # Dynamic input of default design space
             eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
-            selected_inputs = eval_inputs[eval_inputs['selected_input']
+            self.selected_inputs = eval_inputs[eval_inputs['selected_input']
                                           == True]['full_name'].tolist()
-            self.selected_inputs = selected_inputs
-            self.eval_in_list = [
-                f'{proxy.ee.study_name}.{element}' for element in selected_inputs]
+            # self.eval_in_list = [
+            #     f'{proxy.ee.study_name}.{element}' for element in selected_inputs]
 
-            default_design_space = pd.DataFrame({'variable': selected_inputs,
+
+            default_design_space = pd.DataFrame({'variable': self.selected_inputs,
 
                                                  # FIXME: Ask about this
                                                  # default setup
-                                                 'lower_bnd': [None] * len(selected_inputs),
+                                                 'lower_bnd': [None] * len(self.selected_inputs),
                                                  # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
                                                  #                                              'type') == 'array' else 0.0
                                                  # for var in
                                                  # self.eval_in_list],
                                                  # FIXME: Ask about this
                                                  # default setup
-                                                 'upper_bnd': [None] * len(selected_inputs)
+                                                 'upper_bnd': [None] * len(self.selected_inputs)
                                                  # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
                                                  #                                                'type') == 'array' else 10.0
                                                  # for var in
