@@ -71,13 +71,13 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #
     #     # self.proxy_discipline.build()
 
-    def build(self):
+    def _custom_build(self, builder_list):
         """
         Instanciate sub proxies managed by the coupling
         """
         old_current_discipline = self.ee.factory.current_discipline
         self.ee.factory.current_discipline = self
-        for builder in self.cls_builder:
+        for builder in builder_list:
             proxy_disc = builder.build()
             if proxy_disc not in self.proxy_disciplines:
                 self.ee.factory.add_discipline(proxy_disc)
@@ -91,6 +91,8 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #         self.mdo_chain.cache.clear()
     #         ProxyDisciplineBuilder.clear_cache(self)
 
+    def build(self):
+        self._custom_build(self.cls_builder)
 
     def clean(self):
         """
