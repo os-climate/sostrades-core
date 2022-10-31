@@ -1938,7 +1938,7 @@ class ProxyDiscipline(object):
             self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                 observer)
 
-        if observer in self.status_observers:
+        if observer not in self.status_observers:
             self.status_observers.append(observer)
 
     def remove_status_observer(self, observer):
