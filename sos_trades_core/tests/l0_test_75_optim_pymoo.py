@@ -61,7 +61,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             "crossover": "int_sbx",
             "mutation": ["int_pm", dict(prob=1.0, eta=3.0)],
         }
-        self.integer_options = {"normalize_design_space": False, "stop_crit_n_x": 99}
+        self.integer_options = {"normalize_design_space": False, "stop_crit_n_x": 99, "stop_crit_n_hv": 999}
 
         # Mixed variables options.
         self.mixed_operators = {
@@ -320,7 +320,6 @@ class TestSoSOptimScenario(unittest.TestCase):
                 **self.integer_options,
                 **self.integer_operators,
                 "max_gen": 2 ** 11,
-                "ref_points": array([[1.0], [2.0], [3.0]]),
             },
             f"{self.discipline_level}.x": ones(n_items, dtype=int),
             f"{self.discipline_level}.items_value": values,
