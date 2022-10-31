@@ -36,5 +36,5 @@ class ProcessBuilder(BaseProcessBuilder):
         driver_wrapper_mod = 'sostrades_core.sos_wrapping.test_discs.simple_custom_driver.SimpleCustomDriver'
 
         driver_builder = self.ee.factory.create_custom_driver_builder(
-            'Driver1', driver_wrapper_mod, builder_list)
+            'Driver1', builder_list, driver_wrapper_mod)
         return driver_builder

@@ -347,24 +347,6 @@ class ProxyEval(ProxyDriverEvaluator):
         return dict(zip(self.eval_in_list,
                         map(self.dm.get_value, self.eval_in_list)))
 
-    def _set_eval_process_builder(self):
-        '''
-        Create the eval process builder, in a coupling if necessary
-        '''
-        if len(self.cls_builder) == 0:  # added condition for proc build
-            disc_builder = None
-        elif len(self.cls_builder) == 1:
-            disc_builder = self.cls_builder[0]
-        else:
-            # If eval process is a list of builders or a non executable builder,
-            # then we build a coupling containing the eval process
-
-            disc_builder = self.ee.factory.create_builder_coupling(
-                self.sos_name+'.subprocess')
-            disc_builder.set_builder_info('cls_builder', self.cls_builder)
-
-        return disc_builder
-
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
         """

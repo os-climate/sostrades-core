@@ -54,7 +54,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
     DESC_IN = {
             'builder_mode': {'type': 'string',
                              'default': 'multi_instance',
-                             'possible_values': ['multi_instance', 'custom'], #TODO: complete
+                             'possible_values': ['multi_instance', 'single_instance', 'custom'], #TODO: complete
                              'structuring': True}
      }
 
@@ -95,10 +95,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
 
     def subprocess_evaluation(self, var_delta_dict, i_subprocess, convert_to_array=True):
-
         local_data = self.attributes['sub_mdo_disciplines'][i_subprocess]\
                          .execute(self._get_input_data(var_delta_dict, i_subprocess))
-
         # out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'][i_subprocess])
         # if convert_to_array:
         #     out_local_data_converted = convert_new_type_into_array(

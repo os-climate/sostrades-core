@@ -63,16 +63,76 @@ class ProxyDriverEvaluator(ProxyDisciplineDriver):
     def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
-        self.eval_process_builder = self._set_eval_process_builder()
+        self.eval_process_builder = None
+        self.scatter_process_builder = None
 
-    def _set_eval_process_builder(self):
-        return self.cls_builder #TODO : to include mono instance case within this class
+    def _set_scatter_process_builder(self, map_name):
+        # builder of the composition scatter
+        scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder)
+        scatter_builder.set_builder_info('coupling_per_scatter', True) #TODO: is hardcoded also in VerySimpleMS/SimpleMS
+        return scatter_builder
+
+    def multi_instance_build(self): #TODO: factorize better
+        if 'map_name' in self.get_data_in():
+            old_current_discipline = self.ee.factory.current_discipline
+            self.ee.factory.current_discipline = self
+            if self.scatter_process_builder is None:
+                map_name = self.get_sosdisc_inputs('map_name')
+                if map_name is not None:
+                    self.scatter_process_builder = self._set_scatter_process_builder(map_name)
+            self.build_scatter_process()
+            # If the old_current_discipline is None that means that it is the first build of a coupling then self is the high
+            # level coupling and we do not have to restore the current_discipline
+            if old_current_discipline is not None:
+                self.ee.factory.current_discipline = old_current_discipline
+
+    def build_scatter_process(self): #TODO: factorize better
+        if self.scatter_process_builder is not None:
+            subprocess_disc = self.scatter_process_builder.build()
+            # store coupling in the children
+            if subprocess_disc not in self.proxy_disciplines:
+                self.ee.factory.add_discipline(subprocess_disc)
+        else:
+            pass #TODO: else add a warning ?
+
+    def setup_sos_disciplines(self):
+        if 'builder_mode' in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs('builder_mode')
+            if builder_mode == 'multi_instance':
+                # TODO: addressing only the very simple multiscenario case
+                if 'map_name' not in self.get_data_in():
+                    dynamic_inputs = {'map_name': {self.TYPE: 'string',
+                                                   self.DEFAULT: 'scenario_list',
+                                                   self.STRUCTURING: True}}
+                    self.add_inputs(dynamic_inputs)
+            elif builder_mode == 'mono_instance':
+                pass #TODO: to merge with Eval
 
     # MONO INSTANCE STUFF
+    def _set_eval_process_builder(self):
+        '''
+        Create the eval process builder, in a coupling if necessary
+        '''
+        if len(self.cls_builder) == 0:  # added condition for proc build
+            disc_builder = None
+        elif len(self.cls_builder) == 1:
+            disc_builder = self.cls_builder[0]
+        else:
+            # If eval process is a list of builders or a non executable builder,
+            # then we build a coupling containing the eval process
+
+            disc_builder = self.ee.factory.create_builder_coupling(
+                self.sos_name+'.subprocess')
+            disc_builder.set_builder_info('cls_builder', self.cls_builder)
+
+        return disc_builder
+
     def mono_instance_build(self):
         '''
         Method copied from SoSCoupling: build and store disciplines in sos_disciplines
         '''
+        if self.eval_process_builder is None:
+            self.eval_process_builder = self._set_eval_process_builder()
         # set current_discipline to self to build and store eval process in the
         # children of SoSEval
         old_current_discipline = self.ee.factory.current_discipline
@@ -107,13 +167,14 @@ class ProxyDriverEvaluator(ProxyDisciplineDriver):
             self.ee.factory.add_discipline(eval_process_disc)
 
     def build(self):
+        # TODO: better factorization
         if 'builder_mode' in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs('builder_mode')
             if builder_mode == 'multi_instance':
-                super().build() #TODO: use scatter options here
+                self.multi_instance_build()
             elif builder_mode == 'mono_instance':
                 self.mono_instance_build()
             elif builder_mode == 'custom':
                 super().build()
-        else:
-            pass
+            else:
+                raise ValueError(f'Wrong builder mode input in {self.sos_name}')

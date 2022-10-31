@@ -282,7 +282,22 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_custom_driver_builder(self, sos_name, driver_wrapper_mod, cls_builder):
+    def create_driver_evaluator_builder(self, sos_name, cls_builder, driver_wrapper_mod=None):
+        module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
+        cls = self.get_disc_class_from_module(module_struct_list)
+        if driver_wrapper_mod is None:
+            driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
+        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        if isinstance(cls_builder, list):
+            builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
+        else:
+            builder.set_builder_info('cls_builder', [cls_builder])
+        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+        return builder
+
+    def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
+        #TODO: refactor after driver classes are merged
         module_struct_list = f'{self.EE_PATH}.proxy_discipline_driver.ProxyDisciplineDriver'
         cls = self.get_disc_class_from_module(module_struct_list)
         driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
@@ -292,14 +307,13 @@ class SosFactory:
         else:
             builder.set_builder_info('cls_builder', [cls_builder])
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
-
         return builder
 
     def create_evaluator_builder(self, sos_name, eval_type, cls_builder):
         """
         create a builder for an evaluator defined by its eval_type
         """
-        # TODO: can be refactored with calls to create_custom_driver_builder
+        # TODO: can be refactored with calls to other methods, do when classes are merged
         if eval_type == 'sensitivity':
             module_struct_list = (
                 f'{self.GENERIC_MODS_PATH}.sensitivity_analysis.SensitivityAnalysis'
@@ -556,30 +570,14 @@ class SosFactory:
         """
         create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
         """
-        # builder(s) of the original subprocess(es)
         builder_list = self.convert_builder_to_list(cls_builder)
-
-        # builder of the driver-evaluator proxy
-        mod_path = (f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator')
-        cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-
-        # builder of the driver wrapper
-        driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
-        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod_path)
-        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
-
-        # builder of the composition scatter #TODO: to review if this should be here or in init or what
-        scatter_builder = self.create_scatter_builder('scatter_temp', map_name, builder_list)
-        scatter_builder.set_builder_info('coupling_per_scatter', True) #TODO: is hardcoded also in VerySimpleMS/SimpleMS
-
-        builder.set_builder_info('cls_builder', [scatter_builder])
+        builder = self.create_driver_evaluator_builder(sos_name, builder_list)
         # builder.set_builder_info('autogather', autogather) #TODO: not adressed
         # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
         # builder.set_builder_info('business_post_proc', business_post_proc) #TODO: not adressed
-
         list_builder = [builder]
 
+        # TODO: address autogather
         if autogather:
             proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
             proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)

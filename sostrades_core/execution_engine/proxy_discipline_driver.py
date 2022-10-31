@@ -78,16 +78,9 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         for disc in self.get_disciplines_to_configure():
             disc.configure()
 
-        if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
-            # Explanation:
-            # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
-            # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
-            # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
-            # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
-            # Remark: condition "(   and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
-            #
-            # Call standard configure methods to set the process discipline
-            # tree
+        # if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
+        if self._data_in == {} or self.subprocess_is_configured():
+            # Call standard configure methods to set the process discipline tree
             ProxyDiscipline.configure(self)
             self.configure_driver()
 
@@ -164,16 +157,17 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
         '''
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         '''
-        return ProxyDiscipline.is_configured(self) and (
-            (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(
-                self.cls_builder) == 0)
+        return ProxyDiscipline.is_configured(self) and self.subprocess_is_configured()
+
+    def subprocess_is_configured(self):
         # Explanation:
-        # 1. SoSDiscipline.is_configured(self) : as in discipline (i.e. conf status of Eval = True and no change in structuring variables of Eval
-        # 2. Added condition compared to ProxSDiscipline :
-        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline exist but all configured
-        # 2.2 len(self.cls_builder) == 0 No yet provided builder and so Is configured is True
-        # Remark: condition "and len(self.proxy_disciplines) != 0) or
-        # len(self.cls_builder) == 0)" added for proc build
+        # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
+        # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
+        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
+        # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
+        # Remark1: condition "(   and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
+        # Remark2: /!\ REMOVED the len(self.proxy_disciplines) == 0 condition to accommodate the DriverEvaluator that holds te build until inputs are available
+        return self.get_disciplines_to_configure() == [] or len(self.cls_builder) == 0
 
     def get_desc_in_out(self, io_type):
         """
