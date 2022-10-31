@@ -213,6 +213,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if cls_builder is None:
             cls_builder = []
         self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
+        self.mdo_discipline_wrapp = None
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Coupling')
 
