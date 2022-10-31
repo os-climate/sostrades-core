@@ -284,7 +284,8 @@ class DoeEval(SoSEval):
                         cle = key
                         var = tuple(
                             [
-                                self.ee.dm.get_data(self.eval_in_list[i], 'type'),
+                                self.ee.dm.get_data(
+                                    self.eval_in_list[i], 'type'),
                                 None,
                                 True,
                             ]
@@ -420,11 +421,13 @@ class DoeEval(SoSEval):
                     len(self.ee.dm.get_all_namespaces_from_var_name(origin_var_name))
                     > 1
                 ):
-                    self.logger.exception('Multiplier name selected already exists!')
+                    self.logger.exception(
+                        'Multiplier name selected already exists!')
                 origin_var_fullname = self.ee.dm.get_all_namespaces_from_var_name(
                     origin_var_name
                 )[0]
-                origin_var_ns = self.ee.dm.get_data(origin_var_fullname, 'namespace')
+                origin_var_ns = self.ee.dm.get_data(
+                    origin_var_fullname, 'namespace')
                 dynamic_inputs_list.append(
                     {
                         f'{multiplier_name}': {
@@ -481,7 +484,8 @@ class DoeEval(SoSEval):
         enable_variables = [True] * len(values)
         # This won't work for an array with a dimension greater than 2
         activated_elems = [
-            [True, True] if self.ee.dm.get_data(var, 'type') == 'array' else [True]
+            [True, True] if self.ee.dm.get_data(
+                var, 'type') == 'array' else [True]
             for var in variables
         ]
         dspace_dict_updated = pd.DataFrame(
@@ -549,7 +553,8 @@ class DoeEval(SoSEval):
                     l_b = array(lb)
                     u_b = array(ub)
                     value = array(val)
-                design_space.add_variable(name, size, var_type, l_b, u_b, value)
+                design_space.add_variable(
+                    name, size, var_type, l_b, u_b, value)
         return design_space
 
     def configure(self):
@@ -585,7 +590,8 @@ class DoeEval(SoSEval):
             filled_options[self._VARIABLES_NAMES] = self.design_space.variables_names
             filled_options[self._VARIABLES_SIZES] = self.design_space.variables_sizes
             # filled_options['n_processes'] = int(filled_options['n_processes'])
-            filled_options['n_processes'] = self.get_sosdisc_inputs('n_processes')
+            filled_options['n_processes'] = self.get_sosdisc_inputs(
+                'n_processes')
             filled_options['wait_time_between_samples'] = self.get_sosdisc_inputs(
                 'wait_time_between_fork'
             )
@@ -619,7 +625,8 @@ class DoeEval(SoSEval):
 
     def create_samples_from_custom_df(self):
         """Generation of the samples in case of a customed DOE"""
-        self.customed_samples = self.get_sosdisc_inputs('custom_samples_df').copy()
+        self.customed_samples = self.get_sosdisc_inputs(
+            'custom_samples_df').copy()
         self.check_customed_samples()
         samples_custom = []
         for index, rows in self.customed_samples.iterrows():
@@ -637,7 +644,8 @@ class DoeEval(SoSEval):
             set(self.customed_samples.columns.to_list())
         ):
             missing_eval_in_variables = set.union(
-                set(self.selected_inputs), set(self.customed_samples.columns.to_list())
+                set(self.selected_inputs), set(
+                    self.customed_samples.columns.to_list())
             ) - set(self.customed_samples.columns.to_list())
             msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
             # To do: provide also the list of missing eval_in variables:
@@ -650,7 +658,8 @@ class DoeEval(SoSEval):
             msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
             self.logger.warning(msg)
             if len(not_relevant_columns) != 0:
-                self.customed_samples.drop(not_relevant_columns, axis=1, inplace=True)
+                self.customed_samples.drop(
+                    not_relevant_columns, axis=1, inplace=True)
             self.selected_inputs.sort()
             self.customed_samples = self.customed_samples[self.selected_inputs]
 
@@ -681,7 +690,7 @@ class DoeEval(SoSEval):
         if self.INPUT_MULTIPLIER_TYPE != []:
             origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
             multipliers_samples = copy.deepcopy(self.samples)
-            multipliers_unique_val = self.generate_unique_val()
+            #multipliers_unique_val = self.generate_unique_val()
             self.add_multiplied_var_to_samples(
                 multipliers_samples, origin_vars_to_update_dict
             )
@@ -776,7 +785,8 @@ class DoeEval(SoSEval):
         origin_vars_to_update_dict = {}
         for select_in in self.eval_in_list:
             if self.MULTIPLIER_PARTICULE in select_in:
-                var_origin_f_name = self.get_names_from_multiplier(select_in)[0]
+                var_origin_f_name = self.get_names_from_multiplier(select_in)[
+                    0]
                 if var_origin_f_name not in origin_vars_to_update_dict:
                     origin_vars_to_update_dict[var_origin_f_name] = copy.deepcopy(
                         self.ee.dm.get_data(var_origin_f_name)['value']
@@ -813,7 +823,8 @@ class DoeEval(SoSEval):
                             var_to_update=var_to_update,
                         )
                 for multiplied_var in vars_to_update_dict:
-                    self.samples[sample_i].append(vars_to_update_dict[multiplied_var])
+                    self.samples[sample_i].append(
+                        vars_to_update_dict[multiplied_var])
         # if 1 multiplier for one df
         else:
             unique_multipliers_dict = {}
@@ -823,7 +834,8 @@ class DoeEval(SoSEval):
                 for i, var in enumerate(self.eval_in_list):
                     unique_multipliers_dict[var] += [sample[i]]
             for var in self.eval_in_list:
-                unique_multipliers_dict[var] = np.unique(unique_multipliers_dict[var])
+                unique_multipliers_dict[var] = np.unique(
+                    unique_multipliers_dict[var])
 
             vars_to_update_dict = {}
             for var_name, value in unique_multipliers_dict.items():
@@ -876,10 +888,12 @@ class DoeEval(SoSEval):
                 for key in float_cols_ids_list:
                     var_to_update[key] = multiplier_value * var_to_update[key]
             else:
-                keys_clean = [self.clean_var_name(var) for var in var_to_update.keys()]
+                keys_clean = [self.clean_var_name(
+                    var) for var in var_to_update.keys()]
                 col_index = keys_clean.index(col_name_clean)
                 col_name = var_to_update.keys()[col_index]
-                var_updated[col_name] = multiplier_value * var_to_update[col_name]
+                var_updated[col_name] = multiplier_value * \
+                    var_to_update[col_name]
         # if float to be multiplied
         else:
             var_updated = multiplier_value * var_to_update
@@ -923,11 +937,14 @@ class DoeEval(SoSEval):
 
         for data_in_key in disc._data_in.keys():
             is_input_type = disc._data_in[data_in_key][self.TYPE] in self.INPUT_TYPE
-            is_structuring = disc._data_in[data_in_key].get(self.STRUCTURING, False)
-            in_coupling_numerical = data_in_key in list(SoSCoupling.DESC_IN.keys())
+            is_structuring = disc._data_in[data_in_key].get(
+                self.STRUCTURING, False)
+            in_coupling_numerical = data_in_key in list(
+                SoSCoupling.DESC_IN.keys())
             full_id = disc.get_var_full_name(data_in_key, disc._data_in)
             is_in_type = (
-                self.dm.data_dict[self.dm.data_id_map[full_id]]['io_type'] == 'in'
+                self.dm.data_dict[self.dm.data_id_map[full_id]
+                                  ]['io_type'] == 'in'
             )
             is_input_multiplier_type = (
                 disc._data_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
@@ -989,7 +1006,6 @@ class DoeEval(SoSEval):
             )
         else:
             full_id_ns = full_id
-
         if disc._data_in[var_name][self.TYPE] == 'float':
             multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
                 self.ee.study_name + ".", 1
@@ -1038,9 +1054,11 @@ class DoeEval(SoSEval):
 
     def get_names_from_multiplier(self, var_name):
         column_name = None
-        var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[0].split('@')[0]
+        var_origin_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+            0].split('@')[0]
         if '@' in var_name:
-            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[0].split('@')[1]
+            column_name = var_name.split(self.MULTIPLIER_PARTICULE)[
+                0].split('@')[1]
 
         return [var_origin_name, column_name]
 
@@ -1178,11 +1196,15 @@ class DoeEval(SoSEval):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
-        self.eval_in_base_list = [element.split(".")[-1] for element in in_list]
+        self.eval_in_base_list = [
+            element.split(".")[-1] for element in in_list]
 
-        self.eval_out_base_list = [element.split(".")[-1] for element in out_list]
-        self.eval_in_list = [f'{self.ee.study_name}.{element}' for element in in_list]
-        self.eval_out_list = [f'{self.ee.study_name}.{element}' for element in out_list]
+        self.eval_out_base_list = [
+            element.split(".")[-1] for element in out_list]
+        self.eval_in_list = [
+            f'{self.ee.study_name}.{element}' for element in in_list]
+        self.eval_out_list = [
+            f'{self.ee.study_name}.{element}' for element in out_list]
 
         self.eval_in_dict = {
             base: full for base, full in zip(self.eval_in_base_list, self.eval_in_list)
