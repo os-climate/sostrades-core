@@ -1896,6 +1896,8 @@ class ProxyDiscipline(object):
         # case of change)
         if self._status != status:
             self._status = status
+            if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
+                self.mdo_discipline_wrapp.mdo_discipline.status = status
 
         # Force update into discipline_dict (GEMS can change status but cannot update the
         # discipline_dict
@@ -1938,7 +1940,7 @@ class ProxyDiscipline(object):
             self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                 observer)
 
-        if observer in self.status_observers:
+        if observer not in self.status_observers:
             self.status_observers.append(observer)
 
     def remove_status_observer(self, observer):
