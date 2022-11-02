@@ -584,7 +584,7 @@ class ExecutionEngine:
         '''
         self.dm.set_values_from_dict(local_data)
 
-    def execute(self):
+    def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
         self.logger.info('PROCESS EXECUTION %s STARTS...',
@@ -600,6 +600,9 @@ class ExecutionEngine:
 
         # -- prepare execution
         self.prepare_execution()
+
+        if loaded_cache is not None:
+            self.load_cache_from_map(loaded_cache)
 
         # -- execution with input data from DM
         ex_proc = self.root_process

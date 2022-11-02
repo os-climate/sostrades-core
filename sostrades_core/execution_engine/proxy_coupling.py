@@ -634,7 +634,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             mda_chain_n_calls = self.mdo_discipline_wrapp.mdo_discipline.n_calls
         else:
             mda_chain_cache = None
-            mda_chain_n_calls = None
+            mda_chain_n_calls = 0
 
         # create_mda_chain from MDODisciplineWrapp
         self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)

@@ -983,6 +983,7 @@ class ProxyDiscipline(object):
                         self.dm.set_data(disc.get_var_full_name(
                             ProxyDiscipline.CACHE_FILE_PATH, disc_in), self.VALUE, cache_file_path,
                             check_value=False)
+            self._reset_cache = False
         if self._reset_debug_mode:
             self.set_debug_mode_rec(
                 self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
