@@ -218,7 +218,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{self.ns}.DoEEval.doe_df'] = samples_df
+        disc_dict[f'{self.ns}.DoEEval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -322,7 +322,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.Eval.doe_df'] = samples_df
+        disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -762,14 +762,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.doe_df').columns.tolist(), ['x'])
+            'doe.DoEEval.samples_df').columns.tolist(), ['x'])
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.doe_df').columns.tolist(),
+        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.samples_df').columns.tolist(),
                              ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.doe_df').columns.tolist(),
+        self.assertListEqual(exec_eng.dm.get_value('doe.DoEEval.samples_df').columns.tolist(),
                              ['DoEEval.subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.DoEEval.eval_inputs'] = self.input_selection_x_z
@@ -785,7 +785,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         samples_dict = {'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{self.ns}.DoEEval.doe_df'] = samples_df
+        disc_dict[f'{self.ns}.DoEEval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -878,14 +878,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
-            'doe.Eval.doe_df').columns.tolist(), ['x'])
+            'doe.Eval.samples_df').columns.tolist(), ['x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertListEqual(exec_eng.dm.get_value('doe.Eval.doe_df').columns.tolist(),
+        self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
                              ['Eval.subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertListEqual(exec_eng.dm.get_value('doe.Eval.doe_df').columns.tolist(),
+        self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
                              ['Eval.subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
@@ -901,7 +901,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         samples_dict = {'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{self.ns}.Eval.doe_df'] = samples_df
+        disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1057,7 +1057,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_dict = {'x': x_values,
                         'DoEEval.subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{self.ns}.DoEEval.doe_df'] = samples_df
+        disc_dict[f'{self.ns}.DoEEval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1152,7 +1152,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_dict = {'x': x_values,
                         'Eval.subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{self.ns}.Eval.doe_df'] = samples_df
+        disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1508,7 +1508,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_dict = {'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{self.ns}.DoEEval.doe_df'] = samples_df
+        disc_dict[f'{self.ns}.DoEEval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1605,7 +1605,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_dict = {'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.Eval.doe_df'] = samples_df
+        disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 

@@ -99,7 +99,7 @@ class DoeWrapper(SoSWrapp):
                }
 
     DESC_OUT = {
-        'doe_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+        'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
                    'namespace': 'ns_doe1'}
     }
 
@@ -304,7 +304,7 @@ class DoeWrapper(SoSWrapp):
         # prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
         #     samples, eval_in_list, design_space)
 
-        self.store_sos_outputs_values({'doe_df': samples})
+        self.store_sos_outputs_values({'samples_df': samples})
 
     def setup_sos_disciplines(self, proxy):
 

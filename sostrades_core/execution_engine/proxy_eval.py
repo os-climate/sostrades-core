@@ -381,16 +381,16 @@ class ProxyEval(ProxyDriverEvaluator):
                 self.eval_in_list[i], 'type'), None, True])
             dataframe_descriptor[cle] = var
 
-        dynamic_inputs = {'doe_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+        dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                      'dataframe_descriptor': dataframe_descriptor,
                                      'dataframe_edition_locked': False,
                                      'visibility': SoSWrapp.SHARED_VISIBILITY,
                                      'namespace': 'ns_eval'
                                      }}
 
-        if 'doe_df' in disc_in and selected_inputs_has_changed:
-            disc_in['doe_df']['value'] = default_custom_dataframe
-            disc_in['doe_df']['dataframe_descriptor'] = dataframe_descriptor
+        if 'samples_df' in disc_in and selected_inputs_has_changed:
+            disc_in['samples_df']['value'] = default_custom_dataframe
+            disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
         return dynamic_inputs
 
 
