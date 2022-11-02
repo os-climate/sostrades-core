@@ -371,7 +371,7 @@ class DataManager:
         return converted_dict
 
     def create_reduced_dm(self):
-        self.reduced_dm = self.get_data_dict_list_attr([ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA,
+        self.reduced_dm = self.get_data_dict_list_attr([ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA, ProxyDiscipline.NUMERICAL,
                                                         ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING, ProxyDiscipline.CONNECTOR_DATA])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):

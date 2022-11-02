@@ -17,6 +17,8 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
+from sostrades_core.tools.base_functions.compute_len import compute_len
+from numpy import zeros
 
 LOGGER = logging.getLogger(__name__)
 
@@ -66,6 +68,7 @@ class SoSWrapp(object):
     # column_editable)}
     DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
     DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
+    DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
 
@@ -83,6 +86,8 @@ class SoSWrapp(object):
         self.output_data_names = []
         self.attributes = {}
         self.local_data = {}
+        self.jac_dict = {}
+        self.jac_boundaries = {}
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
         """
@@ -245,3 +250,117 @@ class SoSWrapp(object):
         :return post processing instance list
         """
         return []
+
+    def set_partial_derivative(self, y_key, x_key, value):
+        """
+        Method to fill the jacobian dict attribute of the wrapp with a partial derivative (value) given
+        a specific input (x_key) and output (y_key). Input and output keys are returned in full name
+
+        @param y_key: String, short name of the output whose derivative is calculated
+        @param x_key: String, short name of the input whose derivative is calculated
+        @param value: Array, values of the given derivative its dimensions depends on the input/output sizes
+        """
+        y_key_full = self.attributes['output_full_name_map'][y_key]
+        x_key_full = self.attributes['input_full_name_map'][x_key]
+        if y_key_full not in self.jac_dict.keys():
+            self.jac_dict[y_key_full]={}
+        self.jac_dict[y_key_full].update({x_key_full: value})
+
+    def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):
+        '''
+        Set the derivative of the column y_key by the column x_key inside the jacobian of GEMS self.jac
+        y_key_column = 'y_key, column_name'
+        '''
+        if len(y_key_column) == 2:
+            y_key, y_column = y_key_column
+        else:
+            y_key = y_key_column[0]
+            y_column = None
+
+        lines_nb_y, index_y_column = self.get_boundary_jac_for_columns(
+            y_key, y_column, self.IO_TYPE_OUT)
+
+        if len(x_key_column) == 2:
+            x_key, x_column = x_key_column
+        else:
+            x_key = x_key_column[0]
+            x_column = None
+
+        lines_nb_x, index_x_column = self.get_boundary_jac_for_columns(
+            x_key, x_column, self.IO_TYPE_IN)
+
+        # Convert keys in namespaced keys in the jacobian matrix for GEMS
+        y_key_full = self.attributes['output_full_name_map'][y_key]
+
+        x_key_full = self.attributes['input_full_name_map'][x_key]
+
+        # Code when dataframes are filled line by line in GEMS, we keep the code for now
+        #         if index_y_column and index_x_column is not None:
+        #             for iy in range(value.shape[0]):
+        #                 for ix in range(value.shape[1]):
+        #                     self.jac[new_y_key][new_x_key][iy * column_nb_y + index_y_column,
+        # ix * column_nb_x + index_x_column] = value[iy, ix]
+        if y_key_full not in self.jac_dict.keys():
+            self.jac_dict[y_key_full] = {}
+        if x_key_full not in self.jac_dict[y_key_full]:
+            self.jac_dict[y_key_full][x_key_full] = zeros(self.get_jac_matrix_shape(y_key, x_key))
+        if index_y_column is not None and index_x_column is not None:
+            self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
+            index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+            self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
+                                                                    'end': (index_y_column + 1) * lines_nb_y},
+                                        f'{x_key_full},{x_column}': {'start': index_x_column * lines_nb_x,
+                                                                    'end': (index_x_column + 1) * lines_nb_x}})
+
+        elif index_y_column is None and index_x_column is not None:
+            self.jac_dict[y_key_full][x_key_full][:, index_x_column *
+                                              lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+
+            self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': 0,
+                                                                    'end': -1},
+                                        f'{x_key_full},{x_column}': {'start': index_x_column * lines_nb_x,
+                                                                    'end': (index_x_column + 1) * lines_nb_x}})
+        elif index_y_column is not None and index_x_column is None:
+            self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
+            :] = value
+            self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
+                                                                    'end': (index_y_column + 1) * lines_nb_y},
+                                        f'{x_key_full},{x_column}': {'start': 0,
+                                                                    'end': -1}})
+        else:
+            raise Exception(
+                'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
+
+    def get_jac_matrix_shape(self, y_key, x_key):
+        y_value = self.get_sosdisc_outputs(y_key)
+        x_value = self.get_sosdisc_inputs(x_key)
+        n_out_j = compute_len(y_value)
+        n_in_j = compute_len(x_value)
+        expected_shape = (n_out_j, n_in_j)
+
+        return expected_shape
+
+    def get_boundary_jac_for_columns(self, key, column, io_type):
+        if io_type == self.IO_TYPE_IN:
+            #var_full_name = self.attributes['input_full_name_map'][key]
+            key_type = self.DESC_IN[key]['type']
+            value = self.get_sosdisc_inputs(key)
+        if io_type == self.IO_TYPE_OUT:
+            #var_full_name = self.attributes['output_full_name_map'][key]
+            key_type = self.DESC_OUT[key]['type']
+            value = self.get_sosdisc_outputs(key)
+        self.DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
+        if key_type == 'dataframe':
+            # Get the number of lines and the index of column from the metadata
+            lines_nb = len(value)
+            index_column = [column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(
+                column)
+        elif key_type == 'array' or key_type == 'float':
+            lines_nb = None
+            index_column = None
+        elif key_type == 'dict':
+            dict_keys = list(value.keys())
+            lines_nb = len(value[column])
+            index_column = dict_keys.index(column)
+
+        return lines_nb, index_column
