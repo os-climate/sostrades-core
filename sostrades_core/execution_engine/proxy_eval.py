@@ -435,7 +435,6 @@ class ProxyEval(ProxyDriverEvaluator):
 
                 # setting dynamic outputs. One output of type dict per selected
                 # output
-                #TODO: dirty namespacing
                 for out_var in self.eval_out_list:
                     dynamic_outputs.update(
                         # {f'{out_var.split(".")[-1]}_dict': {'type': 'dict',

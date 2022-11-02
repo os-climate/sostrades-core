@@ -432,7 +432,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             #     self.assertEqual(self.exec_eng.dm.get_value(
             #         f'{self.study_name}.multi_scenarios.scenario_B.x'), 4)
 
-    def _test_03_dump_and_load_after_execute(self):
+    def test_03_dump_and_load_after_execute(self):
 
         builders = self.exec_eng.factory.get_builder_from_process(
             repo=self.repo, mod_id='test_disc1_disc3_very_simple_multi_scenario')
@@ -458,21 +458,21 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.' +
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
                         scenario + '.Disc3.power'] = 2
 
         dict_values[self.study_name +
                     '.multi_scenarios.name_list'] = ['name_1', 'name_2']
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
         dict_values[self.study_name + '.name_1.x'] = x1
         dict_values[self.study_name + '.name_2.x'] = x2
 
@@ -488,13 +488,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         y2 = a2 * x2 + b2
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.name_1.y'), y1)
+            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
 
         dump_dir = join(self.root_dir, self.namespace)
 
@@ -512,13 +512,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             dump_dir, exec_eng2, DirectLoadDump())
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.name_1.y'), y1)
+            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
         # Clean the dump folder at the end of the test
         self.dirs_to_del.append(
             join(self.root_dir, self.namespace))
