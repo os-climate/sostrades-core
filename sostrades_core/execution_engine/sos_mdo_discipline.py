@@ -84,9 +84,9 @@ class SoSMDODiscipline(MDODiscipline):
         """
         # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
         # send local data to the wrapper for i/o
-        self.sos_wrapp.local_data = self.local_data
-        self.sos_wrapp.input_data_names = self.get_input_data_names()
-        self.sos_wrapp.output_data_names = self.get_output_data_names()
+        # self.sos_wrapp.local_data = self.local_data
+        # self.sos_wrapp.input_data_names = self.get_input_data_names()
+        # self.sos_wrapp.output_data_names = self.get_output_data_names()
         # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
@@ -282,7 +282,6 @@ class SoSMDODiscipline(MDODiscipline):
         Overload compute_sos_jacobian of MDODiscipline to call the function in the discipline wrapp
         Then retrieves the 'jac_dict' attribute of the wrapp to update the self.jac
         """
-        self.sos_wrapp.get_sosdisc_inputs()
         self.sos_wrapp.compute_sos_jacobian()
         for y_key, x_key_dict in self.sos_wrapp.jac_dict.items():
             for x_key, value in x_key_dict.items():
@@ -427,6 +426,16 @@ class SoSMDODiscipline(MDODiscipline):
                     there is more than one input and output')
 
         return indices
+
+
+    @MDODiscipline.local_data.setter
+    def local_data(
+            self, data  # type: MutableMapping[str, Any]
+    ):  # type: (...) -> None
+        super(SoSMDODiscipline, type(self)).local_data.fset(self, data)
+        self.sos_wrapp.local_data = data
+        self.sos_wrapp.input_data_names = self.get_input_data_names()
+        self.sos_wrapp.output_data_names = self.get_output_data_names()
 
     # ----------------------------------------------------
     # ----------------------------------------------------

@@ -53,6 +53,7 @@ class SellarProblem(SoSWrapp):
         c_2 = self.c_2(y_2)
         obj += local_dv
         out = {'obj': obj, 'c_1': c_1, 'c_2': c_2}
+        print('x in SellarProblem : ', x)
         self.store_sos_outputs_values(out)
 
     @staticmethod
@@ -172,6 +173,7 @@ class Sellar1Df(SoSWrapp):
                                                      y_2.loc[y_2['years'] == year,
                                                              'value'].values[0]
             i += 1
+        print('x in Sellar1Df : ', x)
         return out
 
     def compute_sos_jacobian(self):

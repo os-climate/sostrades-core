@@ -195,7 +195,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     DESC_OUT = {
         RESIDUALS_HISTORY: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'dataframe',
-                            ProxyDiscipline.UNIT: '-'}
+                            ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}
     }
 
     eps0 = 1.0e-6
