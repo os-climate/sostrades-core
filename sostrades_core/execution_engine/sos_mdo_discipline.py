@@ -23,6 +23,8 @@ import logging
 from copy import deepcopy
 from pandas import DataFrame
 from numpy import ndarray, floating
+from scipy.sparse.lil import lil_matrix
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -102,7 +104,7 @@ class SoSMDODiscipline(MDODiscipline):
 
         # debug modes
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
-            self.__check_nan_in_data(self.local_data)
+            self._check_nan_in_data(self.local_data)
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
@@ -116,6 +118,185 @@ class SoSMDODiscipline(MDODiscipline):
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
+
+    def linearize(self, input_data=None, force_all=False, force_no_exec=False,
+                  exec_before_linearize=True):
+        """overloads GEMS linearize function
+        """
+
+        self.default_inputs = self._default_inputs
+        if input_data is not None:
+            self.default_inputs.update(input_data)
+
+        if self.linearization_mode == self.COMPLEX_STEP:
+            # is complex_step, switch type of inputs variables
+            # perturbed to complex
+            inputs, _ = self._retreive_diff_inouts(force_all)
+            def_inputs = self.default_inputs
+            for name in inputs:
+                def_inputs[name] = def_inputs[name].astype('complex128')
+        else:
+            pass
+
+        # need execution before the linearize
+        if not force_no_exec and exec_before_linearize:
+            self.reset_statuses_for_run()
+            self.exec_for_lin = True
+            self.execute(self.default_inputs)
+            self.exec_for_lin = False
+            force_no_exec = True
+            need_execution_after_lin = False
+
+        # need execution but after linearize, in the NR GEMSEO case an
+        # execution is done bfore the while loop which udates the local_data of
+        # each discipline
+        elif not force_no_exec and not exec_before_linearize:
+            force_no_exec = True
+            need_execution_after_lin = True
+
+        # no need of any execution
+        else:
+            need_execution_after_lin = False
+            # maybe no exec before the first linearize, GEMSEO needs a
+            # local_data with inputs and outputs for the jacobian computation
+            # if the local_data is empty
+            if self.local_data == {}:
+                own_data = {
+                    k: v for k, v in self.default_inputs.items() if self.is_input_existing(k) or self.is_output_existing(k)}
+                self.local_data = own_data
+
+        if self.check_linearize_data_changes and not self.is_sos_coupling:
+            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
+                self.default_inputs).items() if key in self.input_grammar.data_names}
+
+        # Set STATUS to LINEARIZE for GUI visualization
+        self.status=self.STATUS_LINEARIZE
+        result = MDODiscipline.linearize(
+            self, self.default_inputs, force_all, force_no_exec)
+        self.status = self.STATUS_DONE
+
+        self._check_nan_in_data(result)
+        if self.check_linearize_data_changes and not self.is_sos_coupling:
+            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
+                self.default_inputs).items() if key in disc_data_before_linearize.keys()}
+            is_output_error = True
+            output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
+                                                                disc_data_after_linearize,
+                                                                'Discipline data integrity through linearize',
+                                                                is_output_error=is_output_error)
+            if output_error != '':
+                raise ValueError(output_error)
+
+        if need_execution_after_lin:
+            self.reset_statuses_for_run()
+            self.execute(self.default_inputs)
+
+        return result
+
+    def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
+                       step=1e-7, threshold=1e-8, linearization_mode='auto',
+                       inputs=None, outputs=None, parallel=False,
+                       n_processes=MDODiscipline.N_CPUS,
+                       use_threading=False, wait_time_between_fork=0,
+                       auto_set_step=False, plot_result=False,
+                       file_path="jacobian_errors.pdf",
+                       show=False, figsize_x=10, figsize_y=10, input_column=None, output_column=None,
+                       dump_jac_path=None, load_jac_path=None):
+        """
+        Overload check jacobian to execute the init_execution
+        """
+
+        # The init execution allows to check jacobian without an execute before the check
+        # however if an execute was done, we do not want to restart the model
+        # and potentially loose informations to compute gradients (some
+        # gradients are computed with the model)
+        if self.status != self.STATUS_DONE:
+            self.init_execution()
+
+        # if dump_jac_path is provided, we trigger GEMSEO dump
+        if dump_jac_path is not None:
+            reference_jacobian_path = dump_jac_path
+            save_reference_jacobian = True
+        # if dump_jac_path is provided, we trigger GEMSEO dump
+        elif load_jac_path is not None:
+            reference_jacobian_path = load_jac_path
+            save_reference_jacobian = False
+        else:
+            reference_jacobian_path = None
+            save_reference_jacobian = False
+
+        approx = DisciplineJacApprox(
+            self,
+            derr_approx,
+            step,
+            parallel,
+            n_processes,
+            use_threading,
+            wait_time_between_fork,
+        )
+        if inputs is None:
+            inputs = self.get_input_data_names(filtered_inputs=True)
+        if outputs is None:
+            outputs = self.get_output_data_names(filtered_outputs=True)
+
+        if auto_set_step:
+            approx.auto_set_step(outputs, inputs, print_errors=True)
+
+        # Differentiate analytically
+        self.add_differentiated_inputs(inputs)
+        self.add_differentiated_outputs(outputs)
+        self.linearization_mode = linearization_mode
+        self.reset_statuses_for_run()
+        # Linearize performs execute() if needed
+        self.linearize(input_data)
+
+        if input_column is None and output_column is None:
+            indices = None
+        else:
+            indices = self._get_columns_indices(
+                inputs, outputs, input_column, output_column)
+
+        jac_arrays = {
+            key_out: {key_in: value.toarray() if not isinstance(value, ndarray) else value for key_in, value in
+                      subdict.items()}
+            for key_out, subdict in self.jac.items()}
+        o_k = approx.check_jacobian(
+            jac_arrays,
+            outputs,
+            inputs,
+            self,
+            threshold,
+            plot_result=plot_result,
+            file_path=file_path,
+            show=show,
+            figsize_x=figsize_x,
+            figsize_y=figsize_y,
+            reference_jacobian_path=reference_jacobian_path,
+            save_reference_jacobian=save_reference_jacobian,
+            indices=indices,
+        )
+        return o_k
+
+    def compute_sos_jacobian(self):
+        """
+        Overload compute_sos_jacobian of MDODiscipline to call the function in the discipline wrapp
+        Then retrieves the 'jac_dict' attribute of the wrapp to update the self.jac
+        """
+        self.sos_wrapp.get_sosdisc_inputs()
+        self.sos_wrapp.compute_sos_jacobian()
+        for y_key, x_key_dict in self.sos_wrapp.jac_dict.items():
+            for x_key, value in x_key_dict.items():
+                self.set_partial_derivative(y_key, x_key, value)
+
+    def set_partial_derivative(self, y_key, x_key, value):
+        '''
+        Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac
+        '''
+        
+        if x_key in self.jac[y_key]:
+            if isinstance(value, ndarray):
+                value = lil_matrix(value)
+            self.jac[y_key][x_key] = value
 
     # def create_io_full_name_map(self):
     #     """
@@ -195,8 +376,7 @@ class SoSMDODiscipline(MDODiscipline):
         if not filtered_outputs:
             return self.output_grammar.get_data_names()
         else:
-            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.get_data_names(),
-                                               logger=self.LOGGER)
+            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.get_data_names())
 
     def get_attributes_to_serialize(self):  # pylint: disable=R0201
         """
@@ -212,24 +392,60 @@ class SoSMDODiscipline(MDODiscipline):
 
         return super().get_attributes_to_serialize() + [self._NEW_ATTR_TO_SERIALIZE]
 
+    def _get_columns_indices(self, inputs, outputs, input_column, output_column):
+        """
+        returns indices of input_columns and output_columns
+        """
+        # Get boundaries of the jacobian to compare
+        if inputs is None:
+            inputs = self.get_input_data_names()
+        if outputs is None:
+            outputs = self.get_output_data_names()
+
+        indices = None
+        if input_column is not None or output_column is not None:
+            if len(inputs) == 1 and len(outputs) == 1:
+
+                if self.sos_disciplines is not None:
+                    for discipline in self.sos_disciplines:
+                        self.sos_wrapp.jac_boundaries.update(discipline.jac_boundaries)
+
+                indices = {}
+                if output_column is not None:
+                    jac_bnd = self.sos_wrapp.jac_boundaries[f'{outputs[0]},{output_column}']
+                    tup = [jac_bnd['start'], jac_bnd['end']]
+                    indices[outputs[0]] = [i for i in range(*tup)]
+
+                if input_column is not None:
+                    jac_bnd = self.sos_wrapp.jac_boundaries[f'{inputs[0]},{input_column}']
+                    tup = [jac_bnd['start'], jac_bnd['end']]
+                    indices[inputs[0]] = [i for i in range(*tup)]
+
+            else:
+                raise Exception(
+                    'Not possible to use input_column and output_column options when \
+                    there is more than one input and output')
+
+        return indices
+
     # ----------------------------------------------------
     # ----------------------------------------------------
     #  METHODS TO DEBUG DISCIPLINE
     # ----------------------------------------------------
     # ----------------------------------------------------
 
-    def __check_nan_in_data(self, data):
+    def _check_nan_in_data(self, data):
         """ Using entry data, check if nan value exist in data's
 
         :params: data
         :type: composite data
 
         """
-        has_nan = self.__check_nan_in_data_rec(data, "")
+        has_nan = self._check_nan_in_data_rec(data, "")
         if has_nan:
             raise ValueError(f'NaN values found in {self.name}')
 
-    def __check_nan_in_data_rec(self, data, parent_key):
+    def _check_nan_in_data_rec(self, data, parent_key):
         """
         Using entry data, check if nan value exist in data's as recursive method
 
@@ -261,7 +477,7 @@ class SoSMDODiscipline(MDODiscipline):
                 elif pd.isnull(data_value).any():
                     nan_found = True
             elif isinstance(data_value, dict):
-                self.__check_nan_in_data_rec(
+                self._check_nan_in_data_rec(
                     data_value, f'{parent_key}/{data_key}')
             elif isinstance(data_value, floating):
                 if pd.isnull(data_value).any():

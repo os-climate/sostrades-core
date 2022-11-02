@@ -136,8 +136,8 @@ class MDODisciplineWrapp(object):
                                                    sos_wrapp=self.wrapper,
                                                    reduced_dm=reduced_dm)
             self._init_grammar_with_keys(proxy)
-#             self._update_all_default_values(input_data)
             self._set_wrapper_attributes(proxy, self.wrapper)
+            self._update_all_default_values(proxy)
             # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
@@ -193,7 +193,7 @@ class MDODisciplineWrapp(object):
                          if not check_input or key in self.mdo_discipline.input_grammar.get_data_names()]
             self.mdo_discipline._default_inputs.update(to_update)
 
-    def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None):  # type: (...) -> None
+    def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None, reduced_dm=None):  # type: (...) -> None
         """
         MDAChain instantiation when owned by a ProxyCoupling.
 
@@ -205,6 +205,7 @@ class MDODisciplineWrapp(object):
         if self.wrapping_mode == 'SoSTrades':
             mdo_discipline = SoSMDAChain(
                 disciplines=sub_mdo_disciplines,
+                reduced_dm=reduced_dm,
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
                 ** proxy._get_numerical_inputs(),
@@ -234,6 +235,15 @@ class MDODisciplineWrapp(object):
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
+
+    def _update_all_default_values(self, proxy):
+        '''Store all input grammar data names' values from input data in default values of mdo_discipline
+        '''
+
+        for key, value in proxy.get_data_in().items():
+            if value['default'] is not None:
+                full_key = proxy.get_var_full_name(key, proxy.get_data_in())
+                self.mdo_discipline._default_inputs.update({full_key: value['default']})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
         ''' 

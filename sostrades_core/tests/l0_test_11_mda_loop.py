@@ -640,7 +640,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-15
-        values_dict['EE.n_processes'] = 4
+        values_dict['EE.n_processes'] = 1
         values_dict['EE.max_mda_iter'] = 50
         values_dict['EE.sub_mda_class'] = 'MDANewtonRaphson'
         values_dict['EE.linear_solver_MDA_options'] = {
@@ -668,7 +668,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict = {}
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-20
-        values_dict['EE.n_processes'] = 2
+        values_dict['EE.n_processes'] = 1
         values_dict['EE.max_mda_iter'] = 100
         values_dict['EE.sub_mda_class'] = 'MDANewtonRaphson'
         values_dict['EE.linear_solver_MDA_options'] = {
@@ -694,7 +694,7 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(values_dict['EE.linear_solver_MDA_options']['max_iter'],
                          sub_mda_class.linear_solver_options['max_iter'])
 
-#         exec_eng.execute()
+        exec_eng.execute()
 
     def test_09_mda_numerical_options_GS(self):
 
@@ -1032,6 +1032,8 @@ class TestMDALoop(unittest.TestCase):
                          sub_mda_class.linear_solver_options['max_iter'])
 
         values_dict = {}
+        values_dict['EE.h'] = array([8., 9.])
+        values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-13
 
@@ -1060,13 +1062,13 @@ class TestMDALoop(unittest.TestCase):
 
         import tracemalloc
         tracemalloc.start()
-#
-#         exec_eng.execute()
-#         current, peak = tracemalloc.get_traced_memory()
-#         print(
-#             f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
-#
-#         tracemalloc.stop()
+
+        exec_eng.execute()
+        current, peak = tracemalloc.get_traced_memory()
+        print(
+            f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+
+        tracemalloc.stop()
 
     def test_16_mda_numerical_options_GSPureNRorGSMDA(self):
 

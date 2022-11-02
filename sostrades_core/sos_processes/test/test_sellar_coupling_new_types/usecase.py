@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.study_manager import StudyManager
+import numpy as np
+import pandas as pd
 
 
 class Study(StudyManager):
@@ -23,18 +24,28 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
+        ns = f'{self.study_name}'
+        coupling_name = "SellarCoupling"
 
-        dict_values = {
-            f'{self.study_name}.Disc1.x': 3,
-            f'{self.study_name}.Disc1.a': 1,
-            f'{self.study_name}.Disc1.b': 5,
-            f'{self.study_name}.Disc1.name': 'A1'
-            }
-        return dict_values
+        df = pd.DataFrame({'years': np.arange(1, 5)})
+        df['value'] = 1.0
+
+        dict_x = {'years': np.arange(1, 5), 'value': np.ones(4)}
+        disc_dict = {}
+        # Sellar inputs
+        disc_dict[f'{ns}.{coupling_name}.x'] = dict_x
+        disc_dict[f'{ns}.{coupling_name}.y_1'] = df
+        disc_dict[f'{ns}.{coupling_name}.y_2'] = df
+        disc_dict[f'{ns}.{coupling_name}.z'] = np.array([1., 1.])
+        disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{ns}.{coupling_name}.max_mda_iter'] = 100
+        disc_dict[f'{ns}.{coupling_name}.tolerance'] = 1e-12 
+
+        return [disc_dict]
 
 
 if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.run(for_test=True)
-    
+    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
+    uc_cls.run()

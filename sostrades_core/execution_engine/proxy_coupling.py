@@ -637,7 +637,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             mda_chain_n_calls = None
 
         # create_mda_chain from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self)
+        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
 
         # set cache cache of gemseo object
         self.set_gemseo_disciplines_caches(mda_chain_cache, mda_chain_n_calls)

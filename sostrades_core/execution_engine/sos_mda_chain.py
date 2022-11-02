@@ -23,6 +23,7 @@ from copy import deepcopy, copy
 from multiprocessing import cpu_count
 
 from pandas import DataFrame
+from numpy import ndarray, floating
 from itertools import repeat
 import platform
 
@@ -34,7 +35,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda
-
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 
 import logging
 
@@ -89,6 +90,7 @@ class SoSMDAChain(MDAChain):
     def __init__(self,
 #             ee,
             disciplines,  # type: Sequence[MDODiscipline]
+            reduced_dm=None, # type: dict
             sub_mda_class="MDAJacobi",  # type: str
             max_mda_iter=20,  # type: int
             name=None,  # type: Optional[str]
@@ -112,6 +114,7 @@ class SoSMDAChain(MDAChain):
 #         self.ee = ee
 #         self.dm = ee.dm
         self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
+        self.reduced_dm = reduced_dm
         
         MDAChain.__init__(self,
             disciplines,  # type: Sequence[MDODiscipline]
@@ -284,8 +287,10 @@ class SoSMDAChain(MDAChain):
         '''
         Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
         '''
+        # LOGGER.info(
+        #     f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
         LOGGER.info(
-            f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
+            f'Computing the gradient for the MDA : {self.name}')
 
         return self._old_discipline_linearize(input_data=input_data,
                                               force_all=force_all,
@@ -298,77 +303,8 @@ class SoSMDAChain(MDAChain):
         # set GEM's default_inputs for gradient computation purposes
         # to be deleted during GEMS update
 
-        if input_data is not None:
-            self.default_inputs = input_data
-        else:
-            self.default_inputs = {}
-            input_data = self.get_input_data_for_gems()
-            self.default_inputs = input_data
-
-        if self.linearization_mode == self.COMPLEX_STEP:
-            # is complex_step, switch type of inputs variables
-            # perturbed to complex
-            inputs, _ = self._retreive_diff_inouts(force_all)
-            def_inputs = self.default_inputs
-            for name in inputs:
-                def_inputs[name] = def_inputs[name].astype('complex128')
-        else:
-            pass
-
-        # need execution before the linearize
-        if not force_no_exec and exec_before_linearize:
-            self.reset_statuses_for_run()
-            self.exec_for_lin = True
-            self.execute(input_data)
-            self.exec_for_lin = False
-            force_no_exec = True
-            need_execution_after_lin = False
-
-        # need execution but after linearize, in the NR GEMSEO case an
-        # execution is done bfore the while loop which udates the local_data of
-        # each discipline
-        elif not force_no_exec and not exec_before_linearize:
-            force_no_exec = True
-            need_execution_after_lin = True
-
-        # no need of any execution
-        else:
-            need_execution_after_lin = False
-            # maybe no exec before the first linearize, GEMSEO needs a
-            # local_data with inputs and outputs for the jacobian computation
-            # if the local_data is empty
-            if self.local_data == {}:
-                own_data = {
-                    k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
-                self.local_data = own_data
-
-        if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
-                input_data).items() if key in self.input_grammar.data_names}
-
-        # set LINEARIZE status to get inputs from local_data instead of
-        # datamanager
-        self._update_status_dm(self.STATUS_LINEARIZE)
-        result = MDODiscipline.linearize(
+        result = SoSMDODiscipline.linearize(
             self, input_data, force_all, force_no_exec)
-        # reset DONE status
-        self._update_status_dm(self.STATUS_DONE)
-
-        self.__check_nan_in_data(result)
-        if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
-                input_data).items() if key in disc_data_before_linearize.keys()}
-            is_output_error = True
-            output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                                disc_data_after_linearize,
-                                                                'Discipline data integrity through linearize',
-                                                                is_output_error=is_output_error)
-            if output_error != '':
-                raise ValueError(output_error)
-
-        if need_execution_after_lin:
-            self.reset_statuses_for_run()
-            self.execute(input_data)
 
         return result
 
@@ -388,7 +324,7 @@ class SoSMDAChain(MDAChain):
         for disc in self.sos_disciplines:
             disc.init_execution()
 
-        indices = SoSDisciplineBuilder._get_columns_indices(
+        indices = SoSMDODiscipline._get_columns_indices(
             self, inputs, outputs, input_column, output_column)
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
@@ -403,10 +339,16 @@ class SoSMDAChain(MDAChain):
             reference_jacobian_path = None
             save_reference_jacobian = False
 
-        if inputs is None:
-            inputs = self.get_input_data_names(filtered_inputs=True)
         if outputs is None:
-            outputs = self.get_output_data_names(filtered_outputs=True)
+            output_list = []
+            for disc in self.sos_disciplines:
+                output_list += disc.get_output_data_names(filtered_outputs=True)
+            outputs = list(set(output_list))
+        if inputs is None:
+            input_list = []
+            for disc in self.sos_disciplines:
+                input_list += disc.get_input_data_names(filtered_inputs=True)
+            inputs = list(set(input_list))
 
         return MDAChain.check_jacobian(self,
                                        input_data=input_data,
@@ -577,3 +519,64 @@ class SoSMDAChain(MDAChain):
 
         return disciplines
 
+    #  METHODS TO DEBUG MDA CHAIN (NEEDED FOR LINEARIZE)
+    # ----------------------------------------------------
+    # ----------------------------------------------------
+
+    def _check_nan_in_data(self, data):
+        """ Using entry data, check if nan value exist in data's
+
+        :params: data
+        :type: composite data
+
+        """
+        has_nan = self._check_nan_in_data_rec(data, "")
+        if has_nan:
+            raise ValueError(f'NaN values found in {self.name}')
+
+    def _check_nan_in_data_rec(self, data, parent_key):
+        """
+        Using entry data, check if nan value exist in data's as recursive method
+
+        :params: data
+        :type: composite data
+
+        :params: parent_key, on composite type (dict), reference parent key
+        :type: str
+
+        """
+        has_nan = False
+        import pandas as pd
+        for data_key, data_value in data.items():
+
+            nan_found = False
+            if isinstance(data_value, DataFrame):
+                if data_value.isnull().any():
+                    nan_found = True
+            elif isinstance(data_value, ndarray):
+                # None value in list throw an exception when used with isnan
+                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
+                    nan_found = True
+                elif pd.isnull(list(data_value)).any():
+                    nan_found = True
+            elif isinstance(data_value, list):
+                # None value in list throw an exception when used with isnan
+                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
+                    nan_found = True
+                elif pd.isnull(data_value).any():
+                    nan_found = True
+            elif isinstance(data_value, dict):
+                self._check_nan_in_data_rec(
+                    data_value, f'{parent_key}/{data_key}')
+            elif isinstance(data_value, floating):
+                if pd.isnull(data_value).any():
+                    nan_found = True
+
+            if nan_found:
+                full_key = data_key
+                if len(parent_key) > 0:
+                    full_key = f'{parent_key}/{data_key}'
+                LOGGER.debug(f'NaN values found in {full_key}')
+                LOGGER.debug(data_value)
+                has_nan = True
+        return has_nan
