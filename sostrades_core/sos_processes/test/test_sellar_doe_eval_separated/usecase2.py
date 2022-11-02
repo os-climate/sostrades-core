@@ -21,14 +21,21 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 class Study(StudyManager):
 
-    def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine)
+    def __init__(self, run_usecase=False, execution_engine=None):
+        super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
+        dspace_dict = {'variable': ['x', 'z'],
+
+                       'lower_bnd': [0., [-10., 0.]],
+                       'upper_bnd': [10., [10., 10.]],
+
+                       }
+        dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                              'y_2',
                                              'z']}
         input_selection_x_z = pd.DataFrame(input_selection_x_z)
@@ -40,20 +47,12 @@ class Study(StudyManager):
 
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "CustomDOE"
-        disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
-        disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_obj_y1_y2
-        x_values = [array([9.379763880395856]), array([8.88644794300546]),
-                    array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
-        z_values = [array([1.515949043849158, 5.6317362409322165]),
-                    array([-1.1962705421254114, 6.523436208612142]),
-                    array([-1.9947578026244557, 4.822570933860785]
-                          ), array([1.7490668861813, 3.617234050834533]),
-                    array([-9.316161097119341, 9.918161285133076])]
-
-        samples_dict = {'x': x_values, 'z': z_values}
-        samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.DoEEval.doe_df'] = samples_df
+        n_samples = 100
+        disc_dict[f'{ns}.DoE.sampling_algo'] = "fullfact"
+        disc_dict[f'{ns}.DoE.design_space'] = dspace
+        disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{ns}.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.eval_outputs'] = output_selection_obj_y1_y2
 
         # Sellar inputs
         local_dv = 10.
@@ -61,14 +60,12 @@ class Study(StudyManager):
         disc_dict[f'{ns}.y_1'] = array([1.])
         disc_dict[f'{ns}.y_2'] = array([1.])
         disc_dict[f'{ns}.z'] = array([1., 1.])
-        disc_dict[f'{ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
-        disc_dict[f'{ns}.DoEEval.max_mda_iter'] = 100
-        disc_dict[f'{ns}.DoEEval.tolerance'] = 1e-10
+        disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 
 
 if '__main__' == __name__:
-    uc_cls = Study()
+    uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.run()

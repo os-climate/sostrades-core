@@ -60,7 +60,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.y_1'] = array([1.])
         disc_dict[f'{ns}.y_2'] = array([1.])
         disc_dict[f'{ns}.z'] = array([1., 1.])
-        disc_dict[f'{ns}.DoEEval.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.DoEEval.subprocess.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 
