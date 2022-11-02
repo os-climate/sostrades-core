@@ -357,7 +357,7 @@ class SosFactory:
 
         return builder
 
-    def create_scatter_builder(self, sos_name, map_name, cls_builder):
+    def create_scatter_builder(self, sos_name, map_name, cls_builder, coupling_per_scatter=False):
         """
         create a builder  defined by a scatter type SoSDisciplineScatter
         """
@@ -370,7 +370,7 @@ class SosFactory:
         )
         builder.set_builder_info('map_name', map_name)
         builder.set_builder_info('cls_builder', cls_builder)
-
+        builder.set_builder_info('coupling_per_scatter', coupling_per_scatter)
         return builder
 
     def create_value_block_builder(

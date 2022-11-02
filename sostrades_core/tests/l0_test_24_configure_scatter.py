@@ -244,3 +244,71 @@ class TestScatterDiscipline(unittest.TestCase):
         last_dm_values.remove('Scatter.z_dict')
         self.assertListEqual(raw_dm_values, last_dm_values,
                              'After removing discipline, data manager variables list is different than raw list')
+
+
+    def test_05_multiinstance_modification_remove_one_aircraft_1_on_coupling_per_scatter(self):
+        disc_list_full = ['Scatter', 'Scatter.scatter_node',
+                          'Scatter.scatter_node.CH19_H2', 'Scatter.scatter_node.CH19_H2.Disc1', 'Scatter.scatter_node.CH19_H2.Disc2',
+                          'Scatter.scatter_node.CH19_Kero', 'Scatter.scatter_node.CH19_Kero.Disc1', 'Scatter.scatter_node.CH19_Kero.Disc2']
+        disc_list_1_1 = disc_list_full[:-3]
+
+        self.exec_eng = ExecutionEngine(self.name)
+
+        # set scatter build map
+        mydict = {'input_name': 'AC_list',
+                  'input_type': 'string_list',
+                  'input_ns': 'ns_barrierr',
+                  'output_name': 'ac_name',
+                  'scatter_ns': 'ns_ac',
+                  'gather_ns': 'ns_barrierr'
+                  }
+        self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
+
+        # set namespace definition
+        self.exec_eng.ns_manager.add_ns('ns_barrierr', self.name)
+        # get coupling process builder
+        sub_proc = 'test_disc1_disc2_coupling'
+        cls_list = self.exec_eng.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
+                                                            mod_id=sub_proc)
+
+        # create scatter builder with map and coupling process
+        scatter_node = self.exec_eng.factory.create_scatter_builder(
+            'scatter_node','AC_list', cls_list, coupling_per_scatter=True)
+
+        # set scatter builder to root process
+        self.exec_eng.factory.set_builders_to_coupling_builder(scatter_node)
+        self.exec_eng.configure()
+
+
+        private_values_multiproduct = {
+            f'{self.name}.AC_list': self.list_aircraft_1}
+
+        self.exec_eng.dm.set_values_from_dict(private_values_multiproduct)
+
+        self.exec_eng.configure()
+
+        print('Treeview for test test_03_multiinstance_modification_remove_one_aircraft_1')
+        self.exec_eng.display_treeview_nodes()
+
+        disciplines_list = list(self.exec_eng.dm.disciplines_id_map.keys())
+        disciplines_list.sort()
+
+        self.assertListEqual(disc_list_full, disciplines_list,
+                             'Discipline between reference and generated are different')
+
+        #-- remove on aircraft
+        private_values_multiproduct = {
+            f'{self.name}.AC_list': self.list_aircraft_remove_1_1}
+
+        self.exec_eng.dm.set_values_from_dict(private_values_multiproduct)
+
+        self.exec_eng.configure()
+
+        print('Treeview for test test_03_multiinstance_modification_remove_one_aircraft_1')
+        self.exec_eng.display_treeview_nodes()
+
+        disciplines_list = list(self.exec_eng.dm.disciplines_id_map.keys())
+        disciplines_list.sort()
+
+        self.assertListEqual(disc_list_1_1, disciplines_list,
+                             'Discipline between reference and generated are different')

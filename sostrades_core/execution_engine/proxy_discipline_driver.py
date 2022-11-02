@@ -84,7 +84,7 @@ class ProxyDisciplineDriver(ProxyDisciplineBuilder):
             ProxyDiscipline.configure(self)
             self.configure_driver()
 
-        if len(self.get_disciplines_to_configure()) == 0:
+        if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
             # if len(self.proxy_disciplines) == 1:
                 # only for 1 subcoupling, so not handling cases like driver of

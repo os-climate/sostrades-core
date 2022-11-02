@@ -376,6 +376,7 @@ class ProxyDiscipline(object):
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
             self.add_status_observers_to_gemseo_disc()
+
         else:
             # TODO : this should only be necessary when changes in structuring
             # variables happened?

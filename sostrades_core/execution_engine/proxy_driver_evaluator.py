@@ -99,8 +99,8 @@ class ProxyDriverEvaluator(ProxyDisciplineDriver):
             scatter_builder = None
         else:
             # builder of the scatter in aggregation
-            scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder) # TODO: nice to remove scatter node
-            scatter_builder.set_builder_info('coupling_per_scatter', True) #TODO: is hardcoded also in VerySimpleMS/SimpleMS
+            scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder, # TODO: nice to remove scatter node
+                                                                     coupling_per_scatter=True) #NB: is hardcoded also in VerySimpleMS/SimpleMS
         self.scatter_process_builder = scatter_builder
 
     def multi_instance_build(self):
@@ -113,7 +113,7 @@ class ProxyDriverEvaluator(ProxyDisciplineDriver):
             if self.scatter_process_builder is not None:
                 super()._custom_build([self.scatter_process_builder])
             else:
-                self.logger.warn(f'Scatter builder not configured in {self.sos_name}, map_name might be missing')
+                self.logger.warn(f'Scatter builder not configured in {self.sos_name}, map_name missing?')
 
     # MONO INSTANCE PROCESS
     def _set_eval_process_builder(self):
