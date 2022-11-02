@@ -219,7 +219,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 #             for graph in post_proc_list[0].post_processings:
 #                 graph.to_plotly().show()
 
-    def _test_02_consecutive_configure(self):
+    def test_02_consecutive_configure(self):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
@@ -280,7 +280,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        # # check tree view with scenario_1 and scenario_2 #TODO: reactivate checks when treeview is fixed
+        # # # check tree view with scenario_1 and scenario_2 #TODO: reactivate checks when treeview is fixed
         # exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
         #                f'|_ {self.study_name}',
         #                f'\t|_ multi_scenarios',
@@ -312,8 +312,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        # FIXME: at this point the treeview is not clean even though the proxy tree is
-        # # check tree view after scenario_2 deletion to validate cleaning
+        # # check tree view after scenario_2 deletion to validate cleaning #TODO: reactivate checks when treeview is fixed
         # exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
         #                f'|_ {self.study_name}',
         #                f'\t|_ multi_scenarios',
@@ -330,13 +329,11 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         # exp_tv_str = '\n'.join(exp_tv_list)
         # assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        #FIXME: variables don't get cleaned
-        ##
-        # self.assertListEqual(
-        #     [key for key in self.exec_eng.dm.data_id_map.keys()
-        #      if 'scenario_2' in key and key.split('.')[-1] not in ProxyDiscipline.NUM_DESC_IN and
-        #      key.split('.')[-1] not in ProxyCoupling.DESC_IN],
-        #     [])
+        self.assertListEqual(
+            [key for key in self.exec_eng.dm.data_id_map.keys()
+             if 'scenario_2' in key and key.split('.')[-1] not in ProxyDiscipline.NUM_DESC_IN and
+             key.split('.')[-1] not in ProxyCoupling.DESC_IN],
+            [])
 
         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
             self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
@@ -412,28 +409,28 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, SoSVerySimpleMultiScenario):
-                self.assertListEqual(
-                    [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['scenario_list'])
-                self.assertListEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_A', 'scenario_B'])
-                self.assertListEqual(
-                    list(self.exec_eng.dm.get_disciplines_with_name(
-                        f'{self.study_name}')[0].get_sosdisc_outputs().keys()),
-                    ['residuals_history'])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
+            # if isinstance(disc, SoSVerySimpleMultiScenario):
+            self.assertListEqual(
+                [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['scenario_list'])
+            self.assertListEqual(self.exec_eng.dm.get_value(
+                f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_A', 'scenario_B'])
+            self.assertListEqual(
+                list(self.exec_eng.dm.get_disciplines_with_name(
+                    f'{self.study_name}')[0].get_sosdisc_outputs().keys()),
+                ['residuals_history'])
 
-            elif isinstance(disc, SoSScatterData):
-                self.assertListEqual(
-                    list(disc.get_data_io_dict('in').keys()), ['x_dict', 'scenario_list'])
-                self.assertListEqual(
-                    list(disc.get_data_io_dict('out').keys()), ['scenario_A.x', 'scenario_B.x'])
-                self.assertDictEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.x_dict'), {'scenario_A': 2, 'scenario_B': 4})
-                self.assertEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_A.x'), 2)
-                self.assertEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_B.x'), 4)
+            # elif isinstance(disc, SoSScatterData):
+            #     self.assertListEqual(
+            #         list(disc.get_data_io_dict('in').keys()), ['x_dict', 'scenario_list'])
+            #     self.assertListEqual(
+            #         list(disc.get_data_io_dict('out').keys()), ['scenario_A.x', 'scenario_B.x'])
+            #     self.assertDictEqual(self.exec_eng.dm.get_value(
+            #         f'{self.study_name}.multi_scenarios.x_dict'), {'scenario_A': 2, 'scenario_B': 4})
+            #     self.assertEqual(self.exec_eng.dm.get_value(
+            #         f'{self.study_name}.multi_scenarios.scenario_A.x'), 2)
+            #     self.assertEqual(self.exec_eng.dm.get_value(
+            #         f'{self.study_name}.multi_scenarios.scenario_B.x'), 4)
 
     def _test_03_dump_and_load_after_execute(self):
 
