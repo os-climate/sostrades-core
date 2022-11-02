@@ -333,8 +333,8 @@ class DoeWrapper(SoSWrapp):
                                                         self.VARIABLES: ('string', None, False),
                                                         self.VALUES: ('string', None, True)}}})
             all_options = list(default_dict.keys())
-            if 'algo_options' in disc_in and algo_name_has_changed:
-                disc_in['algo_options']['value'] = default_dict
+            # if 'algo_options' in disc_in and algo_name_has_changed:
+            #     disc_in['algo_options']['value'] = default_dict
             if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
                     disc_in['algo_options']['value'].keys()) != all_options:
                 options_map = ChainMap(
