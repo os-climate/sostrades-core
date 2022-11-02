@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.tools.filter.filter import filter_variables_to_convert
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -343,13 +345,13 @@ class SoSMDAChain(MDAChain):
             output_list = []
             for disc in self.sos_disciplines:
                 output_list += disc.get_output_data_names(filtered_outputs=True)
-            outputs = list(set(output_list))
+            outputs = self.get_output_data_names(filtered_outputs=True)#list(set(output_list))
         if inputs is None:
             input_list = []
             for disc in self.sos_disciplines:
                 input_list += disc.get_input_data_names(filtered_inputs=True)
-            inputs = list(set(input_list))
-
+            inputs = self.get_input_data_names(filtered_inputs=True)#list(set(input_list))
+        print('Check jacobian mda_chain : ', linearization_mode)
         return MDAChain.check_jacobian(self,
                                        input_data=input_data,
                                        derr_approx=derr_approx,
@@ -580,3 +582,35 @@ class SoSMDAChain(MDAChain):
                 LOGGER.debug(data_value)
                 has_nan = True
         return has_nan
+
+    def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
+        """
+        Retrieve the names of the input variables from the input_grammar.
+
+        Arguments:
+            filtered_inputs (bool): flag whether to filter variables
+
+        Return:
+            List[string] The names of the input variables.
+        """
+        if not filtered_inputs:
+            return self.input_grammar.get_data_names()
+        else:
+            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
+                                                    logger=LOGGER)
+
+    def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
+        """
+        Retrieve the names of the output variables from the output_grammar
+
+        Arguments:
+            filtered_outputs (bool): flag whether to filter variables
+
+        Return:
+            List[string] The names of the output variables.
+        """
+        if not filtered_outputs:
+            return self.output_grammar.get_data_names()
+        else:
+            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.get_data_names())
+
