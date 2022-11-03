@@ -651,3 +651,108 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 'scenario_1.o', 'scenario_2.o', 'scenario_list'])
             self.assertListEqual(
                 list(gather_disc3.get_data_out().keys()), ['o_dict'])
+
+
+
+    def test_05_get_samples_after_crash(self):
+        #FIXME: inquire why not working, add asserts
+
+        # scatter build map
+        ac_map = {'input_name': 'name_list',
+                  'input_type': 'string_list',
+                  'input_ns': 'ns_scatter_scenario',
+                  'output_name': 'ac_name',
+                  'scatter_ns': 'ns_ac',
+                  'gather_ns': 'ns_scenario',
+                  'ns_to_update': ['ns_data_ac']}
+
+        self.exec_eng.smaps_manager.add_build_map('name_list', ac_map)
+
+        # scenario build map
+        scenario_map = {'input_name': 'scenario_list',
+                        'input_type': 'string_list',
+                        'input_ns': 'ns_scatter_scenario',
+                        'output_name': 'scenario_name',
+                        'scatter_ns': 'ns_scenario',
+                        'gather_ns': 'ns_scatter_scenario',
+                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
+
+        self.exec_eng.smaps_manager.add_build_map(
+            'scenario_list', scenario_map)
+
+        # shared namespace
+        self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_scatter_scenario', 'MyCase.multi_scenarios')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_disc3', 'MyCase.multi_scenarios.scatter_temp.Disc3')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_out_disc3', 'MyCase.multi_scenarios')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_data_ac', 'MyCase')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_post_proc', 'MyCase.Post-processing')
+
+        # instantiate factory # get instantiator from Discipline class
+
+        builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                             mod_id='test_disc1_scenario')
+
+        scatter_list = self.exec_eng.factory.create_multi_scatter_builder_from_list(
+            'name_list', builder_list=builder_list, autogather=False) # TODO: handle autogather input order and set to True...
+
+        mod_list = f'{self.base_path}.disc3_scenario.Disc3'
+        disc3_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc3', mod_list)
+        scatter_list.append(disc3_builder)
+
+        multi_scenarios = self.exec_eng.factory.create_very_simple_multi_scenario_driver(
+            'multi_scenarios', 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing')
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            multi_scenarios)
+        self.exec_eng.configure()
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
+            'scenario_1', 'scenario_2']
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            x1 = 2.
+            x2 = 4.
+            a1 = 3
+            b1 = 4
+            a2 = 6
+            b2 = 2
+
+            dict_values[self.study_name + '.name_1.a'] = a1
+            dict_values[self.study_name + '.name_2.a'] = a2
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+                        scenario + '.Disc1.name_1.b'] = b1
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+                        scenario + '.Disc1.name_2.b'] = b2
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+                        scenario + '.Disc3.constant'] = 3
+            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+                        scenario + '.Disc3.power'] = 2
+
+        dict_values[self.study_name +
+                    '.multi_scenarios.name_list'] = ['name_1', 'name_2']
+        dict_values[self.study_name +
+                    '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
+        dict_values[self.study_name +
+                    '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
+        # dict_values[self.study_name + '.name_1.x'] = x1
+        dict_values[self.study_name + '.name_2.x'] = x2
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.dm.set_values_from_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+        try:
+            self.exec_eng.execute()
+        except:
+            pass
