@@ -652,11 +652,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             self.assertListEqual(
                 list(gather_disc3.get_data_out().keys()), ['o_dict'])
 
-
-
     def test_05_get_samples_after_crash(self):
-        #FIXME: inquire why not working, add asserts
-
         # scatter build map
         ac_map = {'input_name': 'name_list',
                   'input_type': 'string_list',
@@ -746,13 +742,25 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                     '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
                     '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
+
+        # missing input x1:
         # dict_values[self.study_name + '.name_1.x'] = x1
+
         dict_values[self.study_name + '.name_2.x'] = x2
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.dm.set_values_from_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
         try:
+             # execute fails because of missing input x1 => ValueError
             self.exec_eng.execute()
-        except:
-            pass
+        except ValueError:
+            # check that all variables have been loaded on dm at the end of the execution
+            for var in self.exec_eng.dm.data_id_map.keys():
+                dm_value = self.exec_eng.dm.get_value(var)
+                if var not in dict_values:
+                    # default inputs and all outputs
+                    self.assertEqual(self.exec_eng.dm.get_data(var, 'default'), dm_value)
+                else:
+                    # user defined inputs
+                    self.assertEqual(dict_values[var], dm_value)
