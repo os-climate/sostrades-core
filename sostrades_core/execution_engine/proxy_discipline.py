@@ -1743,7 +1743,7 @@ class ProxyDiscipline(object):
         Update cache_map dict in DM with cache and its children recursively
         '''
 
-        mdo_discipline = self.mdo_discipline_wrapp.mdo_discipline
+        mdo_discipline = self.mdo_discipline_wrapp.mdo_discipline if self.mdo_discipline_wrapp is not None else None
         if mdo_discipline is not None and mdo_discipline.cache is not None:
             self._store_cache_with_hashed_uid(mdo_discipline)
         # store children cache recursively
