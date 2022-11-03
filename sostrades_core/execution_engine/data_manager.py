@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -27,6 +28,7 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
+from gemseo.caches.simple_cache import SimpleCache
 
 TYPE = ProxyDiscipline.TYPE
 VALUE = ProxyDiscipline.VALUE
@@ -103,16 +105,62 @@ class DataManager:
             h.update(string.encode())
         return h.digest()
 
-    def load_gemseo_disciplines_cache(self, cache_map):
+    def reinit_cache_map(self):
+        self.cache_map = {}
+        self.gemseo_disciplines_id_map = {}
+
+    def fill_cache_map(self, disc_info_list, disc):
         '''
-        Store gemseo disciplines cache from cache_map using gemseo_disciplines_id_map
+        Fill the cache_map for the dump/load cache method 
+        '''
+        hashed_uid = self.generate_hashed_uid(disc_info_list)
+        self.cache_map[hashed_uid] = disc.cache
+        # store disc in DM map
+        if hashed_uid in self.gemseo_disciplines_id_map:
+            raise Exception(
+                'The hashed_uid to fill the cache_map must be unique')
+        else:
+            self.gemseo_disciplines_id_map[hashed_uid] = disc
+
+    def delete_hashed_id_in_cache_map(self, hashed_uid):
+
+        if hashed_uid in self.cache_map:
+            del self.cache_map[hashed_uid]
+            del self.gemseo_disciplines_id_map[hashed_uid]
+
+    def fill_gemseo_caches_with_unanonymized_cache_map(self, cache_map):
+        '''
+        Fill gemseo discipline cache from cache_map using gemseo_disciplines_id_map
         '''
         # update cache of all gemseo disciplines with loaded cache_map
-        for disc_id, disc_cache in cache_map.items():
+        for disc_id, serialized_cache in cache_map.items():
             if disc_id in self.gemseo_disciplines_id_map:
-                self.cache_map[disc_id] = disc_cache
-                for disc in self.gemseo_disciplines_id_map[disc_id]:
-                    disc.cache = disc_cache
+                disc_cache = self.cache_map[disc_id]
+                self.fill_cache_with_serialized_cache(
+                    disc_cache, serialized_cache)
+#                 for disc in self.gemseo_disciplines_id_map[disc_id]:
+#                     disc.cache = disc_cache
+
+    def fill_cache_with_serialized_cache(self, empty_cache, serialized_cache):
+        '''
+        Fill empty cache from prepare execution with the serialized cache (dict) found in the pickle
+        '''
+
+        if isinstance(empty_cache, SimpleCache):
+
+            cached_inputs = serialized_cache[1]['inputs']
+            in_names = list(cached_inputs.keys())
+            cached_outputs = serialized_cache[1]['outputs']
+            out_names = list(cached_outputs.keys())
+            empty_cache.cache_outputs(cached_inputs, in_names,
+                                      cached_outputs, out_names)
+#
+            if 'jacobian' in serialized_cache[1]:
+                cached_jac = serialized_cache[1]['jacobian']
+                empty_cache.cache_jacobian(cached_inputs, in_names, cached_jac)
+        else:
+            self.logger.error(
+                f'Only simple cache dump/load is handled for now but discipline {empty_cache.name} has a cache as {empty_cache.__class__}')
 
     def reset(self):
         self.data_dict = {}
@@ -241,7 +289,7 @@ class DataManager:
         namespace_list = []
         for key in self.data_id_map.keys():
             if key.endswith(var_name):
-            # if key == var_name:
+                # if key == var_name:
                 namespace_list.append(key)
 
         return namespace_list
