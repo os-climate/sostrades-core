@@ -1888,7 +1888,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         i = 0
         for key in eval_disc_ind.keys():
-            self.assertTrue( 0. <=  eval_disc_samples['Eval.Disc1.a'][i]  <= 1.)
+            self.assertTrue(0. <= eval_disc_samples['Eval.Disc1.a'][i] <= 1.)
             self.assertAlmostEqual(eval_disc_ind[key],
                                    private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
             i += 1
