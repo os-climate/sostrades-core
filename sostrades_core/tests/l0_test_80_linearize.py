@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import warnings
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -29,7 +30,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import Study as Study_disc1_all_types
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as Study_sellar_coupling
 from sostrades_core.sos_processes.test.test_sellar_coupling_new_types.usecase import Study as Study_sellar_coupling_new_types
-
+from numpy import ComplexWarning
 
 class TestAnalyticGradients(unittest.TestCase):
     """
@@ -41,6 +42,7 @@ class TestAnalyticGradients(unittest.TestCase):
         self.study_name = 'usecase'
         self.ns = f'{self.study_name}'
         self.repo = 'sostrades_core.sos_processes.test'
+        warnings.filterwarnings('error', category=ComplexWarning)
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
@@ -142,6 +144,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.configure()
 
         values_dict = Study_sellar_coupling.setup_usecase(self)[0]
+        values_dict[f'{self.ns}.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
 
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
@@ -152,7 +155,7 @@ class TestAnalyticGradients(unittest.TestCase):
                        step=1e-15, threshold=1e-8,))
             print('CHECK_JACOBIAN performed for ', proxy_disc.get_disc_full_name())
         assert(exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
-            values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8,))
+            values_dict, linearization_mode='adjoint', derr_approx='complex_step', step=1e-15, threshold=1e-8,))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
     def test_05_check_jacobian_on_sellar_coupling_new_types(self):
@@ -170,7 +173,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.configure()
 
         values_dict = Study_sellar_coupling_new_types.setup_usecase(self)[0]
-
+        values_dict[f'{self.ns}.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
@@ -180,7 +183,7 @@ class TestAnalyticGradients(unittest.TestCase):
                        step=1e-15, threshold=1e-8,))
             print('CHECK_JACOBIAN performed for ', proxy_disc.get_disc_full_name())
         assert(exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
-            values_dict, derr_approx='finite_differences', step=1e-7, threshold=1e-7,))
+            values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8, linearization_mode='adjoint'))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
     def test_06_check_jacobian_specified_inputs_outputs(self):
