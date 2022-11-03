@@ -2280,13 +2280,14 @@ class ProxyDiscipline(object):
             'sostrades_core', 'sos_trades_core')
     # useful for debugging
 
-    def display_proxy_subtree(self):
+    def display_proxy_subtree(self, callback=None):
         proxy_subtree = []
-        self.get_proxy_subtree_rec(proxy_subtree)
+        self.get_proxy_subtree_rec(proxy_subtree, 0, callback)
         return '\n'.join(proxy_subtree)
 
-    def get_proxy_subtree_rec(self, proxy_subtree, indent=0):
+    def get_proxy_subtree_rec(self, proxy_subtree, indent=0, callback=None):
+        callback_string = ' [' + str(callback(self)) + ']' if callback is not None else ''
         proxy_subtree.append('    ' * indent + '|_ ' + self.ee.ns_manager.get_local_namespace_value(self)
-                             + '  (' + self.__class__.__name__ + ')')
+                             + '  (' + self.__class__.__name__ + ')'+callback_string)
         for disc in self.proxy_disciplines:
-            disc.get_proxy_subtree_rec(proxy_subtree, indent + 1)
+            disc.get_proxy_subtree_rec(proxy_subtree, indent + 1, callback)
