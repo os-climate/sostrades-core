@@ -223,8 +223,8 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         self.dir_to_del.append(self.dump_dir)
         for disc_id in study_dump.ee.dm.gemseo_disciplines_id_map.keys():
-            disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id][0]
-            disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id][0]
+            disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id]
+            disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id]
             self.assertEqual(disc_load.n_calls, 0)
             self.assertEqual(disc_dump.n_calls, 1)
 
@@ -496,5 +496,5 @@ class TestLoadSimpleCache(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestLoadSimpleCache()
     cls.setUp()
-    cls.test_08_load_cache_on_sellar_mda_newton_raphson()
+    cls.test_04_dump_and_load_simple_cache_on_process()
     cls.tearDown()

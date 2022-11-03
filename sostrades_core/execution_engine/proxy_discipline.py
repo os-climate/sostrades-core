@@ -388,7 +388,7 @@ class ProxyDiscipline(object):
                 # == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-                if self.get_sosdisc_inputs(self.CACHE_TYPE) == 'None':
+                if self.get_sosdisc_inputs(self.CACHE_TYPE) == 'None' and self.dm.cache_map is not None:
                     self.delete_cache_in_cache_map()
 
 #             if self._reset_debug_mode:
