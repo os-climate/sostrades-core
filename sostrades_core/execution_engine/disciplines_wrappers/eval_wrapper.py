@@ -487,7 +487,7 @@ class EvalWrapper(DriverEvaluatorWrapper):
     def take_samples(self):
         """Generating samples for the Eval
         """
-        self.custom_samples = self.get_sosdisc_inputs('doe_df').copy()
+        self.custom_samples = self.get_sosdisc_inputs('samples_df').copy()
         self.check_custom_samples()
         return self.custom_samples
 

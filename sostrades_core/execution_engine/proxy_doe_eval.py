@@ -105,55 +105,55 @@ class ProxyDoeEval(ProxyEval):
         'levels': 'default'
     }
 
-    default_algo_options_lhs = {
-        'n_samples': 'default',
-        'alpha': 'orthogonal',
-        'eval_jac': False,
-        'face': 'faced',
-        'iterations': 5,
-        'max_time': 0,
-        'seed': 1,
-        'center_bb': 'default',
-        'center_cc': 'default',
-        'criterion': 'default',
-        'levels': 'default'
-    }
-
-    default_algo_options_fullfact = {
-        'n_samples': 'default',
-        'alpha': 'orthogonal',
-        'eval_jac': False,
-        'face': 'faced',
-        'iterations': 5,
-        'max_time': 0,
-        'seed': 1,
-        'center_bb': 'default',
-        'center_cc': 'default',
-        'criterion': 'default',
-        'levels': 'default'
-    }
-    d = {'col1': [1, 2], 'col2': [3, 4]}
-    X_pd = pd.DataFrame(data=d)
-
-    default_algo_options_CustomDOE = {
-        'n_processes': 1,
-        'wait_time_between_samples': 0.0
-    }
-
-    default_algo_options_CustomDOE_file = {
-        'eval_jac': False,
-        'max_time': 0,
-        'samples': None,
-        'doe_file': 'X_pd.csv',
-        'comments': '#',
-        'delimiter': ',',
-        'skiprows': 0
-    }
-
-    algo_dict = {"lhs": default_algo_options_lhs,
-                 "fullfact": default_algo_options_fullfact,
-                 "CustomDOE": default_algo_options_CustomDOE,
-                 }
+    # default_algo_options_lhs = {
+    #     'n_samples': 'default',
+    #     'alpha': 'orthogonal',
+    #     'eval_jac': False,
+    #     'face': 'faced',
+    #     'iterations': 5,
+    #     'max_time': 0,
+    #     'seed': 1,
+    #     'center_bb': 'default',
+    #     'center_cc': 'default',
+    #     'criterion': 'default',
+    #     'levels': 'default'
+    # }
+    #
+    # default_algo_options_fullfact = {
+    #     'n_samples': 'default',
+    #     'alpha': 'orthogonal',
+    #     'eval_jac': False,
+    #     'face': 'faced',
+    #     'iterations': 5,
+    #     'max_time': 0,
+    #     'seed': 1,
+    #     'center_bb': 'default',
+    #     'center_cc': 'default',
+    #     'criterion': 'default',
+    #     'levels': 'default'
+    # }
+    # d = {'col1': [1, 2], 'col2': [3, 4]}
+    # X_pd = pd.DataFrame(data=d)
+    #
+    # default_algo_options_CustomDOE = {
+    #     'n_processes': 1,
+    #     'wait_time_between_samples': 0.0
+    # }
+    #
+    # default_algo_options_CustomDOE_file = {
+    #     'eval_jac': False,
+    #     'max_time': 0,
+    #     'samples': None,
+    #     'doe_file': 'X_pd.csv',
+    #     'comments': '#',
+    #     'delimiter': ',',
+    #     'skiprows': 0
+    # }
+    #
+    # algo_dict = {"lhs": default_algo_options_lhs,
+    #              "fullfact": default_algo_options_fullfact,
+    #              "CustomDOE": default_algo_options_CustomDOE,
+    #              }
 
     def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         '''

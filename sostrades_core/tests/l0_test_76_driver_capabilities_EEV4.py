@@ -626,7 +626,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         samples_dict = {'Eval.Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
-        disc_dict[f'{ns}.Eval.doe_df'] = samples_df
+        disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -759,7 +759,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'doe.DoE')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
-            'doe_df')
+            'samples_df')
 
         dimension = sum([len(sublist) if isinstance(
             sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
@@ -771,7 +771,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                          theoretical_fullfact_samples)
 
         # print(doe_disc_samples)
-        # test output 'doe_df' sample dataframe
+        # test output 'samples_df' sample dataframe
         self.eval_inputs = self.input_selection_x_z
         selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']
                                            == True]['full_name']
