@@ -1801,27 +1801,33 @@ class TestSoSDOEScenario(unittest.TestCase):
                                    private_values[self.study_name + '.DoEEval.Disc1.b'] * doe_disc_samples['DoEEval.Disc1.a'][i][0])
             i += 1
 
-    def test_15_separated_doe_and_eval_execution_fullfact_on_1_var(self):
+    def test_15_DoE_OT_FACTORIAL_Eval(self):
         """
-        """
-        input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
-                                           'y_2',
-                                           'z']}
-        self.input_selection_x = pd.DataFrame(input_selection_x)
 
-        dspace_dict_x = {'variable': ['x'],
+        """
+
+        input_selection_a = {'selected_input': [False, True, False],
+                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_a = pd.DataFrame(input_selection_a)
+
+        output_selection_ind = {'selected_output': [False, True],
+                                'full_name': ['y', 'Eval.Disc1.indicator']}
+        output_selection_ind = pd.DataFrame(output_selection_ind)
+
+        dspace_dict_a = {'variable': ['Eval.Disc1.a'],
 
                          'lower_bnd': [0.],
-                         'upper_bnd': [10.],
+                         'upper_bnd': [1.],
 
                          }
-        dspace_x = pd.DataFrame(dspace_dict_x)
+        dspace_a = pd.DataFrame(dspace_dict_a)
 
-        exec_eng = ExecutionEngine(self.study_name)
+        study_name = 'doe'
+        ns = study_name
+
+        exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_sellar_doe_eval_separated"
+        proc_name = "test_disc1_doe_eval_separated"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
@@ -1830,77 +1836,62 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        # -- set up disciplines in Scenario
-        disc_dict = {}
-        # DoE inputs
-        n_samples = 15
-        disc_dict[f'{self.ns}.DoE.sampling_algo'] = "fullfact"
-        disc_dict[f'{self.ns}.DoE.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.DoE.algo_options'] = {'n_samples': n_samples}
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
-
-        # Eval inputs
-        # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
-        exec_eng.load_study_from_input_dict(disc_dict)
-
-        # Sellar inputs
-        local_dv = 10.
-        values_dict = {}
-        # array([1.])
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
-        values_dict[f'{self.ns}.z'] = array([1., 1.])
-        values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.load_study_from_input_dict(values_dict)
-
-        exec_eng.execute()
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+        exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ doe',
                        f'\t|_ DoE',
                        '\t|_ Eval',
-                       '\t\t|_ subprocess',
-                       '\t\t\t|_ Sellar_Problem',
-                       '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1']
+                       '\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 20
+        levels = [0.25, 0.5, 0.75]
+        centers = [5]
+        disc_dict[f'{ns}.DoE.sampling_algo'] = 'OT_FACTORIAL'
+        disc_dict[f'{ns}.DoE.design_space'] = dspace_a
+        disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
+        disc_dict[f'{ns}.eval_inputs'] = input_selection_a
+
+        # Eval inputs
+        # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
+        disc_dict[f'{ns}.eval_outputs'] = output_selection_ind
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # -- Discipline inputs
+        private_values = {
+            f'{ns}.x': array([10.]),
+            f'{ns}.Eval.Disc1.a': array([0.5]),
+            f'{ns}.Eval.Disc1.b': array([25431.]),
+            f'{ns}.y': array([4.]),
+            f'{ns}.Eval.Disc1.indicator': array([53.])}
+        exec_eng.load_study_from_input_dict(private_values)
+
+        exec_eng.execute()
+
+        root_outputs = exec_eng.root_process.get_output_data_names()
+        self.assertIn('doe.Eval.Disc1.indicator_dict', root_outputs)
+
         eval_disc = exec_eng.dm.get_disciplines_with_name(
-            'doe.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+            study_name + '.Eval')[0]
 
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
-        print(eval_disc_samples)
-        eval_disc_obj = eval_disc.get_sosdisc_outputs('obj_dict')
-        eval_disc_y1 = eval_disc.get_sosdisc_outputs('y_1_dict')
-        eval_disc_y2 = eval_disc.get_sosdisc_outputs('y_2_dict')
-        # self.assertEqual(len(eval_disc_samples), n_samples + 1)
-        # self.assertEqual(len(eval_disc_obj), n_samples + 1)
-        # reference_dict_eval_disc_y1 = {'scenario_1': array([10.491019856682016]), 'scenario_2': array([7.247824531594309]),
-        #                               'scenario_3': array([2.9753409599263483]), 'scenario_4': array([1.7522749587335193]),
-        #                               'scenario_5': array([9.384097972066053]), 'scenario_6': array([8.36704386923391]),
-        #                               'scenario_7': array([4.479056921478663]), 'scenario_8': array([5.286891081070988]),
-        #                               'scenario_9': array([3.240108355137796]), 'scenario_10': array([6.194561090631401]),
-        #                               'reference': array([2.29689011157193])}
-        # reference_dict_eval_disc_y2 = {'scenario_1': array([5.238984386606706]), 'scenario_2': array([4.692178398916815]),
-        #                               'scenario_3': array([3.7249176675790494]), 'scenario_4': array([3.3237352298452736]),
-        #                               'scenario_5': array([5.063347510823095]), 'scenario_6': array([4.892584289045681]),
-        #                               'scenario_7': array([4.116378255765888]), 'scenario_8': array([4.2993240487306235]),
-        #                               'scenario_9': array([3.8000300983977455]), 'scenario_10': array([4.488887520686984]),
-        #                               'reference': array([3.5155494421403515])}
-        # for key in eval_disc_y1.keys():
-        #     self.assertAlmostEqual(
-        #         eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
-        # for key in eval_disc_y2.keys():
-        #     self.assertAlmostEqual(
-        #         eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0])
-        #
-        # # we check that at the end of the run the dm contains the reference (or
-        # # initial ) point
-        # self.assertEqual(exec_eng.dm.get_value('doe.x'), array([1.0]))
+
+        eval_disc_ind = eval_disc.get_sosdisc_outputs(
+            'Eval.Disc1.indicator_dict')
+
+        i = 0
+        for key in eval_disc_ind.keys():
+            self.assertTrue( 0. <=  eval_disc_samples['Eval.Disc1.a'][i]  <= 1.)
+            self.assertAlmostEqual(eval_disc_ind[key],
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
+            i += 1
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()

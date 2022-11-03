@@ -365,7 +365,6 @@ class TestSampleGenerator(unittest.TestCase):
         '''
         pass
 
-
 if '__main__' == __name__:
     cls = TestSampleGenerator()
     cls.setUp()
