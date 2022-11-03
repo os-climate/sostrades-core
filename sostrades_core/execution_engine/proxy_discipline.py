@@ -404,8 +404,8 @@ class ProxyDiscipline(object):
         '''
 
         for observer in self.status_observers:
-            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
-                observer)
+            if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
+                self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(observer)
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
@@ -1937,7 +1937,7 @@ class ProxyDiscipline(object):
         Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist. 
         We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
         '''
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
             self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                 observer)
 
@@ -1952,7 +1952,7 @@ class ProxyDiscipline(object):
         '''
         if observer in self.status_observers:
             self.status_observers.remove(observer)
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
             self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
                 observer)
 
@@ -2019,8 +2019,8 @@ class ProxyDiscipline(object):
 
         Returns: List[ChartFilter]
         """
-        if self.mdo_discipline_wrapp is not None:
-            return self.mdo_discipline_wrapp.get_chart_filter_list()
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list()
         else:
             return []
 
