@@ -196,6 +196,12 @@ class ProxyDisciplineGather(ProxyDiscipline):
                     self.update_data_io_with_modified_inst_desc_io()
                     # update inputs user level
                     self.update_inputs_user_level()
+            else:
+                # NB: without this else, the gather does not get reconfigured after its first configuration, which
+                # involves a change in the structuring variables, not until its map is available. This spams the
+                # configuration logs on the GUI with "100 iterations" warnings. This else clause needs to be reviewed
+                # if the configuration loop is redesigned.
+                ProxyDiscipline.configure(self)
 
     def check_builders_to_gather_are_configured(self):
         '''
