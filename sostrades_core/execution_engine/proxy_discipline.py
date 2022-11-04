@@ -313,6 +313,7 @@ class ProxyDiscipline(object):
         self.in_checkjac = False
         self._is_configured = False
         self._reset_cache = False
+        self._set_children_cache = False
         self._reset_debug_mode = False
 
         # -- disciplinary data attributes
@@ -387,6 +388,9 @@ class ProxyDiscipline(object):
                 # == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+                if self.get_sosdisc_inputs(self.CACHE_TYPE) == 'None' and self.dm.cache_map is not None:
+                    self.delete_cache_in_cache_map()
+
 #             if self._reset_debug_mode:
 #                 # update default values when changing debug modes between executions
 #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
@@ -404,8 +408,9 @@ class ProxyDiscipline(object):
         '''
 
         for observer in self.status_observers:
-            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
-                observer)
+            if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
+                self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
+                    observer)
 
     def set_cache(self, disc, cache_type, cache_hdf_file):
         '''
@@ -424,6 +429,13 @@ class ProxyDiscipline(object):
             if cache_type != 'None':
                 disc.set_cache_policy(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
+
+    def delete_cache_in_cache_map(self):
+        '''
+        If a cache has been written
+        '''
+        hashed_uid = self.get_cache_map_hashed_uid(self)
+        self.dm.delete_hashed_id_in_cache_map(hashed_uid)
 
     def get_shared_namespace_list(self, data_dict):
         '''
@@ -935,25 +947,38 @@ class ProxyDiscipline(object):
             self.linearization_mode = self.get_sosdisc_inputs(
                 'linearization_mode')
 
-            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
-            if cache_type != self._structuring_variables[self.CACHE_TYPE]:
-                self._reset_cache = True
+            self.update_reset_cache()
 
-            # Debug mode logging and recursive setting (priority to the parent)
-            debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
-            if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
-                    and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None):  # not necessary on first config
-                self._reset_debug_mode = True
-                # logging
-                if debug_mode != "":
-                    if debug_mode == "all":
-                        for mode in self.AVAILABLE_DEBUG_MODE:
-                            if mode not in ["", "all"]:
-                                self.logger.info(
-                                    f'Discipline {self.sos_name} set to debug mode {mode}')
-                    else:
-                        self.logger.info(
-                            f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+            self.update_reset_debug_mode()
+
+    def update_reset_debug_mode(self):
+        '''
+        Update the reset_debug_mode boolean if debug mode has changed + logger 
+        '''
+        # Debug mode logging and recursive setting (priority to the parent)
+        debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
+        if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
+                and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None):  # not necessary on first config
+            self._reset_debug_mode = True
+            # logging
+            if debug_mode != "":
+                if debug_mode == "all":
+                    for mode in self.AVAILABLE_DEBUG_MODE:
+                        if mode not in ["", "all"]:
+                            self.logger.info(
+                                f'Discipline {self.sos_name} set to debug mode {mode}')
+                else:
+                    self.logger.info(
+                        f'Discipline {self.sos_name} set to debug mode {debug_mode}')
+
+    def update_reset_cache(self):
+        '''
+        Update the reset_cache boolean if cache type has changed
+        '''
+        cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
+        if cache_type != self._structuring_variables[self.CACHE_TYPE]:
+            self._reset_cache = True
+            self._set_children_cache = True
 
     def set_debug_mode_rec(self, debug_mode):
         """
@@ -970,7 +995,7 @@ class ProxyDiscipline(object):
         '''
         Set cache_type and cache_file_path input values to children, if cache inputs have changed
         '''
-        if self._reset_cache:
+        if self._reset_cache and self._set_children_cache:
             cache_type = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
             cache_file_path = self.get_sosdisc_inputs(
                 ProxyDiscipline.CACHE_FILE_PATH)
@@ -983,6 +1008,8 @@ class ProxyDiscipline(object):
                         self.dm.set_data(disc.get_var_full_name(
                             ProxyDiscipline.CACHE_FILE_PATH, disc_in), self.VALUE, cache_file_path,
                             check_value=False)
+            self._set_children_cache = False
+
         if self._reset_debug_mode:
             self.set_debug_mode_rec(
                 self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
@@ -1744,7 +1771,7 @@ class ProxyDiscipline(object):
         '''
 
         mdo_discipline = self.mdo_discipline_wrapp.mdo_discipline if self.mdo_discipline_wrapp is not None else None
-        if mdo_discipline is not None and mdo_discipline.cache is not None:
+        if mdo_discipline is not None:
             self._store_cache_with_hashed_uid(mdo_discipline)
         # store children cache recursively
         for disc in self.proxy_disciplines:
@@ -1754,23 +1781,24 @@ class ProxyDiscipline(object):
         '''
         Generate hashed uid and store cache in DM
         '''
+        if disc.cache is not None:
+            disc_info_list = self.get_disc_info_list_for_hashed_uid(disc)
+            # store cache in DM map
+            self.dm.fill_cache_map(disc_info_list, disc)
+
+    def get_disc_info_list_for_hashed_uid(self, disc):
         full_name = self.get_disc_full_name().split(self.ee.study_name)[-1]
         class_name = disc.__class__.__name__
         anoninmated_data_io = self.get_anonimated_data_io(disc)
 
         # set disc infos string list with full name, class name and anonimated
         # i/o for hashed uid generation
-        disc_info_list = [full_name, class_name, anoninmated_data_io]
+        return [full_name, class_name, anoninmated_data_io]
+
+    def get_cache_map_hashed_uid(self, disc):
+        disc_info_list = self.get_disc_info_list_for_hashed_uid(disc)
         hashed_uid = self.dm.generate_hashed_uid(disc_info_list)
-
-        # store cache in DM map
-        self.dm.cache_map[hashed_uid] = disc.cache
-
-        # store disc in DM map
-        if hashed_uid in self.dm.gemseo_disciplines_id_map:
-            self.dm.gemseo_disciplines_id_map[hashed_uid].append(disc)
-        else:
-            self.dm.gemseo_disciplines_id_map[hashed_uid] = [disc]
+        return hashed_uid
 
     def get_var_full_name(self, var_name, disc_dict):
         '''
@@ -1837,15 +1865,16 @@ class ProxyDiscipline(object):
         '''
         Return: (List[string]) of anonimated input and output keys for serialisation purpose
         '''
-        anonimated_data_io = ''
 
-        for key in disc.get_input_data_names():
-            anonimated_data_io += key.split(self.ee.study_name)[-1]
+        input_list_anonimated = [key.split(
+            self.ee.study_name, 1)[-1] for key in disc.get_input_data_names()]
+        input_list_anonimated.sort()
+        output_list_anonimated = [key.split(
+            self.ee.study_name, 1)[-1] for key in disc.get_output_data_names()]
+        output_list_anonimated.sort()
+        input_list_anonimated.extend(output_list_anonimated)
 
-        for key in disc.get_output_data_names():
-            anonimated_data_io += key.split(self.ee.study_name)[-1]
-
-        return anonimated_data_io
+        return ''.join(input_list_anonimated)
 
     def _convert_list_of_keys_to_namespace_name(self, keys, io_type):
         """
@@ -1937,7 +1966,7 @@ class ProxyDiscipline(object):
         Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist. 
         We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
         '''
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
             self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                 observer)
 
@@ -1952,7 +1981,7 @@ class ProxyDiscipline(object):
         '''
         if observer in self.status_observers:
             self.status_observers.remove(observer)
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
             self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
                 observer)
 
@@ -2019,8 +2048,8 @@ class ProxyDiscipline(object):
 
         Returns: List[ChartFilter]
         """
-        if self.mdo_discipline_wrapp is not None:
-            return self.mdo_discipline_wrapp.get_chart_filter_list()
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list()
         else:
             return []
 
@@ -2280,13 +2309,15 @@ class ProxyDiscipline(object):
             'sostrades_core', 'sos_trades_core')
     # useful for debugging
 
-    def display_proxy_subtree(self):
+    def display_proxy_subtree(self, callback=None):
         proxy_subtree = []
-        self.get_proxy_subtree_rec(proxy_subtree)
+        self.get_proxy_subtree_rec(proxy_subtree, 0, callback)
         return '\n'.join(proxy_subtree)
 
-    def get_proxy_subtree_rec(self, proxy_subtree, indent=0):
+    def get_proxy_subtree_rec(self, proxy_subtree, indent=0, callback=None):
+        callback_string = ' [' + str(callback(self)) + \
+            ']' if callback is not None else ''
         proxy_subtree.append('    ' * indent + '|_ ' + self.ee.ns_manager.get_local_namespace_value(self)
-                             + '  (' + self.__class__.__name__ + ')')
+                             + '  (' + self.__class__.__name__ + ')' + callback_string)
         for disc in self.proxy_disciplines:
-            disc.get_proxy_subtree_rec(proxy_subtree, indent + 1)
+            disc.get_proxy_subtree_rec(proxy_subtree, indent + 1, callback)

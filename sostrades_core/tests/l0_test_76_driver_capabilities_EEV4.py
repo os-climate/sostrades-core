@@ -333,7 +333,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 i_lower += 1
             i_upper += 1
 
-    def test_3_simple_custom_driver(self):
+    def _test_3_simple_custom_driver(self):
 
         study_name = 'root'
         exec_eng = ExecutionEngine(study_name)

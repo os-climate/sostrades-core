@@ -19,7 +19,7 @@ Class that manage a whole study process (load, execute, save, dump..)
 """
 
 from time import time
-from os.path import join, isdir
+from os.path import join, isdir, exists
 from logging import INFO, DEBUG
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
@@ -67,6 +67,7 @@ class BaseStudyManager():
         self.__rw_strategy = DirectLoadDump()
         self.__yield_method = yield_method
         self.__execution_engine = execution_engine
+        self.loaded_cache = None
 
     def run_usecase(self):
         return self.__run_usecase
@@ -256,32 +257,32 @@ class BaseStudyManager():
         data = self.execution_engine.get_anonimated_data_dict()
 
         self._put_data_into_file(study_folder_path, data)
-        
+
     def dump_cache(self, study_folder_path):
         """ Method that dump cache_map from the data manager to a file
-
+        Do not dump the cache if there is no cache to dump
         :params: study_folder_path, location of pickle file to load
         :type: str
         """
         # Retrieve cache_map to dump
         cache_map = self.execution_engine.get_cache_map_to_dump()
+        # Do not dump the cache if there is no cache to dump
+        if cache_map != {}:
+            self._put_cache_into_file(study_folder_path, cache_map)
+        else:
+            # method to delet pickle if a pickle exists
+            pass
 
-        self._put_cache_into_file(study_folder_path, cache_map)
-        
-    def load_cache(self, study_folder_path=None):
-        """ Method that load cache into the execution engine
+    def read_cache_pickle(self, study_folder_path=None):
+        """ Method that read cache pickle into the execution engine
 
         :params: study_folder_path, location of pickle file to load (optional parameter)
         :type: str
         """
         # Retrieve the cache map to load
-        loaded_cache_map = self.setup_cache_map_dict(study_folder_path)
+        self.loaded_cache = self.setup_cache_map_dict(
+            study_folder_path)
 
-        # Load disciplines cache from loaded cache map
-        if loaded_cache_map is not None:
-            self.execution_engine.load_cache_from_map(
-                loaded_cache_map)
-        
     def load_disciplines_data(self, study_folder_path=None):
         """ Method that load data into the execution engine
 
@@ -354,7 +355,7 @@ class BaseStudyManager():
         start_time = time()
         if self.__run_usecase:
             try:
-                self.execution_engine.execute()
+                self.execution_engine.execute(loaded_cache=self.loaded_cache)
                 message = f'Study {study_display_name} execution time : {time() - start_time} seconds'
                 logger.info(message)
                 print(message)
@@ -369,7 +370,8 @@ class BaseStudyManager():
         else:
             print(f'Study {study_display_name} is configured not to run.')
             print(f'Skipping execute.')
-            logger.info(f'Study {study_display_name} is configured not to run.')
+            logger.info(
+                f'Study {study_display_name} is configured not to run.')
             logger.info(f'Skipping execute.')
 
         # Method after execute and before dump
@@ -402,7 +404,7 @@ class BaseStudyManager():
             return self._get_data_from_file(study_folder_path)
 
         return []
-    
+
     def setup_cache_map_dict(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process
         from a specific way
@@ -450,7 +452,8 @@ class BaseStudyManager():
             f'------ Check post-processing integrity ------')
 #         ppf = PostProcessingFactory()
 #         ppf.get_all_post_processings(
-#             execution_engine=self.execution_engine, filters_only=False, for_test=True)
+# execution_engine=self.execution_engine, filters_only=False,
+# for_test=True)
 
         logger.info(
             f'------ Check data manager integrity after post-processing calls ------')
@@ -535,7 +538,7 @@ class BaseStudyManager():
 
             serializer.put_dict_from_study(
                 study_folder_path, self.__rw_strategy, data)
-            
+
     def _put_cache_into_file(self, study_folder_path, data):
         """ Method that load save from a file using an serializer object strategy (set with the according setter)
         File will be entirely overwrittent
@@ -553,7 +556,7 @@ class BaseStudyManager():
 
             serializer.put_cache_from_study(
                 study_folder_path, self.__rw_strategy, data)
-            
+
     def _get_cache_from_file(self, study_folder_path):
         """ Method that load discipline data into the execution engine
 

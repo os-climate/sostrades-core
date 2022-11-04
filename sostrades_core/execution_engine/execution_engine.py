@@ -28,7 +28,7 @@ from sostrades_core.execution_engine.post_processing_manager import PostProcessi
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
-
+from copy import copy
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
 DEFAULT_SMAPS_MANAGER_NAME = 'default_smap_namanger'
@@ -213,9 +213,51 @@ class ExecutionEngine:
         '''
         Build cache map with all gemseo disciplines cache
         '''
-        self.dm.cache_map = {}
-        self.dm.gemseo_disciplines_id_map = {}
+        self.dm.reinit_cache_map()
+
         self.root_process._set_dm_cache_map()
+
+    def anonymize_caches_in_cache_map(self):
+        '''
+        Anonymize each cache of the cache map by anonymizing each variable key inside the cache
+        The returned cache is a dict already serialized and anonymized
+        None values are not serialized 
+        '''
+        anonymized_cache_map = {}
+        if self.dm.cache_map != {}:
+            for key, cache in self.dm.cache_map.items():
+                serialized_new_cache = cache.get_all_data()
+                anonymized_cache = {}
+                for index, index_dict in serialized_new_cache.items():
+                    anonymized_cache[index] = {data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in values_dict.items()}
+                                               for data_types, values_dict in index_dict.items() if values_dict is not None and data_types in ['inputs', 'outputs']}
+                    if index_dict['jacobian'] is not None:
+                        anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
+                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in index_dict['jacobian'].items()}
+
+                anonymized_cache_map[key] = anonymized_cache
+
+        return anonymized_cache_map
+
+    def unanonymize_caches_in_cache_map(self, cache_map):
+        '''
+        Unanonymize each cache of the cache map by anonymizing each variable key inside the cache
+        The returned cache is a dict already serialized and anonymized
+        None values are not serialized 
+        '''
+        unanonymized_cache_map = {}
+        if cache_map != {}:
+            for key, serialized_cache in cache_map.items():
+                unanonymized_cache = {}
+                for index, index_dict in serialized_cache.items():
+                    unanonymized_cache[index] = {data_types: {self.__unanonimize_key(key): value for key, value in values_dict.items()}
+                                                 for data_types, values_dict in index_dict.items() if data_types in ['inputs', 'outputs']}
+                    if 'jacobian' in index_dict:
+                        unanonymized_cache[index]['jacobian'] = {self.__unanonimize_key(key_out): {self.__unanonimize_key(
+                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in index_dict['jacobian'].items()}
+                unanonymized_cache_map[key] = unanonymized_cache
+
+        return unanonymized_cache_map
 
     def get_cache_map_to_dump(self):
         '''
@@ -223,17 +265,26 @@ class ExecutionEngine:
         '''
         if self.dm.cache_map is None:
             self.build_cache_map()
-        return self.dm.cache_map
+
+        anonymized_cache_map = self.anonymize_caches_in_cache_map()
+
+        return anonymized_cache_map
 
     def load_cache_from_map(self, cache_map):
         '''
         Load disciplines cache from cache_map
         '''
-        # build cache map and gemseo disciplines id map in data manager
-        self.build_cache_map()
+
         if len(cache_map) > 0:
+            # build cache map and gemseo disciplines id map in data manager
+            self.build_cache_map()
+
+            unanonymized_cache_map = self.unanonymize_caches_in_cache_map(
+                cache_map)
             # store cache of all gemseo disciplines
-            self.dm.load_gemseo_disciplines_cache(cache_map)
+
+            self.dm.fill_gemseo_caches_with_unanonymized_cache_map(
+                unanonymized_cache_map)
 
     def update_status_configure(self):
         '''
@@ -584,7 +635,7 @@ class ExecutionEngine:
         '''
         self.dm.set_values_from_dict(local_data)
 
-    def execute(self):
+    def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
         self.logger.info('PROCESS EXECUTION %s STARTS...',
@@ -600,6 +651,9 @@ class ExecutionEngine:
 
         # -- prepare execution
         self.prepare_execution()
+
+        if loaded_cache is not None:
+            self.load_cache_from_map(loaded_cache)
 
         # -- execution with input data from DM
         ex_proc = self.root_process

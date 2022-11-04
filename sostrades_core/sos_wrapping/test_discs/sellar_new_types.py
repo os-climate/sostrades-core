@@ -53,7 +53,6 @@ class SellarProblem(SoSWrapp):
         c_2 = self.c_2(y_2)
         obj += local_dv
         out = {'obj': obj, 'c_1': c_1, 'c_2': c_2}
-        print('x in SellarProblem : ', x)
         self.store_sos_outputs_values(out)
 
     @staticmethod
@@ -126,7 +125,7 @@ class SellarProblem(SoSWrapp):
             ('obj',), ('y_1', 'value'), np.array([1.0, 0.0, 0.0, 0.0]))
 
         self.set_partial_derivative_for_other_types(
-            ('obj',), ('y_2', 'value'), np.array([-exp(-y_2.iloc[0]['value']), 0.0, 0.0, 0.0]))
+            ('obj',), ('y_2', 'value'), np.array([-exp(-y_2.iloc[0]['value']).real, 0.0, 0.0, 0.0]))
 
         self.set_partial_derivative('obj', 'local_dv', np.atleast_2d(np.array(
             [1.0])))
@@ -173,7 +172,6 @@ class Sellar1Df(SoSWrapp):
                                                      y_2.loc[y_2['years'] == year,
                                                              'value'].values[0]
             i += 1
-        print('x in Sellar1Df : ', x)
         return out
 
     def compute_sos_jacobian(self):
@@ -257,7 +255,7 @@ class Sellar2Df(SoSWrapp):
 
         lines_nb = len(np.arange(1, 5))
         self.set_partial_derivative_for_other_types(('y_2', 'value'), ('y_1', 'value'),
-                                                    1.0 / (2 * sqrt(y_1.iloc[0]['value'])) * np.identity(lines_nb))
+                                                    1.0 / (2 * sqrt(y_1.iloc[0]['value']).real) * np.identity(lines_nb))
 
         self.set_partial_derivative_for_other_types(('y_2', 'value'), ('z',), [
             [1.0, 1.0] for i in range(lines_nb)])

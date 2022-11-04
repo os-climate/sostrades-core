@@ -90,16 +90,16 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
 
-    def get_chart_filter_list(self):
-        """
-        Return a list of ChartFilter instance base on the inherited class post processing filtering capabilities
-
-        Returns: List[ChartFilter]
-        """
-        if self.wrapper is not None:
-            return self.wrapper.get_chart_filter_list()
-        else:
-            return []
+    # def get_chart_filter_list(self):
+    #     """
+    #     Return a list of ChartFilter instance base on the inherited class post processing filtering capabilities
+    #
+    #     Returns: List[ChartFilter]
+    #     """
+    #     if self.wrapper is not None:
+    #         return self.wrapper.get_chart_filter_list()
+    #     else:
+    #         return []
 
 #     def get_post_processing_list(self, filters=None):
 #         """

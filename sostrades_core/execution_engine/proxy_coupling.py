@@ -252,7 +252,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         mda_chain = self.mdo_discipline_wrapp.mdo_discipline
 
-        if mda_chain is not None and mda_chain.cache is not None:
+        if mda_chain is not None:
             # store SoSCoupling cache in DM
             self._store_cache_with_hashed_uid(mda_chain)
 
@@ -262,7 +262,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # store sub mdas cache recursively
             for mda in mda_chain.sub_mda_list:
                 self._set_sub_mda_dm_cache_map(mda)
-
+        else:
+            raise Exception(
+                'Can not build the cache map if the prepare execution has not been run because we need GEMSEO objects')
         # store children cache recursively
         for disc in self.proxy_disciplines:
             disc._set_dm_cache_map()
@@ -634,10 +636,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             mda_chain_n_calls = self.mdo_discipline_wrapp.mdo_discipline.n_calls
         else:
             mda_chain_cache = None
-            mda_chain_n_calls = None
+            mda_chain_n_calls = 0
 
         # create_mda_chain from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
+        self.mdo_discipline_wrapp.create_mda_chain(
+            sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
 
         # set cache cache of gemseo object
         self.set_gemseo_disciplines_caches(mda_chain_cache, mda_chain_n_calls)

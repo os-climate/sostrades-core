@@ -102,9 +102,9 @@ class DataManager:
             h.update(string.encode())
         return h.digest()
 
-    def load_gemseo_disciplines_cache(self, cache_map):
+    def fill_gemseo_caches_with_unanonymized_cache_map(self, cache_map):
         '''
-        Store gemseo disciplines cache from cache_map using gemseo_disciplines_id_map
+        Fill gemseo disciplines cache with cache_map already unanonymized
         '''
         # update cache of all gemseo disciplines with loaded cache_map
         for disc_id, disc_cache in cache_map.items():
