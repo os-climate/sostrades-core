@@ -70,7 +70,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # run with dump cache_map
         study_dump.run(dump_study=True)
-        # cache_type is None then cache map is an empty dict
+        # cache_type is None then cache map is {}
         self.assertEqual(study_dump.ee.dm.cache_map, {})
         # check dumped cache pickle non existence
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
@@ -167,7 +167,7 @@ class TestLoadSimpleCache(unittest.TestCase):
                         disc_id][1][var_type][input_var_anonymized]
                     if isinstance(input_value, (float, int, str)):
                         self.assertEqual(input_value, serialized_input_value)
-
+        study_dump.manage_dump_cache()
         study_dump.dump_cache(dump_dir)
         # check dumped cache pickle existence
         cache_pkl_path = join(dump_dir, 'cache.pkl')
@@ -274,7 +274,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
                               'test_disc1_disc2_coupling', study_1.study_name, 'cache.pkl')
         self.assertTrue(exists(cache_pkl_path))
-        cache_map_from_pkl = study_1.setup_cache_map_dict(dump_dir)
+        study_1.read_cache_pickle(dump_dir)
+        cache_map_from_pkl = study_1.loaded_cache
         self.assertEqual(len(cache_map_from_pkl), 1)
 
         # load dumped dm in a new study
