@@ -449,6 +449,14 @@ class TestLoadSimpleCache(unittest.TestCase):
                 {key_out: value for key_out, value in cache[key][1]['outputs'].items(
                 ) if not key_out.endswith('residuals_history')},
                 {key_out: value for key_out, value in new_cache[key][1]['outputs'].items() if not key_out.endswith('residuals_history')})
+
+        study_2.run()
+
+        # check n_calls == 0
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            self.assertEqual(
+                disc.n_calls, 0)
+
         self.dir_to_del.append(dump_dir)
         self.dir_to_del.append(new_dump_dir)
 
