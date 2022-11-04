@@ -282,7 +282,7 @@ class BaseStudyManager():
             3 dump cache is called and no execution have been done, copy study
             --> dump loaded_cache stored in the study_manager in another pkl
         '''
-        if self.execution_engine.root_process.status == ProxyDiscipline.STATUS_DONE:
+        if self.execution_engine.root_process.is_prepared:
             # Retrieve cache_map to dump
             self.dump_cache_map = self.execution_engine.get_cache_map_to_dump()
             if self.dump_cache_map == {}:
@@ -296,6 +296,7 @@ class BaseStudyManager():
                 self.dumped_cache = True
         else:
             if self.loaded_cache is not None:
+                self.dumped_cache = True
                 self.dump_cache_map = self.loaded_cache
             else:
                 self.dumped_cache = False
