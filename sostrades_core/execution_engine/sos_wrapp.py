@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
 from sostrades_core.tools.base_functions.compute_len import compute_len
-from numpy import zeros
+from numpy import zeros, array, ndarray, complex128
 
 LOGGER = logging.getLogger(__name__)
 
@@ -294,19 +294,20 @@ class SoSWrapp(object):
 
         x_key_full = self.attributes['input_full_name_map'][x_key]
 
-        # Code when dataframes are filled line by line in GEMS, we keep the code for now
-        #         if index_y_column and index_x_column is not None:
-        #             for iy in range(value.shape[0]):
-        #                 for ix in range(value.shape[1]):
-        #                     self.jac[new_y_key][new_x_key][iy * column_nb_y + index_y_column,
-        # ix * column_nb_x + index_x_column] = value[iy, ix]
         if y_key_full not in self.jac_dict.keys():
             self.jac_dict[y_key_full] = {}
         if x_key_full not in self.jac_dict[y_key_full]:
             self.jac_dict[y_key_full][x_key_full] = zeros(self.get_jac_matrix_shape(y_key, x_key))
+        # Check if value is or has complex
+        if type(value[0]) in [complex, complex128]:
+            self.jac_dict[y_key_full][x_key_full] = array(self.jac_dict[y_key_full][x_key_full], dtype=complex)
+        elif type(value[0]) in [array, ndarray]:
+            if value.dtype in [complex, complex128]:
+                self.jac_dict[y_key_full][x_key_full] = array(self.jac_dict[y_key_full][x_key_full], dtype=complex)
+
         if index_y_column is not None and index_x_column is not None:
             self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-            index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                     'end': (index_y_column + 1) * lines_nb_y},
                                         f'{x_key_full},{x_column}': {'start': index_x_column * lines_nb_x,
