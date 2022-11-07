@@ -572,6 +572,7 @@ class SosFactory:
         """
         builder_list = self.convert_builder_to_list(cls_builder)
         builder = self.create_driver_evaluator_builder(sos_name, builder_list)
+        builder.set_builder_info('map_name', map_name)
         # builder.set_builder_info('autogather', autogather) #TODO: not adressed
         # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
         # builder.set_builder_info('business_post_proc', business_post_proc) #TODO: not adressed

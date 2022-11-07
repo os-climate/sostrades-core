@@ -45,8 +45,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
+    # BUILDER_MODE = 'builder_mode'
+    #
+    # MONO_INSTANCE = 'mono_instance'
+    # MULTI_INSTANCE = 'multi_instance'
+    # BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE]
+
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
+                 map_name=None,
                  associated_namespaces=None):
         '''
         Constructor
@@ -65,6 +72,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
         self.eval_process_builder = None
         self.scatter_process_builder = None
+        self.map_name = map_name
+
 
     def get_desc_in_out(self, io_type):
         """
@@ -102,12 +111,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
-            # if len(self.proxy_disciplines) == 1:
-                # only for 1 subcoupling, so not handling cases like driver of
-                # driver
-                # self.update_data_io_with_subprocess_io()
-            # else:
-            #     raise NotImplementedError
             self.set_children_cache_inputs()
 
     def update_data_io_with_subprocess_io(self):
@@ -129,12 +132,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if 'builder_mode' in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs('builder_mode')
             if builder_mode == 'multi_instance':
-                # TODO: addressing only the very simple multiscenario case
-                if 'map_name' not in self.get_data_in():
-                    dynamic_inputs = {'map_name': {self.TYPE: 'string',
-                                                   self.DEFAULT: 'scenario_list',
-                                                   self.STRUCTURING: True}}
-                    self.add_inputs(dynamic_inputs)
+                pass # TODO: addressing only the very simple multiscenario case
+                # if 'map_name' not in self.get_data_in():
+                #     dynamic_inputs = {'map_name': {self.TYPE: 'string',
+                #                                    self.DEFAULT: 'scenario_list',
+                #                                    self.STRUCTURING: True}}
+                #     self.add_inputs(dynamic_inputs)
             elif builder_mode == 'mono_instance':
                 pass #TODO: to merge with Eval
             elif builder_mode == 'custom':
@@ -146,6 +149,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         super().setup_sos_disciplines()
 
     def build(self): #TODO: make me work with custom driver
+        # TODO: check proper cleaning when changin builder mode
         if len(self.cls_builder) == 0: # added condition for proc build
             pass
         elif 'builder_mode' in self.get_data_in():
@@ -206,11 +210,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def multi_instance_build(self):
         # TODO: will need to include options for MultiScenario other than VerySimple
-        if 'map_name' in self.get_data_in():
+        if self.map_name is not None:
             if self.scatter_process_builder is None:
-                map_name = self.get_sosdisc_inputs('map_name')
-                if map_name is not None:
-                    self._set_scatter_process_builder(map_name)
+                self._set_scatter_process_builder(self.map_name)
             if self.scatter_process_builder is not None:
                 super()._custom_build([self.scatter_process_builder])
             else:
