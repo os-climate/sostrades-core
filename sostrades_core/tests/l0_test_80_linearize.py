@@ -205,7 +205,6 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
-        #for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
         mdo_disc = exec_eng.dm.get_disciplines_with_name('usecase.SellarCoupling.Sellar_2')[0].mdo_discipline_wrapp.mdo_discipline
         inputs=['usecase.SellarCoupling.z']
         outputs=['usecase.SellarCoupling.y_2']

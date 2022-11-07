@@ -55,7 +55,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         '''
         Test when cache is None that file is not written + map are empty
         '''
-        dump_dir = join(self.dump_dir, 'test_03')
+        dump_dir = join(self.dump_dir, 'test_01')
 
         # run study, then dump dm and disciplines status
         study_dump = study_disc1_disc2()
@@ -70,7 +70,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # run with dump cache_map
         study_dump.run(dump_study=True)
-        # cache_type is None then cache map is an empty dict
+        # cache_type is None then cache map is {}
         self.assertEqual(study_dump.ee.dm.cache_map, {})
         # check dumped cache pickle non existence
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
@@ -132,7 +132,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         Check anonymization before dumping the pickle file 
         And check unanonymization
         '''
-        dump_dir = join(self.dump_dir, 'test_02')
+        dump_dir = join(self.dump_dir, 'test_03')
 
         # run study, then dump dm and disciplines status
         study_dump = study_disc1_disc2()
@@ -167,7 +167,7 @@ class TestLoadSimpleCache(unittest.TestCase):
                         disc_id][1][var_type][input_var_anonymized]
                     if isinstance(input_value, (float, int, str)):
                         self.assertEqual(input_value, serialized_input_value)
-
+        study_dump.manage_dump_cache()
         study_dump.dump_cache(dump_dir)
         # check dumped cache pickle existence
         cache_pkl_path = join(dump_dir, 'cache.pkl')
@@ -186,7 +186,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         '''
         Dump and load a simple cache on the entire process with same name to check all values
         '''
-        dump_dir = join(self.dump_dir, 'test_02')
+        dump_dir = join(self.dump_dir, 'test_04')
 
         # run study, then dump dm and disciplines status
         study_dump = study_disc1_disc2()
@@ -256,7 +256,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         '''
         Dump and load a simple cache on ony one disc to test the configuration +  different process names
         '''
-        dump_dir = join(self.dump_dir, 'test_04')
+        dump_dir = join(self.dump_dir, 'test_05')
 
         # run study, then dump dm and disciplines status
         study_1 = study_disc1_disc2()
@@ -274,7 +274,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
                               'test_disc1_disc2_coupling', study_1.study_name, 'cache.pkl')
         self.assertTrue(exists(cache_pkl_path))
-        cache_map_from_pkl = study_1.setup_cache_map_dict(dump_dir)
+        study_1.read_cache_pickle(dump_dir)
+        cache_map_from_pkl = study_1.loaded_cache
         self.assertEqual(len(cache_map_from_pkl), 1)
 
         # load dumped dm in a new study
@@ -297,17 +298,20 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         self.dir_to_del.append(self.dump_dir)
 
-    def test_06_set_recursive_cache_coupling(self):
-
-        dump_dir = join(self.dump_dir, 'test_05')
+    def test_06_set_different_cache_type(self):
+        '''
+        Test different cache type to verify reconfiguration rest_cache mode 
+        and to verify that pkl is deleted when cache is None
+        '''
+        dump_dir = join(self.dump_dir, 'test_06')
 
         study = study_disc1_disc2()
         study.load_data()
-        study.set_dump_directory(
-            dump_dir)
+
         values_dict = {f'{study.study_name}.cache_type': 'SimpleCache'}
         study.load_data(from_input_dict=values_dict)
-
+        study.set_dump_directory(
+            dump_dir)
         study.run(dump_study=True)
 
         for disc in study.ee.factory.proxy_disciplines:
@@ -322,10 +326,20 @@ class TestLoadSimpleCache(unittest.TestCase):
             self.assertEqual(
                 disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
 
+        # check dumped cache pickle existence
+        cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
+                              'test_disc1_disc2_coupling', study.study_name, 'cache.pkl')
+        self.assertTrue(exists(cache_pkl_path))
+
         values_dict = {f'{study.study_name}.cache_type': 'None'}
         study.load_data(from_input_dict=values_dict)
         study.read_cache_pickle(dump_dir)
         study.run(dump_study=True)
+
+        # check dumped cache pickle existence
+        cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
+                              'test_disc1_disc2_coupling', study.study_name, 'cache.pkl')
+        self.assertFalse(exists(cache_pkl_path))
 
         self.assertEqual(len(study.ee.dm.cache_map), 0)
 
@@ -340,7 +354,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_07_load_cache_on_sellar_mda(self):
 
-        dump_dir = join(self.dump_dir, 'test_06')
+        dump_dir = join(self.dump_dir, 'test_07')
 
         # create study sellar MDA and load data from usecase
         study_1 = study_sellar_mda()
@@ -385,7 +399,68 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         self.dir_to_del.append(self.dump_dir)
 
-    def test_08_load_cache_on_sellar_mda_newton_raphson(self):
+    def test_08_copy_cache_with_copy_study(self):
+
+        dump_dir = join(self.dump_dir, 'test_08')
+
+        study = study_disc1_disc2()
+        study.load_data()
+
+        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache'}
+        study.load_data(from_input_dict=values_dict)
+        study.set_dump_directory(
+            dump_dir)
+        study.run(dump_study=True)
+        study.read_cache_pickle(dump_dir)
+        cache = study.loaded_cache
+        # check dumped cache pickle existence
+        cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
+                              'test_disc1_disc2_coupling', study.study_name, 'cache.pkl')
+        self.assertTrue(exists(cache_pkl_path))
+
+        # create new study in new directory and new name
+        new_dump_dir = join(self.dump_dir, 'new_test_08')
+        study_2 = BaseStudyManager(
+            self.repo_name, self.proc_name_disc1_disc2, 'new_study')
+
+        # load the data from the old directory
+        study_2.load_data(dump_dir, display_treeview=False)
+
+        study_2.set_dump_directory(
+            new_dump_dir)
+        # study_2.load_disciplines_data(dump_dir)
+        study_2.read_cache_pickle(dump_dir)
+
+        # check dumped cache pickle existence
+        new_cache_pkl_path = join(new_dump_dir, 'sostrades_core.sos_processes.test',
+                                  'test_disc1_disc2_coupling', study_2.study_name, 'cache.pkl')
+        self.assertFalse(exists(new_cache_pkl_path))
+        # Save it in the new directory
+        study_2.dump_study(study_2.dump_directory)
+        # check dumped cache pickle existence
+        new_cache_pkl_path = join(new_dump_dir, 'sostrades_core.sos_processes.test',
+                                  'test_disc1_disc2_coupling', study_2.study_name, 'cache.pkl')
+        self.assertTrue(exists(new_cache_pkl_path))
+        study_2.read_cache_pickle(new_dump_dir)
+        new_cache = study_2.loaded_cache
+        self.assertListEqual(list(cache.keys()), list(new_cache.keys()))
+        for key in cache.keys():
+            self.assertDictEqual(
+                {key_out: value for key_out, value in cache[key][1]['outputs'].items(
+                ) if not key_out.endswith('residuals_history')},
+                {key_out: value for key_out, value in new_cache[key][1]['outputs'].items() if not key_out.endswith('residuals_history')})
+
+        study_2.run()
+
+        # check n_calls == 0
+        for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
+            self.assertEqual(
+                disc.n_calls, 0)
+
+        self.dir_to_del.append(dump_dir)
+        self.dir_to_del.append(new_dump_dir)
+
+    def test_09_load_cache_on_sellar_mda_newton_raphson(self):
 
         dump_dir = join(self.dump_dir, 'test_07')
 
@@ -496,5 +571,5 @@ class TestLoadSimpleCache(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestLoadSimpleCache()
     cls.setUp()
-    cls.test_04_dump_and_load_simple_cache_on_process()
+    cls.test_08_copy_cache_with_copy_study()
     cls.tearDown()

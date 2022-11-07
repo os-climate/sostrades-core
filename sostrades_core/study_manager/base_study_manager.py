@@ -21,6 +21,7 @@ Class that manage a whole study process (load, execute, save, dump..)
 from time import time
 from os.path import join, isdir, exists
 from logging import INFO, DEBUG
+from os import remove
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 # from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
@@ -68,6 +69,8 @@ class BaseStudyManager():
         self.__yield_method = yield_method
         self.__execution_engine = execution_engine
         self.loaded_cache = None
+        self.dumped_cache = False
+        self.dump_cache_map = None
 
     def run_usecase(self):
         return self.__run_usecase
@@ -264,24 +267,52 @@ class BaseStudyManager():
         :params: study_folder_path, location of pickle file to load
         :type: str
         """
-        # Retrieve cache_map to dump
-        cache_map = self.execution_engine.get_cache_map_to_dump()
-        # Do not dump the cache if there is no cache to dump
-        if cache_map != {}:
-            self._put_cache_into_file(study_folder_path, cache_map)
+
+        if self.dumped_cache:
+            self._put_cache_into_file(study_folder_path, self.dump_cache_map)
+
+    def manage_dump_cache(self):
+        '''
+        Mathod that defines the dump strategy in several cases
+        Three solutions :
+            1 Execution is done, a cache_map exists is not empty 
+            --> dump cache_map
+            2 prepare execution is done and cache map is empty because all cache_type are None
+            --> delete the existing pkl
+            3 dump cache is called and no execution have been done, copy study
+            --> dump loaded_cache stored in the study_manager in another pkl
+        '''
+        if self.execution_engine.root_process.is_prepared:
+            # Retrieve cache_map to dump
+            self.dump_cache_map = self.execution_engine.get_cache_map_to_dump()
+            if self.dump_cache_map == {}:
+                # 2nd solution
+                self.dumped_cache = False
+                if exists(self.study_cache_file_path):
+                    remove(self.study_cache_file_path)
+
+            else:
+                # 1st solution
+                self.dumped_cache = True
         else:
-            # method to delet pickle if a pickle exists
-            pass
+            if self.loaded_cache is not None:
+                self.dumped_cache = True
+                self.dump_cache_map = self.loaded_cache
+            else:
+                self.dumped_cache = False
 
     def read_cache_pickle(self, study_folder_path=None):
-        """ Method that read cache pickle into the execution engine
+        """ Method that read cache pickle and save it into the study manager
 
         :params: study_folder_path, location of pickle file to load (optional parameter)
         :type: str
         """
         # Retrieve the cache map to load
-        self.loaded_cache = self.setup_cache_map_dict(
-            study_folder_path)
+        if study_folder_path is not None and isdir(study_folder_path):
+            self.loaded_cache = self._get_cache_from_file(study_folder_path)
+
+        else:
+            self.loaded_cache = None
 
     def load_disciplines_data(self, study_folder_path=None):
         """ Method that load data into the execution engine
@@ -382,13 +413,22 @@ class BaseStudyManager():
                 'The following error occurs in "after_execute_before_dump" methods')
 
         if dump_study and self.dump_directory is not None:
-            self.dump_data(self.dump_directory)
-            self.dump_disciplines_data(self.dump_directory)
-            self.dump_cache(self.dump_directory)
+
+            self.dump_study(self.dump_directory)
             logger.debug(
                 f'Reference dump to {self.dump_directory}')
 
         logger.info(f'Study {study_display_name} done.')
+
+    def dump_study(self, dump_dir):
+        '''
+        Dump a study by dumping its data in the dm.pkl the disciplines in another pkl and the cache in another one
+        '''
+        self.dump_data(dump_dir)
+        self.dump_disciplines_data(dump_dir)
+        # manage what to dump for the cache
+        self.manage_dump_cache()
+        self.dump_cache(dump_dir)
 
     def setup_usecase(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process
@@ -404,21 +444,6 @@ class BaseStudyManager():
             return self._get_data_from_file(study_folder_path)
 
         return []
-
-    def setup_cache_map_dict(self, study_folder_path=None):
-        """ Method to overload in order to provide data to the loaded study process
-        from a specific way
-
-        :params: study_folder_path, location of pickle file to load (optional parameter)
-        :type: str
-
-        :return: dictionary, {str: *}
-        """
-
-        if study_folder_path is not None and isdir(study_folder_path):
-            return self._get_cache_from_file(study_folder_path)
-
-        return {}
 
     def setup_disciplines_data(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process
