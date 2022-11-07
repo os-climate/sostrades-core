@@ -73,12 +73,12 @@ class SoSWrapp(object):
     IO_TYPE_OUT = 'out'
 
     def __init__(self, sos_name):
-        '''
+        """
         Constructor.
 
         Arguments:
             sos_name (string): name of the discipline
-        '''
+        """
         self.sos_name = sos_name
         self.input_full_name_map = {}
         self.output_full_name_map = {}

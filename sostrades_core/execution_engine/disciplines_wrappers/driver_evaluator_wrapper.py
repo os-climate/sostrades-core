@@ -45,11 +45,14 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 class DriverEvaluatorWrapper(SoSWrapp):
-    '''
-    Generic Wrapper with SoSEval functions
-    '''
+    """
+    DriverEvaluatorWrapper is a type of SoSWrapp that can evaluate one or several subprocesses either with their
+    reference inputs or by applying modifications to some of the subprocess variables. It is assumed to have references
+    to the GEMSEO objects at the root of each of the subprocesses, stored in self.attributes['sub_mdo_disciplines'].
+    """
 
     _maturity = 'Fake'
+
     BUILDER_MODE = 'builder_mode'
     MONO_INSTANCE = 'mono_instance'
     MULTI_INSTANCE = 'multi_instance'
@@ -64,6 +67,12 @@ class DriverEvaluatorWrapper(SoSWrapp):
      }
 
     def __init__(self, sos_name):
+        """
+        Constructor.
+
+        Arguments:
+            sos_name (string): name of the discipline
+        """
         super().__init__(sos_name)
         self.custom_samples = None  # input samples dataframe
         self.samples = None         # samples to evaluate as list[list[Any]] or ndarray
@@ -72,26 +81,58 @@ class DriverEvaluatorWrapper(SoSWrapp):
         self.subprocesses_to_eval = None
 
     def _init_input_data(self):
+        """
+        Initialise the attribute that stores the input data of every subprocess for this run.
+        """
         self.n_subprocs = len(self.attributes['sub_mdo_disciplines'])
         self.input_data_for_disc = [{}]*self.n_subprocs
         #TODO: deepcopy option? [discuss]
         for i_subprocess in self.subprocesses_to_eval or range(self.n_subprocs):
             self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][i_subprocess])
 
-    def _get_input_data(self, delta_dict, i_subprocess=0):
+    def _get_input_data(self, var_delta_dict, i_subprocess=0):
+        """
+        Updates the input data to execute a given subprocess by applying changes to the variables whose full names and
+        new values are specified in the var_delta_dict (for all other variables use reference subprocess values).
+
+        Arguments:
+            var_delta_dict (dict): keys are variable full names and values are variable non-reference values to be applied
+                               at subprocess execution
+            i_subprocess (int): index of the subprocess to execute, i.e. the subprocess that provides reference inputs
+                                and to whom var_delta_dict is applied
+
+        Returns:
+            self.input_data_for_disc[i_subprocess] (dict): the input data updated with new values for certain variables
+        """
         #TODO: deepcopy option? [discuss]
-        self.input_data_for_disc[i_subprocess].update(delta_dict)
+        self.input_data_for_disc[i_subprocess].update(var_delta_dict)
         return self.input_data_for_disc[i_subprocess]
 
     def _select_output_data(self, raw_data, eval_out_data_names):
+        """
+        Filters from raw_data the items that are in eval_out_data_names.
+
+        Arguments:
+            raw_data (dict): dictionary of variable full names and values such as the local_data of a subprocess
+            eval_out_data_names (list[string]): full names of the variables to keep
+
+        Returns:
+             output_data_dict (dict): filtered dictionary
+        """
         output_data_dict = {key: value for key,value in raw_data.items()
                           if key in eval_out_data_names}
         return output_data_dict
 
     def get_input_data_for_gems(self, disc):
-        '''
-        Get input_data for linearize sosdiscipline
-        '''
+        """
+        Get reference inputs for a subprocess by querying for the data names in its input grammar.
+
+        Arguments:
+            disc (MDODiscipline): discipline at the root of the subprocess.
+
+        Returns:
+            input_data (dict): full names and reference values for the subprocess inputs
+        """
         input_data = {}
         input_data_names = disc.input_grammar.get_data_names()
         if len(input_data_names) > 0:
@@ -100,6 +141,17 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
 
     def subprocess_evaluation(self, var_delta_dict, i_subprocess, convert_to_array=True):
+        """
+        Evaluate a subprocess.
+
+        Arguments:
+            var_delta_dict (dict): keys are variable full names and values are variable non-reference values to be
+                                   applied for the execution of this subprocess. Providing an empty dict will evaluate
+                                   reference values unless input_data_for_disc[i_subprocess] attribute has been modified
+                                   beforehand.
+            i_subprocess (int): index of the subprocess to execute, i.e. the subprocess that provides reference inputs
+                                and to whom delta_dict is applied
+        """
         local_data = self.attributes['sub_mdo_disciplines'][i_subprocess]\
                          .execute(self._get_input_data(var_delta_dict, i_subprocess))
         # out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'][i_subprocess])
@@ -118,7 +170,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
         # return out_values
         # return local_data
 
-    def run(self): # very simple ms
+    def run(self):
+        # very simple ms only
         self._init_input_data()
         for i_subprocess in range(self.n_subprocs):
             self.subprocess_evaluation({}, i_subprocess)

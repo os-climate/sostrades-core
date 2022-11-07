@@ -2264,9 +2264,9 @@ class ProxyDiscipline(object):
 
     def set_wrapper_attributes(self, wrapper):
         """
-        set the attribute attributes of wrapper which is used to provide the wrapper with information that is
-        figured out at configuration time. the input and output full name map allow the wrappers to work with
-        short names whereas the GEMSEO objects use variable full names in their data structures.
+        set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
+        figured out at configuration time but needed at runtime. the input and output full name map allow the wrappers
+        to work with short names whereas the GEMSEO objects use variable full names in their data structures.
         """
         input_full_name_map, output_full_name_map = self.create_io_full_name_map()
         wrapper.attributes = {
