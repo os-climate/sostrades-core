@@ -1789,11 +1789,11 @@ class ProxyDiscipline(object):
     def get_disc_info_list_for_hashed_uid(self, disc):
         full_name = self.get_disc_full_name().split(self.ee.study_name)[-1]
         class_name = disc.__class__.__name__
-        anoninmated_data_io = self.get_anonimated_data_io(disc)
+        data_io_string = self.get_single_data_io_string_for_disc_uid(disc)
 
         # set disc infos string list with full name, class name and anonimated
         # i/o for hashed uid generation
-        return [full_name, class_name, anoninmated_data_io]
+        return [full_name, class_name, data_io_string]
 
     def get_cache_map_hashed_uid(self, disc):
         disc_info_list = self.get_disc_info_list_for_hashed_uid(disc)
@@ -1861,7 +1861,7 @@ class ProxyDiscipline(object):
         """
         return self.ee.dm.get_discipline_ids_list(self.get_disc_full_name())
 
-    def get_anonimated_data_io(self, disc):
+    def get_single_data_io_string_for_disc_uid(self, disc):
         '''
         Return: (List[string]) of anonimated input and output keys for serialisation purpose
         '''
