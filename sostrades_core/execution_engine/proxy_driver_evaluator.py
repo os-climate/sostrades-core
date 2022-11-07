@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
-
+from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 
 class ProxyDriverEvaluatorException(Exception):
     pass
@@ -44,13 +44,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'icon': '',
         'version': '',
     }
-
-    # BUILDER_MODE = 'builder_mode'
-    #
-    # MONO_INSTANCE = 'mono_instance'
-    # MULTI_INSTANCE = 'multi_instance'
-    # BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE]
-
+    
+    BUILDER_MODE = DriverEvaluatorWrapper.BUILDER_MODE
+    MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
+    MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
+    REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
+    BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
+    
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  map_name=None,
@@ -129,19 +129,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
 
     def setup_sos_disciplines(self):
-        if 'builder_mode' in self.get_data_in():
-            builder_mode = self.get_sosdisc_inputs('builder_mode')
-            if builder_mode == 'multi_instance':
+        if self.BUILDER_MODE in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            if builder_mode == self.MULTI_INSTANCE:
                 pass # TODO: addressing only the very simple multiscenario case
                 # if 'map_name' not in self.get_data_in():
                 #     dynamic_inputs = {'map_name': {self.TYPE: 'string',
                 #                                    self.DEFAULT: 'scenario_list',
                 #                                    self.STRUCTURING: True}}
                 #     self.add_inputs(dynamic_inputs)
-            elif builder_mode == 'mono_instance':
+            elif builder_mode == self.MONO_INSTANCE:
                 pass #TODO: to merge with Eval
-            elif builder_mode == 'custom':
-                pass #custom build requires no specific dynamic inputs
+            elif builder_mode == self.REGULAR_BUILD:
+                pass #regular build requires no specific dynamic inputs
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
@@ -152,13 +152,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: check proper cleaning when changin builder mode
         if len(self.cls_builder) == 0: # added condition for proc build
             pass
-        elif 'builder_mode' in self.get_data_in():
-            builder_mode = self.get_sosdisc_inputs('builder_mode')
-            if builder_mode == 'multi_instance':
+        elif self.BUILDER_MODE in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            if builder_mode == self.MULTI_INSTANCE:
                 self.multi_instance_build()
-            elif builder_mode == 'mono_instance':
+            elif builder_mode == self.MONO_INSTANCE:
                 self.mono_instance_build()
-            elif builder_mode == 'custom':
+            elif builder_mode == self.REGULAR_BUILD:
                 super().build()
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')

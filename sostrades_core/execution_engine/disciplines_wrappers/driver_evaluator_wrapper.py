@@ -50,12 +50,17 @@ class DriverEvaluatorWrapper(SoSWrapp):
     '''
 
     _maturity = 'Fake'
+    BUILDER_MODE = 'builder_mode'
+    MONO_INSTANCE = 'mono_instance'
+    MULTI_INSTANCE = 'multi_instance'
+    REGULAR_BUILD = 'regular_build'
+    BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE, REGULAR_BUILD]
 
     DESC_IN = {
-            'builder_mode': {SoSWrapp.TYPE: 'string',
-                             SoSWrapp.DEFAULT: 'multi_instance',
-                             SoSWrapp.POSSIBLE_VALUES: ['multi_instance', 'single_instance', 'custom'],
-                             SoSWrapp.STRUCTURING: True}
+            BUILDER_MODE : {SoSWrapp.TYPE: 'string',
+                            SoSWrapp.DEFAULT: MULTI_INSTANCE,
+                            SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
+                            SoSWrapp.STRUCTURING: True}
      }
 
     def __init__(self, sos_name):
