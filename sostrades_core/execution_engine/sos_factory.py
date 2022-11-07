@@ -297,8 +297,8 @@ class SosFactory:
         return builder
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
-        #TODO: refactor after driver classes are merged
-        module_struct_list = f'{self.EE_PATH}.proxy_discipline_driver.ProxyDisciplineDriver'
+        #TODO: recode when driver classes are properly merged, at the moment custom driver wrapper is off (won't build)
+        module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
         driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)

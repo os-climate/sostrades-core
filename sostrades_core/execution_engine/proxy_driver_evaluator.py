@@ -45,7 +45,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls=None, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder,
+                 driver_wrapper_cls=None,
+                 associated_namespaces=None):
         '''
         Constructor
 
@@ -135,8 +137,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.add_inputs(dynamic_inputs)
             elif builder_mode == 'mono_instance':
                 pass #TODO: to merge with Eval
+            elif builder_mode == 'custom':
+                pass #custom build requires no specific dynamic inputs
+            else:
+                raise ValueError(f'Wrong builder mode input in {self.sos_name}')
+        # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
+        # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
+        super().setup_sos_disciplines()
 
-    def build(self):
+    def build(self): #TODO: make me work with custom driver
         if len(self.cls_builder) == 0: # added condition for proc build
             pass
         elif 'builder_mode' in self.get_data_in():
@@ -167,7 +176,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         super().set_wrapper_attributes(wrapper)
         wrapper.attributes.update({'sub_mdo_disciplines': [
                                   proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
-                                  if proxy.mdo_discipline_wrapp is not None]})
+                                  if proxy.mdo_discipline_wrapp is not None]}) # discs and couplings but not scatters
 
     def is_configured(self):
         '''
