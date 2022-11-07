@@ -847,6 +847,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         return ordered_list
 
+    @property
+    def is_prepared(self):
+
+        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+            return True
+        else:
+            return False
+
     def ordered_disc_list_rec(self, disc, ordered_list):
         '''
          Recursive function to obtain the ordered list of disciplines configured by the MDAChain
