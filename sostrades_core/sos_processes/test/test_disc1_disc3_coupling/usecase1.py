@@ -42,7 +42,7 @@ class Study(StudyManager):
         dict_values[self.study_name + '.Disc3.constant'] = constant
         dict_values[self.study_name + '.Disc3.power'] = power
         dict_values[self.study_name + '.Disc3.z'] = z
-
+        dict_values[self.study_name + '.cache_type'] = 'SimpleCache'
         return [dict_values]
 
 
