@@ -34,7 +34,6 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_discipline_driver import ProxyDisciplineDriver
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from numpy import NaN
@@ -350,7 +349,7 @@ class ProxyEval(ProxyDriverEvaluator):
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper
         """
-        # ProxyDisciplineDriver attributes (sub_mdo_discipline)
+        # ProxyDriverEvaluator attributes (sub_mdo_discipline)
         super().set_wrapper_attributes(wrapper)
         eval_attributes = {'eval_in_list': self.eval_in_list,
                            'eval_out_list': self.eval_out_list,

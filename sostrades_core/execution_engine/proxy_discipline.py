@@ -323,9 +323,9 @@ class ProxyDiscipline(object):
         self._data_in = None
         self._data_out = None
         self._io_ns_map_in = None
-        self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDisciplineDriver
+        self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
 
-        self._structuring_variables = None  # used by ProxyCoupling, ProxyDisciplineDriver
+        self._structuring_variables = None
         self.reset_data()
         # -- Maturity attribute
         self._maturity = self.get_maturity()
@@ -1789,11 +1789,11 @@ class ProxyDiscipline(object):
     def get_disc_info_list_for_hashed_uid(self, disc):
         full_name = self.get_disc_full_name().split(self.ee.study_name)[-1]
         class_name = disc.__class__.__name__
-        anoninmated_data_io = self.get_anonimated_data_io(disc)
+        data_io_string = self.get_single_data_io_string_for_disc_uid(disc)
 
         # set disc infos string list with full name, class name and anonimated
         # i/o for hashed uid generation
-        return [full_name, class_name, anoninmated_data_io]
+        return [full_name, class_name, data_io_string]
 
     def get_cache_map_hashed_uid(self, disc):
         disc_info_list = self.get_disc_info_list_for_hashed_uid(disc)
@@ -1861,7 +1861,7 @@ class ProxyDiscipline(object):
         """
         return self.ee.dm.get_discipline_ids_list(self.get_disc_full_name())
 
-    def get_anonimated_data_io(self, disc):
+    def get_single_data_io_string_for_disc_uid(self, disc):
         '''
         Return: (List[string]) of anonimated input and output keys for serialisation purpose
         '''
@@ -2264,9 +2264,9 @@ class ProxyDiscipline(object):
 
     def set_wrapper_attributes(self, wrapper):
         """
-        set the attribute attributes of wrapper which is used to provide the wrapper with information that is
-        figured out at configuration time. the input and output full name map allow the wrappers to work with
-        short names whereas the GEMSEO objects use variable full names in their data structures.
+        set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
+        figured out at configuration time but needed at runtime. the input and output full name map allow the wrappers
+        to work with short names whereas the GEMSEO objects use variable full names in their data structures.
         """
         input_full_name_map, output_full_name_map = self.create_io_full_name_map()
         wrapper.attributes = {

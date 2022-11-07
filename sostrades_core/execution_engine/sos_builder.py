@@ -108,7 +108,7 @@ class SoSBuilder(object):
 
     def create_disc(self, future_new_ns_disc_name):
         if self.cls.__name__ in ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather', 'ProxyDoeEval',
-                                 'ProxyDisciplineDriver', 'ProxyEval', 'ProxyDriverEvaluator']:
+                                 'ProxyEval', 'ProxyDriverEvaluator']:
             self.disc = self.cls(**self.__args)
         else:
             self.disc = ProxyDiscipline(**self.__args)

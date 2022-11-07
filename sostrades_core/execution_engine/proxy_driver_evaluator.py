@@ -19,6 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
+from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -44,11 +45,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'icon': '',
         'version': '',
     }
-
+    
+    BUILDER_MODE = DriverEvaluatorWrapper.BUILDER_MODE
+    MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
+    MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
+    REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
+    BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
+    
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
+                 map_name=None,
                  associated_namespaces=None):
-        '''
+        """
         Constructor
 
         Arguments:
@@ -56,8 +64,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
             cls_builder (List[SoSBuilder]): list of the sub proxy builders
             driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
+            map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
-        '''
+        """
         super().__init__(sos_name, ee, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
         if cls_builder is None:
@@ -65,6 +74,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
         self.eval_process_builder = None
         self.scatter_process_builder = None
+        self.map_name = map_name
+
 
     def get_desc_in_out(self, io_type):
         """
@@ -80,20 +91,22 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
         """
-        creation of mdo_discipline_wrapp by the proxy
-        To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
+        creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
+        a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
+        them in a different way than a coupling.
         """
         self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(
             name, wrapper, wrapping_mode)
 
     def configure(self):
-        '''
-        Configure the SoSEval and its children sos_disciplines + set eval possible values for the GUI
-        '''
-        # configure eval process stored in children
+        """
+        Configure the DriverEvaluator layer
+        """
+        # configure al processes stored in children
         for disc in self.get_disciplines_to_configure():
             disc.configure()
 
+        # configure current discipline DriverEvaluator
         # if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
         if self._data_in == {} or self.subprocess_is_configured():
             # Call standard configure methods to set the process discipline tree
@@ -102,15 +115,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
-            # if len(self.proxy_disciplines) == 1:
-                # only for 1 subcoupling, so not handling cases like driver of
-                # driver
-                # self.update_data_io_with_subprocess_io()
-            # else:
-            #     raise NotImplementedError
             self.set_children_cache_inputs()
 
     def update_data_io_with_subprocess_io(self):
+        """
+        Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
+        exploited for couplings etc.
+        """
         self._restart_data_io_to_disc_io()
         #TODO: working because no two different discs share a local ns
         for proxy_disc in self.proxy_disciplines:
@@ -126,52 +137,64 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
 
     def setup_sos_disciplines(self):
-        if 'builder_mode' in self.get_data_in():
-            builder_mode = self.get_sosdisc_inputs('builder_mode')
-            if builder_mode == 'multi_instance':
-                # TODO: addressing only the very simple multiscenario case
-                if 'map_name' not in self.get_data_in():
-                    dynamic_inputs = {'map_name': {self.TYPE: 'string',
-                                                   self.DEFAULT: 'scenario_list',
-                                                   self.STRUCTURING: True}}
-                    self.add_inputs(dynamic_inputs)
-            elif builder_mode == 'mono_instance':
+        """
+        Dynamic inputs and outputs of the DriverLayer
+        """
+        if self.BUILDER_MODE in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            if builder_mode == self.MULTI_INSTANCE:
+                pass # TODO: addressing only the very simple multiscenario case
+                # if 'map_name' not in self.get_data_in():
+                #     dynamic_inputs = {'map_name': {self.TYPE: 'string',
+                #                                    self.DEFAULT: 'scenario_list',
+                #                                    self.STRUCTURING: True}}
+                #     self.add_inputs(dynamic_inputs)
+            elif builder_mode == self.MONO_INSTANCE:
                 pass #TODO: to merge with Eval
-            elif builder_mode == 'custom':
-                pass #custom build requires no specific dynamic inputs
+            elif builder_mode == self.REGULAR_BUILD:
+                pass #regular build requires no specific dynamic inputs
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
         # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
-        super().setup_sos_disciplines()
+        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper case
 
-    def build(self): #TODO: make me work with custom driver
+    def build(self):
+        """
+        Build of the subprocesses of the DriverEvaluator.
+        """
+        # TODO: make me work with custom driver
+        # TODO: test proper cleaning when changing builder mode
         if len(self.cls_builder) == 0: # added condition for proc build
             pass
-        elif 'builder_mode' in self.get_data_in():
-            builder_mode = self.get_sosdisc_inputs('builder_mode')
-            if builder_mode == 'multi_instance':
+        elif self.BUILDER_MODE in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            if builder_mode == self.MULTI_INSTANCE:
                 self.multi_instance_build()
-            elif builder_mode == 'mono_instance':
+            elif builder_mode == self.MONO_INSTANCE:
                 self.mono_instance_build()
-            elif builder_mode == 'custom':
+            elif builder_mode == self.REGULAR_BUILD:
                 super().build()
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')
 
     def prepare_execution(self):
-        '''
-        Preparation of the GEMSEO process, including GEMSEO objects instanciation
-        '''
+        """
+        Preparation of the GEMSEO process, including GEMSEO objects instantiation
+        """
         # prepare_execution of proxy_disciplines as in coupling
         # TODO: move to builder ?
-
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
         # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
         super().prepare_execution()
 
     def set_wrapper_attributes(self, wrapper):
+        """
+        set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
+        figured out at configuration time but needed at runtime. The DriverEvaluator in particular needs to provide
+        its wrapper with a reference to the subprocess GEMSEO objets so they can be manipulated at runtime.
+        """
         #TODO: needs to accommodate the eval attributes in the mono instance case
         super().set_wrapper_attributes(wrapper)
         wrapper.attributes.update({'sub_mdo_disciplines': [
@@ -179,12 +202,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                   if proxy.mdo_discipline_wrapp is not None]}) # discs and couplings but not scatters
 
     def is_configured(self):
-        '''
+        """
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
-        '''
+        """
         return ProxyDiscipline.is_configured(self) and self.subprocess_is_configured()
 
     def subprocess_is_configured(self):
+        """
+        Return True if the subprocess is configured or the builder is empty.
+        """
         # Explanation:
         # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
         # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
@@ -196,30 +222,39 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     # MULTI INSTANCE PROCESS
     def _set_scatter_process_builder(self, map_name):
+        """
+        Create and set the scatter builder that will allow multi-instance builds.
+        """
         if len(self.cls_builder) == 0:  # added condition for proc build
             scatter_builder = None
         else:
-            # builder of the scatter in aggregation
+            # builder of the scatter in aggregation with references to self.cls_builder builders
             scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder, # TODO: nice to remove scatter node
                                                                      coupling_per_scatter=True) #NB: is hardcoded also in VerySimpleMS/SimpleMS
         self.scatter_process_builder = scatter_builder
 
     def multi_instance_build(self):
+        """
+        Build of the subprocesses in multi-instance builder mode.
+        """
         # TODO: will need to include options for MultiScenario other than VerySimple
-        if 'map_name' in self.get_data_in():
+        if self.map_name is not None:
+            # set the scatter builder that allows to scatter the subprocess
             if self.scatter_process_builder is None:
-                map_name = self.get_sosdisc_inputs('map_name')
-                if map_name is not None:
-                    self._set_scatter_process_builder(map_name)
+                self._set_scatter_process_builder(self.map_name)
+            # if the scatter builder exists, use it to build the process
             if self.scatter_process_builder is not None:
                 super()._custom_build([self.scatter_process_builder])
             else:
                 self.logger.warn(f'Scatter builder not configured in {self.sos_name}, map_name missing?')
+        else:
+            self.logger.warn(f'Attempting multi-instance build without a map_name in {self.sos_name}')
+
 
     # MONO INSTANCE PROCESS
     def _set_eval_process_builder(self):
         '''
-        Create the eval process builder, in a coupling if necessary
+        Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.
         '''
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
@@ -235,7 +270,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def mono_instance_build(self):
         '''
-        Method copied from SoSCoupling: build and store disciplines in sos_disciplines
+        Build of the subprocesses in mono-instance builder mode.
         '''
         if self.eval_process_builder is None:
             self._set_eval_process_builder()

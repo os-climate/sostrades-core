@@ -215,7 +215,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
     def test_2_DoeEval_of_DoeEval(self):
         """ Here we test a DoeEval of a DoeEval process on a single sub-discipline to check that the transition of the
-        ProxyDisciplineDriver from working with short names to working with tuples of short names and namespace (of the
+        driver layer from working with short names to working with tuples of short names and namespace (of the
         discipline to the local data variable belongs) is implemented. It is really a test of driver of a driver using
         DoeEval. The test demonstrates the capability to use a driver of a driver.
         """
