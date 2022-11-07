@@ -109,6 +109,10 @@ class TestLoadSimpleCache(unittest.TestCase):
         # activate cache
         dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache'}
         study_1.load_data(from_input_dict=dict_values)
+
+        for disc in study_1.execution_engine.root_process.proxy_disciplines:
+            self.assertEqual(disc.get_sosdisc_inputs(
+                'cache_type'), 'SimpleCache')
         study_1.ee.prepare_execution()
         study_1.ee.build_cache_map()
 
@@ -571,5 +575,5 @@ class TestLoadSimpleCache(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestLoadSimpleCache()
     cls.setUp()
-    cls.test_08_copy_cache_with_copy_study()
+    cls.test_02_same_cache_map_with_2_different_studies()
     cls.tearDown()
