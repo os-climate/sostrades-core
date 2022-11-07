@@ -94,8 +94,8 @@ class DoeWrapper(SoSWrapp):
                #                  'dataframe_edition_locked': False,
                #                  'structuring': True, 'visibility': SoSWrapp.SHARED_VISIBILITY,
                #                  'namespace': 'ns_doe'},
-               'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
-               'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
+               # 'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+               # 'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0},
                }
 
     DESC_OUT = {
