@@ -80,7 +80,13 @@ class DoeWrapper(SoSWrapp):
 
     # TODO: refactor as DESC_IN = copy.deepcopy(EvalWrapp.DESC_IN).update(DoeWrapp.DESC_IN) or similar,
     #  when DoeWrapp and EvalWrapp are fixed
-    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True},
+
+    # get possible values for sampling algorithm name
+    available_doe_algorithms = get_available_doe_algorithms()
+    available_doe_algorithms = [
+        algo_name for algo_name in available_doe_algorithms if algo_name not in ['CustomDOE', 'DiagonalDOE']]
+
+    DESC_IN = {'sampling_algo': {'type': 'string', 'structuring': True, 'possible_values': available_doe_algorithms},
                'eval_inputs': {'type': 'dataframe',
                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
                                                         'full_name': ('string', None, False)},
@@ -159,13 +165,6 @@ class DoeWrapper(SoSWrapp):
         self.eval_in_list = None
         self.selected_inputs = None
         self.dict_desactivated_elem = {}
-
-    def get_available_algo_names(self):
-        """This method provide the list of available algo
-        """
-        sample_generator = DoeSampleGenerator(self)
-        algo_names_list = sample_generator.get_available_algo_names()
-        return algo_names_list
 
     @classmethod
     def get_algo_default_options(cls, algo_name):
@@ -323,11 +322,6 @@ class DoeWrapper(SoSWrapp):
         disc_in = proxy.get_data_in()
 
         if len(disc_in) != 0:
-            dynamic_inputs = {}
-            # filling possible values for sampling algorithm name
-            dynamic_inputs.update({'sampling_algo': {'type': 'string',
-                                                     'possible_values': self.get_available_algo_names(),
-                                                     'structuring': True}})
             # Dynamic input of default algo options
             algo_name_has_changed = False
             algo_name = proxy.get_sosdisc_inputs(self.ALGO)
@@ -336,7 +330,7 @@ class DoeWrapper(SoSWrapp):
                 self.previous_algo_name = algo_name
 
             default_dict = self.get_algo_default_options(algo_name)
-
+            dynamic_inputs = {}
             dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                     'dataframe_edition_locked': False,
                                                     'structuring': True,
