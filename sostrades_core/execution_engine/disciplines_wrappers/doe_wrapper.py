@@ -100,7 +100,7 @@ class DoeWrapper(SoSWrapp):
 
     DESC_OUT = {
         'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                   'namespace': 'ns_doe1'}
+                       'namespace': 'ns_doe1'}
     }
 
     default_algo_options = {
@@ -159,6 +159,13 @@ class DoeWrapper(SoSWrapp):
         self.eval_in_list = None
         self.selected_inputs = None
         self.dict_desactivated_elem = {}
+
+    def get_available_algo_names(self):
+        """This method provide the list of available algo
+        """
+        sample_generator = DoeSampleGenerator(self)
+        algo_names_list = sample_generator.get_available_algo_names()
+        return algo_names_list
 
     @classmethod
     def get_algo_default_options(cls, algo_name):
@@ -288,7 +295,8 @@ class DoeWrapper(SoSWrapp):
         algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
 
-        design_space = self.create_design_space(self.selected_inputs, dspace_df)
+        design_space = self.create_design_space(
+            self.selected_inputs, dspace_df)
         self.design_space = design_space
 
         generator_name = 'doe_generator'
@@ -299,7 +307,8 @@ class DoeWrapper(SoSWrapp):
         # print(list(self.sample_generator.get_options(algo_name).keys()))
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
-        samples = self.sample_generator.generate_samples(algo_name, algo_options, self.selected_inputs, design_space)
+        samples = self.sample_generator.generate_samples(
+            algo_name, algo_options, self.selected_inputs, design_space)
 
         # prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
         #     samples, eval_in_list, design_space)
@@ -314,14 +323,17 @@ class DoeWrapper(SoSWrapp):
         disc_in = proxy.get_data_in()
 
         if len(disc_in) != 0:
-
+            dynamic_inputs = {}
+            # filling possible values for sampling algorithm name
+            dynamic_inputs.update({'sampling_algo': {'type': 'string',
+                                                     'possible_values': self.get_available_algo_names(),
+                                                     'structuring': True}})
             # Dynamic input of default algo options
             algo_name_has_changed = False
             algo_name = proxy.get_sosdisc_inputs(self.ALGO)
             if self.previous_algo_name != algo_name:
                 algo_name_has_changed = True
                 self.previous_algo_name = algo_name
-            dynamic_inputs = {}
 
             default_dict = self.get_algo_default_options(algo_name)
 
@@ -345,10 +357,10 @@ class DoeWrapper(SoSWrapp):
             # Dynamic input of default design space
             eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
             self.selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                          == True]['full_name'].tolist()
+                                               == True]['full_name'].tolist()
             # self.eval_in_list = [
-            #     f'{proxy.ee.study_name}.{element}' for element in selected_inputs]
-
+            # f'{proxy.ee.study_name}.{element}' for element in
+            # selected_inputs]
 
             default_design_space = pd.DataFrame({'variable': self.selected_inputs,
 
