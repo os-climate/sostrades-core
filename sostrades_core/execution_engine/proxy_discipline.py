@@ -323,9 +323,9 @@ class ProxyDiscipline(object):
         self._data_in = None
         self._data_out = None
         self._io_ns_map_in = None
-        self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDisciplineDriver
+        self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
 
-        self._structuring_variables = None  # used by ProxyCoupling, ProxyDisciplineDriver
+        self._structuring_variables = None
         self.reset_data()
         # -- Maturity attribute
         self._maturity = self.get_maturity()
