@@ -37,6 +37,7 @@ import csv
 from os.path import dirname, join
 from pandas.testing import assert_frame_equal
 import re
+from os.path import join, dirname, exists
 
 
 class UnitTestHandler(Handler):
@@ -55,6 +56,7 @@ class UnitTestHandler(Handler):
 class TestSoSDOEScenario(unittest.TestCase):
 
     def setUp(self):
+        self.ref_dir = join(dirname(__file__), 'data')
         self.study_name = 'doe'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarDoeScenario"
@@ -321,8 +323,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # for loop over the sampling algo names and execution to save the resultant sampling in a CSV file.
         name_of_csv = "pydoe_reference_dataframe.csv"
         # f = open(name_of_csv, "w")  # For creating the file
-        f = open(name_of_csv, "r")   # For using the file
-        reference_dataframe = pd.read_csv(name_of_csv,sep='\t')   # Extraction of dataframe from reference csv file (use if already created)
+        # f = open(name_of_csv, "r")   # For using the file
+        reference_dataframe = pd.read_csv(join(self.ref_dir, name_of_csv),sep='\t')   # Extraction of dataframe from reference csv file (use if already created)
         for sampling_algo_name in pydoe_list_of_algo_names:
             disc_dict[f'{self.ns}.DoE.sampling_algo'] = sampling_algo_name
 
@@ -371,7 +373,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                     reference_samples[name][index] = array(element2, dtype=float)
             # Actual check samples correspond to reference samples
             assert_frame_equal(doe_disc_samples, reference_samples)
-        f.close()
+        # f.close()
 
     def test_4_doe_OT_algo_check(self):
         """
@@ -472,8 +474,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # for loop over the sampling algo names and execution to save the resultant sampling in a CSV file.
         name_of_csv = "ot_reference_dataframe.csv"
         # f = open(name_of_csv, "w")  # For creating the file
-        f = open(name_of_csv, "r")   # For using the file
-        reference_dataframe = pd.read_csv(name_of_csv,sep='\t')   # Extraction of dataframe from reference csv file (use if already created)
+        # f = open(name_of_csv, "r")   # For using the file
+        reference_dataframe = pd.read_csv(join(self.ref_dir, name_of_csv),sep='\t')  # Extraction of dataframe from reference csv file (use if already created)
         for sampling_algo_name in OT_list_of_algo_names:
             disc_dict[f'{self.ns}.DoE.sampling_algo'] = sampling_algo_name
 
@@ -522,5 +524,5 @@ class TestSoSDOEScenario(unittest.TestCase):
                     reference_samples[name][index] = array(element2, dtype=float)
             # Actual check samples correspond to reference samples
             assert_frame_equal(doe_disc_samples, reference_samples)
-        f.close()
+        # f.close()
 
