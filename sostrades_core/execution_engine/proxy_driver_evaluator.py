@@ -151,16 +151,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             if builder_mode == self.MULTI_INSTANCE:
                 self.build_inst_desc_io_with_scenario_df()
-                pass # TODO: addressing only the very simple multiscenario case
-                # if 'map_name' not in self.get_data_in():
-                #     dynamic_inputs = {'map_name': {self.TYPE: 'string',
-                #                                    self.DEFAULT: 'scenario_list',
-                #                                    self.STRUCTURING: True}}
-                #     self.add_inputs(dynamic_inputs)
             elif builder_mode == self.MONO_INSTANCE:
-                pass #TODO: to merge with Eval
+                pass  # TODO: to merge with Eval
             elif builder_mode == self.REGULAR_BUILD:
-                pass #regular build requires no specific dynamic inputs
+                pass  # regular build requires no specific dynamic inputs
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
