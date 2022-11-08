@@ -1033,7 +1033,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         return new_chart
 
-    def generate_lines_chart_with_display(
+    def generate_lines_chart_with_dropdown(
         self,
         data_df: pd.DataFrame,
         column_with_categories,
@@ -1196,7 +1196,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         return new_chart
 
-    def generate_pie_chart_with_display(
+    def generate_pie_chart_with_dropdown(
         self,
         df: pd.DataFrame,
         lab_column_name: str,
