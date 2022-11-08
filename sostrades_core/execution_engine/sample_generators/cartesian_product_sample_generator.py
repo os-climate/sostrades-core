@@ -17,11 +17,13 @@ from builtins import NotImplementedError
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator
 
+
 import pandas as pd
 import numpy as np
 
 import itertools
 
+from sostrades_core.api import get_sos_logger
 import logging
 LOGGER = logging.getLogger(__name__)
 
@@ -53,15 +55,13 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     #     '''
     #     self.name = generator_name
 
-    def generate_samples(self, selected_inputs, dict_of_list_values):
+    def generate_samples(self, dict_of_list_values):
         '''
-        Method that generate samples in a design space for a selected algorithm with its options 
-        The method also checks the output formating
+        Method that generate samples based as a cartesian product of list of values for selected variables.
+        Selected variables are provided in the keys of "dict_of_list_values".
 
         Arguments:
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
             dict_of_list_values (dict): for each selected variables it provides a list of values to be combined in a cartesian product
-
 
         Returns:
             samples_df (data_frame) : generated samples
@@ -70,8 +70,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         '''
 
         # generate the sampling by subclass
-        samples_df = self._generate_samples(
-            selected_inputs, dict_of_list_values)
+        samples_df = self._generate_samples(dict_of_list_values)
 
         # check sample formatting
         self._check_samples(samples_df)
@@ -93,25 +92,26 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             msg += "is <%s> " % str(type(samples_df))
             raise SampleTypeError()
 
-    def _generate_samples(self, selected_inputs, dict_of_list_values):
+    def _generate_samples(self, dict_of_list_values):
         '''
-        Method that generate samples
+        Method that generate samples based as a cartesian product of list of values for selected variables.
+        Selected variables are provided in the keys of "dict_of_list_values".
 
         Arguments:
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
             dict_of_list_values (dict): for each selected variables it provides a list of values to be combined in a cartesian product
 
         Returns:
             samples_df (dataframe) : generated samples
         '''
 
+        variable_list = dict_of_list_values.keys()
         vect_list = [dict_of_list_values[elem]
-                     for elem in selected_inputs]
+                     for elem in variable_list]
 
         def combvec(vect_list):
             my_sample = list(itertools.product(*vect_list))
             return my_sample
         my_res = combvec(vect_list)
-        samples_df = pd.DataFrame(my_res, columns=selected_inputs)
+        samples_df = pd.DataFrame(my_res, columns=variable_list)
 
         return samples_df

@@ -373,14 +373,12 @@ class TestSampleGenerator(unittest.TestCase):
         '''
         dict_of_list_values = {
             'x': [0., 3., 4., 5., 7.],
-            'z': [[-10., 0.], [-5., 4.], [10, 10]],
-            'y_1': [0., 3.]
+            'z': [[-10., 0.], [-5., 4.], [10, 10]]
         }
-        selected_inputs = self.selected_inputs
+        variable_list = dict_of_list_values.keys()
 
         sample_generator = CartesianProductSampleGenerator(self)
-        samples_df = sample_generator.generate_samples(
-            selected_inputs, dict_of_list_values)
+        samples_df = sample_generator.generate_samples(dict_of_list_values)
 
         print(samples_df)
 
@@ -402,7 +400,7 @@ class TestSampleGenerator(unittest.TestCase):
             [7.0, [10, 10]]]
 
         target_samples_df = pd.DataFrame(
-            targeted_samples, columns=selected_inputs)
+            targeted_samples, columns=variable_list)
 
         assert_frame_equal(samples_df, target_samples_df)
 
