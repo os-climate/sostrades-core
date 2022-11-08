@@ -55,12 +55,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'icon': '',
         'version': '',
     }
-    
+
     BUILDER_MODE = DriverEvaluatorWrapper.BUILDER_MODE
     MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
     MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
     REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
+
     SCENARIO_DF = 'scenario_df'
     SCATTER_NODE_NAME = 'scatter_temp'
 
@@ -72,7 +73,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  map_name=None,
-                 associated_namespaces=None):
+                 associated_namespaces=None,
+                 builder_tool=None):
         """
         Constructor
 
@@ -93,12 +95,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                          associated_namespaces=associated_namespaces)
         if cls_builder is None:
             cls_builder = []
-        self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
+
+        if builder_tool:
+            self.builder_tool_cls = builder_tool
+            self.cls_builder = cls_builder
+            self.builder_tool = None
+            self.scatter_list_name = None
+        else:
+            self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
+            self.builder_tool_cls = None
         self.eval_process_builder = None
         self.scatter_process_builder = None
         self.map_name = map_name
         self.scatter_list = None
-
         self.eval_in_list = None
         self.eval_out_list = None
         self.selected_outputs = []
@@ -132,14 +141,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Configure the DriverEvaluator layer
         """
+        if self.builder_tool_cls:
+            self.configure_tool()
         # configure al processes stored in children
         for disc in self.get_disciplines_to_configure():
             disc.configure()
 
         # configure current discipline DriverEvaluator
-        # if self._data_in == {} or (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
+        # if self._data_in == {} or (self.get_disciplines_to_configure() == []
+        # and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
         if self._data_in == {} or self.subprocess_is_configured():
-            # Call standard configure methods to set the process discipline tree
+            # Call standard configure methods to set the process discipline
+            # tree
             ProxyDiscipline.configure(self)
             self.configure_driver()
 
@@ -153,11 +166,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         exploited for couplings etc.
         """
         self._restart_data_io_to_disc_io()
-        #TODO: working because no two different discs share a local ns
+        # TODO: working because no two different discs share a local ns
         for proxy_disc in self.proxy_disciplines:
             # if not isinstance(proxy_disc, ProxyDisciplineGather):
-            subprocess_data_in = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True)
-            subprocess_data_out = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True)
+            subprocess_data_in = proxy_disc.get_data_io_with_full_name(
+                self.IO_TYPE_IN, as_namespaced_tuple=True)
+            subprocess_data_out = proxy_disc.get_data_io_with_full_name(
+                self.IO_TYPE_OUT, as_namespaced_tuple=True)
             self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
             self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
 
@@ -186,29 +201,29 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
                 # TODO: clean code below with class variables etc.
                 dynamic_inputs = {'eval_inputs': {'type': 'dataframe',
-                                                    'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                                            'full_name': ('string', None, False)},
-                                                    'dataframe_edition_locked': False,
-                                                    'structuring': True,
-                                                    'visibility': self.SHARED_VISIBILITY,
-                                                    'namespace': 'ns_eval'},
+                                                  'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                                           'full_name': ('string', None, False)},
+                                                  'dataframe_edition_locked': False,
+                                                  'structuring': True,
+                                                  'visibility': self.SHARED_VISIBILITY,
+                                                  'namespace': 'ns_eval'},
                                   'eval_outputs': {'type': 'dataframe',
-                                                             'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                                                 'full_name': ('string', None, False)},
-                                                             'dataframe_edition_locked': False,
-                                                             'structuring': True, 'visibility': self.SHARED_VISIBILITY,
-                                                             'namespace': 'ns_eval'},
+                                                   'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                                            'full_name': ('string', None, False)},
+                                                   'dataframe_edition_locked': False,
+                                                   'structuring': True, 'visibility': self.SHARED_VISIBILITY,
+                                                   'namespace': 'ns_eval'},
                                   'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
                                   'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
-                            }
-                dynamic_outputs = {'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
-                                   'namespace': 'ns_eval'}
                                   }
+                dynamic_outputs = {'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
+                                                         'namespace': 'ns_eval'}
+                                   }
 
                 selected_inputs_has_changed = False
                 disc_in = self.get_data_in()
                 if 'eval_inputs' in disc_in:
-                # if len(disc_in) != 0:
+                    # if len(disc_in) != 0:
 
                     eval_outputs = self.get_sosdisc_inputs('eval_outputs')
                     eval_inputs = self.get_sosdisc_inputs('eval_inputs')
@@ -227,7 +242,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         # TODO: is it OK that it crashes with empty input ? also, might want an eval without outputs ?
                         # we set the lists which will be used by the evaluation
                         # function of sosEval
-                        self.set_eval_in_out_lists(self.selected_inputs, self.selected_outputs)
+                        self.set_eval_in_out_lists(
+                            self.selected_inputs, self.selected_outputs)
 
                         # setting dynamic outputs. One output of type dict per selected
                         # output
@@ -236,16 +252,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                 {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
                                                                                            'visibility': 'Shared',
                                                                                            'namespace': 'ns_doe'}})
-                        dynamic_inputs.update(self._get_dynamic_inputs_doe(disc_in, selected_inputs_has_changed))
+                        dynamic_inputs.update(self._get_dynamic_inputs_doe(
+                            disc_in, selected_inputs_has_changed))
                 self.add_inputs(dynamic_inputs)
                 self.add_outputs(dynamic_outputs)
             elif builder_mode == self.REGULAR_BUILD:
                 pass  # regular build requires no specific dynamic inputs
             else:
-                raise ValueError(f'Wrong builder mode input in {self.sos_name}')
+                raise ValueError(
+                    f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
         # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
-        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper case
+        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper
+        # case
 
     def prepare_build(self):
         """
@@ -254,7 +273,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: make me work with custom driver
         # TODO: test proper cleaning when changing builder mode
         builder_list = []
-        if len(self.cls_builder) == 0: # added condition for proc build
+        if len(self.cls_builder) == 0:  # added condition for proc build
             pass
         elif self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
@@ -265,7 +284,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             elif builder_mode == self.REGULAR_BUILD:
                 builder_list = super().prepare_build()
             else:
-                raise ValueError(f'Wrong builder mode input in {self.sos_name}')
+                raise ValueError(
+                    f'Wrong builder mode input in {self.sos_name}')
         return builder_list
 
     def prepare_execution(self):
@@ -276,7 +296,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: move to builder ?
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
+        # TODO : cache mgmt of children necessary ? here or in
+        # SoSMDODisciplineDriver ?
         super().prepare_execution()
 
     def set_wrapper_attributes(self, wrapper):
@@ -285,11 +306,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         figured out at configuration time but needed at runtime. The DriverEvaluator in particular needs to provide
         its wrapper with a reference to the subprocess GEMSEO objets so they can be manipulated at runtime.
         """
-        #TODO: needs to accommodate the eval attributes in the mono instance case
-        super().set_wrapper_attributes(wrapper) # io full name maps set by ProxyDiscipline
+        # TODO: needs to accommodate the eval attributes in the mono instance
+        # case
+        # io full name maps set by ProxyDiscipline
+        super().set_wrapper_attributes(wrapper)
+
         wrapper.attributes.update({'sub_mdo_disciplines': [
                                   proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
-                                  if proxy.mdo_discipline_wrapp is not None]}) # discs and couplings but not scatters
+                                  if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
 
         if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE:
             eval_attributes = {'eval_in_list': self.eval_in_list,
@@ -321,7 +345,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
         # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
         # Remark1: condition "(   and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
-        # Remark2: /!\ REMOVED the len(self.proxy_disciplines) == 0 condition to accommodate the DriverEvaluator that holds te build until inputs are available
+        # Remark2: /!\ REMOVED the len(self.proxy_disciplines) == 0 condition
+        # to accommodate the DriverEvaluator that holds te build until inputs
+        # are available
         return self.get_disciplines_to_configure() == [] or len(self.cls_builder) == 0
 
     # MULTI INSTANCE PROCESS
@@ -332,27 +358,36 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if len(self.cls_builder) == 0:  # added condition for proc build
             scatter_builder = None
         else:
-            # builder of the scatter in aggregation with references to self.cls_builder builders
-            scatter_builder = self.ee.factory.create_scatter_builder(self.SCATTER_NODE_NAME, map_name, self.cls_builder, # TODO: nice to remove scatter node
-                                                                     coupling_per_scatter=True) #NB: is hardcoded also in VerySimpleMS/SimpleMS
+
+            # builder of the scatter in aggregation with references to
+            # self.cls_builder builders
+            scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder,  # TODO: nice to remove scatter node
+                                                                     coupling_per_scatter=True)  # NB: is hardcoded also in VerySimpleMS/SimpleMS
         self.scatter_process_builder = scatter_builder
 
     def prepare_multi_instance_build(self):
         """
         Get the scatter builder for the subprocesses in multi-instance builder mode.
         """
-        # TODO: will need to include options for MultiScenario other than VerySimple
+        # TODO: will need to include options for MultiScenario other than
+        # VerySimple
         if self.map_name is not None:
             # set the scatter builder that allows to scatter the subprocess
             if self.scatter_process_builder is None:
-                self._set_scatter_process_builder(self.map_name)
+                if self.builder_tool_cls:
+                    self.scatter_process_builder = self.build_tool()
+
+                else:
+                    self._set_scatter_process_builder(self.map_name)
             # if the scatter builder exists, use it to build the process
             if self.scatter_process_builder is not None:
                 return [self.scatter_process_builder]
             else:
-                self.logger.warn(f'Scatter builder not configured in {self.sos_name}, map_name missing?')
+                self.logger.warn(
+                    f'Scatter builder not configured in {self.sos_name}, map_name missing?')
         else:
-            self.logger.warn(f'Attempting multi-instance build without a map_name in {self.sos_name}')
+            self.logger.warn(
+                f'Attempting multi-instance build without a map_name in {self.sos_name}')
         return []
 
     def build_inst_desc_io_with_scenario_df(self):
@@ -361,14 +396,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         # get a reference to the scatter discipline
         # TODO: refactor code below when scatter as a tool is ready /!\
-        driver_evaluator_node = self.ee.ns_manager.get_local_namespace_value(self)
-        scatter_node = self.ee.ns_manager.compose_ns([driver_evaluator_node, self.SCATTER_NODE_NAME])
+        driver_evaluator_node = self.ee.ns_manager.get_local_namespace_value(
+            self)
+        scatter_node = self.ee.ns_manager.compose_ns(
+            [driver_evaluator_node, self.SCATTER_NODE_NAME])
         scatter_disc_list = self.dm.get_disciplines_with_name(scatter_node)
-        if scatter_disc_list: # otherwise nothing is possible
+        if scatter_disc_list:  # otherwise nothing is possible
             # get scatter disc
             scatter_disc = scatter_disc_list[0]
             if self.SCENARIO_DF not in self.get_data_in():
-                # add scenario_df to inst_desc_in in the same namespace defined by the scatter map
+                # add scenario_df to inst_desc_in in the same namespace defined
+                # by the scatter map
                 input_ns = scatter_disc.sc_map.get_input_ns()
                 scenario_df_input = {self.SCENARIO_DF: {
                     self.TYPE: 'dataframe',
@@ -379,21 +417,39 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.VISIBILITY: self.SHARED_VISIBILITY,
                     self.NAMESPACE: input_ns,
                     self.EDITABLE: True,
-                    self.STRUCTURING: True}} #TODO: manage variable columns for (non-very-simple) multiscenario cases
+                    self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
                 self.add_inputs(scenario_df_input)
             else:
                 # TODO: refactor code below when scatter as a tool is ready /!\
                 # brutally set the scatter node parameters to comply with scenario_df, which implies that scenario_df
-                # has priority over the dynamic input of the scatter node (which is bound to disappear)
+                # has priority over the dynamic input of the scatter node
+                # (which is bound to disappear)
                 scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-                self.scatter_list = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][self.SCENARIO_NAME].values.tolist()
+                self.scatter_list = scenario_df[scenario_df[self.SELECTED_SCENARIO]
+                                                == True][self.SCENARIO_NAME].values.tolist()
                 scatter_input_name = scatter_disc.sc_map.get_input_name()
                 scatter_disc_in = scatter_disc.get_data_in()
                 if scatter_input_name in scatter_disc_in:
                     self.dm.set_data(scatter_disc.get_var_full_name(scatter_input_name, scatter_disc_in), self.VALUE,
                                      self.scatter_list, check_value=False)
 
+    def configure_tool(self):
+        if self.builder_tool is None:
+            self.builder_tool = self.builder_tool_cls(
+                'scatter_tool', self.ee, self.map_name, self.cls_builder, coupling_per_scatter=False)
+            scatter_list_desc_in = self.builder_tool.get_scatter_list_desc_in()
+            self.add_inputs(scatter_list_desc_in)
+
+        self.builder_tool.prepare_tool(self)
+
+    def build_tool(self):
+
+        builder_list = self.builder_tool.build()
+
+        return builder_list
+
     # MONO INSTANCE PROCESS
+
     def _get_disc_shared_ns_value(self):
         # TODO: better factorization, rename?
         return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value()
@@ -406,11 +462,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             disc_builder = None
         elif len(self.cls_builder) == 1:
             # Note no distinction is made whether the builder is executable or not; old implementation used to put
-            # scatter builds under a coupling automatically too. # TODO: check if necessary for gather implementation.
+            # scatter builds under a coupling automatically too. # TODO: check
+            # if necessary for gather implementation.
             disc_builder = self.cls_builder[0]
         else:
-            # If eval process is a list of builders then we build a coupling containing the eval process
-            disc_builder = self.ee.factory.create_builder_coupling('subprocess')
+            # If eval process is a list of builders then we build a coupling
+            # containing the eval process
+            disc_builder = self.ee.factory.create_builder_coupling(
+                'subprocess')
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
         self.eval_process_builder = disc_builder
 
@@ -420,6 +479,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         if self.eval_process_builder is None:
             self._set_eval_process_builder()
+
         return [self.eval_process_builder] if self.eval_process_builder is not None else []
 
     def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
@@ -438,9 +498,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
         analyzed_disc = self.proxy_disciplines[0]
-        possible_in_values_full, possible_out_values_full = self.fill_possible_values(analyzed_disc)
+        possible_in_values_full, possible_out_values_full = self.fill_possible_values(
+            analyzed_disc)
         possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
-                                                                      possible_in_values_full, possible_out_values_full)
+                                                                                      possible_in_values_full, possible_out_values_full)
 
         # Take only unique values in the list
         possible_in_values = list(set(possible_in_values_full))
@@ -512,7 +573,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             full_id = disc.get_var_full_name(
                 data_in_key, disc_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc_in[data_in_key]['editable']
             is_None = disc_in[data_in_key]['value'] is None
@@ -554,7 +615,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
         '''
-        # TODO: does this involve avoidable, recursive back and forths during configuration ?
+        # TODO: does this involve avoidable, recursive back and forths during
+        # configuration ?
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(
@@ -584,11 +646,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             dataframe_descriptor[cle] = var
 
         dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                     'dataframe_descriptor': dataframe_descriptor,
-                                     'dataframe_edition_locked': False,
-                                     'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                     'namespace': 'ns_eval'
-                                     }}
+                                         'dataframe_descriptor': dataframe_descriptor,
+                                         'dataframe_edition_locked': False,
+                                         'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                         'namespace': 'ns_eval'
+                                         }}
 
         if 'samples_df' in disc_in and selected_inputs_has_changed:
             disc_in['samples_df']['value'] = default_custom_dataframe

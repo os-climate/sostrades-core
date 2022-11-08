@@ -83,7 +83,8 @@ class SosFactory:
 
         self.coupling_disc = None
         self.is_sos_coupling = True
-        self.__logger = get_sos_logger(f'{self.__execution_engine.logger.name}.Factory')
+        self.__logger = get_sos_logger(
+            f'{self.__execution_engine.logger.name}.Factory')
 
         self.__reset()
 
@@ -133,13 +134,16 @@ class SosFactory:
         """
         multi_builder_list = []
         for builder in builder_list:
-            scatter = self.create_scatter_builder(builder.sos_name, map_name, builder)
+            scatter = self.create_scatter_builder(
+                builder.sos_name, map_name, builder)
             multi_builder_list.append(scatter)
             if autogather:
-                gather = self.create_gather_builder(builder.sos_name, map_name, builder)
+                gather = self.create_gather_builder(
+                    builder.sos_name, map_name, builder)
                 multi_builder_list.append(gather)
             if path_sum is not None:
-                child_builder = self.create_sum_builder(builder.sos_name, path_sum)
+                child_builder = self.create_sum_builder(
+                    builder.sos_name, path_sum)
                 multi_builder_list.append(child_builder)
 
         return multi_builder_list
@@ -168,7 +172,8 @@ class SosFactory:
         disc_id = disc.get_disc_id_from_namespace()
         disc.clean_dm_from_disc(disc)
         self.proxy_disciplines.remove(disc)
-        self.__ns_manager.remove_dependencies_after_disc_deletion(disc, disc_id)
+        self.__ns_manager.remove_dependencies_after_disc_deletion(
+            disc, disc_id)
 
     @property
     def current_discipline(self):
@@ -282,25 +287,29 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_driver_evaluator_builder(self, sos_name, cls_builder, driver_wrapper_mod=None):
+    def create_driver_evaluator_builder(self, sos_name, cls_builder, driver_wrapper_mod=None, builder_tool=None):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
         if driver_wrapper_mod is None:
             driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
-        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
+        driver_wrapper_cls = self.get_disc_class_from_module(
+            driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         if isinstance(cls_builder, list):
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
         else:
             builder.set_builder_info('cls_builder', [cls_builder])
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+        builder.set_builder_info('builder_tool', builder_tool)
         return builder
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
-        #TODO: recode when driver classes are properly merged, at the moment custom driver wrapper is off (won't build)
+        # TODO: recode when driver classes are properly merged, at the moment
+        # custom driver wrapper is off (won't build)
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
-        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
+        driver_wrapper_cls = self.get_disc_class_from_module(
+            driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         if isinstance(cls_builder, list):
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
@@ -313,7 +322,8 @@ class SosFactory:
         """
         create a builder for an evaluator defined by its eval_type
         """
-        # TODO: can be refactored with calls to other methods, do when classes are merged
+        # TODO: can be refactored with calls to other methods, do when classes
+        # are merged
         if eval_type == 'sensitivity':
             module_struct_list = (
                 f'{self.GENERIC_MODS_PATH}.sensitivity_analysis.SensitivityAnalysis'
@@ -346,10 +356,12 @@ class SosFactory:
                 'The evaluation type should be sensitivity,gradient or FORM'
             )
 
-        cls = self.get_disc_class_from_module(module_struct_list)               #cls of ProxyEval specialization
-        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod_path)  #cls of driver wrapper
+        cls = self.get_disc_class_from_module(
+            module_struct_list)  # cls of ProxyEval specialization
+        driver_wrapper_cls = self.get_disc_class_from_module(
+            driver_wrapper_mod_path)  # cls of driver wrapper
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        if isinstance(cls_builder, list):                                       #cls builder of subprocess
+        if isinstance(cls_builder, list):  # cls builder of subprocess
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
         else:
             builder.set_builder_info('cls_builder', [cls_builder])
@@ -390,7 +402,8 @@ class SosFactory:
         builder = SoSBuilder(builder_name, self.__execution_engine, cls)
         builder.set_builder_info('own_map_name', own_map_name)
         builder.set_builder_info('child_map_name', connected_map_name)
-        builder.set_builder_info('associated_builder_list', associated_builder_list)
+        builder.set_builder_info(
+            'associated_builder_list', associated_builder_list)
         builder.set_builder_info('autogather', autogather)
         builder.set_builder_info('builder_child_path', builder_child_path)
         return builder
@@ -411,7 +424,8 @@ class SosFactory:
         builder.set_builder_info('architecture_df', architecture_df)
         # add custom value block folder if specified
         if custom_vb_folder_list is not None:
-            builder.set_builder_info('custom_vb_folder_list', custom_vb_folder_list)
+            builder.set_builder_info(
+                'custom_vb_folder_list', custom_vb_folder_list)
 
         return builder
 
@@ -446,7 +460,8 @@ class SosFactory:
             mod_path_multi_scatter = (
                 f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             )
-            cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            cls_multi_scatter = self.get_disc_class_from_module(
+                mod_path_multi_scatter)
             for sub_builder in builder_list:
                 if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
 
@@ -493,7 +508,8 @@ class SosFactory:
             mod_path_multi_scatter = (
                 f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             )
-            cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            cls_multi_scatter = self.get_disc_class_from_module(
+                mod_path_multi_scatter)
             for sub_builder in builder_list:
                 if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
 
@@ -542,7 +558,8 @@ class SosFactory:
             mod_path_multi_scatter = (
                 f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             )
-            cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+            cls_multi_scatter = self.get_disc_class_from_module(
+                mod_path_multi_scatter)
             for sub_builder in builder_list:
                 if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
 
@@ -575,20 +592,23 @@ class SosFactory:
         builder.set_builder_info('map_name', map_name)
         # builder.set_builder_info('autogather', autogather) #TODO: not adressed
         # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
-        # builder.set_builder_info('business_post_proc', business_post_proc) #TODO: not adressed
+        # builder.set_builder_info('business_post_proc', business_post_proc)
+        # #TODO: not adressed
         list_builder = [builder]
 
         # TODO: address autogather
         if autogather:
             proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
-            proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)
+            proxy_scatter_cls = self.get_disc_class_from_module(
+                proxy_scatter_mod_path)
             # TODO: multiscatter?
             # mod_path_multi_scatter = (
             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
             # )
             # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
             for sub_builder in builder_list:
-                if sub_builder.cls is not proxy_scatter_cls: # not in [cls_scatter, cls_multi_scatter]:
+                # not in [cls_scatter, cls_multi_scatter]:
+                if sub_builder.cls is not proxy_scatter_cls:
                     if gather_node is None:
                         complete_name = sub_builder.sos_name
                     else:
@@ -599,6 +619,51 @@ class SosFactory:
                     list_builder.append(gather)
         return list_builder
 
+    def create_scatter_driver_with_tool(
+        self,
+        sos_name,
+        map_name,
+        cls_builder,
+        autogather=False,
+        gather_node=None,
+        business_post_proc=False,
+    ):
+        """
+        create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
+        """
+        scatter_tool_path = f'{self.EE_PATH}.scatter_tool.ScatterTool'
+
+        scatter_tool = self.get_disc_class_from_module(scatter_tool_path)
+
+        builder = self.create_driver_evaluator_builder(
+            sos_name, cls_builder, builder_tool=scatter_tool)
+        builder.set_builder_info('map_name', map_name)
+        # builder.set_builder_info('autogather', autogather) #TODO: not adressed
+        # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
+        # builder.set_builder_info('business_post_proc', business_post_proc)
+        # #TODO: not adressed
+        list_builder = [builder]
+
+#         # TODO: address autogather
+#         if autogather:
+#             proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
+#             proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)
+#             # TODO: multiscatter?
+#             # mod_path_multi_scatter = (
+#             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
+#             # )
+#             # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+#             for sub_builder in builder_list:
+#                 if sub_builder.cls is not proxy_scatter_cls: # not in [cls_scatter, cls_multi_scatter]:
+#                     if gather_node is None:
+#                         complete_name = sub_builder.sos_name
+#                     else:
+#                         complete_name = f'{gather_node}.{sub_builder.sos_name}'
+#                     gather = self.create_gather_builder(
+#                         complete_name, map_name, sub_builder
+#                     )
+#                     list_builder.append(gather)
+        return list_builder
 
     def create_scatter_data_builder(self, sos_name, map_name):
         """
@@ -723,7 +788,8 @@ class SosFactory:
                 ]
                 # CHeck if the following class is in the list
                 if class_name in class_list:
-                    module_class_path = '.'.join([sub_module.__name__, class_name])
+                    module_class_path = '.'.join(
+                        [sub_module.__name__, class_name])
                     break
             else:
                 continue
