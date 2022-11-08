@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import pandas as pd
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -124,8 +126,14 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
-            'scenario_1', 'scenario_2']
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            False,
+                                                                                                            True],
+                                                                                      'scenario_name':['scenario_1',
+                                                                                                       'scenario_Z',
+                                                                                                       'scenario_2']})
+        # dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
+        #     'scenario_1', 'scenario_2']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -274,8 +282,14 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             multi_scenarios)
         self.exec_eng.configure()
 
-        dict_values = {f'{self.study_name}.multi_scenarios.scenario_list': ['scenario_1', 'scenario_2'],
-                       f'{self.study_name}.multi_scenarios.name_list': ['name_1', 'name_2']}
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                              'scenario_name':['scenario_1',
+                                                                                               'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.name_list'] = ['name_1', 'name_2']
+        # dict_values = {f'{self.study_name}.multi_scenarios.scenario_list': ['scenario_1', 'scenario_2'],
+        #                f'{self.study_name}.multi_scenarios.name_list': ['name_1', 'name_2']}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -306,8 +320,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
                                  'scenario_1', 'scenario_2'])
 
-        dict_values[self.study_name +
-                    '.multi_scenarios.scenario_list'] = ['scenario_1']
+        dict_values[self.study_name +'.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario' : [True,
+                                                                                                            False],
+                                                                                     'scenario_name' : ['scenario_1',
+                                                                                                        'scenario_2']})
+        # dict_values[self.study_name +
+        #             '.multi_scenarios.scenario_list'] = ['scenario_1']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -340,7 +358,14 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                                  'scenario_1'])
 
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_list'] = ['scenario_1', 'scenario_2', 'scenario_3']
+                    '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                          True,
+                                                                                          True],
+                                                                    'scenario_name': ['scenario_1',
+                                                                                      'scenario_2',
+                                                                                      'scenario_3']})
+        # dict_values[self.study_name +
+        #             '.multi_scenarios.scenario_list'] = ['scenario_1', 'scenario_2', 'scenario_3']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -350,7 +375,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                                  'scenario_1', 'scenario_2', 'scenario_3'])
 
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_list'] = []
+                    '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [],
+                                                                    'scenario_name': []})
+        # dict_values[self.study_name +
+        #             '.multi_scenarios.scenario_list'] = []
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -360,7 +388,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 list(disc.get_scattered_disciplines().keys()), [])
 
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_list'] = ['scenario_A', 'scenario_B']
+                    '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                          True],
+                                                                    'scenario_name': ['scenario_A',
+                                                                                      'scenario_B']})
+        # dict_values[self.study_name +
+        #             '.multi_scenarios.scenario_list'] = ['scenario_A', 'scenario_B']
 
         self.assertListEqual(
             [key for key in self.exec_eng.dm.data_id_map.keys() if 'scenario_1' in key and key.split('.')[-1] not in ProxyDiscipline.NUM_DESC_IN and
@@ -441,8 +474,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
-            'scenario_1', 'scenario_2']
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+        # dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
+        #     'scenario_1', 'scenario_2']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -581,8 +618,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             self.exec_eng.configure()
 
             dict_values = {}
-            dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
-                'scenario_1', 'scenario_2']
+            dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                                True],
+                                                                                          'scenario_name': ['scenario_1',
+                                                                                                            'scenario_2']})
+            # dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
+            #     'scenario_1', 'scenario_2']
 
             scenario_list = ['scenario_1', 'scenario_2']
             for scenario in scenario_list:
@@ -710,8 +751,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
-            'scenario_1', 'scenario_2']
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+        # dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
+        #     'scenario_1', 'scenario_2']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -758,6 +803,15 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             # check that all variables have been loaded on dm at the end of the execution
             for var in self.exec_eng.dm.data_id_map.keys():
                 dm_value = self.exec_eng.dm.get_value(var)
+                if var == f'{self.study_name}.multi_scenarios.scenario_list':
+                    # this variable is an exception because it is forced by the value of another variable during setup
+                    # TODO: remove this if when scatter as a tool is ready /!\
+                    continue
+
+                if var == f'{self.study_name}.multi_scenarios.scenario_df':
+                    self.assertListEqual(dict_values[var].values.tolist(), dm_value.values.tolist())
+                    continue
+
                 if var not in dict_values:
                     # default inputs and all outputs
                     self.assertEqual(self.exec_eng.dm.get_data(var, 'default'), dm_value)
