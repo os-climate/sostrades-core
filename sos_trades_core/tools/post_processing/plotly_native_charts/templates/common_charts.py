@@ -1195,6 +1195,103 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         return new_chart
 
+    def generate_pie_chart_with_display(
+        self,
+        df: pd.DataFrame,
+        lab_column_name: str,
+        val_column_name: str,
+        top_to_show:list,
+        chart_name: str = '',
+        ticksuffix: str = '',
+    ):
+
+        fig = go.Figure()
+        vis = True
+
+        if (lab_column_name in df) & (val_column_name in df):
+
+            df.sort_values(by=val_column_name, axis=0, ascending=False, inplace=True)
+            # other_value = 0
+            for top in top_to_show:
+                lines_showed=int(top.split(' ')[-1])
+                if lines_showed > len(df):
+                    lines_showed=len(df)
+                if top == top_to_show[0]:
+                    vis = True
+                else:
+                    vis = False
+                df_to_show=df.head(lines_showed)
+                pie_labels = df_to_show[lab_column_name].values.tolist()
+                pie_values = df_to_show[val_column_name].values.tolist()
+                pie_text = [f'{round(val,2)} {ticksuffix}' for val in pie_values]
+                fig.add_trace(
+                    go.Pie(
+                        labels=pie_labels,
+                        values=pie_values,
+                        text=pie_text,
+                        hovertext=pie_text,
+                        visible=vis,
+                        textinfo='label+percent',
+                        hoverinfo='label+text+percent',
+                        textposition='inside',
+                    )
+                )
+
+        # Chart Layout update
+        fig.update_layout(
+            margin=dict(t=80, l=15, r=0, b=10),
+            legend=dict(orientation='v'),
+            showlegend=False,
+            uniformtext=dict(minsize=12, mode='hide'),
+        )
+        # Add dropdowns
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    buttons=list(
+                        [
+                            dict(
+                                args=[
+                                    {
+                                        'visible': [
+                                            True if i == j else False
+                                            for j in range(
+                                                int(
+                                                    len(fig.data)
+                                                )
+                                            )
+                                        ]
+                                    },
+                                    {
+                                        'title': f'<b>Total Free Cashflow per {top_to_show[i]} components </b>'
+                                    },
+                                ],
+                                label=top_to_show[i],
+                                method="update",
+                            )
+                            for i in range(len(top_to_show))
+                        ]
+                    ),
+                    direction='down',
+                    type='dropdown',
+                    pad={"r": 0, "t": 0},
+                    showactive=True,
+                    active=0,
+                    x=1.0,
+                    y=1.01,
+                    yanchor='bottom',
+                    xanchor='right',
+                ),
+            ]
+        )
+        if len(fig.data) > 0:
+            # Create native plotly chart
+            chart_name = f'{chart_name}'
+            new_chart = InstantiatedPlotlyNativeChart(fig=fig, chart_name=chart_name)
+            # new_chart.annotation_upper_left = annotation_upper_left
+
+            return new_chart
+
     def generate_marker_chart_by_category_with_isoline(
         self,
         data_df: pd.DataFrame,
