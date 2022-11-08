@@ -211,7 +211,7 @@ class TestSampleGenerator(unittest.TestCase):
 
         sample_generator = DoeSampleGenerator(self)
         samples_df = sample_generator.generate_samples(
-            sampling_algo_name, algo_options, selected_inputs, design_space)
+            sampling_algo_name, algo_options, design_space)
 
         # print(samples_df)
 
@@ -276,7 +276,7 @@ class TestSampleGenerator(unittest.TestCase):
 
             sample_generator = DoeSampleGenerator(self)
             samples_df = sample_generator.generate_samples(
-                sampling_algo_name, algo_options, selected_inputs, design_space)
+                sampling_algo_name, algo_options, design_space)
 
             # print(samples_df)
 
@@ -350,7 +350,7 @@ class TestSampleGenerator(unittest.TestCase):
 
             sample_generator = DoeSampleGenerator(self)
             samples_df = sample_generator.generate_samples(
-                sampling_algo_name, algo_options, selected_inputs, design_space)
+                sampling_algo_name, algo_options, design_space)
             # print(samples_df)
 
             #assert_frame_equal(samples_df, self.target_samples_df)
@@ -380,7 +380,7 @@ class TestSampleGenerator(unittest.TestCase):
         sample_generator = CartesianProductSampleGenerator(self)
         samples_df = sample_generator.generate_samples(dict_of_list_values)
 
-        print(samples_df)
+        # print(samples_df)
 
         targeted_samples = [
             [0.0, [-10.0, 0.0]],

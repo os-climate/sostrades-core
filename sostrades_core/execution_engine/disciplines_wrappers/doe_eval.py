@@ -133,7 +133,7 @@ class DoeEval(EvalWrapper):
             #     sampling_algo_name)
 
             samples = self.sample_generator.generate_samples(
-                sampling_algo_name, algo_options, eval_in_list, design_space)
+                sampling_algo_name, algo_options, design_space)
 
             return samples
             # DoeWrapper(self.sos_name).generate_samples_from_doe_factory(algo_name)

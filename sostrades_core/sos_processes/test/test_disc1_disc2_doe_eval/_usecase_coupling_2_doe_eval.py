@@ -40,7 +40,7 @@ class Study(StudyManager):
                                'full_name': ['x', 'DoEEval.Disc1.a']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
 
-        output_selection_z_z = {'selected_output': [True, True,False],
+        output_selection_z_z = {'selected_output': [True, True, False],
                                 'full_name': ['z', 'DoEEval.Disc1.z','DoEEval.Disc1.indicator']}
         output_selection_z_z = pd.DataFrame(output_selection_z_z)
 
