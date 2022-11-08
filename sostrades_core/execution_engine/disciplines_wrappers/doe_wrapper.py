@@ -307,7 +307,7 @@ class DoeWrapper(SoSWrapp):
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
         samples = self.sample_generator.generate_samples(
-            algo_name, algo_options, self.selected_inputs, design_space)
+            algo_name, algo_options, design_space)
 
         # prepared_samples = self.sample_generator.prepare_samples_for_evaluation(
         #     samples, eval_in_list, design_space)

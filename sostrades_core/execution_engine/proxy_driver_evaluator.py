@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import pandas as pd
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -51,7 +53,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
     REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
-    
+    SCENARIO_DF = 'scenario_df'
+    SCATTER_NODE_NAME = 'scatter_temp'
+
+    SELECTED_SCENARIO = 'selected_scenario'
+    SCENARIO_NAME = 'scenario_name'
+
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  map_name=None,
@@ -75,7 +82,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_process_builder = None
         self.scatter_process_builder = None
         self.map_name = map_name
-
+        self.scatter_list = None
 
     def get_desc_in_out(self, io_type):
         """
@@ -143,16 +150,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             if builder_mode == self.MULTI_INSTANCE:
-                pass # TODO: addressing only the very simple multiscenario case
-                # if 'map_name' not in self.get_data_in():
-                #     dynamic_inputs = {'map_name': {self.TYPE: 'string',
-                #                                    self.DEFAULT: 'scenario_list',
-                #                                    self.STRUCTURING: True}}
-                #     self.add_inputs(dynamic_inputs)
+                self.build_inst_desc_io_with_scenario_df()
             elif builder_mode == self.MONO_INSTANCE:
-                pass #TODO: to merge with Eval
+                pass  # TODO: to merge with Eval
             elif builder_mode == self.REGULAR_BUILD:
-                pass #regular build requires no specific dynamic inputs
+                pass  # regular build requires no specific dynamic inputs
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
@@ -231,7 +233,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             scatter_builder = None
         else:
             # builder of the scatter in aggregation with references to self.cls_builder builders
-            scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder, # TODO: nice to remove scatter node
+            scatter_builder = self.ee.factory.create_scatter_builder(self.SCATTER_NODE_NAME, map_name, self.cls_builder, # TODO: nice to remove scatter node
                                                                      coupling_per_scatter=True) #NB: is hardcoded also in VerySimpleMS/SimpleMS
         self.scatter_process_builder = scatter_builder
 
@@ -252,6 +254,44 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.logger.warn(f'Attempting multi-instance build without a map_name in {self.sos_name}')
         return []
+
+    def build_inst_desc_io_with_scenario_df(self):
+        '''
+        Complete inst_desc_in with scenario_df
+        '''
+        # get a reference to the scatter discipline
+        # TODO: refactor code below when scatter as a tool is ready /!\
+        driver_evaluator_node = self.ee.ns_manager.get_local_namespace_value(self)
+        scatter_node = self.ee.ns_manager.compose_ns([driver_evaluator_node, self.SCATTER_NODE_NAME])
+        scatter_disc_list = self.dm.get_disciplines_with_name(scatter_node)
+        if scatter_disc_list: # otherwise nothing is possible
+            # get scatter disc
+            scatter_disc = scatter_disc_list[0]
+            if self.SCENARIO_DF not in self.get_data_in():
+                # add scenario_df to inst_desc_in in the same namespace defined by the scatter map
+                input_ns = scatter_disc.sc_map.get_input_ns()
+                scenario_df_input = {self.SCENARIO_DF: {
+                    self.TYPE: 'dataframe',
+                    self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
+                    self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
+                                                self.SCENARIO_NAME: ('string', None, False)},
+                                                self.DATAFRAME_EDITION_LOCKED: False,
+                    self.VISIBILITY: self.SHARED_VISIBILITY,
+                    self.NAMESPACE: input_ns,
+                    self.EDITABLE: True,
+                    self.STRUCTURING: True}} #TODO: manage variable columns for (non-very-simple) multiscenario cases
+                self.add_inputs(scenario_df_input)
+            else:
+                # TODO: refactor code below when scatter as a tool is ready /!\
+                # brutally set the scatter node parameters to comply with scenario_df, which implies that scenario_df
+                # has priority over the dynamic input of the scatter node (which is bound to disappear)
+                scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+                self.scatter_list = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][self.SCENARIO_NAME].values.tolist()
+                scatter_input_name = scatter_disc.sc_map.get_input_name()
+                scatter_disc_in = scatter_disc.get_data_in()
+                if scatter_input_name in scatter_disc_in:
+                    self.dm.set_data(scatter_disc.get_var_full_name(scatter_input_name, scatter_disc_in), self.VALUE,
+                                     self.scatter_list, check_value=False)
 
     # MONO INSTANCE PROCESS
     def _set_eval_process_builder(self):
