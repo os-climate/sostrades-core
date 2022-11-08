@@ -151,9 +151,13 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
 
-        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-        doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
+        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
+        # doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
+        # exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
+
+        proc_name = "test_doe"
+        doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
+                                                                mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             [doe_builder])
