@@ -344,34 +344,38 @@ class DoeWrapper(SoSWrapp):
 
             # Dynamic input of default design space
             eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
-            self.selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                          == True]['full_name'].tolist()
+            if eval_inputs is not None:
+                self.selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                                   == True]['full_name'].tolist()
+            # eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
+            # self.selected_inputs = eval_inputs[eval_inputs['selected_input']
+            #                               == True]['full_name'].tolist()
             # self.eval_in_list = [
             #     f'{proxy.ee.study_name}.{element}' for element in selected_inputs]
 
 
-            default_design_space = pd.DataFrame({'variable': self.selected_inputs,
+                default_design_space = pd.DataFrame({'variable': self.selected_inputs,
 
-                                                 # FIXME: Ask about this
-                                                 # default setup
-                                                 'lower_bnd': [None] * len(self.selected_inputs),
-                                                 # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
-                                                 #                                              'type') == 'array' else 0.0
-                                                 # for var in
-                                                 # self.eval_in_list],
-                                                 # FIXME: Ask about this
-                                                 # default setup
-                                                 'upper_bnd': [None] * len(self.selected_inputs)
-                                                 # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
-                                                 #                                                'type') == 'array' else 10.0
-                                                 # for var in
-                                                 # self.eval_in_list]
-                                                 })
+                                                     # FIXME: Ask about this
+                                                     # default setup
+                                                     'lower_bnd': [None] * len(self.selected_inputs),
+                                                     # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
+                                                     #                                              'type') == 'array' else 0.0
+                                                     # for var in
+                                                     # self.eval_in_list],
+                                                     # FIXME: Ask about this
+                                                     # default setup
+                                                     'upper_bnd': [None] * len(self.selected_inputs)
+                                                     # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
+                                                     #                                                'type') == 'array' else 10.0
+                                                     # for var in
+                                                     # self.eval_in_list]
+                                                     })
 
-            dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                                    }})
-            if 'design_space' in disc_in and selected_inputs_has_changed:
-                disc_in['design_space']['value'] = default_design_space
+                dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
+                                                        }})
+                if 'design_space' in disc_in and selected_inputs_has_changed:
+                    disc_in['design_space']['value'] = default_design_space
 
         proxy.add_inputs(dynamic_inputs)
         proxy.add_outputs(dynamic_outputs)
