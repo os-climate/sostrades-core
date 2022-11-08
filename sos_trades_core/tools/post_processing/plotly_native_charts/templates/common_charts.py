@@ -1141,6 +1141,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             legend=None,
         )
 
+        # Add dropdowns
         fig.update_layout(
             updatemenus=[
                 dict(
@@ -1263,7 +1264,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                                         ]
                                     },
                                     {
-                                        'title': f'<b>Total Free Cashflow per {top_to_show[i]} components </b>'
+                                        'title': f'<b>Total Free Cash Flow by {top_to_show[i]} components</b>'
                                     },
                                 ],
                                 label=top_to_show[i],
@@ -1274,7 +1275,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     ),
                     direction='down',
                     type='dropdown',
-                    pad={"r": 0, "t": 0},
+                    pad={"r": 10, "t": 0},
                     showactive=True,
                     active=0,
                     x=1.0,
