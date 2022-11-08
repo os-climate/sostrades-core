@@ -71,7 +71,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #
     #     # self.proxy_discipline.build()
 
-    def _custom_build(self, builder_list):
+    def _build(self, builder_list):
         """
         Instanciate sub proxies managed by the coupling
         """
@@ -94,7 +94,14 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #         ProxyDisciplineBuilder.clear_cache(self)
 
     def build(self):
-        self._custom_build(self.cls_builder)
+        builder_list = self.prepare_build()
+        self._build(builder_list)
+
+    def prepare_build(self):
+        """
+        To be overload by subclasses with special builds.
+        """
+        return self.cls_builder
 
     def clean(self):
         """

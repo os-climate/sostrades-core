@@ -159,24 +159,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
         # super().setup_sos_disciplines() # TODO: manage custom driver wrapper case
 
-    def build(self):
+    def prepare_build(self):
         """
-        Build of the subprocesses of the DriverEvaluator.
+        Get the actual drivers of the subprocesses of the DriverEvaluator.
         """
         # TODO: make me work with custom driver
         # TODO: test proper cleaning when changing builder mode
+        builder_list = []
         if len(self.cls_builder) == 0: # added condition for proc build
             pass
         elif self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             if builder_mode == self.MULTI_INSTANCE:
-                self.multi_instance_build()
+                builder_list = self.prepare_multi_instance_build()
             elif builder_mode == self.MONO_INSTANCE:
-                self.mono_instance_build()
+                builder_list = self.prepare_mono_instance_build()
             elif builder_mode == self.REGULAR_BUILD:
-                super().build()
+                builder_list = super().prepare_build()
             else:
                 raise ValueError(f'Wrong builder mode input in {self.sos_name}')
+        return builder_list
 
     def prepare_execution(self):
         """
@@ -233,9 +235,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                      coupling_per_scatter=True) #NB: is hardcoded also in VerySimpleMS/SimpleMS
         self.scatter_process_builder = scatter_builder
 
-    def multi_instance_build(self):
+    def prepare_multi_instance_build(self):
         """
-        Build of the subprocesses in multi-instance builder mode.
+        Get the scatter builder for the subprocesses in multi-instance builder mode.
         """
         # TODO: will need to include options for MultiScenario other than VerySimple
         if self.map_name is not None:
@@ -244,12 +246,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self._set_scatter_process_builder(self.map_name)
             # if the scatter builder exists, use it to build the process
             if self.scatter_process_builder is not None:
-                super()._custom_build([self.scatter_process_builder])
+                return [self.scatter_process_builder]
             else:
                 self.logger.warn(f'Scatter builder not configured in {self.sos_name}, map_name missing?')
         else:
             self.logger.warn(f'Attempting multi-instance build without a map_name in {self.sos_name}')
-
+        return []
 
     # MONO INSTANCE PROCESS
     def _set_eval_process_builder(self):
@@ -268,11 +270,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             disc_builder.set_builder_info('cls_builder', self.cls_builder)
         self.eval_process_builder = disc_builder
 
-    def mono_instance_build(self):
+    def prepare_mono_instance_build(self):
         '''
-        Build of the subprocesses in mono-instance builder mode.
+        Get the builder of the single subprocesses in mono-instance builder mode.
         '''
         if self.eval_process_builder is None:
             self._set_eval_process_builder()
-        super()._custom_build([self.eval_process_builder])
-
+        return [self.eval_process_builder] if self.eval_process_builder is not None else []

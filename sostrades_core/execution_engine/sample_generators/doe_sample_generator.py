@@ -124,6 +124,10 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # We should use only one line or two provided by gemseo
         fn = algo_lib.__class__._get_options
 
+        #opts_gram = algo_lib.init_options_grammar(sampling_algo_name)
+        # print(algo_lib._get_options(algo_options)) # is checking the user
+        # provided options and not providing default options
+
         algo_options_descr_dict = get_options_doc(fn)
 
         def get_default_args(func):
