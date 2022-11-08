@@ -202,8 +202,8 @@ class ProxyEval(ProxyDriverEvaluator):
 
         return poss_in_values_full, poss_out_values_full
 
-    def build(self):
-        super().mono_instance_build()
+    def prepare_build(self):
+        return super().prepare_mono_instance_build()
 
     def configure_driver(self):
         # Extract variables for eval analysis
