@@ -33,6 +33,8 @@ import os
 from os.path import dirname, join
 
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
+from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator
+
 from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import DoeWrapper
 
 
@@ -143,7 +145,7 @@ class TestSampleGenerator(unittest.TestCase):
         sample_generator = DoeSampleGenerator(self)
 
         algo_names_list = sample_generator.get_available_algo_names()
-        print(algo_names_list)
+        # print(algo_names_list)
 
         sampling_algo_name = 'fullfact'
         algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
@@ -164,13 +166,13 @@ class TestSampleGenerator(unittest.TestCase):
             target_algo_options_descr_dict_keys))
 
         # test if it works with all algo samples names
-        print('\n')
+        # print('\n')
         for sampling_algo_name in algo_names_list:
             algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
                 sampling_algo_name)
-            print(sampling_algo_name)
-            print(algo_options_desc_in)
-            print('\n')
+            # print(sampling_algo_name)
+            # print(algo_options_desc_in)
+            # print('\n')
 
         # test the error message in case of wrong algo_name
         sampling_algo_name = 'toto'
@@ -211,7 +213,7 @@ class TestSampleGenerator(unittest.TestCase):
         samples_df = sample_generator.generate_samples(
             sampling_algo_name, algo_options, selected_inputs, design_space)
 
-        print(samples_df)
+        # print(samples_df)
 
         assert_frame_equal(samples_df, self.target_samples_df)
 
@@ -248,8 +250,8 @@ class TestSampleGenerator(unittest.TestCase):
         list_of_algo_names = pydoe_list_of_algo_names
 
         for sampling_algo_name in list_of_algo_names:
-            print('\n')
-            print(sampling_algo_name)
+            # print('\n')
+            # print(sampling_algo_name)
 
             algo_options = user_pydoe_algo_options
 
@@ -276,7 +278,7 @@ class TestSampleGenerator(unittest.TestCase):
             samples_df = sample_generator.generate_samples(
                 sampling_algo_name, algo_options, selected_inputs, design_space)
 
-            print(samples_df)
+            # print(samples_df)
 
             #assert_frame_equal(samples_df, self.target_samples_df)
 
@@ -312,8 +314,8 @@ class TestSampleGenerator(unittest.TestCase):
         user_openturns_algo_options['n_samples'] = n_samples
 
         for sampling_algo_name in list_of_algo_names:
-            print('\n')
-            print(sampling_algo_name)
+            # print('\n')
+            # print(sampling_algo_name)
 
             algo_options = openturns_algo_options_desc_in
 
@@ -349,7 +351,7 @@ class TestSampleGenerator(unittest.TestCase):
             sample_generator = DoeSampleGenerator(self)
             samples_df = sample_generator.generate_samples(
                 sampling_algo_name, algo_options, selected_inputs, design_space)
-            print(samples_df)
+            # print(samples_df)
 
             #assert_frame_equal(samples_df, self.target_samples_df)
 
@@ -359,11 +361,51 @@ class TestSampleGenerator(unittest.TestCase):
                 algo_options['centers'] = None
             #################################################################
 
-    def test_05_check_test_big_n_samples(self):
+    def test_05_check_big_n_samples(self):
         '''
         Test to check big values of n_samples and associated performances
         '''
         pass
+
+    def test_06_check_generate_samples_cartesian_product(self):
+        '''
+        Test to check the cartesian product algorithm
+        '''
+        dict_of_list_values = {
+            'x': [0., 3., 4., 5., 7.],
+            'z': [[-10., 0.], [-5., 4.], [10, 10]],
+            'y_1': [0., 3.]
+        }
+        selected_inputs = self.selected_inputs
+
+        sample_generator = CartesianProductSampleGenerator(self)
+        samples_df = sample_generator.generate_samples(
+            selected_inputs, dict_of_list_values)
+
+        print(samples_df)
+
+        targeted_samples = [
+            [0.0, [-10.0, 0.0]],
+            [0.0, [-5.0, 4.0]],
+            [0.0, [10, 10]],
+            [3.0, [-10.0, 0.0]],
+            [3.0, [-5.0, 4.0]],
+            [3.0, [10, 10]],
+            [4.0, [-10.0, 0.0]],
+            [4.0, [-5.0, 4.0]],
+            [4.0, [10, 10]],
+            [5.0, [-10.0, 0.0]],
+            [5.0, [-5.0, 4.0]],
+            [5.0, [10, 10]],
+            [7.0, [-10.0, 0.0]],
+            [7.0, [-5.0, 4.0]],
+            [7.0, [10, 10]]]
+
+        target_samples_df = pd.DataFrame(
+            targeted_samples, columns=selected_inputs)
+
+        assert_frame_equal(samples_df, target_samples_df)
+
 
 if '__main__' == __name__:
     cls = TestSampleGenerator()
