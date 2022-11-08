@@ -29,7 +29,9 @@ from scipy.interpolate import RegularGridInterpolator
 from scipy.stats import norm
 
 from sos_trades_core.execution_engine.data_connector.ontology_data_connector import (
-    GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER, OntologyDataConnector)
+    GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER,
+    OntologyDataConnector,
+)
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sos_trades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
@@ -188,29 +190,35 @@ class UncertaintyQuantification(SoSDiscipline):
                     out_param = selected_outputs.tolist()
                     out_param.sort()
 
-                    ontology_connector = self.ee.connector_container.get_persistent_connector(
-                        GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
+                    ontology_connector = (
+                        self.ee.connector_container.get_persistent_connector(
+                            GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER
+                        )
+                    )
 
                     parameter_list = in_param + out_param
-                    parameter_list = [val.split('.')[-1]
-                                      for val in parameter_list]
+                    parameter_list = [val.split('.')[-1] for val in parameter_list]
 
-                    ontology_connector = self.ee.connector_container.get_persistent_connector(
-                        GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER)
+                    ontology_connector = (
+                        self.ee.connector_container.get_persistent_connector(
+                            GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER
+                        )
+                    )
                     if ontology_connector is not None:
                         data_request = {
                             OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
                             OntologyDataConnector.REQUEST_ARGS: parameter_list,
                         }
                         conversion_full_ontology = ontology_connector.load_data(
-                            data_request)
+                            data_request
+                        )
                     else:
                         # Cannot make a call to ontology so set default data
                         conversion_full_ontology = {
-                            parameter: parameter for parameter in parameter_list}
+                            parameter: [parameter, None] for parameter in parameter_list
+                        }
 
-                    possible_distrib = ['Normal', 'PERT',
-                                        'LogNormal', 'Triangular']
+                    possible_distrib = ['Normal', 'PERT', 'LogNormal', 'Triangular']
 
                     # distrib = [possible_distrib[random.randrange(
                     # len(possible_distrib))] for i in range(len(in_param))]
@@ -564,8 +572,7 @@ class UncertaintyQuantification(SoSDiscipline):
         return distrib
 
     def Triangular_distrib(self, lower_bnd, upper_bnd, most_probable_val):
-        distrib = ot.Triangular(int(lower_bnd), int(
-            most_probable_val), int(upper_bnd))
+        distrib = ot.Triangular(int(lower_bnd), int(most_probable_val), int(upper_bnd))
 
         # plot
         # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
@@ -620,8 +627,7 @@ class UncertaintyQuantification(SoSDiscipline):
         out_names = []
         if 'data_details_df' in self.get_sosdisc_inputs():
             data_df = self.get_sosdisc_inputs(['data_details_df'])
-            in_names = data_df.loc[data_df['type']
-                                   == 'input', 'name'].to_list()
+            in_names = data_df.loc[data_df['type'] == 'input', 'name'].to_list()
         if 'output_interpolated_values_df' in self.get_sosdisc_outputs():
             out_df = (
                 self.get_sosdisc_outputs(['output_interpolated_values_df'])
@@ -632,8 +638,7 @@ class UncertaintyQuantification(SoSDiscipline):
 
         names_list = in_names + out_names
         chart_list = [n + ' Distribution' for n in names_list]
-        chart_filters.append(ChartFilter(
-            'Charts', chart_list, chart_list, 'Charts'))
+        chart_filters.append(ChartFilter('Charts', chart_list, chart_list, 'Charts'))
 
         return chart_filters
 
@@ -657,16 +662,14 @@ class UncertaintyQuantification(SoSDiscipline):
                 self.get_sosdisc_outputs('input_parameters_samples_df')
             )
         if 'data_details_df' in self.get_sosdisc_inputs():
-            self.data_details = deepcopy(
-                self.get_sosdisc_inputs(['data_details_df']))
+            self.data_details = deepcopy(self.get_sosdisc_inputs(['data_details_df']))
         if 'input_distribution_parameters_df' in self.get_sosdisc_inputs():
             input_distribution_parameters_df = deepcopy(
                 self.get_sosdisc_inputs(['input_distribution_parameters_df'])
             )
         if 'confidence_interval' in self.get_sosdisc_inputs():
             confidence_interval = (
-                deepcopy(self.get_sosdisc_inputs(
-                    ['confidence_interval'])) / 100
+                deepcopy(self.get_sosdisc_inputs(['confidence_interval'])) / 100
             )
 
         for input_name in list(input_parameters_distrib_df.columns):
@@ -708,8 +711,7 @@ class UncertaintyQuantification(SoSDiscipline):
             "unit"
         ].values[0]
         hist_y = go.Figure()
-        hist_y.add_trace(go.Histogram(
-            x=list(data), nbinsx=100, histnorm='probability'))
+        hist_y.add_trace(go.Histogram(x=list(data), nbinsx=100, histnorm='probability'))
 
         # statistics on data list
         distribution_type = distrib_param.loc[distrib_param['parameter'] == data_name][
@@ -848,8 +850,7 @@ class UncertaintyQuantification(SoSDiscipline):
             name = data_name.split('.')[1]
             eval_output_name = data_name.split('.')[0]
 
-        ns_from_var = self.ee.dm.get_all_namespaces_from_var_name(
-            eval_output_name)
+        ns_from_var = self.ee.dm.get_all_namespaces_from_var_name(eval_output_name)
         ns_from_var_wo_study_list = [
             elem.split(self.ee.study_name + '.', 1)[1] for elem in ns_from_var
         ]
@@ -867,8 +868,7 @@ class UncertaintyQuantification(SoSDiscipline):
                 "unit"
             ].values[0]
         hist_y = go.Figure()
-        hist_y.add_trace(go.Histogram(
-            x=list(data), nbinsx=100, histnorm='probability'))
+        hist_y.add_trace(go.Histogram(x=list(data), nbinsx=100, histnorm='probability'))
 
         # statistics on data list
         data_list = [x for x in data if np.isnan(x) == False]
