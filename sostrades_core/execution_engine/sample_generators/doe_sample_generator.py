@@ -15,7 +15,8 @@ limitations under the License.
 '''
 from builtins import NotImplementedError
 
-from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator
+from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
+    SampleTypeError
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import get_available_doe_algorithms
@@ -34,7 +35,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 
-class SampleTypeError(TypeError):
+class DoeSampleTypeError(SampleTypeError):
     pass
 
 
@@ -42,6 +43,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     '''
     Abstract class that generates sampling
     '''
+    GENERATOR_NAME = "DOE_GENERATOR"
 
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
@@ -51,11 +53,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    # def __init__(self, generator_name):
-    #     '''
-    #     Constructor
-    #     '''
-    #     self.name = generator_name
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        super().__init__(self.GENERATOR_NAME)
 
     def get_available_algo_names(self):
         '''
@@ -143,7 +145,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         return algo_options_desc_in, algo_options_descr_dict
 
-    def _check_options(self, sampling_algo_name, algo_options):
+    def _check_options(self, sampling_algo_name, algo_options, selected_inputs, design_space):
         '''
         Check provided options before sample generation
         Arguments:
@@ -156,35 +158,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                            "and that levels are well defined")
 
         pass
-
-    def generate_samples(self, sampling_algo_name, algo_options, selected_inputs, design_space):
-        '''
-        Method that generate samples in a design space for a selected algorithm with its options 
-        The method also checks the output formating
-
-
-        Arguments:
-            sampling_algo_name (string): name of the numerical algorithm
-            algo_options (dict): provides the selected value of each option of the algorithm 
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
-            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
-
-        Returns:
-            samples_df (data_frame) : generated samples
-                                      dataframe of a matrix of n raws  (each raw is an input point to be evaluated)  
-                                      any variable of dim m is an array of dim m in a single column of the matrix            
-        '''
-        # check options
-        self._check_options(sampling_algo_name, algo_options)
-
-        # generate the sampling by subclass
-        samples_df = self._generate_samples(
-            sampling_algo_name, algo_options, selected_inputs, design_space)
-
-        # check sample formatting
-        self._check_samples(samples_df)
-
-        return samples_df
 
     def _check_samples(self, samples_df):
         '''

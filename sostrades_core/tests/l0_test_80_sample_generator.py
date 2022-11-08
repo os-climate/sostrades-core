@@ -142,7 +142,7 @@ class TestSampleGenerator(unittest.TestCase):
         '''
         Test that checks get_options_desc_in for DoeSampleGenerator
         '''
-        sample_generator = DoeSampleGenerator(self)
+        sample_generator = DoeSampleGenerator()
 
         algo_names_list = sample_generator.get_available_algo_names()
         # print(algo_names_list)
@@ -209,7 +209,7 @@ class TestSampleGenerator(unittest.TestCase):
         design_space = doe_wrapper.create_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
 
-        sample_generator = DoeSampleGenerator(self)
+        sample_generator = DoeSampleGenerator()
         samples_df = sample_generator.generate_samples(
             sampling_algo_name, algo_options, selected_inputs, design_space)
 
@@ -274,7 +274,7 @@ class TestSampleGenerator(unittest.TestCase):
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
-            sample_generator = DoeSampleGenerator(self)
+            sample_generator = DoeSampleGenerator()
             samples_df = sample_generator.generate_samples(
                 sampling_algo_name, algo_options, selected_inputs, design_space)
 
@@ -348,7 +348,7 @@ class TestSampleGenerator(unittest.TestCase):
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
-            sample_generator = DoeSampleGenerator(self)
+            sample_generator = DoeSampleGenerator()
             samples_df = sample_generator.generate_samples(
                 sampling_algo_name, algo_options, selected_inputs, design_space)
             # print(samples_df)
