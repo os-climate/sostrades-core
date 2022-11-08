@@ -157,7 +157,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         pass
 
-    def generate_samples(self, sampling_algo_name, algo_options, selected_inputs, design_space):
+    def generate_samples(self, sampling_algo_name, algo_options, design_space):
         '''
         Method that generate samples in a design space for a selected algorithm with its options 
         The method also checks the output formating
@@ -166,7 +166,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             sampling_algo_name (string): name of the numerical algorithm
             algo_options (dict): provides the selected value of each option of the algorithm 
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
@@ -179,7 +178,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         # generate the sampling by subclass
         samples_df = self._generate_samples(
-            sampling_algo_name, algo_options, selected_inputs, design_space)
+            sampling_algo_name, algo_options, design_space)
 
         # check sample formatting
         self._check_samples(samples_df)
@@ -201,14 +200,13 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             msg += "is <%s> " % str(type(samples_df))
             raise SampleTypeError()
 
-    def _generate_samples(self, sampling_algo_name, algo_options, selected_inputs, design_space):
+    def _generate_samples(self, sampling_algo_name, algo_options, design_space):
         '''
         Method that generate samples
 
         Arguments:
             sampling_algo_name (string): name of the numerical algorithm
             algo_options (dict): provides the selected value of each option of the algorithm
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
@@ -219,8 +217,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         unnormalized_samples = self.unnormalized_samples_from_design_space(
             normalized_samples, design_space)
         samples = self.reformat_samples_from_design_space(
-            unnormalized_samples, selected_inputs, design_space)
-        samples_df = self.put_samples_in_df_format(samples, selected_inputs)
+            unnormalized_samples, design_space)
+        samples_df = self.put_samples_in_df_format(samples, design_space)
 
         return samples_df
 
@@ -338,7 +336,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             samples.append(x_sample)
         return samples
 
-    def reformat_samples_from_design_space(self, samples, selected_inputs, design_space):
+    def reformat_samples_from_design_space(self, samples, design_space):
         """
         Reformat samples based on the design space to take into account variables with dim >1
         It uses methods from gemseo Design Space
@@ -348,7 +346,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             samples (numpy matrix of floats) : matrix of n raws  (each raw is an input point to be evaluated)  
                                      any variable of dim m will be an array of dim m in a single column of the matrix 
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
@@ -356,6 +353,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                     matrix of n raws  (each raw is an input point to be evaluated)  
                                     any variable of dim m is an array of dim m in a single column of the matrix 
         """
+        selected_inputs = list(design_space.keys())
+
         reformated_samples = []
         for current_point in samples:  # To be vectorized
             # Current point  is an array with variables ordered as in selected_inputs
@@ -367,6 +366,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
             # We reconstruct the current point as an array with variables
             # ordered as in selected_inputs
+
             reformated_current_point = []
             for in_variable in selected_inputs:
                 reformated_current_point.append(
@@ -375,7 +375,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         return reformated_samples
 
-    def put_samples_in_df_format(self, samples, selected_inputs):
+    def put_samples_in_df_format(self, samples, design_space):
         """
         construction of a dataframe of the generated samples
         # To be vectorized
@@ -383,12 +383,12 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             samples (numpy matrix of arrays) : matrix of n raws  (each raw is an input point to be evaluated)  
                                                any variable of dim m will be an array of dim m in a single column of the matrix
-            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
-
+            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
         Returns:
             samples_df (data_frame) : dataframe of a matrix of n raws  (each raw is an input point to be evaluated)  
                                       any variable of dim m is an array of dim m in a single column of the matrix
         """
+        selected_inputs = list(design_space.keys())
         samples_df = pd.DataFrame(data=samples,
                                   columns=selected_inputs)
         return samples_df
