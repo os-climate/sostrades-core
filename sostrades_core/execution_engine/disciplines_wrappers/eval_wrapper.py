@@ -75,27 +75,6 @@ class EvalWrapper(DriverEvaluatorWrapper):
                                  'namespace': 'ns_eval'}
     }
 
-    # def __init__(self, sos_name):
-    #     super().__init__(sos_name)
-        # self.custom_samples = None  # input samples dataframe
-        # self.samples = None         # samples to evaluate as list[list[Any]] or ndarray
-        # self.input_data_for_disc = None
-
-    # def _init_input_data(self):
-    #     #TODO: deepcopy option? [discuss]
-    #     self.input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][0])
-    #     # self.input_data_for_disc = [self.get_input_data_for_gems(disc) for disc in self.attributes['sub_mdo_disciplines']]
-
-    # def _get_input_data(self, delta_dict):
-    #     #TODO: deepcopy option? [discuss]
-    #     self.input_data_for_disc.update(delta_dict)
-    #     return self.input_data_for_disc
-
-    # def _select_output_data(self, raw_data, eval_out_data_names):
-    #     output_data_dict = {key: value for key,value in raw_data.items()
-    #                       if key in eval_out_data_names}
-    #     return output_data_dict
-
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
 
         '''This function executes a parallel execution of the function sample_evaluation

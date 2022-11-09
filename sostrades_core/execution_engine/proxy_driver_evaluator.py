@@ -18,7 +18,15 @@ import pandas as pd
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+
+import pandas as pd
+import copy
+from numpy import NaN
+
+from sostrades_core.api import get_sos_logger
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
@@ -59,6 +67,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
 
+    EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
+
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  map_name=None,
@@ -74,6 +84,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         """
+        # if 'ns_doe' does not exist in ns_manager, we create this new
+        # namespace to store output dictionaries associated to eval_outputs
+        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
+            ee.ns_manager.add_ns('ns_doe', ee.study_name)
+
         super().__init__(sos_name, ee, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
         if cls_builder is None:
@@ -83,6 +98,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.scatter_process_builder = None
         self.map_name = map_name
         self.scatter_list = None
+
+        self.eval_in_list = None
+        self.eval_out_list = None
+        self.selected_outputs = []
+        self.selected_inputs = []
+        self.eval_out_type = []
+        self.eval_out_list_size = []
+        self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
 
     def get_desc_in_out(self, io_type):
         """
@@ -142,17 +165,80 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         To be overload by drivers with specific configuration actions
         """
+        # Extract variables for eval analysis in mono instance mode
+        disc_in = self.get_data_in()
+        if self.BUILDER_MODE in disc_in \
+                and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE \
+                and 'eval_inputs' in disc_in \
+                and len(self.proxy_disciplines) > 0:
+            self.set_eval_possible_values()
 
     def setup_sos_disciplines(self):
         """
-        Dynamic inputs and outputs of the DriverLayer
+        Dynamic inputs and outputs of the DriverEvaluator
         """
         if self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             if builder_mode == self.MULTI_INSTANCE:
                 self.build_inst_desc_io_with_scenario_df()
             elif builder_mode == self.MONO_INSTANCE:
-                pass  # TODO: to merge with Eval
+                # pass  # TODO: to merge with Eval WIP
+
+                # TODO: clean code below with class variables etc.
+                dynamic_inputs = {'eval_inputs': {'type': 'dataframe',
+                                                    'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                                            'full_name': ('string', None, False)},
+                                                    'dataframe_edition_locked': False,
+                                                    'structuring': True,
+                                                    'visibility': self.SHARED_VISIBILITY,
+                                                    'namespace': 'ns_eval'},
+                                  'eval_outputs': {'type': 'dataframe',
+                                                             'dataframe_descriptor': {'selected_output': ('bool', None, True),
+                                                                                 'full_name': ('string', None, False)},
+                                                             'dataframe_edition_locked': False,
+                                                             'structuring': True, 'visibility': self.SHARED_VISIBILITY,
+                                                             'namespace': 'ns_eval'},
+                                  'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
+                                  'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
+                            }
+                dynamic_outputs = {'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
+                                   'namespace': 'ns_eval'}
+                                  }
+
+                selected_inputs_has_changed = False
+                disc_in = self.get_data_in()
+                if 'eval_inputs' in disc_in:
+                # if len(disc_in) != 0:
+
+                    eval_outputs = self.get_sosdisc_inputs('eval_outputs')
+                    eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+
+                    # we fetch the inputs and outputs selected by the user
+                    selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                                    == True]['full_name']
+                    selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                                  == True]['full_name']
+                    if set(selected_inputs.tolist()) != set(self.selected_inputs):
+                        selected_inputs_has_changed = True
+                        self.selected_inputs = selected_inputs.tolist()
+                    self.selected_outputs = selected_outputs.tolist()
+
+                    if len(selected_inputs) > 0 and len(selected_outputs) > 0:
+                        # TODO: is it OK that it crashes with empty input ? also, might want an eval without outputs ?
+                        # we set the lists which will be used by the evaluation
+                        # function of sosEval
+                        self.set_eval_in_out_lists(self.selected_inputs, self.selected_outputs)
+
+                        # setting dynamic outputs. One output of type dict per selected
+                        # output
+                        for out_var in self.eval_out_list:
+                            dynamic_outputs.update(
+                                {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
+                                                                                           'visibility': 'Shared',
+                                                                                           'namespace': 'ns_doe'}})
+                        dynamic_inputs.update(self._get_dynamic_inputs_doe(disc_in, selected_inputs_has_changed))
+                self.add_inputs(dynamic_inputs)
+                self.add_outputs(dynamic_outputs)
             elif builder_mode == self.REGULAR_BUILD:
                 pass  # regular build requires no specific dynamic inputs
             else:
@@ -200,10 +286,24 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         its wrapper with a reference to the subprocess GEMSEO objets so they can be manipulated at runtime.
         """
         #TODO: needs to accommodate the eval attributes in the mono instance case
-        super().set_wrapper_attributes(wrapper)
+        super().set_wrapper_attributes(wrapper) # io full name maps set by ProxyDiscipline
         wrapper.attributes.update({'sub_mdo_disciplines': [
                                   proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
                                   if proxy.mdo_discipline_wrapp is not None]}) # discs and couplings but not scatters
+
+        if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE:
+            eval_attributes = {'eval_in_list': self.eval_in_list,
+                               'eval_out_list': self.eval_out_list,
+                               'reference_scenario': self.get_x0(),
+                               'activated_elems_dspace_df': [[True, True]
+                                                             if self.ee.dm.get_data(var, 'type') == 'array' else [True]
+                                                             for var in self.eval_in_list],  # TODO: Array dimensions greater than 2??? TEST
+                               'study_name': self.ee.study_name,
+                               'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
+                               'selected_inputs': self.selected_inputs,
+                               'selected_outputs': self.selected_outputs,
+                               }
+            wrapper.attributes.update(eval_attributes)
 
     def is_configured(self):
         """
@@ -294,6 +394,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                      self.scatter_list, check_value=False)
 
     # MONO INSTANCE PROCESS
+    def _get_disc_shared_ns_value(self):
+        # TODO: better factorization, rename?
+        return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value()
+
     def _set_eval_process_builder(self):
         '''
         Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.
@@ -317,3 +421,197 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.eval_process_builder is None:
             self._set_eval_process_builder()
         return [self.eval_process_builder] if self.eval_process_builder is not None else []
+
+    def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
+        '''
+        Set the evaluation variable list (in and out) present in the DM
+        which fits with the eval_in_base_list filled in the usecase or by the user
+        '''
+        self.eval_in_list = [
+            f'{self.ee.study_name}.{element}' for element in in_list]
+        self.eval_out_list = [
+            f'{self.ee.study_name}.{element}' for element in out_list]
+
+    def set_eval_possible_values(self):
+        '''
+            Once all disciplines have been run through,
+            set the possible values for eval_inputs and eval_outputs in the DM
+        '''
+        analyzed_disc = self.proxy_disciplines[0]
+        possible_in_values_full, possible_out_values_full = self.fill_possible_values(analyzed_disc)
+        possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
+                                                                      possible_in_values_full, possible_out_values_full)
+
+        # Take only unique values in the list
+        possible_in_values = list(set(possible_in_values_full))
+        possible_out_values = list(set(possible_out_values_full))
+
+        # these sorts are just for aesthetics
+        possible_in_values.sort()
+        possible_out_values.sort()
+
+        default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
+                                             'full_name': possible_in_values})
+        default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
+                                              'full_name': possible_out_values})
+
+        eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
+        eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
+        my_ns_eval_path = self._get_disc_shared_ns_value()
+
+        if eval_input_new_dm is None:
+            self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
+                             'value', default_in_dataframe, check_value=False)
+        # check if the eval_inputs need to be updated after a subprocess
+        # configure
+        elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                               is_eval_input=True)
+            default_dataframe = copy.deepcopy(default_in_dataframe)
+            already_set_names = eval_input_new_dm['full_name'].tolist()
+            already_set_values = eval_input_new_dm['selected_input'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
+                    index]
+            self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
+                             'value', default_dataframe, check_value=False)
+
+        if eval_output_new_dm is None:
+            self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
+                             'value', default_out_dataframe, check_value=False)
+        # check if the eval_inputs need to be updated after a subprocess
+        # configure
+        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                               is_eval_input=False)
+            default_dataframe = copy.deepcopy(default_out_dataframe)
+            already_set_names = eval_output_new_dm['full_name'].tolist()
+            already_set_values = eval_output_new_dm['selected_output'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
+                    index]
+            self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
+                             'value', default_dataframe, check_value=False)
+
+    def fill_possible_values(self, disc):
+        '''
+            Fill possible values lists for eval inputs and outputs
+            an input variable must be a float coming from a data_in of a discipline in all the process
+            and not a default variable
+            an output variable must be any data from a data_out discipline
+        '''
+        poss_in_values_full = []
+        poss_out_values_full = []
+        disc_in = disc.get_data_in()
+        for data_in_key in disc_in.keys():
+            is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
+            is_structuring = disc_in[data_in_key].get(
+                self.STRUCTURING, False)
+            in_coupling_numerical = data_in_key in list(
+                ProxyCoupling.DESC_IN.keys())
+            full_id = disc.get_var_full_name(
+                data_in_key, disc_in)
+            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                         ]['io_type'] == 'in'
+            # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+            is_editable = disc_in[data_in_key]['editable']
+            is_None = disc_in[data_in_key]['value'] is None
+            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
+                # Caution ! This won't work for variables with points in name
+                # as for ac_model
+                # we remove the study name from the variable full  name for a
+                # sake of simplicity
+                if is_input_type:
+                    poss_in_values_full.append(
+                        full_id.split(self.ee.study_name + ".", 1)[1])
+                    # poss_in_values_full.append(full_id)
+
+                # if is_input_multiplier_type and not is_None:
+                #     poss_in_values_list = self.set_multipliers_values(
+                #         disc, full_id, data_in_key)
+                #     for val in poss_in_values_list:
+                #         poss_in_values_full.append(val)
+
+        disc_out = disc.get_data_out()
+        for data_out_key in disc_out.keys():
+            # Caution ! This won't work for variables with points in name
+            # as for ac_model
+            in_coupling_numerical = data_out_key in list(
+                ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
+            full_id = disc.get_var_full_name(
+                data_out_key, disc_out)
+            if not in_coupling_numerical:
+                # we remove the study name from the variable full  name for a
+                # sake of simplicity
+                poss_out_values_full.append(
+                    full_id.split(self.ee.study_name + ".", 1)[1])
+                # poss_out_values_full.append(full_id)
+        return poss_in_values_full, poss_out_values_full
+
+    def find_possible_values(
+            self, disc, possible_in_values, possible_out_values):
+        '''
+            Run through all disciplines and sublevels
+            to find possible values for eval_inputs and eval_outputs
+        '''
+        # TODO: does this involve avoidable, recursive back and forths during configuration ?
+        if len(disc.proxy_disciplines) != 0:
+            for sub_disc in disc.proxy_disciplines:
+                sub_in_values, sub_out_values = self.fill_possible_values(
+                    sub_disc)
+                possible_in_values.extend(sub_in_values)
+                possible_out_values.extend(sub_out_values)
+                self.find_possible_values(
+                    sub_disc, possible_in_values, possible_out_values)
+
+        return possible_in_values, possible_out_values
+
+    def get_x0(self):
+        '''
+        Get initial values for input values decided in the evaluation
+        '''
+        return dict(zip(self.eval_in_list,
+                        map(self.dm.get_value, self.eval_in_list)))
+
+    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
+        default_custom_dataframe = pd.DataFrame(
+            [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+        dataframe_descriptor = {}
+        for i, key in enumerate(self.selected_inputs):
+            cle = key
+            var = tuple([self.ee.dm.get_data(
+                self.eval_in_list[i], 'type'), None, True])
+            dataframe_descriptor[cle] = var
+
+        dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                     'dataframe_descriptor': dataframe_descriptor,
+                                     'dataframe_edition_locked': False,
+                                     'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                     'namespace': 'ns_eval'
+                                     }}
+
+        if 'samples_df' in disc_in and selected_inputs_has_changed:
+            disc_in['samples_df']['value'] = default_custom_dataframe
+            disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
+        return dynamic_inputs
+
+    def check_eval_io(self, given_list, default_list, is_eval_input):
+        """
+        Set the evaluation variable list (in and out) present in the DM
+        which fits with the eval_in_base_list filled in the usecase or by the user
+        """
+
+        for given_io in given_list:
+            if given_io not in default_list:
+                if is_eval_input:
+                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+                                f'input of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
+                                f'be created. '
+
+                else:
+                    error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+                                f'output of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning). Dynamic inputs might  not be created. '
+
+                self.logger.warning(error_msg)

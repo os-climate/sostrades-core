@@ -860,6 +860,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
+        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -1835,6 +1837,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
+        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ doe',

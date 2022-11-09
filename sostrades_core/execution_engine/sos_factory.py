@@ -329,11 +329,11 @@ class SosFactory:
                 f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
             )
         elif eval_type == 'doe_eval':
-            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
+            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'  # FIXME: should use DriverEvaluator objects, once the DoEEval tests are adapted
             driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
         elif eval_type == 'eval':
-            module_struct_list = f'{self.EE_PATH}.proxy_eval.ProxyEval'
-            driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.eval_wrapper.EvalWrapper'
+            module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
+            driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
         elif eval_type == 'build_doe_eval':
             module_struct_list = f'{self.GENERIC_MODS_PATH}.build_doe_eval.BuildDoeEval'
         elif eval_type == 'grid_search':
