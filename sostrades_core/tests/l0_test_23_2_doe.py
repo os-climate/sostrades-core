@@ -226,7 +226,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exception.
         """
 
-        sample_generator = DoeSampleGenerator(self)
+        sample_generator = DoeSampleGenerator()
 
         for sampling_algo_name in ['CustomDOE', 'DiagonalDOE']:
             with self.assertRaises(Exception) as cm:
@@ -260,7 +260,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                  'max_time': 0}
 
 
-        sample_generator = DoeSampleGenerator(self)
+        sample_generator = DoeSampleGenerator()
 
         # Loop to check the algo default options retrieved from Gemseo (and to check whether they have changed, in case
         # Gemseo updates them and it is necessary to modify the given algo options to generate again the reference
@@ -404,15 +404,13 @@ class TestSoSDOEScenario(unittest.TestCase):
                                    'seed': 1,
                                    'max_time': 0}
 
-        sample_generator = DoeSampleGenerator(self)
+        sample_generator = DoeSampleGenerator()
 
         # Loop to check the algo default options retrieved from Gemseo
         for sampling_algo_name in OT_list_of_algo_names:
             algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
                 sampling_algo_name)
             # print(f'\nThe default algo options for {sampling_algo_name} are:\n',algo_options_desc_in)
-
-        sample_generator = DoeSampleGenerator(self)
 
         # Loop to check the algo default options retrieved from Gemseo (and to check whether they have changed, in case
         # Gemseo updates them and it is necessary to modify the given algo options to generate again the reference
