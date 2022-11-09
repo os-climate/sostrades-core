@@ -107,7 +107,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_2.load_data()
 
         # activate cache
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache'}
+        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
+                       f'{study_1.study_name}.propagate_cache_to_children': True}
         study_1.load_data(from_input_dict=dict_values)
 
         for disc in study_1.execution_engine.root_process.proxy_disciplines:
@@ -116,7 +117,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.ee.prepare_execution()
         study_1.ee.build_cache_map()
 
-        dict_values = {f'{study_2.study_name}.cache_type': 'SimpleCache'}
+        dict_values = {f'{study_2.study_name}.cache_type': 'SimpleCache',
+                       f'{study_2.study_name}.propagate_cache_to_children': True}
         study_2.load_data(from_input_dict=dict_values)
         study_2.ee.prepare_execution()
         study_2.ee.build_cache_map()
@@ -196,7 +198,9 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_dump = study_disc1_disc2()
         study_dump.load_data()
         # cache activation
-        dict_values = {f'{study_dump.study_name}.cache_type': 'SimpleCache'}
+        dict_values = {f'{study_dump.study_name}.cache_type': 'SimpleCache',
+                       f'{study_dump.study_name}.propagate_cache_to_children': True
+                       }
         study_dump.load_data(from_input_dict=dict_values)
         study_dump.set_dump_directory(dump_dir)
 
@@ -312,7 +316,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         study = study_disc1_disc2()
         study.load_data()
 
-        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache'}
+        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache',
+                       f'{study.study_name}.propagate_cache_to_children': True}
         study.load_data(from_input_dict=values_dict)
         study.set_dump_directory(
             dump_dir)
@@ -335,7 +340,8 @@ class TestLoadSimpleCache(unittest.TestCase):
                               'test_disc1_disc2_coupling', study.study_name, 'cache.pkl')
         self.assertTrue(exists(cache_pkl_path))
 
-        values_dict = {f'{study.study_name}.cache_type': 'None'}
+        values_dict = {f'{study.study_name}.cache_type': 'None',
+                       f'{study.study_name}.propagate_cache_to_children': True}
         study.load_data(from_input_dict=values_dict)
         study.read_cache_pickle(dump_dir)
         study.run(dump_study=True)
@@ -367,7 +373,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_data()
 
         # cache activation
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache'}
+        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
+                       f'{study_1.study_name}.propagate_cache_to_children': True}
         study_1.load_data(from_input_dict=dict_values)
 
         # run MDA
@@ -410,7 +417,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         study = study_disc1_disc2()
         study.load_data()
 
-        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache'}
+        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache',
+                       f'{study.study_name}.propagate_cache_to_children': True}
         study.load_data(from_input_dict=values_dict)
         study.set_dump_directory(
             dump_dir)
@@ -476,6 +484,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # cache activation
         dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
+                       f'{study_1.study_name}.propagate_cache_to_children': True,
                        f'{study_1.study_name}.SellarCoupling.sub_mda_class': 'MDANewtonRaphson'}
         study_1.load_data(from_input_dict=dict_values)
 
@@ -530,6 +539,44 @@ class TestLoadSimpleCache(unittest.TestCase):
             self.assertEqual(disc.n_calls_linearize, 0)
         self.dir_to_del.append(self.dump_dir)
 
+    def test_10_set_different_cache_type_verify_after_run(self):
+        '''
+        Test different cache type to verify reconfiguration rest_cache mode 
+        and to verify that pkl is deleted when cache is None
+        '''
+        dump_dir = join(self.dump_dir, 'test_06')
+
+        study = study_disc1_disc2()
+        study.load_data()
+
+        values_dict = {f'{study.study_name}.cache_type': 'SimpleCache',
+                       f'{study.study_name}.propagate_cache_to_children': True, }
+        study.load_data(from_input_dict=values_dict)
+        study.set_dump_directory(
+            dump_dir)
+        study.run(dump_study=True)
+
+        for disc in study.ee.factory.proxy_disciplines:
+            self.assertEqual(
+                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+
+        self.assertEqual(len(study.ee.dm.cache_map), 4)
+
+        values_dict = {f'{study.study_name}.Disc2.cache_type': 'None',
+                       f'{study.study_name}.propagate_cache_to_children': False, }
+        study.load_data(from_input_dict=values_dict)
+        study.read_cache_pickle(dump_dir)
+        study.run(dump_study=True)
+
+        study_2 = BaseStudyManager(
+            self.repo_name, self.proc_name_disc1_disc2, study.study_name)
+        study_2.load_data(from_path=dump_dir)
+        study_2.load_disciplines_data(dump_dir)
+        study_2.read_cache_pickle(dump_dir)
+        self.assertEqual(study_2.ee.dm.get_value(
+            f'{study.study_name}.Disc2.cache_type'), 'None')
+
+        self.dir_to_del.append(self.dump_dir)
 #     def _test_08_load_cache_on_sellar_opt(self):
 #
 #         dump_dir = join(self.dump_dir, 'test_08')
@@ -575,5 +622,5 @@ class TestLoadSimpleCache(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestLoadSimpleCache()
     cls.setUp()
-    cls.test_02_same_cache_map_with_2_different_studies()
+    cls.test_09_load_cache_on_sellar_mda_newton_raphson()
     cls.tearDown()

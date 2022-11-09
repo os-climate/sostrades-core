@@ -991,30 +991,6 @@ class ProxyDiscipline(object):
                     self.DEBUG_MODE, disc_in), self.VALUE, debug_mode, check_value=False)
                 disc.set_debug_mode_rec(debug_mode)
 
-    def set_children_cache_inputs(self):
-        '''
-        Set cache_type and cache_file_path input values to children, if cache inputs have changed
-        '''
-        if self._reset_cache and self._set_children_cache:
-            cache_type = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
-            cache_file_path = self.get_sosdisc_inputs(
-                ProxyDiscipline.CACHE_FILE_PATH)
-            for disc in self.proxy_disciplines:
-                disc_in = disc.get_data_in()
-                if ProxyDiscipline.CACHE_TYPE in disc_in:
-                    self.dm.set_data(disc.get_var_full_name(
-                        ProxyDiscipline.CACHE_TYPE, disc_in), self.VALUE, cache_type, check_value=False)
-                    if cache_file_path is not None:
-                        self.dm.set_data(disc.get_var_full_name(
-                            ProxyDiscipline.CACHE_FILE_PATH, disc_in), self.VALUE, cache_file_path,
-                            check_value=False)
-            self._set_children_cache = False
-
-        if self._reset_debug_mode:
-            self.set_debug_mode_rec(
-                self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
-            self._reset_debug_mode = False
-
     def setup_sos_disciplines(self):
         """
         Method to be overloaded to add dynamic inputs/outputs using add_inputs/add_outputs methods.
