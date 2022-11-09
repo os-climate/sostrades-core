@@ -50,7 +50,7 @@ class ScatterTool():
         Constructor
         '''
         self.__factory = ee.factory
-        self.__scattered_disciplines = {}
+        self.__scattered_builders = {}
         self.sub_coupling_builder_dict = {}
         self.__gathered_disciplines = {}
         self.__scatter_data_map = []
@@ -62,9 +62,13 @@ class ScatterTool():
         self.__scatter_list = None
         self.local_namespace = None
         self.input_name = None
+        self.ns_to_update = None
         self.ee = ee
         self.sos_name = sos_name
-        self.associated_namespaces = associated_namespaces
+        if associated_namespaces is None:
+            self.associated_namespaces = []
+        else:
+            self.associated_namespaces = associated_namespaces
         self.sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
         ee.smaps_manager.associate_disc_to_build_map(self)
         self.sc_map.configure_map(cls_builder)
@@ -76,16 +80,9 @@ class ScatterTool():
         if not isinstance(self.__builders, list):
             self.builder_name = self.__builders.sos_name
 
-    def get_scattered_disciplines(self):
-        return self.__scattered_disciplines
-
     @property
     def scatter_data_map(self):
         return self.__scatter_data_map
-
-    @property
-    def scatter_builders(self):
-        return self.__builders
 
     @property
     def scatter_build_map(self):
@@ -127,10 +124,10 @@ class ScatterTool():
 
         ns_to_update_name_list = self.sc_map.get_ns_to_update()
         # store ns_to_update namespace object
-        ns_to_update = {}
+        self.ns_to_update = {}
         for ns_name in ns_to_update_name_list:
-            ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(driver,
-                                                                            ns_name)
+            self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(driver,
+                                                                                 ns_name)
 
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
@@ -151,24 +148,24 @@ class ScatterTool():
         # TO DO : do this with associate_namespaces
         # self.ee.ns_manager.update_shared_ns_with_others_ns(self)
 
-        builder_list = []
+        clean_builder_list = []
         if self.__scatter_list is not None:
 
-            new_sub_names = self.clean_scattered_disciplines(
+            new_sub_names, clean_builder_list = self.clean_scattered_builders(
                 self.__scatter_list)
 
             # build sub_process through the factory
             for name in self.__scatter_list:
                 if self.coupling_per_scatter:
-                    builder_list = self.build_sub_coupling(
+                    self.build_sub_coupling(
                         name, self.local_namespace, new_sub_names, self.ns_to_update)
                 else:
-                    builder_list = self.build_child_scatter(
+                    self.build_child_scatter(
                         name, self.local_namespace, new_sub_names, self.ns_to_update)
 
             self.ee.ns_manager.shared_ns_dict.update(self.ns_to_update)
 
-        return builder_list
+        return self.get_all_builders(), clean_builder_list
 
     def build_sub_coupling(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
@@ -191,7 +188,6 @@ class ScatterTool():
 #             coupling_disc.is_parallel = True
             self.add_scatter_builder(coupling_builder, name)
 
-        return coupling_builder
 #         else:
 #             coupling_disc = self.sub_coupling_builder_dict[name].build()
 #             # flag the coupling so that it can be executed in parallel
@@ -206,19 +202,17 @@ class ScatterTool():
             self.builder_name, name, local_namespace)
         ns_ids.append(ns_scatter_id)
         ns_update_ids = self.sc_map.update_ns(
-            old_ns_to_update, name, self.sos_name)
+            old_ns_to_update, name, self.sos_name, add_in_shared_ns_dict=False)
         ns_ids.extend(ns_update_ids)
         # Case of a scatter of coupling :
         if isinstance(self.__builders, list):
-            builder_list = self.build_scatter_of_coupling(
+            self.build_scatter_of_coupling(
                 name, local_namespace, new_sub_names, ns_update_ids)
 
         # Case of a coupling of scatter :
         else:
-            builder_list = self.build_coupling_of_scatter(
+            self.build_coupling_of_scatter(
                 name, new_sub_names, ns_update_ids)
-
-        return builder_list
 
     def build_scatter_of_coupling(self, name, local_namespace, new_sub_names, ns_update_ids):
         '''
@@ -234,8 +228,10 @@ class ScatterTool():
 
         '''
         for builder in self.__builders:
-            self.ee.ns_manager.set_current_disc_ns(
-                f'{local_namespace}.{name}')
+            #             self.ee.ns_manager.set_current_disc_ns(
+            #                 f'{local_namespace}.{name}')
+            old_builder_name = builder.sos_name
+            builder.set_disc_name(f'{name}.{old_builder_name}')
             if builder.associated_namespaces != []:
                 builder.add_namespace_list_in_associated_namespaces(
                     self.associated_namespaces)
@@ -247,8 +243,6 @@ class ScatterTool():
             # new_sub_names
             if name in new_sub_names:
                 self.add_scatter_builder(builder, name)
-
-        return self.__builders
 
     def build_coupling_of_scatter(self, name, new_sub_names, ns_update_ids):
         '''
@@ -277,39 +271,25 @@ class ScatterTool():
 
         return self.__builders
 
-    def clean_scattered_disciplines(self, sub_names):
+    def clean_scattered_builders(self, sub_names):
         '''
         Clean disciplines that was scattered and are not in the scatter_list anymore
         Return the new scatter names not yet present in the list of scattered disciplines
         '''
         # sort sub_names to filter new names and disciplines to remove
+        clean_builders_list = []
         new_sub_names = [
-            name for name in sub_names if not name in self.__scattered_disciplines]
+            name for name in sub_names if not name in self.__scattered_builders]
         disc_name_to_remove = [
-            name for name in self.__scattered_disciplines if not name in sub_names]
+            name for name in self.__scattered_builders if not name in sub_names]
         for disc_name in disc_name_to_remove:
-            self.clean_children(self.__scattered_disciplines[disc_name])
+            clean_builders_list.append(self.__scattered_builders[disc_name])
             if self.coupling_per_scatter:
                 del self.sub_coupling_builder_dict[disc_name]
 
-            del self.__scattered_disciplines[disc_name]
+            del self.__scattered_builders[disc_name]
 
-        return new_sub_names
-
-    def add_disc_to_remove_recursive(self, disc, to_remove):
-        if isinstance(disc, ProxyDisciplineScatter):
-            to_remove.append(disc)
-            for disc_list in disc.__scattered_disciplines.values():
-                for sub_disc in disc_list:
-                    self.add_disc_to_remove_recursive(sub_disc, to_remove)
-        elif type(disc).__name__ == 'SoSMultiScatterBuilder':
-            to_remove.append(disc)
-            for builder in np.concatenate(list(disc.child_scatter_builder_list.values())):
-                for sub_disc in list(builder.discipline_dict.values()):
-                    self.add_disc_to_remove_recursive(
-                        sub_disc, to_remove)
-        else:
-            to_remove.append(disc)
+        return new_sub_names, clean_builders_list
 
     def remove_scattered_disciplines(self, disc_to_remove):
         '''
@@ -320,67 +300,18 @@ class ScatterTool():
             if self.coupling_per_scatter:
                 del self.sub_coupling_builder_dict[disc]
 
-            del self.__scattered_disciplines[disc]
-
-    def add_scatter_discipline(self, disc, name):
-        '''
-        Add the discipline to the factory and to the dictionary of scattered_disciplines
-        '''
-        self.__factory.add_discipline(disc)
-        if name in self.__scattered_disciplines.keys():
-            self.__scattered_disciplines[name].append(disc)
-        else:
-            self.__scattered_disciplines.update({name: [disc]})
-        if disc not in self.built_proxy_disciplines:
-            self.built_proxy_disciplines.append(disc)
+            del self.__scattered_builders[disc]
 
     def add_scatter_builder(self, builder, name):
         '''
         Add the discipline to the factory and to the dictionary of scattered_disciplines
         '''
         # self.__factory.add_discipline(disc)
-        if name in self.__scattered_disciplines.keys():
-            self.__scattered_disciplines[name].append(builder)
-        else:
-            self.__scattered_disciplines.update({name: [builder]})
+
+        self.__scattered_builders.update({name: builder})
 #         if disc not in self.built_proxy_disciplines:
 #             self.built_proxy_disciplines.append(disc)
 
-    def get_maturity(self):
-        '''
-        Get the maturity of the scatter TODO
-        '''
-        return ''
+    def get_all_builders(self):
 
-    def run(self):
-        '''
-        No run function for a SoSDisciplineScatter
-        '''
-        pass
-
-    def setup_sos_disciplines(self):
-        """
-        Method to be overloaded to add dynamic inputs/outputs using add_inputs/add_outputs methods.
-        If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
-        DESC_IN = {'X': {'structuring':True}}
-        """
-        pass
-
-    def prepare_execution(self):
-        """
-        Overload
-        """
-        self._status = ProxyDiscipline.STATUS_PENDING
-
-    def get_status_after_configure(self):
-        if len(self.built_proxy_disciplines) > 0:
-            if any(proxy.status == ProxyDiscipline.STATUS_FAILED for proxy in self.built_proxy_disciplines):
-                return ProxyDiscipline.STATUS_FAILED
-            return self.built_proxy_disciplines[-1].status
-        return ProxyDiscipline.STATUS_DONE
-
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
-        """
-        overload of proxy_discipline's method
-        """
-        pass
+        return list(self.__scattered_builders.values())
