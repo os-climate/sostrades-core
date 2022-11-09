@@ -125,7 +125,7 @@ class DoeEval(EvalWrapper):
             generator_name = 'doe_generator'
             if self.sample_generator == None:
                 if generator_name == 'doe_generator':
-                    self.sample_generator = DoeSampleGenerator(self)
+                    self.sample_generator = DoeSampleGenerator()
 
             # Not needed here: to be put in config to set the desc_in instead
             # of the hard coded default dicts of EEV3...
