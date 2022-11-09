@@ -34,9 +34,11 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
 
-        mod_dict_doe = {'DoE': 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'}
+        mod_dict_doe = {
+            'DoE_Sampling': 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'}
         doe_builder = self.create_builder_list(mod_dict_doe,
-                                               ns_dict={'ns_doe1': f'{self.ee.study_name}.DoE'}
+                                               ns_dict={
+                                                   'ns_doe1': f'{self.ee.study_name}.DoE_Sampling'}
                                                )
 
         return doe_builder

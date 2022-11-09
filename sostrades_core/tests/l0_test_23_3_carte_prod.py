@@ -117,22 +117,24 @@ class TestCartesianProduct(unittest.TestCase):
         scenario_selection = target_samples_df
 
         # -- set up disciplines in Scenario
-        # DoE inputs
+        # CP inputs
         disc_dict = {}
         disc_dict[f'{self.ns}.CP.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{self.ns}.CP.eval_inputs'] = self.input_selection_x_z
-        disc_dict[f'{self.ns}.CP.scenario_selection'] = scenario_selection
+        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_x_z
+        #disc_dict[f'{self.ns}.CP.scenario_selection'] = scenario_selection
 
         exec_eng.load_study_from_input_dict(disc_dict)
-
-        exec_eng.execute()
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
                        f'\t|_ CP']
         exp_tv_str = '\n'.join(exp_tv_list)
-        exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        exec_eng.display_treeview_nodes(True)
+
+        exec_eng.execute()
+
         # disc = exec_eng.dm.get_disciplines_with_name(
         #     'cp.CP')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         disc = exec_eng.root_process.proxy_disciplines[0]
