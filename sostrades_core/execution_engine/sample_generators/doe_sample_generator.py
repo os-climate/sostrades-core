@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from builtins import NotImplementedError
-
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
 
@@ -23,7 +21,6 @@ from gemseo.api import get_available_doe_algorithms
 from gemseo.api import get_algorithm_options_schema
 from gemseo.api import compute_doe
 
-from tqdm import tqdm
 import pandas as pd
 from gemseo.utils.source_parsing import get_options_doc
 
@@ -53,53 +50,67 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
+    # We remove 'CustomDOE' from gemseo
+    # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#customdoe
+
+    # We remove 'DiagonalDOE' from gemseo gemseo.algos.doe.lib_scalable
+    # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#diagonaldoe
+    # This algorithm is special: it has parameters "reverse" that can have name of variable
+    # Do we want it in SoSTrades. Does it works also or not ?
+    UNSUPPORTED_GEMSEO_ALGORITHMS = ['CustomDOE', 'DiagonalDOE']
+
     def __init__(self):
         '''
         Constructor
         '''
+        #- inits super class
         super().__init__(self.GENERATOR_NAME)
-
+        #- create attributes
+        self.doe_factory = None
+        self.__available_algo_names = None
+        #- set attribute values
+        self._reload()
+        
+    def _reload(self):
+        '''
+        Reloads all attributes of the class
+        - creates the DOEFactory
+        - creates the DOEFactory from GEMSEO
+        '''
+        # DOEFactory is instantiated once here
+        self.doe_factory = DOEFactory()
+        # all the DOE algorithms in GEMSEO that are available in current environment
+        all_names = self.doe_factory.algorithms
+        # filter with the unsupported GEMSEO algorithms.
+        self.__available_algo_names = list(set(all_names)-set(self.UNSUPPORTED_GEMSEO_ALGORITHMS))
+        
     def get_available_algo_names(self):
         '''
-        Method that provides the list of available algo_names
+        Method that provides the already created list of available algo_names, filtered by the unsupported ones
 
         Returns:
-            the Sample Generator expected inputs (as DESC_IN format)
-                                (to be provided to proxy i/o grammars)
-            More precisely:
              algo_names_list (list): list of available algo names
         '''
-        available_doe_algorithms = get_available_doe_algorithms()
-        available_doe_algorithms = [
-            algo_name for algo_name in available_doe_algorithms if algo_name not in ['CustomDOE', 'DiagonalDOE']]
-        # We remove 'CustomDOE' from gemseo
-        # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#customdoe
-
-        # We remove 'DiagonalDOE' from gemseo gemseo.algos.doe.lib_scalable
-        # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#diagonaldoe
-        # This algorithm is special: it has parameters "reverse" that can have name of variable
-        # Do we want it in SoSTrades. Does it works also or not ?
-
-        return available_doe_algorithms
-
-    def _check_algo_name(self, sampling_algo_name):
+        return self.__available_algo_names
+    
+    def _check_algo_name(self, algo_name):
         '''
         Check provided algo name before getting its algo_options
         Arguments:
-            sampling_algo_name (string): name of the numerical algorithm
+            algo_name (string): name of the numerical algorithm
         Raises:
             Exception if sampling_algo_name is not in the list of available algorithms
         '''
         algo_names_list = self.get_available_algo_names()
-        if sampling_algo_name not in algo_names_list:
-            if sampling_algo_name in ['CustomDOE', 'DiagonalDOE']:
+        if algo_name not in algo_names_list:
+            if algo_name in self.UNSUPPORTED_GEMSEO_ALGORITHMS:
                 raise Exception(
-                    f"The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator")
+                    f"The provided algorithm name {algo_name} is not allowed in doe sample generator")
             else:
                 raise Exception(
-                    f"The provided algorithm name {sampling_algo_name} is not in the available algorithm list : {algo_names_list}")
+                    f"The provided algorithm name {algo_name} is not in the available algorithm list : {algo_names_list}")
 
-    def get_options_desc_in(self, sampling_algo_name):
+    def get_options_and_default_values(self, sampling_algo_name):
         '''
         Method that provides the list of options of an algorithm with there default values (if any) and description
 
@@ -109,29 +120,28 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             the Sample Generator expected inputs (as DESC_IN format)
                                 (to be provided to proxy i/o grammars)
             More precisely:
-             algo_options_desc_in (dict): dict of algo options with default values (if any). It is in algo_options desci_in format
+             algo_options (dict): dict of algo options with default values (if any). It is in algo_options desci_in format
              algo_options_descr_dict (dict): dict of description of algo options
              e.g. https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
         '''
-
         # check sampling_algo_name
         self._check_algo_name(sampling_algo_name)
 
-        # get options of the sampling_algo_name in desc_in format
-        doe_factory = DOEFactory()
-        algo_lib = doe_factory.create(sampling_algo_name)
+        # create the algo library
+        algo_lib = self.doe_factory.create(sampling_algo_name)
 
         # Remark: The following lines of code should be in gemseo
         # We should use only one line or two provided by gemseo
+#         default_opt = algo_lib._get_options()
+#        # provided options and not providing default options
+
         fn = algo_lib.__class__._get_options
 
-        #opts_gram = algo_lib.init_options_grammar(sampling_algo_name)
-        # print(algo_lib._get_options(algo_options)) # is checking the user
-        # provided options and not providing default options
-
+        # retrieve description of options provided in docstrings
         algo_options_descr_dict = get_options_doc(fn)
-
+        
+        # retrieve default algo options and values
         def get_default_args(func):
             import inspect
             signature = inspect.signature(func)
@@ -140,10 +150,20 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 for k, v in signature.parameters.items()
                 if v.default is not inspect.Parameter.empty
             }
+        algo_options = get_default_args(fn)
+        
+        # get option keys dedicated to algo
+        opts_gram = algo_lib.init_options_grammar(sampling_algo_name)
+        opt_to_keep = opts_gram.get_data_names()
+        
+        # remove options that are not in the grammar of the algo
+        all_options = list(algo_options.keys())
+        for k in all_options:
+            if k not in opt_to_keep:
+                algo_options.pop(k,None)
+                algo_options_descr_dict.pop(k,None)
 
-        algo_options_desc_in = get_default_args(fn)
-
-        return algo_options_desc_in, algo_options_descr_dict
+        return algo_options, algo_options_descr_dict
 
     def _check_options(self, sampling_algo_name, algo_options, design_space):
         '''
@@ -188,11 +208,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         '''
         normalized_samples = self._generate_normalized_samples(
             sampling_algo_name, algo_options, design_space)
-        unnormalized_samples = self.unnormalized_samples_from_design_space(
+        unnormalized_samples = self._unnormalize_samples_from_design_space(
             normalized_samples, design_space)
-        samples = self.reformat_samples_from_design_space(
+        samples = self._reformat_samples_from_design_space(
             unnormalized_samples, design_space)
-        samples_df = self.put_samples_in_df_format(samples, design_space)
+        samples_df = self._put_samples_in_df_format(samples, design_space)
 
         return samples_df
 
@@ -209,14 +229,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             normalized_samples (numpy matrix) :   matrix of n raws  (each raw is an input point to be evaluated)  
                                                   any variable of dim m will be in m columns of the matrix 
         '''
-        gemseo_options = self.generate_gemseo_options(
+        gemseo_options = self._generate_gemseo_options(
             algo_options, design_space)
 
-        normalized_samples = self.generate_normalized_samples_from_doe_factory(
+        normalized_samples = self._generate_normalized_samples_from_doe_factory(
             sampling_algo_name, **gemseo_options)  # call to gemseo
         return normalized_samples
 
-    def generate_gemseo_options(self, algo_options, design_space):
+    def _generate_gemseo_options(self, algo_options, design_space):
         """
         Providing algorithm's option in format needed for the _generate_samples method of the Doe Factory. 
         Those options comes:
@@ -256,7 +276,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         return gemseo_options
 
-    def generate_normalized_samples_from_doe_factory(self, sampling_algo_name, **gemseo_options):
+    def _generate_normalized_samples_from_doe_factory(self, sampling_algo_name, **gemseo_options):
         """
         Generating samples for the Doe using the _generate_samples method of the Doe Factory
 
@@ -271,14 +291,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                  any variable of dim m will be in m columns of the matrix 
 
         """
-        doe_factory = DOEFactory()
-        algo = doe_factory.create(sampling_algo_name)
+#         doe_factory = DOEFactory()
+        algo = self.doe_factory.create(sampling_algo_name)
         normalized_samples = algo._generate_samples(**gemseo_options)
         return normalized_samples
 
-    def unnormalized_samples_from_design_space(self, normalized_samples, design_space):
+    def _unnormalize_samples_from_design_space(self, normalized_samples, design_space):
         """
-        Un-normalized sample from design space lower and upper bound
+        Un-normalize sample from design space lower and upper bound
         Check whether the variables satisfy the design space requirements
         It uses methods from gemseo Design Space
 
@@ -310,7 +330,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             samples.append(x_sample)
         return samples
 
-    def reformat_samples_from_design_space(self, samples, design_space):
+    def _reformat_samples_from_design_space(self, samples, design_space):
         """
         Reformat samples based on the design space to take into account variables with dim >1
         It uses methods from gemseo Design Space
@@ -350,7 +370,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         return reformated_samples
 
-    def put_samples_in_df_format(self, samples, design_space):
+    def _put_samples_in_df_format(self, samples, design_space):
         """
         construction of a dataframe of the generated samples
         # To be vectorized

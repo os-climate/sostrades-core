@@ -138,9 +138,9 @@ class TestSampleGenerator(unittest.TestCase):
         self.target_samples_df = pd.DataFrame(data=target_samples_fullfact,
                                               columns=self.selected_inputs)
 
-    def test_01_check_get_options_desc_in(self):
+    def test_01_check_get_options_and_default_values(self):
         '''
-        Test that checks get_options_desc_in for DoeSampleGenerator
+        Test that checks get_options_and_default_values for DoeSampleGenerator
         '''
         sample_generator = DoeSampleGenerator()
 
@@ -148,7 +148,7 @@ class TestSampleGenerator(unittest.TestCase):
         # print(algo_names_list)
 
         sampling_algo_name = 'fullfact'
-        algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+        algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
             sampling_algo_name)
 
         # print(algo_options_desc_in)
@@ -168,7 +168,7 @@ class TestSampleGenerator(unittest.TestCase):
         # test if it works with all algo samples names
         # print('\n')
         for sampling_algo_name in algo_names_list:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
                 sampling_algo_name)
             # print(sampling_algo_name)
             # print(algo_options_desc_in)
@@ -177,7 +177,7 @@ class TestSampleGenerator(unittest.TestCase):
         # test the error message in case of wrong algo_name
         sampling_algo_name = 'toto'
         with self.assertRaises(Exception) as cm:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
                 sampling_algo_name)
 
         error_message = f'The provided algorithm name {sampling_algo_name} is not in the available algorithm list : {algo_names_list}'
@@ -187,7 +187,7 @@ class TestSampleGenerator(unittest.TestCase):
         # algo_names
         for sampling_algo_name in ['CustomDOE', 'DiagonalDOE']:
             with self.assertRaises(Exception) as cm:
-                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_desc_in(
+                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
                     sampling_algo_name)
 
             error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'

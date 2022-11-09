@@ -179,7 +179,7 @@ class DoeWrapper(SoSWrapp):
         # In get_options_desc_in, it is already checked whether the algo_name belongs to the list of possible Gemseo
         # DoE algorithms
         if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator().get_options_desc_in(algo_name)
+            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(algo_name)
             return algo_options_desc_in
         else:
             return cls.default_algo_options
