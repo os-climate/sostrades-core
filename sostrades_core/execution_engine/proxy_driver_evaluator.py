@@ -388,19 +388,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.map_name is not None:
             # set the scatter builder that allows to scatter the subprocess
             if self.builder_tool_cls:
-                self.builder_list_from_tool = self.build_tool()
-
-                return self.builder_list_from_tool
-
-            if self.scatter_process_builder is None:
-
-                self._set_scatter_process_builder(self.map_name)
-            # if the scatter builder exists, use it to build the process
-            if self.scatter_process_builder is not None:
-                return [self.scatter_process_builder]
+                self.build_tool()
+                # Tool is building disciplines for the driver on behalf of the
+                # driver name
+                return []
             else:
-                self.logger.warn(
-                    f'Scatter builder not configured in {self.sos_name}, map_name missing?')
+                if self.scatter_process_builder is None:
+
+                    self._set_scatter_process_builder(self.map_name)
+                # if the scatter builder exists, use it to build the process
+                if self.scatter_process_builder is not None:
+                    return [self.scatter_process_builder]
+                else:
+                    self.logger.warn(
+                        f'Scatter builder not configured in {self.sos_name}, map_name missing?')
         else:
             self.logger.warn(
                 f'Attempting multi-instance build without a map_name in {self.sos_name}')
@@ -452,7 +453,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def configure_tool(self):
         if self.builder_tool is None:
             self.builder_tool = self.builder_tool_cls(
-                'scatter_tool', self.ee, self.map_name, self.cls_builder, coupling_per_scatter=False)
+                'scatter_tool', self.ee, self.map_name, self.cls_builder, driver=self, coupling_per_scatter=False)
             scatter_list_desc_in = self.builder_tool.get_scatter_list_desc_in()
             self.add_inputs(scatter_list_desc_in)
 
@@ -460,11 +461,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def build_tool(self):
 
-        builder_list, clean_builder_list = self.builder_tool.build()
-
-        self.clean_children(clean_builder_list)
-
-        return builder_list
+        self.builder_tool.build()
 
     # MONO INSTANCE PROCESS
 

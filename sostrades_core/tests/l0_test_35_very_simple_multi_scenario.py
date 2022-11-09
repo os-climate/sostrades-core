@@ -1236,5 +1236,5 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
-    cls.test_01_multi_scenario_of_scatter()
+    cls._test_01bis_multi_scenario_of_scatter_with_tool()
     cls.tearDown()
