@@ -276,6 +276,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             pass
         elif self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            # builder_mode_has_changed = True
+            # if builder_mode_has_changed:
+            #     self.clean_children(self.built_proxy_disciplines)
             if builder_mode == self.MULTI_INSTANCE:
                 builder_list = self.prepare_multi_instance_build()
             elif builder_mode == self.MONO_INSTANCE:

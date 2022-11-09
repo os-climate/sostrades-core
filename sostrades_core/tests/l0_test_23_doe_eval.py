@@ -291,6 +291,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
+        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
                                'full_name': ['Eval.Sellar_Problem.local_dv', 'x', 'y_1',
@@ -498,7 +500,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-
+        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
         # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
@@ -1141,6 +1144,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
+        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_local_dv_x,
@@ -1576,6 +1581,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
+        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
                                'full_name': ['Eval.Sellar_Problem.local_dv', 'x', 'y_1',
@@ -1591,8 +1598,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
                      f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
-        # Eval inputs
 
+        # Eval inputs
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
                     array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
         z_values = [array([1.515949043849158, 5.6317362409322165]),
