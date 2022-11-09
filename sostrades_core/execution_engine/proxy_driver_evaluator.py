@@ -63,7 +63,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
 
     SCENARIO_DF = 'scenario_df'
-    SCATTER_NODE_NAME = 'scatter_temp'
 
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
@@ -407,14 +406,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         # get a reference to the scatter discipline
         # TODO: refactor code below when scatter as a tool is ready /!\
-        driver_evaluator_node = self.ee.ns_manager.get_local_namespace_value(
+        scatter_node = self.ee.ns_manager.get_local_namespace_value(
             self)
-        scatter_node = self.ee.ns_manager.compose_ns(
-            [driver_evaluator_node, self.SCATTER_NODE_NAME])
+
         scatter_disc_list = self.dm.get_disciplines_with_name(scatter_node)
         if scatter_disc_list:  # otherwise nothing is possible
             # get scatter disc
-            scatter_disc = scatter_disc_list[0]
+            scatter_disc = [
+                disc for disc in scatter_disc_list if hasattr(disc, 'sc_map')][0]
             if self.SCENARIO_DF not in self.get_data_in():
                 # add scenario_df to inst_desc_in in the same namespace defined
                 # by the scatter map
