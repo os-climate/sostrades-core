@@ -103,6 +103,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
             self.builder_tool_cls = None
+
+        self.old_builder_mode = None
         self.eval_process_builder = None
         self.scatter_process_builder = None
         self.map_name = map_name
@@ -276,9 +278,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             pass
         elif self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
-            # builder_mode_has_changed = True
-            # if builder_mode_has_changed:
-            #     self.clean_children(self.built_proxy_disciplines)
+            builder_mode_has_changed = builder_mode != self.old_builder_mode
+            if builder_mode_has_changed:
+                self.old_builder_mode = copy.copy(builder_mode)
+                self.clean_children(self.built_proxy_disciplines)
             if builder_mode == self.MULTI_INSTANCE:
                 builder_list = self.prepare_multi_instance_build()
             elif builder_mode == self.MONO_INSTANCE:
