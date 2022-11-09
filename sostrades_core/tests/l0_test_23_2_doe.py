@@ -32,7 +32,8 @@ from numpy import array, std
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-import os, sys
+import os
+import sys
 import csv
 from os.path import dirname, join
 from pandas.testing import assert_frame_equal
@@ -168,11 +169,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         disc_dict = {}
         n_samples = 10
-        disc_dict[f'{self.ns}.DoE.sampling_algo'] = "fullfact"
-        disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.DoE.algo_options'] = {
+        disc_dict[f'{self.ns}.DoE_Sampling.sampling_algo'] = "fullfact"
+        disc_dict[f'{self.ns}.DoE_Sampling.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.DoE_Sampling.algo_options'] = {
             'n_samples': n_samples, 'fake_option': 'fake_option'}
-        disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.DoE_Sampling.eval_inputs'] = self.input_selection_x_z
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -180,7 +181,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ DoE']
+                       f'\t|_ DoE_Sampling']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -244,21 +245,21 @@ class TestSoSDOEScenario(unittest.TestCase):
         sampling to test the different DoE algorithms aimed by this test.
         """
 
-        pydoe_list_of_algo_names = ['fullfact', 'ff2n', 'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
+        pydoe_list_of_algo_names = ['fullfact', 'ff2n',
+                                    'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
         pydoe_algo_default_options = {'alpha': 'orthogonal',
-                                 'face': 'faced',
-                                 'criterion': None,
-                                 'iterations': 5,
-                                 'eval_jac': False,
-                                 'center_bb': None,
-                                 'center_cc': None,
-                                 'n_samples': None,
-                                 'levels': None,
-                                 'n_processes': 1,
-                                 'wait_time_between_samples': 0.0,
-                                 'seed': 1,
-                                 'max_time': 0}
-
+                                      'face': 'faced',
+                                      'criterion': None,
+                                      'iterations': 5,
+                                      'eval_jac': False,
+                                      'center_bb': None,
+                                      'center_cc': None,
+                                      'n_samples': None,
+                                      'levels': None,
+                                      'n_processes': 1,
+                                      'wait_time_between_samples': 0.0,
+                                      'seed': 1,
+                                      'max_time': 0}
 
         sample_generator = DoeSampleGenerator()
 
@@ -273,7 +274,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # To work, DoE needs (statically) a sampling_algo and an eval_inputs and (dinamically) a design space.
         # The eval_inputs and design space will be defined below and samplings will be checked to assert that the right
-        # columns in the sampling are generated and that they are within design space range.
+        # columns in the sampling are generated and that they are within design
+        # space range.
         input_selection_x_z = {'selected_input': [False, False, False, True, False, True],
                                'full_name': ['u', 'v', 'w', 'x', 'y', 'z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
@@ -285,7 +287,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.dspace_eval = pd.DataFrame(dspace_dict_eval)
 
         # Build of the DoE discipline under the root process node.
-        exec_eng = ExecutionEngine(self.study_name)   #doe
+        exec_eng = ExecutionEngine(self.study_name)  # doe
 
         mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
         doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
@@ -305,30 +307,39 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
         # DoE inputs. The same algo options will be used for all samplings (let it be noted some default options values
-        # will not allow to execute a DoE sampling, e.g. n_samples cannot be equal to None).
+        # will not allow to execute a DoE sampling, e.g. n_samples cannot be
+        # equal to None).
         disc_dict = {}
         disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
         pydoe_algo_used_options = {'alpha': 'orthogonal',
-                                 'face': 'faced',
-                                 'criterion': None,
-                                 'iterations': 5,
-                                 'eval_jac': False,
-                                 'center_bb': None,
-                                 'center_cc': (2, 2),  # center cc shall not be None for ccdesign sampling.
-                                 'n_samples': 5,  # n_samples shall not be None for fullfact sampling.
-                                 'levels': None,
-                                 'n_processes': 1,
-                                 'wait_time_between_samples': 0.0,
-                                 'seed': 1,
-                                 'max_time': 0}
+                                   'face': 'faced',
+                                   'criterion': None,
+                                   'iterations': 5,
+                                   'eval_jac': False,
+                                   'center_bb': None,
+                                   # center cc shall not be None for ccdesign
+                                   # sampling.
+                                   'center_cc': (2, 2),
+                                   # n_samples shall not be None for fullfact
+                                   # sampling.
+                                   'n_samples': 5,
+                                   'levels': None,
+                                   'n_processes': 1,
+                                   'wait_time_between_samples': 0.0,
+                                   'seed': 1,
+                                   'max_time': 0}
         disc_dict[f'{self.ns}.DoE.algo_options'] = pydoe_algo_used_options
 
-        # for loop over the sampling algo names and execution to save the resultant sampling in a CSV file.
+        # for loop over the sampling algo names and execution to save the
+        # resultant sampling in a CSV file.
         name_of_csv = "pydoe_reference_dataframe.csv"
         # f = open(name_of_csv, "w")  # For creating the file
         # f = open(name_of_csv, "r")   # For using the file
-        reference_dataframe = pd.read_csv(join(self.ref_dir, name_of_csv),sep='\t')   # Extraction of dataframe from reference csv file (use if already created)
+        # Extraction of dataframe from reference csv file (use if already
+        # created)
+        reference_dataframe = pd.read_csv(
+            join(self.ref_dir, name_of_csv), sep='\t')
         for sampling_algo_name in pydoe_list_of_algo_names:
             disc_dict[f'{self.ns}.DoE.sampling_algo'] = sampling_algo_name
 
@@ -356,25 +367,31 @@ class TestSoSDOEScenario(unittest.TestCase):
             #                         index=False
             #                         )
 
-            # Check whether samples correspond to design space variable selection
+            # Check whether samples correspond to design space variable
+            # selection
             design_space = exec_eng.dm.get_value('doe.DoE.design_space')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
-            # Check whether samples correspond with eval_inputs variable selection
+            # Check whether samples correspond with eval_inputs variable
+            # selection
             eval_inputs = exec_eng.dm.get_value('doe.DoE.eval_inputs')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              eval_inputs.loc[eval_inputs['selected_input'] == True]['full_name'].to_list())
             # Check whether samples correspond to reference samples
             # Fix format dataframe from CSV file
-            algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo'] == sampling_algo_name]
+            algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo']
+                                                             == sampling_algo_name]
             algo_reference_samples = algo_reference_samples.reset_index()
-            reference_samples = algo_reference_samples[doe_disc_samples.columns.to_list()]
+            reference_samples = algo_reference_samples[doe_disc_samples.columns.to_list(
+            )]
             for name in doe_disc_samples.columns.to_list():
-                for index in range(0,len(reference_samples[name])):
+                for index in range(0, len(reference_samples[name])):
                     element = reference_samples[name][index]
-                    element1 = re.split("\s+", element.replace('[','').replace(']',''))
+                    element1 = re.split(
+                        "\s+", element.replace('[', '').replace(']', ''))
                     element2 = [i for i in element1 if i != '']
-                    reference_samples[name][index] = array(element2, dtype=float)
+                    reference_samples[name][index] = array(
+                        element2, dtype=float)
             # Actual check samples correspond to reference samples
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
@@ -423,7 +440,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # To work, DoE needs (statically) a sampling_algo and an eval_inputs and (dinamically) a design space.
         # The eval_inputs and design space will be defined below and samplings will be checked to assert that the right
-        # columns in the sampling are generated and that they are within design space range.
+        # columns in the sampling are generated and that they are within design
+        # space range.
         input_selection_x_z = {'selected_input': [False, False, False, True, False, True],
                                'full_name': ['u', 'v', 'w', 'x', 'y', 'z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
@@ -435,7 +453,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.dspace_eval = pd.DataFrame(dspace_dict_eval)
 
         # Build of the DoE discipline under the root process node.
-        exec_eng = ExecutionEngine(self.study_name)   #doe
+        exec_eng = ExecutionEngine(self.study_name)  # doe
 
         mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
         doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
@@ -455,14 +473,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
         # DoE inputs. The same algo options will be used for all samplings (let it be noted some default options values
-        # will not allow to execute a DoE sampling, e.g. n_samples cannot be equal to None).
+        # will not allow to execute a DoE sampling, e.g. n_samples cannot be
+        # equal to None).
         disc_dict = {}
         disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
         OT_algo_used_options = {'levels': None,
                                 'centers': None,
                                 'eval_jac': False,
-                                'n_samples': 10,  # Must be non null at least for OT_SOBOL.
+                                # Must be non null at least for OT_SOBOL.
+                                'n_samples': 10,
                                 'n_processes': 1,
                                 'wait_time_between_samples': 0.0,
                                 'criterion': 'C2',
@@ -473,11 +493,15 @@ class TestSoSDOEScenario(unittest.TestCase):
                                 'max_time': 0}
         disc_dict[f'{self.ns}.DoE.algo_options'] = OT_algo_used_options
 
-        # for loop over the sampling algo names and execution to save the resultant sampling in a CSV file.
+        # for loop over the sampling algo names and execution to save the
+        # resultant sampling in a CSV file.
         name_of_csv = "ot_reference_dataframe.csv"
         # f = open(name_of_csv, "w")  # For creating the file
         # f = open(name_of_csv, "r")   # For using the file
-        reference_dataframe = pd.read_csv(join(self.ref_dir, name_of_csv),sep='\t')  # Extraction of dataframe from reference csv file (use if already created)
+        # Extraction of dataframe from reference csv file (use if already
+        # created)
+        reference_dataframe = pd.read_csv(
+            join(self.ref_dir, name_of_csv), sep='\t')
         for sampling_algo_name in OT_list_of_algo_names:
             disc_dict[f'{self.ns}.DoE.sampling_algo'] = sampling_algo_name
 
@@ -505,26 +529,31 @@ class TestSoSDOEScenario(unittest.TestCase):
             #                         index=False
             #                         )
 
-            # Check whether samples correspond to design space variable selection
+            # Check whether samples correspond to design space variable
+            # selection
             design_space = exec_eng.dm.get_value('doe.DoE.design_space')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
-            # Check whether samples correspond with eval_inputs variable selection
+            # Check whether samples correspond with eval_inputs variable
+            # selection
             eval_inputs = exec_eng.dm.get_value('doe.DoE.eval_inputs')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              eval_inputs.loc[eval_inputs['selected_input'] == True]['full_name'].to_list())
             # Check whether samples correspond to reference samples
             # Fix format dataframe from CSV file
-            algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo'] == sampling_algo_name]
+            algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo']
+                                                             == sampling_algo_name]
             algo_reference_samples = algo_reference_samples.reset_index()
-            reference_samples = algo_reference_samples[doe_disc_samples.columns.to_list()]
+            reference_samples = algo_reference_samples[doe_disc_samples.columns.to_list(
+            )]
             for name in doe_disc_samples.columns.to_list():
-                for index in range(0,len(reference_samples[name])):
+                for index in range(0, len(reference_samples[name])):
                     element = reference_samples[name][index]
-                    element1 = re.split("\s+", element.replace('[','').replace(']',''))
+                    element1 = re.split(
+                        "\s+", element.replace('[', '').replace(']', ''))
                     element2 = [i for i in element1 if i != '']
-                    reference_samples[name][index] = array(element2, dtype=float)
+                    reference_samples[name][index] = array(
+                        element2, dtype=float)
             # Actual check samples correspond to reference samples
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
-
