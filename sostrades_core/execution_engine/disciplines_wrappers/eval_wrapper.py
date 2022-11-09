@@ -47,7 +47,7 @@ LOGGER = logging.getLogger(__name__)
 
 class EvalWrapper(DriverEvaluatorWrapper):
     '''
-    Generic Wrapper with SoSEval functions
+    Generic Wrapper with SoSEval functions # FIXME: whole module is to be removed when doeeval tests are adapted
     '''
 
     _maturity = 'Fake'

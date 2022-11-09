@@ -157,7 +157,7 @@ class ProxyDoeEval(ProxyEval):
 
     def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         '''
-        Constructor
+        Constructor # FIXME: whole module is to be removed when doeeval tests are adapted
         '''
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)

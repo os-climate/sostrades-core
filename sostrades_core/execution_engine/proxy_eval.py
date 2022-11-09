@@ -66,7 +66,7 @@ class ProxyEval(ProxyDriverEvaluator):
 
     def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         '''
-        Constructor
+        Constructor # FIXME: whole module is to be removed when doeeval tests are adapted
         '''
         # if 'ns_doe' does not exist in ns_manager, we create this new
         # namespace to store output dictionaries associated to eval_outputs
