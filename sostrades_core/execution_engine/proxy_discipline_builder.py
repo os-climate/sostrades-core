@@ -63,17 +63,19 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #     self.proxy_discipline = None
     #     self.built_sos_disciplines = None
     PROPAGATE_CACHE = 'propagate_cache_to_children'
-    DESC_IN = {PROPAGATE_CACHE: {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                 ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
-                                 ProxyDiscipline.STRUCTURING: True},
-               }
+    NUM_DESC_IN = {PROPAGATE_CACHE: {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
+                                     ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
+                                     ProxyDiscipline.STRUCTURING: True},
+                   }
+    NUM_DESC_IN.update(ProxyDiscipline.NUM_DESC_IN)
 
     def _build(self, builder_list):
         """
         Instanciate sub proxies managed by the coupling
         """
         old_current_discipline = self.ee.factory.current_discipline
-        self.ee.factory.current_discipline = self
+        self.set_father_discipline()
+
         for builder in builder_list:
             proxy_disc = builder.build()
             if proxy_disc not in self.proxy_disciplines:
@@ -90,6 +92,12 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #     def clear_cache(self):
     #         self.mdo_chain.cache.clear()
     #         ProxyDisciplineBuilder.clear_cache(self)
+
+    def set_father_discipline(self):
+        '''
+        Set the current discipline to build the builder_list at this level
+        '''
+        self.ee.factory.current_discipline = self
 
     def build(self):
         builder_list = self.prepare_build()
@@ -115,7 +123,9 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         self.clean_dm_from_disc()
         self.ee.ns_manager.remove_dependencies_after_disc_deletion(
             self, self.disc_id)
-        self.ee.factory.remove_sos_discipline(self)
+        # means that is a scatter (not in factory)
+        if not hasattr(self, 'coupling_per_scatter'):
+            self.ee.factory.remove_sos_discipline(self)
 
     def clean_children(self, list_children):
         """
@@ -146,27 +156,29 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         '''
         Set cache_type and cache_file_path input values to children, if cache inputs have changed
         '''
-        propagate_cache_to_children = self.get_sosdisc_inputs(
-            'propagate_cache_to_children')
-        if self._reset_cache and self._set_children_cache and propagate_cache_to_children:
-            cache_type = self.get_sosdisc_inputs(ProxyDiscipline.CACHE_TYPE)
-            cache_file_path = self.get_sosdisc_inputs(
-                ProxyDiscipline.CACHE_FILE_PATH)
-            for disc in self.proxy_disciplines:
-                disc_in = disc.get_data_in()
-                if ProxyDiscipline.CACHE_TYPE in disc_in:
-                    self.dm.set_data(disc.get_var_full_name(
-                        ProxyDiscipline.CACHE_TYPE, disc_in), self.VALUE, cache_type, check_value=False)
-                    if cache_file_path is not None:
+        if self.PROPAGATE_CACHE in self.get_data_in():
+            propagate_cache_to_children = self.get_sosdisc_inputs(
+                self.PROPAGATE_CACHE)
+            if self._reset_cache and self._set_children_cache and propagate_cache_to_children:
+                cache_type = self.get_sosdisc_inputs(
+                    ProxyDiscipline.CACHE_TYPE)
+                cache_file_path = self.get_sosdisc_inputs(
+                    ProxyDiscipline.CACHE_FILE_PATH)
+                for disc in self.proxy_disciplines:
+                    disc_in = disc.get_data_in()
+                    if ProxyDiscipline.CACHE_TYPE in disc_in:
                         self.dm.set_data(disc.get_var_full_name(
-                            ProxyDiscipline.CACHE_FILE_PATH, disc_in), self.VALUE, cache_file_path,
-                            check_value=False)
-                if self.PROPAGATE_CACHE in disc_in:
-                    self.dm.set_data(disc.get_var_full_name(
-                        self.PROPAGATE_CACHE, disc_in), self.VALUE, propagate_cache_to_children, check_value=False)
-            self._set_children_cache = False
+                            ProxyDiscipline.CACHE_TYPE, disc_in), self.VALUE, cache_type, check_value=False)
+                        if cache_file_path is not None:
+                            self.dm.set_data(disc.get_var_full_name(
+                                ProxyDiscipline.CACHE_FILE_PATH, disc_in), self.VALUE, cache_file_path,
+                                check_value=False)
+                    if self.PROPAGATE_CACHE in disc_in:
+                        self.dm.set_data(disc.get_var_full_name(
+                            self.PROPAGATE_CACHE, disc_in), self.VALUE, propagate_cache_to_children, check_value=False)
+                self._set_children_cache = False
 
-        if self._reset_debug_mode:
-            self.set_debug_mode_rec(
-                self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
-            self._reset_debug_mode = False
+            if self._reset_debug_mode:
+                self.set_debug_mode_rec(
+                    self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
+                self._reset_debug_mode = False

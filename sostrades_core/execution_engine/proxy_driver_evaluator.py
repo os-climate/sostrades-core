@@ -361,9 +361,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             # builder of the scatter in aggregation with references to
             # self.cls_builder builders
-            scatter_builder = self.ee.factory.create_scatter_builder('scatter_temp', map_name, self.cls_builder,  # TODO: nice to remove scatter node
+            scatter_builder = self.ee.factory.create_scatter_builder(self.sos_name, map_name, self.cls_builder,  # TODO: nice to remove scatter node
                                                                      coupling_per_scatter=True)  # NB: is hardcoded also in VerySimpleMS/SimpleMS
+
         self.scatter_process_builder = scatter_builder
+
+    def set_father_discipline(self):
+
+        ProxyDisciplineBuilder.set_father_discipline(self)
+
+        if self.scatter_process_builder is not None:
+            self.ee.ns_manager.set_current_disc_ns(
+                self.get_disc_full_name().replace(f'.{self.sos_name}', ''))
 
     def prepare_multi_instance_build(self):
         """
@@ -373,12 +382,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # VerySimple
         if self.map_name is not None:
             # set the scatter builder that allows to scatter the subprocess
-            if self.scatter_process_builder is None:
-                if self.builder_tool_cls:
-                    self.scatter_process_builder = self.build_tool()
+            if self.builder_tool_cls:
+                self.builder_list_from_tool = self.build_tool()
 
-                else:
-                    self._set_scatter_process_builder(self.map_name)
+                return self.builder_list_from_tool
+
+            if self.scatter_process_builder is None:
+
+                self._set_scatter_process_builder(self.map_name)
             # if the scatter builder exists, use it to build the process
             if self.scatter_process_builder is not None:
                 return [self.scatter_process_builder]
@@ -444,7 +455,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def build_tool(self):
 
-        builder_list = self.builder_tool.build()
+        builder_list, clean_builder_list = self.builder_tool.build()
+
+        self.clean_children(clean_builder_list)
 
         return builder_list
 

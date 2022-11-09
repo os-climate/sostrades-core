@@ -17,6 +17,7 @@ limitations under the License.
 #-- Generate test 1 process
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
@@ -26,8 +27,9 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
-    
+
         # scatter build map
         ac_map = {'input_name': 'name_list',
                   'input_type': 'string_list',
@@ -36,9 +38,9 @@ class ProcessBuilder(BaseProcessBuilder):
                   'scatter_ns': 'ns_ac',
                   'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
-    
+
         self.ee.smaps_manager.add_build_map('name_list', ac_map)
-    
+
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
                         'input_type': 'string_list',
@@ -47,35 +49,35 @@ class ProcessBuilder(BaseProcessBuilder):
                         'scatter_ns': 'ns_scenario',
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
-    
+
         self.ee.smaps_manager.add_build_map(
             'scenario_list', scenario_map)
-    
+
         # shared namespace
         self.ee.ns_manager.add_ns('ns_barrierr', self.ee.study_name)
         self.ee.ns_manager.add_ns(
             'ns_scatter_scenario', f'{self.ee.study_name}.multi_scenarios')
         self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{self.ee.study_name}.multi_scenarios.scatter_temp.Disc3')
+            'ns_disc3', f'{self.ee.study_name}.multi_scenarios.Disc3')
         self.ee.ns_manager.add_ns(
             'ns_out_disc3', f'{self.ee.study_name}.multi_scenarios')
         self.ee.ns_manager.add_ns(
             'ns_data_ac', self.ee.study_name)
-    
+
         # instantiate factory # get instantiator from Discipline class
-    
+
         builder_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
-                                                           mod_id='test_disc1_scenario')
-    
+                                                                mod_id='test_disc1_scenario')
+
         scatter_list = self.ee.factory.create_multi_scatter_builder_from_list(
-            'name_list', builder_list=builder_list, autogather=False) # TODO: handle autogather input order and set to True...
-    
+            'name_list', builder_list=builder_list, autogather=False)  # TODO: handle autogather input order and set to True...
+
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
             'Disc3', mod_list)
         scatter_list.append(disc3_builder)
-    
+
         multi_scenarios = self.ee.factory.create_very_simple_multi_scenario_driver(
             'multi_scenarios', 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing')
-    
+
         return multi_scenarios

@@ -157,8 +157,10 @@ class SosFactory:
         #             raise Exception(
         # f'The discipline {discipline.get_disc_full_name()} is not added at the
         # right place : {self.__current_discipline.get_disc_full_name()}')
+
         self.__current_discipline.add_discipline(discipline)
-        self.__proxy_disciplines.append(discipline)
+        if not hasattr(discipline, 'coupling_per_scatter'):
+            self.__proxy_disciplines.append(discipline)
 
     def add_discipline_list(self, disciplines):
         self.__current_discipline.add_discipline_list(disciplines)

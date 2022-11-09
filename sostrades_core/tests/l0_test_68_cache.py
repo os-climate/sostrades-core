@@ -105,23 +105,29 @@ class TestCache(unittest.TestCase):
 
         # first execute
         res_1 = self.ee.execute()
-        
+
         # check cache is None
         self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.Disc1.cache_type'), 'None')
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache, None)
+        self.assertEqual(self.ee.dm.get_value(
+            'SoSDisc.Disc1.cache_type'), 'None')
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache, None)
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].n_calls
+        n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+            0].n_calls
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
 
         # get number of calls after second call
         n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].n_calls
+        n_call_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+            0].n_calls
 
         self.assertEqual(n_call_root_2, n_call_root_1 + 1)
         self.assertEqual(n_call_2, n_call_1 + 1)
@@ -129,18 +135,24 @@ class TestCache(unittest.TestCase):
         # ACTIVATE SIMPLE CACHE ROOT PROCESS
 
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.propagate_cache_to_children'] = True
         self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
         res_1 = self.ee.execute()
-        
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.Disc1.cache_type'), 'SimpleCache')
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__, 'SimpleCache')
+
+        self.assertEqual(self.ee.dm.get_value(
+            'SoSDisc.Disc1.cache_type'), 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__, 'SimpleCache')
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].n_calls
+        n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+            0].n_calls
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
@@ -156,26 +168,33 @@ class TestCache(unittest.TestCase):
 
         values_dict[f'{self.name}.cache_type'] = 'None'
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         self.ee.prepare_execution()
 
         # check cache is None
         self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.Disc1.cache_type'), 'None')
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache, None)
+        self.assertEqual(self.ee.dm.get_value(
+            'SoSDisc.Disc1.cache_type'), 'None')
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache, None)
 
         # ACTIVATE CACHE FOR DISC1 ONLY
 
         values_dict[f'{self.name}.Disc1.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         self.ee.prepare_execution()
 
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
@@ -251,7 +270,8 @@ class TestCache(unittest.TestCase):
         # second execute
         self.ee.execute()
         # check nb of calls of sos_coupling
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
         # check nb of calls of subdisciplines
         for disc in self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines:
             self.assertEqual(disc.n_calls, 1)
@@ -271,6 +291,7 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+        values_dict[f'{self.name}.propagate_cache_to_children'] = True
         self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
@@ -286,9 +307,12 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -301,8 +325,10 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on second discipline
         # so that all disciplines are executed twice
@@ -315,8 +341,10 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # third execute with modif on a protected variable
         values_dict[f'{self.name}.x'] = 2.
@@ -328,8 +356,10 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_5_cache_coupling_wo_change_of_strings(self):
         '''
@@ -366,7 +396,8 @@ class TestCache(unittest.TestCase):
                        self.name + '.Disc1.an_input_2': ['value_2', 'value_3'],
                        self.name + '.Disc2.constant': 1.5,
                        self.name + '.Disc2.power': 2,
-                       self.name + '.cache_type': 'SimpleCache'}
+                       self.name + '.cache_type': 'SimpleCache',
+                       f'{self.name}.propagate_cache_to_children': True}
 
         # set input data
         self.ee.load_study_from_input_dict(values_dict)
@@ -385,9 +416,12 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
 
         # check
-        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execution w/o change
         self.ee.execute()
@@ -397,8 +431,10 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 0
         # check
         # self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_6_test_cache_coupling_with_string_change(self):
         '''
@@ -435,6 +471,8 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+
+        values_dict[f'{self.name}.propagate_cache_to_children'] = True
         self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
@@ -450,9 +488,12 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -465,8 +506,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # third execute with modif on privates on second discipline
         # so that all disciplines are executed twice
@@ -480,8 +523,10 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fourth execute with second modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -494,8 +539,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -509,8 +556,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
         '''
@@ -544,6 +593,8 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+
+        values_dict[f'{self.name}.propagate_cache_to_children'] = True
         self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
@@ -559,9 +610,12 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -575,8 +629,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -592,8 +648,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_8_test_cache_coupling_with_string_list_change(self):
         '''
@@ -624,6 +682,8 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+
+        values_dict[f'{self.name}.propagate_cache_to_children'] = True
         self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
@@ -639,9 +699,12 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -654,8 +717,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -669,8 +734,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2']
         self.ee.load_study_from_input_dict(values_dict)
@@ -682,14 +749,18 @@ class TestCache(unittest.TestCase):
 
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def test_9_test_cache_coupling_with_string_list_of_dict_change(self):
         '''
@@ -722,6 +793,8 @@ class TestCache(unittest.TestCase):
         values_dict[f'{self.name}.Disc2.constant'] = -10.
         values_dict[f'{self.name}.x'] = 3.
         values_dict[f'{self.name}.cache_type'] = 'SimpleCache'
+
+        values_dict[f'{self.name}.propagate_cache_to_children'] = True
         self.ee.load_study_from_input_dict(values_dict)
 
         # get disciplines objects
@@ -737,9 +810,12 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
         # check
-        self.assertEqual(sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -753,8 +829,10 @@ class TestCache(unittest.TestCase):
         # n_calls_disc2 += 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -770,14 +848,18 @@ class TestCache(unittest.TestCase):
 
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
     def _test_10_cache_on_sellar_optim_gemseo_scenario(self):
         '''
@@ -960,8 +1042,10 @@ class TestCache(unittest.TestCase):
                                                                     "ineq_tolerance": 1e-6,
                                                                     "normalize_design_space": True}
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = np.array([1.])
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = np.array([1.])
-        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = np.array([1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = np.array([
+                                                                            1.])
+        disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = np.array([
+                                                                            1.])
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = np.array([
             1., 1.])
         disc_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = 10.
@@ -996,8 +1080,8 @@ class TestCache(unittest.TestCase):
 
         # remove cache_type keys from dm_with_cache and dm_without_cache
         for cache_type_key in exec_eng.dm.get_all_namespaces_from_var_name(
-                'cache_type') + exec_eng.dm.get_all_namespaces_from_var_name(
-            'cache_file_path') + exec_eng.dm.get_all_namespaces_from_var_name('residuals_history'):
+            'cache_type') + exec_eng.dm.get_all_namespaces_from_var_name(
+                'cache_file_path') + exec_eng.dm.get_all_namespaces_from_var_name('residuals_history'):
             dm_with_simple_cache.pop(cache_type_key)
             #             dm_with_HDF5_cache.pop(cache_type_key)
             #             dm_with_memory_full_cache.pop(cache_type_key)
@@ -1032,7 +1116,8 @@ class TestCache(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.study_name = 'SoSDisc'
 
-        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -1074,10 +1159,12 @@ class TestCache(unittest.TestCase):
 
         grid_search_disc = self.ee.dm.get_disciplines_with_name(
             f'{self.study_name}.{self.grid_search}')[0]
-        disc1 = self.ee.dm.get_disciplines_with_name(f'{self.study_name}.{self.grid_search}.Disc1')[0]
+        disc1 = self.ee.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}.Disc1')[0]
 
         # check cache is None
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(
+            grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
@@ -1101,12 +1188,17 @@ class TestCache(unittest.TestCase):
         dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(dict_values)
 
-        # check that the root process distributes the cache to all its sos_disciplines
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        # check that the root process distributes the cache to all its
+        # sos_disciplines
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs(
+            'cache_type'), 'SimpleCache')
         self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'SimpleCache')
-        self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
@@ -1155,7 +1247,8 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(dict_values)
 
         # check cache is None
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(
+            grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
@@ -1188,7 +1281,8 @@ class TestCache(unittest.TestCase):
         self.grid_search = 'GridSearch'
         self.study_name = 'SoSDisc'
 
-        eval_inputs = self.ee.dm.get_value(f'{self.study_name}.{self.grid_search}.eval_inputs')
+        eval_inputs = self.ee.dm.get_value(
+            f'{self.study_name}.{self.grid_search}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         f'{self.grid_search}.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -1230,10 +1324,12 @@ class TestCache(unittest.TestCase):
 
         grid_search_disc = self.ee.dm.get_disciplines_with_name(
             f'{self.study_name}.{self.grid_search}')[0]
-        disc1 = self.ee.dm.get_disciplines_with_name(f'{self.study_name}.{self.grid_search}.Disc1')[0]
+        disc1 = self.ee.dm.get_disciplines_with_name(
+            f'{self.study_name}.{self.grid_search}.Disc1')[0]
 
         # check cache is None
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
+        self.assertEqual(
+            grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'None')
         self.assertEqual(self.ee.root_process.cache, None)
         self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
@@ -1257,12 +1353,17 @@ class TestCache(unittest.TestCase):
         dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
         self.ee.load_study_from_input_dict(dict_values)
 
-        # check that the root process distributes the cache to all its sos_disciplines
-        self.assertEqual(grid_search_disc.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+        # check that the root process distributes the cache to all its
+        # sos_disciplines
+        self.assertEqual(grid_search_disc.get_sosdisc_inputs(
+            'cache_type'), 'SimpleCache')
         self.assertEqual(disc1.get_sosdisc_inputs('cache_type'), 'SimpleCache')
-        self.assertEqual(self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
-        self.assertEqual(self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+        self.assertEqual(
+            self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
@@ -1343,7 +1444,8 @@ class TestCache(unittest.TestCase):
 
         for cache_input in self.ee.dm.get_all_namespaces_from_var_name('cache_type'):
             if 'name_1' in cache_input:
-                self.assertTrue(self.ee.dm.get_value(cache_input), 'SimpleCache')
+                self.assertTrue(self.ee.dm.get_value(
+                    cache_input), 'SimpleCache')
             else:
                 self.assertTrue(self.ee.dm.get_value(cache_input), 'None')
 
@@ -1362,12 +1464,15 @@ class TestCache(unittest.TestCase):
         study_1 = study_sellar_opt()
         study_1.load_data()
         # cache activation at the level of optim scenario
-        dict_values = {f'{study_1.study_name}.SellarOptimScenario.cache_type': 'SimpleCache'}
+        dict_values = {
+            f'{study_1.study_name}.SellarOptimScenario.cache_type': 'SimpleCache'}
         study_1.load_data(from_input_dict=dict_values)
 
-        # check that the cache type is set for all optim scenario sub disciplines
+        # check that the cache type is set for all optim scenario sub
+        # disciplines
         for discipline in study_1.execution_engine.factory.sos_disciplines:
-            self.assertEqual(discipline.get_sosdisc_inputs('cache_type'), 'SimpleCache')
+            self.assertEqual(discipline.get_sosdisc_inputs(
+                'cache_type'), 'SimpleCache')
 
     def test_17_cache_and_status_coupling(self):
         '''
@@ -1403,7 +1508,8 @@ class TestCache(unittest.TestCase):
                        self.name + '.Disc1.an_input_2': ['value_2', 'value_3'],
                        self.name + '.Disc2.constant': 1.5,
                        self.name + '.Disc2.power': 2,
-                       self.name + '.cache_type': 'SimpleCache'}
+                       self.name + '.cache_type': 'SimpleCache',
+                       f'{self.name}.propagate_cache_to_children': True}
 
         # set input data
         self.ee.load_study_from_input_dict(values_dict)
@@ -1421,22 +1527,35 @@ class TestCache(unittest.TestCase):
         n_calls_disc1 += 1
         n_calls_disc2 += 1
 
-        # check that status are DONE after the first execution both on SOSTRADES and GEMSEO side
-        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        # check that status are DONE after the first execution both on
+        # SOSTRADES and GEMSEO side
+        self.assertEqual(self.ee.root_process.status,
+                         ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
 
         # check that status are PENDING after the second prepare execution
         self.ee.prepare_execution()
-        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.status,
+                         ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
 
         # second execution w/o change
         self.ee.execute()
@@ -1446,30 +1565,46 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 0
 
         # check that no discipline ran
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
         # check that the status are done after non-execution
-        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(self.ee.root_process.status,
+                         ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
 
-        # third execute with change of a private parameter of the second discipline
+        # third execute with change of a private parameter of the second
+        # discipline
         values_dict[f'{self.name}.Disc2.power'] = 3.
         self.ee.load_study_from_input_dict(values_dict)
 
         # check that status are PENDING after the second prepare execution
         self.ee.prepare_execution()
-        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(self.ee.root_process.status,
+                         ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
 
         self.ee.execute()
 
@@ -1479,17 +1614,28 @@ class TestCache(unittest.TestCase):
         n_calls_disc2 += 1
 
         # check that disc1 did not run
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
-        self.assertEqual(disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
-        self.assertEqual(disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+        self.assertEqual(
+            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+        self.assertEqual(
+            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
-        # check that the status are DONE after some disciplines executed and some did not
-        self.assertEqual(self.ee.root_process.status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        # check that the status are DONE after some disciplines executed and
+        # some did not
+        self.assertEqual(self.ee.root_process.status,
+                         ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+
 
 if __name__ == "__main__":
     cls = TestCache()

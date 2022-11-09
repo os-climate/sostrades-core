@@ -164,6 +164,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.residuals_history': init_dict('dataframe'),
                     ns_2 + '.n_subcouplings_parallel': init_dict('int'),
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
+                    ns_2 + '.propagate_cache_to_children': init_dict('bool'),
                     ns_2 + '.tolerance_gs': init_dict('float'),
                     ns_2 + '.relax_factor': init_dict('float'),
                     ns_2 + '.authorize_self_coupled_disciplines': init_dict('bool'), }
@@ -228,7 +229,7 @@ class TestDataManagerGenerator(unittest.TestCase):
             ns_pv_disc1 + '.a': 10.,
             ns_pv_disc1 + '.b': 20.,
             ns_pv_disc1 + '.indicator': 200.,
-            ns_pv_disc2 + '.constant':-10.,
+            ns_pv_disc2 + '.constant': -10.,
             ns_pv_disc2 + '.power': 2}
 
         # check outputs
@@ -254,11 +255,14 @@ class TestDataManagerGenerator(unittest.TestCase):
         # check status with data manager method
         status_dict_from_dm = exec_engine.dm.build_disc_status_dict()
         for disc in status_dict_from_dm.values():
-            self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
+            self.assertEqual(list(disc.values())[
+                             0], ProxyDiscipline.STATUS_DONE)
         # check status with execution engine method
         status_dict_from_ee = exec_engine.get_anonimated_disciplines_status_dict()
         for disc in status_dict_from_ee.values():
-            self.assertEqual(list(disc.values())[0], ProxyDiscipline.STATUS_DONE)
+            self.assertEqual(list(disc.values())[
+                             0], ProxyDiscipline.STATUS_DONE)
+
 
 ''' HOW TO UPDATE dm.pkl file (reference dm.data_dict):
 go to ref dir (sostrades_core\tests\data\ref_output\<STUDY_DIR>)

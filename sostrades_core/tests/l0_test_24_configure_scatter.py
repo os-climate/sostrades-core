@@ -245,7 +245,6 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(raw_dm_values, last_dm_values,
                              'After removing discipline, data manager variables list is different than raw list')
 
-
     def test_05_multiinstance_modification_remove_one_aircraft_1_on_coupling_per_scatter(self):
         disc_list_full = ['Scatter', 'Scatter.scatter_node',
                           'Scatter.scatter_node.CH19_H2', 'Scatter.scatter_node.CH19_H2.Disc1', 'Scatter.scatter_node.CH19_H2.Disc2',
@@ -269,16 +268,15 @@ class TestScatterDiscipline(unittest.TestCase):
         # get coupling process builder
         sub_proc = 'test_disc1_disc2_coupling'
         cls_list = self.exec_eng.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
-                                                            mod_id=sub_proc)
+                                                                  mod_id=sub_proc)
 
         # create scatter builder with map and coupling process
         scatter_node = self.exec_eng.factory.create_scatter_builder(
-            'scatter_node','AC_list', cls_list, coupling_per_scatter=True)
+            'scatter_node', 'AC_list', cls_list, coupling_per_scatter=True)
 
         # set scatter builder to root process
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_node)
         self.exec_eng.configure()
-
 
         private_values_multiproduct = {
             f'{self.name}.AC_list': self.list_aircraft_1}
@@ -312,3 +310,10 @@ class TestScatterDiscipline(unittest.TestCase):
 
         self.assertListEqual(disc_list_1_1, disciplines_list,
                              'Discipline between reference and generated are different')
+
+
+if '__main__' == __name__:
+    cls = TestScatterDiscipline()
+    cls.setUp()
+    cls.test_05_multiinstance_modification_remove_one_aircraft_1_on_coupling_per_scatter()
+    cls.tearDown()

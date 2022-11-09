@@ -193,7 +193,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                ProxyDiscipline.STRUCTURING: True}
     }
 
-    DESC_IN.update(ProxyDisciplineBuilder.DESC_IN)
     DESC_OUT = {
         RESIDUALS_HISTORY: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'dataframe',
                             ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}

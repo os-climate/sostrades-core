@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import pandas as pd
 
+import pandas as pd
+from sostrades_core.execution_engine.proxy_discipline_scatter import ProxyDisciplineScatter
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -92,7 +93,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
-            'ns_disc3', 'MyCase.multi_scenarios.scatter_temp.Disc3')
+            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
         self.exec_eng.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
@@ -130,9 +131,9 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             False,
                                                                                                             True],
-                                                                                      'scenario_name':['scenario_1',
-                                                                                                       'scenario_Z',
-                                                                                                       'scenario_2']})
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_Z',
+                                                                                                        'scenario_2']})
         # dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
         #     'scenario_1', 'scenario_2']
 
@@ -150,21 +151,21 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
 
         dict_values[self.study_name +
                     '.multi_scenarios.name_list'] = ['name_1', 'name_2']
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
         dict_values[self.study_name + '.name_1.x'] = x1
         dict_values[self.study_name + '.name_2.x'] = x2
 
@@ -180,13 +181,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         y2 = a2 * x2 + b2
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
 
         # gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.Post-processing.Disc1')[0]
@@ -229,7 +230,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 #             for graph in post_proc_list[0].post_processings:
 #                 graph.to_plotly().show()
 
-    def test_01bis_multi_scenario_of_scatter_with_tool(self):
+    def _test_01bis_multi_scenario_of_scatter_with_tool(self):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
@@ -259,7 +260,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
-            'ns_disc3', 'MyCase.multi_scenarios.scatter_temp.Disc3')
+            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
         self.exec_eng.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
@@ -310,21 +311,21 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
 
         dict_values[self.study_name +
                     '.multi_scenarios.name_list'] = ['name_1', 'name_2']
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
         dict_values[self.study_name + '.name_1.x'] = x1
         dict_values[self.study_name + '.name_2.x'] = x2
 
@@ -340,13 +341,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         y2 = a2 * x2 + b2
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
 
         # gather_disc1 = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.Post-processing.Disc1')[0]
@@ -419,7 +420,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
-            'ns_disc3', 'MyCase.multi_scenarios.scatter_temp.Disc3')
+            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
         self.exec_eng.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
@@ -448,11 +449,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
-                                                                              'scenario_name':['scenario_1',
-                                                                                               'scenario_2']})
-        dict_values[f'{self.study_name}.multi_scenarios.name_list'] = ['name_1', 'name_2']
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.name_list'] = [
+            'name_1', 'name_2']
         # dict_values = {f'{self.study_name}.multi_scenarios.scenario_list': ['scenario_1', 'scenario_2'],
-        #                f'{self.study_name}.multi_scenarios.name_list': ['name_1', 'name_2']}
+        # f'{self.study_name}.multi_scenarios.name_list': ['name_1', 'name_2']}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -479,13 +481,14 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         # exp_tv_str = '\n'.join(exp_tv_list)
         # assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
-            self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                 'scenario_1', 'scenario_2'])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+            if isinstance(disc, ProxyDisciplineScatter):
+                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+                                     'scenario_1', 'scenario_2'])
 
-        dict_values[self.study_name +'.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario' : [True,
+        dict_values[self.study_name + '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             False],
-                                                                                     'scenario_name' : ['scenario_1',
+                                                                                      'scenario_name': ['scenario_1',
                                                                                                         'scenario_2']})
         # dict_values[self.study_name +
         #             '.multi_scenarios.scenario_list'] = ['scenario_1']
@@ -516,9 +519,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
              key.split('.')[-1] not in ProxyCoupling.DESC_IN],
             [])
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
-            self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                 'scenario_1'])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+            if isinstance(disc, ProxyDisciplineScatter):
+                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+                                     'scenario_1'])
 
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
@@ -533,9 +537,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
-            self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                 'scenario_1', 'scenario_2', 'scenario_3'])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+            if isinstance(disc, ProxyDisciplineScatter):
+                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+                                     'scenario_1', 'scenario_2', 'scenario_3'])
 
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [],
@@ -546,9 +551,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
-            self.assertListEqual(
-                list(disc.get_scattered_disciplines().keys()), [])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+            if isinstance(disc, ProxyDisciplineScatter):
+                self.assertListEqual(
+                    list(disc.get_scattered_disciplines().keys()), [])
 
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
@@ -571,9 +577,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
-            self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                 'scenario_A', 'scenario_B'])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+            if isinstance(disc, ProxyDisciplineScatter):
+                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+                                     'scenario_A', 'scenario_B'])
 
         scenario_list = ['scenario_A', 'scenario_B']
         for scenario in scenario_list:
@@ -586,18 +593,18 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_A.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_A.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_B.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_B.Disc3.z'] = 1.5
         dict_values[self.study_name + '.name_1.x'] = x1
         dict_values[self.study_name + '.name_2.x'] = x2
 
@@ -605,16 +612,17 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scatter_temp'):
-            # if isinstance(disc, SoSVerySimpleMultiScenario):
-            self.assertListEqual(
-                [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['scenario_list'])
-            self.assertListEqual(self.exec_eng.dm.get_value(
-                f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_A', 'scenario_B'])
-            self.assertListEqual(
-                list(self.exec_eng.dm.get_disciplines_with_name(
-                    f'{self.study_name}')[0].get_sosdisc_outputs().keys()),
-                ['residuals_history'])
+        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+            if isinstance(disc, ProxyDisciplineScatter):
+                # if isinstance(disc, SoSVerySimpleMultiScenario):
+                self.assertListEqual(
+                    [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['scenario_list'])
+                self.assertListEqual(self.exec_eng.dm.get_value(
+                    f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_A', 'scenario_B'])
+                self.assertListEqual(
+                    list(self.exec_eng.dm.get_disciplines_with_name(
+                        f'{self.study_name}')[0].get_sosdisc_outputs().keys()),
+                    ['residuals_history'])
 
             # elif isinstance(disc, SoSScatterData):
             #     self.assertListEqual(
@@ -659,21 +667,21 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
 
         dict_values[self.study_name +
                     '.multi_scenarios.name_list'] = ['name_1', 'name_2']
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
         dict_values[self.study_name + '.name_1.x'] = x1
         dict_values[self.study_name + '.name_2.x'] = x2
 
@@ -689,13 +697,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         y2 = a2 * x2 + b2
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
 
         dump_dir = join(self.root_dir, self.namespace)
 
@@ -713,13 +721,13 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             dump_dir, exec_eng2, DirectLoadDump())
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_1.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_1.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_1.name_2.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_1.y'), y1)
+            'MyCase.multi_scenarios.scenario_2.name_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scatter_temp.scenario_2.name_2.y'), y2)
+            'MyCase.multi_scenarios.scenario_2.name_2.y'), y2)
         # Clean the dump folder at the end of the test
         self.dirs_to_del.append(
             join(self.root_dir, self.namespace))
@@ -887,7 +895,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
-            'ns_disc3', 'MyCase.multi_scenarios.scatter_temp.Disc3')
+            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
         self.exec_eng.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase.multi_scenarios')
         self.exec_eng.ns_manager.add_ns(
@@ -938,21 +946,21 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             dict_values[self.study_name + '.name_1.a'] = a1
             dict_values[self.study_name + '.name_2.a'] = a2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_1.b'] = b1
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc1.name_2.b'] = b2
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.constant'] = 3
-            dict_values[self.study_name + '.multi_scenarios.scatter_temp.' +
+            dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
 
         dict_values[self.study_name +
                     '.multi_scenarios.name_list'] = ['name_1', 'name_2']
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scatter_temp.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
 
         # missing input x1:
         # dict_values[self.study_name + '.name_1.x'] = x1
@@ -976,7 +984,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                     continue
 
                 if var == f'{self.study_name}.multi_scenarios.scenario_df':
-                    self.assertListEqual(dict_values[var].values.tolist(), dm_value.values.tolist())
+                    self.assertListEqual(
+                        dict_values[var].values.tolist(), dm_value.values.tolist())
                     continue
 
                 if var not in dict_values:
@@ -991,5 +1000,5 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
-    cls.test_01bis_multi_scenario_of_scatter_with_tool()
+    cls.test_01_multi_scenario_of_scatter()
     cls.tearDown()
