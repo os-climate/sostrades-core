@@ -32,22 +32,22 @@ class AbstractSampleGenerator(object):
         '''
         Constructor
         '''
-        self.name = generator_name
+        self.generator_name = generator_name
 
-    def generate_samples(self, **kwargs):
+    def generate_samples(self, *args, **kwargs):
         '''
         Method that generate samples and checks the output formating
         '''
         # check options
-        self._check_options(**kwargs)
+        self._check_options(*args, **kwargs)
         # generate the sampling by subclass
-        samples = self._generate_samples(**kwargs)
+        samples = self._generate_samples(*args, **kwargs)
         # check sample formatting
         self._check_samples(samples)
 
         return samples
 
-    def _generate_samples(self, **kwargs):
+    def _generate_samples(self, *args, **kwargs):
         '''
         Method that generate samples
         To be overloaded by subclass
@@ -73,7 +73,7 @@ class AbstractSampleGenerator(object):
         '''
         raise NotImplementedError
 
-    def _check_options(self, **kwargs):
+    def _check_options(self, *args, **kwargs):
         '''
         Check provided options before sample generation
         To be overloaded by subclass
