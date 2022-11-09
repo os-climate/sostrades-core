@@ -64,7 +64,7 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns(
             'ns_data_ac', self.ee.study_name)
         ns_eval = self.ee.ns_manager.add_ns(
-            'ns_eval', self.ee.study_name)
+            'ns_eval', f'{self.ee.study_name}.multi_scenarios')
 
         # instantiate factory # get instantiator from Discipline class
 
