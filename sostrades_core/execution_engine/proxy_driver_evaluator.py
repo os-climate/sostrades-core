@@ -513,15 +513,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Add subprocess name in namespaces used by the coupling 
         For now only ns_to_update in scatter_map are updated
         '''
-
-        sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
-        ns_to_update = sc_map.get_ns_to_update()
-        for ns_name in ns_to_update:
-            ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
-            updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
-                ns_obj.get_value(), self.SUBCOUPLING_NAME, after_name=self.sos_name)
-            self.ee.ns_manager.add_ns(
-                ns_name, updated_value)
+        if self.map_name is not None:
+            sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
+            ns_to_update = sc_map.get_ns_to_update()
+            for ns_name in ns_to_update:
+                ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
+                updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
+                    ns_obj.get_value(), self.SUBCOUPLING_NAME, after_name=self.sos_name)
+                self.ee.ns_manager.add_ns(
+                    ns_name, updated_value)
 
     def clean_namespaces_with_subprocess(self):
         '''
