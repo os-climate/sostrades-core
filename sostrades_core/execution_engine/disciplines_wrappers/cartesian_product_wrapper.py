@@ -87,7 +87,6 @@ class CartesianProductWrapper(SoSWrapp):
     def __init__(self, sos_name):
         super().__init__(sos_name)
         self.sample_generator = None
-        self.previous_sampling_method = ""
         self.selected_inputs = None
         self.eval_in_list = None
         self.selected_inputs = None
@@ -120,7 +119,7 @@ class CartesianProductWrapper(SoSWrapp):
                 eval_inputs_cp_has_changed = False
                 eval_inputs_cp = proxy.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
                 # 1. Manage update of EVAL_INPUTS_CP
-                if not (eval_inputs_cp.equals(eval_inputs_cp)):
+                if not (eval_inputs_cp.equals(self.eval_inputs_cp)):
                     eval_inputs_cp_has_changed = True
                     self.eval_inputs_cp = eval_inputs_cp
                 # 2. Set or update SCENARIO_SELECTION
