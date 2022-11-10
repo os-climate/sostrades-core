@@ -111,7 +111,7 @@ class CartesianProductWrapper(SoSWrapp):
             elif sampling_method == self.CARTESIAN_PRODUCT:
                 dynamic_inputs.update({self.EVAL_INPUTS_CP: {'type': 'dataframe',
                                                              'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                                                      'full_name': ('string', None, False)},
+                                                                                      'full_name': ('string', None, True)},
                                                              'dataframe_edition_locked': False,
                                                              'structuring': True,
                                                              'visibility': SoSWrapp.SHARED_VISIBILITY,
