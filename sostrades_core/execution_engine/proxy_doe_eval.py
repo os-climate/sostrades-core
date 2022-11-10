@@ -159,7 +159,7 @@ class ProxyDoeEval(ProxyEval):
 
     def __init__(self, sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=None):
         '''
-        Constructor
+        Constructor # FIXME: whole module is to be removed when doeeval tests are adapted
         '''
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
@@ -386,7 +386,7 @@ class ProxyDoeEval(ProxyEval):
         """
         # TODO: Duplicity of code with DoeWrapper. Not treated since in principle DoeEval (together is going to disappear)
         if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator().get_options_desc_in(algo_name)
+            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(algo_name)
             return algo_options_desc_in
         else:
             return self.default_algo_options

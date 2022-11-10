@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_sellar_doe_eval',
+        'label': 'sostrades_core.sos_processes.test.test_cartesian_product',
         'description': '',
         'category': '',
         'version': '',
@@ -35,10 +35,10 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
 
         mod_dict_doe = {
-            'DoE_Sampling': 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'}
-        doe_builder = self.create_builder_list(mod_dict_doe,
-                                               ns_dict={
-                                                   'ns_doe1': f'{self.ee.study_name}.DoE_Sampling'}
-                                               )
+            'CP': 'sostrades_core.execution_engine.disciplines_wrappers.cartesian_product_wrapper.CartesianProductWrapper'}
+        builder = self.create_builder_list(mod_dict_doe,
+                                           ns_dict={
+                                               'ns_cp': f'{self.ee.study_name}.CP'}
+                                           )
 
-        return doe_builder
+        return builder

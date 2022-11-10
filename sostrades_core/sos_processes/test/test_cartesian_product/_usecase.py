@@ -33,7 +33,7 @@ class Study(StudyManager):
         dspace_dict = {'variable': ['x', 'z'],
                        'lower_bnd': [[0.], [-10., 0.]],
                        'upper_bnd': [[10.], [10., 10.]]
-                       }
+                        }
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
@@ -45,10 +45,10 @@ class Study(StudyManager):
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{ns}.DoE_Sampling.sampling_algo'] = "fullfact"
-        disc_dict[f'{ns}.DoE_Sampling.design_space'] = dspace
-        disc_dict[f'{ns}.DoE_Sampling.algo_options'] = {'n_samples': n_samples}
-        disc_dict[f'{ns}.DoE_Sampling.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.DoE.sampling_algo'] = "fullfact"
+        disc_dict[f'{ns}.DoE.design_space'] = dspace
+        disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{ns}.DoE.eval_inputs'] = input_selection_x_z
 
         return [disc_dict]
 

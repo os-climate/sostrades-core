@@ -91,11 +91,11 @@ class ScatterMap:
             base_namespace = local_namespace
 
         ns_id = self.ee.ns_manager.add_ns(
-            self.get_scatter_ns(), f'{base_namespace}.{scatter_name}')
+            self.get_scatter_ns(), f'{base_namespace}.{scatter_name}', add_in_shared_ns_dict=True)
 
         return ns_id
 
-    def update_ns(self, old_ns, name, after_name):
+    def update_ns(self, old_ns, name, after_name, add_in_shared_ns_dict=True):
         '''
         Create namespaces for ns_to_update and add to shared_ns_dict
         '''
@@ -105,7 +105,7 @@ class ScatterMap:
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
                 old_ns[ns_name].get_value(), name, after_name=after_name)
             ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value)
+                ns_name, updated_value, add_in_shared_ns_dict=add_in_shared_ns_dict)
             ns_ids.append(ns_id)
 
         return ns_ids

@@ -118,7 +118,7 @@ class NamespaceManager:
 
         return ns_ids
 
-    def add_ns(self, name, ns_value):
+    def add_ns(self, name, ns_value, add_in_shared_ns_dict=True):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -139,7 +139,8 @@ class NamespaceManager:
             self.all_ns_dict[ns.get_ns_id()] = ns
         # This shared_ns_dict delete the namespace if already exist: new one
         # has priority
-        self.shared_ns_dict[name] = ns
+        if add_in_shared_ns_dict:
+            self.shared_ns_dict[name] = ns
         self.ns_object_map[id(ns)] = ns
 
         return ns.get_ns_id()

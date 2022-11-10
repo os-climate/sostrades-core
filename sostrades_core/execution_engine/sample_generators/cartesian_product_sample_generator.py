@@ -15,8 +15,8 @@ limitations under the License.
 '''
 from builtins import NotImplementedError
 
-from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator
-
+from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
+    SampleTypeError
 
 import pandas as pd
 import numpy as np
@@ -32,15 +32,17 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 
-class SampleTypeError(TypeError):
+class CartesianProductSampleTypeError(SampleTypeError):
     pass
 
 
 class CartesianProductSampleGenerator(AbstractSampleGenerator):
     '''
-    Abstract class that generates sampling
+    Caresian Product class that generates sampling
     '''
     GENERATOR_NAME = "CARTESIAN_PRODUCT_GENERATOR"
+
+    GENERATOR_NAME = "DOE_GENERATOR"
 
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
@@ -55,28 +57,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         Constructor
         '''
         super().__init__(self.GENERATOR_NAME)
-
-    def generate_samples(self, dict_of_list_values):
-        '''
-        Method that generate samples based as a cartesian product of list of values for selected variables.
-        Selected variables are provided in the keys of "dict_of_list_values".
-
-        Arguments:
-            dict_of_list_values (dict): for each selected variables it provides a list of values to be combined in a cartesian product
-
-        Returns:
-            samples_df (data_frame) : generated samples
-                                      dataframe of a matrix of n raws  (each raw is an input point to be evaluated)  
-                                      any variable of dim m is an array of dim m in a single column of the matrix            
-        '''
-
-        # generate the sampling by subclass
-        samples_df = self._generate_samples(dict_of_list_values)
-
-        # check sample formatting
-        self._check_samples(samples_df)
-
-        return samples_df
 
     def _check_samples(self, samples_df):
         '''

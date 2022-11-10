@@ -104,7 +104,7 @@ class DoeEval(EvalWrapper):
                               'namespace': 'ns_doe_eval'}
     }
 
-    def __init__(self, sos_name):
+    def __init__(self, sos_name): # FIXME: whole module is to be removed when doeeval tests are adapted
         super().__init__(sos_name)
         self.sample_generator = None
 
