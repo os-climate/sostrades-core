@@ -117,6 +117,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_type = []
         self.eval_out_list_size = []
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
+        self.old_samples_df = None
 
     def get_desc_in_out(self, io_type):
         """
@@ -721,22 +722,30 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                          }}
 
         if 'samples_df' in disc_in and selected_inputs_has_changed:  #This reflects 'samples_df' dynamic input has been configured and that eval_inputs have changed
-            all_NaN = True
-            if list(disc_in['samples_df']['value'].keys()) == list(default_custom_dataframe.keys()):  # This reflects eval_inputs has changed and samples are not empty
+
+            all_None = True
+            from_samples = list(disc_in['samples_df']['value'].keys())
+            from_default = list(default_custom_dataframe.keys())
+            if from_samples != from_default:
+                if len(from_samples) < len(from_default):
+                    element_missing = list(set(from_default) - set(from_samples))
+                    disc_in['samples_df']['value'][element_missing] = None
+                else:
+                    disc_in['samples_df']['value'] = disc_in['samples_df']['value'][from_default]
+                disc_in['samples_df']['value'] = disc_in['samples_df']['value'].reindex(sorted(disc_in['samples_df']['value'].columns), axis=1)
+            else:  # This reflects eval_inputs has changed and samples are not empty
                 for column in list(disc_in['samples_df']['value'].keys()):
                     for element in list(disc_in['samples_df']['value'][column]):
-                        if math.isnan(element):
+                        if element == None:
                             pass
                         else:
-                            all_NaN = False
+                            all_None = False
                             break
-                    if all_NaN:  # If eval_inputs has changed but new samples have not been added, the column must be empty
-                        disc_in['samples_df']['value'][column] = NaN
+                    if all_None:  # If eval_inputs has changed but new samples have not been added, the column must be empty
+                        disc_in['samples_df']['value'][column] = None
                     else:        # If eval_inputs has changed and new samples have been added, the column must as is (with samples)
                         pass
-            else:  # This reflects eval_inputs has changed but samples are empty
-                disc_in['samples_df']['value'] = default_custom_dataframe
-            # disc_in['samples_df']['value'] = default_custom_dataframe
+            # # disc_in['samples_df']['value'] = default_custom_dataframe
             disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
         return dynamic_inputs
 

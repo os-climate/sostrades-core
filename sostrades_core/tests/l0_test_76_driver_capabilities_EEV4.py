@@ -830,30 +830,28 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        x_values = [NaN, NaN, NaN, NaN, NaN]
-        new_samples_dict2 = {'x': x_values, 'Eval.Disc1.a': a_values}
+        new_samples_dict2 = {'Eval.Disc1.a': a_values}
         new_samples_df2 = pd.DataFrame(new_samples_dict2)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df2
 
-        # Reconfigure et re-execute
+        # Reconfigure
         exec_eng.load_study_from_input_dict(disc_dict)
-        exec_eng.execute()
 
         # Check samples
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
-        eval_disc_samples = eval_disc.get_sosdisc_outputs(
-            'samples_inputs_df')
+        eval_disc_samples = eval_disc.get_sosdisc_inputs(
+            'samples_df')
         # self.assertEqual(list(eval_disc_samples['x'][0:-1]), x_values)
-        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
-        x_all_NaN = True
-        for element in list(eval_disc_samples['x'][0:-1]):
-            if math.isnan(element):
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
+        x_all_None = True
+        for element in list(eval_disc_samples['x']):
+            if element == None:
                 pass
             else:
-                x_all_NaN = False
+                x_all_None = False
                 break
-        assert x_all_NaN == True
+        assert x_all_None == True
 
 
 
