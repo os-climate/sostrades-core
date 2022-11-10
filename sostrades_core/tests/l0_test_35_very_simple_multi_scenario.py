@@ -1083,7 +1083,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        # check tree view after scenario_2 deletion to validate cleaning #TODO: reactivate checks when treeview is fixed
+        # check tree view after scenario_2 deletion to validate cleaning #TODO:
+        # reactivate checks when treeview is fixed
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ multi_scenarios',
@@ -1100,7 +1101,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi(self):
+    def test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi(self):
         # scatter build map
         ac_map = {'input_name': 'name_list',
                   'input_type': 'string_list',
@@ -1163,9 +1164,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'name_1', 'name_2']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
-        self.exec_eng.display_treeview_nodes()
+        self.exec_eng.display_treeview_nodes(display_variables=True)
 
-        # check tree view mono_instance #TODO: reactivate checks when treeview is fixed
+        # check tree view mono_instance #TODO: reactivate checks when treeview
+        # is fixed
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ multi_scenarios',
@@ -1173,14 +1175,15 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                        '\t\t\t|_ Disc1',
                        '\t\t\t\t|_ name_1',
                        '\t\t\t\t|_ name_2',
-                       '\t\t\t|_ Disc3'
+                       '\t\t\t|_ Disc3',
                        '\t|_ Post-processing',
                        # '\t\t|_ Disc1', # TODO: reactivate when activating gather role
                        '\t\t|_ Disc3',
                        '\t|_ name_1',
                        '\t|_ name_2']
         exp_tv_str = '\n'.join(exp_tv_list)
-        # assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+        print(exp_tv_str)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
             if isinstance(disc, ProxyDisciplineScatter):
@@ -1217,8 +1220,9 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
-    cls._test_01bis_multi_scenario_of_scatter_with_tool()
+    cls.test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi()
     cls.tearDown()
