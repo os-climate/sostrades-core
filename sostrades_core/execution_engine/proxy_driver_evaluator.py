@@ -283,6 +283,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.clean_children(self.built_proxy_disciplines)
                 if self.old_builder_mode == self.MONO_INSTANCE:
                     self.clean_namespaces_with_subprocess()
+                    self.eval_process_builder = None
+                elif self.old_builder_mode == self.MULTI_INSTANCE:
+                    self.scatter_process_builder = None
                 self.old_builder_mode = copy.copy(builder_mode)
             if builder_mode == self.MULTI_INSTANCE:
                 builder_list = self.prepare_multi_instance_build()

@@ -980,7 +980,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                     # user defined inputs
                     self.assertEqual(dict_values[var], dm_value)
 
-    def _test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono(self):
+    def test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono(self):
         # scatter build map
         ac_map = {'input_name': 'name_list',
                   'input_type': 'string_list',
@@ -1224,5 +1224,5 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
-    cls.test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi()
+    cls.test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono()
     cls.tearDown()
