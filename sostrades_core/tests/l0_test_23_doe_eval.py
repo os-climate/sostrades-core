@@ -214,7 +214,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         wrong_values = 5 * [0.0]
 
-        samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
+        samples_dict = {'x': x_values, 'z': z_values,
+                        'wrong_values': wrong_values}
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -320,7 +321,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         wrong_values = 5 * [0.0]
 
-        samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
+        samples_dict = {'x': x_values, 'z': z_values,
+                        'wrong_values': wrong_values}
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -356,7 +358,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
 
-
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
             'samples_inputs_df')
         doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_dict')
@@ -375,9 +376,11 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_4': array([7.644306621667905]),
                                       'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
         for key in doe_disc_y2.keys():
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+            self.assertAlmostEqual(
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
     def _test_3_doe_eval_execution_lhs_on_1_var(self):
         """ this test is a non regression test on doe eval
@@ -551,17 +554,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_samples), n_samples + 1)
         self.assertEqual(len(eval_disc_obj), n_samples + 1)
         reference_dict_eval_disc_y1 = {'scenario_1': array([10.491019856682016]), 'scenario_2': array([7.247824531594309]),
-                                      'scenario_3': array([2.9753409599263483]), 'scenario_4': array([1.7522749587335193]),
-                                      'scenario_5': array([9.384097972066053]), 'scenario_6': array([8.36704386923391]),
-                                      'scenario_7': array([4.479056921478663]), 'scenario_8': array([5.286891081070988]),
-                                      'scenario_9': array([3.240108355137796]), 'scenario_10': array([6.194561090631401]),
-                                      'reference': array([2.29689011157193])}
+                                       'scenario_3': array([2.9753409599263483]), 'scenario_4': array([1.7522749587335193]),
+                                       'scenario_5': array([9.384097972066053]), 'scenario_6': array([8.36704386923391]),
+                                       'scenario_7': array([4.479056921478663]), 'scenario_8': array([5.286891081070988]),
+                                       'scenario_9': array([3.240108355137796]), 'scenario_10': array([6.194561090631401]),
+                                       'reference': array([2.29689011157193])}
         reference_dict_eval_disc_y2 = {'scenario_1': array([5.238984386606706]), 'scenario_2': array([4.692178398916815]),
-                                      'scenario_3': array([3.7249176675790494]), 'scenario_4': array([3.3237352298452736]),
-                                      'scenario_5': array([5.063347510823095]), 'scenario_6': array([4.892584289045681]),
-                                      'scenario_7': array([4.116378255765888]), 'scenario_8': array([4.2993240487306235]),
-                                      'scenario_9': array([3.8000300983977455]), 'scenario_10': array([4.488887520686984]),
-                                      'reference': array([3.5155494421403515])}
+                                       'scenario_3': array([3.7249176675790494]), 'scenario_4': array([3.3237352298452736]),
+                                       'scenario_5': array([5.063347510823095]), 'scenario_6': array([4.892584289045681]),
+                                       'scenario_7': array([4.116378255765888]), 'scenario_8': array([4.2993240487306235]),
+                                       'scenario_9': array([3.8000300983977455]), 'scenario_10': array([4.488887520686984]),
+                                       'reference': array([3.5155494421403515])}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
                 eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
@@ -654,7 +657,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.DoEEval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        default_algo_options_lhs, algo_options_descr_dict = DoeSampleGenerator().get_options_desc_in(
+        default_algo_options_lhs, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(
             algo_name)
 
         self.assertDictEqual(exec_eng.dm.get_value(
@@ -666,14 +669,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # trigger a reconfiguration after options and design space changes
         n_samples = 10
-        face = 'faced'
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face},
+        #face = 'faced'
+        # disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face},
+        #             'doe.DoEEval.design_space': dspace_x_eval}
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples},
                      'doe.DoEEval.design_space': dspace_x_eval}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertEqual(exec_eng.dm.get_value(
             'doe.DoEEval.algo_options')['n_samples'], n_samples)
-        self.assertEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.algo_options')['face'], face)
+        # self.assertEqual(exec_eng.dm.get_value(
+        #    'doe.DoEEval.algo_options')['face'], face)
 
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
@@ -682,20 +687,23 @@ class TestSoSDOEScenario(unittest.TestCase):
         algo_name = "fullfact"
         disc_dict = {'doe.DoEEval.sampling_algo': algo_name}
         exec_eng.load_study_from_input_dict(disc_dict)
-        default_algo_options_fullfact, algo_options_descr_dict = DoeSampleGenerator().get_options_desc_in(
+        default_algo_options_fullfact, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(
             algo_name)
         self.assertDictEqual(exec_eng.dm.get_value(
             'doe.DoEEval.algo_options'), default_algo_options_fullfact)
         assert_frame_equal(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
+        # disc_dict = {'doe.DoEEval.algo_options': {
+        #    'n_samples': n_samples, 'face': face}}
         disc_dict = {'doe.DoEEval.algo_options': {
-            'n_samples': n_samples, 'face': face}}
+            'n_samples': n_samples}}
+
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertEqual(exec_eng.dm.get_value(
             'doe.DoEEval.algo_options')['n_samples'], n_samples)
-        self.assertEqual(exec_eng.dm.get_value(
-            'doe.DoEEval.algo_options')['face'], face)
+        # self.assertEqual(exec_eng.dm.get_value(
+        #    'doe.DoEEval.algo_options')['face'], face)
 
         # trigger a reconfiguration after eval_inputs and eval_outputs changes
         disc_dict = {'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
@@ -714,12 +722,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertTrue(exec_eng.dm.get_value('doe.DoEEval.design_space').reset_index(drop=True)['variable'].equals(
             dspace_x_z.reset_index(drop=True)['variable']))
 
-        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face},
+        # disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples, 'face': face},
+        #             'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
+        #             'doe.DoEEval.design_space': dspace_eval}
+
+        disc_dict = {'doe.DoEEval.algo_options': {'n_samples': n_samples},
                      'doe.DoEEval.eval_outputs': self.output_selection_obj_y1_y2,
                      'doe.DoEEval.design_space': dspace_eval}
+
         exec_eng.load_study_from_input_dict(disc_dict)
         algo_full_options = default_algo_options_fullfact
-        algo_full_options.update({'n_samples': n_samples, 'face': face})
+        #algo_full_options.update({'n_samples': n_samples, 'face': face})
+        algo_full_options.update({'n_samples': n_samples})
 
         self.assertDictEqual(exec_eng.dm.get_value('doe.DoEEval.algo_options'),
                              algo_full_options)
@@ -857,7 +871,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         proc_name = "test_sellar_eval"
         eval_builder = factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id=proc_name)
+                                                        mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             eval_builder)
@@ -1200,6 +1214,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_obj), 6)
         self.assertEqual(len(eval_disc_y1), 6)
         self.assertEqual(len(eval_disc_y2), 6)
+
     def _test_8_doe_eval_parallel_execution(self):
         """ this tests evaluates the ability of the doe eval
         to store reference scenario value in dm when running
@@ -1866,7 +1881,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         centers = [5]
         disc_dict[f'{ns}.DoE.sampling_algo'] = 'OT_FACTORIAL'
         disc_dict[f'{ns}.DoE.design_space'] = dspace_a
-        disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
+        disc_dict[f'{ns}.DoE.algo_options'] = {
+            'n_samples': n_samples, 'levels': levels, 'centers': centers}
         disc_dict[f'{ns}.eval_inputs'] = input_selection_a
 
         # Eval inputs
@@ -1903,6 +1919,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(eval_disc_ind[key],
                                    private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
             i += 1
+
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
