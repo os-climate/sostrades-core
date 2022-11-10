@@ -28,11 +28,12 @@ unit test for doe scenario
 """
 
 import unittest
-from numpy import array, std
+from numpy import array, std, NaN
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 import os
 from os.path import dirname, join
+import math
 
 
 class UnitTestHandler(Handler):
@@ -651,6 +652,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
 
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
             'Eval.Disc1.indicator_dict')
@@ -709,6 +711,151 @@ class TestSoSDOEScenario(unittest.TestCase):
                 var_tuple = (var, identifier)
                 self.assertEqual(identifier, id(
                     exec_eng.root_process._data_in[var_tuple]['ns_reference']))
+
+    def test_8_Eval_reconfiguration_adding_again_User_Defined_samples_if_still_in_eval_inputs(self):
+        """
+        This test checks that the custom samples applied to an Eval driver delivers expected outputs. The user_defined
+        sampling is applied to variables that are not in the root process, to check that namespacing works properly.
+        It is a non regression test
+        """
+
+        study_name = 'root'
+        ns = study_name
+
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        proc_name = "test_disc1_eval"
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                        mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            eval_builder)
+
+        exec_eng.configure()
+        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
+
+        exp_tv_list = [f'Nodes representation for Treeview {ns}',
+                       '|_ root',
+                       f'\t|_ Eval',
+                       '\t\t|_ Disc1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+
+        # -- Eval inputs
+        input_selection_a = {'selected_input': [False, True, False],
+                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_a = pd.DataFrame(input_selection_a)
+
+        output_selection_ind = {'selected_output': [False, True],
+                                'full_name': ['y', 'Eval.Disc1.indicator']}
+        output_selection_ind = pd.DataFrame(output_selection_ind)
+
+        disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
+                     f'{ns}.Eval.eval_outputs': output_selection_ind}
+
+        a_values = [array([2.0]), array([4.0]), array(
+            [6.0]), array([8.0]), array([10.0])]
+
+        samples_dict = {'Eval.Disc1.a': a_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{ns}.Eval.samples_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # -- Discipline inputs
+        private_values = {
+            f'{ns}.x': array([10.]),
+            f'{ns}.Eval.Disc1.a': array([5.]),
+            f'{ns}.Eval.Disc1.b': array([25431.]),
+            f'{ns}.y': array([4.]),
+            f'{ns}.Eval.Disc1.indicator': array([53.])}
+        exec_eng.load_study_from_input_dict(private_values)
+
+        exec_eng.execute()
+
+        root_outputs = exec_eng.root_process.get_output_data_names()
+        self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
+
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
+
+        eval_disc_samples = eval_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
+
+        eval_disc_ind = eval_disc.get_sosdisc_outputs(
+            'Eval.Disc1.indicator_dict')
+
+        self.assertEqual(len(eval_disc_ind), 6)
+        i = 0
+        for key in eval_disc_ind.keys():
+            self.assertAlmostEqual(eval_disc_ind[key],
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
+            i += 1
+
+        # Change of eval_inputs with addition of samples
+        input_selection_a_b = {'selected_input': [False, True, True],
+                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_a_b = pd.DataFrame(input_selection_a_b)
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a_b
+
+        # Change of samples
+        b_values = [array([1.0]), array([3.0]), array(
+            [5.0]), NaN, NaN]
+        new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
+        new_samples_df = pd.DataFrame(new_samples_dict)
+        disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
+
+        # Reconfigure et re-execute
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+
+        # Check samples
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
+        eval_disc_samples = eval_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.b'][0:-1]), b_values)
+
+        # Change of eval_inputs without adding samples
+        # Change of eval_inputs
+        input_selection_x_a = {'selected_input': [True, True, False],
+                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_x_a = pd.DataFrame(input_selection_x_a)
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
+
+        # Change of samples
+        x_values = [NaN, NaN, NaN, NaN, NaN]
+        new_samples_dict2 = {'x': x_values, 'Eval.Disc1.a': a_values}
+        new_samples_df2 = pd.DataFrame(new_samples_dict2)
+        disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df2
+
+        # Reconfigure et re-execute
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+
+        # Check samples
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
+        eval_disc_samples = eval_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        # self.assertEqual(list(eval_disc_samples['x'][0:-1]), x_values)
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
+        x_all_NaN = True
+        for element in list(eval_disc_samples['x'][0:-1]):
+            if math.isnan(element):
+                pass
+            else:
+                x_all_NaN = False
+                break
+        assert x_all_NaN == True
+
+
 
 
 

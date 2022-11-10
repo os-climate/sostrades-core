@@ -22,6 +22,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import pandas as pd
 import copy
 from numpy import NaN
+import math
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -671,7 +672,22 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                          }}
 
         if 'samples_df' in disc_in and selected_inputs_has_changed:
-            disc_in['samples_df']['value'] = default_custom_dataframe
+            all_NaN = True
+            if list(disc_in['samples_df']['value'].keys()) == list(default_custom_dataframe.keys()):  # This reflects eval_inputs has changed and samples are not empty
+                for column in list(disc_in['samples_df']['value'].keys()):
+                    for element in list(disc_in['samples_df']['value'][column]):
+                        if math.isnan(element):
+                            pass
+                        else:
+                            all_NaN = False
+                            break
+                    if all_NaN:  # If eval_inputs has changed but new samples have not been added, the column must be empty
+                        disc_in['samples_df']['value'][column] = NaN
+                    else:        # If eval_inputs has changed and new samples have been added, the column must as is (with samples)
+                        pass
+            else:  # This reflects eval_inputs has changed but samples are empty
+                disc_in['samples_df']['value'] = default_custom_dataframe
+            # disc_in['samples_df']['value'] = default_custom_dataframe
             disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
         return dynamic_inputs
 
