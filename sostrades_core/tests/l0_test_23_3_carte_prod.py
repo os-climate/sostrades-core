@@ -58,12 +58,16 @@ class TestCartesianProduct(unittest.TestCase):
             'x': [0., 3., 4., 5., 7.],
             'z': [[-10., 0.], [-5., 4.], [10, 10]]
         }
+        list_of_values = [[], dict_of_list_values['x'],
+                          [], [], dict_of_list_values['z']]
 
-        input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
-                                             'y_2',
-                                             'z']}
-        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+        input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
+                                  'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                'y_2',
+                                                'z'],
+                                  'list_of_values': list_of_values
+                                  }
+        self.input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
         self.repo = 'sostrades_core.sos_processes.test'
 
@@ -88,39 +92,12 @@ class TestCartesianProduct(unittest.TestCase):
         exec_eng.configure()
 
         #
-        dict_of_list_values = {
-            'x': [0., 3., 4., 5., 7.],
-            'z': [[-10., 0.], [-5., 4.], [10, 10]]
-        }
-        variable_list = dict_of_list_values.keys()
-
-        targeted_samples = [
-            [0.0, [-10.0, 0.0]],
-            [0.0, [-5.0, 4.0]],
-            [0.0, [10, 10]],
-            [3.0, [-10.0, 0.0]],
-            [3.0, [-5.0, 4.0]],
-            [3.0, [10, 10]],
-            [4.0, [-10.0, 0.0]],
-            [4.0, [-5.0, 4.0]],
-            [4.0, [10, 10]],
-            [5.0, [-10.0, 0.0]],
-            [5.0, [-5.0, 4.0]],
-            [5.0, [10, 10]],
-            [7.0, [-10.0, 0.0]],
-            [7.0, [-5.0, 4.0]],
-            [7.0, [10, 10]]]
-
-        target_samples_df = pd.DataFrame(
-            targeted_samples, columns=variable_list)
-
-        scenario_selection = target_samples_df
 
         # -- set up disciplines in Scenario
         # CP inputs
         disc_dict = {}
         disc_dict[f'{self.ns}.CP.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_z
         #disc_dict[f'{self.ns}.CP.scenario_selection'] = scenario_selection
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -144,6 +121,27 @@ class TestCartesianProduct(unittest.TestCase):
 
         print(disc_samples)
 
+        targeted_samples = [
+            [0.0, [-10.0, 0.0]],
+            [0.0, [-5.0, 4.0]],
+            [0.0, [10, 10]],
+            [3.0, [-10.0, 0.0]],
+            [3.0, [-5.0, 4.0]],
+            [3.0, [10, 10]],
+            [4.0, [-10.0, 0.0]],
+            [4.0, [-5.0, 4.0]],
+            [4.0, [10, 10]],
+            [5.0, [-10.0, 0.0]],
+            [5.0, [-5.0, 4.0]],
+            [5.0, [10, 10]],
+            [7.0, [-10.0, 0.0]],
+            [7.0, [-5.0, 4.0]],
+            [7.0, [10, 10]]]
+
+        variable_list = ['x', 'z']
+        target_samples_df = pd.DataFrame(
+            targeted_samples, columns=variable_list)
+
     def test_2_cartesian_product_step_by_step_execution(self):
         """
         This is a test of the cartesian product wrapper
@@ -165,34 +163,6 @@ class TestCartesianProduct(unittest.TestCase):
         exec_eng.configure()
 
         #
-        dict_of_list_values = {
-            'x': [0., 3., 4., 5., 7.],
-            'z': [[-10., 0.], [-5., 4.], [10, 10]]
-        }
-        variable_list = dict_of_list_values.keys()
-
-        targeted_samples = [
-            [0.0, [-10.0, 0.0]],
-            [0.0, [-5.0, 4.0]],
-            [0.0, [10, 10]],
-            [3.0, [-10.0, 0.0]],
-            [3.0, [-5.0, 4.0]],
-            [3.0, [10, 10]],
-            [4.0, [-10.0, 0.0]],
-            [4.0, [-5.0, 4.0]],
-            [4.0, [10, 10]],
-            [5.0, [-10.0, 0.0]],
-            [5.0, [-5.0, 4.0]],
-            [5.0, [10, 10]],
-            [7.0, [-10.0, 0.0]],
-            [7.0, [-5.0, 4.0]],
-            [7.0, [10, 10]]]
-
-        target_samples_df = pd.DataFrame(
-            targeted_samples, columns=variable_list)
-
-        scenario_selection = target_samples_df
-
         # -- set up disciplines in Scenario
         # 1. Input sampling_method
         # CP inputs
@@ -226,8 +196,10 @@ class TestCartesianProduct(unittest.TestCase):
         # 2. Input eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.display_treeview_nodes(True)
 
         disc_sampling_method = disc.get_sosdisc_inputs(
             'sampling_method')
