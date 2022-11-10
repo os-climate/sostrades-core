@@ -51,25 +51,37 @@ class UnitTestHandler(Handler):
 class TestCartesianProduct(unittest.TestCase):
 
     def setUp(self):
+        self.repo = 'sostrades_core.sos_processes.test'
         self.study_name = 'cp'
         self.ns = f'{self.study_name}'
 
         dict_of_list_values = {
             'x': [0., 3., 4., 5., 7.],
+            'y_1': [1.0, 2.0],
             'z': [[-10., 0.], [-5., 4.], [10, 10]]
         }
-        list_of_values = [[], dict_of_list_values['x'],
-                          [], [], dict_of_list_values['z']]
+        list_of_values_x_z = [[], dict_of_list_values['x'],
+                              [], [], dict_of_list_values['z']]
 
         input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
                                   'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                                 'y_2',
                                                 'z'],
-                                  'list_of_values': list_of_values
+                                  'list_of_values': list_of_values_x_z
                                   }
         self.input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
-        self.repo = 'sostrades_core.sos_processes.test'
+        list_of_values_x_y_1_z = [[], dict_of_list_values['x'],
+                                  dict_of_list_values['y_1'], [], dict_of_list_values['z']]
+
+        input_selection_cp_x_y_1_z = {'selected_input': [False, True, True, False, True],
+                                      'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                    'y_2',
+                                                    'z'],
+                                      'list_of_values': list_of_values_x_y_1_z
+                                      }
+        self.input_selection_cp_x_y_1_z = pd.DataFrame(
+            input_selection_cp_x_y_1_z)
 
     def test_1_cartesian_product_execution(self):
         """
@@ -98,7 +110,7 @@ class TestCartesianProduct(unittest.TestCase):
         disc_dict = {}
         disc_dict[f'{self.ns}.CP.sampling_method'] = 'cartesian_product'
         disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_z
-        #disc_dict[f'{self.ns}.CP.scenario_selection'] = scenario_selection
+        #disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -109,6 +121,22 @@ class TestCartesianProduct(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
         exec_eng.display_treeview_nodes(True)
+
+        disc = exec_eng.root_process.proxy_disciplines[0]
+        disc_sampling_method = disc.get_sosdisc_inputs(
+            'sampling_method')
+        print('sampling__method:')
+        print(disc_sampling_method)
+
+        disc_eval_inputs_cp = disc.get_sosdisc_inputs(
+            'eval_inputs_cp')
+        print('eval_inputs_cp 2:')
+        print(disc_eval_inputs_cp)
+
+        disc_generated_samples = disc.get_sosdisc_inputs(
+            'generated_samples')
+        print('generated_samples:')
+        print(disc_generated_samples)
 
         exec_eng.execute()
 
@@ -211,10 +239,33 @@ class TestCartesianProduct(unittest.TestCase):
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        disc_scenario_selection = disc.get_sosdisc_inputs(
-            'scenario_selection')
-        print('scenario_selection:')
-        print(disc_scenario_selection)
+        disc_generated_samples = disc.get_sosdisc_inputs(
+            'generated_samples')
+        print('generated_samples:')
+        print(disc_generated_samples)
+
+        # 3. Input an updated eval_inputs_cp
+        # CP inputs
+        disc_dict = {}
+        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.display_treeview_nodes(True)
+
+        disc_sampling_method = disc.get_sosdisc_inputs(
+            'sampling_method')
+        print('sampling__method:')
+        print(disc_sampling_method)
+
+        disc_eval_inputs_cp = disc.get_sosdisc_inputs(
+            'eval_inputs_cp')
+        print('eval_inputs_cp 3:')
+        print(disc_eval_inputs_cp)
+
+        disc_generated_samples = disc.get_sosdisc_inputs(
+            'generated_samples')
+        print('generated_samples:')
+        print(disc_generated_samples)
 
         exec_eng.execute()
 
