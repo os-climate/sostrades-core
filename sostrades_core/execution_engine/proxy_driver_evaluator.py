@@ -413,18 +413,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         # get a reference to the scatter discipline
         # TODO: refactor code below when scatter as a tool is ready /!\
-        scatter_node = self.ee.ns_manager.get_local_namespace_value(
-            self)
 
-        scatter_disc_list = self.dm.get_disciplines_with_name(scatter_node)
-        if scatter_disc_list:  # otherwise nothing is possible
-            # get scatter disc
-            scatter_disc = [
-                disc for disc in scatter_disc_list if hasattr(disc, 'sc_map')][0]
-            if self.SCENARIO_DF not in self.get_data_in():
-                # add scenario_df to inst_desc_in in the same namespace defined
-                # by the scatter map
-                input_ns = scatter_disc.sc_map.get_input_ns()
+        if self.builder_tool_cls:
+            if self.builder_tool:
+                input_ns = self.builder_tool.sc_map.get_input_ns()
                 scenario_df_input = {self.SCENARIO_DF: {
                     self.TYPE: 'dataframe',
                     self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
@@ -436,28 +428,53 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.EDITABLE: True,
                     self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
                 self.add_inputs(scenario_df_input)
-            else:
-                # TODO: refactor code below when scatter as a tool is ready /!\
-                # brutally set the scatter node parameters to comply with scenario_df, which implies that scenario_df
-                # has priority over the dynamic input of the scatter node
-                # (which is bound to disappear)
-                scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-                self.scatter_list = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                                                == True][self.SCENARIO_NAME].values.tolist()
-                scatter_input_name = scatter_disc.sc_map.get_input_name()
-                scatter_disc_in = scatter_disc.get_data_in()
-                if scatter_input_name in scatter_disc_in:
-                    self.dm.set_data(scatter_disc.get_var_full_name(scatter_input_name, scatter_disc_in), self.VALUE,
-                                     self.scatter_list, check_value=False)
+        else:
+
+            scatter_node = self.ee.ns_manager.get_local_namespace_value(
+                self)
+
+            scatter_disc_list = self.dm.get_disciplines_with_name(scatter_node)
+            if scatter_disc_list:  # otherwise nothing is possible
+                # get scatter disc
+                scatter_disc = [
+                    disc for disc in scatter_disc_list if hasattr(disc, 'sc_map')][0]
+                if self.SCENARIO_DF not in self.get_data_in():
+                    # add scenario_df to inst_desc_in in the same namespace defined
+                    # by the scatter map
+                    input_ns = scatter_disc.sc_map.get_input_ns()
+                    scenario_df_input = {self.SCENARIO_DF: {
+                        self.TYPE: 'dataframe',
+                        self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
+                        self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
+                                                    self.SCENARIO_NAME: ('string', None, True)},
+                        self.DATAFRAME_EDITION_LOCKED: False,
+                        self.VISIBILITY: self.SHARED_VISIBILITY,
+                        self.NAMESPACE: input_ns,
+                        self.EDITABLE: True,
+                        self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
+                    self.add_inputs(scenario_df_input)
+                else:
+                    # TODO: refactor code below when scatter as a tool is ready /!\
+                    # brutally set the scatter node parameters to comply with scenario_df, which implies that scenario_df
+                    # has priority over the dynamic input of the scatter node
+                    # (which is bound to disappear)
+                    scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+                    self.scatter_list = scenario_df[scenario_df[self.SELECTED_SCENARIO]
+                                                    == True][self.SCENARIO_NAME].values.tolist()
+                    scatter_input_name = scatter_disc.sc_map.get_input_name()
+                    scatter_disc_in = scatter_disc.get_data_in()
+                    if scatter_input_name in scatter_disc_in:
+                        self.dm.set_data(scatter_disc.get_var_full_name(scatter_input_name, scatter_disc_in), self.VALUE,
+                                         self.scatter_list, check_value=False)
 
     def configure_tool(self):
         if self.builder_tool is None:
             self.builder_tool = self.builder_tool_cls(
                 'scatter_tool', self.ee, self.map_name, self.cls_builder, driver=self, coupling_per_scatter=False)
-            scatter_list_desc_in = self.builder_tool.get_scatter_list_desc_in()
-            self.add_inputs(scatter_list_desc_in)
+#             scatter_list_desc_in = self.builder_tool.get_scatter_list_desc_in()
+#             self.add_inputs(scatter_list_desc_in)
 
-        self.builder_tool.prepare_tool(self)
+        self.builder_tool.prepare_tool()
 
     def build_tool(self):
 
