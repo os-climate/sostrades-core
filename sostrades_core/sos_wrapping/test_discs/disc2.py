@@ -47,8 +47,7 @@ class Disc2(SoSWrapp):
         y = self.get_sosdisc_inputs('y')
         constant = self.get_sosdisc_inputs('constant')
         power = self.get_sosdisc_inputs('power')
-        if isinstance(power, int):
-            time.sleep(power)
+
 #         info = self.get_sosdisc_inputs('info')
         dict_values = {'z': constant + y ** power}
         # put new field value in data_out
