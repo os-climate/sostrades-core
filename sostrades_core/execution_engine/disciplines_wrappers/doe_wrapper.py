@@ -160,14 +160,17 @@ class DoeWrapper(SoSWrapp):
     def __init__(self, sos_name):
         super().__init__(sos_name)
         self.sample_generator = None
-        self.previous_algo_name = ""
+        self.previous_algo_name = ""     # It also contains the case of empty algo name
         self.selected_inputs = None
         self.eval_in_list = None
         self.selected_inputs = None
         self.dict_desactivated_elem = {}
 
-    @classmethod
-    def get_algo_default_options(cls, algo_name):
+        generator_name = 'doe_generator'
+        if generator_name == 'doe_generator':
+            self.sample_generator = DoeSampleGenerator()
+
+    def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
         """
 
@@ -179,10 +182,12 @@ class DoeWrapper(SoSWrapp):
         # In get_options_desc_in, it is already checked whether the algo_name belongs to the list of possible Gemseo
         # DoE algorithms
         if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator().get_options_desc_in(algo_name)
+            algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_desc_in(algo_name)
             return algo_options_desc_in
         else:
-            return cls.default_algo_options
+            raise Exception(
+                f"A DoE algorithm which is not available in GEMSEO has been selected.")
+            # return self.default_algo_options
 
     def create_design_space(self, selected_inputs, dspace_df):
         """
@@ -297,11 +302,6 @@ class DoeWrapper(SoSWrapp):
             self.selected_inputs, dspace_df)
         self.design_space = design_space
 
-        generator_name = 'doe_generator'
-        if self.sample_generator == None:
-            if generator_name == 'doe_generator':
-                self.sample_generator = DoeSampleGenerator()
-
         # print(list(self.sample_generator.get_options(algo_name).keys()))
         # https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html#fullfact
 
@@ -317,68 +317,68 @@ class DoeWrapper(SoSWrapp):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
-        selected_inputs_has_changed = False
+        # selected_inputs_has_changed = False
         disc_in = proxy.get_data_in()
 
         if len(disc_in) != 0:
             # Dynamic input of default algo options
-            algo_name_has_changed = False
-            algo_name = proxy.get_sosdisc_inputs(self.ALGO)
-            if self.previous_algo_name != algo_name:
-                algo_name_has_changed = True
-                self.previous_algo_name = algo_name
+            if self.ALGO in disc_in:
+                algo_name = proxy.get_sosdisc_inputs(self.ALGO)
 
-            default_dict = self.get_algo_default_options(algo_name)
-            dynamic_inputs = {}
-            dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
-                                                    'dataframe_edition_locked': False,
-                                                    'structuring': True,
+                # algo_name_has_changed = False
+                # if self.previous_algo_name != algo_name:
+                #     algo_name_has_changed = True
+                #     self.previous_algo_name = algo_name
 
-                                                    'dataframe_descriptor': {
-                                                        self.VARIABLES: ('string', None, False),
-                                                        self.VALUES: ('string', None, True)}}})
-            all_options = list(default_dict.keys())
-            # if 'algo_options' in disc_in and algo_name_has_changed:
-            #     disc_in['algo_options']['value'] = default_dict
-            if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
-                    disc_in['algo_options']['value'].keys()) != all_options:
-                options_map = ChainMap(
-                    disc_in['algo_options']['value'], default_dict)
-                disc_in['algo_options']['value'] = {
-                    key: options_map[key] for key in all_options}
+                if algo_name is not None:# and algo_name_has_changed:
+                    default_dict = self.get_algo_default_options(algo_name)
+                    dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
+                                                            'dataframe_edition_locked': False,
+                                                            'structuring': True,
+
+                                                            'dataframe_descriptor': {
+                                                                self.VARIABLES: ('string', None, False),
+                                                                self.VALUES: ('string', None, True)}}})
+                    all_options = list(default_dict.keys())
+                    # if 'algo_options' in disc_in and algo_name_has_changed:
+                    #     disc_in['algo_options']['value'] = default_dict
+                    if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
+                            disc_in['algo_options']['value'].keys()) != all_options:
+                        options_map = ChainMap(
+                            disc_in['algo_options']['value'], default_dict)
+                        disc_in['algo_options']['value'] = {
+                            key: options_map[key] for key in all_options}
 
             # Dynamic input of default design space
-            eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
-            if eval_inputs is not None:
-                self.selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                                   == True]['full_name'].tolist()
+            if 'eval_inputs' in disc_in:
+                eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
+                if eval_inputs is not None:
+                    self.selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                                       == True]['full_name'].tolist()
 
-            # self.eval_in_list = [
-            # f'{proxy.ee.study_name}.{element}' for element in
-            # selected_inputs]
+                    default_design_space = pd.DataFrame({'variable': self.selected_inputs,
 
-                default_design_space = pd.DataFrame({'variable': self.selected_inputs,
+                                                         # FIXME: Ask about this
+                                                         # default setup
+                                                         'lower_bnd': [None] * len(self.selected_inputs),
+                                                         # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
+                                                         #                                              'type') == 'array' else 0.0
+                                                         # for var in
+                                                         # self.eval_in_list],
+                                                         # FIXME: Ask about this
+                                                         # default setup
+                                                         'upper_bnd': [None] * len(self.selected_inputs)
+                                                         # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
+                                                         #                                                'type') == 'array' else 10.0
+                                                         # for var in
+                                                         # self.eval_in_list]
+                                                         })
 
-                                                     # FIXME: Ask about this
-                                                     # default setup
-                                                     'lower_bnd': [None] * len(self.selected_inputs),
-                                                     # [[0.0, 0.0] if proxy.ee.dm.get_data(var,
-                                                     #                                              'type') == 'array' else 0.0
-                                                     # for var in
-                                                     # self.eval_in_list],
-                                                     # FIXME: Ask about this
-                                                     # default setup
-                                                     'upper_bnd': [None] * len(self.selected_inputs)
-                                                     # [[10.0, 10.0] if proxy.ee.dm.get_data(var,
-                                                     #                                                'type') == 'array' else 10.0
-                                                     # for var in
-                                                     # self.eval_in_list]
-                                                     })
-
-                dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space
-                                                        }})
-                if 'design_space' in disc_in and selected_inputs_has_changed:
-                    disc_in['design_space']['value'] = default_design_space
+                    dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space,
+                                                            'structuring': True
+                                                            }})
+                    # if 'design_space' in disc_in and selected_inputs_has_changed:
+                    #     disc_in['design_space']['value'] = default_design_space
 
         proxy.add_inputs(dynamic_inputs)
         proxy.add_outputs(dynamic_outputs)

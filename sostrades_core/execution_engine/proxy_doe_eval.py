@@ -33,6 +33,8 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import DoeWrapper
 import pandas as pd
 from collections import ChainMap
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
+from gemseo.api import get_available_doe_algorithms
 
 
 class ProxyDoeEval(ProxyEval):
@@ -200,8 +202,8 @@ class ProxyDoeEval(ProxyEval):
             if 'design_space' in disc_in and selected_inputs_has_changed:
                 disc_in['design_space']['value'] = default_design_space
 
-        #default_dict = self.get_algo_default_options(algo_name)
-        default_dict = DoeWrapper.get_algo_default_options(algo_name)
+        default_dict = self.get_algo_default_options(algo_name)
+        # default_dict = DoeWrapper.get_algo_default_options(algo_name)
         dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                 'dataframe_edition_locked': False,
                                                 'structuring': True,
@@ -382,9 +384,10 @@ class ProxyDoeEval(ProxyEval):
     def get_algo_default_options(self, algo_name):
         """This algo generate the default options to set for a given doe algorithm
         """
-
-        if algo_name in self.algo_dict.keys():
-            return self.algo_dict[algo_name]
+        # TODO: Duplicity of code with DoeWrapper. Not treated since in principle DoeEval (together is going to disappear)
+        if algo_name in get_available_doe_algorithms():
+            algo_options_desc_in, algo_options_descr_dict = DoeSampleGenerator().get_options_desc_in(algo_name)
+            return algo_options_desc_in
         else:
             return self.default_algo_options
 

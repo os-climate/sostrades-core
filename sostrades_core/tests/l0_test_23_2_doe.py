@@ -287,7 +287,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Build of the DoE discipline under the root process node.
         exec_eng = ExecutionEngine(self.study_name)   #doe
 
-        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
+        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
+        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
         exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
 
@@ -307,6 +308,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs. The same algo options will be used for all samplings (let it be noted some default options values
         # will not allow to execute a DoE sampling, e.g. n_samples cannot be equal to None).
         disc_dict = {}
+        disc_dict[f'{self.ns}.DoE.sampling_method'] = "DOE_GENERATOR"
         disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
         pydoe_algo_used_options = {'alpha': 'orthogonal',
@@ -437,7 +439,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Build of the DoE discipline under the root process node.
         exec_eng = ExecutionEngine(self.study_name)   #doe
 
-        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
+        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
+        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
         exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
 
@@ -457,6 +460,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs. The same algo options will be used for all samplings (let it be noted some default options values
         # will not allow to execute a DoE sampling, e.g. n_samples cannot be equal to None).
         disc_dict = {}
+        disc_dict[f'{self.ns}.DoE.sampling_method'] = "DOE_GENERATOR"
         disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
         OT_algo_used_options = {'levels': None,
@@ -483,7 +487,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
             # To check what it is indispensable for each algo.
             if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
-                disc_dict[f'{self.ns}.DoE.algo_options']['levels'] = [0.1]
+                disc_dict[f'{self.ns}.DoE.algo_options']['levels'] = [0.1]    # Must be number between 0 and 1
                 disc_dict[f'{self.ns}.DoE.algo_options']['centers'] = (0, 0, 0)
             else:
                 disc_dict[f'{self.ns}.DoE.algo_options']['levels'] = None
@@ -528,3 +532,95 @@ class TestSoSDOEScenario(unittest.TestCase):
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
 
+    def test_5_doe_execution_fullfact_generic_sample_tool(self):
+        """
+        This is a test converted from EEV3 in which a fullfact sampling generation is compared with respect to a
+        reference sampling for such DoE algo. It was made through a DoeEval but now just through a DoE.
+        """
+
+        input_selection_x_z = {'selected_input': [False, True, False, False, True],
+                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                             'y_2',
+                                             'z']}
+        self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        dspace_dict_eval = {'variable': ['x', 'z'],
+                            'lower_bnd': [[0.], [-10., 0.]],
+                            'upper_bnd': [[10.], [10., 10.]]
+                            }
+        self.dspace_eval = pd.DataFrame(dspace_dict_eval)
+
+        exec_eng = ExecutionEngine(self.study_name)
+
+        mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
+        # Since the DOE_GENERATOR will be selected, the name of 'DoE' is given to the ProxyDiscipline associated with
+        # the SampleGeneratorWrapper
+        doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
+        exec_eng.ns_manager.add_ns('ns_doe1', f'{self.ns}.DoE')
+
+        # proc_name = "test_doe"
+        # doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
+        #                                                         mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [doe_builder])
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        #Selection of the sampling generating method:
+        disc_dict[f'{self.ns}.DoE.sampling_method'] = "DOE_GENERATOR"
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{self.ns}.DoE.sampling_algo'] = "fullfact"
+        disc_dict[f'{self.ns}.DoE.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.DoE.algo_options'] = {
+            'n_samples': n_samples, 'fake_option': 'fake_option'}
+        disc_dict[f'{self.ns}.DoE.eval_inputs'] = self.input_selection_x_z
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ DoE']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        # doe_disc = exec_eng.dm.get_disciplines_with_name(
+        #     'doe.DoE')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        doe_disc = exec_eng.root_process.proxy_disciplines[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'samples_df')
+
+        dimension = sum([len(sublist) if isinstance(
+            sublist, list) else 1 for sublist in list(self.dspace_eval['lower_bnd'].values)])
+
+        theoretical_fullfact_levels = int(n_samples ** (1.0 / dimension))
+
+        theoretical_fullfact_samples = theoretical_fullfact_levels ** dimension
+        self.assertEqual(len(doe_disc_samples),
+                         theoretical_fullfact_samples)
+
+        # print(doe_disc_samples)
+        # test output 'samples_df' sample dataframe
+        self.eval_inputs = self.input_selection_x_z
+        selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']
+                                           == True]['full_name']
+        selected_inputs = selected_inputs.tolist()
+        target_samples = [[array([0.]), array([-10., 0.])],
+                          [array([10.]), array([-10., 0.])],
+                          [array([0.]), array([10., 0.])],
+                          [array([10.]), array([10., 0.])],
+                          [array([0.]), array([-10., 10.])],
+                          [array([10.]), array([-10., 10.])],
+                          [array([0.]), array([10., 10.])],
+                          [array([10.]), array([10., 10.])]]
+
+        target_samples_df = pd.DataFrame(data=target_samples,
+                                         columns=selected_inputs)
+
+        assert_frame_equal(doe_disc_samples, target_samples_df)

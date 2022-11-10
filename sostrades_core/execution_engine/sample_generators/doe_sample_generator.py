@@ -59,7 +59,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         '''
         super().__init__(self.GENERATOR_NAME)
 
-    def get_available_algo_names(self):
+    @staticmethod
+    def get_available_algo_names():
         '''
         Method that provides the list of available algo_names
 

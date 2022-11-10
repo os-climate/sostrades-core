@@ -40,6 +40,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     '''
     Abstract class that generates sampling
     '''
+    GENERATOR_NAME = "CARTESIAN_PRODUCT_GENERATOR"
 
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
@@ -49,11 +50,11 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    # def __init__(self, generator_name):
-    #     '''
-    #     Constructor
-    #     '''
-    #     self.name = generator_name
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        super().__init__(self.GENERATOR_NAME)
 
     def generate_samples(self, dict_of_list_values):
         '''

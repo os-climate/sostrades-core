@@ -377,7 +377,7 @@ class TestSampleGenerator(unittest.TestCase):
         }
         variable_list = dict_of_list_values.keys()
 
-        sample_generator = CartesianProductSampleGenerator(self)
+        sample_generator = CartesianProductSampleGenerator()
         samples_df = sample_generator.generate_samples(dict_of_list_values)
 
         # print(samples_df)
