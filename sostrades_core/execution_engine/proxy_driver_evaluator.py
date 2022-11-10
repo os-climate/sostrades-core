@@ -720,7 +720,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                          'namespace': 'ns_eval'
                                          }}
 
-        if 'samples_df' in disc_in and selected_inputs_has_changed:
+        if 'samples_df' in disc_in and selected_inputs_has_changed:  #This reflects 'samples_df' dynamic input has been configured and that eval_inputs have changed
             all_NaN = True
             if list(disc_in['samples_df']['value'].keys()) == list(default_custom_dataframe.keys()):  # This reflects eval_inputs has changed and samples are not empty
                 for column in list(disc_in['samples_df']['value'].keys()):
