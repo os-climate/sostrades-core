@@ -101,12 +101,14 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
             scatter_desc_in = {input_name: {
                 ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
                 ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
-                ProxyDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), ProxyDiscipline.STRUCTURING: True}}
+                ProxyDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), ProxyDiscipline.STRUCTURING: True,
+                ProxyDiscipline.USER_LEVEL: 3}}
         else:
             scatter_desc_in = {input_name: {
                 ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
                 ProxyDiscipline.VISIBILITY: ProxyDiscipline.LOCAL_VISIBILITY,
-                ProxyDiscipline.STRUCTURING: True}}
+                ProxyDiscipline.STRUCTURING: True,
+                ProxyDiscipline.USER_LEVEL: 3}}
 
         self.inst_desc_in.update(scatter_desc_in)
 
