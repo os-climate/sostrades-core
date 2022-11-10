@@ -50,7 +50,7 @@ def post_processings(execution_engine, namespace, filters):
 
         table_name = 'Scenario dict'
         scenario_list = execution_engine.dm.get_value(
-            'MyCase.multi_scenarios.scenario_list')
+            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist()
 
         headers = ['Scenarios']
 

@@ -45,12 +45,12 @@ class ScatterTool():
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None, coupling_per_scatter=False):
+    def __init__(self, sos_name, ee, map_name, cls_builder, driver, associated_namespaces=None, coupling_per_scatter=False):
         '''
         Constructor
         '''
         self.__factory = ee.factory
-        self.__scattered_builders = {}
+        self.__scattered_disciplines = {}
         self.sub_coupling_builder_dict = {}
         self.__gathered_disciplines = {}
         self.__scatter_data_map = []
@@ -64,6 +64,7 @@ class ScatterTool():
         self.input_name = None
         self.ns_to_update = None
         self.ee = ee
+        self.driver = driver
         self.sos_name = sos_name
         if associated_namespaces is None:
             self.associated_namespaces = []
@@ -75,7 +76,7 @@ class ScatterTool():
         self.__builders = cls_builder
 
         # add input_name to inst_desc_in
-        self.build_inst_desc_in_with_map()
+        # self.build_inst_desc_in_with_map()
         self.builder_name = None
         if not isinstance(self.__builders, list):
             self.builder_name = self.__builders.sos_name
@@ -88,45 +89,46 @@ class ScatterTool():
     def scatter_build_map(self):
         return self.__scatter_build_map
 
-    def build_inst_desc_in_with_map(self):
-        '''
-        Consult the associated scatter map and adapt the inst_desc_in of the gather with the scatter var_name 
-        '''
-        self.scatter_list_name = self.sc_map.get_input_name()
-        input_type = 'list'
-        input_subtype_descriptor = {'list': 'string'}
+#     def build_inst_desc_in_with_map(self):
+#         '''
+#         Consult the associated scatter map and adapt the inst_desc_in of the gather with the scatter var_name
+#         '''
+#         self.scatter_list_name = self.sc_map.get_input_name()
+#         input_type = 'list'
+#         input_subtype_descriptor = {'list': 'string'}
+#
+#         if self.sc_map.INPUT_NS in self.sc_map.get_map():
+#             scatter_desc_in = {self.scatter_list_name: {
+#                 ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
+#                 ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
+#                 ProxyDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), ProxyDiscipline.STRUCTURING: True}}
+#         else:
+#             scatter_desc_in = {self.scatter_list_name: {
+#                 ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
+#                 ProxyDiscipline.VISIBILITY: ProxyDiscipline.LOCAL_VISIBILITY,
+#                 ProxyDiscipline.STRUCTURING: True}}
+#
+#         self.__scatter_list_desc_in = scatter_desc_in
 
-        if self.sc_map.INPUT_NS in self.sc_map.get_map():
-            scatter_desc_in = {self.scatter_list_name: {
-                ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
-                ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
-                ProxyDisciplineBuilder.NAMESPACE: self.sc_map.get_input_ns(), ProxyDiscipline.STRUCTURING: True}}
-        else:
-            scatter_desc_in = {self.scatter_list_name: {
-                ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
-                ProxyDiscipline.VISIBILITY: ProxyDiscipline.LOCAL_VISIBILITY,
-                ProxyDiscipline.STRUCTURING: True}}
+#     def get_scatter_list_desc_in(self):
+#
+#         return self.__scatter_list_desc_in
 
-        self.__scatter_list_desc_in = scatter_desc_in
+    def prepare_tool(self):
+        if self.driver.SCENARIO_DF in self.driver.get_data_in():
+            scenario_df = self.driver.get_sosdisc_inputs(
+                self.driver.SCENARIO_DF)
+            self.set_scatter_list(scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
+                                              == True][self.driver.SCENARIO_NAME].values.tolist())
 
-    def get_scatter_list_desc_in(self):
-
-        return self.__scatter_list_desc_in
-
-    def prepare_tool(self, driver):
-
-        if self.scatter_list_name in driver.get_data_in().keys():
-            scatter_list = driver.get_sosdisc_inputs(
-                self.scatter_list_name)
-            self.set_scatter_list(scatter_list)
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
-            driver)
+            self.driver)
 
         ns_to_update_name_list = self.sc_map.get_ns_to_update()
         # store ns_to_update namespace object
         self.ns_to_update = {}
         for ns_name in ns_to_update_name_list:
-            self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(driver,
+            self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
                                                                                  ns_name)
 
     def set_scatter_list(self, scatter_list):
@@ -151,7 +153,7 @@ class ScatterTool():
         clean_builder_list = []
         if self.__scatter_list is not None:
 
-            new_sub_names, clean_builder_list = self.clean_scattered_builders(
+            new_sub_names = self.clean_scattered_disciplines(
                 self.__scatter_list)
 
             # build sub_process through the factory
@@ -165,15 +167,13 @@ class ScatterTool():
 
             self.ee.ns_manager.shared_ns_dict.update(self.ns_to_update)
 
-        return self.get_all_builders(), clean_builder_list
-
     def build_sub_coupling(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
         # Call scatter map to modify the associated namespace
         self.sc_map.modify_scatter_ns(self.builder_name, name, local_namespace)
 
         self.sc_map.update_ns(
-            old_ns_to_update, name, self.sos_name)
+            old_ns_to_update, name, local_namespace)
 
         if name in new_sub_names:
 
@@ -183,15 +183,15 @@ class ScatterTool():
             coupling_builder.set_builder_info('with_data_io', True)
             self.sub_coupling_builder_dict[name] = coupling_builder
 
-#             coupling_disc = coupling_builder.build()
-#             # flag the coupling so that it can be executed in parallel
-#             coupling_disc.is_parallel = True
-            self.add_scatter_builder(coupling_builder, name)
+            coupling_disc = coupling_builder.build()
+            # flag the coupling so that it can be executed in parallel
+            coupling_disc.is_parallel = True
+            self.add_scatter_discipline(coupling_disc, name)
 
-#         else:
-#             coupling_disc = self.sub_coupling_builder_dict[name].build()
-#             # flag the coupling so that it can be executed in parallel
-#             coupling_disc.is_parallel = True
+        else:
+            coupling_disc = self.sub_coupling_builder_dict[name].build()
+            # flag the coupling so that it can be executed in parallel
+            coupling_disc.is_parallel = True
 
     def build_child_scatter(self, name, local_namespace, new_sub_names, old_ns_to_update):
 
@@ -202,17 +202,19 @@ class ScatterTool():
             self.builder_name, name, local_namespace)
         ns_ids.append(ns_scatter_id)
         ns_update_ids = self.sc_map.update_ns(
-            old_ns_to_update, name, self.sos_name, add_in_shared_ns_dict=False)
+            old_ns_to_update, name, local_namespace, add_in_shared_ns_dict=False)
         ns_ids.extend(ns_update_ids)
         # Case of a scatter of coupling :
         if isinstance(self.__builders, list):
             self.build_scatter_of_coupling(
-                name, local_namespace, new_sub_names, ns_update_ids)
+                name, local_namespace, new_sub_names, ns_ids)
 
         # Case of a coupling of scatter :
         else:
-            self.build_coupling_of_scatter(
-                name, new_sub_names, ns_update_ids)
+            raise Exception(
+                'COupling of scatter not possible anymore in EEV4, wait for new treeview display')
+#             self.build_coupling_of_scatter(
+#                 name, new_sub_names, ns_ids)
 
     def build_scatter_of_coupling(self, name, local_namespace, new_sub_names, ns_update_ids):
         '''
@@ -238,40 +240,41 @@ class ScatterTool():
 
             builder.add_namespace_list_in_associated_namespaces(
                 ns_update_ids)
-            #disc = builder.build()
+            disc = builder.build()
+            builder.set_disc_name(old_builder_name)
             # Add the discipline only if it is in
             # new_sub_names
             if name in new_sub_names:
-                self.add_scatter_builder(builder, name)
+                self.add_scatter_discipline(disc, name)
 
-    def build_coupling_of_scatter(self, name, new_sub_names, ns_update_ids):
-        '''
-        # We set the scatter_name as the discipline name in the scatter which has already the name of the builder
-        # Disc1 is the scatter
-        #
-        # Disc1
-        #        |_name_1
-        #        |_name_2
-        '''
-        old_builder_name = self.__builders.sos_name
-        self.__builders.set_disc_name(name)
-        if self.__builders.associated_namespaces != []:
-            self.__builders.add_namespace_list_in_associated_namespaces(
-                self.associated_namespaces)
+#     def build_coupling_of_scatter(self, name, new_sub_names, ns_update_ids):
+#         '''
+#         # We set the scatter_name as the discipline name in the scatter which has already the name of the builder
+#         # Disc1 is the scatter
+#         #
+#         # Disc1
+#         #        |_name_1
+#         #        |_name_2
+#         '''
+#         old_builder_name = self.__builders.sos_name
+#         self.__builders.set_disc_name(name)
+#         if self.__builders.associated_namespaces != []:
+#             self.__builders.add_namespace_list_in_associated_namespaces(
+#                 self.associated_namespaces)
+#
+#         self.__builders.add_namespace_list_in_associated_namespaces(
+#             ns_update_ids)
+#         #disc = self.__builders.build()
+#         # self.__builders.set_disc_name(old_builder_name)
+#
+#         # Add the discipline only if it is in
+#         # new_sub_names
+#         if name in new_sub_names:
+#             self.add_scatter_builder(self.__builders, name)
+#
+#         return self.__builders
 
-        self.__builders.add_namespace_list_in_associated_namespaces(
-            ns_update_ids)
-        #disc = self.__builders.build()
-        # self.__builders.set_disc_name(old_builder_name)
-
-        # Add the discipline only if it is in
-        # new_sub_names
-        if name in new_sub_names:
-            self.add_scatter_builder(self.__builders, name)
-
-        return self.__builders
-
-    def clean_scattered_builders(self, sub_names):
+    def clean_scattered_disciplines(self, sub_names):
         '''
         Clean disciplines that was scattered and are not in the scatter_list anymore
         Return the new scatter names not yet present in the list of scattered disciplines
@@ -279,17 +282,16 @@ class ScatterTool():
         # sort sub_names to filter new names and disciplines to remove
         clean_builders_list = []
         new_sub_names = [
-            name for name in sub_names if not name in self.__scattered_builders]
+            name for name in sub_names if not name in self.__scattered_disciplines]
         disc_name_to_remove = [
-            name for name in self.__scattered_builders if not name in sub_names]
+            name for name in self.__scattered_disciplines if not name in sub_names]
         for disc_name in disc_name_to_remove:
-            clean_builders_list.append(self.__scattered_builders[disc_name])
             if self.coupling_per_scatter:
                 del self.sub_coupling_builder_dict[disc_name]
 
-            del self.__scattered_builders[disc_name]
+            del self.__scattered_disciplines[disc_name]
 
-        return new_sub_names, clean_builders_list
+        return new_sub_names
 
     def remove_scattered_disciplines(self, disc_to_remove):
         '''
@@ -300,18 +302,27 @@ class ScatterTool():
             if self.coupling_per_scatter:
                 del self.sub_coupling_builder_dict[disc]
 
-            del self.__scattered_builders[disc]
+            del self.__scattered_disciplines[disc]
 
-    def add_scatter_builder(self, builder, name):
+    def add_scatter_discipline(self, disc, name):
         '''
         Add the discipline to the factory and to the dictionary of scattered_disciplines
         '''
-        # self.__factory.add_discipline(disc)
-
-        self.__scattered_builders.update({name: builder})
+        self.set_father_discipline()
+        self.__factory.add_discipline(disc)
+        if name in self.__scattered_disciplines.keys():
+            self.__scattered_disciplines[name].append(disc)
+        else:
+            self.__scattered_disciplines.update({name: [disc]})
 #         if disc not in self.built_proxy_disciplines:
 #             self.built_proxy_disciplines.append(disc)
 
-    def get_all_builders(self):
+    def set_father_discipline(self):
+        '''
+        Set the current discipline to build the builder_list at this level
+        '''
+        self.ee.factory.current_discipline = self.driver
 
-        return list(self.__scattered_builders.values())
+    def get_all_scattered_disciplines(self):
+
+        return list(self.__scattered_disciplines.values())

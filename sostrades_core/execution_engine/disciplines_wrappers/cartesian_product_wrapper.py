@@ -70,8 +70,9 @@ class CartesianProductWrapper(SoSWrapp):
     DOE_ALGO = 'doe_algo'
     CARTESIAN_PRODUCT = 'cartesian_product'
     SAMPLING_METHOD = 'sampling_method'
-    SCENARIO_SELECTION = 'scenario_selection'
     EVAL_INPUTS_CP = 'eval_inputs_cp'
+    SCENARIO_SELECTION = 'scenario_selection'
+
     # INPUT_MULTIPLIER_TYPE = []
 
     available_sampling_methods = [DOE_ALGO, CARTESIAN_PRODUCT]
@@ -90,7 +91,7 @@ class CartesianProductWrapper(SoSWrapp):
         self.selected_inputs = None
         self.eval_in_list = None
         self.selected_inputs = None
-        self.eval_inputs_cp = None
+        self.previous_eval_inputs_cp = None
         self.dict_desactivated_elem = {}
 
     def setup_sos_disciplines(self, proxy):
@@ -100,53 +101,64 @@ class CartesianProductWrapper(SoSWrapp):
         eval_inputs_cp_has_changed = False
         disc_in = proxy.get_data_in()
 
+        default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
+                                                 'full_name': [''],
+                                                 'list_of_values': [[]]})
+
         if len(disc_in) != 0:
             sampling_method = proxy.get_sosdisc_inputs(self.SAMPLING_METHOD)
             if sampling_method == self.DOE_ALGO:
-                pass
+                self.previous_eval_inputs_cp = None
             elif sampling_method == self.CARTESIAN_PRODUCT:
                 dynamic_inputs.update({self.EVAL_INPUTS_CP: {'type': 'dataframe',
                                                              'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                                                      'full_name': ('string', None, False)},
+                                                                                      'full_name': ('string', None, True),
+                                                                                      'list_of_values': ('list', None, True)},
                                                              'dataframe_edition_locked': False,
                                                              'structuring': True,
                                                              'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                             'namespace': 'ns_cp'}})
+                                                             'namespace': 'ns_cp',
+                                                             'default': default_in_eval_input_cp}})
 
             # Dynamic set or update of SCENARIO_SELECTION for cartesian product
             # method
+            eval_inputs_cp_has_changed = False
             if self.EVAL_INPUTS_CP in disc_in:
-                eval_inputs_cp_has_changed = False
                 eval_inputs_cp = proxy.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
-                # 1. Manage update of EVAL_INPUTS_CP
-                if not (eval_inputs_cp.equals(self.eval_inputs_cp)):
+                # 1. Manage update status of EVAL_INPUTS_CP
+                if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
                     eval_inputs_cp_has_changed = True
-                    self.eval_inputs_cp = eval_inputs_cp
-                # 2. Set or update SCENARIO_SELECTION
-
-                dict_of_list_values = {
-                    'x': [0., 3., 4., 5., 7.],
-                    'z': [[-10., 0.], [-5., 4.], [10, 10]]}
-                generator_name = 'cp_generator'
-                if self.sample_generator == None:
-                    if generator_name == 'cp_generator':
-                        self.sample_generator = CartesianProductSampleGenerator()
-                samples_gene_df = self.sample_generator.generate_samples(
-                    dict_of_list_values)
-
-                dynamic_inputs.update({self.SCENARIO_SELECTION: {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                                 'namespace': 'ns_cp', 'default': samples_gene_df}})
-                if self.SCENARIO_SELECTION in disc_in and eval_inputs_cp_has_changed:
-                    dict_of_list_values = {
-                        'x': [0., 3., 4., 5., 7.],
-                        'z': [[-10., 0.], [-5., 4.], [10, 10]]}
-                    generator_name = 'cp_generator'
-                    if self.sample_generator == None:
-                        if generator_name == 'cp_generator':
-                            self.sample_generator = CartesianProductSampleGenerator()
-                    samples_gene_df = self.sample_generator.generate_samples(
-                        dict_of_list_values)
-                    #self._data_in[self.SCENARIO_SELECTION]['value'] = samples_gene_df
+                    self.previous_eval_inputs_cp = eval_inputs_cp
+                # 2. Manage empty selection in EVAL_INPUTS_CP
+                if eval_inputs_cp is not None:
+                    logic_1 = eval_inputs_cp['selected_input'] == True
+                    logic_2 = eval_inputs_cp['list_of_values'].isin([[]])
+                    eval_inputs_cp_filtered = eval_inputs_cp[logic_1 & ~logic_2]
+                    eval_inputs_cp_filtered = eval_inputs_cp_filtered[[
+                        'full_name', 'list_of_values']]
+                    selected_inputs_cp = list(
+                        eval_inputs_cp_filtered['full_name'])
+                    if len(selected_inputs_cp) < 2:
+                        LOGGER.warning(
+                            'Selected_inputs must have at least 2 variables to do a cartesian product')
+                    elif eval_inputs_cp_has_changed:
+                        # 3. Set or update SCENARIO_SELECTION in line with selected
+                        # eval_inputs_cp
+                        dict_of_list_values = eval_inputs_cp_filtered.set_index(
+                            'full_name').T.to_dict('records')[0]
+                        # for var_name in selected_inputs_cp:
+                        #    dict_of_list_values[var_name] =
+                        # dict_of_list_values = {
+                        #    'x': [0., 3., 4., 5., 7.],
+                        #    'z': [[-10., 0.], [-5., 4.], [10, 10]]}
+                        generator_name = 'cp_generator'
+                        if self.sample_generator == None:
+                            if generator_name == 'cp_generator':
+                                self.sample_generator = CartesianProductSampleGenerator()
+                        samples_gene_df = self.sample_generator.generate_samples(
+                            dict_of_list_values)
+                        dynamic_inputs.update({self.SCENARIO_SELECTION: {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                                         'namespace': 'ns_cp', 'default': samples_gene_df}})
 
         proxy.add_inputs(dynamic_inputs)
         proxy.add_outputs(dynamic_outputs)

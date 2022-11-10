@@ -30,25 +30,25 @@ class Study(StudyManager):
         """
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['x', 'z'],
-                       'lower_bnd': [[0.], [-10., 0.]],
-                       'upper_bnd': [[10.], [10., 10.]]
-                        }
-        dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
-                                             'y_2',
-                                             'z']}
-        input_selection_x_z = pd.DataFrame(input_selection_x_z)
+        dict_of_list_values = {
+            'x': [0., 3., 4., 5., 7.],
+            'z': [[-10., 0.], [-5., 4.], [10, 10]]
+        }
+        list_of_values = [[], dict_of_list_values['x'],
+                          [], [], dict_of_list_values['z']]
+
+        input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
+                                  'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                                'y_2',
+                                                'z'],
+                                  'list_of_values': list_of_values
+                                  }
+        input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
         disc_dict = {}
-        # DoE inputs
-        n_samples = 100
-        disc_dict[f'{ns}.DoE.sampling_algo'] = "fullfact"
-        disc_dict[f'{ns}.DoE.design_space'] = dspace
-        disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples}
-        disc_dict[f'{ns}.DoE.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.CP.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{ns}.CP.eval_inputs_cp'] = input_selection_cp_x_z
 
         return [disc_dict]
 
