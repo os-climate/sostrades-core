@@ -1204,6 +1204,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         top_to_show:list,
         chart_name: str = '',
         ticksuffix: str = '',
+        title_prefix: str = '',
     ):
 
         fig = go.Figure()
@@ -1264,7 +1265,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                                         ]
                                     },
                                     {
-                                        'title': f'<b>Total Free Cash Flow by {top_to_show[i]} components</b>'
+                                        'title': f'<b> {title_prefix} Total Free Cash Flow by {top_to_show[i]} components</b>'
                                     },
                                 ],
                                 label=top_to_show[i],
