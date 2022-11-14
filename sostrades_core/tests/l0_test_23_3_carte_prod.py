@@ -274,6 +274,30 @@ class TestCartesianProduct(unittest.TestCase):
 
         print(disc_samples)
 
+        # 4. Change sampling_method: go to doe_algo
+        # CP inputs
+        disc_dict = {}
+        disc_dict[f'{self.ns}.CP_Sampling.sampling_method'] = 'doe_algo'
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # 5. Change sampling_method: come back  to cartesian_product
+        # CP inputs
+        disc_dict = {}
+        disc_dict[f'{self.ns}.CP_Sampling.sampling_method'] = 'cartesian_product'
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        disc_dict = {}
+        disc_dict[f'{self.ns}.CP_Sampling.eval_inputs_cp'] = self.input_selection_cp_x_z
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        disc_dict = {}
+        disc_dict[f'{self.ns}.CP_Sampling.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.execute()
+
 
 if '__main__' == __name__:
     cls = TestCartesianProduct()

@@ -32,6 +32,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator
 import pandas as pd
 from collections import ChainMap
@@ -110,7 +111,11 @@ class CartesianProductWrapper(SoSWrapp):
             sampling_method = proxy.get_sosdisc_inputs(self.SAMPLING_METHOD)
             if sampling_method == self.DOE_ALGO:
                 self.previous_eval_inputs_cp = None
-                self.sample_generator = None
+                generator_name = 'doe_generator'
+                if self.sample_generator == None:
+                    if generator_name == 'doe_generator':
+                        self.sample_generator = DoeSampleGenerator()
+
             elif sampling_method == self.CARTESIAN_PRODUCT:
                 generator_name = 'cp_generator'
                 if self.sample_generator == None:
@@ -129,7 +134,7 @@ class CartesianProductWrapper(SoSWrapp):
             # Dynamic set or update of GENERATED_SAMPLES for cartesian product
             # method
             self.eval_inputs_cp_has_changed = False
-            if self.EVAL_INPUTS_CP in disc_in:
+            if self.EVAL_INPUTS_CP in disc_in and generator_name == 'cp_generator':
                 eval_inputs_cp = proxy.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
                 # 1. Manage update status of EVAL_INPUTS_CP
                 if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
