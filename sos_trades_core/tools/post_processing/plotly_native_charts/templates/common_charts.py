@@ -1211,7 +1211,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         fig = go.Figure()
         vis = True
 
-        if (lab_column_name in df) & (val_column_name in df):
+        if (len(df)) & (lab_column_name in df) & (val_column_name in df):
 
             df.sort_values(by=val_column_name, axis=0, ascending=False, inplace=True)
             # other_value = 0
@@ -1283,6 +1283,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 ),
             ]
         )
+        new_chart = None
         if len(fig.data) > 0:
             # Create native plotly chart
             chart_name = f'{chart_name}'
