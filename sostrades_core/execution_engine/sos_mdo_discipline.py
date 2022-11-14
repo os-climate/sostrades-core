@@ -170,7 +170,7 @@ class SoSMDODiscipline(MDODiscipline):
                 self.default_inputs).items() if key in self.input_grammar.data_names}
 
         # Set STATUS to LINEARIZE for GUI visualization
-        self.status=self.STATUS_LINEARIZE
+        self.status = self.STATUS_LINEARIZE
         result = MDODiscipline.linearize(
             self, self.default_inputs, force_all, force_no_exec)
         self.status = self.STATUS_DONE
@@ -291,7 +291,7 @@ class SoSMDODiscipline(MDODiscipline):
         '''
         Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac
         '''
-        
+
         if x_key in self.jac[y_key]:
             if isinstance(value, ndarray):
                 value = lil_matrix(value)
@@ -405,9 +405,10 @@ class SoSMDODiscipline(MDODiscipline):
         if input_column is not None or output_column is not None:
             if len(inputs) == 1 and len(outputs) == 1:
 
-                if self.sos_disciplines is not None:
-                    for discipline in self.sos_disciplines:
-                        self.sos_wrapp.jac_boundaries.update(discipline.jac_boundaries)
+                if hasattr(self, 'disciplines') and self.disciplines is not None:
+                    for discipline in self.disciplines:
+                        self.sos_wrapp.jac_boundaries.update(
+                            discipline.jac_boundaries)
 
                 indices = {}
                 if output_column is not None:
@@ -426,7 +427,6 @@ class SoSMDODiscipline(MDODiscipline):
                     there is more than one input and output')
 
         return indices
-
 
     @MDODiscipline.local_data.setter
     def local_data(
@@ -500,7 +500,6 @@ class SoSMDODiscipline(MDODiscipline):
                 LOGGER.debug(data_value)
                 has_nan = True
         return has_nan
-
 
     def check_discipline_data_integrity(self, left_dict, right_dict, test_subject, is_output_error=False):
         """

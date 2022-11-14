@@ -312,6 +312,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # SoSMDODisciplineDriver ?
         super().prepare_execution()
 
+        self.reset_subdisciplines_of_wrapper()
+
+    def reset_subdisciplines_of_wrapper(self):
+
+        self.mdo_discipline_wrapp.reset_subdisciplines(self)
+
     def set_wrapper_attributes(self, wrapper):
         """
         set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
@@ -721,7 +727,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                          'namespace': 'ns_eval'
                                          }}
 
-        if 'samples_df' in disc_in and selected_inputs_has_changed:  #This reflects 'samples_df' dynamic input has been configured and that eval_inputs have changed
+        # This reflects 'samples_df' dynamic input has been configured and that
+        # eval_inputs have changed
+        if 'samples_df' in disc_in and selected_inputs_has_changed:
 
             # all_None = True
             from_samples = list(disc_in['samples_df']['value'].keys())
@@ -736,11 +744,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             for element in from_eval_inputs:
                 if element in from_samples:
                     final_dataframe[element] = disc_in['samples_df']['value'][element]
+
                 else:
                     final_dataframe[element] = [NaN for _ in range(len_df)]
 
             disc_in['samples_df']['value'] = final_dataframe
-
 
             # # if not all(elem in from_eval_inputs for elem in from_samples): # If samples is not contained in eval_inputs, eval_inputs is taken for samples
             # if not set(from_samples) in set(from_eval_inputs):

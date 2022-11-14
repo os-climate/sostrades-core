@@ -52,26 +52,38 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
             cache_file_path (string): file path of the pickle file to dump/load the cache [???]
         """
         # get all executable sub disciplines
-        sub_mdo_disciplines = [pdisc.mdo_discipline_wrapp.mdo_discipline
-                               for pdisc in proxy.proxy_disciplines
-                               if pdisc.mdo_discipline_wrapp is not None]
+        sub_mdo_disciplines = self.get_sub_mdo_disciplines(proxy)
 
         # create the SoSMDODisciplineDriver
         if self.wrapping_mode == 'SoSTrades':
             self.mdo_discipline = SoSMDODisciplineDriver(full_name=proxy.get_disc_full_name(),
-                                                        grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                                        cache_type=cache_type,
-                                                        cache_file_path=cache_file_path,
-                                                        sos_wrapp=self.wrapper,
-                                                        reduced_dm=reduced_dm,
-                                                        disciplines=sub_mdo_disciplines)
+                                                         grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                                                         cache_type=cache_type,
+                                                         cache_file_path=cache_file_path,
+                                                         sos_wrapp=self.wrapper,
+                                                         reduced_dm=reduced_dm,
+                                                         disciplines=sub_mdo_disciplines)
             self._init_grammar_with_keys(proxy)
-#             self._update_all_default_values(input_data) #TODO: numerical inputs etc?
+# self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
             # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
+
+    def get_sub_mdo_disciplines(self, proxy):
+
+        sub_mdo_disciplines = [pdisc.mdo_discipline_wrapp.mdo_discipline
+                               for pdisc in proxy.proxy_disciplines
+                               if pdisc.mdo_discipline_wrapp is not None]
+        return sub_mdo_disciplines
+
+    def reset_subdisciplines(self, proxy):
+
+        sub_mdo_disciplines = self.get_sub_mdo_disciplines(proxy)
+
+        if self.mdo_discipline is not None:
+            self.mdo_discipline.disciplines = sub_mdo_disciplines
 
     # def _init_grammar_with_keys(self, proxy):
     #     '''
@@ -89,7 +101,7 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
     #     grammar = self.mdo_discipline.output_grammar
     #     grammar.clear()
     #     grammar.initialize_from_base_dict({output: None for output in output_names})
-        
+
 #    def _update_all_default_values(self, input_data):
 #        '''
 #        Store all input grammar data names' values from input data in default values of mdo_discipline
