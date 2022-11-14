@@ -83,6 +83,14 @@ class TestCartesianProduct(unittest.TestCase):
         self.input_selection_cp_x_y_1_z = pd.DataFrame(
             input_selection_cp_x_y_1_z)
 
+        input_selection_cp_x = {'selected_input': [False, True, False, False, True],
+                                'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                              'y_2',
+                                              ''],
+                                'list_of_values': list_of_values_x_z
+                                }
+        self.input_selection_cp_x = pd.DataFrame(input_selection_cp_x)
+
     def test_1_cartesian_product_execution(self):
         """
         This is a test of the cartesian product wrapper
