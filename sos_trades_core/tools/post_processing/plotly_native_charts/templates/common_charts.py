@@ -431,6 +431,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             title_text=chart_name,
             showlegend=False,
             autosize=True,
+            height=data_df.shape[0] * 30 + 250,
             # height=data_df.shape[0] * 10,
         )
 
