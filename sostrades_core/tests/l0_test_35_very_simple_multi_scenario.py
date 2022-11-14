@@ -16,6 +16,7 @@ limitations under the License.
 
 import pandas as pd
 from sostrades_core.execution_engine.proxy_discipline_scatter import ProxyDisciplineScatter
+from sostrades_core.sos_processes.test.test_driver.usecase_scatter import Study as study_scatter
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -1220,9 +1221,53 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+    def test_08_check_double_prepare_execution_and_status(self):
+
+        study = study_scatter()
+        study.load_data()
+        dict_values = {f'{study.study_name}.cache_type': 'SimpleCache'}
+        study.load_data(from_input_dict=dict_values)
+
+        status_dict_all_done = {'<study_ph>': {'ProxyCoupling': 'DONE'},
+                                '<study_ph>.multi_scenarios': {'ProxyDriverEvaluator': 'DONE', 'ProxyDisciplineScatter': 'DONE'},
+                                '<study_ph>.multi_scenarios.scenario_1': {'ProxyCoupling': 'DONE'},
+                                '<study_ph>.multi_scenarios.scenario_1.Disc1': {'ProxyDiscipline': 'DONE'},
+                                '<study_ph>.multi_scenarios.scenario_1.Disc2': {'ProxyDiscipline': 'DONE'},
+                                '<study_ph>.multi_scenarios.scenario_2': {'ProxyCoupling': 'DONE'},
+                                '<study_ph>.multi_scenarios.scenario_2.Disc1': {'ProxyDiscipline': 'DONE'},
+                                '<study_ph>.multi_scenarios.scenario_2.Disc2': {'ProxyDiscipline': 'DONE'}}
+
+        # run with dump cache_map
+        study.run()
+
+        # check sosmdachain of execution and sosmdachain under proxycouplings
+        proxy_coupling1 = study.execution_engine.root_process.proxy_disciplines[
+            0].proxy_disciplines[1]
+        mdachain_under_proxy_coupling = proxy_coupling1.mdo_discipline_wrapp.mdo_discipline
+        mdodisciplinedriver = study.execution_engine.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+            0]
+        mdachain_under_mdodisciplinedriver = mdodisciplinedriver.disciplines[0]
+        self.assertEqual(mdachain_under_proxy_coupling.__hash__,
+                         mdachain_under_mdodisciplinedriver.__hash__)
+        self.assertDictEqual(
+            status_dict_all_done, study.execution_engine.get_anonimated_disciplines_status_dict())
+        study.run()
+
+        # check sosmdachain of execution and sosmdachain under proxycouplings
+        proxy_coupling1 = study.execution_engine.root_process.proxy_disciplines[
+            0].proxy_disciplines[1]
+        mdachain_under_proxy_coupling = proxy_coupling1.mdo_discipline_wrapp.mdo_discipline
+        mdodisciplinedriver = study.execution_engine.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+            0]
+        mdachain_under_mdodisciplinedriver = mdodisciplinedriver.disciplines[0]
+        self.assertEqual(mdachain_under_proxy_coupling.__hash__,
+                         mdachain_under_mdodisciplinedriver.__hash__)
+        self.assertDictEqual(
+            status_dict_all_done, study.execution_engine.get_anonimated_disciplines_status_dict())
+
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
-    cls.test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono()
+    cls.test_08_check_double_prepare_execution_and_status()
     cls.tearDown()
