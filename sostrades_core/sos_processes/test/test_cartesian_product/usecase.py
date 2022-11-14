@@ -21,12 +21,15 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 class Study(StudyManager):
 
-    def __init__(self, run_usecase=False, execution_engine=None):
-        super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
+    # def __init__(self, run_usecase=False, execution_engine=None):
+    #    super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
+
+    def __init__(self, execution_engine=None):
+        super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
         """
-        Usecase for lhs DoE
+        Usecase for cartesian product in stand alone
         """
 
         ns = f'{self.study_name}'
@@ -47,13 +50,15 @@ class Study(StudyManager):
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
         disc_dict = {}
-        disc_dict[f'{ns}.CP.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{ns}.CP.eval_inputs_cp'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.CP_Sampling.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{ns}.CP_Sampling.eval_inputs_cp'] = input_selection_cp_x_z
 
         return [disc_dict]
 
 
 if '__main__' == __name__:
-    uc_cls = Study(run_usecase=True)
+    #uc_cls = Study(run_usecase=True)
+    uc_cls = Study()
     uc_cls.load_data()
+    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.run()
