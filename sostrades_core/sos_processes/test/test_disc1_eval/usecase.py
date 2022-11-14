@@ -44,19 +44,25 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_ind
 
-        a_values = [array([2.0]), array([4.0]), array(
-            [6.0]), array([8.0]), array([10.0])]
+        # a_values = [array([2.0]), array([4.0]), array(
+        #     [6.0]), array([8.0]), array([10.0])]
+        a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
         samples_dict = {'Eval.Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
 
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
         # Disc1 inputs
-        disc_dict[f'{ns}.x'] = array([10.])
-        disc_dict[f'{ns}.Eval.Disc1.a'] = array([5.])
-        disc_dict[f'{ns}.Eval.Disc1.b'] = array([25.])
-        disc_dict[f'{ns}.y'] = array([4.])
-        disc_dict[f'{ns}.Eval.Disc1.indicator'] = array([53.])
+        # disc_dict[f'{ns}.x'] = array([10.])
+        # disc_dict[f'{ns}.Eval.Disc1.a'] = array([5.])
+        # disc_dict[f'{ns}.Eval.Disc1.b'] = array([25.])
+        # disc_dict[f'{ns}.y'] = array([4.])
+        # disc_dict[f'{ns}.Eval.Disc1.indicator'] = array([53.])
+        disc_dict[f'{ns}.x'] = 10.
+        disc_dict[f'{ns}.Eval.Disc1.a'] = 5.
+        disc_dict[f'{ns}.Eval.Disc1.b'] = 25.
+        disc_dict[f'{ns}.y'] = 4.
+        disc_dict[f'{ns}.Eval.Disc1.indicator'] = 53.
 
         return [disc_dict]
 

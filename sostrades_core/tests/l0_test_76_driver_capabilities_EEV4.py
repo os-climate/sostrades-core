@@ -714,9 +714,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
     def test_8_Eval_reconfiguration_adding_again_User_Defined_samples_if_still_in_eval_inputs(self):
         """
-        This test checks that the custom samples applied to an Eval driver delivers expected outputs. The user_defined
-        sampling is applied to variables that are not in the root process, to check that namespacing works properly.
-        It is a non regression test
+        This test checks that samples dataframe is properly modified and generated when eval_inputs is modified and
+        , consequently, a reconfiguration is undertaken (since eval_inputs is a structuring variable).
         """
 
         study_name = 'root'
@@ -757,8 +756,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
                      f'{ns}.Eval.eval_outputs': output_selection_ind}
 
-        a_values = [array([2.0]), array([4.0]), array(
-            [6.0]), array([8.0]), array([10.0])]
+        # a_values = [array([2.0]), array([4.0]), array(
+        #     [6.0]), array([8.0]), array([10.0])]
+        a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
 
         samples_dict = {'Eval.Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -767,12 +767,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # -- Discipline inputs
+        # private_values = {
+        #     f'{ns}.x': array([10.]),
+        #     f'{ns}.Eval.Disc1.a': array([5.]),
+        #     f'{ns}.Eval.Disc1.b': array([25431.]),
+        #     f'{ns}.y': array([4.]),
+        #     f'{ns}.Eval.Disc1.indicator': array([53.])}
         private_values = {
-            f'{ns}.x': array([10.]),
-            f'{ns}.Eval.Disc1.a': array([5.]),
-            f'{ns}.Eval.Disc1.b': array([25431.]),
-            f'{ns}.y': array([4.]),
-            f'{ns}.Eval.Disc1.indicator': array([53.])}
+            f'{ns}.x': 10.,
+            f'{ns}.Eval.Disc1.a': 5.,
+            f'{ns}.Eval.Disc1.b': 25431.,
+            f'{ns}.y': 4.,
+            f'{ns}.Eval.Disc1.indicator': 53.}
         exec_eng.load_study_from_input_dict(private_values)
 
         exec_eng.execute()
@@ -794,18 +800,19 @@ class TestSoSDOEScenario(unittest.TestCase):
         i = 0
         for key in eval_disc_ind.keys():
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i])
             i += 1
 
-        # 1.Change of eval_inputs with addition of samples
+        # 1. Samples and eval_inputs equal
         input_selection_a_b = {'selected_input': [False, True, True],
                              'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
         input_selection_a_b = pd.DataFrame(input_selection_a_b)
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a_b
 
         # Change of samples
-        b_values = [array([1.0]), array([3.0]), array(
-            [5.0]), array([1.0]), array([1.0])]
+        # b_values = [array([1.0]), array([3.0]), array(
+        #     [5.0]), array([1.0]), array([1.0])]
+        b_values = [1.0, 3.0, 5.0, 7.0, 9.0]
         new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
@@ -822,7 +829,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
         self.assertEqual(list(eval_disc_samples['Eval.Disc1.b'][0:-1]), b_values)
 
-        # 2. Change of eval_inputs without adding samples
+        # 2. More eval_inputs than samples and sample included in eval_inputs
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [True, True, False],
                                'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
@@ -853,7 +860,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 break
         assert x_all_None == True
 
-        # 3. Change of eval_inputs without adding samples
+        # 3. More eval_inputs than samples and samples not included in eval_inputs
         # Change of eval_inputs
         input_selection_x_b = {'selected_input': [True, False, True],
                                'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
@@ -893,7 +900,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 break
         assert b_all_nan == True
 
-        # 4. Change of eval_inputs without adding samples
+        # 4. More samples than eval_inputs and samples partially included in eval_inputs
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [False, True, False],
                                'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
@@ -915,7 +922,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'samples_df')
         self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
 
-        # 5. Change of eval_inputs without adding samples
+        # 5. Eval_inputs and samples do not coincide at all.
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [True, False, False],
                                'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
