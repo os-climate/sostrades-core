@@ -723,29 +723,60 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         if 'samples_df' in disc_in and selected_inputs_has_changed:  #This reflects 'samples_df' dynamic input has been configured and that eval_inputs have changed
 
-            all_None = True
+            # all_None = True
             from_samples = list(disc_in['samples_df']['value'].keys())
-            from_default = list(default_custom_dataframe.keys())
-            if from_samples != from_default:
-                if len(from_samples) < len(from_default):
-                    element_missing = list(set(from_default) - set(from_samples))
-                    disc_in['samples_df']['value'][element_missing] = None
+            from_eval_inputs = list(default_custom_dataframe.keys())
+            final_dataframe = pd.DataFrame(None, columns=self.selected_inputs)
+
+            len_df = 1
+            for element in from_eval_inputs:
+                if element in from_samples:
+                    len_df = len(disc_in['samples_df']['value'])
+
+            for element in from_eval_inputs:
+                if element in from_samples:
+                    final_dataframe[element] = disc_in['samples_df']['value'][element]
                 else:
-                    disc_in['samples_df']['value'] = disc_in['samples_df']['value'][from_default]
-                disc_in['samples_df']['value'] = disc_in['samples_df']['value'].reindex(sorted(disc_in['samples_df']['value'].columns), axis=1)
-            else:  # This reflects eval_inputs has changed and samples are not empty
-                for column in list(disc_in['samples_df']['value'].keys()):
-                    for element in list(disc_in['samples_df']['value'][column]):
-                        if element == None:
-                            pass
-                        else:
-                            all_None = False
-                            break
-                    if all_None:  # If eval_inputs has changed but new samples have not been added, the column must be empty
-                        disc_in['samples_df']['value'][column] = None
-                    else:        # If eval_inputs has changed and new samples have been added, the column must as is (with samples)
-                        pass
-            # # disc_in['samples_df']['value'] = default_custom_dataframe
+                    final_dataframe[element] = [NaN for _ in range(len_df)]
+
+            disc_in['samples_df']['value'] = final_dataframe
+
+
+            # # if not all(elem in from_eval_inputs for elem in from_samples): # If samples is not contained in eval_inputs, eval_inputs is taken for samples
+            # if not set(from_samples) in set(from_eval_inputs):
+            #     disc_in['samples_df']['value'] = default_custom_dataframe
+            # else: #If samples is contained in eval_inputs, samples are increased with eval_inputs
+            #     if len(from_samples) < len(from_eval_inputs):
+            #         element_missing = list(set(from_eval_inputs) - set(from_samples))
+            #         disc_in['samples_df']['value'][element_missing] = None
+            #     else:
+            #         disc_in['samples_df']['value'] = disc_in['samples_df']['value'][from_eval_inputs]
+            #     disc_in['samples_df']['value'] = disc_in['samples_df']['value'].reindex(sorted(disc_in['samples_df']['value'].columns), axis=1)
+
+            # if from_samples != from_eval_inputs:
+            #     # If samples and eval_inputs partially coincide
+            #     if len(from_samples) < len(from_eval_inputs):
+            #         element_missing = list(set(from_eval_inputs) - set(from_samples))
+            #         disc_in['samples_df']['value'][element_missing] = None
+            #     else:
+            #         disc_in['samples_df']['value'] = disc_in['samples_df']['value'][from_eval_inputs]
+            #     disc_in['samples_df']['value'] = disc_in['samples_df']['value'].reindex(sorted(disc_in['samples_df']['value'].columns), axis=1)
+            #     # #TODO: If samples and eval_inputs do not coincide at all
+            #
+            #
+            # else:  # This reflects eval_inputs has changed and samples are not empty
+            #     for column in list(disc_in['samples_df']['value'].keys()):
+            #         for element in list(disc_in['samples_df']['value'][column]):
+            #             if element == None:
+            #                 pass
+            #             else:
+            #                 all_None = False
+            #                 break
+            #         if all_None:  # If eval_inputs has changed but new samples have not been added, the column must be empty
+            #             disc_in['samples_df']['value'][column] = None
+            #         else:        # If eval_inputs has changed and new samples have been added, the column must as is (with samples)
+            #             pass
+            # # # disc_in['samples_df']['value'] = default_custom_dataframe
             disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
         return dynamic_inputs
 

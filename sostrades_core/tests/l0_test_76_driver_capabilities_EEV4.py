@@ -797,7 +797,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                    private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
             i += 1
 
-        # Change of eval_inputs with addition of samples
+        # 1.Change of eval_inputs with addition of samples
         input_selection_a_b = {'selected_input': [False, True, True],
                              'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
         input_selection_a_b = pd.DataFrame(input_selection_a_b)
@@ -805,7 +805,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Change of samples
         b_values = [array([1.0]), array([3.0]), array(
-            [5.0]), NaN, NaN]
+            [5.0]), array([1.0]), array([1.0])]
         new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
@@ -822,7 +822,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
         self.assertEqual(list(eval_disc_samples['Eval.Disc1.b'][0:-1]), b_values)
 
-        # Change of eval_inputs without adding samples
+        # 2. Change of eval_inputs without adding samples
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [True, True, False],
                                'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
@@ -846,14 +846,104 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
         x_all_None = True
         for element in list(eval_disc_samples['x']):
-            if element == None:
+            if math.isnan(element):
                 pass
             else:
                 x_all_None = False
                 break
         assert x_all_None == True
 
+        # 3. Change of eval_inputs without adding samples
+        # Change of eval_inputs
+        input_selection_x_b = {'selected_input': [True, False, True],
+                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_x_b = pd.DataFrame(input_selection_x_b)
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_b
 
+        # Change of samples
+        new_samples_dict3 = {'Eval.Disc1.a': a_values}
+        new_samples_df3 = pd.DataFrame(new_samples_dict3)
+        disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df3
+
+        # Reconfigure
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Check samples
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
+        eval_disc_samples = eval_disc.get_sosdisc_inputs(
+            'samples_df')
+        # self.assertEqual(list(eval_disc_samples['x'][0:-1]), x_values)
+        # self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
+        x_all_nan = True
+        for element in list(eval_disc_samples['x']):
+            if math.isnan(element):
+                pass
+            else:
+                x_all_nan = False
+                break
+        assert x_all_nan == True
+
+        b_all_nan = True
+        for element in list(eval_disc_samples['Eval.Disc1.b']):
+            if math.isnan(element):
+                pass
+            else:
+                b_all_nan = False
+                break
+        assert b_all_nan == True
+
+        # 4. Change of eval_inputs without adding samples
+        # Change of eval_inputs
+        input_selection_x_a = {'selected_input': [False, True, False],
+                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_x_a = pd.DataFrame(input_selection_x_a)
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
+
+        # Change of samples
+        new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
+        new_samples_df = pd.DataFrame(new_samples_dict)
+        disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
+
+        # Reconfigure
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Check samples
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
+        eval_disc_samples = eval_disc.get_sosdisc_inputs(
+            'samples_df')
+        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
+
+        # 5. Change of eval_inputs without adding samples
+        # Change of eval_inputs
+        input_selection_x_a = {'selected_input': [True, False, False],
+                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+        input_selection_x_a = pd.DataFrame(input_selection_x_a)
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
+
+        # Change of samples
+        new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
+        new_samples_df = pd.DataFrame(new_samples_dict)
+        disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
+
+        # Reconfigure
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Check samples
+        eval_disc = exec_eng.dm.get_disciplines_with_name(
+            study_name + '.Eval')[0]
+        eval_disc_samples = eval_disc.get_sosdisc_inputs(
+            'samples_df')
+
+        x_all_nan = True
+        for element in list(eval_disc_samples['x']):
+            if math.isnan(element):
+                pass
+            else:
+                x_all_nan = False
+                break
+        assert x_all_nan == True
 
 
 
