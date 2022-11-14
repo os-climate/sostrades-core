@@ -128,12 +128,12 @@ class CartesianProductWrapper(SoSWrapp):
 
             # Dynamic set or update of GENERATED_SAMPLES for cartesian product
             # method
-            eval_inputs_cp_has_changed = False
+            self.eval_inputs_cp_has_changed = False
             if self.EVAL_INPUTS_CP in disc_in:
                 eval_inputs_cp = proxy.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
                 # 1. Manage update status of EVAL_INPUTS_CP
                 if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-                    eval_inputs_cp_has_changed = True
+                    self.eval_inputs_cp_has_changed = True
                     self.previous_eval_inputs_cp = eval_inputs_cp
                 # 2. Manage empty selection in EVAL_INPUTS_CP
                 if eval_inputs_cp is not None:
@@ -148,19 +148,26 @@ class CartesianProductWrapper(SoSWrapp):
                         LOGGER.warning(
                             'Selected_inputs must have at least 2 variables to do a cartesian product')
                     else:
-                        if eval_inputs_cp_has_changed:
+                        if self.eval_inputs_cp_has_changed:
                             dict_of_list_values = eval_inputs_cp_filtered.set_index(
                                 'full_name').T.to_dict('records')[0]
                             self.samples_gene_df = self.sample_generator.generate_samples(
                                 dict_of_list_values)
-                        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe', 'structuring': True, 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                                                'namespace': 'ns_cp', 'value': self.samples_gene_df}})
+                        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                                        'dataframe_edition_locked': True,
+                                                                        'structuring': True,
+                                                                        'unit': None,
+                                                                        'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                                        'namespace': 'ns_cp',
+                                                                        'default': self.samples_gene_df}})
+                    #dict_values = {}
+                    #dict_values[f'{proxy.get_disc_full_name()}.{self.GENERATED_SAMPLES}'] = self.samples_gene_df
+                    # proxy.ee.load_study_from_input_dict(dict_values)
+
                     # 3. Set or update GENERATED_SAMPLES in line with selected
                     # eval_inputs_cp
-                    # if self.GENERATED_SAMPLES in disc_in:
-                    #    proxy.dm.set_data(
-                    #        f'{proxy.get_disc_full_name()}.{self.GENERATED_SAMPLES}',
-                    #        self.VALUE, samples_gene_df)
+                    if self.GENERATED_SAMPLES in disc_in:
+                        disc_in[self.GENERATED_SAMPLES]['value'] = self.samples_gene_df
 
         proxy.add_inputs(dynamic_inputs)
         proxy.add_outputs(dynamic_outputs)

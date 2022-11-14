@@ -35,10 +35,10 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
 
         mod_dict_doe = {
-            'CP': 'sostrades_core.execution_engine.disciplines_wrappers.cartesian_product_wrapper.CartesianProductWrapper'}
+            'CP_Sampling': 'sostrades_core.execution_engine.disciplines_wrappers.cartesian_product_wrapper.CartesianProductWrapper'}
         builder = self.create_builder_list(mod_dict_doe,
                                            ns_dict={
-                                               'ns_cp': f'{self.ee.study_name}.CP'}
+                                               'ns_cp': f'{self.ee.study_name}.CP_Sampling'}
                                            )
 
         return builder

@@ -108,15 +108,15 @@ class TestCartesianProduct(unittest.TestCase):
         # -- set up disciplines in Scenario
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.CP.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.CP_Sampling.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{self.ns}.CP_Sampling.eval_inputs_cp'] = self.input_selection_cp_x_z
         #disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
-                       f'\t|_ CP']
+                       f'\t|_ CP_Sampling']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
@@ -195,13 +195,13 @@ class TestCartesianProduct(unittest.TestCase):
         # 1. Input sampling_method
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.CP.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{self.ns}.CP_Sampling.sampling_method'] = 'cartesian_product'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
-                       f'\t|_ CP']
+                       f'\t|_ CP_Sampling']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
@@ -224,7 +224,7 @@ class TestCartesianProduct(unittest.TestCase):
         # 2. Input eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.CP_Sampling.eval_inputs_cp'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -247,7 +247,7 @@ class TestCartesianProduct(unittest.TestCase):
         # 3. Input an updated eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.CP.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.CP_Sampling.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)

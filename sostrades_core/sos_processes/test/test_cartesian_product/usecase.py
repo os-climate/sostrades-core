@@ -29,7 +29,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase for lhs DoE
+        Usecase for cartesian product in stand alone
         """
 
         ns = f'{self.study_name}'
@@ -50,8 +50,8 @@ class Study(StudyManager):
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
         disc_dict = {}
-        disc_dict[f'{ns}.CP.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{ns}.CP.eval_inputs_cp'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.CP_Sampling.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{ns}.CP_Sampling.eval_inputs_cp'] = input_selection_cp_x_z
 
         return [disc_dict]
 
