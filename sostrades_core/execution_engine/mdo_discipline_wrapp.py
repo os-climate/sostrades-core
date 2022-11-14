@@ -138,7 +138,8 @@ class MDODisciplineWrapp(object):
             self._init_grammar_with_keys(proxy)
             self._set_wrapper_attributes(proxy, self.wrapper)
             self._update_all_default_values(proxy)
-            self.mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs('linearization_mode')
+            self.mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(
+                'linearization_mode')
             # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
@@ -224,8 +225,8 @@ class MDODisciplineWrapp(object):
             mdo_discipline.linear_solver_MDO = proxy.linear_solver_MDO
             mdo_discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
             mdo_discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
-            mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs('linearization_mode')
-            print('mda_chain_linearization_mode =', proxy.get_sosdisc_inputs('linearization_mode') )
+            mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(
+                'linearization_mode')
 
             # set other additional options (SoSTrades)
             mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
@@ -246,7 +247,8 @@ class MDODisciplineWrapp(object):
         for key, value in proxy.get_data_in().items():
             if value['default'] is not None:
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
-                self.mdo_discipline._default_inputs.update({full_key: value['default']})
+                self.mdo_discipline._default_inputs.update(
+                    {full_key: value['default']})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
         ''' 

@@ -842,8 +842,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
 
         ordered_list = self.proxy_disciplines
-        self.logger.warning(
-            "TODO: fix the order disc list in proxy coupling (set as the top level list of disciplines for debug purpose)")
+#         self.logger.warning(
+#             "TODO: fix the order disc list in proxy coupling (set as the top level list of disciplines for debug purpose)")
 
         return ordered_list
 
