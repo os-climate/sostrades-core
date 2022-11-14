@@ -431,7 +431,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             title_text=chart_name,
             showlegend=False,
             autosize=True,
-            height=data_df.shape[0] * 30 + 250,
+            # height=data_df.shape[0] * 10,
         )
 
         new_chart = None
@@ -494,12 +494,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         title: str = '',
         annotation_upper_left: dict = {},
         ticksuffix: str = '',
-        threshold_to_show:float =1, 
-
+        threshold_to_show: float = 1,
     ):
 
         fig = go.Figure()
-        threshold=threshold_to_show/100.
+        threshold = threshold_to_show / 100.0
 
         if (lab_column_name in df) & (val_column_name in df):
 
@@ -1201,7 +1200,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         df: pd.DataFrame,
         lab_column_name: str,
         val_column_name: str,
-        top_to_show:list,
+        top_to_show: list,
         chart_name: str = '',
         ticksuffix: str = '',
         title_prefix: str = '',
@@ -1216,14 +1215,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             df.sort_values(by=val_column_name, axis=0, ascending=False, inplace=True)
             # other_value = 0
             for top in top_to_show:
-                lines_showed=int(top.split(' ')[-1])
+                lines_showed = int(top.split(' ')[-1])
                 if lines_showed > len(df):
-                    lines_showed=len(df)
+                    lines_showed = len(df)
                 if top == top_to_show[0]:
                     vis = True
                 else:
                     vis = False
-                df_to_show=df.head(lines_showed)
+                df_to_show = df.head(lines_showed)
                 pie_labels = df_to_show[lab_column_name].values.tolist()
                 pie_values = df_to_show[val_column_name].values.tolist()
                 pie_text = [f'{round(val,2)} {ticksuffix}' for val in pie_values]
@@ -1258,11 +1257,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                                     {
                                         'visible': [
                                             True if i == j else False
-                                            for j in range(
-                                                int(
-                                                    len(fig.data)
-                                                )
-                                            )
+                                            for j in range(int(len(fig.data)))
                                         ]
                                     },
                                     {
