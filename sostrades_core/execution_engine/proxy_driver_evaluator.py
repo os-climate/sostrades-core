@@ -123,6 +123,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         get the desc_in or desc_out. if a wrapper exists get it from the wrapper, otherwise get it from the proxy class
         """
+        # TODO : check if the following logic could be OK, 
+        # according to what we want to do : DESC_IN of Proxy is updated by SoSWrapp if exists
+        # thus no mixed calls to n-1 and n-2
+
         if self.mdo_discipline_wrapp.wrapper is not None:
             # ProxyDiscipline gets the DESC from the wrapper
             return ProxyDiscipline.get_desc_in_out(self, io_type)
@@ -156,6 +160,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self._data_in == {} or self.subprocess_is_configured():
             # Call standard configure methods to set the process discipline
             # tree
+            # TODO: use super()
             ProxyDiscipline.configure(self)
             self.configure_driver()
 
