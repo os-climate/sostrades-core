@@ -233,7 +233,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'
             self.assertEqual(str(cm.exception), error_message)
 
-    def test_3_doe_pydoe_algo_check(self):
+    def _test_3_doe_pydoe_algo_check(self):
         """
         The aim of this test is to examine DoE Gemseo algorithms which are not CustomDOE, DiagonalDOE or
         OT, that is, pydoe DoE algorithm family.
@@ -394,7 +394,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
 
-    def test_4_doe_OT_algo_check(self):
+    def _test_4_doe_OT_algo_check(self):
         """
         The aim of this test is to examine DoE Gemseo algorithms which are not CustomDOE, DiagonalDOE or
         pydoe, that is, OT DoE algorithm family.
@@ -507,7 +507,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
             # To check what it is indispensable for each algo.
             if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
-                disc_dict[f'{self.ns}.DoE.algo_options']['levels'] = [0.1]    # Must be number between 0 and 1
+                disc_dict[f'{self.ns}.DoE.algo_options']['levels'] = [
+                    0.1]    # Must be number between 0 and 1
                 disc_dict[f'{self.ns}.DoE.algo_options']['centers'] = (0, 0, 0)
             else:
                 disc_dict[f'{self.ns}.DoE.algo_options']['levels'] = None
@@ -558,7 +559,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
 
-    def test_5_doe_execution_fullfact_generic_sample_tool(self):
+    def _test_5_doe_execution_fullfact_generic_sample_tool(self):
         """
         This is a test converted from EEV3 in which a fullfact sampling generation is compared with respect to a
         reference sampling for such DoE algo. It was made through a DoeEval but now just through a DoE.
@@ -595,7 +596,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {}
-        #Selection of the sampling generating method:
+        # Selection of the sampling generating method:
         disc_dict[f'{self.ns}.DoE.sampling_method'] = "DOE_GENERATOR"
         # DoE inputs
         n_samples = 10
@@ -650,4 +651,3 @@ class TestSoSDOEScenario(unittest.TestCase):
                                          columns=selected_inputs)
 
         assert_frame_equal(doe_disc_samples, target_samples_df)
-
