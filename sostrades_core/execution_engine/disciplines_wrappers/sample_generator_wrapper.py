@@ -47,20 +47,37 @@ LOGGER = logging.getLogger(__name__)
 class SampleGeneratorWrapper(SoSWrapp):
     '''
     Generic SampleGenerator class
+    1) Strucrure of Desc_in/Desc_out:
+        |_ DESC_IN
+            |_ SAMPLING_METHOD (namespace: 'ns_cp',structuring)
+                |_ EVAL_INPUTS (namespace: 'ns_doe1', structuring, dynamic : SAMPLING_METHOD ==self.DOE_ALGO)             
+                |_ SAMPLING_ALGO (structuring, dynamic : SAMPLING_METHOD ==self.DOE_ALGO)
+                        |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO!=None) NB: default DESIGN_SPACE depends on EVAL_INPUTS (As to be "Not empty")
+                        |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
+                |_ EVAL_INPUTS_CP (namespace: 'ns_cp', structuring, dynamic : SAMPLING_METHOD ==self.CARTESIAN_PRODUCT)
+                        |_ GENERATED_SAMPLES(namespace: 'ns_cp', structuring, dynamic: EVAL_INPUTS_CP != None)                 
+        |_ DESC_OUT
+            |_ SAMPLES_DF (namespace: 'ns_cp') 
     '''
-
-    # Design space dataframe headers
     VARIABLES = "variable"
     VALUES = "value"
+    POSSIBLE_VALUES = 'possible_values'
+    TYPE = "type"
+
+    NS_SEP = '.'
+    INPUT_TYPE = ['float', 'array', 'int', 'string']
+
+    DESIGN_SPACE = "design_space"
     UPPER_BOUND = "upper_bnd"
     LOWER_BOUND = "lower_bnd"
-    TYPE = "type"
+    DIMENSION = "dimension"
+    _VARIABLES_NAMES = "variables_names"
+    _VARIABLES_SIZES = "variables_sizes"
+
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
-    POSSIBLE_VALUES = 'possible_values'
-    N_SAMPLES = "n_samples"
-    DESIGN_SPACE = "design_space"
 
+    N_SAMPLES = "n_samples"
     ALGO = "sampling_algo"
     ALGO_OPTIONS = "algo_options"
     USER_GRAD = 'user'
@@ -72,22 +89,23 @@ class SampleGeneratorWrapper(SoSWrapp):
     # DESC_I/O
     PARALLEL_OPTIONS = 'parallel_options'
 
-    DIMENSION = "dimension"
-    _VARIABLES_NAMES = "variables_names"
-    _VARIABLES_SIZES = "variables_sizes"
-    NS_SEP = '.'
-    INPUT_TYPE = ['float', 'array', 'int', 'string']
-
     SAMPLING_METHOD = 'sampling_method'
-    DOE_GENERATOR = 'DOE_GENERATOR'
-    CARTESIAN_PRODUCT_GENERATOR = 'CARTESIAN_PRODUCT_GENERATOR'
+    DOE_ALGO = 'doe_algo'
+    CARTESIAN_PRODUCT = 'cartesian_product'
+    available_sampling_methods = [DOE_ALGO, CARTESIAN_PRODUCT]
 
-    available_sampling_methods = [DOE_GENERATOR, CARTESIAN_PRODUCT_GENERATOR]
-    DESC_IN = {'sampling_method': {'type': 'string', 'structuring': True, 'possible_values': available_sampling_methods}}
+    EVAL_INPUTS_CP = 'eval_inputs_cp'
+    GENERATED_SAMPLES = 'generated_samples'
+    SAMPLES_DF = 'samples_df'
+
+    DESC_IN = {'sampling_method': {'type': 'string',
+                                   'structuring': True,
+                                   'possible_values': available_sampling_methods}}
 
     DESC_OUT = {
-        'samples_df': {'type': 'dataframe', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                       'namespace': 'ns_doe1'}
+        'samples_df': {'type': 'dataframe',
+                       'unit': None,
+                       'visibility': SoSWrapp.LOCAL_VISIBILITY}
     }
 
     default_algo_options = {
@@ -104,40 +122,116 @@ class SampleGeneratorWrapper(SoSWrapp):
         'levels': 'default'
     }
 
-
     def __init__(self, sos_name):
         super().__init__(sos_name)
         self.sample_generator = None
+        self.sample_generator_doe = None
+        self.sample_generator_cp = None
+
         self.sampling_method = None
         # self.previous_algo_name = ""
+
         self.previous_sampling_method = ""
         self.selected_inputs = None
         self.eval_in_list = None
-        self.selected_inputs = None
         self.dict_desactivated_elem = {}
+        self.previous_eval_inputs = None
 
-        # self.instantiate_sampling_tool()
+        self.previous_eval_inputs_cp = None
+        self.eval_inputs_cp_filtered = None
+        self.eval_inputs_cp_validity = True
 
-    def instantiate_sampling_tool(self):
+        self.samples_gene_df = None
 
-        if self.sampling_method == self.DOE_GENERATOR:
-            self.sample_generator = DoeSampleGenerator()
-        elif self.sampling_method == self.CARTESIAN_PRODUCT_GENERATOR:
-            self.sample_generator = CartesianProductSampleGenerator()
+    def setup_sos_disciplines(self, proxy):
+
+        dynamic_inputs = {}
+        dynamic_outputs = {}
+        disc_in = proxy.get_data_in()
+
+        if len(disc_in) != 0:
+            self.sampling_method = proxy.get_sosdisc_inputs(
+                self.SAMPLING_METHOD)
+            self.instantiate_sampling_tool()
+
+            # sampling_method_has_changed = False
+            # if self.previous_sampling_method != self.sampling_method:
+            #     sampling_method_has_changed = True
+            #     self.previous_sampling_method = self.sampling_method
+
+            # Switch betwwen doe_algo method or cartesian_product method
+            if self.sampling_method == self.DOE_ALGO:
+                dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method(
+                    proxy, disc_in)
+            elif self.sampling_method == self.CARTESIAN_PRODUCT:
+                self.setup_cp_method(proxy, dynamic_inputs)
+            elif self.sampling_method is not None:
+                # FIXME: this case should not arrive since exception would
+                # already had been raised during instantiation of sampling
+                # tool. Else in case more tools are introduced.
+                raise Exception(
+                    f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
+                    f"introduce one of the available methods from {self.available_sampling_methods}.")
+
+        proxy.add_inputs(dynamic_inputs)
+        proxy.add_outputs(dynamic_outputs)
+
+    def run(self):
+
+        samples = None
+
+        if self.sampling_method == self.DOE_ALGO:
+            algo_name = self.get_sosdisc_inputs(self.ALGO)
+            algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
+            dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+
+            design_space = self.create_design_space(
+                self.selected_inputs, dspace_df)
+            # self.design_space = design_space
+
+            samples = self.sample_generator_doe.generate_samples(
+                algo_name, algo_options, design_space)
+        elif self.sampling_method == self.CARTESIAN_PRODUCT:
+            samples = self.run_cp()
         else:
+            # FIXME: this case should not arrive since exception would already
+            # had been raised during intanstiation of sampling tool. Else in
+            # case more tools are introduced.
             raise Exception(
                 f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
                 f"introduce one of the available methods from {self.available_sampling_methods}.")
 
+        # Loop to raise an error in case the sampling has not been made.
+        # If samples' type is dataframe, that means that the previous loop has
+        # been entered.
+        if isinstance(samples, pd.DataFrame):
+            pass
+        else:
+            raise Exception(
+                f"Sampling has not been made")
+
+        self.store_sos_outputs_values({'samples_df': samples})
+
+    def instantiate_sampling_tool(self):
+        """
+           Instantiate SampleGenearator once and only if needed
+        """
+        if self.sampling_method == self.DOE_ALGO:
+            if self.sample_generator_doe == None:
+                self.sample_generator_doe = DoeSampleGenerator()
+        elif self.sampling_method == self.CARTESIAN_PRODUCT:
+            if self.sample_generator_cp == None:
+                self.sample_generator_cp = CartesianProductSampleGenerator()
 
     def get_algo_default_options(self, algo_name):
-        """This algo generate the default options to set for a given doe algorithm
+        """
+            This algo generate the default options to set for a given doe algorithm
         """
 
         # In get_options_and_default_values, it is already checked whether the algo_name belongs to the list of possible Gemseo
         # DoE algorithms
         if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_and_default_values(
+            algo_options_desc_in, algo_options_descr_dict = self.sample_generator_doe.get_options_and_default_values(
                 algo_name)
             return algo_options_desc_in
         else:
@@ -247,70 +341,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                     name, size, var_type, l_b, u_b, value)
         return design_space
 
-    def run(self):
-
-        samples = None
-
-        if self.sampling_method == self.DOE_GENERATOR:
-            algo_name = self.get_sosdisc_inputs(self.ALGO)
-            algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-            dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-
-            design_space = self.create_design_space(
-                self.selected_inputs, dspace_df)
-            # self.design_space = design_space
-
-            samples = self.sample_generator.generate_samples(
-                algo_name, algo_options, design_space)
-        elif self.sampling_method == self.CARTESIAN_PRODUCT:
-            pass
-        else:
-            # FIXME: this case should not arrive since exception would already had been raised during intanstiation of sampling tool. Else in case more tools are introduced.
-            raise Exception(
-                f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
-                f"introduce one of the available methods from {self.available_sampling_methods}.")
-
-        # Loop to raise an error in case the sampling has not been made.
-        # If samples' type is dataframe, that means that the previous loop has been entered.
-        if isinstance(samples, pd.DataFrame):
-            pass
-        else:
-            raise Exception(
-                f"Sampling has not been made")
-
-        self.store_sos_outputs_values({'samples_df': samples})
-
-    def setup_sos_disciplines(self, proxy):
-
-        dynamic_inputs = {}
-        dynamic_outputs = {}
-        disc_in = proxy.get_data_in()
-
-        if len(disc_in) != 0:
-
-            self.sampling_method = proxy.get_sosdisc_inputs(self.SAMPLING_METHOD)
-            self.instantiate_sampling_tool()
-
-            # sampling_method_has_changed = False
-            # if self.previous_sampling_method != self.sampling_method:
-            #     sampling_method_has_changed = True
-            #     self.previous_sampling_method = self.sampling_method
-
-            if self.sampling_method == self.DOE_GENERATOR:
-
-                dynamic_inputs, dynamic_outputs = self.update_dynamic_inputs_outputs_doe(proxy,disc_in)
-            elif self.sampling_method == self.CARTESIAN_PRODUCT_GENERATOR:
-                pass
-            else:
-                #FIXME: this case should not arrive since exception would already had been raised during intanstiation of sampling tool. Else in case more tools are introduced.
-                raise Exception(
-                    f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
-                    f"introduce one of the available methods from {self.available_sampling_methods}.")
-
-        proxy.add_inputs(dynamic_inputs)
-        proxy.add_outputs(dynamic_outputs)
-
-    def update_dynamic_inputs_outputs_doe(self, proxy, disc_in):
+    def setup_doe_algo_method(self, proxy, disc_in):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
@@ -318,9 +349,10 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         # Dynamic input of old 'nominal' DESC_IN of DoEWrapper
         # Get possible values for sampling algorithm name
-        available_doe_algorithms = self.sample_generator.get_available_algo_names()
+        available_doe_algorithms = self.sample_generator_doe.get_available_algo_names()
         dynamic_inputs.update({'sampling_algo':
-                                   {'type': 'string', 'structuring': True, 'possible_values': available_doe_algorithms},
+                               {'type': 'string', 'structuring': True,
+                                   'possible_values': available_doe_algorithms},
                                'eval_inputs':
                                    {'type': 'dataframe',
                                     'dataframe_descriptor': {'selected_input': ('bool', None, True),
@@ -394,3 +426,158 @@ class SampleGeneratorWrapper(SoSWrapp):
                 #     disc_in['design_space']['value'] = default_design_space
 
         return dynamic_inputs, dynamic_outputs
+
+    def setup_cp_method(self, proxy, dynamic_inputs):
+        '''
+        Method that setup the cp method
+
+        '''
+        # Reset parameters of the other method to initial values
+        self.previous_eval_inputs = None
+        # Define the selected method name as attribute and instantiate
+        # the sample generator
+        self.generator_name = 'cp_generator'
+        if self.sample_generator_cp == None:
+            self.sample_generator_cp = CartesianProductSampleGenerator()
+        # Setup dynamic inputs for cp_generator method: i.e. EVAL_INPUTS_CP
+        self.setup_dynamic_inputs_for_cp_generator_method(dynamic_inputs)
+        # Setup dynamic inputs which depend on EVAL_INPUTS_CP setting or
+        # update: i.e. GENERATED_SAMPLES
+        self.setup_dynamic_inputs_which_depend_on_eval_input_cp(
+            proxy, dynamic_inputs)
+
+    def setup_dynamic_inputs_for_cp_generator_method(self, dynamic_inputs):
+        '''
+        Method that setup dynamic inputs in case of cp_generator selection: i.e. EVAL_INPUTS_CP
+
+        Arguments:
+            dynamic_inputs (dict): the dynamic input dict to be updated
+
+        '''
+        default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
+                                                 'full_name': [''],
+                                                 'list_of_values': [[]]})
+        dynamic_inputs.update({self.EVAL_INPUTS_CP: {'type': 'dataframe',
+                                                     'dataframe_descriptor': {'selected_input': ('bool', None, True),
+                                                                              'full_name': ('string', None, True),
+                                                                              'list_of_values': ('list', None, True)},
+                                                     'dataframe_edition_locked': False,
+                                                     'structuring': True,
+                                                     'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                     'namespace': 'ns_cp',
+                                                     'default': default_in_eval_input_cp}})
+
+    def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, proxy, dynamic_inputs):
+        '''
+        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
+        Arguments:
+            dynamic_inputs (dict): the dynamic input dict to be updated
+        '''
+        self.eval_inputs_cp_has_changed = False
+        disc_in = proxy.get_data_in()
+        if self.EVAL_INPUTS_CP in disc_in and self.generator_name == 'cp_generator':
+            eval_inputs_cp = proxy.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
+            # 1. Manage update status of EVAL_INPUTS_CP
+            if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
+                self.eval_inputs_cp_has_changed = True
+                self.previous_eval_inputs_cp = eval_inputs_cp
+            # 2. Manage selection in EVAL_INPUTS_CP
+            if eval_inputs_cp is not None:
+                # reformat eval_inputs_cp to take into account only useful
+                # informations
+                self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
+                    eval_inputs_cp)
+                # Check selected input cp validity
+                self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
+                    self.eval_inputs_cp_filtered)
+                # Setup GENERATED_SAMPLES for cartesian product
+                self.setup_generated_samples_for_cp(proxy, dynamic_inputs)
+
+    def setup_generated_samples_for_cp(self, proxy, dynamic_inputs):
+        '''
+        Method that setup GENERATED_SAMPLES for cartesian product
+        Arguments:
+            dynamic_inputs (dict): the dynamic input dict to be updated
+        '''
+        if self.eval_inputs_cp_validity:
+            if self.eval_inputs_cp_has_changed:
+                dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
+                    'full_name').T.to_dict('records')[0]
+                self.samples_gene_df = self.sample_generator_cp.generate_samples(
+                    dict_of_list_values)
+            dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                            'dataframe_edition_locked': True,
+                                                            'structuring': True,
+                                                            'unit': None,
+                                                            'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                            'namespace': 'ns_cp',
+                                                            'default': self.samples_gene_df}})
+
+        # Set or update GENERATED_SAMPLES in line with selected
+        # eval_inputs_cp
+        disc_in = proxy.get_data_in()
+        if self.GENERATED_SAMPLES in disc_in:
+            disc_in[self.GENERATED_SAMPLES]['value'] = self.samples_gene_df
+
+    def reformat_eval_inputs_cp(self, eval_inputs_cp):
+        '''
+        Method that reformat eval_input_cp depending on user's selection
+
+        Arguments:
+            eval_inputs_cp (dataframe): 
+
+        Returns:
+            eval_inputs_cp_filtered (dataframe) :
+
+        '''
+        logic_1 = eval_inputs_cp['selected_input'] == True
+        logic_2 = eval_inputs_cp['list_of_values'].isin([[]])
+        logic_3 = eval_inputs_cp['full_name'] is None
+        logic_4 = eval_inputs_cp['full_name'] == ''
+        eval_inputs_cp_filtered = eval_inputs_cp[logic_1 &
+                                                 ~logic_2 & ~logic_3 & ~logic_4]
+        eval_inputs_cp_filtered = eval_inputs_cp_filtered[[
+            'full_name', 'list_of_values']]
+        return eval_inputs_cp_filtered
+
+    def check_eval_inputs_cp(self, eval_inputs_cp_filtered):
+        '''
+        Method that reformat eval_input_cp depending on user's selection
+
+        Arguments:
+            eval_inputs_cp (dataframe): 
+
+        Returns:
+            validity (boolean) :
+
+        '''
+        is_valid = True
+        selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
+        if len(selected_inputs_cp) < 2:
+            LOGGER.warning(
+                'Selected_inputs must have at least 2 variables to do a cartesian product')
+            is_valid = False
+        return is_valid
+
+    def run_cp(self):
+        '''
+        Method that generates the desc_out self.SAMPLES_DF from desc_in self.GENERATED_SAMPLES
+        Here no modification of the samples: but we can imagine that we may remove raws.
+        Maybe we do not need a run method here.
+
+        Inputs:
+            self.GENERATED_SAMPLES (dataframe) : generated samples from sampling method
+        Outputs:
+            self.SAMPLES_DF (dataframe) : prepared samples for evaluation
+        '''
+
+        GENERATED_SAMPLES = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
+
+        samples_df = GENERATED_SAMPLES
+
+        # prepared_samples = self.sample_generator_cp.prepare_samples_for_evaluation(
+        #     samples, eval_in_list, design_space)
+
+        self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
+
+        return samples_df
