@@ -266,6 +266,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.add_outputs(dynamic_outputs)
             elif builder_mode == self.REGULAR_BUILD:
                 pass  # regular build requires no specific dynamic inputs
+            elif builder_mode is None:
+                pass
             else:
                 raise ValueError(
                     f'Wrong builder mode input in {self.sos_name}')
@@ -300,6 +302,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 builder_list = self.prepare_mono_instance_build()
             elif builder_mode == self.REGULAR_BUILD:
                 builder_list = super().prepare_build()
+            elif builder_mode is None:
+                pass
             else:
                 raise ValueError(
                     f'Wrong builder mode input in {self.sos_name}')
@@ -441,8 +445,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
                                                 self.SCENARIO_NAME: ('string', None, True)},
                     self.DATAFRAME_EDITION_LOCKED: False,
-                    self.VISIBILITY: self.SHARED_VISIBILITY,
-                    self.NAMESPACE: input_ns,
+                    # self.VISIBILITY: self.SHARED_VISIBILITY,
+                    # self.NAMESPACE: input_ns,
                     self.EDITABLE: True,
                     self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
                 self.add_inputs(scenario_df_input)
@@ -466,8 +470,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
                                                     self.SCENARIO_NAME: ('string', None, True)},
                         self.DATAFRAME_EDITION_LOCKED: False,
-                        self.VISIBILITY: self.SHARED_VISIBILITY,
-                        self.NAMESPACE: input_ns,
+                        # self.VISIBILITY: self.SHARED_VISIBILITY,
+                        # self.NAMESPACE: input_ns,
                         self.EDITABLE: True,
                         self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
                     self.add_inputs(scenario_df_input)

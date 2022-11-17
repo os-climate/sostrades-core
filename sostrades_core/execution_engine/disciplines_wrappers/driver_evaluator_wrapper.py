@@ -61,7 +61,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     DESC_IN = {
             BUILDER_MODE : {SoSWrapp.TYPE: 'string',
-                            SoSWrapp.DEFAULT: MONO_INSTANCE,
+                            # SoSWrapp.DEFAULT: MULTI_INSTANCE,
                             SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
                             SoSWrapp.STRUCTURING: True}
      }

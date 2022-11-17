@@ -952,5 +952,46 @@ class TestSoSDOEScenario(unittest.TestCase):
                 break
         assert x_all_nan == True
 
+    def test_9_nested_very_simple_multi_scenarios(self):
 
+        study_name = 'root'
+        ns = study_name
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        proc_name = "test_disc1_disc3_very_simple_multi_scenario_nested"
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                        mod_id=proc_name)
 
+        exec_eng.factory.set_builders_to_coupling_builder(
+            eval_builder)
+
+        exec_eng.configure()
+
+        dict_values = {}
+        dict_values[f'{study_name}.outer_ms.builder_mode'] = 'multi_instance'
+        dict_values[f'{study_name}.outer_ms.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                     False,
+                                                                                                     True],
+                                                                               'scenario_name': ['scenario_1',
+                                                                                                 'scenario_Z',
+                                                                                                 'scenario_2']})
+        exec_eng.load_study_from_input_dict(dict_values)
+
+        dict_values[f'{study_name}.outer_ms.scenario_1.inner_ms.builder_mode'] = 'multi_instance'
+        dict_values[f'{study_name}.outer_ms.scenario_1.inner_ms.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                                             False,
+                                                                                                                             True],
+                                                                                                                   'scenario_name': ['name_11',
+                                                                                                                                     'name_1K',
+                                                                                                                                     'name_12']})
+        dict_values[f'{study_name}.outer_ms.scenario_2.inner_ms.builder_mode'] = 'multi_instance'
+        dict_values[f'{study_name}.outer_ms.scenario_2.inner_ms.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                                             False,
+                                                                                                                             True],
+                                                                                                       'scenario_name': ['name_21',
+                                                                                                                         'name_2K',
+                                                                                                                         'name_22']})
+        exec_eng.load_study_from_input_dict(dict_values)
+        print(exec_eng.display_treeview_nodes())
+        print('=====')
+        print(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()))
