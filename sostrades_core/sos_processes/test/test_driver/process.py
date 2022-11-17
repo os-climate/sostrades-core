@@ -45,7 +45,7 @@ class ProcessBuilder(BaseProcessBuilder):
                                                             mod_id='test_disc1_disc2_coupling')
 
         self.ee.ns_manager.add_ns_def(my_namespace)
-        scatter_builder_list = self.ee.factory.create_very_simple_multi_scenario_driver(
-            'multi_scenarios', 'scenario_list', cls_list, autogather=False)
+        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+            'multi_scenarios', cls_list, map_name='scenario_list')
 
-        return scatter_builder_list
+        return multi_scenarios

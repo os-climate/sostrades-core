@@ -114,6 +114,7 @@ class ScatterTool(SosTool):
                 else:
                     self.build_child_scatter(
                         name, new_name, ns_ids_list)
+            self.clean_builders()
 
     def build_sub_coupling(self, name, new_name, ns_ids_list):
         '''
@@ -226,6 +227,10 @@ class ScatterTool(SosTool):
 
             del self.__scattered_disciplines[disc]
 
+    def clean_all_disciplines_from_tool(self):
+        all_disc_list = self.get_all_builded_disciplines()
+        self.clean_from_driver(all_disc_list)
+
     def clean_from_driver(self, disc_list):
         """
         This method cleans the given list of children from the current discipline
@@ -242,5 +247,12 @@ class ScatterTool(SosTool):
             self.__scattered_disciplines[name].append(disc)
         else:
             self.__scattered_disciplines.update({name: [disc]})
-        if disc not in self.driver.built_proxy_disciplines:
-            self.driver.built_proxy_disciplines.append(disc)
+
+    def get_all_builded_disciplines(self):
+
+        return [disc for disc_list in self.__scattered_disciplines.values() for disc in disc_list]
+
+    def clean_builders(self):
+
+        for builder in self.sub_builders:
+            builder.delete_all_associated_namespaces()

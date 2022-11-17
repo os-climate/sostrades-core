@@ -126,7 +126,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         get the desc_in or desc_out. if a wrapper exists get it from the wrapper, otherwise get it from the proxy class
         """
-        # TODO : check if the following logic could be OK, 
+        # TODO : check if the following logic could be OK,
         # according to what we want to do : DESC_IN of Proxy is updated by SoSWrapp if exists
         # thus no mixed calls to n-1 and n-2
 
@@ -290,7 +290,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             builder_mode_has_changed = builder_mode != self.old_builder_mode
             if builder_mode_has_changed:
-                self.clean_children(self.built_proxy_disciplines)
+                self.clean_children()
                 if self.old_builder_mode == self.MONO_INSTANCE:
                     self.clean_namespaces_with_subprocess()
                     self.eval_process_builder = None

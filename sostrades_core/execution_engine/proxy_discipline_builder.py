@@ -80,9 +80,6 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
             proxy_disc = builder.build()
             if proxy_disc not in self.proxy_disciplines:
                 self.ee.factory.add_discipline(proxy_disc)
-            # so that cleaning is good both for scatter and coupling
-            if proxy_disc not in self.built_proxy_disciplines:
-                self.built_proxy_disciplines.append(proxy_disc)
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
         # high level coupling and we do not have to restore the
         # current_discipline
@@ -114,9 +111,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;
         We first begin by cleaning all the disciplines children, afterward we clean the discipline itself
         """
-        for discipline in self.built_proxy_disciplines:
-            discipline.clean()
-            self.ee.factory.remove_discipline_from_father_executor(discipline)
+        self.clean_children()
 
         #         SoSDiscipline.clean(self)
         self.father_builder.remove_discipline(self)
@@ -127,14 +122,22 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         if not hasattr(self, 'coupling_per_scatter'):
             self.ee.factory.remove_sos_discipline(self)
 
-    def clean_children(self, list_children):
+    def clean_children(self, list_children=None):
         """
         This method cleans the given list of children from the current discipline
+        If no given_list then it clean the entire list of built_proxy_disciplines
         """
-        for discipline in list_children:
-            self.built_proxy_disciplines.remove(discipline)
-            discipline.clean()
-            self.ee.factory.remove_discipline_from_father_executor(discipline)
+        if list_children is not None:
+            for discipline in list_children:
+                discipline.clean()
+                self.ee.factory.remove_discipline_from_father_executor(
+                    discipline)
+        else:
+            for discipline in self.proxy_disciplines:
+                discipline.clean()
+
+            self.proxy_disciplines = []
+
         self._is_configured = False
 
     def get_desc_in_out(self, io_type):
