@@ -79,19 +79,13 @@ class ScatterMap:
 
         self.builder = builder
 
-    def modify_scatter_ns(self, builder_name, scatter_name, local_namespace):
+    def modify_scatter_ns(self, scatter_name, local_namespace):
         '''
         Modify disc scatter_ns value and add it to ns_manager 
         '''
 
-        if not isinstance(self.builder, list):
-            base_namespace = local_namespace.replace(
-                f'.{builder_name}', '')
-        else:
-            base_namespace = local_namespace
-
         ns_id = self.ee.ns_manager.add_ns(
-            self.get_scatter_ns(), f'{base_namespace}.{scatter_name}', add_in_shared_ns_dict=True)
+            self.get_scatter_ns(), f'{local_namespace}.{scatter_name}', add_in_shared_ns_dict=False)
 
         return ns_id
 

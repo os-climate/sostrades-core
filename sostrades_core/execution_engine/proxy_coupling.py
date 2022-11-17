@@ -201,7 +201,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     eps0 = 1.0e-6
     has_chart = False
 
-    def __init__(self, sos_name, ee, cls_builder=None, with_data_io=False, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         '''
         Constructor
 
@@ -217,7 +217,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Coupling')
 
-        self.with_data_io = with_data_io
         self.residuals_dict = {}
 
         self.linear_solver_MDA = None

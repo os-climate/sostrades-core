@@ -70,7 +70,7 @@ class SosFactory:
         self.__sos_name = sos_name
         self.__execution_engine = execution_engine
         self.__ns_manager = execution_engine.ns_manager
-
+        self.__tool_factory = execution_engine.tool_factory
         self.__proxy_disciplines = []
 
         self.__created_namespace = None
@@ -110,6 +110,10 @@ class SosFactory:
     @property
     def root(self):
         return self.__root
+
+    @property
+    def tool_factory(self):
+        return self.__tool_factory
 
     def set_builders_to_coupling_builder(self, builders):
         """add builders to builder list
@@ -289,7 +293,7 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_driver_evaluator_builder(self, sos_name, cls_builder, driver_wrapper_mod=None, builder_tool=None):
+    def create_driver_evaluator_builder(self, sos_name, cls_builder=None, driver_wrapper_mod=None, builder_tool=None):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
         if driver_wrapper_mod is None:
@@ -297,12 +301,22 @@ class SosFactory:
         driver_wrapper_cls = self.get_disc_class_from_module(
             driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        if isinstance(cls_builder, list):
-            builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
-        else:
-            builder.set_builder_info('cls_builder', [cls_builder])
+
+        if cls_builder is not None:
+            if isinstance(cls_builder, list):
+                builder.set_builder_info(
+                    'cls_builder', list(flatten(cls_builder)))
+            else:
+                builder.set_builder_info('cls_builder', [cls_builder])
+
+        if builder_tool is not None:
+            builder.set_builder_info('builder_tool', builder_tool)
+
+        if builder_tool is None and cls_builder is None:
+            raise Exception(
+                'The driver evaluator builder must have either a cls_builder either a builder_tool to work')
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
-        builder.set_builder_info('builder_tool', builder_tool)
+
         return builder
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
@@ -341,7 +355,9 @@ class SosFactory:
                 f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
             )
         elif eval_type == 'doe_eval':
-            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'  # FIXME: should use DriverEvaluator objects, once the DoEEval tests are adapted
+            # FIXME: should use DriverEvaluator objects, once the DoEEval tests
+            # are adapted
+            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
             driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
         elif eval_type == 'eval':
             module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
@@ -624,47 +640,49 @@ class SosFactory:
     def create_scatter_driver_with_tool(
         self,
         sos_name,
-        map_name,
         cls_builder,
-        autogather=False,
-        gather_node=None,
-        business_post_proc=False,
+        map_name
     ):
         """
         create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
         """
+        scatter_tool = self.tool_factory.create_tool_builder(
+            'scatter_name', 'ScatterTool', map_name=map_name)
+
+        # TODO: handle autogather input order and set to True...
+        multi_scenarios = self.create_driver_with_tool(
+            sos_name, cls_builder, scatter_tool)
+
+        return multi_scenarios
+
+    def create_tool_builder(
+        self, tool_type,
+        map_name=None,
+    ):
+        """
+        create a  tool builder
+        """
+        tool_builder = self.tool_factory.get_tool_builder(tool_type)
         scatter_tool_path = f'{self.EE_PATH}.scatter_tool.ScatterTool'
 
         scatter_tool = self.get_disc_class_from_module(scatter_tool_path)
+        tool_builder.set_builder_info('map_name', map_name)
+
+        return scatter_tool
+
+    def create_driver_with_tool(
+        self,
+        sos_name, cls_builder, builder_tool
+    ):
+        """
+        create a driver associated with a tool to build cls_builder
+        """
 
         builder = self.create_driver_evaluator_builder(
-            sos_name, cls_builder, builder_tool=scatter_tool)
-        builder.set_builder_info('map_name', map_name)
-        # builder.set_builder_info('autogather', autogather) #TODO: not adressed
-        # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
-        # builder.set_builder_info('business_post_proc', business_post_proc)
-        # #TODO: not adressed
+            sos_name, cls_builder=cls_builder, builder_tool=builder_tool)
+
         list_builder = [builder]
 
-#         # TODO: address autogather
-#         if autogather:
-#             proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
-#             proxy_scatter_cls = self.get_disc_class_from_module(proxy_scatter_mod_path)
-#             # TODO: multiscatter?
-#             # mod_path_multi_scatter = (
-#             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-#             # )
-#             # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
-#             for sub_builder in builder_list:
-#                 if sub_builder.cls is not proxy_scatter_cls: # not in [cls_scatter, cls_multi_scatter]:
-#                     if gather_node is None:
-#                         complete_name = sub_builder.sos_name
-#                     else:
-#                         complete_name = f'{gather_node}.{sub_builder.sos_name}'
-#                     gather = self.create_gather_builder(
-#                         complete_name, map_name, sub_builder
-#                     )
-#                     list_builder.append(gather)
         return list_builder
 
     def create_scatter_data_builder(self, sos_name, map_name):

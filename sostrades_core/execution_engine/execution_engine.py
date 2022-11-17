@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -74,6 +75,10 @@ class ExecutionEngine:
                               logger=get_sos_logger(f'{self.logger.name}.DataManager'))
         self.smaps_manager = ScatterMapsManager(
             name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
+
+        self.tool_factory = ToolFactory(
+            self, self.study_name)
+
         self.__factory = SosFactory(
             self, self.study_name)
 

@@ -172,7 +172,6 @@ class ProxyDisciplineScatter(ProxyDisciplineBuilder):
             coupling_builder = self.ee.factory.create_builder_coupling(name)
 
             coupling_builder.set_builder_info('cls_builder', self.__builders)
-            coupling_builder.set_builder_info('with_data_io', True)
             self.sub_coupling_builder_dict[name] = coupling_builder
 
             coupling_disc = coupling_builder.build()
