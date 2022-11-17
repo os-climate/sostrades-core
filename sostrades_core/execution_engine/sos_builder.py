@@ -51,6 +51,10 @@ class SoSBuilder(object):
         return self.__disc_name
 
     @property
+    def ee(self):
+        return self.__ee
+
+    @property
     def args(self):
         return self.__args
 

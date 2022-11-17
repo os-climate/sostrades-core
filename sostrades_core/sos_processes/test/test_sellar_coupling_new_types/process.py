@@ -19,6 +19,7 @@ Generate an optimization scenario
 """
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
@@ -28,6 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         '''
         default initialisation test
@@ -38,9 +40,10 @@ class ProcessBuilder(BaseProcessBuilder):
                      'Sellar_2': disc_dir + 'Sellar2Df',
                      'Sellar_1': disc_dir + 'Sellar1Df'}
 
-        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_OptimSellar': self.ee.study_name + '.SellarCoupling'})
-        coupling_builder = self.ee.factory.create_builder_coupling("SellarCoupling")
+        builder_list = self.create_builder_list(
+            mods_dict, ns_dict={'ns_OptimSellar': self.ee.study_name + '.SellarCoupling'})
+        coupling_builder = self.ee.factory.create_builder_coupling(
+            "SellarCoupling")
         coupling_builder.set_builder_info('cls_builder', builder_list)
-        coupling_builder.set_builder_info('with_data_io', True)
-    
+
         return coupling_builder

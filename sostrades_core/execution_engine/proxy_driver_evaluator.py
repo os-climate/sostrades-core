@@ -13,16 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import pandas as pd
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-import pandas as pd
 import copy
+import pandas as pd
 from numpy import NaN
-import math
+
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -31,6 +30,7 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
+from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -45,7 +45,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Eval Model',
+        'label': 'Driver Evaluator',
         'type': 'Official',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -70,9 +70,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SUBCOUPLING_NAME = 'subprocess'
     EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    def __init__(self, sos_name, ee, cls_builder,
+    def __init__(self, sos_name, ee, cls_builder=None,
                  driver_wrapper_cls=None,
-                 map_name=None,
                  associated_namespaces=None,
                  builder_tool=None):
         """
@@ -93,22 +92,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         super().__init__(sos_name, ee, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
-        if cls_builder is None:
-            cls_builder = []
-
-        if builder_tool:
-            self.builder_tool_cls = builder_tool
+        if cls_builder is not None:
             self.cls_builder = cls_builder
-            self.builder_tool = None
-            self.scatter_list_name = None
         else:
-            self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
+            self.cls_builder = None
+
+        self.builder_tool = None
+        if builder_tool is not None:
+            if not isinstance(builder_tool, ToolBuilder):
+                self.logger.error(
+                    f'The given builder tool {builder_tool} is not a tool builder')
+            self.builder_tool_cls = builder_tool
+        else:
             self.builder_tool_cls = None
+
+        if builder_tool is None and cls_builder is None:
+            raise Exception(
+                'The driver evaluator builder must have either a cls_builder either a builder_tool to work')
 
         self.old_builder_mode = None
         self.eval_process_builder = None
-        self.scatter_process_builder = None
-        self.map_name = map_name
         self.scatter_list = None
         self.eval_in_list = None
         self.eval_out_list = None
@@ -283,9 +286,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: make me work with custom driver
         # TODO: test proper cleaning when changing builder mode
         builder_list = []
-        if len(self.cls_builder) == 0:  # added condition for proc build
-            pass
-        elif self.BUILDER_MODE in self.get_data_in():
+        if self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             builder_mode_has_changed = builder_mode != self.old_builder_mode
             if builder_mode_has_changed:
@@ -294,7 +295,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.clean_namespaces_with_subprocess()
                     self.eval_process_builder = None
                 elif self.old_builder_mode == self.MULTI_INSTANCE:
-                    self.scatter_process_builder = None
+                    self.builder_tool = None
                 self.old_builder_mode = copy.copy(builder_mode)
             if builder_mode == self.MULTI_INSTANCE:
                 builder_list = self.prepare_multi_instance_build()
@@ -375,31 +376,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Remark2: /!\ REMOVED the len(self.proxy_disciplines) == 0 condition
         # to accommodate the DriverEvaluator that holds te build until inputs
         # are available
-        return self.get_disciplines_to_configure() == [] or len(self.cls_builder) == 0
-
-    # MULTI INSTANCE PROCESS
-    def _set_scatter_process_builder(self, map_name):
-        """
-        Create and set the scatter builder that will allow multi-instance builds.
-        """
-        if len(self.cls_builder) == 0:  # added condition for proc build
-            scatter_builder = None
-        else:
-
-            # builder of the scatter in aggregation with references to
-            # self.cls_builder builders
-            scatter_builder = self.ee.factory.create_scatter_builder(self.sos_name, map_name, self.cls_builder,  # TODO: nice to remove scatter node
-                                                                     coupling_per_scatter=True)  # NB: is hardcoded also in VerySimpleMS/SimpleMS
-
-        self.scatter_process_builder = scatter_builder
-
-    def set_father_discipline(self):
-
-        ProxyDisciplineBuilder.set_father_discipline(self)
-
-        if self.scatter_process_builder is not None:
-            self.ee.ns_manager.set_current_disc_ns(
-                self.get_disc_full_name().replace(f'.{self.sos_name}', ''))
+        return self.get_disciplines_to_configure() == []  # or len(self.cls_builder) == 0
 
     def prepare_multi_instance_build(self):
         """
@@ -407,27 +384,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         # TODO: will need to include options for MultiScenario other than
         # VerySimple
-        if self.map_name is not None:
-            # set the scatter builder that allows to scatter the subprocess
-            if self.builder_tool_cls:
-                self.build_tool()
-                # Tool is building disciplines for the driver on behalf of the
-                # driver name
-                return []
-            else:
-                if self.scatter_process_builder is None:
 
-                    self._set_scatter_process_builder(self.map_name)
-                # if the scatter builder exists, use it to build the process
-                if self.scatter_process_builder is not None:
-                    return [self.scatter_process_builder]
-                else:
-                    self.logger.warn(
-                        f'Scatter builder not configured in {self.sos_name}, map_name missing?')
-        else:
-            self.logger.warn(
-                f'Attempting multi-instance build without a map_name in {self.sos_name}')
-        return []
+        # set the scatter builder that allows to scatter the subprocess
+        if self.builder_tool_cls:
+            self.build_tool()
+            # Tool is building disciplines for the driver on behalf of the
+            # driver name
+            return []
 
     def build_inst_desc_io_with_scenario_df(self):
         '''
@@ -491,11 +454,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_tool(self):
         if self.builder_tool is None:
-            self.builder_tool = self.builder_tool_cls(
-                'scatter_tool', self.ee, self.map_name, self.cls_builder, driver=self, coupling_per_scatter=False)
-#             scatter_list_desc_in = self.builder_tool.get_scatter_list_desc_in()
-#             self.add_inputs(scatter_list_desc_in)
-
+            self.builder_tool = self.builder_tool_cls.instantiate()
+            self.builder_tool.associate_tool_to_driver(
+                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
         self.builder_tool.prepare_tool()
 
     def build_tool(self):
@@ -532,30 +493,35 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Add subprocess name in namespaces used by the coupling 
         For now only ns_to_update in scatter_map are updated
+        TODO : Get all namespaces specified in the cls_builder
+        and associate them to the builder with new extra_ns (without shared_ns_dict association)
         '''
-        if self.map_name is not None:
-            sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
-            ns_to_update = sc_map.get_ns_to_update()
-            for ns_name in ns_to_update:
-                ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
-                updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
-                    ns_obj.get_value(), self.SUBCOUPLING_NAME, after_name=self.sos_name)
-                self.ee.ns_manager.add_ns(
-                    ns_name, updated_value)
+        pass
+#         if self.map_name is not None:
+#             sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
+#             ns_to_update = sc_map.get_ns_to_update()
+#             for ns_name in ns_to_update:
+#                 ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
+#                 updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
+#                     ns_obj.get_value(), self.SUBCOUPLING_NAME, after_name=self.sos_name)
+#                 self.ee.ns_manager.add_ns(
+#                     ns_name, updated_value)
 
     def clean_namespaces_with_subprocess(self):
         '''
         Clean subprocess name in namespaces used by the coupling 
         For now only ns_to_update in scatter_map are updated
+        Not needed when the namespaces will be clearly associated (maybe a desassociation will be needed ? )
         '''
-        sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
-        ns_to_update = sc_map.get_ns_to_update()
-        for ns_name in ns_to_update:
-            ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
-            updated_value = ns_obj.get_value().replace(
-                f'.{self.SUBCOUPLING_NAME}', '')
-            self.ee.ns_manager.add_ns(
-                ns_name, updated_value)
+        pass
+#         sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
+#         ns_to_update = sc_map.get_ns_to_update()
+#         for ns_name in ns_to_update:
+#             ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
+#             updated_value = ns_obj.get_value().replace(
+#                 f'.{self.SUBCOUPLING_NAME}', '')
+#             self.ee.ns_manager.add_ns(
+#                 ns_name, updated_value)
 
     def prepare_mono_instance_build(self):
         '''

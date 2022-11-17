@@ -135,6 +135,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
             self.built_proxy_disciplines.remove(discipline)
             discipline.clean()
             self.ee.factory.remove_discipline_from_father_executor(discipline)
+        self._is_configured = False
 
     def get_desc_in_out(self, io_type):
         """
