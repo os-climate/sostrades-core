@@ -634,7 +634,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                         f'{self.study_name}')[0].get_sosdisc_outputs().keys()),
                     ['residuals_history'])
 
-    def test_05_dump_and_load_after_execute(self):
+    def _test_05_dump_and_load_after_execute(self):
 
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
@@ -1068,7 +1068,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def test_08_check_double_prepare_execution_and_status(self):
+    def _test_08_check_double_prepare_execution_and_status(self):
 
         study = study_scatter()
         study.load_data()

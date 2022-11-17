@@ -38,7 +38,9 @@ class ProcessBuilder(BaseProcessBuilder):
                            'input_ns': 'ns_eval',
                            'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.ee.smaps_manager.add_build_map('scenario_list', my_scatter_dict)
+        if 'scenario_list' not in self.ee.smaps_manager.build_maps_dict:
+            self.ee.smaps_manager.add_build_map(
+                'scenario_list', my_scatter_dict)
 
         # instantiate factory by getting builder from process
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
