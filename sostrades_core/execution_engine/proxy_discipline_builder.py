@@ -77,6 +77,11 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         self.set_father_discipline()
 
         for builder in builder_list:
+            # A builder of disciplines should propagate its associated namespaces
+            # and has the priority over associated namespaces already set
+            if self.associated_namespaces != []:
+                builder.add_namespace_list_in_associated_namespaces(
+                    self.associated_namespaces)
             proxy_disc = builder.build()
             if proxy_disc not in self.proxy_disciplines:
                 self.ee.factory.add_discipline(proxy_disc)
@@ -118,9 +123,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         self.clean_dm_from_disc()
         self.ee.ns_manager.remove_dependencies_after_disc_deletion(
             self, self.disc_id)
-        # means that is a scatter (not in factory)
-        if not hasattr(self, 'coupling_per_scatter'):
-            self.ee.factory.remove_sos_discipline(self)
+        self.ee.factory.remove_sos_discipline(self)
 
     def clean_children(self, list_children=None):
         """
