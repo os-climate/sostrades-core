@@ -70,7 +70,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SUBCOUPLING_NAME = 'subprocess'
     EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    def __init__(self, sos_name, ee, cls_builder=None,
+    def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
                  builder_tool=None):
@@ -95,7 +95,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if cls_builder is not None:
             self.cls_builder = cls_builder
         else:
-            self.cls_builder = None
+            raise Exception(
+                'The driver evaluator builder must have a cls_builder to work')
 
         self.builder_tool = None
         if builder_tool is not None:
@@ -106,13 +107,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.builder_tool_cls = None
 
-        if builder_tool is None and cls_builder is None:
-            raise Exception(
-                'The driver evaluator builder must have either a cls_builder either a builder_tool to work')
-
         self.old_builder_mode = None
         self.eval_process_builder = None
-        self.scatter_list = None
         self.eval_in_list = None
         self.eval_out_list = None
         self.selected_outputs = []
@@ -164,7 +160,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # Call standard configure methods to set the process discipline
             # tree
             # TODO: use super()
-            ProxyDiscipline.configure(self)
+            super().configure()
             self.configure_driver()
 
         if self.subprocess_is_configured():
@@ -203,33 +199,43 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.configure_subprocesses_with_driver_input()
 
     def configure_subprocesses_with_driver_input(self):
-        # TODO: code below might need refactoring after reference_scenario configuration fashion is decided upon
+        # TODO: code below might need refactoring after reference_scenario
+        # configuration fashion is decided upon
         scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-        # NB assuming that the scenario_df entries are unique otherwise there is some intelligence to be added
-        scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][self.SCENARIO_NAME].values.tolist()
-        # check that all the input scenarios have indeed been built (configuration sequence allows the opposite)
+        # NB assuming that the scenario_df entries are unique otherwise there
+        # is some intelligence to be added
+        scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
+                                     == True][self.SCENARIO_NAME].values.tolist()
+        # check that all the input scenarios have indeed been built
+        # (configuration sequence allows the opposite)
         if self.subprocesses_built(scenario_names):
-            var_names = [col for col in scenario_df.columns if col not in [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
-            # check that there are indeed variable changes input, with respect to reference scenario
+            var_names = [col for col in scenario_df.columns if col not in [
+                self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+            # check that there are indeed variable changes input, with respect
+            # to reference scenario
             if var_names:
-                driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
+                driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(
+                    self)
                 scenarios_data_dict = {}
                 for sc in scenario_names:
                     for var in var_names:
-                        var_full_name = self.ee.ns_manager.compose_ns([driver_evaluator_ns, sc, var])
+                        var_full_name = self.ee.ns_manager.compose_ns(
+                            [driver_evaluator_ns, sc, var])
                         scenarios_data_dict[var_full_name] = scenario_df[sc][var]
                 if scenarios_data_dict:
-                    # push to dm  # TODO: should also alter associated disciplines' reconfig. flags for structuring ?
+                    # push to dm  # TODO: should also alter associated
+                    # disciplines' reconfig. flags for structuring ?
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
 
     def subprocesses_built(self, scenario_names):
-        #TODO: if scenario_names is None get it?
+        # TODO: if scenario_names is None get it?
         builder_names = [b.sos_name for b in self.cls_builder]
         proxies_names = [disc.sos_name for disc in self.proxy_disciplines]
         expected_proxies_names = []
         for sc_name in scenario_names:
             for builder_name in builder_names:
-                expected_proxies_names.append(self.ee.ns_manager.compose_ns([sc_name, builder_name]))
+                expected_proxies_names.append(
+                    self.ee.ns_manager.compose_ns([sc_name, builder_name]))
         return set(expected_proxies_names) == set(proxies_names)
 
     def setup_sos_disciplines(self):
@@ -307,7 +313,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
         # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
-        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper case
+        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper
+        # case
 
     def prepare_build(self):
         """
@@ -349,7 +356,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: move to builder ?
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
+        # TODO : cache mgmt of children necessary ? here or in
+        # SoSMDODisciplineDriver ?
         super().prepare_execution()
 
         self.reset_subdisciplines_of_wrapper()
@@ -391,7 +399,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         """
-        return ProxyDiscipline.is_configured(self) and self.subprocess_is_configured()
+        return super().is_configured() and self.subprocess_is_configured()
 
     def subprocess_is_configured(self):
         """
@@ -422,9 +430,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Complete inst_desc_in with scenario_df
         '''
-        # get a reference to the scatter discipline
-        # TODO: refactor code below when scatter as a tool is ready /!\
-
         if self.builder_tool:
             scenario_df_input = {self.SCENARIO_DF: {
                 self.TYPE: 'dataframe',
@@ -438,7 +443,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_tool(self):
         '''
-        Instantiate the tool if it does not e
+        Instantiate the tool if it does not and prepare it with data that he needs (the tool know what he needs)
         '''
         if self.builder_tool is None:
             self.builder_tool = self.builder_tool_cls.instantiate()
