@@ -295,7 +295,7 @@ class TestSerializeDF(unittest.TestCase):
                             f'exported csv files differ:\n{exp_f_p}\nVS\n{out_f_p}')
         self.dir_to_del.append(self.out_dir)
 
-    def test_05_load_study_after_execute(self):
+    def _test_05_load_study_after_execute(self):
         # load process in GUI
         self.name = 'MyCase'
         self.repo = 'sostrades_core.sos_processes.test'

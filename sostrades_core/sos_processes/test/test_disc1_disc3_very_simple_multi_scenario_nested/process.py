@@ -68,14 +68,12 @@ class ProcessBuilder(BaseProcessBuilder):
         # ns_eval_inner = self.ee.ns_manager.add_ns(
         #     'ns_eval', f'{self.ee.study_name}.outer_ms.subprocess.inner_ms')
 
-
         # get builder for disc1
         builder_disc1 = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
-                                                                mod_id='test_disc1_scenario')
+                                                                 mod_id='test_disc1_scenario')
         # create an inner ms driver for disc1 only in builder_list
-        builder_list = self.ee.factory.create_very_simple_multi_scenario_driver(
-            'inner_ms','name_list', builder_disc1, autogather=False)  # TODO: handle autogather input order and set to True...
-
+        builder_list = self.ee.factory.create_scatter_driver_with_tool(
+            'inner_ms', builder_disc1, 'name_list')
         # get builder for disc3 and append to builder_list
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
@@ -84,11 +82,10 @@ class ProcessBuilder(BaseProcessBuilder):
         # builder_list[0].associate_namespaces(ns_eval_inner)
 
         # create an outer ms driver
-        multi_scenarios = self.ee.factory.create_very_simple_multi_scenario_driver(
-            'outer_ms', 'scenario_list', builder_list, autogather=False)
+        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+            'outer_ms', builder_list, 'scenario_list')
         # multi_scenarios[0].associate_namespaces(ns_eval_outer)
         return multi_scenarios
-
 
         # ns_lower_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoEEvalUpper.DoEEvalLower')
         # doe_eval_builder_lower = self.ee.factory.create_evaluator_builder(

@@ -308,8 +308,6 @@ class ProxyDiscipline(object):
         self.is_parallel = False
         self.is_specific_driver = False
 
-        # -- Sub-disciplines attributes
-        self.built_proxy_disciplines = []
         self.in_checkjac = False
         self._is_configured = False
         self._reset_cache = False

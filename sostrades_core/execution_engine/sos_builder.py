@@ -113,7 +113,7 @@ class SoSBuilder(object):
     def create_disc(self, future_new_ns_disc_name):
         if self.cls.__name__ in ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather',
                                  # 'ProxyEval',  # already merged into DriverEvaluator
-                                 'ProxyDoeEval', # FIXME: 11 DoeEval tests need to be adapted as DoE+Eval, then this constructor shall be removed too
+                                 'ProxyDoeEval',  # FIXME: 11 DoeEval tests need to be adapted as DoE+Eval, then this constructor shall be removed too
                                  'ProxyDriverEvaluator']:
             self.disc = self.cls(**self.__args)
         else:
@@ -150,5 +150,15 @@ class SoSBuilder(object):
         new_ns_dict = {ns.split(self.NS_NAME_SEPARATOR)[
             0]: ns for ns in ns_list}
         self.__associated_namespaces_dict.update(new_ns_dict)
+
+        self.__args['associated_namespaces'] = self.associated_namespaces
+
+    def delete_all_associated_namespaces(self):
+        '''
+        Add a namespace in associated namespaces list but check if one already exists with the same name
+        If yes then the new one has the priority : 
+        we do this with a dict for performances the update gives the priority to the new one
+        '''
+        self.__associated_namespaces_dict = {}
 
         self.__args['associated_namespaces'] = self.associated_namespaces
