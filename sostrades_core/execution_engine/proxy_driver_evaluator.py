@@ -193,11 +193,44 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         # Extract variables for eval analysis in mono instance mode
         disc_in = self.get_data_in()
-        if self.BUILDER_MODE in disc_in \
-                and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE \
-                and 'eval_inputs' in disc_in \
-                and len(self.proxy_disciplines) > 0:
-            self.set_eval_possible_values()
+        if self.BUILDER_MODE in disc_in:
+            if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE \
+                    and 'eval_inputs' in disc_in and len(self.proxy_disciplines) > 0:
+                self.set_eval_possible_values()
+            # TODO: check if the configuration of the scenarios ~scatter_data is to be done here
+            # TODO: ok for successive configurations ? test
+            elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
+                self.configure_subprocesses_with_driver_input()
+
+    def configure_subprocesses_with_driver_input(self):
+        # TODO: code below might need refactoring after reference_scenario configuration fashion is decided upon
+        scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+        # NB assuming that the scenario_df entries are unique otherwise there is some intelligence to be added
+        scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][self.SCENARIO_NAME].values.tolist()
+        # check that all the input scenarios have indeed been built (configuration sequence allows the opposite)
+        if self.subprocesses_built(scenario_names):
+            var_names = [col for col in scenario_df.columns if col not in [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+            # check that there are indeed variable changes input, with respect to reference scenario
+            if var_names:
+                driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
+                scenarios_data_dict = {}
+                for sc in scenario_names:
+                    for var in var_names:
+                        var_full_name = self.ee.ns_manager.compose_ns([driver_evaluator_ns, sc, var])
+                        scenarios_data_dict[var_full_name] = scenario_df[sc][var]
+                if scenarios_data_dict:
+                    # push to dm  # TODO: should also alter associated disciplines' reconfig. flags for structuring ?
+                    self.ee.dm.set_values_from_dict(scenarios_data_dict)
+
+    def subprocesses_built(self, scenario_names):
+        #TODO: if scenario_names is None get it?
+        builder_names = [b.sos_name for b in self.cls_builder]
+        proxies_names = [disc.sos_name for disc in self.proxy_disciplines]
+        expected_proxies_names = []
+        for sc_name in scenario_names:
+            for builder_name in builder_names:
+                expected_proxies_names.append(self.ee.ns_manager.compose_ns([sc_name, builder_name]))
+        return set(expected_proxies_names) == set(proxies_names)
 
     def setup_sos_disciplines(self):
         """
@@ -208,8 +241,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if builder_mode == self.MULTI_INSTANCE:
                 self.build_inst_desc_io_with_scenario_df()
             elif builder_mode == self.MONO_INSTANCE:
-                # pass  # TODO: to merge with Eval WIP
-
                 # TODO: clean code below with class variables etc.
                 dynamic_inputs = {'eval_inputs': {'type': 'dataframe',
                                                   'dataframe_descriptor': {'selected_input': ('bool', None, True),
@@ -276,8 +307,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
         # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
-        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper
-        # case
+        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper case
 
     def prepare_build(self):
         """
@@ -318,8 +348,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: move to builder ?
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in
-        # SoSMDODisciplineDriver ?
+        # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
         super().prepare_execution()
 
         self.reset_subdisciplines_of_wrapper()
