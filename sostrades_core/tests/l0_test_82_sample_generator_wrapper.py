@@ -127,6 +127,9 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
     def setUp_cp(self):
 
+        self.sampling_generation_mode_cp = 'at_configuration_time'
+        #self.sampling_generation_mode_cp = 'at_run_time'
+
         self.study_name_cp = 'cp'
         self.sampling_method_cp = 'cartesian_product'
 
@@ -221,12 +224,12 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # DoE inputs
         disc_dict = {}
         n_samples = 10
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = self.sampling_method_doe
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_algo'] = "fullfact"
-        disc_dict[f'{self.ns}.Sampling_Generator.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.Sampling_Generator.algo_options'] = {
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_algo'] = "fullfact"
+        disc_dict[f'{self.ns}.Sample_Generator.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.Sample_Generator.algo_options'] = {
             'n_samples': n_samples, 'fake_option': 'fake_option'}
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs'] = self.input_selection_x_z
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -234,7 +237,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Sampling_Generator']
+                       f'\t|_ Sample_Generator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -337,7 +340,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # Check of the proper treeview
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Sampling_Generator']
+                       f'\t|_ Sample_Generator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -346,10 +349,10 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # will not allow to execute a DoE sampling, e.g. n_samples cannot be
         # equal to None).
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = "doe_algo"
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs'] = self.input_selection_x_z
-        disc_dict[f'{self.ns}.Sampling_Generator.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.Sampling_Generator.algo_options'] = pydoe_algo_used_options
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = "doe_algo"
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.Sample_Generator.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.Sample_Generator.algo_options'] = pydoe_algo_used_options
 
         # for loop over the sampling algo names and execution to save the
         # resultant sampling in a CSV file.
@@ -361,15 +364,15 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         reference_dataframe = pd.read_csv(
             join(self.ref_dir, name_of_csv), sep='\t')
         for sampling_algo_name in pydoe_list_of_algo_names:
-            disc_dict[f'{self.ns}.Sampling_Generator.sampling_algo'] = sampling_algo_name
+            disc_dict[f'{self.ns}.Sample_Generator.sampling_algo'] = sampling_algo_name
 
             # To check what it is indispensable for each algo.
             # if sampling_algo_name == 'fullfact':
-            #     disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['n_samples'] = 5
+            #     disc_dict[f'{self.ns}.Sample_Generator.algo_options']['n_samples'] = 5
             # else:
-            #     disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['n_samples'] = None
+            #     disc_dict[f'{self.ns}.Sample_Generator.algo_options']['n_samples'] = None
             # if sampling_algo_name == 'ccdesign':
-            #     disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['center_cc'] = (2, 2)
+            #     disc_dict[f'{self.ns}.Sample_Generator.algo_options']['center_cc'] = (2, 2)
 
             exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -390,13 +393,13 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # Check whether samples correspond to design space variable
             # selection
             design_space = exec_eng.dm.get_value(
-                'doe.Sampling_Generator.design_space')
+                'doe.Sample_Generator.design_space')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
             # Check whether samples correspond with eval_inputs variable
             # selection
             eval_inputs = exec_eng.dm.get_value(
-                'doe.Sampling_Generator.eval_inputs')
+                'doe.Sample_Generator.eval_inputs')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              eval_inputs.loc[eval_inputs['selected_input'] == True]['full_name'].to_list())
             # Check whether samples correspond to reference samples
@@ -494,7 +497,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # Check of the proper treeview
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Sampling_Generator']
+                       f'\t|_ Sample_Generator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -503,10 +506,10 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # will not allow to execute a DoE sampling, e.g. n_samples cannot be
         # equal to None).
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = "doe_algo"
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs'] = self.input_selection_x_z
-        disc_dict[f'{self.ns}.Sampling_Generator.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.Sampling_Generator.algo_options'] = OT_algo_used_options
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = "doe_algo"
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.Sample_Generator.design_space'] = self.dspace_eval
+        disc_dict[f'{self.ns}.Sample_Generator.algo_options'] = OT_algo_used_options
 
         # for loop over the sampling algo names and execution to save the
         # resultant sampling in a CSV file.
@@ -518,17 +521,17 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         reference_dataframe = pd.read_csv(
             join(self.ref_dir, name_of_csv), sep='\t')
         for sampling_algo_name in OT_list_of_algo_names:
-            disc_dict[f'{self.ns}.Sampling_Generator.sampling_algo'] = sampling_algo_name
+            disc_dict[f'{self.ns}.Sample_Generator.sampling_algo'] = sampling_algo_name
 
             # To check what it is indispensable for each algo.
             if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
-                disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['levels'] = [
+                disc_dict[f'{self.ns}.Sample_Generator.algo_options']['levels'] = [
                     0.1]    # Must be number between 0 and 1
-                disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['centers'] = (
+                disc_dict[f'{self.ns}.Sample_Generator.algo_options']['centers'] = (
                     0, 0, 0)
             else:
-                disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['levels'] = None
-                disc_dict[f'{self.ns}.Sampling_Generator.algo_options']['centers'] = None
+                disc_dict[f'{self.ns}.Sample_Generator.algo_options']['levels'] = None
+                disc_dict[f'{self.ns}.Sample_Generator.algo_options']['centers'] = None
 
             exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -549,13 +552,13 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # Check whether samples correspond to design space variable
             # selection
             design_space = exec_eng.dm.get_value(
-                'doe.Sampling_Generator.design_space')
+                'doe.Sample_Generator.design_space')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
             # Check whether samples correspond with eval_inputs variable
             # selection
             eval_inputs = exec_eng.dm.get_value(
-                'doe.Sampling_Generator.eval_inputs')
+                'doe.Sample_Generator.eval_inputs')
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              eval_inputs.loc[eval_inputs['selected_input'] == True]['full_name'].to_list())
             # Check whether samples correspond to reference samples
@@ -601,15 +604,15 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # -- set up disciplines in Scenario
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs_cp'] = self.input_selection_cp_x_z
         #disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
-                       f'\t|_ Sampling_Generator']
+                       f'\t|_ Sample_Generator']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
@@ -626,10 +629,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        disc_generated_samples = disc.get_sosdisc_inputs(
-            'generated_samples')
-        print('generated_samples:')
-        print(disc_generated_samples)
+        if self.sampling_generation_mode_cp == 'at_configuration_time':
+            disc_generated_samples = disc.get_sosdisc_inputs(
+                'generated_samples')
+            print('generated_samples:')
+            print(disc_generated_samples)
 
         exec_eng.execute()
 
@@ -688,13 +692,13 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # 1. Input sampling_method
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = 'cartesian_product'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
-                       f'\t|_ Sampling_Generator']
+                       f'\t|_ Sample_Generator']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
@@ -717,7 +721,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # 2. Input eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs_cp'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -732,15 +736,16 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        disc_generated_samples = disc.get_sosdisc_inputs(
-            'generated_samples')
-        print('generated_samples:')
-        print(disc_generated_samples)
+        if self.sampling_generation_mode_cp == 'at_configuration_time':
+            disc_generated_samples = disc.get_sosdisc_inputs(
+                'generated_samples')
+            print('generated_samples:')
+            print(disc_generated_samples)
 
         # 3. Input an updated eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -755,10 +760,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print('eval_inputs_cp 3:')
         print(disc_eval_inputs_cp)
 
-        disc_generated_samples = disc.get_sosdisc_inputs(
-            'generated_samples')
-        print('generated_samples:')
-        print(disc_generated_samples)
+        if self.sampling_generation_mode_cp == 'at_configuration_time':
+            disc_generated_samples = disc.get_sosdisc_inputs(
+                'generated_samples')
+            print('generated_samples:')
+            print(disc_generated_samples)
 
         exec_eng.execute()
 
@@ -770,23 +776,23 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # 4. Change sampling_method: go to doe_algo
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = 'doe_algo'
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = 'doe_algo'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # 5. Change sampling_method: come back  to cartesian_product
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.sampling_method'] = 'cartesian_product'
+        disc_dict[f'{self.ns}.Sample_Generator.sampling_method'] = 'cartesian_product'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs_cp'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         disc_dict = {}
-        disc_dict[f'{self.ns}.Sampling_Generator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.Sample_Generator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.execute()

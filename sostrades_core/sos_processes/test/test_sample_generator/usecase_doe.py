@@ -45,12 +45,12 @@ class Study(StudyManager):
         disc_dict = {}
         # DoE inputs
         n_samples = 100
-        disc_dict[f'{ns}.Sampling_Generator.sampling_method'] = "doe_algo"
-        disc_dict[f'{ns}.Sampling_Generator.sampling_algo'] = "fullfact"
-        disc_dict[f'{ns}.Sampling_Generator.design_space'] = dspace
-        disc_dict[f'{ns}.Sampling_Generator.algo_options'] = {
+        disc_dict[f'{ns}.Sample_Generator.sampling_method'] = "doe_algo"
+        disc_dict[f'{ns}.Sample_Generator.sampling_algo'] = "fullfact"
+        disc_dict[f'{ns}.Sample_Generator.design_space'] = dspace
+        disc_dict[f'{ns}.Sample_Generator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{ns}.Sampling_Generator.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.Sample_Generator.eval_inputs'] = input_selection_x_z
 
         return [disc_dict]
 

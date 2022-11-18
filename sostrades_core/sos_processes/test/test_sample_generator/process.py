@@ -35,11 +35,10 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
 
         mod_dict_doe = {
-            'Sampling_Generator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
+            'Sample_Generator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
         builder = self.create_builder_list(mod_dict_doe,
                                            ns_dict={
-                                               'ns_doe1': f'{self.ee.study_name}.Sampling_Generator',
-                                               'ns_cp': f'{self.ee.study_name}.Sampling_Generator'}
+                                               'ns_sampling': f'{self.ee.study_name}.Sample_Generator'}
                                            )
 
         return builder
