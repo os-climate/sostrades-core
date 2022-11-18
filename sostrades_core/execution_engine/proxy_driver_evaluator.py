@@ -291,6 +291,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             builder_mode_has_changed = builder_mode != self.old_builder_mode
             if builder_mode_has_changed:
                 self.clean_children()
+                self.clean_sub_builders()
                 if self.old_builder_mode == self.MONO_INSTANCE:
                     self.clean_namespaces_with_subprocess()
                     self.eval_process_builder = None
@@ -380,17 +381,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def prepare_multi_instance_build(self):
         """
-        Get the scatter builder for the subprocesses in multi-instance builder mode.
+        Call the tool to build the subprocesses in multi-instance builder mode.
         """
-        # TODO: will need to include options for MultiScenario other than
-        # VerySimple
-
-        # set the scatter builder that allows to scatter the subprocess
-        if self.builder_tool_cls:
-            self.build_tool()
-            # Tool is building disciplines for the driver on behalf of the
-            # driver name
-            return []
+        self.build_tool()
+        # Tool is building disciplines for the driver on behalf of the
+        # driver name
+        # no further disciplines needed to be builded by the evaluator
+        return []
 
     def build_inst_desc_io_with_scenario_df(self):
         '''
@@ -399,60 +396,21 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # get a reference to the scatter discipline
         # TODO: refactor code below when scatter as a tool is ready /!\
 
-        if self.builder_tool_cls:
-            if self.builder_tool:
-                input_ns = self.builder_tool.sc_map.get_input_ns()
-                scenario_df_input = {self.SCENARIO_DF: {
-                    self.TYPE: 'dataframe',
-                    self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
-                    self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
-                                                self.SCENARIO_NAME: ('string', None, True)},
-                    self.DATAFRAME_EDITION_LOCKED: False,
-                    # self.VISIBILITY: self.SHARED_VISIBILITY,
-                    # self.NAMESPACE: input_ns,
-                    self.EDITABLE: True,
-                    self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
-                self.add_inputs(scenario_df_input)
-        else:
-
-            scatter_node = self.ee.ns_manager.get_local_namespace_value(
-                self)
-
-            scatter_disc_list = self.dm.get_disciplines_with_name(scatter_node)
-            if scatter_disc_list:  # otherwise nothing is possible
-                # get scatter disc
-                scatter_disc = [
-                    disc for disc in scatter_disc_list if hasattr(disc, 'sc_map')][0]
-                if self.SCENARIO_DF not in self.get_data_in():
-                    # add scenario_df to inst_desc_in in the same namespace defined
-                    # by the scatter map
-                    input_ns = scatter_disc.sc_map.get_input_ns()
-                    scenario_df_input = {self.SCENARIO_DF: {
-                        self.TYPE: 'dataframe',
-                        self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
-                        self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
-                                                    self.SCENARIO_NAME: ('string', None, True)},
-                        self.DATAFRAME_EDITION_LOCKED: False,
-                        # self.VISIBILITY: self.SHARED_VISIBILITY,
-                        # self.NAMESPACE: input_ns,
-                        self.EDITABLE: True,
-                        self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
-                    self.add_inputs(scenario_df_input)
-                else:
-                    # TODO: refactor code below when scatter as a tool is ready /!\
-                    # brutally set the scatter node parameters to comply with scenario_df, which implies that scenario_df
-                    # has priority over the dynamic input of the scatter node
-                    # (which is bound to disappear)
-                    scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-                    self.scatter_list = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                                                    == True][self.SCENARIO_NAME].values.tolist()
-                    scatter_input_name = scatter_disc.sc_map.get_input_name()
-                    scatter_disc_in = scatter_disc.get_data_in()
-                    if scatter_input_name in scatter_disc_in:
-                        self.dm.set_data(scatter_disc.get_var_full_name(scatter_input_name, scatter_disc_in), self.VALUE,
-                                         self.scatter_list, check_value=False)
+        if self.builder_tool:
+            scenario_df_input = {self.SCENARIO_DF: {
+                self.TYPE: 'dataframe',
+                self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
+                self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
+                                            self.SCENARIO_NAME: ('string', None, True)},
+                self.DATAFRAME_EDITION_LOCKED: False,
+                self.EDITABLE: True,
+                self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
+            self.add_inputs(scenario_df_input)
 
     def configure_tool(self):
+        '''
+        Instantiate the tool if it does not e
+        '''
         if self.builder_tool is None:
             self.builder_tool = self.builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
@@ -783,3 +741,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                 f'beginning). Dynamic inputs might  not be created. '
 
                 self.logger.warning(error_msg)
+
+    def clean_sub_builders(self):
+        '''
+        Clean sub_builders as they were at initialization especially for their associated namespaces
+        '''
+        for builder in self.cls_builder:
+            # delete all associated namespaces
+            builder.delete_all_associated_namespaces()
+            # set back all associated namespaces that was at the init of the
+            # evaluator
+            builder.add_namespace_list_in_associated_namespaces(
+                self.associated_namespaces)
