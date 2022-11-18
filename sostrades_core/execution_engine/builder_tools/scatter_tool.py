@@ -38,7 +38,7 @@ class ScatterTool(SosTool):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder, map_name, coupling_per_scatter=False):
+    def __init__(self, sos_name, ee, cls_builder, map_name, coupling_per_scenario=True):
         '''
         Constructor
         '''
@@ -46,7 +46,7 @@ class ScatterTool(SosTool):
         SosTool.__init__(self, sos_name, ee, cls_builder)
 
         self.map_name = map_name
-        self.coupling_per_scatter = coupling_per_scatter
+        self.coupling_per_scenario = coupling_per_scenario
 
         self.__scattered_disciplines = {}
         self.sub_coupling_builder_dict = {}
@@ -108,13 +108,12 @@ class ScatterTool(SosTool):
             for name in self.__scatter_list:
                 new_name = name in new_sub_names
                 ns_ids_list = self.update_namespaces(name)
-                if self.coupling_per_scatter:
+                if self.coupling_per_scenario:
                     self.build_sub_coupling(
                         name, new_name, ns_ids_list)
                 else:
                     self.build_child_scatter(
                         name, new_name, ns_ids_list)
-            self.clean_builders()
 
     def build_sub_coupling(self, name, new_name, ns_ids_list):
         '''
@@ -222,7 +221,7 @@ class ScatterTool(SosTool):
 
         for disc in disc_to_remove:
             self.clean_from_driver(self.__scattered_disciplines[disc])
-            if self.coupling_per_scatter:
+            if self.coupling_per_scenario:
                 del self.sub_coupling_builder_dict[disc]
 
             del self.__scattered_disciplines[disc]
@@ -251,8 +250,3 @@ class ScatterTool(SosTool):
     def get_all_builded_disciplines(self):
 
         return [disc for disc_list in self.__scattered_disciplines.values() for disc in disc_list]
-
-    def clean_builders(self):
-
-        for builder in self.sub_builders:
-            builder.delete_all_associated_namespaces()

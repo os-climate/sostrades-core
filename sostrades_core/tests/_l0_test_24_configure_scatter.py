@@ -245,7 +245,7 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(raw_dm_values, last_dm_values,
                              'After removing discipline, data manager variables list is different than raw list')
 
-    def test_05_multiinstance_modification_remove_one_aircraft_1_on_coupling_per_scatter(self):
+    def test_05_multiinstance_modification_remove_one_aircraft_1_on_coupling_per_scenario(self):
         disc_list_full = ['Scatter', 'Scatter.scatter_node',
                           'Scatter.scatter_node.CH19_H2', 'Scatter.scatter_node.CH19_H2.Disc1', 'Scatter.scatter_node.CH19_H2.Disc2',
                           'Scatter.scatter_node.CH19_Kero', 'Scatter.scatter_node.CH19_Kero.Disc1', 'Scatter.scatter_node.CH19_Kero.Disc2']
@@ -272,7 +272,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         # create scatter builder with map and coupling process
         scatter_node = self.exec_eng.factory.create_scatter_builder(
-            'scatter_node', 'AC_list', cls_list, coupling_per_scatter=True)
+            'scatter_node', 'AC_list', cls_list, coupling_per_scenario=True)
 
         # set scatter builder to root process
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_node)

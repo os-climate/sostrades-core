@@ -163,8 +163,7 @@ class SosFactory:
         # right place : {self.__current_discipline.get_disc_full_name()}')
 
         self.__current_discipline.add_discipline(discipline)
-        if not hasattr(discipline, 'coupling_per_scatter'):
-            self.__proxy_disciplines.append(discipline)
+        self.__proxy_disciplines.append(discipline)
 
     def add_discipline_list(self, disciplines):
         self.__current_discipline.add_discipline_list(disciplines)
@@ -387,7 +386,7 @@ class SosFactory:
 
         return builder
 
-    def create_scatter_builder(self, sos_name, map_name, cls_builder, coupling_per_scatter=False):
+    def create_scatter_builder(self, sos_name, map_name, cls_builder, coupling_per_scenario=False):
         """
         create a builder  defined by a scatter type SoSDisciplineScatter
         """
@@ -400,7 +399,8 @@ class SosFactory:
         )
         builder.set_builder_info('map_name', map_name)
         builder.set_builder_info('cls_builder', cls_builder)
-        builder.set_builder_info('coupling_per_scatter', coupling_per_scatter)
+        builder.set_builder_info(
+            'coupling_per_scenario', coupling_per_scenario)
         return builder
 
     def create_value_block_builder(
