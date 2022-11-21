@@ -63,6 +63,22 @@ class SampleGeneratorWrapper(SoSWrapp):
         |_ DESC_OUT
             |_ SAMPLES_DF (namespace: 'ns_sampling')
     '''
+
+    _ontology_data = {
+        'label': 'Sample_Generator wrapper',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': 'Sample_Generator wrapper that implements the genearotion of a samples from a DoE (Design of Experiment) algorithm or from a cross product.',
+        # icon for sample generator from
+        # https://fontawesome.com/icons/grid-4?s=regular&f=classic
+        'icon': 'fas fa-grid-4 fa-fw',
+        'version': ''
+    }
+
     VARIABLES = "variable"
     VALUES = "value"
     POSSIBLE_VALUES = 'possible_values'
