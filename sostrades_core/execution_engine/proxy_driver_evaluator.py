@@ -215,22 +215,27 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
                 scenarios_data_dict = {}
                 for sc in scenario_names:
+                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[0] # assuming it is unique # TODO: as index?
                     for var in var_names:
                         var_full_name = self.ee.ns_manager.compose_ns([driver_evaluator_ns, sc, var])
-                        scenarios_data_dict[var_full_name] = scenario_df[sc][var]
+                        scenarios_data_dict[var_full_name] = sc_row.loc[var]
                 if scenarios_data_dict:
                     # push to dm  # TODO: should also alter associated disciplines' reconfig. flags for structuring ?
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
 
     def subprocesses_built(self, scenario_names):
         #TODO: if scenario_names is None get it?
-        builder_names = [b.sos_name for b in self.cls_builder]
         proxies_names = [disc.sos_name for disc in self.proxy_disciplines]
-        expected_proxies_names = []
-        for sc_name in scenario_names:
-            for builder_name in builder_names:
-                expected_proxies_names.append(self.ee.ns_manager.compose_ns([sc_name, builder_name]))
-        return set(expected_proxies_names) == set(proxies_names)
+        # # assuming self.coupling_per_scenario is true so bock below commented
+        # if self.coupling_per_scenario:
+        #     builder_names = [b.sos_name for b in self.cls_builder]
+        #     expected_proxies_names = []
+        #     for sc_name in scenario_names:
+        #         for builder_name in builder_names:
+        #             expected_proxies_names.append(self.ee.ns_manager.compose_ns([sc_name, builder_name]))
+        #     return set(expected_proxies_names) == set(proxies_names)
+        # else:
+        return set(proxies_names) == set(scenario_names)
 
     def setup_sos_disciplines(self):
         """
