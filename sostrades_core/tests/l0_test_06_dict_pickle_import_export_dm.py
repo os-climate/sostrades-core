@@ -17,6 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
+import pandas as pd
 from copy import deepcopy
 from os import makedirs
 from os.path import join, dirname, basename
@@ -295,73 +296,60 @@ class TestSerializeDF(unittest.TestCase):
                             f'exported csv files differ:\n{exp_f_p}\nVS\n{out_f_p}')
         self.dir_to_del.append(self.out_dir)
 
-    def _test_05_load_study_after_execute(self):
+    def test_05_load_study_after_execute(self):
         # load process in GUI
         self.name = 'MyCase'
         self.repo = 'sostrades_core.sos_processes.test'
         self.exec_eng = ExecutionEngine(self.name)
 
         builders = self.exec_eng.factory.get_builder_from_process(
-            repo=self.repo, mod_id='test_coupling_of_scatter')
+            repo=self.repo, mod_id='test_driver')
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
 
         self.exec_eng.configure()
-
-        # User fill in the fields in the GUI
-        dict_values = {self.name +
-                       '.name_list': ['name_1', 'name_2']}
+        dict_values = {}
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_2']})
+        dict_values[f'{self.name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.name}.multi_scenarios.builder_mode'] = 'multi_instance'
         self.exec_eng.load_study_from_input_dict(dict_values)
-
         self.exec_eng.display_treeview_nodes()
 
-        constant1 = 10
-        constant2 = 20
-        power1 = 2
-        power2 = 3
-
-        private_val = {}
-        private_val[self.name +
-                    '.Disc2.name_1.constant'] = constant1
-        private_val[self.name + '.Disc2.name_1.power'] = power1
-        private_val[self.name +
-                    '.Disc2.name_2.constant'] = constant2
-        private_val[self.name + '.Disc2.name_2.power'] = power2
-
-        x1 = 2
+        scenario_list = ['scenario_1', 'scenario_2']
+        x1 = 2.
+        x2 = 4.
         a1 = 3
         b1 = 4
-        x2 = 4
         a2 = 6
         b2 = 2
-        private_val[self.name + '.name_1.x'] = x1
-        private_val[self.name + '.name_2.x'] = x2
-        private_val[self.name + '.Disc1.name_1.a'] = a1
-        private_val[self.name + '.Disc1.name_2.a'] = a2
-        private_val[self.name + '.Disc1.name_1.b'] = b1
-        private_val[self.name + '.Disc1.name_2.b'] = b2
-        self.exec_eng.load_study_from_input_dict(private_val)
+        for scenario in scenario_list:
+            dict_values[self.name + '.multi_scenarios.' +
+                        scenario + '.Disc2.constant'] = 3
+            dict_values[self.name + '.multi_scenarios.' +
+                        scenario + '.Disc2.power'] = 2
+        dict_values[self.name +
+                    '.multi_scenarios.scenario_1.Disc1.b'] = b1
+        dict_values[self.name +
+                    '.multi_scenarios.scenario_2.Disc1.b'] = b2
+        dict_values[self.name +
+                    '.multi_scenarios.scenario_1.Disc1.a'] = a1
+        dict_values[self.name +
+                    '.multi_scenarios.scenario_2.Disc1.a'] = a2
+        dict_values[self.name +
+                    '.multi_scenarios.scenario_1.x'] = x1
+        dict_values[self.name +
+                    '.multi_scenarios.scenario_2.x'] = x2
+        self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.exec_eng.execute()
 
-        y1 = self.exec_eng.dm.get_value(self.name + '.name_1.y')
-        y2 = self.exec_eng.dm.get_value(self.name + '.name_2.y')
+        y1 = self.exec_eng.dm.get_value(
+            self.name + '.multi_scenarios.scenario_1.y')
+        y2 = self.exec_eng.dm.get_value(
+            self.name + '.multi_scenarios.scenario_2.y')
         self.assertEqual(y1, a1 * x1 + b1)
         self.assertEqual(y2, a2 * x2 + b2)
-
-        z1 = self.exec_eng.dm.get_value(self.name + '.name_1.z')
-        z2 = self.exec_eng.dm.get_value(self.name + '.name_2.z')
-        self.assertEqual(z1, constant1 + y1 ** power1)
-        self.assertEqual(z2, constant2 + y2 ** power2)
-
-        z_dict = self.exec_eng.dm.get_value(
-            self.name + '.z_dict')
-        # Check gather disciplines
-        self.assertDictEqual(z_dict, {'name_1': z1, 'name_2': z2})
-
-        y_dict = self.exec_eng.dm.get_value(
-            self.name + '.y_dict')
-        # Check gather disciplines
-        self.assertDictEqual(y_dict, {'name_1': y1, 'name_2': y2})
 
         dump_dir = join(self.root_dir, self.name)
 
@@ -370,7 +358,7 @@ class TestSerializeDF(unittest.TestCase):
 
         exec_eng2 = ExecutionEngine(self.name)
         builders = exec_eng2.factory.get_builder_from_process(
-            repo=self.repo, mod_id='test_coupling_of_scatter')
+            repo=self.repo, mod_id='test_driver')
         exec_eng2.factory.set_builders_to_coupling_builder(builders)
 
         exec_eng2.configure()
@@ -378,10 +366,12 @@ class TestSerializeDF(unittest.TestCase):
         BaseStudyManager.static_load_data(
             dump_dir, exec_eng2, DirectLoadDump())
 
-        y1 = exec_eng2.dm.get_value(self.name + '.name_1.y')
-        y2 = exec_eng2.dm.get_value(self.name + '.name_2.y')
-        self.assertEqual(exec_eng2.dm.get_value(
-            self.name + '.Disc1.name_1.a'), a1)
+        y1 = exec_eng2.dm.get_value(
+            self.name + '.multi_scenarios.scenario_1.y')
+        y2 = exec_eng2.dm.get_value(
+            self.name + '.multi_scenarios.scenario_2.y')
+        self.assertEqual(exec_eng2.dm.get_value(self.name +
+                                                '.multi_scenarios.scenario_1.Disc1.a'), a1)
         self.assertEqual(y1, a1 * x1 + b1)
         self.assertEqual(y2, a2 * x2 + b2)
         self.dir_to_del.append(
