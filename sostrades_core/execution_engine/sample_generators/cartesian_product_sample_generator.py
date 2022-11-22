@@ -42,8 +42,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     '''
     GENERATOR_NAME = "CARTESIAN_PRODUCT_GENERATOR"
 
-    GENERATOR_NAME = "DOE_GENERATOR"
-
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"

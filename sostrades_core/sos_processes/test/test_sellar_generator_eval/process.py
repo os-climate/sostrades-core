@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_sellar_doe_eval',
+        'label': 'sostrades_core.sos_processes.test.test_sellar_sample_generator',
         'description': '',
         'category': '',
         'version': '',
@@ -38,11 +38,19 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1'}
-        builder_list = self.create_builder_list(mods_dict,
+        builder_list_sellar = self.create_builder_list(mods_dict,
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
-                                                         'ns_doe_eval': f'{self.ee.study_name}.DoEEval'}
+                                                         'ns_eval': f'{self.ee.study_name}'}
                                                 )
-        doe_eval_builder = self.ee.factory.create_evaluator_builder(
-            'DoEEval', 'doe_eval', builder_list)
+        eval_builder = self.ee.factory.create_evaluator_builder(
+            'Eval', 'eval', builder_list_sellar)
 
-        return doe_eval_builder
+        mod_dict_doe = {
+            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
+        doe_builder = self.create_builder_list(mod_dict_doe,
+                                               ns_dict={'ns_sampling': f'{self.ee.study_name}'}
+                                               )
+
+        doe_builder.append(eval_builder)
+
+        return doe_builder

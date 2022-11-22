@@ -13,32 +13,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Generate a doe scenario
-"""
+# mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
+# -- Generate test 2 process
+
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_sellar_doe_eval',
+        'label': 'sostrades_core.sos_processes.test.test_disc1_disc2_generator_eval',
         'description': '',
         'category': '',
         'version': '',
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
+        mods_dict = {'Disc2': disc_dir + 'disc2.Disc2',
+                     'Disc1': disc_dir + 'disc1_doe_eval.Disc1'}
+        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name,
+                                                                    'ns_eval': f'{self.ee.study_name}'})
+
+        eval_builder = self.ee.factory.create_evaluator_builder(
+            'Eval', 'eval', builder_list)
 
         mod_dict_doe = {
-            'DoE_Sampling': 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'}
+            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
         doe_builder = self.create_builder_list(mod_dict_doe,
-                                               ns_dict={
-                                                   'ns_doe1': f'{self.ee.study_name}.DoE_Sampling'}
+                                               ns_dict={'ns_sampling': f'{self.ee.study_name}'}
                                                )
+
+        doe_builder.append(eval_builder)
 
         return doe_builder
