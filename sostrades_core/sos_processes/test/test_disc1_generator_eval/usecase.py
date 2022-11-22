@@ -47,22 +47,24 @@ class Study(StudyManager):
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {}
-        # DoE inputs
+        # DoE + Eval inputs
+        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         n_samples = 10
         levels = [0.25, 0.5, 0.75]
         centers = [5]
-        disc_dict[f'{ns}.DoE.sampling_algo'] = 'OT_FACTORIAL'
-        disc_dict[f'{ns}.DoE.design_space'] = dspace
-        disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "doe_algo"
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
+        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
+        disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
         disc_dict[f'{ns}.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.eval_outputs'] = output_selection_ind
 
         # Disc1 inputs
-        disc_dict[f'{ns}.x'] = array([10.])
-        disc_dict[f'{ns}.Eval.Disc1.a'] = array([0.5])
-        disc_dict[f'{ns}.Eval.Disc1.b'] = array([25.])
-        disc_dict[f'{ns}.y'] = array([4.])
-        disc_dict[f'{ns}.Eval.Disc1.indicator'] = array([53.])
+        disc_dict[f'{ns}.x'] = 10.
+        disc_dict[f'{ns}.Eval.Disc1.a'] = 0.5
+        disc_dict[f'{ns}.Eval.Disc1.b'] = 25.
+        disc_dict[f'{ns}.y'] = 4.
+        disc_dict[f'{ns}.Eval.Disc1.indicator'] = 53.
 
         return [disc_dict]
 

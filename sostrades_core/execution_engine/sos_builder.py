@@ -112,8 +112,6 @@ class SoSBuilder(object):
 
     def create_disc(self, future_new_ns_disc_name):
         if self.cls.__name__ in ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather', 'ProxyOptim',
-                                 # 'ProxyEval',  # already merged into DriverEvaluator
-                                 'ProxyDoeEval',  # FIXME: 11 DoeEval tests need to be adapted as DoE+Eval, then this constructor shall be removed too
                                  'ProxyDriverEvaluator']:
             self.disc = self.cls(**self.__args)
         else:

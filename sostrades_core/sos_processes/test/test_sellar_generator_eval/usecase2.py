@@ -35,7 +35,7 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['DoEEval.Sellar_Problem.local_dv', 'x', 'y_1',
+                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                              'y_2',
                                              'z']}
         input_selection_x_z = pd.DataFrame(input_selection_x_z)
@@ -47,12 +47,14 @@ class Study(StudyManager):
 
         disc_dict = {}
         # DoE inputs
-        n_samples = 100
-        disc_dict[f'{ns}.DoEEval.sampling_algo'] = "fullfact"
-        disc_dict[f'{ns}.DoEEval.design_space'] = dspace
-        disc_dict[f'{ns}.DoEEval.algo_options'] = {'n_samples': n_samples}
-        disc_dict[f'{ns}.DoEEval.eval_inputs'] = input_selection_x_z
-        disc_dict[f'{ns}.DoEEval.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
+        n_samples = 65
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "fullfact"
+        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
+        disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{ns}.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.eval_outputs'] = output_selection_obj_y1_y2
 
         # Sellar inputs
         local_dv = 10.
@@ -60,7 +62,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.y_1'] = array([1.])
         disc_dict[f'{ns}.y_2'] = array([1.])
         disc_dict[f'{ns}.z'] = array([1., 1.])
-        disc_dict[f'{ns}.DoEEval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 

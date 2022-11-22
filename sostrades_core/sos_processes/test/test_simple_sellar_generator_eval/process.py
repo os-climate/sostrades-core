@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_sellar_doe_eval',
+        'label': 'sostrades_core.sos_processes.test.test_simple_sellar_generator_eval',
         'description': '',
         'category': '',
         'version': '',
@@ -34,22 +34,30 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
         # add disciplines Sellar
-        disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-        mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
-                     'Sellar_2': disc_dir + 'Sellar2',
-                     'Sellar_1': disc_dir + 'Sellar1'}
-        builder_list_sellar = self.create_builder_list(mods_dict,
+        disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
+        mods_dict = {'Sellar_Problem': disc_dir + 'sellar.SellarProblem',
+                     'Sellar_2': disc_dir + 'sellar.Sellar2',
+                     'Sellar_1': disc_dir + 'sellar.Sellar1'}
+        builder_list = self.create_builder_list(mods_dict,
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
                                                          'ns_eval': f'{self.ee.study_name}'}
                                                 )
         eval_builder = self.ee.factory.create_evaluator_builder(
-            'Eval', 'eval', builder_list_sellar)
+            'Eval', 'eval', builder_list)
 
-        mod_dict_doe = {'DoE': 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'}
+        mod_dict_doe = {
+            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
         doe_builder = self.create_builder_list(mod_dict_doe,
-                                               ns_dict={'ns_doe1': f'{self.ee.study_name}'}
+                                               ns_dict={'ns_sampling': f'{self.ee.study_name}'}
                                                )
 
-        doe_builder.append(eval_builder)
 
-        return doe_builder
+        mods_dict2 = {'Simple_Disc': disc_dir + 'simple_disc.SimpleDisc'}
+        builder_list2 = self.create_builder_list(mods_dict2,
+                                                ns_dict={'ns_OptimSellar': self.ee.study_name}
+                                                )
+
+        builder_list2.append(doe_builder)
+        builder_list2.append(eval_builder)
+
+        return builder_list2

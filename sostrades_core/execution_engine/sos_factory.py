@@ -353,11 +353,11 @@ class SosFactory:
             module_struct_list = (
                 f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
             )
-        elif eval_type == 'doe_eval':
-            # FIXME: should use DriverEvaluator objects, once the DoEEval tests
-            # are adapted
-            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
-            driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
+        # elif eval_type == 'doe_eval':
+        #     # FIXME: should use DriverEvaluator objects, once the DoEEval tests
+        #     # are adapted
+        #     module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
+        #     driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
         elif eval_type == 'eval':
             module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
             driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
