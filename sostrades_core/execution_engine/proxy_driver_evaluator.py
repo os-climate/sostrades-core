@@ -264,7 +264,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     # gives problems with structuring variables checks leading to incomplete configuration sometimes
                     if not generated_samples.empty and id(generated_samples) != self.old_samples_df_id:
                         self.old_samples_df_id = id(generated_samples)
-                        scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+                        # we crush old scenario_df and propose a df with all scenarios imposed by new sample, all de-activated
+                        scenario_df = pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
                         scenario_df = pd.concat([scenario_df, generated_samples], axis=1)
                         scenario_df[self.SELECTED_SCENARIO] = False
                         scenario_name = scenario_df[self.SCENARIO_NAME]
