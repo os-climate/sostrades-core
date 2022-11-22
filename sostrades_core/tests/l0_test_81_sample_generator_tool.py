@@ -36,7 +36,7 @@ from os.path import dirname, join
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator
 
-from sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper import DoeWrapper
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 
 from pandas.testing import assert_frame_equal
@@ -214,7 +214,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         selected_inputs = self.selected_inputs
 
-        doe_wrapper = DoeWrapper(self.study_name)
+        doe_wrapper = SampleGeneratorWrapper(self.study_name)
         design_space = doe_wrapper.create_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -279,7 +279,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             selected_inputs = self.selected_inputs
 
-            doe_wrapper = DoeWrapper(self.study_name)
+            doe_wrapper = SampleGeneratorWrapper(self.study_name)
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -353,7 +353,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             selected_inputs = self.selected_inputs
 
-            doe_wrapper = DoeWrapper(self.study_name)
+            doe_wrapper = SampleGeneratorWrapper(self.study_name)
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
