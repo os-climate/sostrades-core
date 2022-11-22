@@ -59,7 +59,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # instantiate factory # get instantiator from Discipline class
         mod_list1 = 'sostrades_core.sos_wrapping.test_discs.disc1_scenario.Disc1'
-        disc1_builder = self.ee.get_builder_from_module('Disc1', mod_list1)
+        disc1_builder = self.ee.factory.get_builder_from_module('Disc1', mod_list1)
 
         mod_list3 = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
