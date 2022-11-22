@@ -259,6 +259,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),  ['scenario_1',
+                                                                                      'scenario_2',
+                                                                                      'scenario_3',
+                                                                                      'scenario_4'])
+
         # manually configure the scenarios non-varying values (~reference)
         scenario_list = ['scenario_1', 'scenario_2', 'scenario_4']
         dict_values[self.study_name + '.a'] = self.a1
@@ -275,18 +281,15 @@ class TestSimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        self.exec_eng.execute()
-        self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),  ['scenario_1',
-                                                                                      'scenario_2',
-                                                                                      'scenario_3',
-                                                                                      'scenario_4'])
         ms_disc = self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-
         self.assertEqual(ms_sub_disc_names, ['scenario_1',
                                              'scenario_2',
                                              'scenario_4'])
+
+        self.exec_eng.execute()
+
+
 
         y1, o1 = (self.a1 * self.x1 + self.b1, self.constant + self.z1 ** self.power)
         y2, o2 = (self.a1 * self.x1 + self.b1, self.constant + self.z2 ** self.power)

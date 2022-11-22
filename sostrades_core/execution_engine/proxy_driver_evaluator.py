@@ -271,6 +271,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         scenario_name = scenario_df[self.SCENARIO_NAME]
                         for i in scenario_name.index.tolist():
                             scenario_name.iloc[i] = 'scenario_'+str(i+1)
+                        self.logger.info('Generated sample has changed, updating scenarios to select.')
                         self.dm.set_data(self.get_var_full_name(self.SCENARIO_DF, disc_in),
                                          'value', scenario_df, check_value=False)
 
