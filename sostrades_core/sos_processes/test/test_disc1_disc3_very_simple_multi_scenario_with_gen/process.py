@@ -38,41 +38,41 @@ class ProcessBuilder(BaseProcessBuilder):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3', 'ns_ac']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.ee.smaps_manager.add_build_map(
             'scenario_list', scenario_map)
 
         # shared namespace
-        self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
-        self.exec_eng.ns_manager.add_ns(
+        self.ee.ns_manager.add_ns('ns_barrierr', 'MyCase')
+        self.ee.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
-        self.exec_eng.ns_manager.add_ns(
+        self.ee.ns_manager.add_ns(
             'ns_disc3', 'MyCase.multi_scenarios.Disc3')
-        self.exec_eng.ns_manager.add_ns(
+        self.ee.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase.multi_scenarios')
-        self.exec_eng.ns_manager.add_ns(
+        self.ee.ns_manager.add_ns(
             'ns_ac', 'MyCase.multi_scenarios')
-        self.exec_eng.ns_manager.add_ns(
+        self.ee.ns_manager.add_ns(
             'ns_data_ac', 'MyCase')
 
         # putting the ns_sampling in the same value as the driver will trigger the coupling like in mono instance case
-        self.exec_eng.ns_manager.add_ns('ns_sampling', 'MyCase.multi_scenarios')
+        self.ee.ns_manager.add_ns('ns_sampling', 'MyCase.multi_scenarios')
 
         # instantiate factory # get instantiator from Discipline class
-        mod_list1 = f'{self.base_path}.disc1_scenario.Disc1'
-        disc1_builder = self.factory.get_builder_from_module('Disc1', mod_list1)
+        mod_list1 = 'sostrades_core.sos_wrapping.test_discs.disc1_scenario.Disc1'
+        disc1_builder = self.ee.get_builder_from_module('Disc1', mod_list1)
 
-        mod_list3 = f'{self.base_path}.disc3_scenario.Disc3'
-        disc3_builder = self.exec_eng.factory.get_builder_from_module(
+        mod_list3 = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
+        disc3_builder = self.ee.factory.get_builder_from_module(
             'Disc3', mod_list3)
 
         builder_list = [disc1_builder, disc3_builder]
 
         # multi scenario driver builder
-        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
             'multi_scenarios', builder_list, map_name='scenario_list')
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.factory.get_builder_from_module('Sample_Generator', mod_cp)
+        cp_builder = self.ee.factory.get_builder_from_module('Sample_Generator', mod_cp)
 
         return multi_scenarios+[cp_builder]
