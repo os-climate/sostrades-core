@@ -890,7 +890,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             # execution
             for var in self.exec_eng.dm.data_id_map.keys():
                 dm_value = self.exec_eng.dm.get_value(var)
-                if var == f'{self.study_name}.multi_scenarios.scenario_list':
+                if var == f'{self.study_name}.multi_scenarios.scenario_list' or \
+                        var == f'{self.study_name}.multi_scenarios.generated_samples':
                     # this variable is an exception because it is forced by the value of another variable during setup
                     # TODO: remove this if when scatter as a tool is ready /!\
                     continue

@@ -30,6 +30,7 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
 
 
@@ -69,6 +70,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SCENARIO_NAME = 'scenario_name'
     SUBCOUPLING_NAME = 'subprocess'
     EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
+
+    GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
+
+
 
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
@@ -116,7 +121,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_type = []
         self.eval_out_list_size = []
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
-        self.old_samples_df = None
+
+        self.old_samples_df_id = None
 
     def get_desc_in_out(self, io_type):
         """
@@ -247,8 +253,23 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         if self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            disc_in = self.get_data_in()
             if builder_mode == self.MULTI_INSTANCE:
                 self.build_inst_desc_io_with_scenario_df()
+                if self.GENERATED_SAMPLES in disc_in:
+                    generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
+                    # TODO: checking for sample change via object identity based on SampleGenerator impl. -> check value equality?
+                    if generated_samples is not None and id(generated_samples) != self.old_samples_df_id:
+                        self.old_samples_df_id = id(generated_samples)
+                        scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+                        scenario_df = pd.concat([scenario_df, generated_samples], axis=1)
+                        scenario_df[self.SELECTED_SCENARIO] = False
+                        scenario_name = scenario_df[self.SCENARIO_NAME]
+                        for i in scenario_name.index.tolist():
+                            scenario_name.iloc[i] = 'scenario_'+str(i+1)
+                        self.dm.set_data(self.get_var_full_name(self.SCENARIO_DF, disc_in),
+                                         'value', scenario_df, check_value=False)
+
             elif builder_mode == self.MONO_INSTANCE:
                 # TODO: clean code below with class variables etc.
                 dynamic_inputs = {'eval_inputs': {'type': 'dataframe',
@@ -272,7 +293,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                    }
 
                 selected_inputs_has_changed = False
-                disc_in = self.get_data_in()
                 if 'eval_inputs' in disc_in:
                     # if len(disc_in) != 0:
 
@@ -434,7 +454,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Complete inst_desc_in with scenario_df
         '''
         if self.builder_tool:
-            scenario_df_input = {self.SCENARIO_DF: {
+            dynamic_inputs = {self.SCENARIO_DF: {
                 self.TYPE: 'dataframe',
                 self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
                 self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
@@ -442,7 +462,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.DATAFRAME_EDITION_LOCKED: False,
                 self.EDITABLE: True,
                 self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
-            self.add_inputs(scenario_df_input)
+
+            dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                            'dataframe_edition_locked': True,
+                                                            'structuring': True,
+                                                            'unit': None,
+                                                            # 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                            # 'namespace': 'ns_sampling',
+                                                            # 'default': pd.DataFrame(), # TODO: [think] set optional ?
+                                                            self.OPTIONAL: True,
+                                                            self.USER_LEVEL: 3}})
+            self.add_inputs(dynamic_inputs)
 
     def configure_tool(self):
         '''
