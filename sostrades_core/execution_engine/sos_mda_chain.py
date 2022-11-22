@@ -175,8 +175,8 @@ class SoSMDAChain(MDAChain):
         Pre run needed if one of the strong coupling variables is None in a MDA 
         No need of prerun otherwise 
         '''
-        strong_couplings_values = [self.local_data[key] for key in self.strong_couplings if key in self.local_data] #TODO: replace local_data[key] per key should work
-        if len(strong_couplings_values) < len(self.strong_couplings):
+        strong_couplings = [key for key in self.strong_couplings if key in self.local_data] #TODO: replace local_data[key] per key should work
+        if len(strong_couplings) < len(self.strong_couplings):
             LOGGER.info(
                 f'Execute a pre-run for the coupling ' + self.name)
             self.recreate_order_for_first_execution()

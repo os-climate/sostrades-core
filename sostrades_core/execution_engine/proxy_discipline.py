@@ -612,7 +612,10 @@ class ProxyDiscipline(object):
         Returns:
             list[tuple] : [(var_short_name, id(ns_ref)), ...]
         """
-        return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
+        try:
+            return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
+        except:
+            print('vuhdidi')
 
     def _update_io_ns_map(self, var_ns_tuples, io_type):
         """

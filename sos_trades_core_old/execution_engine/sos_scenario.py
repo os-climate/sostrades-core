@@ -405,7 +405,7 @@ class SoSScenario(SoSDisciplineBuilder, Scenario):
 
     def configure_io(self):
         """
-        Configure discipline  and all sub-disciplines
+        Configure discipline and all sub-disciplines
         """
         if self._data_in == {} or self.check_structuring_variables_changes():
             super().configure()
