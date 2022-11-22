@@ -259,7 +259,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 if self.GENERATED_SAMPLES in disc_in:
                     generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
                     # TODO: checking for sample change via object identity based on SampleGenerator impl. -> check value equality?
-                    if generated_samples is not None and id(generated_samples) != self.old_samples_df_id:
+                    # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
+                    # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
+                    # gives problems with structuring variables checks leading to incomplete configuration sometimes
+                    if not generated_samples.empty and id(generated_samples) != self.old_samples_df_id:
                         self.old_samples_df_id = id(generated_samples)
                         scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
                         scenario_df = pd.concat([scenario_df, generated_samples], axis=1)
@@ -469,8 +472,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                             'unit': None,
                                                             # 'visibility': SoSWrapp.SHARED_VISIBILITY,
                                                             # 'namespace': 'ns_sampling',
-                                                            # 'default': pd.DataFrame(), # TODO: [think] set optional ?
-                                                            self.OPTIONAL: True,
+                                                            'default': pd.DataFrame(), # TODO: [think] set optional ?
+                                                            # self.OPTIONAL: True,
                                                             self.USER_LEVEL: 3}})
             self.add_inputs(dynamic_inputs)
 
