@@ -739,10 +739,8 @@ class SosFactory:
 
     def create_optim_builder(self, sos_name, cls_builder):
         """creates the builder of the optim scenario"""
-        module_struct_list = (
-            'sostrades_core.execution_engine.sos_optim_scenario.SoSOptimScenario'
-        )
-        cls = self.get_disc_class_from_module(module_struct_list)
+        mod_path = f'{self.EE_PATH}.proxy_optim.ProxyOptim'
+        cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         builder.set_builder_info('cls_builder', cls_builder)
         return builder

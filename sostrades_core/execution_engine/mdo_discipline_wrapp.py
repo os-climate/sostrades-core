@@ -16,6 +16,7 @@ limitations under the License.
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
+from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -89,6 +90,8 @@ class MDODisciplineWrapp(object):
         """
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
+        # else:
+        #     proxy.setup_sos_disciplines(self)
 
     # def get_chart_filter_list(self):
     #     """
@@ -116,7 +119,6 @@ class MDODisciplineWrapp(object):
 #         else:
 #             return []
 
-    # type: (...) -> None
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
         """
         SoSMDODiscipline instanciation.
@@ -195,7 +197,8 @@ class MDODisciplineWrapp(object):
                          if not check_input or key in self.mdo_discipline.input_grammar.get_data_names()]
             self.mdo_discipline._default_inputs.update(to_update)
 
-    def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None, reduced_dm=None):  # type: (...) -> None
+    def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None,
+                         reduced_dm=None):  # type: (...) -> None
         """
         MDAChain instantiation when owned by a ProxyCoupling.
 
@@ -210,7 +213,7 @@ class MDODisciplineWrapp(object):
                 reduced_dm=reduced_dm,
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                ** proxy._get_numerical_inputs(),
+                **proxy._get_numerical_inputs(),
                 authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
 
             self.mdo_discipline = mdo_discipline
@@ -232,9 +235,41 @@ class MDODisciplineWrapp(object):
             mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
                 'authorize_self_coupled_disciplines')
 
-#             self._init_grammar_with_keys(proxy)
-# self._update_all_default_values(input_data) # TODO: check why/if it is
-# really needed
+            #             self._init_grammar_with_keys(proxy)
+            # self._update_all_default_values(input_data) # TODO: check why/if it is
+            # really needed
+            proxy.status = self.mdo_discipline.status
+
+        elif self.wrapping_mode == 'GEMSEO':
+            pass
+
+    def create_mdo_scenario(self, sub_mdo_disciplines, proxy=None,
+                            reduced_dm=None):  # type: (...) -> None
+        """
+        SoSMDOScenario instantiation when owned by a ProxyOptim.
+
+        Arguments:
+            sub_mdo_disciplines (List[MDODiscipline]): list of sub-MDODisciplines of the MDAChain
+            proxy (ProxyDiscipline): proxy discipline for grammar initialisation
+            input_data (dict): input data to update default values of the MDAChain with
+        """
+        if self.wrapping_mode == 'SoSTrades':
+            #Pass as arguments to __init__ parameters needed for MDOScenario creation
+            mdo_discipline = SoSMDOScenario(
+                sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space,
+                grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm)
+            #Set parameters for SoSMDOScenario
+            mdo_discipline.eval_mode=proxy.eval_mode
+            mdo_discipline.maximize_objective = proxy.maximize_objective
+            mdo_discipline.algo_name = proxy.algo_name
+            mdo_discipline.algo_options = proxy.algo_options
+            mdo_discipline.max_iter = proxy.max_iter
+            mdo_discipline.eval_mode = proxy.eval_mode
+            mdo_discipline.eval_jac = proxy.eval_jac
+
+            self.mdo_discipline = mdo_discipline
+
+            self.__update_gemseo_grammar(proxy, mdo_discipline)
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':
