@@ -82,7 +82,6 @@ class SoSMDOScenario(MDOScenario):
             self.run_eval_mode()
         else:
             self.run_scenario()
-        self.status = self.STATUS_DONE
 
     def execute_at_xopt(self):
         '''
