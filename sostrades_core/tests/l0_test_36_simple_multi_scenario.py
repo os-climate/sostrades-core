@@ -256,6 +256,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         dict_values = {}
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 

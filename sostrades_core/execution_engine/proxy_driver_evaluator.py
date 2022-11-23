@@ -479,7 +479,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                             # 'namespace': 'ns_sampling',
                                                             'default': pd.DataFrame(), # TODO: [think] set optional ?
                                                             # self.OPTIONAL: True,
-                                                            self.USER_LEVEL: 3}})
+                                                            # self.USER_LEVEL: 3
+                                                            }})
             self.add_inputs(dynamic_inputs)
 
     def configure_tool(self):
