@@ -208,10 +208,6 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name_doe)
 
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-        # doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        # exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
-
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
                                                                 mod_id=self.proc_name)
 
@@ -322,12 +318,6 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         # Build of the DoE discipline under the root process node.
         exec_eng = ExecutionEngine(self.study_name_doe)  # doe
-
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-
-        #mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        #doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        #exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
 
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
                                                                 mod_id=self.proc_name)
@@ -480,12 +470,6 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # Build of the DoE discipline under the root process node.
         exec_eng = ExecutionEngine(self.study_name_doe)  # doe
 
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-
-        #mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        #doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        #exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
-
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
                                                                 mod_id=self.proc_name)
 
@@ -587,10 +571,6 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         self.ns = f'{self.study_name_cp}'
         exec_eng = ExecutionEngine(self.study_name_cp)
 
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-        # doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        # exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
-
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
                                                                 mod_id=self.proc_name)
 
@@ -674,10 +654,6 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         self.ns = f'{self.study_name_cp}'
         exec_eng = ExecutionEngine(self.study_name_cp)
-
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-        # doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        # exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
 
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
                                                                 mod_id=self.proc_name)

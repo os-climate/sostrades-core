@@ -24,7 +24,6 @@ from numpy import array, ndarray, delete, NaN
 
 from gemseo.algos.design_space import DesignSpace
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.disciplines_wrappers.eval_wrapper import EvalWrapper
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8

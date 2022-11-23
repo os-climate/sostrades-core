@@ -377,7 +377,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Build of the DoE discipline under the root process node.
         exec_eng = ExecutionEngine(self.study_name)  # doe
 
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
         mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
         exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
@@ -545,7 +544,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Build of the DoE discipline under the root process node.
         exec_eng = ExecutionEngine(self.study_name)  # doe
 
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
         mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
         exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')

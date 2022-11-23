@@ -42,7 +42,6 @@ class ProcessBuilder(BaseProcessBuilder):
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
                                                          'ns_eval': f'{self.ee.study_name}.Eval'}
                                                 )
-        doe_eval_builder = self.ee.factory.create_evaluator_builder(
-            'Eval', 'eval', builder_list)
+        eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list)
 
-        return doe_eval_builder
+        return eval_builder

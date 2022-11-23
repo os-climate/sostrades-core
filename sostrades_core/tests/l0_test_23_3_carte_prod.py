@@ -98,10 +98,6 @@ class TestCartesianProduct(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
 
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-        # doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        # exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
-
         proc_name = "test_cartesian_product"
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,
                                                                 mod_id=proc_name)
@@ -184,10 +180,6 @@ class TestCartesianProduct(unittest.TestCase):
         """
 
         exec_eng = ExecutionEngine(self.study_name)
-
-        # mod_list = 'sostrades_core.execution_engine.disciplines_wrappers.doe_wrapper.DoeWrapper'
-        # doe_builder = exec_eng.factory.get_builder_from_module('DoE', mod_list)
-        # exec_eng.ns_manager.add_ns('ns_doe1', 'doe.DoE')
 
         proc_name = "test_cartesian_product"
         doe_builder = exec_eng.factory.get_builder_from_process(repo=self.repo,

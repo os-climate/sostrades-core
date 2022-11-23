@@ -33,7 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {'Disc1': disc_dir + 'disc1.Disc1'}
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name,
                                                                     'ns_eval': f'{self.ee.study_name}.Eval'})
-        eval_builder = self.ee.factory.create_evaluator_builder(
-            'Eval', 'eval', builder_list)
+
+        eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list)
 
         return eval_builder
