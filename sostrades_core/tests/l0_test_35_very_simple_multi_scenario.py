@@ -15,7 +15,6 @@ limitations under the License.
 '''
 
 import pandas as pd
-from sostrades_core.execution_engine.proxy_discipline_scatter import ProxyDisciplineScatter
 from sostrades_core.sos_processes.test.test_driver.usecase_scatter import Study as study_scatter
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -508,10 +507,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1', 'scenario_2'])
         dict_values = {}
         dict_values[self.study_name + '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             False],
@@ -537,11 +532,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
              key.split('.')[-1] not in ProxyCoupling.DESC_IN],
             [])
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1'])
-
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                           True,
@@ -553,22 +543,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1', 'scenario_2', 'scenario_3'])
-
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [],
                                                                     'scenario_name': []})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(
-                    list(disc.get_scattered_disciplines().keys()), [])
 
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
@@ -588,11 +568,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_A', 'scenario_B'])
 
         scenario_list = ['scenario_A', 'scenario_B']
         for scenario in scenario_list:
@@ -621,18 +596,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.exec_eng.execute()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                # if isinstance(disc, SoSVerySimpleMultiScenario):
-                self.assertListEqual(
-                    [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['scenario_list'])
-                self.assertListEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_A', 'scenario_B'])
-                self.assertListEqual(
-                    list(self.exec_eng.dm.get_disciplines_with_name(
-                        f'{self.study_name}')[0].get_sosdisc_outputs().keys()),
-                    ['residuals_history'])
 
     def _test_05_dump_and_load_after_execute(self):
 
@@ -936,11 +899,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1', 'scenario_2'])
-
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'mono_instance'
         # dict_values[self.study_name +
         #             '.multi_scenarios.scenario_list'] = ['scenario_1']
@@ -983,11 +941,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         print(exp_tv_str)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, ProxyDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1', 'scenario_2'])
-
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
@@ -1017,7 +970,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         study.load_data(from_input_dict=dict_values)
 
         status_dict_all_done = {'<study_ph>': {'ProxyCoupling': 'DONE'},
-                                '<study_ph>.multi_scenarios': {'ProxyDriverEvaluator': 'DONE', 'ProxyDisciplineScatter': 'DONE'},
+                                '<study_ph>.multi_scenarios': {'ProxyDriverEvaluator': 'DONE'},
                                 '<study_ph>.multi_scenarios.scenario_1': {'ProxyCoupling': 'DONE'},
                                 '<study_ph>.multi_scenarios.scenario_1.Disc1': {'ProxyDiscipline': 'DONE'},
                                 '<study_ph>.multi_scenarios.scenario_1.Disc2': {'ProxyDiscipline': 'DONE'},
