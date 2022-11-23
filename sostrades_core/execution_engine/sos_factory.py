@@ -90,7 +90,7 @@ class SosFactory:
 
     def __reset(self):
         """Reinitialize members variables"""
-        self.__sos_disciplines = []
+        self.__proxy_disciplines = []
         self.__optimization_scenarii = []
         self.__created_namespace = []
         self.__sos_builders = []
@@ -100,7 +100,7 @@ class SosFactory:
         self.__current_discipline = None
 
     def init_execution(self):
-        for disc in self.__sos_disciplines:
+        for disc in self.__proxy_disciplines:
             disc.init_execution()
 
     @property
