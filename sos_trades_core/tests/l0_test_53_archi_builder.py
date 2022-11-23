@@ -72,8 +72,8 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Boeing'],
-             'Current': ['Airbus', 'Boeing', 'Services', 'AC_Sales'],
+            {'Parent': ['Business', 'Business', 'Manufacturer1', 'Manufacturer2'],
+             'Current': ['Manufacturer1', 'Manufacturer2', 'Services', 'AC_Sales'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline', 'ValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [True, True, False, False], })
@@ -98,9 +98,9 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -109,12 +109,12 @@ class TestArchiBuilder(unittest.TestCase):
         disc_archi = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.namespace}.Business')[0]
         self.assertEqual(list(disc_archi.activated_builders.keys()), [
-                         'Business.Airbus', 'Business.Boeing', 'Business.Airbus.Services', 'Business.Boeing.AC_Sales'])
+                         'Business.Manufacturer1', 'Business.Manufacturer2', 'Business.Manufacturer1.Services', 'Business.Manufacturer2.AC_Sales'])
         self.assertDictEqual(disc_archi.activation_dict, {'Business': {
-                             'Business.Airbus.Services': 'Airbus', 'Business.Boeing.AC_Sales': 'Boeing'}})
+                             'Business.Manufacturer1.Services': 'Manufacturer1', 'Business.Manufacturer2.AC_Sales': 'Manufacturer2'}})
 
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus', 'Boeing'],
+            {'Business': ['Manufacturer1', 'Manufacturer2'],
              'Services': [True, False],
              'AC_Sales': [False, True]})
 
@@ -122,7 +122,7 @@ class TestArchiBuilder(unittest.TestCase):
             'MyCase.Business.activation_df').to_dict(), activation_df.to_dict())
 
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus', 'Boeing'],
+            {'Business': ['Manufacturer1', 'Manufacturer2'],
              'Services': [True, True],
              'AC_Sales': [False, False]})
         dict_values = {'MyCase.Business.activation_df': activation_df}
@@ -133,25 +133,25 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
-                       '\t\t|_ Boeing', ]
+                       '\t\t|_ Manufacturer2', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         self.assertDictEqual(self.exec_eng.dm.get_value(
             'MyCase.Business.activation_df').to_dict(), activation_df.to_dict())
 
-        disc_airbus = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Airbus')[0]
+        disc_Manufacturer1 = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Manufacturer1')[0]
 
         # No children because the scatter has no children
-        self.assertListEqual([disc.sos_name for disc in disc_airbus.children_list], [
-                             'Airbus.Services'])
+        self.assertListEqual([disc.sos_name for disc in disc_Manufacturer1.children_list], [
+                             'Manufacturer1.Services'])
 
         # desactiation of all builders
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus', 'Boeing'],
+            {'Business': ['Manufacturer1', 'Manufacturer2'],
              'Services': [False, False],
              'AC_Sales': [False, False]})
         dict_values = {'MyCase.Business.activation_df': activation_df}
@@ -162,8 +162,8 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
-                       '\t\t|_ Boeing', ]
+                       '\t\t|_ Manufacturer1',
+                       '\t\t|_ Manufacturer2', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
@@ -172,8 +172,8 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Boeing'],
-             'Current': ['Airbus', 'Boeing', 'Services', 'AC_Sales'],
+            {'Parent': ['Business', 'Business', 'Manufacturer1', 'Manufacturer2'],
+             'Current': ['Manufacturer1', 'Manufacturer2', 'Services', 'AC_Sales'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline', 'ValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [False, False, False, False], })
@@ -198,9 +198,9 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -209,12 +209,12 @@ class TestArchiBuilder(unittest.TestCase):
         disc_archi = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.namespace}.Business')[0]
         self.assertEqual(list(disc_archi.activated_builders.keys()), [
-                         'Business.Airbus', 'Business.Boeing', 'Business.Airbus.Services', 'Business.Boeing.AC_Sales'])
+                         'Business.Manufacturer1', 'Business.Manufacturer2', 'Business.Manufacturer1.Services', 'Business.Manufacturer2.AC_Sales'])
         self.assertDictEqual(disc_archi.activation_dict, {})
 
         activation_df = pd.DataFrame(
-            {'Airbus': [True],
-             'Boeing': [True],
+            {'Manufacturer1': [True],
+             'Manufacturer2': [True],
              'Services': [True],
              'AC_Sales': [True]})
 
@@ -223,8 +223,8 @@ class TestArchiBuilder(unittest.TestCase):
 
         # AC_Sales desactivation
         activation_df = pd.DataFrame(
-            {'Airbus': [True],
-             'Boeing': [True],
+            {'Manufacturer1': [True],
+             'Manufacturer2': [True],
              'Services': [True],
              'AC_Sales': [False]})
 
@@ -236,26 +236,26 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
-                       '\t\t|_ Boeing', ]
+                       '\t\t|_ Manufacturer2', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         self.assertDictEqual(self.exec_eng.dm.get_value(
             'MyCase.Business.activation_df').to_dict(), activation_df.to_dict())
 
-        disc_airbus = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Airbus')[0]
+        disc_Manufacturer1 = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Manufacturer1')[0]
 
         # No children because the scatter has no children
-        self.assertListEqual([disc.sos_name for disc in disc_airbus.children_list], [
-                             'Airbus.Services'])
+        self.assertListEqual([disc.sos_name for disc in disc_Manufacturer1.children_list], [
+                             'Manufacturer1.Services'])
 
         # desactiation of all builders
         activation_df = pd.DataFrame(
-            {'Airbus': [False],
-             'Boeing': [False],
+            {'Manufacturer1': [False],
+             'Manufacturer2': [False],
              'Services': [False],
              'AC_Sales': [False]})
 
@@ -435,8 +435,8 @@ class TestArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Airbus', 'Boeing'],
-             'Current': ['Airbus', 'Boeing', 'Services', 'AC_Sales', 'AC_Sales'],
+            {'Parent': ['Business', 'Business', 'Manufacturer1', 'Manufacturer1', 'Manufacturer2'],
+             'Current': ['Manufacturer1', 'Manufacturer2', 'Services', 'AC_Sales', 'AC_Sales'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('scatter', 'AC_list', 'ValueBlockDiscipline'), ('scatter', 'AC_list', 'ValueBlockDiscipline'), ('scatter', 'AC_list', 'ValueBlockDiscipline')],
              'Activation': [True, True, False, False, False], })
@@ -456,10 +456,10 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
                        '\t\t\t|_ AC_Sales',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -467,7 +467,7 @@ class TestArchiBuilder(unittest.TestCase):
         # test configure and cleaning
 
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus', 'Airbus', 'Boeing'],
+            {'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer2'],
              'AC_list': ['A320', 'A321', 'B737'],
              'AC_Sales': [True, True, True],
              'Services': [True, False, False]})
@@ -480,13 +480,13 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
                        '\t\t\t\t|_ A320',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ A320',
                        '\t\t\t\t|_ A321',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ B737', ]
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -495,16 +495,16 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertListEqual(self.exec_eng.dm.get_value(
             'MyCase.AC_list'), ['A320', 'A321', 'B737'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.AC_Sales.AC_list'), ['A320', 'A321'])
+            'MyCase.Business.Manufacturer1.AC_Sales.AC_list'), ['A320', 'A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.AC_list'), ['A320'])
+            'MyCase.Business.Manufacturer1.Services.AC_list'), ['A320'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Boeing.AC_Sales.AC_list'), ['B737'])
+            'MyCase.Business.Manufacturer2.AC_Sales.AC_list'), ['B737'])
 
         # test configure and cleaning
 
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus', 'Airbus', 'Boeing'],
+            {'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer2'],
              'AC_list': ['A320', 'A321', 'B737'],
              'AC_Sales': [False, True, True],
              'Services': [True, True, False]})
@@ -517,13 +517,13 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Services',
                        '\t\t\t\t|_ A320',
                        '\t\t\t\t|_ A321',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ A321',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ B737']
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -534,11 +534,11 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertListEqual(self.exec_eng.dm.get_value(
             'MyCase.AC_list'), ['A320', 'A321', 'B737'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.AC_Sales.AC_list'), ['A321'])
+            'MyCase.Business.Manufacturer1.AC_Sales.AC_list'), ['A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.AC_list'), ['A320', 'A321'])
+            'MyCase.Business.Manufacturer1.Services.AC_list'), ['A320', 'A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Boeing.AC_Sales.AC_list'), ['B737'])
+            'MyCase.Business.Manufacturer2.AC_Sales.AC_list'), ['B737'])
 
     def test_07_architecture_multi_level(self):
 
@@ -583,8 +583,8 @@ class TestArchiBuilder(unittest.TestCase):
              'Activation': [False, False]})
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Airbus', 'Boeing'],
-             'Current': ['Airbus', 'Boeing', 'AC_Sales', 'Services', 'AC_Sales'],
+            {'Parent': ['Business', 'Business', 'Manufacturer1', 'Manufacturer1', 'Manufacturer2'],
+             'Current': ['Manufacturer1', 'Manufacturer2', 'AC_Sales', 'Services', 'AC_Sales'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('scatter_architecture', 'AC_list', 'SumValueBlockDiscipline', component_sales_architecture_df), ('architecture', services_architecture_df), ('scatter', 'AC_list', 'ValueBlockDiscipline')],
              'Activation': [True, True, False, False, False]})
@@ -599,7 +599,7 @@ class TestArchiBuilder(unittest.TestCase):
 
         self.exec_eng.configure()
 
-        activation_df = pd.DataFrame({'Business': ['Airbus', 'Airbus', 'Boeing', 'Boeing'],
+        activation_df = pd.DataFrame({'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer2', 'Manufacturer2'],
                                       'AC_list': ['AC1', 'AC2', 'AC3', 'AC4'],
                                       'AC_Sales': [True, True, True, True],
                                       'Services': [True, True, False, False],
@@ -613,7 +613,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ AC1',
                        '\t\t\t\t\t|_ Airframe',
@@ -636,7 +636,7 @@ class TestArchiBuilder(unittest.TestCase):
                        '\t\t\t\t\t|_ AC2',
                        '\t\t\t\t\t\t|_ Airframe',
                        '\t\t\t\t\t\t|_ Propulsion',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ AC3',
                        '\t\t\t\t|_ AC4', ]
@@ -646,13 +646,13 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertListEqual(list(self.exec_eng.dm.get_value(
             'MyCase.AC_list')), ['AC1', 'AC2', 'AC3', 'AC4'])
         self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.AC_Sales.AC_list')), ['AC1', 'AC2'])
+            'MyCase.Business.Manufacturer1.AC_Sales.AC_list')), ['AC1', 'AC2'])
         self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Boeing.AC_Sales.AC_list')), ['AC3', 'AC4'])
+            'MyCase.Business.Manufacturer2.AC_Sales.AC_list')), ['AC3', 'AC4'])
         self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.FHS.AC_list')), ['AC1', 'AC2'])
+            'MyCase.Business.Manufacturer1.Services.FHS.AC_list')), ['AC1', 'AC2'])
         self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.OSS.AC_list')), ['AC1', 'AC2'])
+            'MyCase.Business.Manufacturer1.Services.OSS.AC_list')), ['AC1', 'AC2'])
 
     def test_08_process_simple_architecture(self):
 
@@ -683,7 +683,7 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertListEqual(self.exec_eng.dm.get_value('MyCase.Business.activation_df')[
                              'AC_list'].apply(type).values.tolist(), [str, str, str])
 
-        activ_df = pd.DataFrame({'Business': ['Airbus', 'Airbus', 'Airbus', 'Boeing', 'Embraer'],
+        activ_df = pd.DataFrame({'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer1', 'Manufacturer2', 'Embraer'],
                                  'AC_list': ['A320', 'A321', 'A380',  737, 'E170'],
                                  'AC_Sales': [True, True, True, True, True],
                                  'Services': [True, True, True, True, False],
@@ -692,12 +692,12 @@ class TestArchiBuilder(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict(values_dict)
 
-        msg_log_error = 'Invalid Value Block Activation Configuration: [\'Embraer\'] in column Business not in *possible values* [\'Airbus\', \'Boeing\']'
+        msg_log_error = 'Invalid Value Block Activation Configuration: [\'Embraer\'] in column Business not in *possible values* [\'Manufacturer1\', \'Manufacturer2\']'
         self.assertTrue(msg_log_error in my_handler.msg_list)
-        msg_log_error = 'Invalid Value Block Activation Configuration: value block Services not available for [\'Boeing\']'
+        msg_log_error = 'Invalid Value Block Activation Configuration: value block Services not available for [\'Manufacturer2\']'
         self.assertTrue(msg_log_error in my_handler.msg_list)
 
-        activ_df = pd.DataFrame({'Business': ['Airbus', 'Airbus', 'Airbus', 'Boeing'],
+        activ_df = pd.DataFrame({'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer1', 'Manufacturer2'],
                                  'AC_list': ['A320', 'A321', 'A380',  '737'],
                                  'AC_Sales': [True, True, True, True],
                                  'Services': [True, True, True, False],
@@ -706,7 +706,7 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertTrue(activ_df.equals(
             self.exec_eng.dm.get_value('MyCase.Business.activation_df')))
 
-        activ_df = pd.DataFrame({'Business': ['Airbus', 'Airbus', 'Boeing', 'Boeing'],
+        activ_df = pd.DataFrame({'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer2', 'Manufacturer2'],
                                  'AC_list': ['A320', 'A321', 737, 787],
                                  'AC_Sales': [True, True, True, True],
                                  'Services': [True, True, False, False],
@@ -720,14 +720,14 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ Business',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ A320',
                        '\t\t\t\t|_ A321',
                        '\t\t\t|_ Services',
                        '\t\t\t\t|_ FHS',
                        '\t\t\t\t\t|_ A320',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ AC_Sales',
                        '\t\t\t\t|_ 737',
                        '\t\t\t\t|_ 787']
@@ -736,7 +736,7 @@ class TestArchiBuilder(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        activ_df = pd.DataFrame({'Business': ['Airbus', 'Airbus', 'Boeing'],
+        activ_df = pd.DataFrame({'Business': ['Manufacturer1', 'Manufacturer1', 'Manufacturer2'],
                                  'AC_list': ['A320', 'A380', 787],
                                  'AC_Sales': [True, True, True],
                                  'Services': [True, True, False],
@@ -800,7 +800,7 @@ class TestArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         activation_df = pd.DataFrame(
-            {'Actor_list': ['Airbus', 'Boeing', 'Embraer'],
+            {'Actor_list': ['Manufacturer1', 'Manufacturer2', 'Embraer'],
              'Business': [True, True, False],
              'Flight Hour': [True, True, False]})
         self.exec_eng.load_study_from_input_dict(
@@ -809,9 +809,9 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Flight Hour',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ Flight Hour']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -850,7 +850,7 @@ class TestArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         activation_df = pd.DataFrame(
-            {'Actor_list': ['Airbus', 'Boeing', 'Embraer'],
+            {'Actor_list': ['Manufacturer1', 'Manufacturer2', 'Embraer'],
              'Business': [True, True, False]})
         self.exec_eng.load_study_from_input_dict(
             {'MyCase.Business.activation_df': activation_df})
@@ -858,8 +858,8 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
-                       '\t\t|_ Boeing']
+                       '\t\t|_ Manufacturer1',
+                       '\t\t|_ Manufacturer2']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
@@ -1065,10 +1065,10 @@ class TestArchiBuilder(unittest.TestCase):
         test_disc_folder = 'sos_trades_core.sos_wrapping.test_discs'
         architecture_df = pd.DataFrame(
             {'Parent': [None, None,
-                        'Business', 'Airbus',
-                        'Boeing', 'Boeing'],
+                        'Business', 'Manufacturer1',
+                        'Manufacturer2', 'Manufacturer2'],
              'Current': ['Business', 'Business',
-                         'Boeing', 'Disc1',
+                         'Manufacturer2', 'Disc1',
                          'Disc2', 'Disc2'],
              'Type': [(test_disc_folder, 'Disc9in'), (test_disc_folder, 'Disc1'),
                       'ValueBlockDiscipline', 'ValueBlockDiscipline',
@@ -1084,35 +1084,35 @@ class TestArchiBuilder(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def({'ns_ac': self.exec_eng.study_name,
                                              'ns_test': f'{self.exec_eng.study_name}.Business',
                                              'ns_grad1': f'{self.exec_eng.study_name}.Business',
-                                             'ns_protected': f'{self.exec_eng.study_name}.Business.Airbus'})
+                                             'ns_protected': f'{self.exec_eng.study_name}.Business.Manufacturer1'})
         self.exec_eng.configure()
         self.exec_eng.load_study_from_input_dict({})
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ Disc2',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Disc1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         self.assertEqual(len(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Boeing.Disc2')), 2)
+            'MyCase.Business.Manufacturer2.Disc2')), 2)
         self.assertEqual(len(self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Business')), 3)
         self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Boeing.Disc2')[0].__class__, Disc2)
+            'MyCase.Business.Manufacturer2.Disc2')[0].__class__, Disc2)
         self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Boeing.Disc2')[1].__class__, Disc6)
+            'MyCase.Business.Manufacturer2.Disc2')[1].__class__, Disc6)
 
     def _test_14_build_architecture_with_specific_folder(self):
 
         vb_builder_name = 'Business'
         test_disc_folder = 'sos_trades_core.sos_wrapping.test_discs'
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Boeing'],
-             'Current': ['Airbus', 'Boeing', 'Disc1', 'Disc2'],
+            {'Parent': ['Business', 'Business', 'Manufacturer1', 'Manufacturer2'],
+             'Current': ['Manufacturer1', 'Manufacturer2', 'Disc1', 'Disc2'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline',
                       (test_disc_folder, 'Disc1'), (test_disc_folder, 'Disc2')],
              'Action': [('standard'), ('standard'), ('standard'), ('standard')],
@@ -1129,9 +1129,9 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       '\t\t|_ Airbus',
+                       '\t\t|_ Manufacturer1',
                        '\t\t\t|_ Disc1',
-                       '\t\t|_ Boeing',
+                       '\t\t|_ Manufacturer2',
                        '\t\t\t|_ Disc2', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -1140,10 +1140,10 @@ class TestArchiBuilder(unittest.TestCase):
         disc_archi = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.namespace}.Business')[0]
         self.assertEqual(list(disc_archi.activated_builders.keys()), [
-                         'Business.Airbus', 'Business.Boeing', 'Business.Airbus.Disc1', 'Business.Boeing.Disc2'])
+                         'Business.Manufacturer1', 'Business.Manufacturer2', 'Business.Manufacturer1.Disc1', 'Business.Manufacturer2.Disc2'])
 
         self.assertEqual(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Airbus.Disc1')[0].__class__, Disc1)
+            'MyCase.Business.Manufacturer1.Disc1')[0].__class__, Disc1)
 
 
 if '__main__' == __name__:
