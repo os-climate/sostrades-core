@@ -58,7 +58,7 @@ class MDODisciplineWrapp(object):
         else:
             self.wrapper = None
 
-    def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
+    def get_input_data_names(self, filtered_inputs=False):
         """
         Return the names of the input variables.
 
@@ -70,7 +70,7 @@ class MDODisciplineWrapp(object):
         """
         return self.mdo_discipline.get_input_data_names(filtered_inputs)
 
-    def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
+    def get_output_data_names(self, filtered_outputs=False):
         """Return the names of the output variables.
 
         Arguments:
@@ -254,12 +254,13 @@ class MDODisciplineWrapp(object):
             input_data (dict): input data to update default values of the MDAChain with
         """
         if self.wrapping_mode == 'SoSTrades':
-            #Pass as arguments to __init__ parameters needed for MDOScenario creation
+            # Pass as arguments to __init__ parameters needed for MDOScenario
+            # creation
             mdo_discipline = SoSMDOScenario(
                 sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space,
                 grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm)
-            #Set parameters for SoSMDOScenario
-            mdo_discipline.eval_mode=proxy.eval_mode
+            # Set parameters for SoSMDOScenario
+            mdo_discipline.eval_mode = proxy.eval_mode
             mdo_discipline.maximize_objective = proxy.maximize_objective
             mdo_discipline.algo_name = proxy.algo_name
             mdo_discipline.algo_options = proxy.algo_options
