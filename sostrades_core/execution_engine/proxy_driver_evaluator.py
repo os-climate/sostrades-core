@@ -264,6 +264,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
                     # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
                     # gives problems with structuring variables checks leading to incomplete configuration sometimes
+                    self.logger.info('Checking for the existence of a generated sample ['+str(generated_samples.empty)+']')
                     if not generated_samples.empty and not dict_are_equal(generated_samples_dict, self.old_samples_df):
                         self.old_samples_df = copy.deepcopy(generated_samples_dict) #TODO: overload struct. var. check to spare this deepcopy ?
                         # we crush old scenario_df and propose a df with all scenarios imposed by new sample, all de-activated
