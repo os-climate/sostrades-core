@@ -1764,6 +1764,12 @@ class ProxyDiscipline(object):
         """
         return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()}
 
+    def init_execution(self):
+        """
+        To be used to store additional attributes for wrapping
+        """
+        pass
+
     def update_from_dm(self):
         """
         Update all disciplines with datamanager information
