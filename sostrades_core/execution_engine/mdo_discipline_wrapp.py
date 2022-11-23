@@ -90,6 +90,17 @@ class MDODisciplineWrapp(object):
         """
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines(proxy)
+
+    def init_execution(self, proxy):  # type: (...) -> None
+        """
+        init_execution delegated to the wrapper using the proxy for i/o configuration.
+
+        Arguments:
+            proxy (ProxyDiscipline): corresponding proxy discipline
+        """
+        if self.wrapper is not None:
+            self.wrapper.init_execution(proxy)
+
         # else:
         #     proxy.setup_sos_disciplines(self)
 

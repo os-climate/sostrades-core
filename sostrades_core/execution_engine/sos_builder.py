@@ -26,7 +26,7 @@ class SoSBuilder(object):
     Class that stores a class and associated attributes to be built afterwards
     '''
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
-    SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
+    SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
                        'ProxyDriverEvaluator']
 
     def __init__(self, disc_name, ee, cls, is_executable=True):

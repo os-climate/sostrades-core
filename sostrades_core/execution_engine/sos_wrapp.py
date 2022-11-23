@@ -22,8 +22,10 @@ from numpy import zeros, array, ndarray, complex128
 
 LOGGER = logging.getLogger(__name__)
 
+
 class SoSWrappException(Exception):
     pass
+
 
 class SoSWrapp(object):
     '''**SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
@@ -100,6 +102,17 @@ class SoSWrapp(object):
         """
         pass
 
+    def init_execution(self, proxy):  # type: (...) -> None
+        """
+        Define the init_execution of its proxy
+
+        To be overloaded by subclasses.
+
+        Arguments:
+            proxy (ProxyDiscipline): the proxy discipline for dynamic i/o configuration
+        """
+        pass
+
     def run(self):  # type: (...) -> None
         """
         Define the run of the discipline
@@ -107,7 +120,7 @@ class SoSWrapp(object):
         To be overloaded by subclasses.
         """
         raise NotImplementedError()
-    
+
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
         Accessor for the inputs values as a list or dict.
@@ -124,12 +137,13 @@ class SoSWrapp(object):
             # if no keys, get all discipline keys and force
             # output format as dict
             if full_name_keys:
-                keys = self.input_data_names # discipline and subprocess
+                keys = self.input_data_names  # discipline and subprocess
             else:
-                keys = list(self.attributes['input_full_name_map'].keys()) # discipline only
+                # discipline only
+                keys = list(self.attributes['input_full_name_map'].keys())
             in_dict = True
         inputs = self._get_sosdisc_io(
-            keys, io_type=self.IO_TYPE_IN, full_name_keys = full_name_keys)
+            keys, io_type=self.IO_TYPE_IN, full_name_keys=full_name_keys)
         if in_dict:
             # return inputs in an dictionary
             return inputs
@@ -140,7 +154,7 @@ class SoSWrapp(object):
             else:
                 return list(inputs.values())[0]
 
-    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys = False):
+    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
         Accessor for the outputs values as a list or dict.
 
@@ -156,9 +170,10 @@ class SoSWrapp(object):
             # if no keys, get all discipline keys and force
             # output format as dict
             if full_name_keys:
-                keys = self.output_data_names # discipline and subprocess
+                keys = self.output_data_names  # discipline and subprocess
             else:
-                keys = list(self.attributes['output_full_name_map'].keys()) # discipline only
+                # discipline only
+                keys = list(self.attributes['output_full_name_map'].keys())
             in_dict = True
         outputs = self._get_sosdisc_io(
             keys, io_type=self.IO_TYPE_OUT, full_name_keys=full_name_keys)
@@ -192,21 +207,22 @@ class SoSWrapp(object):
         if isinstance(keys, str):
             keys = [keys]
 
-
         if full_name_keys:
             query_keys = keys
         else:
             if io_type == self.IO_TYPE_IN:
-                query_keys = [self.attributes['input_full_name_map'][key] for key in keys]
+                query_keys = [self.attributes['input_full_name_map'][key]
+                              for key in keys]
             elif io_type == self.IO_TYPE_OUT:
-                query_keys = [self.attributes['output_full_name_map'][key] for key in keys]
+                query_keys = [self.attributes['output_full_name_map'][key]
+                              for key in keys]
             else:
                 raise ValueError("Unknown io_type :" +
                                  str(io_type))
 
         values_dict = dict(zip(keys, map(self.local_data.get, query_keys)))
         return values_dict
-    
+
     def _run(self):
         """
         Run user-defined model.
@@ -216,7 +232,7 @@ class SoSWrapp(object):
         """
         self.run()
         return self.local_data
-    
+
     def store_sos_outputs_values(self, dict_values, full_name_keys=False):
         """"
         Store run outputs in the local_data attribute.
@@ -227,9 +243,10 @@ class SoSWrapp(object):
             dict_values (Dict): variables' values to store
         """
         if full_name_keys:
-            self.local_data.update(dict_values) 
+            self.local_data.update(dict_values)
         else:
-            outputs = dict(zip(map(self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
+            outputs = dict(zip(map(
+                self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
             self.local_data.update(outputs)
 
     def get_chart_filter_list(self):
@@ -263,7 +280,7 @@ class SoSWrapp(object):
         y_key_full = self.attributes['output_full_name_map'][y_key]
         x_key_full = self.attributes['input_full_name_map'][x_key]
         if y_key_full not in self.jac_dict.keys():
-            self.jac_dict[y_key_full]={}
+            self.jac_dict[y_key_full] = {}
         self.jac_dict[y_key_full].update({x_key_full: value})
 
     def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):
@@ -297,37 +314,40 @@ class SoSWrapp(object):
         if y_key_full not in self.jac_dict.keys():
             self.jac_dict[y_key_full] = {}
         if x_key_full not in self.jac_dict[y_key_full]:
-            self.jac_dict[y_key_full][x_key_full] = zeros(self.get_jac_matrix_shape(y_key, x_key))
+            self.jac_dict[y_key_full][x_key_full] = zeros(
+                self.get_jac_matrix_shape(y_key, x_key))
         # Check if value is or has complex
         if type(value[0]) in [complex, complex128]:
-            self.jac_dict[y_key_full][x_key_full] = array(self.jac_dict[y_key_full][x_key_full], dtype=complex)
+            self.jac_dict[y_key_full][x_key_full] = array(
+                self.jac_dict[y_key_full][x_key_full], dtype=complex)
         elif type(value[0]) in [array, ndarray]:
             if value.dtype in [complex, complex128]:
-                self.jac_dict[y_key_full][x_key_full] = array(self.jac_dict[y_key_full][x_key_full], dtype=complex)
+                self.jac_dict[y_key_full][x_key_full] = array(
+                    self.jac_dict[y_key_full][x_key_full], dtype=complex)
 
         if index_y_column is not None and index_x_column is not None:
             self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                                  index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
-                                                                    'end': (index_y_column + 1) * lines_nb_y},
+                                                                     'end': (index_y_column + 1) * lines_nb_y},
                                         f'{x_key_full},{x_column}': {'start': index_x_column * lines_nb_x,
-                                                                    'end': (index_x_column + 1) * lines_nb_x}})
+                                                                     'end': (index_x_column + 1) * lines_nb_x}})
 
         elif index_y_column is None and index_x_column is not None:
             self.jac_dict[y_key_full][x_key_full][:, index_x_column *
-                                              lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                                  lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': 0,
-                                                                    'end': -1},
+                                                                     'end': -1},
                                         f'{x_key_full},{x_column}': {'start': index_x_column * lines_nb_x,
-                                                                    'end': (index_x_column + 1) * lines_nb_x}})
+                                                                     'end': (index_x_column + 1) * lines_nb_x}})
         elif index_y_column is not None and index_x_column is None:
             self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-            :] = value
+                                                  :] = value
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
-                                                                    'end': (index_y_column + 1) * lines_nb_y},
+                                                                     'end': (index_y_column + 1) * lines_nb_y},
                                         f'{x_key_full},{x_column}': {'start': 0,
-                                                                    'end': -1}})
+                                                                     'end': -1}})
         else:
             raise Exception(
                 'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')

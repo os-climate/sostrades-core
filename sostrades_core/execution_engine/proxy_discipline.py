@@ -1766,9 +1766,9 @@ class ProxyDiscipline(object):
 
     def init_execution(self):
         """
-        To be used to store additional attributes for wrapping
+        To be used to initialize some object before execution in the wrap
         """
-        pass
+        self.mdo_discipline_wrapp.init_execution(self)
 
     def update_from_dm(self):
         """
