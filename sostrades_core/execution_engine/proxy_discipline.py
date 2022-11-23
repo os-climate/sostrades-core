@@ -364,6 +364,14 @@ class ProxyDiscipline(object):
 
         return self.__config_dependency_disciplines
 
+    @property
+    def config_dependent_disciplines(self):  # type: (...) -> str
+        """
+        The config_dependent_disciplines list which represents the list of disciplines that need to be configured after you configure
+        """
+
+        return self.__config_dependent_disciplines
+
     @status.setter
     def status(self, status):
         """
@@ -691,8 +699,9 @@ class ProxyDiscipline(object):
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
         if data_dict_in_short_names:
-            self.logger.error(
-                'data_dict_in_short_names for uodate_data_io not implemented')
+            error_msg = 'data_dict_in_short_names for uodate_data_io not implemented'
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
 #             data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
 # data_dict.values()))                             # values are values
 # i.e. var dicts
@@ -1755,6 +1764,12 @@ class ProxyDiscipline(object):
         """
         return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()}
 
+    def init_execution(self):
+        """
+        To be used to initialize some object before execution in the wrap
+        """
+        self.mdo_discipline_wrapp.init_execution(self)
+
     def update_from_dm(self):
         """
         Update all disciplines with datamanager information
@@ -2041,12 +2056,14 @@ class ProxyDiscipline(object):
         Do not add twice the same dsicipline
         '''
         if disc == self:
-            self.logger.error(
-                f'Not possible to add self in the config_dependency_list for disc : {disc} ')
+            error_msg = f'Not possible to add self in the config_dependency_list for disc : {disc.get_disc_full_name()}'
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
 
         if self in disc.config_dependency_disciplines:
-            self.logger.error(
-                f'The discipline {disc} has already {self} in its config_dependency_list, it is not possible to add the discipline in config_dependency_list of myself')
+            error_msg = f'The discipline {disc.get_disc_full_name()} has already {self.get_disc_full_name()} in its config_dependency_list, it is not possible to add the discipline in config_dependency_list of myself'
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
 
         if disc not in self.__config_dependency_disciplines:
             self.__config_dependency_disciplines.append(disc)
