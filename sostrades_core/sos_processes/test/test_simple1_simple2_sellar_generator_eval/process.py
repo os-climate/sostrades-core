@@ -42,8 +42,7 @@ class ProcessBuilder(BaseProcessBuilder):
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
                                                          'ns_eval': f'{self.ee.study_name}'}
                                                 )
-        eval_builder = self.ee.factory.create_evaluator_builder(
-            'Eval', 'eval', builder_list_sellar)
+        eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list_sellar)
 
         mod_dict_doe = {
             'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
