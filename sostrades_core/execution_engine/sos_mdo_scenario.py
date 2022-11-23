@@ -75,13 +75,14 @@ class SoSMDOScenario(MDOScenario):
         '''
 
         '''
+        self.status = self.STATUS_RUNNING
         self.update_default_coupling_inputs()
 
         if self.eval_mode:
             self.run_eval_mode()
         else:
             self.run_scenario()
-        print('iugiui')
+        self.status = self.STATUS_DONE
 
     def execute_at_xopt(self):
         '''
@@ -239,7 +240,6 @@ class SoSMDOScenario(MDOScenario):
             k_size=v.size
             self.local_data.update({k: x_vect[current_idx:current_idx+k_size]})
             current_idx+=k_size
-        print('ouho')
 
     def update_default_coupling_inputs(self):
         '''

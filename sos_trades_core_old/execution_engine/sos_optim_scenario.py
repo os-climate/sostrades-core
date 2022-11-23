@@ -324,19 +324,3 @@ class SoSOptimScenario(SoSScenario, MDOScenario):
             except TypeError:
                 self.logger.error("Failed to evaluate function %s", func)
                 raise
-
-    def get_scenario_lagr(self, full_id_l):
-        """
-        get the corresponding lagrangian formulation of a given
-        optimization scenario
-        """
-        from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
-        list_coupl = self.ee.root_process.sos_disciplines
-        for i in list_coupl:
-            if isinstance(i, SoSCoupling):
-                if id(self) == id(i.sos_disciplines[0]):
-                    scenario_name = i.sos_name
-        for j in full_id_l:
-            if scenario_name + '.' in j:
-                full_id = j
-        return full_id
