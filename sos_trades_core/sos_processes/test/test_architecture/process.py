@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 2 process
+# -- Generate test 2 process
 
 import pandas as pd
 from sos_trades_core.sos_processes.base_process_builder import BaseProcessBuilder
@@ -32,45 +32,77 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
 
-        mydict = {'input_name': 'AC_list',
-
-                  'input_ns': 'ns_business',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
+        mydict = {
+            'input_name': 'AC_list',
+            'input_ns': 'ns_business',
+            'output_name': 'AC_name',
+            'scatter_ns': 'ns_ac',
+        }
         map_name = 'AC_list'
         if map_name not in self.ee.smaps_manager.build_maps_dict:
             self.ee.smaps_manager.add_build_map(map_name, mydict)
 
-        vb_type_list = ['SumValueBlockDiscipline',
-                        'ValueBlockDiscipline',
-                        'ValueBlockDiscipline',
-                        'ValueBlockDiscipline',
-                        'ValueBlockDiscipline',
-                        'ValueBlockDiscipline']
+        vb_type_list = [
+            'SumValueBlockDiscipline',
+            'ValueBlockDiscipline',
+            'ValueBlockDiscipline',
+            'ValueBlockDiscipline',
+            'ValueBlockDiscipline',
+            'ValueBlockDiscipline',
+        ]
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Airbus', 'Boeing', 'Services'],
-             'Current': ['Airbus', 'Boeing', 'AC_Sales', 'Services', 'AC_Sales', 'FHS'],
-             'Type': vb_type_list,
-             'Action': [('standard'), ('standard'), ('scatter', 'AC_list', 'ValueBlockDiscipline'), ('standard'), ('scatter', 'AC_list', 'ValueBlockDiscipline'), ('scatter', 'AC_list', 'ValueBlockDiscipline')],
-             'Activation': [True, True, False, False, False, False]})
+            {
+                'Parent': [
+                    'Business',
+                    'Business',
+                    'Manufacturer1',
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'Services',
+                ],
+                'Current': [
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'AC_Sales',
+                    'Services',
+                    'AC_Sales',
+                    'FHS',
+                ],
+                'Type': vb_type_list,
+                'Action': [
+                    ('standard'),
+                    ('standard'),
+                    ('scatter', 'AC_list', 'ValueBlockDiscipline'),
+                    ('standard'),
+                    ('scatter', 'AC_list', 'ValueBlockDiscipline'),
+                    ('scatter', 'AC_list', 'ValueBlockDiscipline'),
+                ],
+                'Activation': [True, True, False, False, False, False],
+            }
+        )
 
         builder = self.ee.factory.create_architecture_builder(
-            vb_builder_name, architecture_df)
+            vb_builder_name, architecture_df
+        )
 
-        self.ee.ns_manager.add_ns_def({'ns_vbdict': self.ee.study_name,
-                                       'ns_public': self.ee.study_name,
-                                       'ns_segment_services': self.ee.study_name,
-                                       'ns_services': self.ee.study_name,
-                                       'ns_services_ac': self.ee.study_name,
-                                       'ns_seg': self.ee.study_name,
-                                       'ns_ac': self.ee.study_name,
-                                       'ns_coc': self.ee.study_name,
-                                       'ns_data_ac': self.ee.study_name,
-                                       'ns_business_ac': self.ee.study_name,
-                                       'ns_rc': self.ee.study_name,
-                                       'ns_business': f'{self.ee.study_name}.Business',
-                                       'ns_Airbus': f'{self.ee.study_name}.Business.Airbus',
-                                       'ns_Boeing': f'{self.ee.study_name}.Business.Boeing'})
+        self.ee.ns_manager.add_ns_def(
+            {
+                'ns_vbdict': self.ee.study_name,
+                'ns_public': self.ee.study_name,
+                'ns_segment_services': self.ee.study_name,
+                'ns_services': self.ee.study_name,
+                'ns_services_ac': self.ee.study_name,
+                'ns_seg': self.ee.study_name,
+                'ns_ac': self.ee.study_name,
+                'ns_coc': self.ee.study_name,
+                'ns_data_ac': self.ee.study_name,
+                'ns_business_ac': self.ee.study_name,
+                'ns_rc': self.ee.study_name,
+                'ns_business': f'{self.ee.study_name}.Business',
+                'ns_Manufacturer1': f'{self.ee.study_name}.Business.Manufacturer1',
+                'ns_Manufacturer2': f'{self.ee.study_name}.Business.Manufacturer2',
+            }
+        )
         return builder

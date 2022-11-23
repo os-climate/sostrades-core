@@ -41,163 +41,276 @@ class TestVBArchiBuilder(unittest.TestCase):
 
     def test_01_configure_data_io_for_vb_discipline(self):
 
-        mydict = {'input_name': 'AC_list',
-
-                  'input_ns': 'ns_business',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
+        mydict = {
+            'input_name': 'AC_list',
+            'input_ns': 'ns_business',
+            'output_name': 'AC_name',
+            'scatter_ns': 'ns_ac',
+        }
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
-        vb_type_list = ['ValueBlockDiscipline',
-                        'SumValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'FakeValueBlockDiscipline']
+        vb_type_list = [
+            'ValueBlockDiscipline',
+            'SumValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+        ]
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus',  'Boeing', 'Boeing', ],
-             'Current': ['Airbus', 'Boeing', 'AC_Sales',  'AC_Sales', 'Services', ],
-             'Type': vb_type_list,
-             'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
-             'Activation': [True, True, False, False, False], })
+            {
+                'Parent': [
+                    'Business',
+                    'Business',
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'Manufacturer2',
+                ],
+                'Current': [
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'AC_Sales',
+                    'AC_Sales',
+                    'Services',
+                ],
+                'Type': vb_type_list,
+                'Action': [
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                ],
+                'Activation': [True, True, False, False, False],
+            }
+        )
 
         builder = self.factory.create_architecture_builder(
-            vb_builder_name, architecture_df)
+            vb_builder_name, architecture_df
+        )
 
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            builder)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
 
         self.exec_eng.configure()
 
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus',  'Boeing'],
-             'AC_Sales': [True, True],
-             'Services': [False, True]})
+            {
+                'Business': ['Manufacturer1', 'Manufacturer2'],
+                'AC_Sales': [True, True],
+                'Services': [False, True],
+            }
+        )
 
-        values_dict = {
-            f'{self.study_name}.Business.activation_df': activation_df}
+        values_dict = {f'{self.study_name}.Business.activation_df': activation_df}
 
         self.exec_eng.load_study_from_input_dict(values_dict)
         self.exec_eng.display_treeview_nodes()
 
-        # Airbus is a simple value block
-        disc_airbus = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Airbus')[0]
+        # Manufacturer1 is a simple value block
+        disc_Manufacturer1 = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Manufacturer1'
+        )[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'debug_mode', 'AC_Sales.output']
-        self.assertListEqual(
-            list(disc_airbus._data_in.keys()), data_in_th_list)
+        data_in_th_list = [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+            'AC_Sales.output',
+        ]
+        self.assertListEqual(list(disc_Manufacturer1._data_in.keys()), data_in_th_list)
 
         data_out_th_list = ['output_gather']
         self.assertListEqual(
-            list(disc_airbus._data_out.keys()), data_out_th_list)
+            list(disc_Manufacturer1._data_out.keys()), data_out_th_list
+        )
 
-        # Boeing is a sumvalueblock
-        disc_boeing = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Boeing')[0]
+        # Manufacturer2 is a sumvalueblock
+        disc_Manufacturer2 = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Manufacturer2'
+        )[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path', 'debug_mode', 'AC_Sales.output', 'Services.output']
-        self.assertListEqual(
-            list(disc_boeing._data_in.keys()), data_in_th_list)
+        data_in_th_list = [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+            'AC_Sales.output',
+            'Services.output',
+        ]
+        self.assertListEqual(list(disc_Manufacturer2._data_in.keys()), data_in_th_list)
         data_out_th_list = ['output_gather', 'output']
         self.assertListEqual(
-            list(disc_boeing._data_out.keys()), data_out_th_list)
+            list(disc_Manufacturer2._data_out.keys()), data_out_th_list
+        )
 
     def test_02_configure_data_io_for_multiple_vb_discipline(self):
 
-        vb_type_list = ['ValueBlockDiscipline',
-                        'SumValueBlockDiscipline',
-                        'ValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'SumValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'FakeValueBlockDiscipline']
+        vb_type_list = [
+            'ValueBlockDiscipline',
+            'SumValueBlockDiscipline',
+            'ValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'SumValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+        ]
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'AC_Sales', 'AC_Sales', 'Boeing', 'Services', 'Services'],
-             'Current': ['Airbus', 'Boeing', 'AC_Sales',  'sale1', 'sale2', 'Services', 'Services1', 'Services2'],
-             'Type': vb_type_list,
-             'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
-             'Activation': [True, True, False, False, False, False, False, False], })
+            {
+                'Parent': [
+                    'Business',
+                    'Business',
+                    'Manufacturer1',
+                    'AC_Sales',
+                    'AC_Sales',
+                    'Manufacturer2',
+                    'Services',
+                    'Services',
+                ],
+                'Current': [
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'AC_Sales',
+                    'sale1',
+                    'sale2',
+                    'Services',
+                    'Services1',
+                    'Services2',
+                ],
+                'Type': vb_type_list,
+                'Action': [
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                ],
+                'Activation': [True, True, False, False, False, False, False, False],
+            }
+        )
 
         builder = self.factory.create_architecture_builder(
-            vb_builder_name, architecture_df)
+            vb_builder_name, architecture_df
+        )
 
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            builder)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
 
         self.exec_eng.configure()
 
         activation_df = pd.DataFrame(
-            {'Business': ['Airbus',  'Boeing'],
-             'AC_Sales': [True, True],
-             'Services': [False, True]})
+            {
+                'Business': ['Manufacturer1', 'Manufacturer2'],
+                'AC_Sales': [True, True],
+                'Services': [False, True],
+            }
+        )
 
-        values_dict = {
-            f'{self.study_name}.Business.activation_df': activation_df}
+        values_dict = {f'{self.study_name}.Business.activation_df': activation_df}
 
         self.exec_eng.load_study_from_input_dict(values_dict)
         self.exec_eng.display_treeview_nodes()
 
-        # Airbus is a simple value block
-        disc_airbus = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Airbus')[0]
+        # Manufacturer1 is a simple value block
+        disc_Manufacturer1 = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Manufacturer1'
+        )[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'debug_mode', 'AC_Sales.output_gather']
-        self.assertListEqual(
-            list(disc_airbus._data_in.keys()), data_in_th_list)
+        data_in_th_list = [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+            'AC_Sales.output_gather',
+        ]
+        self.assertListEqual(list(disc_Manufacturer1._data_in.keys()), data_in_th_list)
 
         data_out_th_list = ['output_gather']
         self.assertListEqual(
-            list(disc_airbus._data_out.keys()), data_out_th_list)
+            list(disc_Manufacturer1._data_out.keys()), data_out_th_list
+        )
 
-        # Boeing is a sumvalueblock
-        disc_boeing = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Business.Boeing')[0]
+        # Manufacturer2 is a sumvalueblock
+        disc_Manufacturer2 = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.Business.Manufacturer2'
+        )[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path',  'debug_mode', 'Services.output_gather', 'Services.output']
-        self.assertListEqual(
-            list(disc_boeing._data_in.keys()), data_in_th_list)
+        data_in_th_list = [
+            'linearization_mode',
+            'cache_type',
+            'cache_file_path',
+            'debug_mode',
+            'Services.output_gather',
+            'Services.output',
+        ]
+        self.assertListEqual(list(disc_Manufacturer2._data_in.keys()), data_in_th_list)
         data_out_th_list = ['output_gather', 'output']
         self.assertListEqual(
-            list(disc_boeing._data_out.keys()), data_out_th_list)
+            list(disc_Manufacturer2._data_out.keys()), data_out_th_list
+        )
 
     def test_03_run_sum_vb_disciplines(self):
 
-        mydict = {'input_name': 'AC_list',
-
-                  'input_ns': 'ns_business',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
+        mydict = {
+            'input_name': 'AC_list',
+            'input_ns': 'ns_business',
+            'output_name': 'AC_name',
+            'scatter_ns': 'ns_ac',
+        }
         self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
 
-        vb_type_list = ['SumValueBlockDiscipline',
-                        'ValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'SumValueBlockDiscipline',
-                        'FakeValueBlockDiscipline',
-                        'FakeValueBlockDiscipline']
+        vb_type_list = [
+            'SumValueBlockDiscipline',
+            'ValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'SumValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+            'FakeValueBlockDiscipline',
+        ]
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Airbus', 'Airbus', 'Boeing', 'Services'],
-             'Current': ['Airbus', 'Boeing', 'AC_Sales', 'Services', 'AC_Sales', 'FHS'],
-             'Type': vb_type_list,
-             'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
-             'Activation': [True, True, False, False, False, False], })
+            {
+                'Parent': [
+                    'Business',
+                    'Business',
+                    'Manufacturer1',
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'Services',
+                ],
+                'Current': [
+                    'Manufacturer1',
+                    'Manufacturer2',
+                    'AC_Sales',
+                    'Services',
+                    'AC_Sales',
+                    'FHS',
+                ],
+                'Type': vb_type_list,
+                'Action': [
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                    ('standard'),
+                ],
+                'Activation': [True, True, False, False, False, False],
+            }
+        )
 
         builder = self.factory.create_architecture_builder(
-            vb_builder_name, architecture_df)
+            vb_builder_name, architecture_df
+        )
 
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            builder)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
 
         values_dict = {}
 
@@ -206,25 +319,35 @@ class TestVBArchiBuilder(unittest.TestCase):
 
         self.exec_eng.execute()
         output_fhs = self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.FHS.output')
+            'MyCase.Business.Manufacturer1.Services.FHS.output'
+        )
 
         output_sales = self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.AC_Sales.output')
+            'MyCase.Business.Manufacturer1.AC_Sales.output'
+        )
 
         output_services_gather = self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.output_gather')
+            'MyCase.Business.Manufacturer1.Services.output_gather'
+        )
 
         output_services = self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.Services.output')
-        output_airbus_gather = self.exec_eng.dm.get_value(
-            'MyCase.Business.Airbus.output_gather')
+            'MyCase.Business.Manufacturer1.Services.output'
+        )
+        output_Manufacturer1_gather = self.exec_eng.dm.get_value(
+            'MyCase.Business.Manufacturer1.output_gather'
+        )
 
         self.assertDictEqual(output_services_gather, {'FHS': output_fhs})
-        self.assertDictEqual(output_services,  output_fhs)
+        self.assertDictEqual(output_services, output_fhs)
 
-        self.assertDictEqual(output_airbus_gather, {'AC_Sales': output_sales,
-                                                    'Services.FHS': output_fhs,
-                                                    'Services': output_services})
+        self.assertDictEqual(
+            output_Manufacturer1_gather,
+            {
+                'AC_Sales': output_sales,
+                'Services.FHS': output_fhs,
+                'Services': output_services,
+            },
+        )
 
 
 if '__main__' == __name__:
