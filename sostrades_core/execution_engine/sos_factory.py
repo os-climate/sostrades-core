@@ -386,23 +386,6 @@ class SosFactory:
     #
     #     return builder
 
-    def create_scatter_builder(self, sos_name, map_name, cls_builder, coupling_per_scenario=False):
-        """
-        create a builder  defined by a scatter type SoSDisciplineScatter
-        """
-        mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
-        cls = self.get_disc_class_from_module(mod_path)
-        # is_executable flag is False because the scatter discipline has no
-        # run method
-        builder = SoSBuilder(
-            sos_name, self.__execution_engine, cls, is_executable=False
-        )
-        builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('cls_builder', cls_builder)
-        builder.set_builder_info(
-            'coupling_per_scenario', coupling_per_scenario)
-        return builder
-
     def create_value_block_builder(
         self,
         builder_name,
@@ -616,25 +599,26 @@ class SosFactory:
 
         # TODO: address autogather
         if autogather:
-            proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
-            proxy_scatter_cls = self.get_disc_class_from_module(
-                proxy_scatter_mod_path)
-            # TODO: multiscatter?
-            # mod_path_multi_scatter = (
-            #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-            # )
-            # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
-            for sub_builder in builder_list:
-                # not in [cls_scatter, cls_multi_scatter]:
-                if sub_builder.cls is not proxy_scatter_cls:
-                    if gather_node is None:
-                        complete_name = sub_builder.sos_name
-                    else:
-                        complete_name = f'{gather_node}.{sub_builder.sos_name}'
-                    gather = self.create_gather_builder(
-                        complete_name, map_name, sub_builder
-                    )
-                    list_builder.append(gather)
+            raise Exception('autogather still not yet implemented')
+#             proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
+#             proxy_scatter_cls = self.get_disc_class_from_module(
+#                 proxy_scatter_mod_path)
+#             # TODO: multiscatter?
+#             # mod_path_multi_scatter = (
+#             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
+#             # )
+#             # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
+#             for sub_builder in builder_list:
+#                 # not in [cls_scatter, cls_multi_scatter]:
+#                 if sub_builder.cls is not proxy_scatter_cls:
+#                     if gather_node is None:
+#                         complete_name = sub_builder.sos_name
+#                     else:
+#                         complete_name = f'{gather_node}.{sub_builder.sos_name}'
+#                     gather = self.create_gather_builder(
+#                         complete_name, map_name, sub_builder
+#                     )
+#                     list_builder.append(gather)
         return list_builder
 
     def create_scatter_driver_with_tool(
