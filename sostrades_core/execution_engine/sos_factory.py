@@ -292,7 +292,8 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_driver_evaluator_builder(self, sos_name, cls_builder=None, driver_wrapper_mod=None, builder_tool=None):
+    def create_driver_evaluator_builder(self, sos_name, cls_builder=None, driver_wrapper_mod=None, builder_tool=None,
+                                        with_sample_generator=False):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
         if driver_wrapper_mod is None:
@@ -316,7 +317,15 @@ class SosFactory:
                 'The driver evaluator builder must have either a cls_builder either a builder_tool to work')
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
-        return builder
+        if with_sample_generator == False:
+            return builder
+        else:
+            sampling_builder = self.get_builder_from_module('SampleGenerator',
+                                                            'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper')
+            self.__execution_engine.ns_manager.add_ns('ns_sampling',
+                                                      self.__execution_engine.ns_manager.get_shared_ns_dict()['ns_eval'].value)
+            return [sampling_builder, builder]
+
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
         # TODO: recode when driver classes are properly merged, at the moment

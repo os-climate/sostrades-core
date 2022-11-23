@@ -42,21 +42,14 @@ class ProcessBuilder(BaseProcessBuilder):
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
                                                          'ns_eval': f'{self.ee.study_name}'}
                                                 )
-        eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list_sellar)
-
-        mod_dict_doe = {
-            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
-        doe_builder = self.create_builder_list(mod_dict_doe,
-                                               ns_dict={'ns_sampling': f'{self.ee.study_name}'}
-                                               )
-
+        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list_sellar,
+                                                                           with_sample_generator=True)
 
         mods_dict2 = {'Simple_Disc': disc_dir + 'simple_disc.SimpleDisc'}
         builder_list2 = self.create_builder_list(mods_dict2,
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name}
                                                 )
 
-        builder_list2.append(doe_builder)
-        builder_list2.append(eval_builder)
+        builder_list2.append(doe_eval_builder)
 
         return builder_list2

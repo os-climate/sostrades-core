@@ -35,14 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name,
                                                                     'ns_eval': f'{self.ee.study_name}'})
 
-        eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list)
+        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list,
+                                                                           with_sample_generator=True)
 
-        mod_dict_doe = {
-            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'}
-        doe_builder = self.create_builder_list(mod_dict_doe,
-                                               ns_dict={'ns_sampling': f'{self.ee.study_name}'}
-                                               )
-
-        doe_builder.append(eval_builder)
-
-        return doe_builder
+        return doe_eval_builder
