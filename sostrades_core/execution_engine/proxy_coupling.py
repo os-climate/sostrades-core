@@ -498,7 +498,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # def get_output_data_names(self):
     #     '''
     #     Returns:
-    #         (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
+    #         (List[string]) output data full names based on i/o and namespaces declarations in the user wrapper
     #     '''
     #     return list(self._data_out_with_full_name.keys())
 

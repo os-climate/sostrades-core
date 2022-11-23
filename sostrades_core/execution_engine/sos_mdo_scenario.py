@@ -82,7 +82,10 @@ class SoSMDOScenario(MDOScenario):
             self.run_eval_mode()
         else:
             self.run_scenario()
-        self.status = self.STATUS_DONE
+        outputs = [discipline.get_output_data()
+                   for discipline in self.disciplines]
+        for data in outputs:
+            self.local_data.update(data)
 
     def execute_at_xopt(self):
         '''
@@ -134,11 +137,6 @@ class SoSMDOScenario(MDOScenario):
 
         self.formulation.opt_problem.evaluate_functions(
             eval_jac=self.eval_jac, normalize=False)
-
-        outputs = [discipline.get_output_data()
-                   for discipline in self.disciplines]
-        for data in outputs:
-            self.local_data.update(data)
 
         #self.store_local_data(**local_data)
         # if eval mode design space was not modified
