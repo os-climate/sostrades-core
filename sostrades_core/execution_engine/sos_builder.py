@@ -26,6 +26,8 @@ class SoSBuilder(object):
     Class that stores a class and associated attributes to be built afterwards
     '''
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
+    SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
+                       'ProxyDriverEvaluator']
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''
@@ -111,18 +113,11 @@ class SoSBuilder(object):
         return self.disc
 
     def create_disc(self, future_new_ns_disc_name):
-        if self.cls.__name__ in ['ProxyCoupling', 'ProxyDisciplineScatter', 'ProxyDisciplineGather', 'ProxyOptim',
-                                 # 'ProxyEval',  # already merged into DriverEvaluator
-                                 'ProxyDoeEval',  # FIXME: 11 DoeEval tests need to be adapted as DoE+Eval, then this constructor shall be removed too
-                                 'ProxyDriverEvaluator']:
+
+        if self.cls.__name__ in self.SPECIFIC_PROXYS:
             self.disc = self.cls(**self.__args)
         else:
             self.disc = ProxyDiscipline(**self.__args)
-
-        # if self.cls.__name__ == 'ProxyDiscipline':
-        #     self.disc = ProxyDiscipline(**self.__args)
-        # else:
-        #     self.disc = self.cls(**self.__args)
 
         self.disc.father_builder = self
         self.discipline_dict[future_new_ns_disc_name] = self.disc

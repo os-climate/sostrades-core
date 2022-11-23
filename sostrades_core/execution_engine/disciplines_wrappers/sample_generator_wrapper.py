@@ -25,7 +25,6 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.disciplines_wrappers.eval_wrapper import EvalWrapper
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -127,12 +126,12 @@ class SampleGeneratorWrapper(SoSWrapp):
                                    'structuring': True,
                                    'possible_values': available_sampling_methods}}
 
-    DESC_OUT = {
-        'samples_df': {'type': 'dataframe',
-                       'unit': None,
-                       'visibility': SoSWrapp.SHARED_VISIBILITY,
-                       'namespace': 'ns_sampling'}
-    }
+    DESC_OUT = {'samples_df': {'type': 'dataframe',
+                               'unit': None,
+                               'visibility': SoSWrapp.SHARED_VISIBILITY,
+                               'namespace': 'ns_sampling'
+                               }
+                }
 
     def __init__(self, sos_name):
         super().__init__(sos_name)
@@ -144,7 +143,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         # self.previous_algo_name = ""
 
-        self.selected_inputs = None
+        self.selected_inputs = []
         self.dict_desactivated_elem = {}
         #self.previous_eval_inputs = None
 
@@ -237,7 +236,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
     def instantiate_sampling_tool(self):
         """
-           Instantiate SampleGenearator once and only if needed
+           Instantiate SampleGenerator once and only if needed
         """
         if self.sampling_method == self.DOE_ALGO:
             if self.sample_generator_doe == None:
@@ -436,7 +435,6 @@ class SampleGeneratorWrapper(SoSWrapp):
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                         'dataframe_edition_locked': False,
                                                         'structuring': True,
-
                                                         'dataframe_descriptor': {
                                                             self.VARIABLES: ('string', None, False),
                                                             self.VALUES: ('string', None, True)}}})
@@ -449,6 +447,14 @@ class SampleGeneratorWrapper(SoSWrapp):
                         disc_in['algo_options']['value'], default_dict)
                     disc_in['algo_options']['value'] = {
                         key: options_map[key] for key in all_options}
+            else:
+                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: {},
+                                                        'dataframe_edition_locked': False,
+                                                        'structuring': True,
+                                                        'editable': False,
+                                                        'dataframe_descriptor': {
+                                                            self.VARIABLES: ('string', None, False),
+                                                            self.VALUES: ('string', None, True)}}})
 
     def setup_design_space(self, proxy, dynamic_inputs):
         '''
@@ -456,13 +462,22 @@ class SampleGeneratorWrapper(SoSWrapp):
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
         '''
+        selected_inputs_has_changed = False
         disc_in = proxy.get_data_in()
         # Dynamic input of default design space
         if 'eval_inputs' in disc_in:
             eval_inputs = proxy.get_sosdisc_inputs('eval_inputs')
+
             if eval_inputs is not None:
-                self.selected_inputs = self.reformat_eval_inputs(
+
+                # selected_inputs = eval_inputs[eval_inputs['selected_input']
+                #                               == True]['full_name']
+                selected_inputs = self.reformat_eval_inputs(
                     eval_inputs).tolist()
+
+                if set(selected_inputs) != set(self.selected_inputs):
+                    selected_inputs_has_changed = True
+                    self.selected_inputs = selected_inputs
 
                 default_design_space = pd.DataFrame({'variable': self.selected_inputs,
                                                      'lower_bnd': [None] * len(self.selected_inputs),
@@ -472,6 +487,23 @@ class SampleGeneratorWrapper(SoSWrapp):
                 dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space,
                                                         'structuring': True
                                                         }})
+
+                # Next lines of code treat the case in which eval inputs change with a previously defined design space,
+                # so that the bound are kept instead of set to default None.
+                if 'design_space' in disc_in and selected_inputs_has_changed:
+                    from_design_space = list(disc_in['design_space']['value']['variable'])
+                    from_eval_inputs = self.selected_inputs
+                    final_dataframe = pd.DataFrame(None, columns=['variable', 'lower_bnd', 'upper_bnd'])
+
+                    for element in from_eval_inputs:
+                        if element in from_design_space:
+                            final_dataframe = final_dataframe.append(disc_in['design_space']['value']
+                                                   [disc_in['design_space']['value']['variable'] == element])
+                        else:
+                            final_dataframe = final_dataframe.append(
+                                                        {'variable': element, 'lower_bnd': None, 'upper_bnd': None},
+                                                        ignore_index=True)
+                    disc_in['design_space']['value'] = final_dataframe
 
     def reformat_eval_inputs(self, eval_inputs):
         '''

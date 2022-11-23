@@ -90,7 +90,7 @@ class SosFactory:
 
     def __reset(self):
         """Reinitialize members variables"""
-        self.__sos_disciplines = []
+        self.__proxy_disciplines = []
         self.__optimization_scenarii = []
         self.__created_namespace = []
         self.__sos_builders = []
@@ -100,7 +100,7 @@ class SosFactory:
         self.__current_discipline = None
 
     def init_execution(self):
-        for disc in self.__sos_disciplines:
+        for disc in self.__proxy_disciplines:
             disc.init_execution()
 
     @property
@@ -333,58 +333,58 @@ class SosFactory:
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
         return builder
 
-    def create_evaluator_builder(self, sos_name, eval_type, cls_builder):
-        """
-        create a builder for an evaluator defined by its eval_type
-        """
-        # TODO: can be refactored with calls to other methods, do when classes
-        # are merged
-        if eval_type == 'sensitivity':
-            module_struct_list = (
-                f'{self.GENERIC_MODS_PATH}.sensitivity_analysis.SensitivityAnalysis'
-            )
-        elif eval_type == 'gradient':
-            module_struct_list = (
-                f'{self.GENERIC_MODS_PATH}.gradient_analysis.GradientAnalysis'
-            )
-        elif eval_type == 'FORM':
-            module_struct_list = f'{self.GENERIC_MODS_PATH}.form_analysis.FORMAnalysis'
-        elif eval_type == 'morphological_matrix':
-            module_struct_list = (
-                f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
-            )
-        elif eval_type == 'doe_eval':
-            # FIXME: should use DriverEvaluator objects, once the DoEEval tests
-            # are adapted
-            module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
-            driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
-        elif eval_type == 'eval':
-            module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
-            driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
-        elif eval_type == 'build_doe_eval':
-            module_struct_list = f'{self.GENERIC_MODS_PATH}.build_doe_eval.BuildDoeEval'
-        elif eval_type == 'grid_search':
-            module_struct_list = (
-                f'{self.GENERIC_MODS_PATH}.grid_search_eval.GridSearchEval'
-            )
-
-        else:
-            raise Exception(
-                'The evaluation type should be sensitivity,gradient or FORM'
-            )
-
-        cls = self.get_disc_class_from_module(
-            module_struct_list)  # cls of ProxyEval specialization
-        driver_wrapper_cls = self.get_disc_class_from_module(
-            driver_wrapper_mod_path)  # cls of driver wrapper
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        if isinstance(cls_builder, list):  # cls builder of subprocess
-            builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
-        else:
-            builder.set_builder_info('cls_builder', [cls_builder])
-        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
-
-        return builder
+    # def create_evaluator_builder(self, sos_name, eval_type, cls_builder):
+    #     """
+    #     create a builder for an evaluator defined by its eval_type
+    #     """
+    #     # TODO: can be refactored with calls to other methods, do when classes
+    #     # are merged
+    #     if eval_type == 'sensitivity':
+    #         module_struct_list = (
+    #             f'{self.GENERIC_MODS_PATH}.sensitivity_analysis.SensitivityAnalysis'
+    #         )
+    #     elif eval_type == 'gradient':
+    #         module_struct_list = (
+    #             f'{self.GENERIC_MODS_PATH}.gradient_analysis.GradientAnalysis'
+    #         )
+    #     elif eval_type == 'FORM':
+    #         module_struct_list = f'{self.GENERIC_MODS_PATH}.form_analysis.FORMAnalysis'
+    #     elif eval_type == 'morphological_matrix':
+    #         module_struct_list = (
+    #             f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
+    #         )
+    #     # elif eval_type == 'doe_eval':
+    #     #     # FIXME: should use DriverEvaluator objects, once the DoEEval tests
+    #     #     # are adapted
+    #     #     module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
+    #     #     driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
+    #     elif eval_type == 'eval':
+    #         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
+    #         driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
+    #     elif eval_type == 'build_doe_eval':
+    #         module_struct_list = f'{self.GENERIC_MODS_PATH}.build_doe_eval.BuildDoeEval'
+    #     elif eval_type == 'grid_search':
+    #         module_struct_list = (
+    #             f'{self.GENERIC_MODS_PATH}.grid_search_eval.GridSearchEval'
+    #         )
+    #
+    #     else:
+    #         raise Exception(
+    #             'The evaluation type should be sensitivity,gradient or FORM'
+    #         )
+    #
+    #     cls = self.get_disc_class_from_module(
+    #         module_struct_list)  # cls of ProxyEval specialization
+    #     driver_wrapper_cls = self.get_disc_class_from_module(
+    #         driver_wrapper_mod_path)  # cls of driver wrapper
+    #     builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+    #     if isinstance(cls_builder, list):  # cls builder of subprocess
+    #         builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
+    #     else:
+    #         builder.set_builder_info('cls_builder', [cls_builder])
+    #     builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+    #
+    #     return builder
 
     def create_scatter_builder(self, sos_name, map_name, cls_builder, coupling_per_scenario=False):
         """

@@ -17,16 +17,24 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from numpy import std
+from gemseo.api import get_available_doe_algorithms
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
+from collections import ChainMap
 
 class SimpleDisc1(SoSWrapp):
     """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
     """
     _maturity = 'Fake'
-    DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+               'added_algo_options': {'type': 'dict', 'visibility': SoSWrapp.LOCAL_VISIBILITY}
+               }
 
     DESC_OUT = {'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                 'sampling_algo': {'type': 'string', 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                  'namespace': 'ns_doe_eval'}}
+                                  'namespace': 'ns_sampling_algo'},
+                'algo_options': {'type': 'dict', 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                 'namespace': 'ns_sampling_algo'}
+                }
 
 
     def run(self):
@@ -38,7 +46,9 @@ class SimpleDisc1(SoSWrapp):
         self.store_sos_outputs_values(z_out)
 
         sampling_algo = self.decide_sampling_algo(z_in)
+        algo_options = self.decide_algo_options(sampling_algo)
         self.store_sos_outputs_values({'sampling_algo': sampling_algo})
+        self.store_sos_outputs_values({'algo_options': algo_options})
 
 
     @staticmethod
@@ -60,6 +70,28 @@ class SimpleDisc1(SoSWrapp):
 
         return sampling_algo
 
+    def decide_algo_options(self, algo_name):
+        """ Computes the output of the simple discipline in array form
+        """
+
+        # Get the algo default options
+        if algo_name in get_available_doe_algorithms():
+            algo_options, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(algo_name)
+        else:
+            raise Exception(
+                f"A DoE algorithm which is not available in GEMSEO has been selected.")
+
+        # Update algo options with user parameters (n_samples in this case)
+        added_algo_options = self.get_sosdisc_inputs('added_algo_options')
+
+        if added_algo_options is not None:
+            for added_option in added_algo_options.keys():
+                if added_option in algo_options.keys():
+                    algo_options[added_option] = added_algo_options[added_option]
+                else:
+                    pass
+
+        return algo_options
 class SimpleDisc2(SoSWrapp):
     """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
     """

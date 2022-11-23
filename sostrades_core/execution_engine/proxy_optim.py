@@ -33,7 +33,6 @@ from sostrades_core.api import get_sos_logger
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
-from sostrades_core.execution_engine.proxy_eval import ProxyEval
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 
 

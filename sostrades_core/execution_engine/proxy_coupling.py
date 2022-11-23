@@ -18,6 +18,7 @@ from gemseo.mda.sequential_mda import MDASequential
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from gemseo.mda.mda_chain import MDAChain
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.archi_builder import ArchiBuilder
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -497,7 +498,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # def get_output_data_names(self):
     #     '''
     #     Returns:
-    #         (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
+    #         (List[string]) output data full names based on i/o and namespaces declarations in the user wrapper
     #     '''
     #     return list(self._data_out_with_full_name.keys())
 
@@ -624,7 +625,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
             # Exclude non executable proxy Disciplines
-            if disc.mdo_discipline_wrapp is not None:
+            if disc.mdo_discipline_wrapp is not None and not isinstance(disc, ArchiBuilder):
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
 

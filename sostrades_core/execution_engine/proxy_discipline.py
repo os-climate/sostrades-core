@@ -289,7 +289,8 @@ class ProxyDiscipline(object):
         self.proxy_disciplines = []
         self._status = None
         self.status_observers = []
-
+        self.__config_dependency_disciplines = []
+        self.__config_dependent_disciplines = []
         # -- Base disciplinary attributes
         self.jac_boundaries = {}
         self.disc_id = None
@@ -354,6 +355,22 @@ class ProxyDiscipline(object):
         if self._status != self.STATUS_CONFIGURE:
             return self.get_status_after_configure()
         return self.STATUS_CONFIGURE
+
+    @property
+    def config_dependency_disciplines(self):  # type: (...) -> str
+        """
+        The config_dependency_disciplines list which represents the list of disciplines that must be configured before you configure
+        """
+
+        return self.__config_dependency_disciplines
+
+    @property
+    def config_dependent_disciplines(self):  # type: (...) -> str
+        """
+        The config_dependent_disciplines list which represents the list of disciplines that need to be configured after you configure
+        """
+
+        return self.__config_dependent_disciplines
 
     @status.setter
     def status(self, status):
@@ -682,8 +699,12 @@ class ProxyDiscipline(object):
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
         if data_dict_in_short_names:
-            data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
-                               data_dict.values()))                             # values are values i.e. var dicts
+            error_msg = 'data_dict_in_short_names for uodate_data_io not implemented'
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
+#             data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
+# data_dict.values()))                             # values are values
+# i.e. var dicts
         else:
             data_io.update(data_dict)
 
@@ -898,19 +919,23 @@ class ProxyDiscipline(object):
         '''
         Configure the ProxyDiscipline
         '''
-        self.set_numerical_parameters()
+        # check if all config_dependency_disciplines are configured. If not no
+        # need to try configuring the discipline because all is not ready for
+        # it
+        if self.check_configured_dependency_disciplines():
+            self.set_numerical_parameters()
 
-        if self.check_structuring_variables_changes():
-            self.set_structuring_variables_values()
+            if self.check_structuring_variables_changes():
+                self.set_structuring_variables_values()
 
-        self.setup_sos_disciplines()
+            self.setup_sos_disciplines()
 
-        self.reload_io()
+            self.reload_io()
 
-        # update discipline status to CONFIGURE
-        self._update_status_dm(self.STATUS_CONFIGURE)
+            # update discipline status to CONFIGURE
+            self._update_status_dm(self.STATUS_CONFIGURE)
 
-        self.set_configure_status(True)
+            self.set_configure_status(True)
 
     def __check_all_data_integrity(self):
         '''
@@ -1018,17 +1043,6 @@ class ProxyDiscipline(object):
                 self.logger.info(
                     f'Try to set a default value for the variable {short_key} in {self.sos_name} which is not an input of this discipline ')
 
-    # -- cache handling
-    def clear_cache(self):
-        """
-        Clear cache of self and children.
-        """
-        # -- Need to clear cache for gradients analysis
-        if self.cache is not None:
-            self.cache.clear()
-        for discipline in self.proxy_disciplines:
-            discipline.clear_cache()
-
     # -- data handling section
     def reset_data(self):
         """
@@ -1112,45 +1126,6 @@ class ProxyDiscipline(object):
             return data_io_full_name[full_name]
         else:
             return data_io_full_name[full_name][data_name]
-
-    def _update_with_values(self, to_update, update_with, update_dm=False):
-        '''
-        Update <to_update> 'value' field with <update_with> and eventually update datamanager.
-
-        Arguments:
-            to_update (Dict[dict]): data structure to update e.g. data_out
-            update_with (dict): key-value dictionary of new values
-            update_dm (bool): whether to update datamanager
-        '''
-        to_update_local_data = {}
-        to_update_dm = {}
-        ns_update_with = {}
-        for k, v in update_with.items():
-            ns_update_with[k] = v
-            # -- Crash if key does not exist in to_update
-            for key in ns_update_with.keys():
-                if to_update[key][self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    raise Exception(
-                        f'It is not possible to update the variable {key} which has a visibility Internal')
-                else:
-                    if to_update[key][self.TYPE] in self.UNSUPPORTED_GEMSEO_TYPES:
-                        # data with unsupported types for gemseo
-                        to_update_dm[self.get_var_full_name(
-                            key, to_update)] = ns_update_with[key]
-                    else:
-                        to_update_local_data[self.get_var_full_name(
-                            key, to_update)] = ns_update_with[key]
-
-        if update_dm:
-            # update DM after run
-            self.dm.set_values_from_dict(to_update_local_data)
-        else:
-            # update local_data after run
-            self.mdo_discipline.store_local_data(**to_update_local_data)
-
-        # need to update outputs that will disappear after filtering the
-        # local_data with supported types
-        self.dm.set_values_from_dict(to_update_dm)
 
     def get_ns_reference(self, visibility, namespace=None):
         '''
@@ -1381,6 +1356,7 @@ class ProxyDiscipline(object):
         values_dict = {}
         for key, q_key in zip(keys, query_keys):
             if q_key not in self.dm.data_id_map:
+                print('toto')
                 raise Exception(
                     f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
@@ -1693,17 +1669,6 @@ class ProxyDiscipline(object):
                 new_name = n
             new_names.append(new_name)
         return new_names
-
-    def store_sos_outputs_values(self, dict_values, update_dm=False):
-        '''
-        Store outputs from 'dict_values' into self._data_out.
-
-        Arguments:
-            dict_values (dict): key-value dictionary of new values
-            update_dm (bool): whether to update datamanager too
-        '''
-        # fill data using data connector if needed
-        self._update_with_values(self.get_data_out(), dict_values, update_dm)
 
     def update_meta_data_out(self, new_data_dict):
         """
@@ -2069,7 +2034,54 @@ class ProxyDiscipline(object):
         '''
         Return False if discipline needs to be configured, True if not
         '''
-        return self.get_configure_status() and not self.check_structuring_variables_changes()
+        return self.get_configure_status() and not self.check_structuring_variables_changes() and self.check_configured_dependency_disciplines()
+
+    def check_configured_dependency_disciplines(self):
+        '''
+        Check if config_dependency_disciplines are configured to know if i am configured
+        Be careful using this capability to avoid endless loop of configuration 
+        '''
+        return all([disc.is_configured() for disc in self.config_dependency_disciplines])
+
+    def add_disc_to_config_dependency_disciplines(self, disc):
+        '''
+        Add a discipline to config_dependency_disciplines 
+        Be careful to endless configuraiton loop (small loops are checked but not with more than two disciplines)
+        Do not add twice the same dsicipline
+        '''
+        if disc == self:
+            error_msg = f'Not possible to add self in the config_dependency_list for disc : {disc.get_disc_full_name()}'
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
+
+        if self in disc.config_dependency_disciplines:
+            error_msg = f'The discipline {disc.get_disc_full_name()} has already {self.get_disc_full_name()} in its config_dependency_list, it is not possible to add the discipline in config_dependency_list of myself'
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
+
+        if disc not in self.__config_dependency_disciplines:
+            self.__config_dependency_disciplines.append(disc)
+            disc.add_dependent_disciplines(self)
+
+    def delete_disc_in_config_dependency_disciplines(self, disc):
+
+        self.__config_dependency_disciplines.remove(disc)
+
+    def add_dependent_disciplines(self, disc):
+
+        self.__config_dependent_disciplines.append(disc)
+
+    def clean_config_dependency_disciplines_of_dependent_disciplines(self):
+
+        for disc in self.__config_dependent_disciplines:
+            disc.delete_disc_in_config_dependency_disciplines(self)
+
+    def add_disc_list_to_config_dependency_disciplines(self, disc_list):
+        '''
+        Add a list to children_list 
+        '''
+        for disc in disc_list:
+            self.add_disc_to_config_dependency_disciplines(disc)
 
     def get_disciplines_to_configure(self):
         '''
@@ -2194,38 +2206,6 @@ class ProxyDiscipline(object):
     #         )
     #         return o_k
 
-    def get_infos_gradient(self, output_var_list, input_var_list):
-        """
-        Method to linearize a discipline and get gradient of output_var_list wrt input_var_list
-
-        Arguments:
-            output_var_list (List[string]): list of output variables
-            input_var_list (List[string]):  list of input variables
-
-        Return:
-            dict_infos_values (Dict[Dict[dict]]): nested dictionary of format {'out_var_name': { 'in_var_name':
-                                                 {'min': --, 'max': --, 'mean': --} ... } ...}
-        """
-
-        dict_infos_values = {}
-        self.add_differentiated_inputs(input_var_list)
-        self.add_differentiated_outputs(output_var_list)
-        result_linearize_dict = self.linearize()
-
-        for out_var_name in output_var_list:
-            dict_infos_values[out_var_name] = {}
-            for in_var_name in input_var_list:
-                dict_infos_values[out_var_name][in_var_name] = {}
-                grad_value = result_linearize_dict[out_var_name][in_var_name]
-                dict_infos_values[out_var_name][in_var_name]['min'] = grad_value.min(
-                )
-                dict_infos_values[out_var_name][in_var_name]['max'] = grad_value.max(
-                )
-                dict_infos_values[out_var_name][in_var_name]['mean'] = grad_value.mean(
-                )
-
-        return dict_infos_values
-
     def clean(self):
         """
         This method cleans a sos_discipline;
@@ -2238,6 +2218,7 @@ class ProxyDiscipline(object):
         self.ee.ns_manager.remove_dependencies_after_disc_deletion(
             self, self.disc_id)
         self.ee.factory.remove_sos_discipline(self)
+        self.clean_config_dependency_disciplines_of_dependent_disciplines()
 
     def set_wrapper_attributes(self, wrapper):
         """
