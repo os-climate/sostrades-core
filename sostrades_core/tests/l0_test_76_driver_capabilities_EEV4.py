@@ -374,7 +374,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.Driver1.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.Disc1.linearization_mode', root_inputs)
 
-    def test_4_simple_discs_work_with_io_of_DoeEval_and_its_subdisciplines(self):
+    def _test_4_simple_discs_work_with_io_of_DoeEval_and_its_subdisciplines(self):
         """
         This test checks that the coupling between the output of a simple discipline and the input of a driver and its
         subprocess works, as well as the coupling of the Doe+Eval output and its subdisciplines outputs with another

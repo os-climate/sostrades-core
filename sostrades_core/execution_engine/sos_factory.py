@@ -337,7 +337,7 @@ class SosFactory:
     #     """
     #     create a builder for an evaluator defined by its eval_type
     #     """
-    #     # TODO: can be refactored with calls to other methods, do when classes
+    #     # : can be refactored with calls to other methods, do when classes
     #     # are merged
     #     if eval_type == 'sensitivity':
     #         module_struct_list = (
@@ -354,7 +354,7 @@ class SosFactory:
     #             f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
     #         )
     #     # elif eval_type == 'doe_eval':
-    #     #     # FIXME: should use DriverEvaluator objects, once the DoEEval tests
+    #     #     # : should use DriverEvaluator objects, once the DoEEval tests
     #     #     # are adapted
     #     #     module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
     #     #     driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'

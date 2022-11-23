@@ -447,14 +447,14 @@ class SampleGeneratorWrapper(SoSWrapp):
                         disc_in['algo_options']['value'], default_dict)
                     disc_in['algo_options']['value'] = {
                         key: options_map[key] for key in all_options}
-            else:
-                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: {},
-                                                        'dataframe_edition_locked': False,
-                                                        'structuring': True,
-                                                        'editable': False,
-                                                        'dataframe_descriptor': {
-                                                            self.VARIABLES: ('string', None, False),
-                                                            self.VALUES: ('string', None, True)}}})
+            # else:
+            #     dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: {},
+            #                                             'dataframe_edition_locked': False,
+            #                                             'structuring': True,
+            #                                             'editable': False,
+            #                                             'dataframe_descriptor': {
+            #                                                 self.VARIABLES: ('string', None, False),
+            #                                                 self.VALUES: ('string', None, True)}}})
 
     def setup_design_space(self, proxy, dynamic_inputs):
         '''
