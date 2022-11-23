@@ -18,9 +18,23 @@ from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEv
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-
+from logging import Handler
+import time
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+
+
+class UnitTestHandler(Handler):
+    """
+    Logging handler for UnitTest
+    """
+
+    def __init__(self):
+        Handler.__init__(self)
+        self.msg_list = []
+
+    def emit(self, record):
+        self.msg_list.append(record.msg)
 
 
 class TestConfigDependencyDiscs(unittest.TestCase):
@@ -88,12 +102,9 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         self.assertEqual(disc1.config_dependency_disciplines, [])
 
-    def test_03_configure_dependency_btw_disciplines(self):
-        pass
-
 
 if '__main__' == __name__:
     cls = TestConfigDependencyDiscs()
     cls.setUp()
-    cls.test_03_configure_dependency_btw_disciplines()
+    cls.test_02_clean_disc_to_config_dependency_disciplines()
     cls.tearDown()
