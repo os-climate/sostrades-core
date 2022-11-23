@@ -32,6 +32,7 @@ from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisci
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -122,7 +123,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_list_size = []
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
 
-        self.old_samples_df_id = None
+        self.old_samples_df = {}
 
     def get_desc_in_out(self, io_type):
         """
@@ -258,12 +259,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.build_inst_desc_io_with_scenario_df()
                 if self.GENERATED_SAMPLES in disc_in:
                     generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
+                    generated_samples_dict = {self.GENERATED_SAMPLES: generated_samples}
                     # TODO: checking for sample change via object identity based on SampleGenerator impl. -> check value equality?
                     # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
                     # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
                     # gives problems with structuring variables checks leading to incomplete configuration sometimes
-                    if not generated_samples.empty and id(generated_samples) != self.old_samples_df_id:
-                        self.old_samples_df_id = id(generated_samples)
+                    if not generated_samples.empty and not dict_are_equal(generated_samples_dict, self.old_samples_df):
+                        self.old_samples_df = copy.deepcopy(generated_samples_dict) #TODO: overload struct. var. check to spare this deepcopy ?
                         # we crush old scenario_df and propose a df with all scenarios imposed by new sample, all de-activated
                         scenario_df = pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
                         scenario_df = pd.concat([scenario_df, generated_samples], axis=1)
