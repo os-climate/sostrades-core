@@ -29,7 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-    # simple 2-disc process NOT USING nested scatters
+        # simple 2-disc process NOT USING nested scatters
         scenario_map = {'input_name': 'scenario_list',
                         'input_type': 'string_list',
                         'input_ns': 'ns_scatter_scenario',
@@ -42,24 +42,27 @@ class ProcessBuilder(BaseProcessBuilder):
             'scenario_list', scenario_map)
 
         # shared namespace
-        self.ee.ns_manager.add_ns('ns_barrierr', 'MyCase')
+        self.ee.ns_manager.add_ns('ns_barrierr', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', 'MyCase.multi_scenarios')
+            'ns_scatter_scenario', f'{self.ee.study_name}.multi_scenarios')
         self.ee.ns_manager.add_ns(
-            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
+            'ns_disc3', f'{self.ee.study_name}.multi_scenarios.Disc3')
         self.ee.ns_manager.add_ns(
-            'ns_out_disc3', 'MyCase.multi_scenarios')
+            'ns_out_disc3', f'{self.ee.study_name}.multi_scenarios')
         self.ee.ns_manager.add_ns(
-            'ns_ac', 'MyCase.multi_scenarios')
+            'ns_ac', f'{self.ee.study_name}.multi_scenarios')
         self.ee.ns_manager.add_ns(
-            'ns_data_ac', 'MyCase')
+            'ns_data_ac', f'{self.ee.study_name}')
 
-        # putting the ns_sampling in the same value as the driver will trigger the coupling like in mono instance case
-        self.ee.ns_manager.add_ns('ns_sampling', 'MyCase.multi_scenarios')
+        # putting the ns_sampling in the same value as the driver will trigger
+        # the coupling like in mono instance case
+        self.ee.ns_manager.add_ns(
+            'ns_sampling', f'{self.ee.study_name}.multi_scenarios')
 
         # instantiate factory # get instantiator from Discipline class
         mod_list1 = 'sostrades_core.sos_wrapping.test_discs.disc1_scenario.Disc1'
-        disc1_builder = self.ee.factory.get_builder_from_module('Disc1', mod_list1)
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1', mod_list1)
 
         mod_list3 = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
@@ -73,6 +76,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module('Sample_Generator', mod_cp)
+        cp_builder = self.ee.factory.get_builder_from_module(
+            'Sample_Generator', mod_cp)
 
-        return multi_scenarios+[cp_builder]
+        return multi_scenarios + [cp_builder]
