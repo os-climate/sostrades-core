@@ -69,7 +69,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     # NEW EEV4 TESTS
     def test_01_multi_instance_configuration_from_df_without_reference_scenario(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_basic'
+        proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -137,7 +137,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_03_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_basic'
+        proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -221,7 +221,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_04_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_basic'
+        proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,  proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -284,7 +284,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_08_changing_trade_variables_by_adding_df_column(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_basic'
+        proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,  proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()

@@ -38,7 +38,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # multi scenario driver builder
         multi_scenarios =  self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
-                                                                    mod_id='test_multi_scenario_basic')
+                                                                    mod_id='test_multi_instance_basic')
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         cp_builder = self.ee.factory.get_builder_from_module('Sample_Generator', mod_cp)

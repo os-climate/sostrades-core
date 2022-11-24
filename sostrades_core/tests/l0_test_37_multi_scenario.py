@@ -27,7 +27,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.test_multi_scenario_with_samplegenerator.usecase import Study
+from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase import Study
 
 
 class TestMultiScenario(unittest.TestCase):
@@ -122,7 +122,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_01_multiscenario_with_sample_generator_cp(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_with_samplegenerator'
+        proc_name = 'test_multi_instance_with_samplegenerator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -191,7 +191,7 @@ class TestMultiScenario(unittest.TestCase):
     def test_03_multi_scenario_from_process_with_basic_config_from_usecase(self):
 
         builder_process = self.exec_eng.factory.get_builder_from_process(
-            self.repo, 'test_multi_scenario_with_samplegenerator')
+            self.repo, 'test_multi_instance_with_samplegenerator')
         self.exec_eng.factory.set_builders_to_coupling_builder(
             builder_process)
 
@@ -248,7 +248,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_04_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_with_samplegenerator'
+        proc_name = 'test_multi_instance_with_samplegenerator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -392,7 +392,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def _test_05_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_scenario_with_samplegenerator'
+        proc_name = 'test_multi_instance_with_samplegenerator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
