@@ -54,11 +54,6 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns(
             'ns_data_ac', f'{self.ee.study_name}')
 
-        # putting the ns_sampling in the same value as the driver will trigger
-        # the coupling like in mono instance case
-        self.ee.ns_manager.add_ns(
-            'ns_sampling', f'{self.ee.study_name}.multi_scenarios')
-
         # instantiate factory # get instantiator from Discipline class
         mod_list1 = 'sostrades_core.sos_wrapping.test_discs.disc1_scenario.Disc1'
         disc1_builder = self.ee.factory.get_builder_from_module(
@@ -74,9 +69,4 @@ class ProcessBuilder(BaseProcessBuilder):
         multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
             'multi_scenarios', builder_list, map_name='scenario_list')
 
-        # sample generator builder
-        mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module(
-            'Sample_Generator', mod_cp)
-
-        return multi_scenarios + [cp_builder]
+        return multi_scenarios
