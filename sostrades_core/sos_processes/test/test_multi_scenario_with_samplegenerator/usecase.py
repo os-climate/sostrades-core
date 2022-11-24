@@ -24,50 +24,29 @@ class Study(StudyManager):
     def __init__(self, run_usecase=False, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
-    # def setup_usecase(self):
-    #     """
-    #     Usecase for lhs DoE and Eval on x variable of Sellar Problem
-    #     """
-    #
-    #     ns = f'{self.study_name}'
-    #     dspace_dict = {'variable': ['x'],
-    #
-    #                      'lower_bnd': [0.],
-    #                      'upper_bnd': [10.],
-    #
-    #                      }
-    #     dspace = pd.DataFrame(dspace_dict)
-    #
-    #     input_selection_x = {'selected_input': [False, True, False, False, False],
-    #                          'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
-    #                                        'y_2',
-    #                                        'z']}
-    #     input_selection_x = pd.DataFrame(input_selection_x)
-    #
-    #     output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-    #                                   'full_name': ['c_1', 'c_2', 'obj',
-    #                                                 'y_1', 'y_2']}
-    #     output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
-    #
-    #     disc_dict = {}
-    #     # DoE inputs
-    #     n_samples = 100
-    #     disc_dict[f'{ns}.DoE.sampling_algo'] = "lhs"
-    #     disc_dict[f'{ns}.DoE.design_space'] = dspace
-    #     disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples}
-    #     disc_dict[f'{ns}.eval_inputs'] = input_selection_x
-    #     disc_dict[f'{ns}.eval_outputs'] = output_selection_obj_y1_y2
-    #
-    #     # Sellar inputs
-    #     local_dv = 10.
-    #     disc_dict[f'{ns}.x'] = array([1.])
-    #     disc_dict[f'{ns}.y_1'] = array([1.])
-    #     disc_dict[f'{ns}.y_2'] = array([1.])
-    #     disc_dict[f'{ns}.z'] = array([1., 1.])
-    #     disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
-    #
-    #     return [disc_dict]
+    def setup_usecase(self):
+        # setup the driver and the sample generator jointly
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
 
+        b1 = 4
+        b2 = 2
+        z1 = 1.2
+        z2 = 1.5
+        dict_of_list_values = {
+            'Disc1.b': [b1, b2],
+            'Disc3.z': [z1, z2]
+        }
+        list_of_values_b_z = [[], dict_of_list_values['Disc1.b'],
+                              [], [], dict_of_list_values['Disc3.z']]
+        input_selection_cp_b_z = pd.DataFrame({'selected_input': [False, True, False, False, True],
+                                                'full_name': ['', 'Disc1.b', '', '', 'Disc3.z'],
+                                                'list_of_values': list_of_values_b_z
+                                                })
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = input_selection_cp_b_z
+
+        return [dict_values]
 
 if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
