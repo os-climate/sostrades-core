@@ -617,23 +617,11 @@ class TestSoSOptimScenario(unittest.TestCase):
         factory = exec_eng2.factory
 
         repo_discopt = 'sostrades_core.sos_processes.test'
-        proc_name_discopt = 'test_sellar_opt_discopt'
         builder = factory.get_builder_from_process(repo=repo_discopt,
                                                    mod_id='test_sellar_coupling')
 
         factory.set_builders_to_coupling_builder(builder)
         exec_eng2.configure()
-
-        disc_dict = {}
-        # Optim inputs
-        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
-        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
-        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
-        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
-        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
-            'c_1', 'c_2']
-        disc_dict[f'{self.ns}.SellarOptimScenario.eval_mode'] = True
-        exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
         local_dv = 10.

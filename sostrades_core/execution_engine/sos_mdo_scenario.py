@@ -86,6 +86,8 @@ class SoSMDOScenario(MDOScenario):
                    for discipline in self.disciplines]
         for data in outputs:
             self.local_data.update(data)
+        self.local_data.update({
+            [key for key in self.reduced_dm.keys() if 'design_space_out' in key][0]: self.formulation.opt_problem.design_space})
 
     def execute_at_xopt(self):
         '''
