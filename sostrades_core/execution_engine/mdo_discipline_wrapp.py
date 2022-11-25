@@ -228,6 +228,8 @@ class MDODisciplineWrapp(object):
             mdo_discipline.max_iter = proxy.max_iter
             mdo_discipline.eval_mode = proxy.eval_mode
             mdo_discipline.eval_jac = proxy.eval_jac
+            mdo_discipline.dict_desactivated_elem = proxy.dict_desactivated_elem
+            mdo_discipline.input_design_space = proxy.get_sosdisc_inputs('design_space')
 
             self.mdo_discipline = mdo_discipline
 

@@ -20,6 +20,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from gemseo.core.mdo_scenario import MDOScenario
 from copy import deepcopy
 import logging
+import pandas as pd
 
 LOGGER = logging.getLogger(__name__)
 
@@ -67,6 +68,8 @@ class SoSMDOScenario(MDOScenario):
         self.max_iter = None
         self.eval_mode = False
         self.eval_jac = False
+        self.dict_desactivated_elem = None
+        self.input_design_space = None
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variables_names
         self.is_sos_coupling=False
@@ -86,8 +89,7 @@ class SoSMDOScenario(MDOScenario):
                    for discipline in self.disciplines]
         for data in outputs:
             self.local_data.update(data)
-        self.local_data.update({
-            [key for key in self.reduced_dm.keys() if 'design_space_out' in key][0]: self.formulation.opt_problem.design_space})
+        self.update_design_space_out()
 
     def execute_at_xopt(self):
         '''
@@ -272,3 +274,26 @@ class SoSMDOScenario(MDOScenario):
         if hasattr(disc, 'disciplines'):
             for disc in disc.disciplines:
                 self._set_default_inputs_from_local_data(disc)
+
+    def update_design_space_out(self):
+        """
+        Method to update design space with opt value
+        """
+        design_space = deepcopy(self.input_design_space)
+        l_variables = design_space['variable']
+        for var in l_variables:
+            full_name_var = [full_name for full_name in self.get_input_data_names() if var == full_name.split('.')[-1]][0]
+            if full_name_var in self.activated_variables:
+                value_x_opt = list(self.formulation.design_space._current_x.get(
+                    full_name_var))
+                if self.dict_desactivated_elem[full_name_var] != {}:
+                    # insert a desactivated element
+                    value_x_opt.insert(
+                        self.dict_desactivated_elem[full_name_var]['position'],
+                        self.dict_desactivated_elem[full_name_var]['value'])
+
+                design_space.loc[design_space['variable'] == var, 'value'] = pd.Series(
+                    [value_x_opt] * len(design_space))
+        self.local_data.update({
+            [key for key in self.get_output_data_names() if 'design_space_out' in key][
+                0]: design_space})
