@@ -99,10 +99,14 @@ class SosFactory:
 
         self.__current_discipline = None
 
-    def init_execution(self):
+    def init_execution(self):  # type: (...) -> None
+        """
+        init_execution delegated to the wrapper using the proxy for i/o configuration.
+        """
         for proxy in self.__proxy_disciplines:
-            if proxy.mdo_discipline_wrapp.wrapper is not None:
-                proxy.mdo_discipline_wrapp.wrapper.init_execution(proxy)
+            factory = proxy.mdo_discipline_wrapp
+            if factory.wrapper is not None:
+                factory.wrapper.init_execution(proxy)
 
     @property
     def sos_name(self):
