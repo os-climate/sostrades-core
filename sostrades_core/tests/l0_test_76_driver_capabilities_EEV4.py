@@ -973,7 +973,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_disc1_disc3_very_simple_multi_scenario_nested"
+        proc_name = "test_multi_instance_nested"
         eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                         mod_id=proc_name)
 

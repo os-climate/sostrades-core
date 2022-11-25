@@ -716,6 +716,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Get initial values for input values decided in the evaluation
         '''
+
         return dict(zip(self.eval_in_list,
                         map(self.dm.get_value, self.eval_in_list)))
 

@@ -564,7 +564,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
 
-    def test_10_cartesian_product_execution(self):
+    def test_4_cartesian_product_execution(self):
         """
         This is a test of the cartesian product wrapper
         """
@@ -647,7 +647,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         target_samples_df = pd.DataFrame(
             targeted_samples, columns=variable_list)
 
-    def test_11_cartesian_product_step_by_step_execution(self):
+    def test_5_cartesian_product_step_by_step_execution(self):
         """
         This is a test of the cartesian product wrapper
         """
@@ -773,8 +773,3 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exec_eng.execute()
 
-
-if '__main__' == __name__:
-    cls = TestSampleGeneratorWrapper()
-    cls.setUp()
-    cls.test_1_cartesian_product_execution()

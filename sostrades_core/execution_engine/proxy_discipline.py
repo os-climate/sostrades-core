@@ -1764,12 +1764,6 @@ class ProxyDiscipline(object):
         """
         return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()}
 
-    def init_execution(self):
-        """
-        To be used to initialize some object before execution in the wrap
-        """
-        self.mdo_discipline_wrapp.init_execution(self)
-
     def update_from_dm(self):
         """
         Update all disciplines with datamanager information
