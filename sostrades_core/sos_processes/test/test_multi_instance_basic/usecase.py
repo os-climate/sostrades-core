@@ -24,49 +24,50 @@ class Study(StudyManager):
     def __init__(self, run_usecase=False, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
-    # def setup_usecase(self):
-    #     """
-    #     Usecase for lhs DoE and Eval on x variable of Sellar Problem
-    #     """
-    #
-    #     ns = f'{self.study_name}'
-    #     dspace_dict = {'variable': ['x'],
-    #
-    #                      'lower_bnd': [0.],
-    #                      'upper_bnd': [10.],
-    #
-    #                      }
-    #     dspace = pd.DataFrame(dspace_dict)
-    #
-    #     input_selection_x = {'selected_input': [False, True, False, False, False],
-    #                          'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
-    #                                        'y_2',
-    #                                        'z']}
-    #     input_selection_x = pd.DataFrame(input_selection_x)
-    #
-    #     output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-    #                                   'full_name': ['c_1', 'c_2', 'obj',
-    #                                                 'y_1', 'y_2']}
-    #     output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
-    #
-    #     disc_dict = {}
-    #     # DoE inputs
-    #     n_samples = 100
-    #     disc_dict[f'{ns}.DoE.sampling_algo'] = "lhs"
-    #     disc_dict[f'{ns}.DoE.design_space'] = dspace
-    #     disc_dict[f'{ns}.DoE.algo_options'] = {'n_samples': n_samples}
-    #     disc_dict[f'{ns}.eval_inputs'] = input_selection_x
-    #     disc_dict[f'{ns}.eval_outputs'] = output_selection_obj_y1_y2
-    #
-    #     # Sellar inputs
-    #     local_dv = 10.
-    #     disc_dict[f'{ns}.x'] = array([1.])
-    #     disc_dict[f'{ns}.y_1'] = array([1.])
-    #     disc_dict[f'{ns}.y_2'] = array([1.])
-    #     disc_dict[f'{ns}.z'] = array([1., 1.])
-    #     disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
-    #
-    #     return [disc_dict]
+    def setup_usecase(self):
+        """
+        Usecase from test_01_multi_instance_configuration_from_df_without_reference_scenario
+        """
+
+        # reference var values
+        self.x1 = 2.
+        self.a1 = 3
+        self.constant = 3
+        self.power = 2
+        self.b1 = 4
+        self.b2 = 2
+        self.z1 = 1.2
+        self.z2 = 1.5
+
+        disc_dict = {}
+        # build the scenarios
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2']})
+        disc_dict[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        disc_dict[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+
+        # configure the scenarios
+        scenario_list = ['scenario_1', 'scenario_2']
+        disc_dict[self.study_name + '.a'] = self.a1
+        disc_dict[self.study_name + '.x'] = self.x1
+        for scenario in scenario_list:
+            disc_dict[self.study_name + '.multi_scenarios.' +
+                        scenario + '.Disc3.constant'] = self.constant
+            disc_dict[self.study_name + '.multi_scenarios.' +
+                        scenario + '.Disc3.power'] = self.power
+
+        # configure b from a dataframe
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2'],
+                                    'Disc1.b': [self.b1, 1e6, self.b2],
+                                    'Disc3.z': [self.z1, 1e6, self.z2]})
+        disc_dict[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+
+        return [disc_dict]
 
 
 if '__main__' == __name__:
