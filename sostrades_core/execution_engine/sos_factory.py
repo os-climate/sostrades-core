@@ -100,8 +100,9 @@ class SosFactory:
         self.__current_discipline = None
 
     def init_execution(self):
-        for disc in self.__proxy_disciplines:
-            disc.init_execution()
+        for proxy in self.__proxy_disciplines:
+            if proxy.mdo_discipline_wrapp.wrapper is not None:
+                proxy.mdo_discipline_wrapp.wrapper.init_execution(proxy)
 
     @property
     def sos_name(self):

@@ -172,6 +172,9 @@ class ExecutionEngine:
         '''
         loop on proxy disciplines and execute prepare execution
         '''
+        #- instantiate models in user wrapps
+        self.__factory.init_execution()
+        #- execution
         self.root_process.prepare_execution()
 
     def fill_data_in_with_connector(self):
@@ -531,7 +534,6 @@ class ExecutionEngine:
         if len(dict_to_load):
             self.update_from_dm()
             self.dm.create_reduced_dm()
-            self.__factory.init_execution()
             if update_status_configure:
                 self.update_status_configure()
         elif self.dm.reduced_dm is None:
@@ -650,9 +652,6 @@ class ExecutionEngine:
         self.update_from_dm()
 
         self.__check_data_integrity_msg()
-
-        # -- init execute
-        self.__factory.init_execution()
 
         # -- prepare execution
         self.prepare_execution()

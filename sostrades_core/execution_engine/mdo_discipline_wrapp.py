@@ -101,35 +101,6 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.init_execution(proxy)
 
-        # else:
-        #     proxy.setup_sos_disciplines(self)
-
-    # def get_chart_filter_list(self):
-    #     """
-    #     Return a list of ChartFilter instance base on the inherited class post processing filtering capabilities
-    #
-    #     Returns: List[ChartFilter]
-    #     """
-    #     if self.wrapper is not None:
-    #         return self.wrapper.get_chart_filter_list()
-    #     else:
-    #         return []
-
-#     def get_post_processing_list(self, filters=None):
-#         """
-#         Return a list of post processing instance using the ChartFilter list given as parameter
-#
-#         Arguments:
-#             filters: filters to apply during post processing making
-#
-#         Returns:
-#             post processing instance list
-#         """
-#         if self.wrapper is not None:
-#             return self.wrapper.get_post_processing_list(self, filters)
-#         else:
-#             return []
-
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
         """
         SoSMDODiscipline instanciation.
@@ -182,17 +153,6 @@ class MDODisciplineWrapp(object):
         grammar.clear()
         grammar.initialize_from_base_dict(
             {output: None for output in output_names})
-
-#    def _update_all_default_values(self, input_data):
-#        '''
-#        Store all input grammar data names' values from input data in default values of mdo_discipline
-#
-#        Arguments:
-#            input_data (dict): values to store
-#        '''
-#        if input_data is not None:
-#            for key in self.mdo_discipline.input_grammar.get_data_names():
-#                self.mdo_discipline._default_inputs[key] = input_data.get(key)
 
     def update_default_from_dict(self, input_dict, check_input=True):
         '''
