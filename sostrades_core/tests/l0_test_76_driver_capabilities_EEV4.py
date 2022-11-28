@@ -968,7 +968,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-
+        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -982,32 +982,66 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        dict_values = {}
-        dict_values[f'{study_name}.outer_ms.builder_mode'] = 'multi_instance'
-        dict_values[f'{study_name}.outer_ms.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                False,
-                                                                                                True],
-                                                                          'scenario_name': ['scenario_1',
-                                                                                            'scenario_Z',
-                                                                                            'scenario_2']})
-        exec_eng.load_study_from_input_dict(dict_values)
+        usecase = Study(execution_engine=exec_eng)
+        usecase.study_name = ns
+        values_dict = usecase.setup_usecase()
 
-        dict_values[f'{study_name}.outer_ms.scenario_1.inner_ms.builder_mode'] = 'multi_instance'
-        dict_values[f'{study_name}.outer_ms.scenario_1.inner_ms.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                                    False,
-                                                                                                                    True],
-                                                                                              'scenario_name': ['name_11',
-                                                                                                                'name_1K',
-                                                                                                                'name_12']})
-        dict_values[f'{study_name}.outer_ms.scenario_2.inner_ms.builder_mode'] = 'multi_instance'
-        dict_values[f'{study_name}.outer_ms.scenario_2.inner_ms.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                                    False,
-                                                                                                                    True],
-                                                                                              'scenario_name': ['name_21',
-                                                                                                                'name_2K',
-                                                                                                                'name_22']})
-        exec_eng.load_study_from_input_dict(dict_values)
-        print(exec_eng.display_treeview_nodes())
-        print('=====')
-        print(exec_eng.root_process.display_proxy_subtree(
-            callback=lambda x: x.is_configured()))
+        exec_eng.load_study_from_input_dict(values_dict[0])
+        # print(exec_eng.display_treeview_nodes())
+        # print('=====')
+        # print(exec_eng.root_process.display_proxy_subtree(
+        #     callback=lambda x: x.is_configured()))
+        exp_ns_tree = 'Nodes representation for Treeview root\n' \
+                      '|_ root\n' \
+                      '\t|_ outer_ms\n' \
+                      '\t\t|_ scenario_1\n' \
+                      '\t\t\t|_ inner_ms\n' \
+                      '\t\t\t\t|_ name_1\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ name_2\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t|_ Disc3\n' \
+                      '\t\t|_ scenario_2\n' \
+                      '\t\t\t|_ inner_ms\n' \
+                      '\t\t\t\t|_ name_1\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ name_2\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t|_ Disc3\n' \
+                      '\t|_ name_1\n' \
+                      '\t|_ name_2'
+        exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
+                         '    |_ root.outer_ms  (ProxyDriverEvaluator) [True]\n' \
+                         '        |_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n' \
+                         '            |_ root.outer_ms.scenario_1.inner_ms  (ProxyDriverEvaluator) [True]\n' \
+                         '                |_ root.outer_ms.scenario_1.inner_ms.name_1  (ProxyCoupling) [True]\n' \
+                         '                    |_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n' \
+                         '                |_ root.outer_ms.scenario_1.inner_ms.name_2  (ProxyCoupling) [True]\n' \
+                         '                    |_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n' \
+                         '            |_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n' \
+                         '        |_ root.outer_ms.scenario_2  (ProxyCoupling) [True]\n' \
+                         '            |_ root.outer_ms.scenario_2.inner_ms  (ProxyDriverEvaluator) [True]\n' \
+                         '                |_ root.outer_ms.scenario_2.inner_ms.name_1  (ProxyCoupling) [True]\n' \
+                         '                    |_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n' \
+                         '                |_ root.outer_ms.scenario_2.inner_ms.name_2  (ProxyCoupling) [True]\n' \
+                         '                    |_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n' \
+                         '            |_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]'
+
+        self.assertEqual(exec_eng.display_treeview_nodes(),
+                         exp_ns_tree)
+        self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
+                         exp_proxy_tree)
+
+        exec_eng.execute()
+
+        scenario_list_outer = ['scenario_1', 'scenario_2']
+        scenario_list_inner = ['name_1', 'name_2']
+        for i, sc in enumerate(scenario_list_outer):
+            self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.o'),
+                             usecase.constant[i] + usecase.z[i] ** usecase.power[i])
+            for j, name in enumerate(scenario_list_inner):
+                self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.Disc1.indicator'),
+                                 usecase.a[j]*usecase.b[i][j])
+                self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.y'),
+                                 usecase.a[j]*usecase.x[j]+usecase.b[i][j])
+
