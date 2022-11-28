@@ -352,6 +352,21 @@ class DataManager:
         '''
         return self.convert_dict_with_maps(self.data_dict, self.data_id_map, keys='full_names')
 
+    def convert_data_dict_with_display_name(self, exec_display=False):
+        ''' 
+        Return data_dict with display namespaced keys if exec_display is False.
+        FOr exec display use standard full names
+        '''
+        display_data_dict = {}
+        for data_id, data_info in self.data_dict.items():
+            if exec_display:
+                display_name = self.get_var_full_name(data_id)
+            else:
+                display_name = self.get_var_display_name(data_id)
+            display_data_dict[display_name] = data_info
+
+        return display_data_dict
+
     def get_data_dict_values(self, excepted=[]):
         '''
         Return a dictionaries with all full named keys in the dm and the value of each key from the dm 
@@ -572,13 +587,13 @@ class DataManager:
         self.no_change = False
         self.data_dict[var_id].update(data_dict)
 
-    def create_treeview(self, root_process, process_module, no_data=False, read_only=False):
+    def create_treeview(self, root_process, process_module, no_data=False, read_only=False, exec_display=False):
         '''
         Function that builds a composite structure
         regarding the DataManager stored data
         '''
         self.treeview = TreeView(
-            name=self.name, no_data=no_data, read_only=read_only)
+            name=self.name, no_data=no_data, read_only=read_only, exec_display=exec_display)
         self.treeview.create_tree_node(data_manager=self,
                                        root_process=root_process,
                                        process_module=process_module,
@@ -744,6 +759,15 @@ class DataManager:
         ns_reference = self.data_dict[var_id][ProxyDiscipline.NS_REFERENCE]
         var_f_name = self.ns_manager.compose_ns([ns_reference.value, var_name])
         return var_f_name
+
+    def get_var_display_name(self, var_id):
+        ''' Get namespace and var_name and return namespaced variable
+        '''
+        var_name = self.get_var_name_from_uid(var_id)
+        ns_reference = self.data_dict[var_id][ProxyDiscipline.NS_REFERENCE]
+        var_display_name = self.ns_manager.compose_ns(
+            [ns_reference.get_display_value(), var_name])
+        return var_display_name
 
     def get_disc_full_name(self, disc_id):
         ''' Get full discipline name

@@ -24,12 +24,13 @@ class Namespace:
     '''
     NS_NAME_SEPARATOR = '__'
 
-    def __init__(self, name, value):
+    def __init__(self, name, value, display_value=None):
         '''
         Class to describe a namespace and manage several instance of the same namespace
         '''
         self.name = name
         self.value = value
+        self.__display_value = display_value
         self.dependency_disc_list = []  # list of dependency disciplines
 
     def to_dict(self):
@@ -47,6 +48,21 @@ class Namespace:
         Get the value in the Namespace
         '''
         return self.value
+
+    def get_display_value(self):
+        '''
+        Get the display value in the Namespace
+        '''
+        if self.__display_value is None:
+            return self.value
+        else:
+            return self.__display_value
+
+    def set_display_value(self, val):
+        '''
+        Set the display value in the Namespace
+        '''
+        self.__display_value = val
 
     def get_ns_id(self):
         '''

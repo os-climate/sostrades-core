@@ -33,13 +33,14 @@ class TreeView:
     """
     PROCESS_DOCUMENTATION = 'Process documentation'
 
-    def __init__(self, name, no_data=False, read_only=False):
+    def __init__(self, name, no_data=False, read_only=False, exec_display=False):
         """ class constructor
         """
         self.name = name
         self.no_data = no_data
         self.read_only = read_only
         self.root = None
+        self.exec_display = exec_display
 
     def create_tree_node(self, data_manager, root_process, ns_manager, process_module=''):
         """ Function that builds a composite structure (tree view  of tree nodes)
@@ -59,7 +60,6 @@ class TreeView:
         """
 
         disc_dict = data_manager.disciplines_dict
-        data_dict = data_manager.convert_data_dict_with_full_name()
 
         treenodes = {}
 
@@ -87,6 +87,9 @@ class TreeView:
         # order
 
         self.create_treenode_rec(self.root, treenodes, disc_dict)
+
+        data_dict = data_manager.convert_data_dict_with_display_name(
+            self.exec_display)
 
         # Now populate each node with their process parameter
         for key, val in data_dict.items():
@@ -150,7 +153,8 @@ class TreeView:
         """
 
         if namespace is None:
-            namespace = discipline.get_disc_full_name().split(NS_SEP)
+            namespace = discipline.get_disc_display_name(
+                self.exec_display).split(NS_SEP)
 
         if len(namespace) > 0:
 
