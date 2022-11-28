@@ -52,8 +52,13 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(
             [disc1_builder, disc2_builder])
 
+        display_value = f'{self.exec_eng.study_name}.new_display'
         self.exec_eng.ns_manager.add_ns(
-            'ns_ac', self.exec_eng.study_name, display_value=f'{self.exec_eng.study_name}.new_display')
+            'ns_ac', self.exec_eng.study_name, display_value=display_value)
+
+        ns_ac = self.exec_eng.ns_manager.get_ns_in_shared_ns_dict('ns_ac')
+
+        self.assertEqual(ns_ac.get_display_value(), display_value)
         self.exec_eng.configure()
 
         self.exec_eng.display_treeview_nodes()
