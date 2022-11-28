@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Disc3 Very Simple Multi Scenario Process',
+        'label': 'Test Multi Instance With Sample Generator (DriverEvaluator)',
         'description': '',
         'category': '',
         'version': '',
