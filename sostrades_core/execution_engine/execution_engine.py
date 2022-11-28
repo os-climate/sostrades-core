@@ -301,18 +301,19 @@ class ExecutionEngine:
         for disc in self.factory.proxy_disciplines:
             disc._update_status_dm(ProxyDiscipline.STATUS_CONFIGURE)
 
-    def get_treeview(self, no_data=False, read_only=False):
+    def get_treeview(self, no_data=False, read_only=False, exec_display=False):
         ''' returns the treenode build based on datamanager '''
-        if self.dm.treeview is None:
+        if self.dm.treeview is None or self.dm.treeview.exec_display != exec_display:
             self.dm.create_treeview(
-                self.root_process, self.__factory.process_module, no_data, read_only)
+                self.root_process, self.__factory.process_module, no_data, read_only, exec_display=exec_display)
+
         return self.dm.treeview
 
-    def display_treeview_nodes(self, display_variables=None):
+    def display_treeview_nodes(self, display_variables=None, exec_display=False):
         '''
         Display the treeview and create it if not 
         '''
-        self.get_treeview()
+        self.get_treeview(exec_display=exec_display)
         tv_to_display = self.dm.treeview.display_nodes(
             display_variables=display_variables)
         self.logger.info(tv_to_display)

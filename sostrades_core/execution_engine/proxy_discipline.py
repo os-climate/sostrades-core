@@ -1752,6 +1752,16 @@ class ProxyDiscipline(object):
             [ns_reference.value, complete_var_name])
         return var_f_name
 
+    def get_var_display_name(self, var_name, disc_dict):
+        '''
+        Get namespaced variable from display namespace and var_name in disc_dict
+        '''
+        ns_reference = disc_dict[var_name][self.NS_REFERENCE]
+        complete_var_name = disc_dict[var_name][self.VAR_NAME]
+        var_f_name = self.ee.ns_manager.compose_ns(
+            [ns_reference.get_display_value(), complete_var_name])
+        return var_f_name
+
     def ns_tuples_to_full_name_keys(self, in_dict):
         """
         Converts the keys of the input dictionary from tuples (var_short_name, id(ns_ref)) to strings var_full_name.
@@ -1796,6 +1806,15 @@ class ProxyDiscipline(object):
         Return: (string) the discipline name with full namespace
         '''
         return self.ee.ns_manager.get_local_namespace_value(self)
+
+    def get_disc_display_name(self, exec_display=False):
+        '''
+        Return: (string) the discipline name with either the display namespace or the exec namespace
+        '''
+        if exec_display:
+            return self.ee.ns_manager.get_local_namespace_value(self)
+        else:
+            return self.ee.ns_manager.get_display_namespace_value(self)
 
     def get_disc_id_from_namespace(self):
         """

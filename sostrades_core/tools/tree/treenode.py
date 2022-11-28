@@ -37,11 +37,12 @@ class TreeNode:
     needed_variables = [ProxyDiscipline.TYPE, ProxyDiscipline.USER_LEVEL, ProxyDiscipline.EDITABLE,
                         ProxyDiscipline.COUPLING, ProxyDiscipline.VALUE, ProxyDiscipline.NUMERICAL, ProxyDiscipline.OPTIONAL]
 
-    def __init__(self, name):
+    def __init__(self, name, exec_display=False):
         """ class constructor
         """
         self.name = name
 
+        self.exec_display = exec_display
         # Children treenode: TreeNode[]
         self.children = []
 
@@ -135,7 +136,8 @@ class TreeNode:
         :params: discipline to set into the treenode
         :type: ProxyDiscipline
         """
-        self.full_namespace = discipline.get_disc_full_name()
+        self.full_namespace = discipline.get_disc_display_name(
+            self.exec_display)
         self.identifier = discipline.disc_id
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
@@ -150,8 +152,12 @@ class TreeNode:
         disc_in = discipline.get_data_in()
         if not no_data:
             for key, data_key in disc_in.items():
-                namespaced_key = discipline.get_var_full_name(
-                    key, disc_in)
+                if self.exec_display:
+                    namespaced_key = discipline.get_var_full_name(
+                        key, disc_in)
+                else:
+                    namespaced_key = discipline.get_var_display_name(
+                        key, disc_in)
                 new_disc_data = {
                     needed_key: data_key[needed_key] for needed_key in self.needed_variables}
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
@@ -163,8 +169,13 @@ class TreeNode:
         disc_out = discipline.get_data_out()
         if not no_data:
             for key, data_key in disc_out.items():
-                namespaced_key = discipline.get_var_full_name(
-                    key, disc_out)
+                if self.exec_display:
+                    namespaced_key = discipline.get_var_full_name(
+                        key, disc_out)
+                else:
+                    namespaced_key = discipline.get_var_display_name(
+                        key, disc_out)
+
                 new_disc_data = {
                     needed_key: data_key[needed_key] for needed_key in self.needed_variables}
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT

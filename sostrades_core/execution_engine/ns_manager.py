@@ -118,7 +118,7 @@ class NamespaceManager:
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, add_in_shared_ns_dict=True):
+    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -133,7 +133,7 @@ class NamespaceManager:
 
         # else we create a new object and store it in all_ns_dict
         else:
-            ns = Namespace(name, ns_value)
+            ns = Namespace(name, ns_value, display_value)
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns
@@ -387,6 +387,12 @@ class NamespaceManager:
         '''
         return self.disc_ns_dict[disc]['local_ns'].get_value()
 
+    def get_display_namespace_value(self, disc):
+        '''
+        Return the display_namespace linked to the discipline disc
+        '''
+        return self.disc_ns_dict[disc]['local_ns'].get_value()
+
     def get_local_namespace(self, disc):
         '''
         Return the local_namespace linked to the discipline disc
@@ -402,6 +408,20 @@ class NamespaceManager:
         complete_var_name = data_io_var[ProxyDiscipline.VAR_NAME]
 
         ns_value = data_io_var[ProxyDiscipline.NS_REFERENCE].get_value()
+        result = self.compose_ns([ns_value, complete_var_name])
+
+        return result
+
+    def get_display_variable(self, disc, var_name, io_type, exec_display=False):
+        '''
+        Get the complete namespace of a variable using NS_REFERENCE and VAR_NAME
+        '''
+        data_io_var = disc.get_data_io_from_key(
+            io_type, var_name)
+        complete_var_name = data_io_var[ProxyDiscipline.VAR_NAME]
+
+        ns_value = data_io_var[ProxyDiscipline.NS_REFERENCE].get_display_value(
+        )
         result = self.compose_ns([ns_value, complete_var_name])
 
         return result
