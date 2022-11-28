@@ -390,7 +390,7 @@ class TestMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_value(
                 'MyCase.multi_scenarios.'+scenario_name+'.o'), o)
 
-    def _test_05_dump_and_load_after_execute_with_2_trade_vars(self):
+    def test_05_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_with_samplegenerator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
