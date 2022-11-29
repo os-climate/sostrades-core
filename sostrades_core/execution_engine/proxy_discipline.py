@@ -1963,32 +1963,6 @@ class ProxyDiscipline(object):
             self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
                 observer)
 
-    def _check_status_before_run(self):
-        """
-        Check discipline status is ok before run and throw ValueError otherwise.
-        """
-        status_ok = True
-        if self.status == self.STATUS_RUNNING:
-            status_ok = False
-        if self.re_exec_policy == self.RE_EXECUTE_NEVER_POLICY:
-            if self.status not in [self.STATUS_PENDING,
-                                   self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
-                status_ok = False
-        elif self.re_exec_policy == self.RE_EXECUTE_DONE_POLICY:
-            if self.status == self.STATUS_DONE:
-                self.reset_statuses_for_run()
-                status_ok = True
-            elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
-                status_ok = False
-        else:
-            raise ValueError("Unknown re_exec_policy :" +
-                             str(self.re_exec_policy))
-        if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
-                             str(self.re_exec_policy))
-
     # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
         """
@@ -2299,8 +2273,9 @@ class ProxyDiscipline(object):
             disc_module = self.__module__
         # return the replace sostrades_core just for documentation (linked
         # ontology is the one from integration)
-        return disc_module.replace(
-            'sostrades_core', 'sos_trades_core')
+#         return disc_module.replace(
+#             'sostrades_core', 'sos_trades_core')
+        return disc_module
     # useful for debugging
 
     def display_proxy_subtree(self, callback=None):
