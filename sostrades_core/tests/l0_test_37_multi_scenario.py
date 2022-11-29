@@ -287,6 +287,12 @@ class TestMultiScenario(unittest.TestCase):
                 self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.'+sc+'.'+var),
                                  scenario_df[scenario_df['scenario_name'] == sc].iloc[0][var])
 
+        # deactivate the eval inputs of the cartesian product and check that the scenarios disappear
+        # dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp']['selected_input']=False
+        # self.exec_eng.load_study_from_input_dict(dict_values)
+        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        self.assertTrue(scenario_df.empty)
+
         # change the trade variables values
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z_3
         self.exec_eng.load_study_from_input_dict(dict_values)
