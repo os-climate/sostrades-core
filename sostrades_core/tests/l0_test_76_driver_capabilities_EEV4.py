@@ -1045,3 +1045,124 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.y'),
                                  usecase.a[j]*usecase.x[j]+usecase.b[i][j])
 
+
+    def test_9_nested_very_simple_multi_scenarios_with_archi_builder(self):
+        """
+        This test builds a nested multi scenario using the DriverEvaluator where the core subprocess is composed of two
+        archi builders Business and Production. The outer multi scenario driver adds variations on the business process
+        whereas the inner multi scenario driver represents scenarios on the Production process. The test is load from a
+        usecase and it checks only the treeviews both for namespaces and for proxy objects.
+        """
+        from sostrades_core.sos_processes.test.test_multi_instance_nested_with_archibuilder.usecase import Study
+        study_name = 'root'
+        ns = study_name
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        proc_name = "test_multi_instance_nested_with_archibuilder"
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                        mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            eval_builder)
+
+        exec_eng.configure()
+        usecase = Study(execution_engine=exec_eng)
+        usecase.study_name = ns
+        values_dict = usecase.setup_usecase()
+
+        exec_eng.load_study_from_input_dict(values_dict[0])
+        # print(exec_eng.display_treeview_nodes())
+        # print('=====')
+        # print(exec_eng.root_process.display_proxy_subtree(
+        #     callback=lambda x: x.is_configured()))
+        exp_ns_tree = 'Nodes representation for Treeview root\n' \
+                     '|_ root\n' \
+                     '\t|_ outer_ms\n' \
+                     '\t\t|_ sc1_business\n' \
+                     '\t\t\t|_ inner_ms\n' \
+                     '\t\t\t\t|_ sc1_local_prod\n' \
+                     '\t\t\t\t\t|_ Production\n' \
+                     '\t\t\t\t\t\t|_ Abroad\n' \
+                     '\t\t\t\t\t\t|_ Local\n' \
+                     '\t\t\t\t\t\t\t|_ Road\n' \
+                     '\t\t\t\t\t|_ Business\n' \
+                     '\t\t\t\t\t\t|_ Remy\n' \
+                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
+                     '\t\t\t\t|_ sc2_abroad_prod\n' \
+                     '\t\t\t\t\t|_ Production\n' \
+                     '\t\t\t\t\t\t|_ Abroad\n' \
+                     '\t\t\t\t\t\t\t|_ Road\n' \
+                     '\t\t\t\t\t\t\t|_ Plane\n' \
+                     '\t\t\t\t\t\t|_ Local\n' \
+                     '\t\t\t\t\t|_ Business\n' \
+                     '\t\t\t\t\t\t|_ Remy\n' \
+                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
+                     '\t\t|_ sc2_business\n' \
+                     '\t\t\t|_ inner_ms\n' \
+                     '\t\t\t\t|_ sc1_local_prod\n' \
+                     '\t\t\t\t\t|_ Production\n' \
+                     '\t\t\t\t\t\t|_ Abroad\n' \
+                     '\t\t\t\t\t\t|_ Local\n' \
+                     '\t\t\t\t\t\t\t|_ Road\n' \
+                     '\t\t\t\t\t|_ Business\n' \
+                     '\t\t\t\t\t\t|_ Remy\n' \
+                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
+                     '\t\t\t\t\t\t\t|_ OPEX\n' \
+                     '\t\t\t\t|_ sc3_all_by_road\n' \
+                     '\t\t\t\t\t|_ Production\n' \
+                     '\t\t\t\t\t\t|_ Abroad\n' \
+                     '\t\t\t\t\t\t\t|_ Road\n' \
+                     '\t\t\t\t\t\t|_ Local\n' \
+                     '\t\t\t\t\t\t\t|_ Road\n' \
+                     '\t\t\t\t\t|_ Business\n' \
+                     '\t\t\t\t\t\t|_ Remy\n' \
+                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
+                     '\t\t\t\t\t\t\t|_ OPEX'
+
+        exp_proxy_tree =  '|_ root  (ProxyCoupling) [True]\n' \
+                           '    |_ root.outer_ms  (ProxyDriverEvaluator) [True]\n' \
+                           '        |_ root.outer_ms.sc1_business  (ProxyCoupling) [True]\n' \
+                           '            |_ root.outer_ms.sc1_business.inner_ms  (ProxyDriverEvaluator) [True]\n' \
+                           '                |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod  (ProxyCoupling) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Local  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Local.Road  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+                           '                |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod  (ProxyCoupling) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Local  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad.Road  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad.Plane  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+                           '        |_ root.outer_ms.sc2_business  (ProxyCoupling) [True]\n' \
+                           '            |_ root.outer_ms.sc2_business.inner_ms  (ProxyDriverEvaluator) [True]\n' \
+                           '                |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod  (ProxyCoupling) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Local  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Local.Road  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy.OPEX  (ProxyDiscipline) [True]\n' \
+                           '                |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road  (ProxyCoupling) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business  (ArchiBuilder) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Abroad  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Local  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Local.Road  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Abroad.Road  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy.OPEX  (ProxyDiscipline) [True]'
+
+        self.assertEqual(exec_eng.display_treeview_nodes(),
+                         exp_ns_tree)
+        self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
+                         exp_proxy_tree)
