@@ -264,7 +264,7 @@ class ProxyDiscipline(object):
         self._reload(sos_name, ee, associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
-        self.father_builder = None
+        self.__father_builder = None
         self.father_executor = None
         self.cls = cls_builder
 
@@ -355,6 +355,23 @@ class ProxyDiscipline(object):
         if self._status != self.STATUS_CONFIGURE:
             return self.get_status_after_configure()
         return self.STATUS_CONFIGURE
+
+    @property
+    def father_builder(self):
+        """
+        The SoSBuilder that have built the discipline , Proxycoupling has no father_builder
+        """
+        try:
+            return self.__father_builder
+        except:
+            return None
+
+    @father_builder.setter
+    def father_builder(self, builder):
+        """
+        setter of father_builder
+        """
+        self.__father_builder = builder
 
     @property
     def config_dependency_disciplines(self):  # type: (...) -> str
@@ -1946,32 +1963,6 @@ class ProxyDiscipline(object):
             self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
                 observer)
 
-    def _check_status_before_run(self):
-        """
-        Check discipline status is ok before run and throw ValueError otherwise.
-        """
-        status_ok = True
-        if self.status == self.STATUS_RUNNING:
-            status_ok = False
-        if self.re_exec_policy == self.RE_EXECUTE_NEVER_POLICY:
-            if self.status not in [self.STATUS_PENDING,
-                                   self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
-                status_ok = False
-        elif self.re_exec_policy == self.RE_EXECUTE_DONE_POLICY:
-            if self.status == self.STATUS_DONE:
-                self.reset_statuses_for_run()
-                status_ok = True
-            elif self.status not in [self.STATUS_PENDING, self.STATUS_CONFIGURE, self.STATUS_VIRTUAL]:
-                status_ok = False
-        else:
-            raise ValueError("Unknown re_exec_policy :" +
-                             str(self.re_exec_policy))
-        if not status_ok:
-            raise ValueError("Trying to run a discipline " + str(type(self)) +
-                             " with status: " + str(self.status) +
-                             " while re_exec_policy is : " +
-                             str(self.re_exec_policy))
-
     # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
         """
@@ -2282,8 +2273,9 @@ class ProxyDiscipline(object):
             disc_module = self.__module__
         # return the replace sostrades_core just for documentation (linked
         # ontology is the one from integration)
-        return disc_module.replace(
-            'sostrades_core', 'sos_trades_core')
+#         return disc_module.replace(
+#             'sostrades_core', 'sos_trades_core')
+        return disc_module
     # useful for debugging
 
     def display_proxy_subtree(self, callback=None):
