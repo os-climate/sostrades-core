@@ -662,17 +662,17 @@ class SampleGeneratorWrapper(SoSWrapp):
             if self.eval_inputs_cp_has_changed:
                 self.samples_gene_df = self.generate_sample_for_cp()
 
-            dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                            'dataframe_edition_locked': True,
-                                                            'structuring': True,
-                                                            'unit': None,
-                                                            'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                            'namespace': 'ns_sampling',
-                                                            'default': self.samples_gene_df}})
-
         if not self.eval_inputs_cp_validity:
-            if self.eval_inputs_cp_has_changed:
-                self.samples_gene_df = None
+            # if self.eval_inputs_cp_has_changed:
+            self.samples_gene_df = pd.DataFrame()
+
+        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                        'dataframe_edition_locked': True,
+                                                        'structuring': True,
+                                                        'unit': None,
+                                                        'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                        'namespace': 'ns_sampling',
+                                                        'default': self.samples_gene_df}})
 
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp

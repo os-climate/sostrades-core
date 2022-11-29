@@ -269,7 +269,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
                     # gives problems with structuring variables checks leading
                     # to incomplete configuration sometimes
-                    if not generated_samples.empty and not dict_are_equal(generated_samples_dict, self.old_samples_df):
+                    if not (generated_samples.empty and not self.old_samples_df) \
+                            and not dict_are_equal(generated_samples_dict, self.old_samples_df):
                         # checking whether the dataframes are already coherent in which case the changes come probably
                         # from a load and there is no need to crush the truth
                         # values
