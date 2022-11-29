@@ -74,8 +74,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
 
-
-
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
@@ -225,9 +223,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self)
                 scenarios_data_dict = {}
                 for sc in scenario_names:
-                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[0] # assuming it is unique # TODO: as index?
+                    # assuming it is unique # TODO: as index?
+                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME]
+                                         == sc].iloc[0]
                     for var in var_names:
-                        var_full_name = self.ee.ns_manager.compose_ns([driver_evaluator_ns, sc, var])
+                        var_full_name = self.ee.ns_manager.compose_ns(
+                            [driver_evaluator_ns, sc, var])
                         scenarios_data_dict[var_full_name] = sc_row.loc[var]
                 if scenarios_data_dict:
                     # push to dm  # TODO: should also alter associated
@@ -235,7 +236,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
 
     def subprocesses_built(self, scenario_names):
-        #TODO: if scenario_names is None get it?
+        # TODO: if scenario_names is None get it?
         proxies_names = [disc.sos_name for disc in self.proxy_disciplines]
         # # assuming self.coupling_per_scenario is true so bock below commented
         # if self.coupling_per_scenario:
@@ -258,26 +259,39 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if builder_mode == self.MULTI_INSTANCE:
                 self.build_inst_desc_io_with_scenario_df()
                 if self.GENERATED_SAMPLES in disc_in:
-                    generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
-                    generated_samples_dict = {self.GENERATED_SAMPLES: generated_samples}
+                    generated_samples = self.get_sosdisc_inputs(
+                        self.GENERATED_SAMPLES)
+                    generated_samples_dict = {
+                        self.GENERATED_SAMPLES: generated_samples}
                     scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
                     # checking whether generated_samples has changed
                     # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
                     # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
-                    # gives problems with structuring variables checks leading to incomplete configuration sometimes
+                    # gives problems with structuring variables checks leading
+                    # to incomplete configuration sometimes
                     if not generated_samples.empty and not dict_are_equal(generated_samples_dict, self.old_samples_df):
                         # checking whether the dataframes are already coherent in which case the changes come probably
-                        # from a load and there is no need to crush the truth values
+                        # from a load and there is no need to crush the truth
+                        # values
                         if not generated_samples.equals(scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], 1)):
-                            self.old_samples_df = copy.deepcopy(generated_samples_dict) #TODO: overload struct. var. check to spare this deepcopy ?
-                            # we crush old scenario_df and propose a df with all scenarios imposed by new sample, all de-activated
-                            scenario_df = pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
-                            scenario_df = pd.concat([scenario_df, generated_samples], axis=1)
+                            # TODO: overload struct. var. check to spare this
+                            # deepcopy ?
+                            self.old_samples_df = copy.deepcopy(
+                                generated_samples_dict)
+                            # we crush old scenario_df and propose a df with
+                            # all scenarios imposed by new sample, all
+                            # de-activated
+                            scenario_df = pd.DataFrame(
+                                columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
+                            scenario_df = pd.concat(
+                                [scenario_df, generated_samples], axis=1)
                             scenario_df[self.SELECTED_SCENARIO] = False
                             scenario_name = scenario_df[self.SCENARIO_NAME]
                             for i in scenario_name.index.tolist():
-                                scenario_name.iloc[i] = 'scenario_'+str(i+1)
-                            self.logger.info('Generated sample has changed, updating scenarios to select.')
+                                scenario_name.iloc[i] = 'scenario_' + \
+                                    str(i + 1)
+                            self.logger.info(
+                                'Generated sample has changed, updating scenarios to select.')
                             self.dm.set_data(self.get_var_full_name(self.SCENARIO_DF, disc_in),
                                              'value', scenario_df, check_value=False)
 
@@ -480,7 +494,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                             'unit': None,
                                                             # 'visibility': SoSWrapp.SHARED_VISIBILITY,
                                                             # 'namespace': 'ns_sampling',
-                                                            'default': pd.DataFrame(), # TODO: [think] set optional ?
+                                                            # TODO: [think] set
+                                                            # optional ?
+                                                            'default': pd.DataFrame(),
                                                             # self.OPTIONAL: True,
                                                             # self.USER_LEVEL: 3
                                                             }})
@@ -497,8 +513,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.builder_tool.prepare_tool()
 
     def build_tool(self):
-
-        self.builder_tool.build()
+        if self.builder_tool is not None:
+            self.builder_tool.build()
 
     # MONO INSTANCE PROCESS
 
@@ -747,7 +763,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if disc_in['samples_df']['value'] is not None:
                 from_samples = list(disc_in['samples_df']['value'].keys())
                 from_eval_inputs = list(default_custom_dataframe.keys())
-                final_dataframe = pd.DataFrame(None, columns=self.selected_inputs)
+                final_dataframe = pd.DataFrame(
+                    None, columns=self.selected_inputs)
 
                 len_df = 1
                 for element in from_eval_inputs:
