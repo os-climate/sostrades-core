@@ -288,9 +288,11 @@ class TestMultiScenario(unittest.TestCase):
                                  scenario_df[scenario_df['scenario_name'] == sc].iloc[0][var])
 
         # deactivate the eval inputs of the cartesian product and check that the scenarios disappear
-        # dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp']['selected_input']=False
-        # self.exec_eng.load_study_from_input_dict(dict_values)
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp']['selected_input'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
         scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        gen = self.exec_eng.root_process.proxy_disciplines[1]
+        print(gen.mdo_discipline_wrapp.wrapper.samples_gene_df)
         self.assertTrue(scenario_df.empty)
 
         # change the trade variables values
