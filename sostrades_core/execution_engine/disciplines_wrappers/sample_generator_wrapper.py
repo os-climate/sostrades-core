@@ -725,9 +725,11 @@ class SampleGeneratorWrapper(SoSWrapp):
         '''
         is_valid = True
         selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
-        if len(selected_inputs_cp) < 2:
+        #n_min = 2
+        n_min = 1
+        if len(selected_inputs_cp) < n_min:
             LOGGER.warning(
-                'Selected_inputs must have at least 2 variables to do a cartesian product')
+                f'Selected_inputs must have at least {n_min} variables to do a cartesian product')
             is_valid = False
         return is_valid
 
