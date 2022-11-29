@@ -62,7 +62,7 @@ class TestArchiBuilder(unittest.TestCase):
         disc = builder.build()
 
         self.assertEqual(
-            'sos_trades_core.sos_wrapping.sum_valueblock_discipline', disc.get_module())
+            'sostrades_core.sos_wrapping.sum_valueblock_discipline', disc.get_module())
 
     def test_02_build_architecture_standard(self):
 
