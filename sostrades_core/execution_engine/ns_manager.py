@@ -61,6 +61,8 @@ class NamespaceManager:
         # disc_ns_dict hosts local_ns and other_ns for each discipline in the
         # exec engine (key is the instanciated discipline)
         self.__disc_ns_dict = {}
+
+        self.display_ns_dict = {}
         self.logger = get_sos_logger(f'{self.ee.logger.name}.NamespaceManager')
 
         # List of dict with extra_ns and ater_name infos for local namespace
@@ -144,6 +146,19 @@ class NamespaceManager:
         self.ns_object_map[id(ns)] = ns
 
         return ns.get_ns_id()
+
+    def add_display_ns_to_disc(self, disc_builder, display_value):
+
+        self.display_ns_dict[disc_builder] = display_value
+        self.associate_display_values_to_new_local_namespaces(disc_builder)
+
+    def associate_display_values_to_new_local_namespaces(self, disc_builder):
+        if disc_builder in self.display_ns_dict:
+            display_value = self.display_ns_dict[disc_builder]
+            for disc in disc_builder.discipline_dict.values():
+                if disc in self.local_ns_dict:
+                    self.local_ns_dict[disc].set_display_value(
+                        display_value)
 
     def get_all_namespace_with_name(self, name):
         '''
@@ -266,6 +281,7 @@ class NamespaceManager:
         local_ns = self.create_local_namespace(disc)
 
         others_ns = self.get_associated_ns(disc)
+
         disc_ns_info = {'local_ns': local_ns,
                         'others_ns': others_ns}
         self.add_disc_ns_info(disc, disc_ns_info)
@@ -299,6 +315,7 @@ class NamespaceManager:
          Create a namespace object for the local namespace
         '''
         local_ns_value = self.compose_ns([self.current_disc_ns, disc.sos_name])
+
         local_ns = Namespace(disc.sos_name, local_ns_value)
 
         self.local_ns_dict[disc] = local_ns
@@ -313,7 +330,7 @@ class NamespaceManager:
         others_ns = copy(self.get_disc_others_ns(disc))
         if disc_id is None:
             disc_id = disc.get_disc_id_from_namespace()
-        for ns_name, ns in others_ns.items():
+        for ns in others_ns.values():
             ns.remove_dependency(disc_id)
         del self.disc_ns_dict[disc]
 
@@ -391,7 +408,13 @@ class NamespaceManager:
         '''
         Return the display_namespace linked to the discipline disc
         '''
-        return self.disc_ns_dict[disc]['local_ns'].get_value()
+        if disc.father_builder in self.display_ns_dict:
+            return self.display_ns_dict[disc.father_builder]
+
+        elif disc.father_builder not in self.display_ns_dict and disc in self.disc_ns_dict:
+            return self.get_local_namespace_value(disc)
+        else:
+            return None
 
     def get_local_namespace(self, disc):
         '''

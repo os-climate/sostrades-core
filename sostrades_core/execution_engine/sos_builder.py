@@ -120,7 +120,10 @@ class SoSBuilder(object):
             self.disc = ProxyDiscipline(**self.__args)
 
         self.disc.father_builder = self
+
         self.discipline_dict[future_new_ns_disc_name] = self.disc
+        self.__ee.ns_manager.associate_display_values_to_new_local_namespaces(
+            self)
 
     def build_sub_discs(self, current_ns, future_new_ns_disc_name):
 

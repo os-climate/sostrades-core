@@ -85,25 +85,81 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
             exec_display=True)
 
-#     def test_02_display_existing_disc_ns(self):
-#
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
-#         disc1_builder = self.exec_eng.factory.get_builder_from_module(
-#             'Disc1', mod_list)
-#
-#         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
-#         disc2_builder = self.exec_eng.factory.get_builder_from_module(
-#             'Disc2', mod_list)
-#
-#         self.exec_eng.factory.set_builders_to_coupling_builder(
-#             [disc1_builder, disc2_builder])
-#
-#         self.exec_eng.ns_manager.add_ns(
-#             'ns_ac', self.exec_eng.study_name)
+    def test_02_display_existing_disc_ns(self):
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
+        disc1_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc1', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            [disc1_builder, disc2_builder])
+
+        self.exec_eng.ns_manager.add_ns(
+            'ns_ac', self.exec_eng.study_name)
+        self.exec_eng.ns_manager.add_display_ns_to_disc(
+            disc1_builder, f'{self.study_name}.New_ns_disc')
+
+        self.exec_eng.configure()
+
+        self.exec_eng.display_treeview_nodes(display_variables=True)
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ New_ns_disc',
+                       f'\t|_ Disc2']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        self.exec_eng.ns_manager.add_display_ns_to_disc(
+            disc1_builder, f'{self.study_name}.New_ns_disc_new')
+        self.exec_eng.dm.treeview = None
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ New_ns_disc_new',
+                       f'\t|_ Disc2']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        self.exec_eng.ns_manager.add_display_ns_to_disc(
+            disc2_builder, f'{self.study_name}.New_ns_disc2')
+        self.exec_eng.dm.treeview = None
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ New_ns_disc_new',
+                       f'\t|_ New_ns_disc2']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        self.exec_eng.ns_manager.add_display_ns_to_disc(
+            disc1_builder, f'{self.study_name}')
+        self.exec_eng.ns_manager.add_display_ns_to_disc(
+            disc2_builder, f'{self.study_name}')
+        self.exec_eng.dm.treeview = None
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ Disc1',
+                       f'\t|_ Disc2']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes(
+            exec_display=True)
 
 
 if '__main__' == __name__:
     cls = TestConfigDependencyDiscs()
     cls.setUp()
-    cls.test_01_display_existing_variable_ns()
+    cls.test_02_display_existing_disc_ns()
     cls.tearDown()

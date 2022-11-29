@@ -264,7 +264,7 @@ class ProxyDiscipline(object):
         self._reload(sos_name, ee, associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
-        self.father_builder = None
+        self.__father_builder = None
         self.father_executor = None
         self.cls = cls_builder
 
@@ -355,6 +355,23 @@ class ProxyDiscipline(object):
         if self._status != self.STATUS_CONFIGURE:
             return self.get_status_after_configure()
         return self.STATUS_CONFIGURE
+
+    @property
+    def father_builder(self):
+        """
+        The SoSBuilder that have built the discipline , Proxycoupling has no father_builder
+        """
+        try:
+            return self.__father_builder
+        except:
+            return None
+
+    @father_builder.setter
+    def father_builder(self, builder):
+        """
+        setter of father_builder
+        """
+        self.__father_builder = builder
 
     @property
     def config_dependency_disciplines(self):  # type: (...) -> str
