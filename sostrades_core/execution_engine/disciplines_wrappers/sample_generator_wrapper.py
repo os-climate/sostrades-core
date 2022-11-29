@@ -454,7 +454,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             #                                             'editable': False,
             #                                             'dataframe_descriptor': {
             #                                                 self.VARIABLES: ('string', None, False),
-            #                                                 self.VALUES: ('string', None, True)}}})
+            # self.VALUES: ('string', None, True)}}})
 
     def setup_design_space(self, proxy, dynamic_inputs):
         '''
@@ -491,18 +491,21 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,
                 # so that the bound are kept instead of set to default None.
                 if 'design_space' in disc_in and selected_inputs_has_changed:
-                    from_design_space = list(disc_in['design_space']['value']['variable'])
+                    from_design_space = list(
+                        disc_in['design_space']['value']['variable'])
                     from_eval_inputs = self.selected_inputs
-                    final_dataframe = pd.DataFrame(None, columns=['variable', 'lower_bnd', 'upper_bnd'])
+                    final_dataframe = pd.DataFrame(
+                        None, columns=['variable', 'lower_bnd', 'upper_bnd'])
 
                     for element in from_eval_inputs:
                         if element in from_design_space:
                             final_dataframe = final_dataframe.append(disc_in['design_space']['value']
-                                                   [disc_in['design_space']['value']['variable'] == element])
+                                                                     [disc_in['design_space']['value']['variable'] == element])
                         else:
                             final_dataframe = final_dataframe.append(
-                                                        {'variable': element, 'lower_bnd': None, 'upper_bnd': None},
-                                                        ignore_index=True)
+                                {'variable': element, 'lower_bnd': None,
+                                    'upper_bnd': None},
+                                ignore_index=True)
                     disc_in['design_space']['value'] = final_dataframe
 
     def reformat_eval_inputs(self, eval_inputs):
@@ -667,10 +670,14 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                             'namespace': 'ns_sampling',
                                                             'default': self.samples_gene_df}})
 
+        if not self.eval_inputs_cp_validity:
+            if self.eval_inputs_cp_has_changed:
+                self.samples_gene_df = None
+
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp
         disc_in = proxy.get_data_in()
-        if self.GENERATED_SAMPLES in disc_in:
+        if self.GENERATED_SAMPLES in disc_in and self.samples_gene_df is not None:
             disc_in[self.GENERATED_SAMPLES]['value'] = self.samples_gene_df
 
     def generate_sample_for_cp(self):
