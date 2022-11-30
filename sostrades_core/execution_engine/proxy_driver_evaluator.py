@@ -499,7 +499,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                             # optional ?
                                                             'default': pd.DataFrame(),
                                                             # self.OPTIONAL: True,
-                                                            # self.USER_LEVEL: 3
+                                                            self.USER_LEVEL: 3
                                                             }})
             self.add_inputs(dynamic_inputs)
 
