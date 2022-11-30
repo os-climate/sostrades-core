@@ -171,6 +171,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
         # return local_data
 
     def run(self):
+        """
+        Run overload
+        """
         builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
         if builder_mode == self.MONO_INSTANCE:
             self.mono_instance_run()
@@ -181,6 +184,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     # MULTI INSTANCE PROCESS
     def multi_instance_run(self):
+        """
+        Run in the multi instance case.
+        """
         # very simple ms only # TODO: accomodate var_delta_dict and subprocess selection for mixed cases type DOE+MS ?
         self._init_input_data()
         for i_subprocess in range(self.n_subprocs):

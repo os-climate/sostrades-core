@@ -57,7 +57,7 @@ class Study(StudyManager):
         activation_df_production_local = pd.DataFrame({'Production': ['Abroad','Local'],
                                                        'Road': [False, True],
                                                        'Plane': [False, False]})
-        activation_df_production__abroad = pd.DataFrame({'Production': ['Abroad','Local'],
+        activation_df_production_abroad = pd.DataFrame({'Production': ['Abroad','Local'],
                                                          'Road': [True, False],
                                                          'Plane': [True, False]})
         activation_df_production_road = pd.DataFrame({'Production': ['Abroad','Local'],
@@ -78,7 +78,7 @@ class Study(StudyManager):
         dict_values[f'{self.study_name}.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.activation_df'] = \
             activation_df_production_local
         dict_values[f'{self.study_name}.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.activation_df'] = \
-            activation_df_production__abroad
+            activation_df_production_abroad
         dict_values[f'{self.study_name}.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.activation_df'] = \
             activation_df_production_local
         dict_values[f'{self.study_name}.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.activation_df'] = \

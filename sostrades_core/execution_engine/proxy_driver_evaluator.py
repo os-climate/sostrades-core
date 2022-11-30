@@ -200,8 +200,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.configure_subprocesses_with_driver_input()
 
     def configure_subprocesses_with_driver_input(self):
-        # TODO: code below might need refactoring after reference_scenario
-        # configuration fashion is decided upon
+        """
+        This function forces the trade variables values of the subprocesses in function of the driverevaluator input df.
+        """
+        # TODO: code below might need refactoring after reference_scenario configuration fashion is decided upon
         scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
         # NB assuming that the scenario_df entries are unique otherwise there
         # is some intelligence to be added
@@ -232,6 +234,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
 
     def subprocesses_built(self, scenario_names):
+        """
+        Check whether the subproxies built are coherent with the input list scenario_names.
+
+        Arguments:
+            scenario_names (list[string]): expected names of the subproxies.
+        """
         # TODO: if scenario_names is None get it?
         proxies_names = [disc.sos_name for disc in self.proxy_disciplines]
         # # assuming self.coupling_per_scenario is true so bock below commented
@@ -511,6 +519,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     # MONO INSTANCE PROCESS
 
     def _get_disc_shared_ns_value(self):
+        """
+        Get the namespace ns_eval used in the mono-instance case.
+        """
         # TODO: better factorization? rename?
         return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value()
 
