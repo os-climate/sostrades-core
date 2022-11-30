@@ -48,7 +48,7 @@ class Study(StudyManager):
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
         disc_dict = {}
-        # DoE + Eval inputs
+        # CP + Eval inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.eval_inputs_cp'] = input_selection_cp_x_z

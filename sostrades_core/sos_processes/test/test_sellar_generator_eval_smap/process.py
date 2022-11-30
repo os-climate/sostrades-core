@@ -50,6 +50,8 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_scatter_scenario', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns(
             'ns_OptimSellar', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns(
+            'ns_sampling', f'{self.ee.study_name}.Eval')
 
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
@@ -65,4 +67,9 @@ class ProcessBuilder(BaseProcessBuilder):
         multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
             'Eval', builder_list_sellar, map_name='scenario_list')
 
-        return multi_scenarios
+        # sample generator builder
+        mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
+        cp_builder = self.ee.factory.get_builder_from_module(
+            'SampleGenerator', mod_cp)
+
+        return multi_scenarios + [cp_builder]
