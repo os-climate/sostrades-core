@@ -430,7 +430,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                'reference_scenario': self.get_x0(),
                                'activated_elems_dspace_df': [[True, True]
                                                              if self.ee.dm.get_data(var, 'type') == 'array' else [True]
-                                                             for var in self.eval_in_list],  # TODO: Array dimensions greater than 2??? TEST
+                                                             for var in self.eval_in_list],  # TODO: Array dimensions greater than 2?
                                'study_name': self.ee.study_name,
                                'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
                                'selected_inputs': self.selected_inputs,
@@ -464,8 +464,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Call the tool to build the subprocesses in multi-instance builder mode.
         """
         self.build_tool()
-        # Tool is building disciplines for the driver on behalf of the
-        # driver name
+        # Tool is building disciplines for the driver on behalf of the driver name
         # no further disciplines needed to be builded by the evaluator
         return []
 
@@ -710,7 +709,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
         '''
-        # TODO: does this involve avoidable, recursive back and forths during configuration ? (config. graph)
+        # TODO: does this involve avoidable, recursive back and forths during configuration ? (<-> config. graph)
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(

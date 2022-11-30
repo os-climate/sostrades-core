@@ -181,11 +181,11 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     # MULTI INSTANCE PROCESS
     def multi_instance_run(self):
-        # very simple ms only # TODO: accomodate var_delta_dict and subprocess selection for other multiscenarios
+        # very simple ms only # TODO: accomodate var_delta_dict and subprocess selection for mixed cases type DOE+MS ?
         self._init_input_data()
         for i_subprocess in range(self.n_subprocs):
             self.subprocess_evaluation({}, i_subprocess)
-            # save data of last execution i.e. reference values #FIXME: do this better in refacto doe
+            # save data of last execution i.e. reference values # TODO: there must be a better way to do this (<-> ref. scenario)
             subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][i_subprocess].local_data[key]
                                       for key in self.attributes['sub_mdo_disciplines'][i_subprocess].output_grammar.get_data_names()}
             self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
@@ -282,28 +282,15 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         """
         # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
-        # self.attributes['sub_mdo_discipline'].clear_cache() # FIXME: cache management?
+        # self.attributes['sub_mdo_discipline'].clear_cache() # TODO: cache management?
 
         if completed_eval_in_list is None:
             eval_in = self.attributes['eval_in_list']
         else:
             eval_in = completed_eval_in_list
-        values_dict = dict(zip(eval_in, x)) #TODO: to discuss whether this is OK or a dict should arrive here
+        # TODO: get a values_dict to arrive here for a + flexible impl. less prone var. name errors and so ?
+        values_dict = dict(zip(eval_in, x))
 
-        # Because we use set_data instead of load_data_from_inputs_dict it isn't possible
-        # to run  soseval on a structuring variable. Therefore structuring variables are
-        # excluded from eval possible values
-        # set values_dict in the data manager to execute the sub process
-        # self.attributes['dm'].set_values_from_dict(values_dict)
-
-        # # execute eval process stored in children
-        # if len(self.proxy_disciplines) > 1:
-        #     # the only child must be a coupling or a single discipline
-        #     raise ProxyEvalException(
-        #         f'ProxyEval discipline has more than one child discipline')
-        # else:
-        # input_data_for_disc = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'])
-        # local_data = self.attributes['sub_mdo_discipline'].execute(input_data_for_disc)
         local_data = self.attributes['sub_mdo_disciplines'][0].execute(self._get_input_data(values_dict))
         out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])
 

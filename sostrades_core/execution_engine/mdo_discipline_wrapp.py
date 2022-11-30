@@ -197,8 +197,7 @@ class MDODisciplineWrapp(object):
                 'authorize_self_coupled_disciplines')
 
             #             self._init_grammar_with_keys(proxy)
-            # self._update_all_default_values(input_data) # TODO: check why/if it is
-            # really needed
+            # self._update_all_default_values(input_data) # TODO: check why/if it is really needed
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':
