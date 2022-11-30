@@ -51,14 +51,14 @@ class Study(StudyManager):
         # CP + Eval inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{ns}.eval_inputs_cp'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
 
         # Sellar inputs
         local_dv = 10.
-        disc_dict[f'{ns}.x'] = array([1.])
-        disc_dict[f'{ns}.y_1'] = array([1.])
-        disc_dict[f'{ns}.y_2'] = array([1.])
-        disc_dict[f'{ns}.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.x'] = array([1.])
+        disc_dict[f'{ns}.Eval.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

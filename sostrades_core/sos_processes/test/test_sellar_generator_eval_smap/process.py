@@ -52,6 +52,8 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_OptimSellar', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns(
             'ns_sampling', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns(
+            'ns_eval', f'{self.ee.study_name}.Eval')
 
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
@@ -59,8 +61,7 @@ class ProcessBuilder(BaseProcessBuilder):
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1'}
         builder_list_sellar = self.create_builder_list(mods_dict,
-                                                       ns_dict={'ns_OptimSellar': self.ee.study_name,
-                                                                'ns_eval': f'{self.ee.study_name}'}
+                                                       #ns_dict={'ns_OptimSellar': self.ee.study_name}
                                                        )
 
         # multi scenario driver builder
