@@ -33,16 +33,16 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
 
         dict_of_list_values = {
-            'x': [0., 3., 4., 5., 7.],
-            'z': [[-10., 0.], [-5., 4.], [10, 10]]
+            'Eval.x': [0., 3., 4., 5., 7.],
+            'Eval.z': [[-10., 0.], [-5., 4.], [10, 10]]
         }
-        list_of_values = [[], dict_of_list_values['x'],
-                          [], [], dict_of_list_values['z']]
+        list_of_values = [[], dict_of_list_values['Eval.x'],
+                          [], [], dict_of_list_values['Eval.z']]
 
         input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
-                                  'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
-                                                'y_2',
-                                                'z'],
+                                  'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
+                                                'Eval.y_2',
+                                                'Eval.z'],
                                   'list_of_values': list_of_values
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
@@ -52,14 +52,6 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
-
-        # Sellar inputs
-        local_dv = 10.
-        disc_dict[f'{ns}.Eval.x'] = array([1.])
-        disc_dict[f'{ns}.Eval.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 
