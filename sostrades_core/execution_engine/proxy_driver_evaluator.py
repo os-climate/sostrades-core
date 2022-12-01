@@ -69,6 +69,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
+    MAX_SAMPLE_AUTO_BUILD_SCENARIOS = 1024   # with SampleGenerator, whether to activate and build all the sampled
+                                             # scenarios by default or not. Set to None to always build.
+
     SUBCOUPLING_NAME = 'subprocess'
     EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
@@ -290,7 +293,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                 columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
                             scenario_df = pd.concat(
                                 [scenario_df, generated_samples], axis=1)
-                            scenario_df[self.SELECTED_SCENARIO] = False
+                            n_scenarios = len(scenario_df.index)
+                            # check whether the number of generated scenarios is not too high to auto-activate them
+                            if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
+                                scenario_df[self.SELECTED_SCENARIO] = True
+                            else:
+                                self.logger.warn(f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
+                                scenario_df[self.SELECTED_SCENARIO] = False
                             scenario_name = scenario_df[self.SCENARIO_NAME]
                             for i in scenario_name.index.tolist():
                                 scenario_name.iloc[i] = 'scenario_' + \
