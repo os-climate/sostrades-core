@@ -249,7 +249,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             cls_builder = []
         self.cls_builder = cls_builder
         self.mdo_discipline_wrapp = None
-        self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
+        # self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Optim')
 
         self.with_data_io = with_data_io

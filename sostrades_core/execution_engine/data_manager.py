@@ -570,7 +570,9 @@ class DataManager:
     def add_disc_id_to_disc_id_map(self, disc_f_name, disc_id):
 
         if disc_f_name in self.disciplines_id_map:
-            self.disciplines_id_map[disc_f_name].append(disc_id)
+            if self.disciplines_id_map[disc_f_name][0] != disc_id:
+                raise ValueError(f'Trying to add two distinct disciplines with the same local namespace {disc_f_name}')
+            # self.disciplines_id_map[disc_f_name].append(disc_id)
         else:
             self.disciplines_id_map[disc_f_name] = [disc_id]
 
