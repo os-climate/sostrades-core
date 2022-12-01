@@ -125,7 +125,7 @@ class ToolFactory:
 
     def create_tool_builder(
         self, tool_name, tool_type, sub_builders=None,
-        map_name=None,
+        map_name=None, hide_coupling_in_driver=False,
     ):
         """
         create a  tool builder
@@ -135,6 +135,8 @@ class ToolFactory:
             tool_name, tool_type, [self.TOOL_FOLDER])
         tool_builder.set_builder_info('map_name', map_name)
         tool_builder.set_builder_info('cls_builder', sub_builders)
+        tool_builder.set_builder_info(
+            'hide_coupling_in_driver', hide_coupling_in_driver)
         return tool_builder
 
     def get_disc_class_from_module(self, module_path):

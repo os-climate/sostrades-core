@@ -152,7 +152,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples}
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -180,7 +181,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
 
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
@@ -191,27 +192,27 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_samples), n_samples + 1)
         self.assertEqual(len(eval_disc_obj), n_samples + 1)
         reference_dict_eval_disc_y1 = {'scenario_1': array([10.491019856682016]),
-                                      'scenario_2': array([7.247824531594309]),
-                                      'scenario_3': array([2.9753409599263483]),
-                                      'scenario_4': array([1.7522749587335193]),
-                                      'scenario_5': array([9.384097972066053]),
-                                      'scenario_6': array([8.36704386923391]),
-                                      'scenario_7': array([4.479056921478663]),
-                                      'scenario_8': array([5.286891081070988]),
-                                      'scenario_9': array([3.240108355137796]),
-                                      'scenario_10': array([6.194561090631401]),
-                                      'reference': array([2.29689011157193])}
+                                       'scenario_2': array([7.247824531594309]),
+                                       'scenario_3': array([2.9753409599263483]),
+                                       'scenario_4': array([1.7522749587335193]),
+                                       'scenario_5': array([9.384097972066053]),
+                                       'scenario_6': array([8.36704386923391]),
+                                       'scenario_7': array([4.479056921478663]),
+                                       'scenario_8': array([5.286891081070988]),
+                                       'scenario_9': array([3.240108355137796]),
+                                       'scenario_10': array([6.194561090631401]),
+                                       'reference': array([2.29689011157193])}
         reference_dict_eval_disc_y2 = {'scenario_1': array([5.238984386606706]),
-                                      'scenario_2': array([4.692178398916815]),
-                                      'scenario_3': array([3.7249176675790494]),
-                                      'scenario_4': array([3.3237352298452736]),
-                                      'scenario_5': array([5.063347510823095]),
-                                      'scenario_6': array([4.892584289045681]),
-                                      'scenario_7': array([4.116378255765888]),
-                                      'scenario_8': array([4.2993240487306235]),
-                                      'scenario_9': array([3.8000300983977455]),
-                                      'scenario_10': array([4.488887520686984]),
-                                      'reference': array([3.5155494421403515])}
+                                       'scenario_2': array([4.692178398916815]),
+                                       'scenario_3': array([3.7249176675790494]),
+                                       'scenario_4': array([3.3237352298452736]),
+                                       'scenario_5': array([5.063347510823095]),
+                                       'scenario_6': array([4.892584289045681]),
+                                       'scenario_7': array([4.116378255765888]),
+                                       'scenario_8': array([4.2993240487306235]),
+                                       'scenario_9': array([3.8000300983977455]),
+                                       'scenario_10': array([4.488887520686984]),
+                                       'reference': array([3.5155494421403515])}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
                 eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
@@ -225,7 +226,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         discipline to the local data variable belongs) is implemented. It is really a test of driver of a driver using
         DoeEval. The test demonstrates the capability to use a driver of a driver.
         """
-        #FIXME: Out of scope current US. This test will have to be adapted to the new architecture in the future.
+        # FIXME: Out of scope current US. This test will have to be adapted to
+        # the new architecture in the future.
 
         dspace_dict_upper = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.b'],
 
@@ -260,7 +262,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         assert not exec_eng.root_process.proxy_disciplines[0].is_sos_coupling
         assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
@@ -341,7 +343,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             i_upper += 1
 
     def _test_3_simple_custom_driver(self):
-        # FIXME: Out of scope current US. This test will have to be adapted to the new architecture in the future.
+        # FIXME: Out of scope current US. This test will have to be adapted to
+        # the new architecture in the future.
 
         study_name = 'root'
         exec_eng = ExecutionEngine(study_name)
@@ -409,7 +412,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         values_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         # values_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
-        values_dict[f'{self.ns}.Simple_Disc1.added_algo_options'] = {'n_samples': n_samples}
+        values_dict[f'{self.ns}.Simple_Disc1.added_algo_options'] = {
+            'n_samples': n_samples}
         values_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
         values_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
 
@@ -420,8 +424,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.y_1'] = array([1.])
         values_dict[f'{self.ns}.y_2'] = array([1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
-        values_dict[f'{self.ns}.z_in'] = 2 * array([1., 1.])  # Input of SimpleDisc1
-        # values_dict[f'{self.ns}.c_1'] = array([1.])            #Input of SimpleDisc2
+        values_dict[f'{self.ns}.z_in'] = 2 * \
+            array([1., 1.])  # Input of SimpleDisc1
+        # values_dict[f'{self.ns}.c_1'] = array([1.])            #Input of
+        # SimpleDisc2
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
@@ -438,7 +444,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t|_ Simple_Disc2']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
 
         assert exec_eng.root_process.proxy_disciplines[2].proxy_disciplines[0].is_sos_coupling
@@ -459,27 +465,27 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_samples), n_samples + 1)
         self.assertEqual(len(eval_disc_obj), n_samples + 1)
         reference_dict_eval_disc_y1 = {'scenario_1': array([10.491019856682016]),
-                                      'scenario_2': array([7.247824531594309]),
-                                      'scenario_3': array([2.9753409599263483]),
-                                      'scenario_4': array([1.7522749587335193]),
-                                      'scenario_5': array([9.384097972066053]),
-                                      'scenario_6': array([8.36704386923391]),
-                                      'scenario_7': array([4.479056921478663]),
-                                      'scenario_8': array([5.286891081070988]),
-                                      'scenario_9': array([3.240108355137796]),
-                                      'scenario_10': array([6.194561090631401]),
-                                      'reference': array([2.29689011157193])}
+                                       'scenario_2': array([7.247824531594309]),
+                                       'scenario_3': array([2.9753409599263483]),
+                                       'scenario_4': array([1.7522749587335193]),
+                                       'scenario_5': array([9.384097972066053]),
+                                       'scenario_6': array([8.36704386923391]),
+                                       'scenario_7': array([4.479056921478663]),
+                                       'scenario_8': array([5.286891081070988]),
+                                       'scenario_9': array([3.240108355137796]),
+                                       'scenario_10': array([6.194561090631401]),
+                                       'reference': array([2.29689011157193])}
         reference_dict_eval_disc_y2 = {'scenario_1': array([5.238984386606706]),
-                                      'scenario_2': array([4.692178398916815]),
-                                      'scenario_3': array([3.7249176675790494]),
-                                      'scenario_4': array([3.3237352298452736]),
-                                      'scenario_5': array([5.063347510823095]),
-                                      'scenario_6': array([4.892584289045681]),
-                                      'scenario_7': array([4.116378255765888]),
-                                      'scenario_8': array([4.2993240487306235]),
-                                      'scenario_9': array([3.8000300983977455]),
-                                      'scenario_10': array([4.488887520686984]),
-                                      'reference': array([3.5155494421403515])}
+                                       'scenario_2': array([4.692178398916815]),
+                                       'scenario_3': array([3.7249176675790494]),
+                                       'scenario_4': array([3.3237352298452736]),
+                                       'scenario_5': array([5.063347510823095]),
+                                       'scenario_6': array([4.892584289045681]),
+                                       'scenario_7': array([4.116378255765888]),
+                                       'scenario_8': array([4.2993240487306235]),
+                                       'scenario_9': array([3.8000300983977455]),
+                                       'scenario_10': array([4.488887520686984]),
+                                       'reference': array([3.5155494421403515])}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
                 eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
@@ -525,7 +531,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples}
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -553,7 +560,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         proxy_disc2 = exec_eng.root_process.proxy_disciplines[
             2].proxy_disciplines[0].proxy_disciplines[1]
         ns_id_cache_disc2_own_data_structure = proxy_disc2._io_ns_map_in['cache_type']
@@ -619,7 +626,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
 
@@ -702,7 +709,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Disc2']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # -- set up disciplines
         private_values = {
@@ -752,7 +759,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
 
@@ -987,7 +994,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict = usecase.setup_usecase()
 
         exec_eng.load_study_from_input_dict(values_dict[0])
-        # print(exec_eng.display_treeview_nodes())
+        # print(exec_eng.display_treeview_nodes(exec_display=True))
         # print('=====')
         # print(exec_eng.root_process.display_proxy_subtree(
         #     callback=lambda x: x.is_configured()))
@@ -1027,7 +1034,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                          '                    |_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n' \
                          '            |_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]'
 
-        self.assertEqual(exec_eng.display_treeview_nodes(),
+        self.assertEqual(exec_eng.display_treeview_nodes(exec_display=True),
                          exp_ns_tree)
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
@@ -1037,14 +1044,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         scenario_list_outer = ['scenario_1', 'scenario_2']
         scenario_list_inner = ['name_1', 'name_2']
         for i, sc in enumerate(scenario_list_outer):
-            self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.o'),
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.o'),
                              usecase.constant[i] + usecase.z[i] ** usecase.power[i])
             for j, name in enumerate(scenario_list_inner):
-                self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.Disc1.indicator'),
-                                 usecase.a[j]*usecase.b[i][j])
-                self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.y'),
-                                 usecase.a[j]*usecase.x[j]+usecase.b[i][j])
-
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.indicator'),
+                                 usecase.a[j] * usecase.b[i][j])
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
+                                 usecase.a[j] * usecase.x[j] + usecase.b[i][j])
 
     def test_9_nested_very_simple_multi_scenarios_with_archi_builder(self):
         """
@@ -1071,98 +1077,98 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict = usecase.setup_usecase()
 
         exec_eng.load_study_from_input_dict(values_dict[0])
-        # print(exec_eng.display_treeview_nodes())
+        # print(exec_eng.display_treeview_nodes(exec_display=True))
         # print('=====')
         # print(exec_eng.root_process.display_proxy_subtree(
         #     callback=lambda x: x.is_configured()))
         exp_ns_tree = 'Nodes representation for Treeview root\n' \
-                     '|_ root\n' \
-                     '\t|_ outer_ms\n' \
-                     '\t\t|_ sc1_business\n' \
-                     '\t\t\t|_ inner_ms\n' \
-                     '\t\t\t\t|_ sc1_local_prod\n' \
-                     '\t\t\t\t\t|_ Production\n' \
-                     '\t\t\t\t\t\t|_ Abroad\n' \
-                     '\t\t\t\t\t\t|_ Local\n' \
-                     '\t\t\t\t\t\t\t|_ Road\n' \
-                     '\t\t\t\t\t|_ Business\n' \
-                     '\t\t\t\t\t\t|_ Remy\n' \
-                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
-                     '\t\t\t\t|_ sc2_abroad_prod\n' \
-                     '\t\t\t\t\t|_ Production\n' \
-                     '\t\t\t\t\t\t|_ Abroad\n' \
-                     '\t\t\t\t\t\t\t|_ Road\n' \
-                     '\t\t\t\t\t\t\t|_ Plane\n' \
-                     '\t\t\t\t\t\t|_ Local\n' \
-                     '\t\t\t\t\t|_ Business\n' \
-                     '\t\t\t\t\t\t|_ Remy\n' \
-                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
-                     '\t\t|_ sc2_business\n' \
-                     '\t\t\t|_ inner_ms\n' \
-                     '\t\t\t\t|_ sc1_local_prod\n' \
-                     '\t\t\t\t\t|_ Production\n' \
-                     '\t\t\t\t\t\t|_ Abroad\n' \
-                     '\t\t\t\t\t\t|_ Local\n' \
-                     '\t\t\t\t\t\t\t|_ Road\n' \
-                     '\t\t\t\t\t|_ Business\n' \
-                     '\t\t\t\t\t\t|_ Remy\n' \
-                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
-                     '\t\t\t\t\t\t\t|_ OPEX\n' \
-                     '\t\t\t\t|_ sc3_all_by_road\n' \
-                     '\t\t\t\t\t|_ Production\n' \
-                     '\t\t\t\t\t\t|_ Abroad\n' \
-                     '\t\t\t\t\t\t\t|_ Road\n' \
-                     '\t\t\t\t\t\t|_ Local\n' \
-                     '\t\t\t\t\t\t\t|_ Road\n' \
-                     '\t\t\t\t\t|_ Business\n' \
-                     '\t\t\t\t\t\t|_ Remy\n' \
-                     '\t\t\t\t\t\t\t|_ CAPEX\n' \
-                     '\t\t\t\t\t\t\t|_ OPEX'
+            '|_ root\n' \
+            '\t|_ outer_ms\n' \
+            '\t\t|_ sc1_business\n' \
+            '\t\t\t|_ inner_ms\n' \
+            '\t\t\t\t|_ sc1_local_prod\n' \
+            '\t\t\t\t\t|_ Production\n' \
+            '\t\t\t\t\t\t|_ Abroad\n' \
+            '\t\t\t\t\t\t|_ Local\n' \
+            '\t\t\t\t\t\t\t|_ Road\n' \
+            '\t\t\t\t\t|_ Business\n' \
+            '\t\t\t\t\t\t|_ Remy\n' \
+            '\t\t\t\t\t\t\t|_ CAPEX\n' \
+            '\t\t\t\t|_ sc2_abroad_prod\n' \
+            '\t\t\t\t\t|_ Production\n' \
+            '\t\t\t\t\t\t|_ Abroad\n' \
+            '\t\t\t\t\t\t\t|_ Road\n' \
+            '\t\t\t\t\t\t\t|_ Plane\n' \
+            '\t\t\t\t\t\t|_ Local\n' \
+            '\t\t\t\t\t|_ Business\n' \
+            '\t\t\t\t\t\t|_ Remy\n' \
+            '\t\t\t\t\t\t\t|_ CAPEX\n' \
+            '\t\t|_ sc2_business\n' \
+            '\t\t\t|_ inner_ms\n' \
+            '\t\t\t\t|_ sc1_local_prod\n' \
+            '\t\t\t\t\t|_ Production\n' \
+            '\t\t\t\t\t\t|_ Abroad\n' \
+            '\t\t\t\t\t\t|_ Local\n' \
+            '\t\t\t\t\t\t\t|_ Road\n' \
+            '\t\t\t\t\t|_ Business\n' \
+            '\t\t\t\t\t\t|_ Remy\n' \
+            '\t\t\t\t\t\t\t|_ CAPEX\n' \
+            '\t\t\t\t\t\t\t|_ OPEX\n' \
+            '\t\t\t\t|_ sc3_all_by_road\n' \
+            '\t\t\t\t\t|_ Production\n' \
+            '\t\t\t\t\t\t|_ Abroad\n' \
+            '\t\t\t\t\t\t\t|_ Road\n' \
+            '\t\t\t\t\t\t|_ Local\n' \
+            '\t\t\t\t\t\t\t|_ Road\n' \
+            '\t\t\t\t\t|_ Business\n' \
+            '\t\t\t\t\t\t|_ Remy\n' \
+            '\t\t\t\t\t\t\t|_ CAPEX\n' \
+            '\t\t\t\t\t\t\t|_ OPEX'
 
-        exp_proxy_tree =  '|_ root  (ProxyCoupling) [True]\n' \
-                           '    |_ root.outer_ms  (ProxyDriverEvaluator) [True]\n' \
-                           '        |_ root.outer_ms.sc1_business  (ProxyCoupling) [True]\n' \
-                           '            |_ root.outer_ms.sc1_business.inner_ms  (ProxyDriverEvaluator) [True]\n' \
-                           '                |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod  (ProxyCoupling) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Local  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Local.Road  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
-                           '                |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod  (ProxyCoupling) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Local  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad.Road  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad.Plane  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
-                           '        |_ root.outer_ms.sc2_business  (ProxyCoupling) [True]\n' \
-                           '            |_ root.outer_ms.sc2_business.inner_ms  (ProxyDriverEvaluator) [True]\n' \
-                           '                |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod  (ProxyCoupling) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Local  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Local.Road  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy.OPEX  (ProxyDiscipline) [True]\n' \
-                           '                |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road  (ProxyCoupling) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business  (ArchiBuilder) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Abroad  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Local  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Local.Road  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Abroad.Road  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
-                           '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy.OPEX  (ProxyDiscipline) [True]'
+        exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
+            '    |_ root.outer_ms  (ProxyDriverEvaluator) [True]\n' \
+            '        |_ root.outer_ms.sc1_business  (ProxyCoupling) [True]\n' \
+            '            |_ root.outer_ms.sc1_business.inner_ms  (ProxyDriverEvaluator) [True]\n' \
+            '                |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod  (ProxyCoupling) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Local  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Production.Local.Road  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+            '                |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod  (ProxyCoupling) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Local  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad.Road  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Production.Abroad.Plane  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc1_business.inner_ms.sc2_abroad_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+            '        |_ root.outer_ms.sc2_business  (ProxyCoupling) [True]\n' \
+            '            |_ root.outer_ms.sc2_business.inner_ms  (ProxyDriverEvaluator) [True]\n' \
+            '                |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod  (ProxyCoupling) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Abroad  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Local  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Production.Local.Road  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc1_local_prod.Business.Remy.OPEX  (ProxyDiscipline) [True]\n' \
+            '                |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road  (ProxyCoupling) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business  (ArchiBuilder) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Abroad  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Local  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Local.Road  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Production.Abroad.Road  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy.CAPEX  (ProxyDiscipline) [True]\n' \
+            '                    |_ root.outer_ms.sc2_business.inner_ms.sc3_all_by_road.Business.Remy.OPEX  (ProxyDiscipline) [True]'
 
-        self.assertEqual(exec_eng.display_treeview_nodes(),
+        self.assertEqual(exec_eng.display_treeview_nodes(exec_display=True),
                          exp_ns_tree)
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)

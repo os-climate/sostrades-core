@@ -142,7 +142,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
-        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples}
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x_z
 
         # Eval inputs
@@ -172,7 +173,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         doe_disc = exec_eng.dm.get_disciplines_with_name(
             'doe.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
 
@@ -252,7 +253,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         root_outputs = exec_eng.root_process.get_output_data_names()
         self.assertIn('root.obj_dict', root_outputs)
@@ -318,7 +319,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
-        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples}
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
@@ -349,7 +351,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             'doe.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
 
@@ -434,7 +436,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # Sellar inputs
         local_dv = 10.
@@ -485,7 +487,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.dm.get_value(
             'doe.SampleGenerator.algo_options')['n_samples'], n_samples)
         # Check options not previously defined (As n_samples had been defined, the new algo options will be constituted
-        # of the new default algo options that depend on the algo name and the already defined n_samples)
+        # of the new default algo options that depend on the algo name and the
+        # already defined n_samples)
         for option in default_algo_options_fullfact.keys():
             if option != 'n_samples':
                 self.assertEqual(exec_eng.dm.get_value('doe.SampleGenerator.algo_options')[option],
@@ -558,7 +561,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x,
@@ -663,7 +666,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # Subprocess disciplines
         values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
@@ -677,7 +680,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
-        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'face': 'faced'}
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples, 'face': 'faced'}
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
 
@@ -773,7 +777,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
 
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
@@ -798,7 +802,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         to store reference scenario value in dm when running
         in parallel
         """
-        #TODO: Update once parallel execution is refactored
+        # TODO: Update once parallel execution is refactored
 
         dspace_dict_x = {'variable': ['x'],
 
@@ -908,7 +912,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # -- set up disciplines
         private_values = {
@@ -1062,7 +1066,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     #                    '\t\t\t|_ Sellar_1']
     #     exp_tv_str = '\n'.join(exp_tv_list)
     #     exec_eng.display_treeview_nodes(True)
-    #     assert exp_tv_str == exec_eng.display_treeview_nodes()
+    #     assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
     #     doe_disc = exec_eng.dm.get_disciplines_with_name('doe.DoEEval')[0]
     #
     #     doe_disc_samples = doe_disc.get_sosdisc_outputs(
@@ -1151,7 +1155,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         root_outputs = exec_eng.root_process.get_output_data_names()
         self.assertIn('root.obj_dict', root_outputs)
@@ -1201,7 +1205,8 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{same_usecase_name}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {
+            f'{same_usecase_name}.Eval.builder_mode': 'mono_instance'}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
@@ -1240,7 +1245,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t\t|_ Sellar_1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         doe_disc = exec_eng.dm.get_disciplines_with_name(
             f'{same_usecase_name}.Eval')[0]
 
@@ -1288,7 +1293,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
 
@@ -1377,7 +1382,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
 

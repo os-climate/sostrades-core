@@ -58,6 +58,10 @@ class Namespace:
         else:
             return self.__display_value
 
+    def is_display_value(self):
+
+        return self.__display_value is not None
+
     def set_display_value(self, val):
         '''
         Set the display value in the Namespace

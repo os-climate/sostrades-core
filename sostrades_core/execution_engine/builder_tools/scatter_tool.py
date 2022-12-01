@@ -38,7 +38,7 @@ class ScatterTool(SosTool):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder, map_name, coupling_per_scenario=True):
+    def __init__(self, sos_name, ee, cls_builder, map_name, coupling_per_scenario=True, hide_coupling_in_driver=False):
         '''
         Constructor
         '''
@@ -47,7 +47,8 @@ class ScatterTool(SosTool):
 
         self.map_name = map_name
         self.coupling_per_scenario = coupling_per_scenario
-
+        self.hide_coupling_in_driver = hide_coupling_in_driver
+        self.driver_display_value = None
         self.__scattered_disciplines = {}
         self.sub_coupling_builder_dict = {}
         self.__scatter_list = None
@@ -85,6 +86,8 @@ class ScatterTool(SosTool):
         for ns_name in ns_to_update_name_list:
             self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
                                                                                  ns_name)
+        if self.hide_coupling_in_driver:
+            self.driver_display_value = self.driver.get_disc_display_name()
 
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
@@ -131,9 +134,12 @@ class ScatterTool(SosTool):
         # Call scatter map to modify the associated namespace
 
         if new_name:
+            coupling_builder = self.driver.create_sub_builder_coupling(
+                name, self.sub_builders)
 
-            coupling_builder = self.ee.factory.create_builder_coupling(name)
-            coupling_builder.set_builder_info('cls_builder', self.sub_builders)
+            if self.hide_coupling_in_driver:
+                self.ee.ns_manager.add_display_ns_to_builder(
+                    coupling_builder, self.driver_display_value)
 
             self.associate_namespaces_to_builder(
                 coupling_builder, ns_ids_list)

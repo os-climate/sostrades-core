@@ -83,9 +83,15 @@ class ScatterMap:
         '''
         Modify disc scatter_ns value and add it to ns_manager 
         '''
+        scatter_namespace_name = self.get_scatter_ns()
 
+        if scatter_namespace_name in self.ee.ns_manager.shared_ns_dict:
+            display_value = self.ee.ns_manager.shared_ns_dict[scatter_namespace_name].get_display_value(
+            )
+        else:
+            display_value = None
         ns_id = self.ee.ns_manager.add_ns(
-            self.get_scatter_ns(), f'{local_namespace}.{scatter_name}', add_in_shared_ns_dict=False)
+            scatter_namespace_name, f'{local_namespace}.{scatter_name}', display_value=display_value, add_in_shared_ns_dict=False)
 
         return ns_id
 
