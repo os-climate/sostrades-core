@@ -513,6 +513,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         if namespace == self.sos_name:
             # if namespace is architecture name, remove architecture name to
             # current_ns to build discipline at same node as architecture
+            # FIXME: this implies building both disciplines in same node which is no longer permitted, remember to
+            #  refactor when ArchiBuilder as a tool and namespace display devs are ready
             current_ns = self.ee.ns_manager.current_disc_ns
             self.ee.ns_manager.set_current_disc_ns(
                 current_ns.split(f'.{namespace}')[0])
