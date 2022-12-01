@@ -33,16 +33,16 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
 
         dict_of_list_values = {
-            'Eval.x': [0., 3., 4., 5., 7.],
-            'Eval.z': [[-10., 0.], [-5., 4.], [10, 10]]
+            'x': [0., 3., 4., 5., 7.],
+            'z': [[-10., 0.], [-5., 4.], [10, 10]]
         }
-        list_of_values = [[], dict_of_list_values['Eval.x'],
-                          [], [], dict_of_list_values['Eval.z']]
+        list_of_values = [[], dict_of_list_values['x'],
+                          [], [], dict_of_list_values['z']]
 
         input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
-                                  'full_name': ['DoEEval.subprocess.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
-                                                'Eval.y_2',
-                                                'Eval.z'],
+                                  'full_name': ['Eval.SellarProblem.local_dv', 'x', 'y_1',
+                                                'y_2',
+                                                'z'],
                                   'list_of_values': list_of_values
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
@@ -60,4 +60,4 @@ if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-    uc_cls.run()
+    # uc_cls.run()
