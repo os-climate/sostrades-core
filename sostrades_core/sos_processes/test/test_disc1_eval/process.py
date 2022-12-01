@@ -22,7 +22,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_disc1_eval',
+        'label': 'Core Test Disc1 Driver Evaluator',
         'description': '',
         'category': '',
         'version': '',
@@ -31,9 +31,16 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict = {'Disc1': disc_dir + 'disc1.Disc1'}
-        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name,
-                                                                    'ns_eval': f'{self.ee.study_name}.Eval'})
+        builder_list = self.create_builder_list(
+            mods_dict,
+            ns_dict={
+                'ns_ac': self.ee.study_name,
+                'ns_eval': f'{self.ee.study_name}.Eval',
+            },
+        )
 
-        eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list)
+        eval_builder = self.ee.factory.create_driver_evaluator_builder(
+            'Eval', builder_list
+        )
 
         return eval_builder

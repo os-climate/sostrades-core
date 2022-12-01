@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_sellar_sample_generator_smap',
+        'label': 'Core Test Sellar Sample Generator Smap',
         'description': '',
         'category': '',
         'version': '',
@@ -34,43 +34,43 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
         # simple 2-disc process NOT USING nested scatters
-        scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
-                        'input_ns': 'ns_scatter_scenario',
-                        'output_name': 'scenario_name',
-                        'scatter_ns': 'ns_scenario',
-                        'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_OptimSellar']}
+        scenario_map = {
+            'input_name': 'scenario_list',
+            'input_type': 'string_list',
+            'input_ns': 'ns_scatter_scenario',
+            'output_name': 'scenario_name',
+            'scatter_ns': 'ns_scenario',
+            'gather_ns': 'ns_scatter_scenario',
+            'ns_to_update': ['ns_OptimSellar'],
+        }
 
-        self.ee.smaps_manager.add_build_map(
-            'scenario_list', scenario_map)
+        self.ee.smaps_manager.add_build_map('scenario_list', scenario_map)
 
         # shared namespace
-        self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns(
-            'ns_sampling', f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns(
-            'ns_eval', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns('ns_scatter_scenario', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns('ns_OptimSellar', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-        mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
-                     'Sellar_2': disc_dir + 'Sellar2',
-                     'Sellar_1': disc_dir + 'Sellar1'}
-        builder_list_sellar = self.create_builder_list(mods_dict,
-                                                       #ns_dict={'ns_OptimSellar': self.ee.study_name}
-                                                       )
+        mods_dict = {
+            'Sellar_Problem': disc_dir + 'SellarProblem',
+            'Sellar_2': disc_dir + 'Sellar2',
+            'Sellar_1': disc_dir + 'Sellar1',
+        }
+        builder_list_sellar = self.create_builder_list(
+            mods_dict,
+            # ns_dict={'ns_OptimSellar': self.ee.study_name}
+        )
 
         # multi scenario driver builder
         multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
-            'Eval', builder_list_sellar, map_name='scenario_list')
+            'Eval', builder_list_sellar, map_name='scenario_list'
+        )
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module(
-            'SampleGenerator', mod_cp)
+        cp_builder = self.ee.factory.get_builder_from_module('SampleGenerator', mod_cp)
 
         return multi_scenarios + [cp_builder]
