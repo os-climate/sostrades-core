@@ -242,3 +242,26 @@ class TestDataManagerStorage(unittest.TestCase):
 
         self.assertDictEqual(self.ee.dm.data_dict,
                              self.ee.dm.convert_data_dict_with_ids(self.ee.dm.convert_data_dict_with_full_name()))
+
+
+    def test_06_crash_with_distinct_disciplines_in_same_local_namespace_for_execution(self):
+        same_name = 'SameName'
+        ns_dict = {'ns_ac': f'{self.ns_test}'}
+
+        self.ee.ns_manager.add_ns_def(ns_dict)
+
+        disc1_builder = self.factory.get_builder_from_module(
+            same_name, self.mod1_path)
+        disc2_builder = self.factory.get_builder_from_module(
+            same_name, self.mod2_path)
+
+        self.factory.set_builders_to_coupling_builder(
+            [disc1_builder, disc2_builder])
+
+        with self.assertRaises(ValueError) as cm:
+            self.ee.configure()
+
+        error_message = f'Trying to add two distinct disciplines with the same local namespace:' \
+                        f' {self.ns_test}.{same_name}'
+
+        self.assertEqual(str(cm.exception), error_message)
