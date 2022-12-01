@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_sellar_sample_generator',
+        'label': 'Core Test Sellar Sample Generator',
         'description': '',
         'category': '',
         'version': '',
@@ -35,15 +35,21 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-        mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
-                     'Sellar_2': disc_dir + 'Sellar2',
-                     'Sellar_1': disc_dir + 'Sellar1'}
-        builder_list_sellar = self.create_builder_list(mods_dict,
-                                                ns_dict={'ns_OptimSellar': self.ee.study_name,
-                                                         'ns_eval': f'{self.ee.study_name}'}
-                                                )
+        mods_dict = {
+            'Sellar_Problem': disc_dir + 'SellarProblem',
+            'Sellar_2': disc_dir + 'Sellar2',
+            'Sellar_1': disc_dir + 'Sellar1',
+        }
+        builder_list_sellar = self.create_builder_list(
+            mods_dict,
+            ns_dict={
+                'ns_OptimSellar': self.ee.study_name,
+                'ns_eval': f'{self.ee.study_name}',
+            },
+        )
 
-        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list_sellar,
-                                                                           with_sample_generator=True)
+        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder(
+            'Eval', builder_list_sellar, with_sample_generator=True
+        )
 
         return doe_eval_builder

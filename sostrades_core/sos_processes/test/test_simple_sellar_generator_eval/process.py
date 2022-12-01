@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_simple_sellar_generator_eval',
+        'label': 'Core Test Simple Sellar Generator Eval',
         'description': '',
         'category': '',
         'version': '',
@@ -35,20 +35,26 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
-        mods_dict = {'Sellar_Problem': disc_dir + 'sellar.SellarProblem',
-                     'Sellar_2': disc_dir + 'sellar.Sellar2',
-                     'Sellar_1': disc_dir + 'sellar.Sellar1'}
-        builder_list_sellar = self.create_builder_list(mods_dict,
-                                                ns_dict={'ns_OptimSellar': self.ee.study_name,
-                                                         'ns_eval': f'{self.ee.study_name}'}
-                                                )
-        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder('Eval', builder_list_sellar,
-                                                                           with_sample_generator=True)
+        mods_dict = {
+            'Sellar_Problem': disc_dir + 'sellar.SellarProblem',
+            'Sellar_2': disc_dir + 'sellar.Sellar2',
+            'Sellar_1': disc_dir + 'sellar.Sellar1',
+        }
+        builder_list_sellar = self.create_builder_list(
+            mods_dict,
+            ns_dict={
+                'ns_OptimSellar': self.ee.study_name,
+                'ns_eval': f'{self.ee.study_name}',
+            },
+        )
+        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder(
+            'Eval', builder_list_sellar, with_sample_generator=True
+        )
 
         mods_dict2 = {'Simple_Disc': disc_dir + 'simple_disc.SimpleDisc'}
-        builder_list2 = self.create_builder_list(mods_dict2,
-                                                ns_dict={'ns_OptimSellar': self.ee.study_name}
-                                                )
+        builder_list2 = self.create_builder_list(
+            mods_dict2, ns_dict={'ns_OptimSellar': self.ee.study_name}
+        )
 
         builder_list2.append(doe_eval_builder)
 
