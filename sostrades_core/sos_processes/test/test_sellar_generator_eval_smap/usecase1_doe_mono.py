@@ -31,7 +31,6 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['Eval.x'],
-
                        'lower_bnd': [0.],
                        'upper_bnd': [10.],
 

@@ -22,6 +22,7 @@ from shutil import rmtree
 from pathlib import Path
 from os.path import join
 import pandas as pd
+from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
@@ -89,28 +90,50 @@ class TestMultiScenario(unittest.TestCase):
             'Disc3.z': [self.z1, self.z2, self.z3]
         }
         list_of_values_b_z_3 = [[], dict_of_list_values_3['Disc1.b'],
-                              [], [], dict_of_list_values_3['Disc3.z']]
+                                [], [], dict_of_list_values_3['Disc3.z']]
 
         input_selection_cp_b_z_3 = {'selected_input': [False, True, False, False, True],
-                                  'full_name': ['', 'Disc1.b', '', '', 'Disc3.z'],
-                                  'list_of_values': list_of_values_b_z_3
-                                  }
+                                    'full_name': ['', 'Disc1.b', '', '', 'Disc3.z'],
+                                    'list_of_values': list_of_values_b_z_3
+                                    }
         self.input_selection_cp_b_z_3 = pd.DataFrame(input_selection_cp_b_z_3)
-
 
         dict_of_list_values_b_z_p = {
             'Disc1.b': [self.b1, self.b2],
             'Disc3.z': [self.z1, self.z2],
             'Disc3.power': [self.power1, self.power2]
-             }
+        }
         list_of_values_b_z_p = [[], dict_of_list_values_b_z_p['Disc1.b'],
-                              [], [], dict_of_list_values_b_z_p['Disc3.z'], dict_of_list_values_b_z_p['Disc3.power']]
+                                [], [], dict_of_list_values_b_z_p['Disc3.z'], dict_of_list_values_b_z_p['Disc3.power']]
 
         input_selection_cp_b_z_p = {'selected_input': [False, True, False, False, True, True],
-                                  'full_name': ['', 'Disc1.b', '', '', 'Disc3.z', 'Disc3.power'],
-                                  'list_of_values': list_of_values_b_z_p
-                                  }
+                                    'full_name': ['', 'Disc1.b', '', '', 'Disc3.z', 'Disc3.power'],
+                                    'list_of_values': list_of_values_b_z_p
+                                    }
         self.input_selection_cp_b_z_p = pd.DataFrame(input_selection_cp_b_z_p)
+
+    def setUp_cp_sellar(self):
+        self.sampling_generation_mode_cp = 'at_configuration_time'
+        #self.sampling_generation_mode_cp = 'at_run_time'
+
+        self.study_name_cp = 'cp'
+        self.sampling_method_cp = 'cartesian_product'
+
+        dict_of_list_values = {
+            'x': [array([3.]), array([4.])],
+            'z': [array([-10., 0.])]
+        }
+
+        list_of_values = [[], dict_of_list_values['x'],
+                          [], [], dict_of_list_values['z']]
+
+        input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
+                                  'full_name': ['Eval.SellarProblem.local_dv', 'x', 'y_1',
+                                                'y_2',
+                                                'z'],
+                                  'list_of_values': list_of_values
+                                  }
+        self.input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
     def tearDown(self):
 
@@ -156,12 +179,14 @@ class TestMultiScenario(unittest.TestCase):
                         scenario + '.Disc3.power'] = self.power
 
         # activate some of the scenarios, deactivated by default
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
         scenario_df['selected_scenario'] = [True, True, False, True]
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios')[0]
+        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         self.assertEqual(ms_sub_disc_names, ['scenario_1',
                                              'scenario_2',
@@ -169,10 +194,14 @@ class TestMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        y1, o1 = (self.a1 * self.x1 + self.b1, self.constant + self.z1 ** self.power)
-        y2, o2 = (self.a1 * self.x1 + self.b1, self.constant + self.z2 ** self.power)
-        y3, o3 = (self.a1 * self.x1 + self.b2, self.constant + self.z1 ** self.power)
-        y4, o4 = (self.a1 * self.x1 + self.b2, self.constant + self.z2 ** self.power)
+        y1, o1 = (self.a1 * self.x1 + self.b1,
+                  self.constant + self.z1 ** self.power)
+        y2, o2 = (self.a1 * self.x1 + self.b1,
+                  self.constant + self.z2 ** self.power)
+        y3, o3 = (self.a1 * self.x1 + self.b2,
+                  self.constant + self.z1 ** self.power)
+        y4, o4 = (self.a1 * self.x1 + self.b2,
+                  self.constant + self.z2 ** self.power)
 
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_1.y'), y1)
@@ -187,6 +216,38 @@ class TestMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_4.o'), o4)
+
+    def test_02_multiscenario_with_sample_generator_cp_sellar(self):
+        # # simple 2-disc process NOT USING nested scatters
+        proc_name = 'test_sellar_generator_eval_smap'
+        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        # get the sample generator inputs
+        self.setUp_cp_sellar()
+        # setup the driver and the sample generator jointly
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = self.input_selection_cp_x_z
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # manually configure the scenarios non-varying values (~reference)
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            dict_values[self.study_name + '.Eval.' +
+                        scenario + '.Sellar_Problem.local_dv'] = 10.
+            dict_values[self.study_name + '.Eval.' +
+                        scenario + '.y_1'] = array([1.])
+            dict_values[self.study_name + '.Eval.' +
+                        scenario + '.y_2'] = array([1.])
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.exec_eng.execute()
 
     def test_03_multi_scenario_from_process_with_basic_config_from_usecase(self):
 
@@ -214,12 +275,14 @@ class TestMultiScenario(unittest.TestCase):
                         scenario + '.Disc3.power'] = self.power
 
         # activate some of the scenarios, deactivated by default
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
         scenario_df['selected_scenario'] = [True, True, False, True]
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios')[0]
+        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         self.assertEqual(ms_sub_disc_names, ['scenario_1',
                                              'scenario_2',
@@ -227,10 +290,14 @@ class TestMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        y1, o1 = (self.a1 * self.x1 + self.b1, self.constant + self.z1 ** self.power)
-        y2, o2 = (self.a1 * self.x1 + self.b1, self.constant + self.z2 ** self.power)
-        y3, o3 = (self.a1 * self.x1 + self.b2, self.constant + self.z1 ** self.power)
-        y4, o4 = (self.a1 * self.x1 + self.b2, self.constant + self.z2 ** self.power)
+        y1, o1 = (self.a1 * self.x1 + self.b1,
+                  self.constant + self.z1 ** self.power)
+        y2, o2 = (self.a1 * self.x1 + self.b1,
+                  self.constant + self.z2 ** self.power)
+        y3, o3 = (self.a1 * self.x1 + self.b2,
+                  self.constant + self.z1 ** self.power)
+        y4, o4 = (self.a1 * self.x1 + self.b2,
+                  self.constant + self.z2 ** self.power)
 
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_1.y'), y1)
@@ -265,10 +332,13 @@ class TestMultiScenario(unittest.TestCase):
         # same input selection as first test, all scenarios activated
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
-        scenario_names = ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4']
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_names = ['scenario_1',
+                          'scenario_2', 'scenario_3', 'scenario_4']
         scenario_vars = ['Disc1.b', 'Disc3.z']
-        self.assertEqual(scenario_df['scenario_name'].values.tolist(),  scenario_names)
+        self.assertEqual(
+            scenario_df['scenario_name'].values.tolist(),  scenario_names)
         self.assertEqual(scenario_df['Disc1.b'].values.tolist(),  [self.b1,
                                                                    self.b1,
                                                                    self.b2,
@@ -279,18 +349,21 @@ class TestMultiScenario(unittest.TestCase):
                                                                    self.z2])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios')[0]
+        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
             for var in scenario_vars:
-                self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.'+sc+'.'+var),
+                self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
                                  scenario_df[scenario_df['scenario_name'] == sc].iloc[0][var])
 
-        # deactivate the eval inputs of the cartesian product and check that the scenarios disappear
+        # deactivate the eval inputs of the cartesian product and check that
+        # the scenarios disappear
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp']['selected_input'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
         gen = self.exec_eng.root_process.proxy_disciplines[1]
         print(gen.mdo_discipline_wrapp.wrapper.samples_gene_df)
         self.assertTrue(scenario_df.empty)
@@ -298,12 +371,14 @@ class TestMultiScenario(unittest.TestCase):
         # change the trade variables values
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z_3
         self.exec_eng.load_study_from_input_dict(dict_values)
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
         scenario_names = ['scenario_1', 'scenario_2', 'scenario_3',
-                          'scenario_4','scenario_5','scenario_6',
-                          'scenario_7','scenario_8','scenario_9']
+                          'scenario_4', 'scenario_5', 'scenario_6',
+                          'scenario_7', 'scenario_8', 'scenario_9']
         scenario_vars = ['Disc1.b', 'Disc3.z']
-        self.assertEqual(scenario_df['scenario_name'].values.tolist(),  scenario_names)
+        self.assertEqual(
+            scenario_df['scenario_name'].values.tolist(),  scenario_names)
         self.assertEqual(scenario_df['Disc1.b'].values.tolist(),  [self.b1,
                                                                    self.b1,
                                                                    self.b1,
@@ -329,16 +404,17 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
             for var in scenario_vars:
-                self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.'+sc+'.'+var),
+                self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
                                  scenario_df[scenario_df['scenario_name'] == sc].iloc[0][var])
 
         # change the trade variables themselves
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z_p
         self.exec_eng.load_study_from_input_dict(dict_values)
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
         scenario_names = ['scenario_1', 'scenario_2', 'scenario_3',
-                          'scenario_4','scenario_5','scenario_6',
-                          'scenario_7','scenario_8']
+                          'scenario_4', 'scenario_5', 'scenario_6',
+                          'scenario_7', 'scenario_8']
         scenario_vars = ['Disc1.b', 'Disc3.z', 'Disc3.power']
         self.assertEqual(scenario_df['Disc1.b'].values.tolist(),  [self.b1,
                                                                    self.b1,
@@ -374,7 +450,7 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
             for var in scenario_vars:
-                self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.'+sc+'.'+var),
+                self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
                                  scenario_df[scenario_df['scenario_name'] == sc].iloc[0][var])
 
         # configure the reference values...
@@ -383,7 +459,7 @@ class TestMultiScenario(unittest.TestCase):
         private_values[self.study_name + '.x'] = self.x1
         for scenario in scenario_names:
             private_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
+                           scenario + '.Disc3.constant'] = self.constant
         self.exec_eng.load_study_from_input_dict(private_values)
 
         self.exec_eng.execute()
@@ -394,9 +470,9 @@ class TestMultiScenario(unittest.TestCase):
             power = sc_row['Disc3.power']
             y, o = (self.a1 * self.x1 + b, self.constant + z ** power)
             self.assertEqual(self.exec_eng.dm.get_value(
-                'MyCase.multi_scenarios.'+scenario_name+'.y'), y)
+                'MyCase.multi_scenarios.' + scenario_name + '.y'), y)
             self.assertEqual(self.exec_eng.dm.get_value(
-                'MyCase.multi_scenarios.'+scenario_name+'.o'), o)
+                'MyCase.multi_scenarios.' + scenario_name + '.o'), o)
 
     def test_05_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
@@ -434,12 +510,14 @@ class TestMultiScenario(unittest.TestCase):
                         scenario + '.Disc3.power'] = self.power
 
         # activate some of the scenarios, deactivated by default
-        scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
+        scenario_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_df')
         scenario_df['selected_scenario'] = [True, True, False, True]
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios')[0]
+        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         self.assertEqual(ms_sub_disc_names, ['scenario_1',
                                              'scenario_2',
@@ -447,10 +525,14 @@ class TestMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        y1, o1 = (self.a1 * self.x1 + self.b1, self.constant + self.z1 ** self.power)
-        y2, o2 = (self.a1 * self.x1 + self.b1, self.constant + self.z2 ** self.power)
-        y3, o3 = (self.a1 * self.x1 + self.b2, self.constant + self.z1 ** self.power)
-        y4, o4 = (self.a1 * self.x1 + self.b2, self.constant + self.z2 ** self.power)
+        y1, o1 = (self.a1 * self.x1 + self.b1,
+                  self.constant + self.z1 ** self.power)
+        y2, o2 = (self.a1 * self.x1 + self.b1,
+                  self.constant + self.z2 ** self.power)
+        y3, o3 = (self.a1 * self.x1 + self.b2,
+                  self.constant + self.z1 ** self.power)
+        y4, o4 = (self.a1 * self.x1 + self.b2,
+                  self.constant + self.z2 ** self.power)
 
         dump_dir = join(self.root_dir, self.namespace)
 
@@ -458,7 +540,8 @@ class TestMultiScenario(unittest.TestCase):
             dump_dir, self.exec_eng, DirectLoadDump())
 
         exec_eng2 = ExecutionEngine(self.namespace)
-        builders = exec_eng2.factory.get_builder_from_process(self.repo, proc_name)
+        builders = exec_eng2.factory.get_builder_from_process(
+            self.repo, proc_name)
         exec_eng2.factory.set_builders_to_coupling_builder(builders)
         exec_eng2.configure()
 
@@ -495,9 +578,7 @@ class TestMultiScenario(unittest.TestCase):
         self.dirs_to_del.append(
             join(self.root_dir, self.namespace))
 
-
-
-    ## EEV3 TESTS #TODO: cleanup when nested scatter exists
+    # EEV3 TESTS #TODO: cleanup when nested scatter exists
     def _test_01_multi_scenario_of_scatter(self):
 
         # scatter build map
