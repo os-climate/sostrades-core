@@ -33,14 +33,17 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
 
         dict_of_list_values = {
-            'x': [0., 3., 4., 5., 7.],
-            'z': [[-10., 0.], [-5., 4.], [10, 10]]
+            'x': [array([3.]), array([4.])],
+            'z': [array([-10., 0.])],
+            'Sellar_Problem.local_dv': [10.],
+            'y_1': [array([1.])],
+            'y_2': [array([1.])]
         }
-        list_of_values = [[], dict_of_list_values['x'],
-                          [], [], dict_of_list_values['z']]
+        list_of_values = [dict_of_list_values['Sellar_Problem.local_dv'], dict_of_list_values['x'],
+                          dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
 
-        input_selection_cp_x_z = {'selected_input': [False, True, False, False, True],
-                                  'full_name': ['Eval.SellarProblem.local_dv', 'x', 'y_1',
+        input_selection_cp_x_z = {'selected_input': [True, True, True, True, True],
+                                  'full_name': ['Sellar_Problem.local_dv', 'x', 'y_1',
                                                 'y_2',
                                                 'z'],
                                   'list_of_values': list_of_values
@@ -60,4 +63,4 @@ if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-    # uc_cls.run()
+    uc_cls.run()
