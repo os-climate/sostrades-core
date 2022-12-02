@@ -337,6 +337,32 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
+    def test_09_two_scenarios_with_same_name(self):
+        proc_name = 'test_multi_instance_basic'
+        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        scenario_df = pd.DataFrame(
+            [['scenario_1', True, self.b1], ['scenario_1', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+
+        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
+                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        with self.assertRaises(Exception) as cm:
+            self.exec_eng.load_study_from_input_dict(dict_values)
+        error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
+        self.assertEqual(str(cm.exception), error_message)
+
+        # self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        # self.exec_eng.configure()
+        # scenario_df['selected_scenario'] = False
+        # dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
+        #                f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        # self.exec_eng.load_study_from_input_dict(dict_values)
+        # pass
+
+
     ## EEV3 TESTS #TODO: cleanup when nested scatter exists
     def _test_01_multi_scenario_of_scatter(self):
 

@@ -185,7 +185,8 @@ class ProxyDiscipline(object):
         'dict': dict,
         'dataframe': DataFrame,
         'bool': bool,
-        'list': list
+        'list': list,
+        PROC_BUILDER_MODAL: dict
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
