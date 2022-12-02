@@ -351,10 +351,16 @@ class TestSimpleMultiScenario(unittest.TestCase):
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
         with self.assertRaises(ValueError) as cm:
             self.exec_eng.load_study_from_input_dict(dict_values)
-
-        same_name = 'SameName'
-        error_message = f'Trying to add two distinct disciplines with the same local namespace: MyCase.multi_scenarios.scenario_1'
+        error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
         self.assertEqual(str(cm.exception), error_message)
+
+        # self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        # self.exec_eng.configure()
+        # scenario_df['selected_scenario'] = False
+        # dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
+        #                f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        # self.exec_eng.load_study_from_input_dict(dict_values)
+        # pass
 
 
     ## EEV3 TESTS #TODO: cleanup when nested scatter exists
