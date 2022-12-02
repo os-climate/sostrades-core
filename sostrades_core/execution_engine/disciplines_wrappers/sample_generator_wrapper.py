@@ -187,7 +187,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
                 # (cleaning)
-                self.selected_inputs = None
+                self.selected_inputs = []
                 self.dict_desactivated_elem = {}
                 self.previous_eval_inputs = None
 
