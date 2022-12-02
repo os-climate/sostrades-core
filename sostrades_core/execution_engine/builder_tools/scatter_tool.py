@@ -74,8 +74,9 @@ class ScatterTool(SosTool):
         if self.driver.SCENARIO_DF in self.driver.get_data_in():
             scenario_df = self.driver.get_sosdisc_inputs(
                 self.driver.SCENARIO_DF)
-            self.set_scatter_list(scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
-                                              == True][self.driver.SCENARIO_NAME].values.tolist())
+            scatter_list = scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
+                                              == True][self.driver.SCENARIO_NAME].values.tolist()
+            self.set_scatter_list(scatter_list)
 
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
             self.driver)
