@@ -32,6 +32,7 @@ from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisci
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
@@ -43,6 +44,45 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     '''
         SOSEval class which creates a sub process to evaluate
         with different methods (Gradient,FORM,Sensitivity ANalysis, DOE, ...)
+
+    1) Strucrure of Desc_in/Desc_out:
+        |_ DESC_IN
+                |_ SUB_PROCESS_INPUTS (structuring)  
+                    |_ EVAL_INPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE)   
+                    |_ EVAL_OUTPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE) 
+                    |_ GENERATED_SAMPLES( structuring,dynamic: self.builder_tool == True) 
+                    |_ SCENARIO_DF (structuring,dynamic: self.builder_tool == True)
+                    |_ SAMPLES_DF (namespace: 'ns_eval', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 ) 
+        |_ DESC_OUT
+            |_ samples_inputs_df (namespace: 'ns_eval', dynamic: builder_mode == self.MONO_INSTANCE)
+            |_ <var>_dict (internal namspace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 and eval_outputs not empty, for <var> in eval_outputs)
+
+
+   2) Description of DESC parameters:
+        |_ DESC_IN
+           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
+                                                    PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
+                                                                          If 'None' then it uses the sos_processes python for doe creation.
+                                                    PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
+                                                                          If 'None' then it uses the sos_processes python for doe creation.
+                                                    USECASE_INFO:         either empty or an available data source of the sub_process
+                                                    USECASE_NAME:         children of USECASE_INFO that contains data source name (can be empty)
+                                                    USECASE_TYPE:         children of USECASE_INFO that contains data source type (can be empty)
+                                                    USECASE_IDENTIFIER:   children of USECASE_INFO that contains data source identifier (can be empty)
+                                                    USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
+                                                                          it is a temporary input: it will be put to None as soon as
+                                                                          its content is 'loaded' in the dm. We will have it has editable
+                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
+                    |_ EVAL_INPUTS    
+                    |_ EVAL_OUTPUTS 
+                    |_ GENERATED_SAMPLES 
+                    |_ SCENARIO_DF
+                    |_ SAMPLES_DF 
+       |_ DESC_OUT
+            |_ samples_inputs_df 
+            |_ <var observable name>_dict':     for each selected output observable doe result
+                                                associated to sample and the selected observable
+
     '''
 
     # ontology information
@@ -69,13 +109,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
-    MAX_SAMPLE_AUTO_BUILD_SCENARIOS = 1024   # with SampleGenerator, whether to activate and build all the sampled
-                                             # scenarios by default or not. Set to None to always build.
+    # with SampleGenerator, whether to activate and build all the sampled
+    MAX_SAMPLE_AUTO_BUILD_SCENARIOS = 1024
+    # scenarios by default or not. Set to None to always build.
 
     SUBCOUPLING_NAME = 'subprocess'
     EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
+
+    SUB_PROCESS_INPUTS = 'sub_process_inputs'
+    default_process_builder_parameter_type = ProcessBuilderParameterType(
+        None, None, 'Empty')
+    USECASE_DATA = 'usecase_data'
+
+    DESC_IN = {SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
+                                    'structuring': True,
+                                    'default': default_process_builder_parameter_type.to_data_manager_dict(),
+                                    'user_level': 1,
+                                    'optional': False
+                                    }}
 
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
@@ -126,6 +179,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
 
+        self.previous_sub_process_usecase_name = 'Empty'
+        self.previous_sub_process_usecase_data = {}
+        # Possible values: 'No_SP_UC_Import', 'SP_UC_Import'
+        self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+
     def get_desc_in_out(self, io_type):
         """
         get the desc_in or desc_out. if a wrapper exists get it from the wrapper, otherwise get it from the proxy class
@@ -165,7 +223,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # if self._data_in == {} or (self.get_disciplines_to_configure() == []
         # and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0:
         if self._data_in == {} or self.subprocess_is_configured():
-            # Call standard configure methods to set the process discipline tree
+            # Call standard configure methods to set the process discipline
+            # tree
             super().configure()
             self.configure_driver()
 
@@ -206,7 +265,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         This function forces the trade variables values of the subprocesses in function of the driverevaluator input df.
         """
-        # TODO: code below might need refactoring after reference_scenario configuration fashion is decided upon
+        # TODO: code below might need refactoring after reference_scenario
+        # configuration fashion is decided upon
         scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
         # NB assuming that the scenario_df entries are unique otherwise there
         # is some intelligence to be added
@@ -233,7 +293,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         scenarios_data_dict[var_full_name] = sc_row.loc[var]
                 if scenarios_data_dict:
                     # push to dm
-                    # TODO: should also alter associated disciplines' reconfig. flags for structuring ? TO TEST
+                    # TODO: should also alter associated disciplines' reconfig.
+                    # flags for structuring ? TO TEST
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
 
     def subprocesses_built(self, scenario_names):
@@ -283,7 +344,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         # values
                         if not generated_samples.equals(scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], 1)):
                             # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
-                            #  remains as a DriverEvaluator input, othrwise another sample change check logic is needed)
+                            # remains as a DriverEvaluator input, othrwise
+                            # another sample change check logic is needed)
                             self.old_samples_df = copy.deepcopy(
                                 generated_samples_dict)
                             # we crush old scenario_df and propose a df with
@@ -294,11 +356,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             scenario_df = pd.concat(
                                 [scenario_df, generated_samples], axis=1)
                             n_scenarios = len(scenario_df.index)
-                            # check whether the number of generated scenarios is not too high to auto-activate them
+                            # check whether the number of generated scenarios
+                            # is not too high to auto-activate them
                             if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
                                 scenario_df[self.SELECTED_SCENARIO] = True
                             else:
-                                self.logger.warn(f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
+                                self.logger.warn(
+                                    f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
                                 scenario_df[self.SELECTED_SCENARIO] = False
                             scenario_name = scenario_df[self.SCENARIO_NAME]
                             for i in scenario_name.index.tolist():
@@ -378,6 +442,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # super().setup_sos_disciplines() # TODO: manage custom driver wrapper
         # case
 
+        # check and import usecase
+        self.manage_import_inputs_from_sub_process()
+
     def prepare_build(self):
         """
         Get the actual drivers of the subprocesses of the DriverEvaluator.
@@ -416,7 +483,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: move to builder ?
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in SoSMDODisciplineDriver ?
+        # TODO : cache mgmt of children necessary ? here or in
+        # SoSMDODisciplineDriver ?
         super().prepare_execution()
 
         self.reset_subdisciplines_of_wrapper()
@@ -505,7 +573,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                             # 'visibility': SoSWrapp.SHARED_VISIBILITY,
                                                             # 'namespace': 'ns_sampling',
                                                             'default': pd.DataFrame(),
-                                                            # self.OPTIONAL: True,
+                                                            # self.OPTIONAL:
+                                                            # True,
                                                             self.USER_LEVEL: 3
                                                             }})
             self.add_inputs(dynamic_inputs)
@@ -541,7 +610,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             disc_builder = None
         elif len(self.cls_builder) == 1:
             # Note no distinction is made whether the builder is executable or not; old implementation used to put
-            # scatter builds under a coupling automatically too. # TODO: check if necessary for gather implementation.
+            # scatter builds under a coupling automatically too. # TODO: check
+            # if necessary for gather implementation.
             disc_builder = self.cls_builder[0]
         else:
             # If eval process is a list of builders then we build a coupling
@@ -704,7 +774,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
         '''
-        # TODO: does this involve avoidable, recursive back and forths during configuration ? (<-> config. graph)
+        # TODO: does this involve avoidable, recursive back and forths during
+        # configuration ? (<-> config. graph)
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(
@@ -799,3 +870,64 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # evaluator
             builder.add_namespace_list_in_associated_namespaces(
                 self.associated_namespaces)
+
+    def manage_import_inputs_from_sub_process(self):
+        """
+            Function needed in setup_sos_disciplines()
+        """
+        # Set sub_proc_import_usecase_status
+        self.set_sub_process_usecase_status_from_user_inputs()
+
+        # Treat the case of SP_UC_Import
+        if self.sub_proc_import_usecase_status == 'SP_UC_Import':
+            # 1. Add 'reference' (if not already existing) in data manager for
+            # usecase import
+            # self.add_reference_instance()
+            # 2. Add data in data manager for this analysis'reference'
+            # 2.1 get anonymized dict
+            anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
+            # 2.2 put anonymized dict in context (unanonymize)
+            # input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
+            #    anonymize_input_dict_from_usecase)
+            # print(input_dict_from_usecase)
+            # self.ee.display_treeview_nodes(True)
+            # 2.3 load data in dm
+            # self.ee.load_study_from_input_dict(input_dict_from_usecase)
+            # 2.4 Update parameters
+            #     Set the status to No_SP_UC_Import'
+            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+            #     Empty the anonymized dict in
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = anonymize_input_dict_from_usecase
+            # sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
+            #}
+            self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
+                             self.VALUES, sub_process_inputs_dict, check_value=False)
+            #     Empty the previous_sub_process_usecase_data
+            self.previous_sub_process_usecase_data = {}
+
+    def set_sub_process_usecase_status_from_user_inputs(self):
+        """
+            State subprocess usecase import status
+            The uscase is defined by its name and its anonimized dict
+            Function needed in manage_import_inputs_from_sub_process()
+        """
+        disc_in = self.get_data_in()
+        if self.SUB_PROCESS_INPUTS in disc_in:  # and self.sub_proc_build_status != 'Empty_SP'
+            sub_process_inputs_dict = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)
+            sub_process_usecase_name = sub_process_inputs_dict[
+                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+            sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
+            if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
+                self.previous_sub_process_usecase_name = sub_process_usecase_name
+                self.previous_sub_process_usecase_data = sub_process_usecase_data
+                # means it is not an empty dictionary
+                if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
+                    self.sub_proc_import_usecase_status = 'SP_UC_Import'
+            else:
+                self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+        else:
+            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'

@@ -49,19 +49,33 @@ class SampleGeneratorWrapper(SoSWrapp):
     Generic SampleGenerator class
     1) Strucrure of Desc_in/Desc_out:
         |_ DESC_IN
-            |_ SAMPLING_METHOD (structuring)
+            |_ SAMPLING_METHOD (structuring)       
                 |_ EVAL_INPUTS (namespace: 'ns_sampling', structuring, dynamic : SAMPLING_METHOD == self.DOE_ALGO) 
                         |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO != None) NB: default DESIGN_SPACE depends on EVAL_INPUTS (Has to be "Not empty")            
                 |_ SAMPLING_ALGO (structuring, dynamic : SAMPLING_METHOD == self.DOE_ALGO)
                         |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
-                            |_ GENERATED_SAMPLES(namespace: 'ns_sampling', structuring,                                               
+                            |_ GENERATED_SAMPLES (namespace: 'ns_sampling', structuring,                                               
                                                  dynamic: EVAL_INPUTS_CP != None and ALGO_OPTIONS set 
                                                      and SAMPLING_GENERATION_MODE == 'at_configuration_time')                          
                 |_ EVAL_INPUTS_CP (namespace: 'ns_sampling', structuring, dynamic : SAMPLING_METHOD == self.CARTESIAN_PRODUCT)
-                        |_ GENERATED_SAMPLES(namespace: 'ns_sampling', structuring,                                               
+                        |_ GENERATED_SAMPLES (namespace: 'ns_sampling', structuring,                                               
                                               dynamic: EVAL_INPUTS_CP != None and SAMPLING_GENERATION_MODE == 'at_configuration_time')                 
         |_ DESC_OUT
             |_ SAMPLES_DF (namespace: 'ns_sampling')
+
+   2) Description of DESC parameters:
+        |_ DESC_IN
+            |_ SAMPLING_METHOD   
+                |_ EVAL_INPUTS
+                        |_ DESIGN_SPACE 
+                |_ SAMPLING_ALGO 
+                        |_ ALGO_OPTIONS 
+                            |_ GENERATED_SAMPLES                        
+                |_ EVAL_INPUTS_CP 
+                        |_ GENERATED_SAMPLES 
+        |_ DESC_OUT
+            |_ SAMPLES_DF
+
     '''
 
     _ontology_data = {
@@ -123,15 +137,20 @@ class SampleGeneratorWrapper(SoSWrapp):
     GENERATED_SAMPLES = 'generated_samples'
     SAMPLES_DF = 'samples_df'
 
-    DESC_IN = {'sampling_method': {'type': 'string',
-                                   'structuring': True,
-                                   'possible_values': available_sampling_methods}}
+    DESC_IN = {SAMPLING_METHOD: {'type': 'string',
+                                 'structuring': True,
+                                 'possible_values': available_sampling_methods,
+                                 'default': DOE_ALGO},
+               SAMPLING_GENERATION_MODE: {'type': 'string',
+                                          'structuring': True,
+                                          'possible_values': available_sampling_generation_modes,
+                                          'default': AT_RUN_TIME}}
 
-    DESC_OUT = {'samples_df': {'type': 'dataframe',
-                               'unit': None,
-                               'visibility': SoSWrapp.SHARED_VISIBILITY,
-                               'namespace': 'ns_sampling'
-                               }
+    DESC_OUT = {SAMPLES_DF: {'type': 'dataframe',
+                             'unit': None,
+                             'visibility': SoSWrapp.SHARED_VISIBILITY,
+                             'namespace': 'ns_sampling'
+                             }
                 }
 
     def __init__(self, sos_name):
