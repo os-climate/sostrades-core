@@ -249,6 +249,59 @@ class TestMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
+    def test_02_multiscenario_with_sample_generator_cp_sellar_study(self):
+        # # simple 2-disc process NOT USING nested scatters
+
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        self.study_name = 'MyStudy'
+        proc_name = 'test_sellar_generator_eval_smap'
+
+        # get the sample generator inputs
+        self.setUp_cp_sellar()
+
+        study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
+        study_dump.set_dump_directory(dump_dir)
+        study_dump.load_data()
+
+        ################ Start checks ##########################
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        # setup the driver and the sample generator jointly
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = self.input_selection_cp_x_z
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # manually configure the scenarios non-varying values (~reference)
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            dict_values[self.study_name + '.Eval.' +
+                        scenario + '.Sellar_Problem.local_dv'] = 10.
+            dict_values[self.study_name + '.Eval.' +
+                        scenario + '.y_1'] = array([1.])
+            dict_values[self.study_name + '.Eval.' +
+                        scenario + '.y_2'] = array([1.])
+        study_dump.load_data(from_input_dict=dict_values)
+        study_dump.dump_data(dump_dir)
+        study_dump.run()
+
+        ########################
+        study_load = BaseStudyManager(self.repo, proc_name, self.study_name)
+        study_load.load_data(from_path=dump_dir)
+        # print(study_load.ee.dm.get_data_dict_values())
+        study_load.run()
+        from shutil import rmtree
+        rmtree(dump_dir)
+
     def test_03_multi_scenario_from_process_with_basic_config_from_usecase(self):
 
         builder_process = self.exec_eng.factory.get_builder_from_process(

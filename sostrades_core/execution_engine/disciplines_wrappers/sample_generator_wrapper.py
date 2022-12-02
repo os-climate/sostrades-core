@@ -25,6 +25,7 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -186,7 +187,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
                 # (cleaning)
-                self.selected_inputs = None
+                self.selected_inputs = []
                 self.dict_desactivated_elem = {}
                 self.previous_eval_inputs = None
 
@@ -636,7 +637,8 @@ class SampleGeneratorWrapper(SoSWrapp):
         if self.EVAL_INPUTS_CP in disc_in:
             eval_inputs_cp = proxy.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
             # 1. Manage update status of EVAL_INPUTS_CP
-            if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
+            # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
+            if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
                 self.eval_inputs_cp_has_changed = True
                 self.previous_eval_inputs_cp = eval_inputs_cp
             # 2. Manage selection in EVAL_INPUTS_CP

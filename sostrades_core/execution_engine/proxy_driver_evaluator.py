@@ -391,7 +391,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.clean_children()
                 self.clean_sub_builders()
                 if self.old_builder_mode == self.MONO_INSTANCE:
-                    self.clean_namespaces_with_subprocess()
                     self.eval_process_builder = None
                 elif self.old_builder_mode == self.MULTI_INSTANCE:
                     self.builder_tool = None
@@ -547,45 +546,21 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             # If eval process is a list of builders then we build a coupling
             # containing the eval process
-            disc_builder = self.ee.factory.create_builder_coupling(
-                self.SUBCOUPLING_NAME)
-            self.update_namespaces_with_subprocess()
-            disc_builder.set_builder_info('cls_builder', self.cls_builder)
+            disc_builder = self.create_sub_builder_coupling(
+                self.SUBCOUPLING_NAME, self.cls_builder)
+            self.hide_coupling_in_driver_for_display(disc_builder)
+
         self.eval_process_builder = disc_builder
 
-    def update_namespaces_with_subprocess(self):
+    def hide_coupling_in_driver_for_display(self, disc_builder):
         '''
-        Add subprocess name in namespaces used by the coupling 
-        For now only ns_to_update in scatter_map are updated
-        TODO : Get all namespaces specified in the cls_builder
-        and associate them to the builder with new extra_ns (without shared_ns_dict association)
+        Set the display_value of the sub coupling to the display_value of the driver 
+        (if no display_value filled the display_value is the simulation value)
         '''
-        pass
-#         if self.map_name is not None:
-#             sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
-#             ns_to_update = sc_map.get_ns_to_update()
-#             for ns_name in ns_to_update:
-#                 ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
-#                 updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
-#                     ns_obj.get_value(), self.SUBCOUPLING_NAME, after_name=self.sos_name)
-#                 self.ee.ns_manager.add_ns(
-#                     ns_name, updated_value)
-
-    def clean_namespaces_with_subprocess(self):
-        '''
-        Clean subprocess name in namespaces used by the coupling 
-        For now only ns_to_update in scatter_map are updated
-        Not needed when the namespaces will be clearly associated (maybe a desassociation will be needed ? )
-        '''
-        pass
-#         sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
-#         ns_to_update = sc_map.get_ns_to_update()
-#         for ns_name in ns_to_update:
-#             ns_obj = self.ee.ns_manager.get_shared_namespace(self, ns_name)
-#             updated_value = ns_obj.get_value().replace(
-#                 f'.{self.SUBCOUPLING_NAME}', '')
-#             self.ee.ns_manager.add_ns(
-#                 ns_name, updated_value)
+        driver_display_value = self.ee.ns_manager.get_local_namespace(
+            self).get_display_value()
+        self.ee.ns_manager.add_display_ns_to_builder(
+            disc_builder, driver_display_value)
 
     def prepare_mono_instance_build(self):
         '''

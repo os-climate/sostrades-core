@@ -82,7 +82,15 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
             if self.associated_namespaces != []:
                 builder.add_namespace_list_in_associated_namespaces(
                     self.associated_namespaces)
+
             proxy_disc = builder.build()
+
+            if self.ee.ns_manager.get_local_namespace(self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
+                father_display_value = self.get_disc_display_name()
+                display_value = f'{father_display_value}.{builder.sos_name}'
+                self.ee.ns_manager.get_local_namespace(
+                    proxy_disc).set_display_value(display_value)
+
             if proxy_disc not in self.proxy_disciplines:
                 self.ee.factory.add_discipline(proxy_disc)
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
@@ -142,6 +150,22 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
             self.proxy_disciplines = []
 
         self._is_configured = False
+
+    def create_sub_builder_coupling(self, builder_name, sub_builders, father_display_value=None):
+
+        disc_builder = self.ee.factory.create_builder_coupling(builder_name)
+
+        disc_builder.set_builder_info('cls_builder', sub_builders)
+
+        if father_display_value is None:
+            father_display_value = self.get_disc_display_name()
+
+        display_value = f'{father_display_value}.{disc_builder.sos_name}'
+
+        self.ee.ns_manager.add_display_ns_to_builder(
+            disc_builder, display_value)
+
+        return disc_builder
 
     def get_desc_in_out(self, io_type):
         """

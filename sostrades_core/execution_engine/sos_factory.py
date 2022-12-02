@@ -331,7 +331,6 @@ class SosFactory:
                                                       self.__execution_engine.ns_manager.get_shared_ns_dict()['ns_eval'].value)
             return [sampling_builder, builder]
 
-
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
         # TODO: recode when driver classes are properly merged, at the moment
         # custom driver wrapper is off (won't build)
@@ -639,13 +638,14 @@ class SosFactory:
         self,
         sos_name,
         cls_builder,
-        map_name
+        map_name,
+        hide_coupling_in_driver=False
     ):
         """
         create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
         """
         scatter_tool = self.tool_factory.create_tool_builder(
-            'scatter_name', 'ScatterTool', map_name=map_name)
+            'scatter_name', 'ScatterTool', map_name=map_name, hide_coupling_in_driver=hide_coupling_in_driver)
 
         # TODO: handle autogather input order and set to True...
         multi_scenarios = self.create_driver_with_tool(

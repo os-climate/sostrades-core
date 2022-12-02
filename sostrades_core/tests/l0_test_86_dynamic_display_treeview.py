@@ -18,7 +18,7 @@ from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEv
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-from logging import Handler
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
@@ -100,7 +100,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         self.exec_eng.ns_manager.add_ns(
             'ns_ac', self.exec_eng.study_name)
-        self.exec_eng.ns_manager.add_display_ns_to_disc(
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc1_builder, f'{self.study_name}.New_ns_disc')
 
         self.exec_eng.configure()
@@ -114,7 +114,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        self.exec_eng.ns_manager.add_display_ns_to_disc(
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc1_builder, f'{self.study_name}.New_ns_disc_new')
         self.exec_eng.dm.treeview = None
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
@@ -125,7 +125,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        self.exec_eng.ns_manager.add_display_ns_to_disc(
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.study_name}.New_ns_disc2')
         self.exec_eng.dm.treeview = None
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
@@ -136,9 +136,9 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        self.exec_eng.ns_manager.add_display_ns_to_disc(
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc1_builder, f'{self.study_name}')
-        self.exec_eng.ns_manager.add_display_ns_to_disc(
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.study_name}')
         self.exec_eng.dm.treeview = None
 
@@ -157,9 +157,212 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
             exec_display=True)
 
+    def test_03_display_on_single_instance_evaluator(self):
+
+        self.repo = 'sostrades_core.sos_processes.test'
+
+        my_namespace = {'ns_barrierr': self.exec_eng.study_name,
+                        'ns_ac': f'{self.exec_eng.study_name}.Disc1',
+                        'ns_eval': f'{self.exec_eng.study_name}.multi_scenarios'}
+
+        my_scatter_dict = {'input_name': 'scenario_list',
+                           'input_type': 'string_list',
+                           'input_ns': 'ns_eval',
+                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
+        # >> introduce ScatterMap
+        if 'scenario_list' not in self.exec_eng.smaps_manager.build_maps_dict:
+            self.exec_eng.smaps_manager.add_build_map(
+                'scenario_list', my_scatter_dict)
+
+        # instantiate factory by getting builder from process
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
+        disc1_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc1', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        self.exec_eng.ns_manager.add_ns_def(my_namespace)
+        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+            'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list')
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
+
+        self.exec_eng.configure()
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'mono_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ multi_scenarios',
+                       f'\t\t|_ subprocess',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc2',
+                       f'\t|_ Disc1']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes(
+            exec_display=True)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ multi_scenarios',
+                       f'\t\t|_ Disc1',
+                       f'\t\t|_ Disc2',
+                       f'\t|_ Disc1']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+    def test_04_display_on_multi_instance_evaluator(self):
+
+        self.repo = 'sostrades_core.sos_processes.test'
+
+        my_scatter_dict = {'input_name': 'scenario_list',
+                           'input_type': 'string_list',
+                           'input_ns': 'ns_eval',
+                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
+        # >> introduce ScatterMap
+        if 'scenario_list' not in self.exec_eng.smaps_manager.build_maps_dict:
+            self.exec_eng.smaps_manager.add_build_map(
+                'scenario_list', my_scatter_dict)
+
+        # instantiate factory by getting builder from process
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
+        disc1_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc1', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        self.exec_eng.ns_manager.add_ns(
+            'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_ac', f'{self.exec_eng.study_name}.Disc1', display_value=f'{self.exec_eng.study_name}.Disc1')
+
+#         self.exec_eng.ns_manager.add_display_ns_to_builder(
+#             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
+#         self.exec_eng.ns_manager.add_display_ns_to_builder(
+#             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
+        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+            'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list')
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
+            multi_scenarios[0], f'{self.exec_eng.study_name}')
+        self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
+        self.exec_eng.configure()
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ multi_scenarios',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc2',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc2']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes(
+            exec_display=True)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ scenario_1',
+                       f'\t\t|_ Disc1',
+                       f'\t\t|_ Disc2',
+                       f'\t|_ scenario_2',
+                       f'\t\t|_ Disc1',
+                       f'\t\t|_ Disc2',
+                       f'\t|_ Disc1']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+    def test_05_display_on_multi_instance_evaluator_hide_coupling(self):
+
+        self.repo = 'sostrades_core.sos_processes.test'
+
+        my_scatter_dict = {'input_name': 'scenario_list',
+                           'input_type': 'string_list',
+                           'input_ns': 'ns_eval',
+                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
+        # >> introduce ScatterMap
+        if 'scenario_list' not in self.exec_eng.smaps_manager.build_maps_dict:
+            self.exec_eng.smaps_manager.add_build_map(
+                'scenario_list', my_scatter_dict)
+
+        # instantiate factory by getting builder from process
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
+        disc1_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc1', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        self.exec_eng.ns_manager.add_ns(
+            'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_ac', f'{self.exec_eng.study_name}.Disc1', display_value=f'{self.exec_eng.study_name}.Disc1')
+
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
+            disc1_builder, f'{self.exec_eng.study_name}.Disc1')
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
+            disc2_builder, f'{self.exec_eng.study_name}.Disc2')
+        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+            'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list', hide_coupling_in_driver=True)
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
+            multi_scenarios[0], f'{self.exec_eng.study_name}')
+        self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
+        self.exec_eng.configure()
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ multi_scenarios',
+                       f'\t\t|_ scenario_1',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc2',
+                       f'\t\t|_ scenario_2',
+                       f'\t\t\t|_ Disc1',
+                       f'\t\t\t|_ Disc2']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes(
+            exec_display=True)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       f'\t|_ Disc1',
+                       f'\t|_ Disc2', ]
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
 
 if '__main__' == __name__:
     cls = TestConfigDependencyDiscs()
     cls.setUp()
-    cls.test_02_display_existing_disc_ns()
+    cls.test_05_display_on_multi_instance_evaluator_hide_coupling()
     cls.tearDown()

@@ -147,10 +147,27 @@ class NamespaceManager:
 
         return ns.get_ns_id()
 
-    def add_display_ns_to_disc(self, disc_builder, display_value):
-
+    def add_display_ns_to_builder(self, disc_builder, display_value):
+        '''
+        Associate a display value to a builder
+        when the builder will build the disciplines it will automatically add the display value to the local namespace
+        '''
         self.display_ns_dict[disc_builder] = display_value
         self.associate_display_values_to_new_local_namespaces(disc_builder)
+
+    def delete_display_ns_in_builder(self, disc_builder):
+        '''
+        Delete a builder in the display_ns_dict
+        '''
+        del self.display_ns_dict[disc_builder]
+
+    def add_display_ns_to_builder_list(self, builder_list, display_value):
+        '''
+        Associate a display value to a builder_list
+        when the builder will build the disciplines it will automatically add the display value to the local namespace
+        '''
+        for builder in builder_list:
+            self.add_display_ns_to_builder(builder, display_value)
 
     def associate_display_values_to_new_local_namespaces(self, disc_builder):
         if disc_builder in self.display_ns_dict:
@@ -404,17 +421,20 @@ class NamespaceManager:
         '''
         return self.disc_ns_dict[disc]['local_ns'].get_value()
 
-    def get_display_namespace_value(self, disc):
-        '''
-        Return the display_namespace linked to the discipline disc
-        '''
-        if disc.father_builder in self.display_ns_dict:
-            return self.display_ns_dict[disc.father_builder]
+#     def get_display_namespace_value(self, disc):
+#         '''
+#         Return the display_namespace linked to the discipline disc
+#         '''
+#         if disc.father_builder in self.display_ns_dict:
+#             return self.display_ns_dict[disc.father_builder]
+#
+#         elif disc.father_builder not in self.display_ns_dict and disc in self.disc_ns_dict:
+#             return self.get_local_namespace_value(disc)
+#         else:
+#             return None
 
-        elif disc.father_builder not in self.display_ns_dict and disc in self.disc_ns_dict:
-            return self.get_local_namespace_value(disc)
-        else:
-            return None
+    def get_display_namespace_value(self, disc):
+        return self.disc_ns_dict[disc]['local_ns'].get_display_value()
 
     def get_local_namespace(self, disc):
         '''
