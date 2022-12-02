@@ -93,12 +93,13 @@ class TreeView:
 
         # Now populate each node with their process parameter
         for key, val in data_dict.items():
-
+            display_key = val['display_name']
             # Each key contains variable namespace followed by its name
             # ns1.ns1.variable_name
             # Special case for public variables which are associated to the upper node level
             # (without namespace name)
-            namespace = NamespaceManager.compose_ns(key.split(NS_SEP)[:-1])
+            namespace = NamespaceManager.compose_ns(
+                display_key.split(NS_SEP)[:-1])
 
             if namespace in treenodes:
                 treenode = treenodes[namespace]
@@ -130,6 +131,7 @@ class TreeView:
     def set_treenode_data(self, treenode, key, val):
 
         if not self.no_data:
+
             treenode.data[key] = {k: v for k, v in val.items()}
 
             if key in treenode.disc_data:

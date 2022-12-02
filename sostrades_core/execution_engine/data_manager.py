@@ -363,7 +363,9 @@ class DataManager:
                 display_name = self.get_var_full_name(data_id)
             else:
                 display_name = self.get_var_display_name(data_id)
-            display_data_dict[display_name] = data_info
+
+            data_info['display_name'] = display_name
+            display_data_dict[self.get_var_full_name(data_id)] = data_info
 
         return display_data_dict
 
@@ -570,7 +572,8 @@ class DataManager:
     def add_disc_id_to_disc_id_map(self, disc_f_name, disc_id):
         if disc_f_name in self.disciplines_id_map:
             # self.disciplines_id_map[disc_f_name].append(disc_id)
-            raise ValueError(f'Trying to add two distinct disciplines with the same local namespace: {disc_f_name}')
+            raise ValueError(
+                f'Trying to add two distinct disciplines with the same local namespace: {disc_f_name}')
         else:
             self.disciplines_id_map[disc_f_name] = [disc_id]
 
