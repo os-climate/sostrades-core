@@ -146,6 +146,7 @@ class TreeNode:
 
         if self.model_name_full_path in self.models_full_path_list :
             new_model_full_path = discipline.get_disc_full_name()
+            self.models_full_path_list.append(new_model_full_path)
         else :
             self.models_full_path_list.append(self.model_name_full_path)
 
