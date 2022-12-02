@@ -265,3 +265,16 @@ class TestDataManagerStorage(unittest.TestCase):
                         f' {self.ns_test}.{same_name}'
 
         self.assertEqual(str(cm.exception), error_message)
+
+    def test_07_crash_with_distinct_disciplines_in_same_local_namespace_for_execution_from_usecase(self):
+        builder_list = self.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
+                                                             mod_id='test_disc1_disc2_coupling_same_name')
+        self.factory.set_builders_to_coupling_builder(builder_list)
+        with self.assertRaises(ValueError) as cm:
+            self.ee.configure()
+            pass
+        same_name = 'SameName'
+        error_message = f'Trying to add two distinct disciplines with the same local namespace:' \
+                        f' {self.ns_test}.{same_name}'
+
+        self.assertEqual(str(cm.exception), error_message)
