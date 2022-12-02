@@ -76,7 +76,6 @@ class ScatterTool(SosTool):
                 self.driver.SCENARIO_DF)
             scatter_list = scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
                                               == True][self.driver.SCENARIO_NAME].values.tolist()
-            self.check_scatter_list_for_duplicates(scatter_list)
             self.set_scatter_list(scatter_list)
 
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
@@ -90,16 +89,6 @@ class ScatterTool(SosTool):
                                                                                  ns_name)
         if self.hide_coupling_in_driver:
             self.driver_display_value = self.driver.get_disc_display_name()
-
-    def check_scatter_list_for_duplicates(self, scatter_list):
-        set_sc_names = set(scatter_list)
-        if len(scatter_list) != len(set_sc_names):
-            repeated_elements = [sc for sc in set_sc_names if scatter_list.count(sc) > 1]
-            msg = 'Cannot activate several scenarios with the same name ('+repeated_elements[0]
-            for sc in repeated_elements[1:]:
-                msg += ', '+sc
-            msg += ').'
-            raise ValueError(msg)
 
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list

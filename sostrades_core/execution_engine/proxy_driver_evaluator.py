@@ -125,6 +125,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
+        self.scenario_names = []
 
     def get_desc_in_out(self, io_type):
         """
@@ -518,14 +519,29 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.builder_tool = self.builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
+        self.check_scatter_list_for_duplicates()
         self.builder_tool.prepare_tool()
 
     def build_tool(self):
         if self.builder_tool is not None:
             self.builder_tool.build()
 
-    # MONO INSTANCE PROCESS
+    def check_scatter_list_for_duplicates(self):
+        if self.SCENARIO_DF in self.get_data_in():
+            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
+                             == True][self.SCENARIO_NAME].values.tolist()
+            set_sc_names = set(scenario_names)
+            if len(scenario_names) != len(set_sc_names):
+                repeated_elements = [sc for sc in set_sc_names if scenario_names.count(sc) > 1]
+                msg = 'Cannot activate several scenarios with the same name ('+repeated_elements[0]
+                for sc in repeated_elements[1:]:
+                    msg += ', '+sc
+                msg += ').'
+                self.logger.error(msg)
+                raise Exception(msg)
 
+    # MONO INSTANCE PROCESS
     def _get_disc_shared_ns_value(self):
         """
         Get the namespace ns_eval used in the mono-instance case.

@@ -349,7 +349,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(Exception) as cm:
             self.exec_eng.load_study_from_input_dict(dict_values)
         error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
         self.assertEqual(str(cm.exception), error_message)
