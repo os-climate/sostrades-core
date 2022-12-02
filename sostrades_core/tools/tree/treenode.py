@@ -144,7 +144,10 @@ class TreeNode:
 
         self.model_name_full_path = discipline.get_module()
 
-        self.models_full_path_list.append(self.model_name_full_path)
+        if self.model_name_full_path in self.models_full_path_list :
+            new_model_full_path = discipline.get_disc_full_name()
+        else :
+            self.models_full_path_list.append(self.model_name_full_path)
 
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
