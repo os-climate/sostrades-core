@@ -142,13 +142,9 @@ class TreeNode:
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
 
-        self.model_name_full_path = discipline.get_module()
+        self.model_name_full_path = self.get_disc_full_path(discipline)
 
-        if self.model_name_full_path in self.models_full_path_list :
-            new_model_full_path = discipline.get_disc_full_name()
-            self.models_full_path_list.append(new_model_full_path)
-        else :
-            self.models_full_path_list.append(self.model_name_full_path)
+        self.models_full_path_list.append(self.model_name_full_path)
 
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
@@ -218,7 +214,17 @@ class TreeNode:
         # Manage markdown documentation
         filepath = inspect.getfile(discipline.__class__)
         markdown_data = TreeNode.get_markdown_documentation(filepath)
-        self.add_markdown_documentation(markdown_data, discipline.get_module())
+        self.add_markdown_documentation(markdown_data, self.model_name_full_path)
+
+    def get_disc_full_path(self,discipline):
+
+        disc_module = discipline.get_module()
+        disc_module_class = disc_module.split('.')[-1]
+        disc_name = discipline.get_disc_full_name()
+
+        disc_full_path = f'{disc_module_class} : {disc_name}'
+
+        return disc_full_path
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
@@ -231,16 +237,15 @@ class TreeNode:
         :params: discipline to set into the treenode
         :type: ProxyDiscipline
         """
+        disc_full_path= self.get_disc_full_path(discipline)
         if namespace not in self.disc_data:
             self.disc_data[namespace] = new_disc_data
-            self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [
-                discipline.get_module()]
+            self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [disc_full_path]
         else:
             for key, value in new_disc_data.items():
                 self.disc_data[namespace][key] = value
-            if discipline.get_module() not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
-                self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(
-                    discipline.get_module())
+            if disc_full_path not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
+                self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(disc_full_path)
 
     def add_markdown_documentation(self, markdown_data, key):
         """ Add a markdon documentation to the treenode
