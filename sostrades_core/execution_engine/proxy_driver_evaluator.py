@@ -45,39 +45,25 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         SOSEval class which creates a sub process to evaluate
         with different methods (Gradient,FORM,Sensitivity ANalysis, DOE, ...)
 
-    1) Strucrure of Desc_in/Desc_out:
-        |_ DESC_IN
-                |_ SUB_PROCESS_INPUTS (structuring)  
-                    |_ EVAL_INPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE)   
-                    |_ EVAL_OUTPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE) 
-                    |_ GENERATED_SAMPLES( structuring,dynamic: self.builder_tool == True) 
-                    |_ SCENARIO_DF (structuring,dynamic: self.builder_tool == True)
-                    |_ SAMPLES_DF (namespace: 'ns_eval', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 ) 
+    1) Structure of Desc_in/Desc_out:
+        |_ DESC_IN 
+            |_ EVAL_INPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE)   
+            |_ EVAL_OUTPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE) 
+            |_ GENERATED_SAMPLES( structuring,dynamic: self.builder_tool == True) 
+            |_ SCENARIO_DF (structuring,dynamic: self.builder_tool == True)
+            |_ SAMPLES_DF (namespace: 'ns_eval', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 ) 
         |_ DESC_OUT
             |_ samples_inputs_df (namespace: 'ns_eval', dynamic: builder_mode == self.MONO_INSTANCE)
             |_ <var>_dict (internal namspace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 and eval_outputs not empty, for <var> in eval_outputs)
 
 
    2) Description of DESC parameters:
-        |_ DESC_IN
-           |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
-                                                    PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
-                                                                          If 'None' then it uses the sos_processes python for doe creation.
-                                                    PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
-                                                                          If 'None' then it uses the sos_processes python for doe creation.
-                                                    USECASE_INFO:         either empty or an available data source of the sub_process
-                                                    USECASE_NAME:         children of USECASE_INFO that contains data source name (can be empty)
-                                                    USECASE_TYPE:         children of USECASE_INFO that contains data source type (can be empty)
-                                                    USECASE_IDENTIFIER:   children of USECASE_INFO that contains data source identifier (can be empty)
-                                                    USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
-                                                                          it is a temporary input: it will be put to None as soon as
-                                                                          its content is 'loaded' in the dm. We will have it has editable
-                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
-                    |_ EVAL_INPUTS    
-                    |_ EVAL_OUTPUTS 
-                    |_ GENERATED_SAMPLES 
-                    |_ SCENARIO_DF
-                    |_ SAMPLES_DF 
+        |_ DESC_IN 
+            |_ EVAL_INPUTS    
+            |_ EVAL_OUTPUTS 
+            |_ GENERATED_SAMPLES 
+            |_ SCENARIO_DF
+            |_ SAMPLES_DF 
        |_ DESC_OUT
             |_ samples_inputs_df 
             |_ <var observable name>_dict':     for each selected output observable doe result
@@ -104,6 +90,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
     REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
+    SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
 
     SCENARIO_DF = 'scenario_df'
 
@@ -118,17 +105,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
 
-    SUB_PROCESS_INPUTS = 'sub_process_inputs'
-    default_process_builder_parameter_type = ProcessBuilderParameterType(
-        None, None, 'Empty')
     USECASE_DATA = 'usecase_data'
-
-    DESC_IN = {SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                                    'structuring': True,
-                                    'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                                    'user_level': 1,
-                                    'optional': False
-                                    }}
 
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
@@ -599,13 +576,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.SCENARIO_DF in self.get_data_in():
             scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
             scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                             == True][self.SCENARIO_NAME].values.tolist()
+                                         == True][self.SCENARIO_NAME].values.tolist()
             set_sc_names = set(scenario_names)
             if len(scenario_names) != len(set_sc_names):
-                repeated_elements = [sc for sc in set_sc_names if scenario_names.count(sc) > 1]
-                msg = 'Cannot activate several scenarios with the same name ('+repeated_elements[0]
+                repeated_elements = [
+                    sc for sc in set_sc_names if scenario_names.count(sc) > 1]
+                msg = 'Cannot activate several scenarios with the same name (' + \
+                    repeated_elements[0]
                 for sc in repeated_elements[1:]:
-                    msg += ', '+sc
+                    msg += ', ' + sc
                 msg += ').'
                 self.logger.error(msg)
                 raise Exception(msg)
