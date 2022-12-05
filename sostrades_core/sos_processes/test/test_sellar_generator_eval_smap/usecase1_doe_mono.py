@@ -48,6 +48,12 @@ class Study(StudyManager):
                                                     'Eval.y_1', 'Eval.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
+        repo = 'sostrades_core.sos_processes.test'
+        mod_id = 'test_sellar_coupling'
+        my_usecase = 'usecase'
+        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
+            repo, mod_id, my_usecase)
+
         disc_dict = {}
         # DoE + Eval inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
@@ -59,6 +65,7 @@ class Study(StudyManager):
             'n_samples': n_samples}
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar inputs
         local_dv = 10.

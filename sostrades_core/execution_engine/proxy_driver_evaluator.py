@@ -437,7 +437,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # case
 
         # check and import usecase
-        self.manage_import_inputs_from_sub_process()
+        # self.manage_import_inputs_from_sub_process()
 
     def prepare_build(self):
         """

@@ -31,6 +31,8 @@ import unittest
 from numpy import array, std, NaN
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+
+
 import os
 from os.path import dirname, join
 import math
@@ -1205,3 +1207,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.exec_eng = study_dump.ee
 
         self.exec_eng.display_treeview_nodes(True)
+
+        sub_process_name = 'test_sellar_coupling'
+        usecase_name = 'usecase'
+
+        anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+            self.repo, sub_process_name, usecase_name)
+
+        # print(anonymize_input_dict_from_usecase)
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)

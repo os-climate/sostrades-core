@@ -50,11 +50,18 @@ class Study(StudyManager):
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
+        repo = 'sostrades_core.sos_processes.test'
+        mod_id = 'test_sellar_coupling'
+        my_usecase = 'usecase'
+        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
+            repo, mod_id, my_usecase)
+
         disc_dict = {}
         # CP + Eval inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         return [disc_dict]
 

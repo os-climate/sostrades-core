@@ -58,7 +58,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
                 |_ BUILDER_MODE (structuring)
-                |_ SUB_PROCESS_INPUTS (structuring)
+                |_ USECASE_DATA (structuring)                
+                |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
    2) Description of DESC parameters:
         |_ DESC_IN
             |_ BUILDER_MODE
@@ -86,6 +87,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
     REGULAR_BUILD = 'regular_build'
     BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE]
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
+    USECASE_DATA = 'usecase_data'
 
     default_process_builder_parameter_type = ProcessBuilderParameterType(
         None, None, 'Empty')
@@ -95,12 +97,22 @@ class DriverEvaluatorWrapper(SoSWrapp):
                        # SoSWrapp.DEFAULT: MULTI_INSTANCE,
                        SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
                        SoSWrapp.STRUCTURING: True},
-        SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                             'structuring': True,
-                             'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                             'user_level': 1,
-                             'optional': False
-                             }
+        # TODO V1
+        # SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
+        #                     'structuring': True,
+        #                     'default': default_process_builder_parameter_type.to_data_manager_dict(),
+        #                     'user_level': 1,
+        #                     'optional': False
+        #                     }
+        USECASE_DATA: {'type': 'dict',
+                       'structuring': True,
+                       'default': {},
+                       'user_level': 1,
+                       'optional': False
+                       }
+
+
+
     }
 
     def __init__(self, sos_name):
