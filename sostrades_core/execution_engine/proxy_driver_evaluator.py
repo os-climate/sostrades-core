@@ -137,7 +137,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
-                 builder_tool=None):
+                 builder_tool=None,
+                 flatten_subprocess=False):
         """
         Constructor
 
@@ -166,6 +167,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.builder_tool_cls = None
 
+        self.flatten_subprocess= flatten_subprocess
         self.old_builder_mode = None
         self.eval_process_builder = None
         self.eval_in_list = None

@@ -298,7 +298,7 @@ class SosFactory:
         return builder
 
     def create_driver_evaluator_builder(self, sos_name, cls_builder=None, driver_wrapper_mod=None, builder_tool=None,
-                                        with_sample_generator=False):
+                                        with_sample_generator=False,flatten_subprocess=False):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
         if driver_wrapper_mod is None:
@@ -314,6 +314,7 @@ class SosFactory:
             else:
                 builder.set_builder_info('cls_builder', [cls_builder])
 
+        builder.set_builder_info('flatten_subprocess',flatten_subprocess)
         if builder_tool is not None:
             builder.set_builder_info('builder_tool', builder_tool)
 
@@ -639,7 +640,8 @@ class SosFactory:
         sos_name,
         cls_builder,
         map_name,
-        hide_coupling_in_driver=False
+        hide_coupling_in_driver=False,
+        flatten_subprocess = False
     ):
         """
         create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
@@ -649,7 +651,7 @@ class SosFactory:
 
         # TODO: handle autogather input order and set to True...
         multi_scenarios = self.create_driver_with_tool(
-            sos_name, cls_builder, scatter_tool)
+            sos_name, cls_builder, scatter_tool,flatten_subprocess=flatten_subprocess)
 
         return multi_scenarios
 
@@ -670,14 +672,14 @@ class SosFactory:
 
     def create_driver_with_tool(
         self,
-        sos_name, cls_builder, builder_tool
+        sos_name, cls_builder, builder_tool,flatten_subprocess=False
     ):
         """
         create a driver associated with a tool to build cls_builder
         """
 
         builder = self.create_driver_evaluator_builder(
-            sos_name, cls_builder=cls_builder, builder_tool=builder_tool)
+            sos_name, cls_builder=cls_builder, builder_tool=builder_tool,flatten_subprocess=flatten_subprocess)
 
         list_builder = [builder]
 
