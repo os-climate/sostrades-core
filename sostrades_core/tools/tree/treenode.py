@@ -156,12 +156,13 @@ class TreeNode:
         disc_in = discipline.get_data_in()
         if not no_data:
             for key, data_key in disc_in.items():
-                if self.exec_display:
-                    namespaced_key = discipline.get_var_full_name(
+                # if self.exec_display:
+
+                namespaced_key = discipline.get_var_full_name(
                         key, disc_in)
-                else:
-                    namespaced_key = discipline.get_var_display_name(
-                        key, disc_in)
+                # else:
+                #     namespaced_key = discipline.get_var_display_name(
+                #         key, disc_in)
                 new_disc_data = {
                     needed_key: data_key[needed_key] for needed_key in self.needed_variables}
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
@@ -173,12 +174,12 @@ class TreeNode:
         disc_out = discipline.get_data_out()
         if not no_data:
             for key, data_key in disc_out.items():
-                if self.exec_display:
-                    namespaced_key = discipline.get_var_full_name(
+                # if self.exec_display:
+                namespaced_key = discipline.get_var_full_name(
                         key, disc_out)
-                else:
-                    namespaced_key = discipline.get_var_display_name(
-                        key, disc_out)
+                # else:
+                #     namespaced_key = discipline.get_var_display_name(
+                #         key, disc_out)
 
                 new_disc_data = {
                     needed_key: data_key[needed_key] for needed_key in self.needed_variables}
