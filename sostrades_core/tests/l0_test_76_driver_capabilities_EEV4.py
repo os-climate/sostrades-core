@@ -1052,7 +1052,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
                                  usecase.a[j] * usecase.x[j] + usecase.b[i][j])
 
-    def test_9_nested_very_simple_multi_scenarios_with_archi_builder(self):
+    def test_10_nested_very_simple_multi_scenarios_with_archi_builder(self):
         """
         This test builds a nested multi scenario using the DriverEvaluator where the core subprocess is composed of two
         archi builders Business and Production. The outer multi scenario driver adds variations on the business process
