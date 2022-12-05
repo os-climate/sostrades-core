@@ -327,11 +327,14 @@ class NamespaceManager:
                     others_ns[shared_ns_name] = shared_ns
         return others_ns
 
+    def compose_local_namespace_value(self, disc):
+        return self.compose_ns([self.current_disc_ns, disc.sos_name])
+
     def create_local_namespace(self, disc):
         '''
          Create a namespace object for the local namespace
         '''
-        local_ns_value = self.compose_ns([self.current_disc_ns, disc.sos_name])
+        local_ns_value = self.compose_local_namespace_value(disc)
 
         local_ns = Namespace(disc.sos_name, local_ns_value)
 
