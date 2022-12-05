@@ -278,6 +278,12 @@ class ProxyDiscipline(object):
         """
         self.father_executor = father_executor
 
+    def _add_optional_shared_ns(self):
+        """
+        Adds the shared namespaces that have a default value depending on the Proxy type. To be overload in subclasses.
+        """
+        pass
+
     def _reload(self, sos_name, ee, associated_namespaces=None):
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -302,6 +308,7 @@ class ProxyDiscipline(object):
             self.associated_namespaces = []
         else:
             self.associated_namespaces = associated_namespaces
+        self._add_optional_shared_ns()
         self.ee.ns_manager.create_disc_ns_info(self)
 
         if not hasattr(self, 'is_sos_coupling'):
