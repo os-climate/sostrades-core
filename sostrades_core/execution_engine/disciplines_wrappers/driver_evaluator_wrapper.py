@@ -30,6 +30,10 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
+
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -44,11 +48,35 @@ from gemseo.core.parallel_execution import ParallelExecution
 import logging
 LOGGER = logging.getLogger(__name__)
 
+
 class DriverEvaluatorWrapper(SoSWrapp):
     """
     DriverEvaluatorWrapper is a type of SoSWrapp that can evaluate one or several subprocesses either with their
     reference inputs or by applying modifications to some of the subprocess variables. It is assumed to have references
     to the GEMSEO objects at the root of each of the subprocesses, stored in self.attributes['sub_mdo_disciplines'].
+
+    1) Structure of Desc_in/Desc_out:
+        |_ DESC_IN
+                |_ BUILDER_MODE (structuring)
+                |_ USECASE_DATA (structuring)                
+                |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
+   2) Description of DESC parameters:
+        |_ DESC_IN
+            |_ BUILDER_MODE
+            |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
+                                                    PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
+                                                                          If 'None' then it uses the sos_processes python for doe creation.
+                                                    PROCESS_NAME:         selected process name (in repository) to be nested inside the DoE.
+                                                                          If 'None' then it uses the sos_processes python for doe creation.
+                                                    USECASE_INFO:         either empty or an available data source of the sub_process
+                                                    USECASE_NAME:         children of USECASE_INFO that contains data source name (can be empty)
+                                                    USECASE_TYPE:         children of USECASE_INFO that contains data source type (can be empty)
+                                                    USECASE_IDENTIFIER:   children of USECASE_INFO that contains data source identifier (can be empty)
+                                                    USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
+                                                                          it is a temporary input: it will be put to None as soon as
+                                                                          its content is 'loaded' in the dm. We will have it has editable
+                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
+
     """
 
     _maturity = 'Fake'
@@ -58,13 +86,34 @@ class DriverEvaluatorWrapper(SoSWrapp):
     MULTI_INSTANCE = 'multi_instance'
     REGULAR_BUILD = 'regular_build'
     BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE]
+    SUB_PROCESS_INPUTS = 'sub_process_inputs'
+    USECASE_DATA = 'usecase_data'
+
+    default_process_builder_parameter_type = ProcessBuilderParameterType(
+        None, None, 'Empty')
 
     DESC_IN = {
-            BUILDER_MODE : {SoSWrapp.TYPE: 'string',
-                            # SoSWrapp.DEFAULT: MULTI_INSTANCE,
-                            SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
-                            SoSWrapp.STRUCTURING: True}
-     }
+        BUILDER_MODE: {SoSWrapp.TYPE: 'string',
+                       # SoSWrapp.DEFAULT: MULTI_INSTANCE,
+                       SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
+                       SoSWrapp.STRUCTURING: True},
+        # TODO V1
+        # SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
+        #                     'structuring': True,
+        #                     'default': default_process_builder_parameter_type.to_data_manager_dict(),
+        #                     'user_level': 1,
+        #                     'optional': False
+        #                     }
+        USECASE_DATA: {'type': 'dict',
+                       'structuring': True,
+                       'default': {},
+                       'user_level': 1,
+                       'optional': False
+                       }
+
+
+
+    }
 
     def __init__(self, sos_name):
         """
@@ -75,7 +124,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
         """
         super().__init__(sos_name)
         self.custom_samples = None  # input samples dataframe
-        self.samples = None         # samples to evaluate as list[list[Any]] or ndarray
+        # samples to evaluate as list[list[Any]] or ndarray
+        self.samples = None
         self.n_subprocs = 0
         self.input_data_for_disc = None
         self.subprocesses_to_eval = None
@@ -85,10 +135,11 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Initialise the attribute that stores the input data of every subprocess for this run.
         """
         self.n_subprocs = len(self.attributes['sub_mdo_disciplines'])
-        self.input_data_for_disc = [{}]*self.n_subprocs
-        #TODO: deepcopy option? [discuss]
+        self.input_data_for_disc = [{}] * self.n_subprocs
+        # TODO: deepcopy option? [discuss]
         for i_subprocess in self.subprocesses_to_eval or range(self.n_subprocs):
-            self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gems(self.attributes['sub_mdo_disciplines'][i_subprocess])
+            self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gems(
+                self.attributes['sub_mdo_disciplines'][i_subprocess])
 
     def _get_input_data(self, var_delta_dict, i_subprocess=0):
         """
@@ -104,7 +155,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Returns:
             self.input_data_for_disc[i_subprocess] (dict): the input data updated with new values for certain variables
         """
-        #TODO: deepcopy option? [discuss]
+        # TODO: deepcopy option? [discuss]
         self.input_data_for_disc[i_subprocess].update(var_delta_dict)
         return self.input_data_for_disc[i_subprocess]
 
@@ -119,8 +170,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Returns:
              output_data_dict (dict): filtered dictionary
         """
-        output_data_dict = {key: value for key,value in raw_data.items()
-                          if key in eval_out_data_names}
+        output_data_dict = {key: value for key, value in raw_data.items()
+                            if key in eval_out_data_names}
         return output_data_dict
 
     def get_input_data_for_gems(self, disc):
@@ -136,9 +187,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
         input_data = {}
         input_data_names = disc.input_grammar.get_data_names()
         if len(input_data_names) > 0:
-            input_data = self.get_sosdisc_inputs(keys=input_data_names, in_dict=True, full_name_keys=True)
+            input_data = self.get_sosdisc_inputs(
+                keys=input_data_names, in_dict=True, full_name_keys=True)
         return input_data
-
 
     def subprocess_evaluation(self, var_delta_dict, i_subprocess, convert_to_array=True):
         """
@@ -187,15 +238,17 @@ class DriverEvaluatorWrapper(SoSWrapp):
         """
         Run in the multi instance case.
         """
-        # very simple ms only # TODO: accomodate var_delta_dict and subprocess selection for mixed cases type DOE+MS ?
+        # very simple ms only # TODO: accomodate var_delta_dict and subprocess
+        # selection for mixed cases type DOE+MS ?
         self._init_input_data()
         for i_subprocess in range(self.n_subprocs):
             self.subprocess_evaluation({}, i_subprocess)
-            # save data of last execution i.e. reference values # TODO: there must be a better way to do this (<-> ref. scenario)
+            # save data of last execution i.e. reference values # TODO: there
+            # must be a better way to do this (<-> ref. scenario)
             subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][i_subprocess].local_data[key]
                                       for key in self.attributes['sub_mdo_disciplines'][i_subprocess].output_grammar.get_data_names()}
-            self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
-
+            self.store_sos_outputs_values(
+                subprocess_ref_outputs, full_name_keys=True)
 
     # MONO INSTANCE PROCESS
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
@@ -279,8 +332,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
             except:
                 self.proxy_disciplines[0]._update_status_recursive(
-                    self.STATUS_FAILED) # FIXME: This won't work
-
+                    self.STATUS_FAILED)  # FIXME: This won't work
 
     def evaluation(self, x, scenario_name=None, convert_to_array=True, completed_eval_in_list=None):
         """
@@ -288,17 +340,21 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         """
         # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
-        # self.attributes['sub_mdo_discipline'].clear_cache() # TODO: cache management?
+        # self.attributes['sub_mdo_discipline'].clear_cache() # TODO: cache
+        # management?
 
         if completed_eval_in_list is None:
             eval_in = self.attributes['eval_in_list']
         else:
             eval_in = completed_eval_in_list
-        # TODO: get a values_dict to arrive here for a + flexible impl. less prone var. name errors and so ?
+        # TODO: get a values_dict to arrive here for a + flexible impl. less
+        # prone var. name errors and so ?
         values_dict = dict(zip(eval_in, x))
 
-        local_data = self.attributes['sub_mdo_disciplines'][0].execute(self._get_input_data(values_dict))
-        out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])
+        local_data = self.attributes['sub_mdo_disciplines'][0].execute(
+            self._get_input_data(values_dict))
+        out_local_data = self._select_output_data(
+            local_data, self.attributes['eval_out_list'])
 
         # needed for gradient computation
         # TODO: manage data flow for gradient computation ?
@@ -313,12 +369,14 @@ class DriverEvaluatorWrapper(SoSWrapp):
             # out_values = list(out_local_data.values())
             out_values = []
             # get back out_local_data is not enough because some variables
-            # could be filtered for unsupported type for gemseo  TODO: is this case relevant??
+            # could be filtered for unsupported type for gemseo  TODO: is this
+            # case relevant??
             for y_id in self.attributes['eval_out_list']:
                 y_val = out_local_data[y_id]
                 out_values.append(y_val)
 
         return out_values
+
     def take_samples(self):
         """
         Generating samples for the Eval
@@ -346,7 +404,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
             # if len(not_relevant_columns) != 0:
             #     self.custom_samples.drop(
             #         not_relevant_columns, axis=1, inplace=True)
-            self.custom_samples = self.custom_samples[self.attributes['selected_inputs']] # drop irrelevant + reorder
+            # drop irrelevant + reorder
+            self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
 
     def mono_instance_run(self):
         '''
@@ -423,15 +482,18 @@ class DriverEvaluatorWrapper(SoSWrapp):
         # construction of a dictionary of dynamic outputs
         # The key is the output name and the value a dictionary of results
         # with scenarii as keys
-        global_dict_output = {key: {} for key in self.attributes['eval_out_list']}
+        global_dict_output = {key: {}
+                              for key in self.attributes['eval_out_list']}
         for (scenario, scenario_output) in dict_output.items():
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
-        # save data of last execution i.e. reference values #FIXME: do this better in refacto doe
+        # save data of last execution i.e. reference values #FIXME: do this
+        # better in refacto doe
         subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][0].local_data[key]
                                   for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
-        self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
+        self.store_sos_outputs_values(
+            subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe})

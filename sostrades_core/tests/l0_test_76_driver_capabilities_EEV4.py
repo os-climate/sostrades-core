@@ -31,9 +31,13 @@ import unittest
 from numpy import array, std, NaN
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+
+
 import os
 from os.path import dirname, join
 import math
+
+from importlib import import_module
 
 
 class UnitTestHandler(Handler):
@@ -1172,3 +1176,45 @@ class TestSoSDOEScenario(unittest.TestCase):
                          exp_ns_tree)
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
+
+    def test_10_usecase_import(self):
+        """
+        This test checks the usecase import capability.
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        self.study_name = 'MyStudy'
+        proc_name = 'test_sellar_generator_eval_smap'
+
+        #study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
+        usecase_name = 'usecase1_doe_mono'
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = getattr(
+            imported_module, 'Study')()
+
+        study_dump.load_data()
+
+        # import du usecase usecase_1_doe_mono
+
+        ################ Start checks ##########################
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        self.exec_eng.display_treeview_nodes(True)
+
+        sub_process_name = 'test_sellar_coupling'
+        usecase_name = 'usecase'
+
+        anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+            self.repo, sub_process_name, usecase_name)
+
+        # print(anonymize_input_dict_from_usecase)
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
