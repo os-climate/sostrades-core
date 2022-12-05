@@ -89,8 +89,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'ns_data_ac', 'MyCase')
         exec_eng.ns_manager.add_ns(
             'ns_ac', 'MyCase.multi_scenarios')
-        exec_eng.ns_manager.add_ns(
-            'ns_eval', 'MyCase.multi_scenarios')
+        # exec_eng.ns_manager.add_ns(
+        #     'ns_eval', 'MyCase.multi_scenarios')
         # instantiate factory # get instantiator from Discipline class
 
         builder_list = self.factory.get_builder_from_process(repo=self.repo,

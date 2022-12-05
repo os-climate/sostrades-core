@@ -47,15 +47,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN 
-            |_ EVAL_INPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE)   
-            |_ EVAL_OUTPUTS (namespace: 'ns_eval', structuring, dynamic : builder_mode == self.MONO_INSTANCE) 
+            |_ EVAL_INPUTS (namespace: NS_EVAL, structuring, dynamic : builder_mode == self.MONO_INSTANCE)   
+            |_ EVAL_OUTPUTS (namespace: NS_EVAL, structuring, dynamic : builder_mode == self.MONO_INSTANCE) 
             |_ GENERATED_SAMPLES( structuring,dynamic: self.builder_tool == True) 
             |_ SCENARIO_DF (structuring,dynamic: self.builder_tool == True)
-            |_ SAMPLES_DF (namespace: 'ns_eval', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 ) 
-        |_ DESC_OUT
-            |_ samples_inputs_df (namespace: 'ns_eval', dynamic: builder_mode == self.MONO_INSTANCE)
-            |_ <var>_dict (internal namspace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 and eval_outputs not empty, for <var> in eval_outputs)
+            |_ SAMPLES_DF (namespace: NS_EVAL, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 ) 
 
+        |_ DESC_OUT
+            |_ samples_inputs_df (namespace: NS_EVAL, dynamic: builder_mode == self.MONO_INSTANCE)
+            |_ <var>_dict (internal namspace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 and eval_outputs not empty, for <var> in eval_outputs)
 
    2) Description of DESC parameters:
         |_ DESC_IN 
@@ -107,6 +107,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     USECASE_DATA = 'usecase_data'
 
+    # namespace for the [var]_dict outputs of the mono-instance evaluator.
+    # since [var] are anonymized
+    NS_DOE = 'ns_doe'
+    # full names, set to root node to have [var]_dict appear in same node as [var]
+    # shared namespace of the mono-instance evaluator for eventual couplings
+    NS_EVAL = 'ns_eval'
+
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
@@ -122,11 +129,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         """
-        # if 'ns_doe' does not exist in ns_manager, we create this new
-        # namespace to store output dictionaries associated to eval_outputs
-        if 'ns_doe' not in ee.ns_manager.shared_ns_dict.keys():
-            ee.ns_manager.add_ns('ns_doe', ee.study_name)
-
         super().__init__(sos_name, ee, driver_wrapper_cls,
                          associated_namespaces=associated_namespaces)
         if cls_builder is not None:
@@ -161,6 +163,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.previous_sub_process_usecase_data = {}
         # Possible values: 'No_SP_UC_Import', 'SP_UC_Import'
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+
+    def _add_optional_shared_ns(self):
+        """
+        Add the shared namespaces NS_DOE and NS_EVAL should they not exist.
+        """
+        # if NS_DOE does not exist in ns_manager, we create this new
+        # namespace to store output dictionaries associated to eval_outputs
+        if self.NS_DOE not in self.ee.ns_manager.shared_ns_dict.keys():
+            self.ee.ns_manager.add_ns(self.NS_DOE, self.ee.study_name)
+        # do the same for the shared namespace for coupling with the
+        # DriverEvaluator
+        if self.NS_EVAL not in self.ee.ns_manager.shared_ns_dict.keys():
+            self.ee.ns_manager.add_ns(
+                self.NS_EVAL, self.ee.ns_manager.compose_local_namespace_value(self))
 
     def get_desc_in_out(self, io_type):
         """
@@ -359,18 +375,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                   'dataframe_edition_locked': False,
                                                   'structuring': True,
                                                   'visibility': self.SHARED_VISIBILITY,
-                                                  'namespace': 'ns_eval'},
+                                                  'namespace': self.NS_EVAL},
                                   'eval_outputs': {'type': 'dataframe',
                                                    'dataframe_descriptor': {'selected_output': ('bool', None, True),
                                                                             'full_name': ('string', None, False)},
                                                    'dataframe_edition_locked': False,
                                                    'structuring': True, 'visibility': self.SHARED_VISIBILITY,
-                                                   'namespace': 'ns_eval'},
+                                                   'namespace': self.NS_EVAL},
                                   'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
                                   'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
                                   }
                 dynamic_outputs = {'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
-                                                         'namespace': 'ns_eval'}
+                                                         'namespace': self.NS_EVAL}
                                    }
 
                 selected_inputs_has_changed = False
@@ -403,7 +419,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             dynamic_outputs.update(
                                 {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
                                                                                            'visibility': 'Shared',
-                                                                                           'namespace': 'ns_doe'}})
+                                                                                           'namespace': self.NS_DOE}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
                 self.add_inputs(dynamic_inputs)
@@ -594,8 +610,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Get the namespace ns_eval used in the mono-instance case.
         """
-        # TODO: better factorization? rename?
-        return self.ee.ns_manager.disc_ns_dict[self]['others_ns']['ns_eval'].get_value()
+        return self.ee.ns_manager.disc_ns_dict[self]['others_ns'][self.NS_EVAL].get_value()
 
     def _set_eval_process_builder(self):
         '''
@@ -804,7 +819,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                          'dataframe_descriptor': dataframe_descriptor,
                                          'dataframe_edition_locked': False,
                                          'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                         'namespace': 'ns_eval'
+                                         'namespace': self.NS_EVAL
                                          }}
 
         # This reflects 'samples_df' dynamic input has been configured and that
@@ -926,3 +941,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+
+    def get_module(self):
+
+        return 'DriverEvaluator'
