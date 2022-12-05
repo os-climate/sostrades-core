@@ -867,3 +867,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     subdisc, ordered_list)
 
         return ordered_list
+
+    def get_module(self):
+
+        return 'ProxyCoupling'

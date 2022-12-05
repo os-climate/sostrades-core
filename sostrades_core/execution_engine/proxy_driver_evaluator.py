@@ -947,3 +947,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+
+    def get_module(self):
+
+        return 'DriverEvaluator'

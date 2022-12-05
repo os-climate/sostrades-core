@@ -1718,7 +1718,7 @@ class ProxyDiscipline(object):
         disc_dict_info['reference'] = self
         disc_dict_info['classname'] = self.__class__.__name__
 #         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
-        disc_dict_info['model_name_full_path'] = self.get_module()
+        disc_dict_info['model_name_full_path'] = self.get_disc_full_path()
         disc_dict_info['treeview_order'] = 'no'
         disc_dict_info[self.NS_REFERENCE] = self.ee.ns_manager.get_local_namespace(
             self)
@@ -2278,6 +2278,19 @@ class ProxyDiscipline(object):
 #             'sostrades_core', 'sos_trades_core')
         return disc_module
     # useful for debugging
+
+    def get_disc_full_path(self):
+        '''
+        Module of a discipline cannot be enough to identify a discipline when two disciplines with same wrapp are at the same node (with display treeview)
+        Then the disc_full_path gives info of the module AND the execution full name
+        '''
+
+        disc_module = self.get_module()
+        disc_name = self.get_disc_full_name()
+
+        disc_full_path = f'{disc_module} : {disc_name}'
+
+        return disc_full_path
 
     def display_proxy_subtree(self, callback=None):
         proxy_subtree = []

@@ -142,7 +142,7 @@ class TreeNode:
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
 
-        self.model_name_full_path = self.get_disc_full_path(discipline)
+        self.model_name_full_path = discipline.get_disc_full_path()
 
         self.models_full_path_list.append(self.model_name_full_path)
 
@@ -216,16 +216,6 @@ class TreeNode:
         markdown_data = TreeNode.get_markdown_documentation(filepath)
         self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
-    def get_disc_full_path(self,discipline):
-
-        disc_module = discipline.get_module()
-        disc_module_class = disc_module.split('.')[-1]
-        disc_name = discipline.get_disc_full_name()
-
-        disc_full_path = f'{disc_module_class} : {disc_name}'
-
-        return disc_full_path
-
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
         :params: new_disc_data, variable data
@@ -237,7 +227,7 @@ class TreeNode:
         :params: discipline to set into the treenode
         :type: ProxyDiscipline
         """
-        disc_full_path= self.get_disc_full_path(discipline)
+        disc_full_path= discipline.get_disc_full_path()
         if namespace not in self.disc_data:
             self.disc_data[namespace] = new_disc_data
             self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [disc_full_path]
