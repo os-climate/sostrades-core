@@ -858,6 +858,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         x_axis_title='',
         y_axis_title='',
         chart_name='',
+        title_by_slider='Total Cumulated Deliveries',
         ticksuffix='',
         textposition='inside',
         annotation_upper_left={},
@@ -939,7 +940,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 args=[
                     {'visible': [False] * len(fig.data)},
                     {
-                        'title': f'Total Cumulated Deliveries in {x_axis_list[i]}',
+                        'title': f'<b>{title_by_slider} in {x_axis_list[i]}</b>',
                         'annotations[0].text': annotations_year[i][0]['text'],
                     },
                 ],  # layout attribute
@@ -968,6 +969,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             ),
             yaxis=dict(
                 title=y_axis_title,
+                ticksuffix=ticksuffix,
                 titlefont=dict(color="#1f77b4"),
                 tickfont=dict(color="#1f77b4"),
                 automargin=True,
@@ -1022,7 +1024,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         )
         if len(fig.data):
             # Create native plotly chart
-            chart_name = f'{chart_name} in {last_year}'
+            chart_name = f'<b>{chart_name} in {last_year}</b>'
             new_chart = InstantiatedPlotlyNativeChart(
                 fig=fig, chart_name=chart_name, default_legend=False
             )
