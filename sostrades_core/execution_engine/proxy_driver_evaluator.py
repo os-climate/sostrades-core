@@ -629,9 +629,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             # If eval process is a list of builders then we build a coupling
             # containing the eval process
-            disc_builder = self.create_sub_builder_coupling(
-                self.SUBCOUPLING_NAME, self.cls_builder)
-            self.hide_coupling_in_driver_for_display(disc_builder)
+            if self.flatten_subprocess :
+                disc_builder = None
+            else :
+                disc_builder = self.create_sub_builder_coupling(
+                    self.SUBCOUPLING_NAME, self.cls_builder)
+                self.hide_coupling_in_driver_for_display(disc_builder)
 
         self.eval_process_builder = disc_builder
 
@@ -945,6 +948,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
-    def get_module(self):
+
+    def get_disc_label(self):
 
         return 'DriverEvaluator'
+    
