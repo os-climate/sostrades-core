@@ -160,6 +160,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
         self.scenario_names = []
+        self.scatter_list_valid = True
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -584,14 +585,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.builder_tool = self.builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-        self.check_scatter_list_for_duplicates()
-        self.builder_tool.prepare_tool()
+        self.scatter_list_valid = self.check_scatter_list_validity()
+        if self.scatter_list_valid:
+            self.builder_tool.prepare_tool()
 
     def build_tool(self):
-        if self.builder_tool is not None:
+        if self.builder_tool is not None and self.scatter_list_valid:
             self.builder_tool.build()
 
-    def check_scatter_list_for_duplicates(self):
+    def check_scatter_list_validity(self):
+        # TODO: include as a case of check data integrity ?
+        # checking for duplicates
         if self.SCENARIO_DF in self.get_data_in():
             scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
             scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
@@ -606,7 +610,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     msg += ', ' + sc
                 msg += ').'
                 self.logger.error(msg)
-                raise Exception(msg)
+                # raise Exception(msg)
+                return False
+        # in any other case the list is valid
+        return True
 
     # MONO INSTANCE PROCESS
     def _get_disc_shared_ns_value(self):

@@ -574,7 +574,11 @@ class DataManager:
             # self.disciplines_id_map[disc_f_name].append(disc_id)
             error_msg = f'Trying to add two distinct disciplines with the same local namespace: {disc_f_name}'
             self.logger.error(error_msg)
+            # Exception
             raise Exception(error_msg)
+
+            # # Off-design behavior
+            # self.disciplines_id_map[disc_f_name].append(disc_id)
         else:
             self.disciplines_id_map[disc_f_name] = [disc_id]
 
