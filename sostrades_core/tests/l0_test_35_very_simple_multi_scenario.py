@@ -930,8 +930,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         dict_values = {}
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'mono_instance'
-        dict_values[f'{self.study_name}.multi_scenarios.name_list'] = [
-            'name_1', 'name_2']
+        # dict_values[f'{self.study_name}.multi_scenarios.name_list'] = [
+        #     'name_1', 'name_2']
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes(display_variables=True)
