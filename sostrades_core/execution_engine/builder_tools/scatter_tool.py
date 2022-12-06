@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
+import copy
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -74,11 +75,16 @@ class ScatterTool(SosTool):
 
         super().prepare_tool()
         if self.driver.SCENARIO_DF in self.driver.get_data_in():
-            scenario_df = self.driver.get_sosdisc_inputs(
-                self.driver.SCENARIO_DF)
-            scatter_list = scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
-                                              == True][self.driver.SCENARIO_NAME].values.tolist()
-            self.set_scatter_list(scatter_list)
+            instance_reference = self.driver.get_sosdisc_inputs(self.driver.INSTANCE_REFERENCE)
+            scenario_df = self.driver.get_sosdisc_inputs(self.driver.SCENARIO_DF)
+            # sce_df = copy.deepcopy(scenario_df)
+            if instance_reference:
+                scenario_df = scenario_df.append(
+                {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
+                ignore_index=True)
+
+            self.set_scatter_list(scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
+                                  == True][self.driver.SCENARIO_NAME].values.tolist())
 
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
             self.driver)
@@ -201,9 +207,19 @@ class ScatterTool(SosTool):
 
         for builder in self.sub_builders:
             old_builder_name = builder.sos_name
-            builder.set_disc_name(f'{name}.{old_builder_name}')
+            #if flatten subprocess then the discipline will be build at coupling above the driver
+            #then the name of the driver must be inside the discipline name
+            #else the discipline is build in the driver then no need of driver_name
+            if self.flatten_subprocess :
+                driver_name = self.driver.sos_name
+                disc_name = f'{driver_name}.{name}.{old_builder_name}'
+            else :
+                disc_name = f'{name}.{old_builder_name}'
+
+            builder.set_disc_name(disc_name)
             if new_name:
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
+            self.set_father_discipline()
             disc = builder.build()
             builder.set_disc_name(old_builder_name)
             # Add the discipline only if it is a new_name

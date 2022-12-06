@@ -171,6 +171,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                                                       'scenario_2']})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
@@ -1021,6 +1022,112 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertDictEqual(
             status_dict_all_done, study.execution_engine.get_anonimated_disciplines_status_dict())
 
+
+    def test_09_multi_scenario_scatter_flatten_subprocess(self):
+
+        # scatter build map
+
+        # scenario build map
+        scenario_map = {'input_name': 'scenario_list',
+                        'input_type': 'string_list',
+                        'input_ns': 'ns_scatter_scenario',
+                        'output_name': 'scenario_name',
+                        'scatter_ns': 'ns_scenario',
+                        'gather_ns': 'ns_scatter_scenario',
+                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3', 'ns_ac']}
+
+        self.exec_eng.smaps_manager.add_build_map(
+            'scenario_list', scenario_map)
+
+        # shared namespace
+
+
+        self.exec_eng.ns_manager.add_ns(
+            'ns_eval', 'MyCase.multi_scenarios')
+        # instantiate factory # get instantiator from Discipline class
+
+        builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                             mod_id='test_disc1_scenario')
+        self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_scatter_scenario', 'MyCase.multi_scenarios')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_out_disc3', 'MyCase.multi_scenarios')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_ac', 'MyCase.multi_scenarios')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_data_ac', 'MyCase')
+        mod_list = f'{self.base_path}.disc3_scenario.Disc3'
+        disc3_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc3', mod_list)
+        builder_list.append(disc3_builder)
+
+        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+            'multi_scenarios', builder_list, map_name='scenario_list',flatten_subprocess= True)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            multi_scenarios)
+        self.exec_eng.configure()
+
+        dict_values = {}
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes(exec_display=True,display_variables = True)
+
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            x1 = 2.
+            x2 = 4.
+            a1 = 3
+            b1 = 4
+            a2 = 6
+            b2 = 2
+
+            dict_values[self.study_name + '.a'] = a1
+            dict_values[self.study_name + '.multi_scenarios.' +
+                        scenario + '.Disc3.constant'] = 3
+            dict_values[self.study_name + '.multi_scenarios.' +
+                        scenario + '.Disc3.power'] = 2
+        dict_values[self.study_name +
+                    '.multi_scenarios.scenario_1.Disc1.b'] = b1
+        dict_values[self.study_name +
+                    '.multi_scenarios.scenario_2.Disc1.b'] = b2
+        dict_values[self.study_name +
+                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+        dict_values[self.study_name +
+                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+        dict_values[self.study_name + '.x'] = x1
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        #check that all disciplines are at root node with flatten_subprocess option
+        disc_list_in_root_coupling = [disc.get_disc_full_name() for disc in self.exec_eng.root_process.proxy_disciplines]
+        disc_list_in_root_coupling_th = ['MyCase.multi_scenarios',
+ 'MyCase.multi_scenarios.scenario_1.Disc1',
+ 'MyCase.multi_scenarios.scenario_1.Disc3',
+ 'MyCase.multi_scenarios.scenario_2.Disc1',
+ 'MyCase.multi_scenarios.scenario_2.Disc3']
+        self.assertEqual(disc_list_in_root_coupling,disc_list_in_root_coupling_th)
+        self.exec_eng.execute()
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),  ['scenario_1',
+                                                                                      'scenario_2'])
+
+        y1 = a1 * x1 + b1
+        y2 = a1 * x1 + b2
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_1.y'), y1)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_2.y'), y2)
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
