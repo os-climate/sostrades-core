@@ -1725,7 +1725,8 @@ class ProxyDiscipline(object):
         disc_dict_info['reference'] = self
         disc_dict_info['classname'] = self.__class__.__name__
 #         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
-        disc_dict_info['model_name_full_path'] = self.get_disc_full_path()
+        disc_dict_info['model_name_full_path'] = self.get_module()
+        disc_dict_info['disc_label'] = self.get_disc_label()
         disc_dict_info['treeview_order'] = 'no'
         disc_dict_info[self.NS_REFERENCE] = self.ee.ns_manager.get_local_namespace(
             self)
@@ -2286,16 +2287,21 @@ class ProxyDiscipline(object):
         return disc_module
     # useful for debugging
 
+    def get_disc_label(self):
+        '''
+        Get the label of the discipline which will be displayed in the GUI
+        '''
+
+        disc_label = self.get_disc_full_name()
+
+        return disc_label
+
     def get_disc_full_path(self):
         '''
-        Module of a discipline cannot be enough to identify a discipline when two disciplines with same wrapp are at the same node (with display treeview)
-        Then the disc_full_path gives info of the module AND the execution full name
+        Get the discipline full path which is a combination of the module and the label of the discipline
         '''
 
-        disc_module = self.get_module()
-        disc_name = self.get_disc_full_name()
-
-        disc_full_path = f'{disc_module} : {disc_name}'
+        disc_full_path = f'{self.get_module()} : {self.get_disc_label()}'
 
         return disc_full_path
 

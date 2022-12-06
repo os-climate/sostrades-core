@@ -79,6 +79,7 @@ class TreeNode:
         # List of models present at current treenode
         self.models_full_path_list = []
 
+        self.discipline_full_path_list = []
         self.model_name = None
         self.model_name_full_path = None
         self.last_treenode = None
@@ -119,6 +120,8 @@ class TreeNode:
         # Serialize models_full_path_list attribute
         dict_obj.update({'models_full_path_list': self.models_full_path_list})
 
+        # Serialize models_full_path_list attribute
+        dict_obj.update({ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST: self.discipline_full_path_list})
         # Serialize markdown_documentation
         dict_obj.update(
             {'markdown_documentation': self.markdown_documentation})
@@ -142,10 +145,9 @@ class TreeNode:
         self.disc_ids.append(self.identifier)
         self.node_type = discipline.__class__.__name__
 
-        self.model_name_full_path = discipline.get_disc_full_path()
-
+        self.model_name_full_path = discipline.get_module()
         self.models_full_path_list.append(self.model_name_full_path)
-
+        self.discipline_full_path_list.append(discipline.get_disc_full_path())
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
         # I/O type : 'in' for data_in and 'out' for data_out
@@ -227,7 +229,9 @@ class TreeNode:
         :params: discipline to set into the treenode
         :type: ProxyDiscipline
         """
-        disc_full_path= discipline.get_disc_full_path()
+
+        disc_full_path = discipline.get_disc_full_path()
+
         if namespace not in self.disc_data:
             self.disc_data[namespace] = new_disc_data
             self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [disc_full_path]
