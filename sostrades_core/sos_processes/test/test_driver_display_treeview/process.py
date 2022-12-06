@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Coupling Of Scatter Process',
+        'label': 'Core Test Display Treeview Process',
         'description': '',
         'category': '',
         'version': '',

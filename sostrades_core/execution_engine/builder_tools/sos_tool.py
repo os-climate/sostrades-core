@@ -49,7 +49,7 @@ class SosTool():
         self.associated_namespaces = None
         self.ee = ee
         self.driver = None
-
+        self.flatten_subprocess = None
         if isinstance(cls_builder, list):
             self.__builders = cls_builder
         else:
@@ -101,7 +101,7 @@ class SosTool():
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
         '''
-        pass
+        self.flatten_subprocess = self.driver.flatten_subprocess
 
     def associate_namespaces_to_builder(self, builder, ns_list):
         '''
@@ -117,4 +117,7 @@ class SosTool():
         '''
         Set the current discipline to build the builder_list at driver level
         '''
-        self.ee.factory.current_discipline = self.driver
+        if self.flatten_subprocess :
+            self.ee.factory.current_discipline = self.driver.father_executor
+        else :
+            self.ee.factory.current_discipline = self.driver

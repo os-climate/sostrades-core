@@ -142,9 +142,12 @@ class SampleGeneratorWrapper(SoSWrapp):
                                  'possible_values': available_sampling_methods,
                                  'default': DOE_ALGO},
                SAMPLING_GENERATION_MODE: {'type': 'string',
-                                          'structuring': True,
+                                          # TODO should be structuring and dynamic with AT_CONFIGURATION_TIME and read_only if BUILDER_MODE=MULTI_INSTANCE
+                                          #'structuring': True,
                                           'possible_values': available_sampling_generation_modes,
-                                          'default': AT_RUN_TIME}}
+                                          'default': AT_RUN_TIME,
+                                          'editable': False}
+               }
 
     DESC_OUT = {SAMPLES_DF: {'type': 'dataframe',
                              'unit': None,
@@ -198,6 +201,8 @@ class SampleGeneratorWrapper(SoSWrapp):
 
                 # setup_doe_algo_method
                 self.sampling_generation_mode = self.AT_RUN_TIME
+                disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_RUN_TIME
+
                 # self.sampling_generation_mode = self.AT_CONFIGURATION_TIME #
                 # It was tested that it also works
 
@@ -213,6 +218,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # setup_cp_method
 
                 self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
+                disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_CONFIGURATION_TIME
                 # self.sampling_generation_mode = self.AT_RUN_TIME # It was
                 # tested that it also works
 

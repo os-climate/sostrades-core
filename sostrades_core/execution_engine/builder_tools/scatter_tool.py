@@ -71,6 +71,8 @@ class ScatterTool(SosTool):
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
         '''
+
+        super().prepare_tool()
         if self.driver.SCENARIO_DF in self.driver.get_data_in():
             scenario_df = self.driver.get_sosdisc_inputs(
                 self.driver.SCENARIO_DF)
@@ -90,6 +92,8 @@ class ScatterTool(SosTool):
         if self.hide_coupling_in_driver:
             self.driver_display_value = self.driver.get_disc_display_name()
 
+        if self.flatten_subprocess :
+            self.coupling_per_scenario = False
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
 
