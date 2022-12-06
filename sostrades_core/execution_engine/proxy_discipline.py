@@ -1285,6 +1285,17 @@ class ProxyDiscipline(object):
 
         return data_dict
 
+    # def get_non_numerical_variables_and_values_dict(self):
+    #
+    #     non_num_dict = {}
+    #     data_in = self.get_data_in()
+    #
+    #     for var in data_in.keys():
+    #         if not data_in[var]['numerical']:
+    #             non_num_dict[self.get_var_full_name(var,data_in)] = data_in[var]['value']
+    #
+    #     return non_num_dict
+
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
         Accessor for the inputs values as a list or dict.
