@@ -200,7 +200,7 @@ class SoSMDAChain(MDAChain):
                 if len(coupled_disciplines) > 1 or (
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
-                        and not coupled_disciplines[0].is_sos_coupling
+                        and self.authorize_self_coupled_disciplines
                 ):
                     # several disciplines coupled
 
@@ -429,7 +429,6 @@ class SoSMDAChain(MDAChain):
                 if len(coupled_disciplines) > 1 or (
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
-                        and not coupled_disciplines[0].is_sos_coupling
                         and self.authorize_self_coupled_disciplines
                 ):
                     # several disciplines coupled

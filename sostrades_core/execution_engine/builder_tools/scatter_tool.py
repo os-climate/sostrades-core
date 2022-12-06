@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
+import copy
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -74,11 +75,16 @@ class ScatterTool(SosTool):
 
         super().prepare_tool()
         if self.driver.SCENARIO_DF in self.driver.get_data_in():
-            scenario_df = self.driver.get_sosdisc_inputs(
-                self.driver.SCENARIO_DF)
-            scatter_list = scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
-                                              == True][self.driver.SCENARIO_NAME].values.tolist()
-            self.set_scatter_list(scatter_list)
+            instance_reference = self.driver.get_sosdisc_inputs(self.driver.INSTANCE_REFERENCE)
+            scenario_df = self.driver.get_sosdisc_inputs(self.driver.SCENARIO_DF)
+            # sce_df = copy.deepcopy(scenario_df)
+            if instance_reference:
+                scenario_df = scenario_df.append(
+                {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
+                ignore_index=True)
+
+            self.set_scatter_list(scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
+                                  == True][self.driver.SCENARIO_NAME].values.tolist())
 
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
             self.driver)
