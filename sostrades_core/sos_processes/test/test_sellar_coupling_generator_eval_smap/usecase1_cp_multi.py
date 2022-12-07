@@ -34,15 +34,15 @@ class Study(StudyManager):
         dict_of_list_values = {
             'x': [array([3.]), array([4.])],
             'z': [array([-10., 0.])],
-            'Sellar_Problem.local_dv': [10.],
+            'SellarCoupling.Sellar_Problem.local_dv': [10.],
             'y_1': [array([1.])],
             'y_2': [array([1.])]
         }
-        list_of_values = [dict_of_list_values['Sellar_Problem.local_dv'], dict_of_list_values['x'],
+        list_of_values = [dict_of_list_values['SellarCoupling.Sellar_Problem.local_dv'], dict_of_list_values['x'],
                           dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
 
         input_selection_cp_x_z = {'selected_input': [True, True, True, True, True],
-                                  'full_name': ['Sellar_Problem.local_dv', 'x', 'y_1',
+                                  'full_name': ['SellarCoupling.Sellar_Problem.local_dv', 'x', 'y_1',
                                                 'y_2',
                                                 'z'],
                                   'list_of_values': list_of_values
@@ -69,7 +69,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 
@@ -78,4 +78,4 @@ if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-    uc_cls.run()
+    # uc_cls.run()

@@ -38,7 +38,7 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
+                             'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
                                            'Eval.y_2',
                                            'Eval.z']}
         input_selection_x = pd.DataFrame(input_selection_x)
@@ -74,7 +74,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.y_1'] = array([1.])
         disc_dict[f'{ns}.Eval.y_2'] = array([1.])
         disc_dict[f'{ns}.Eval.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 

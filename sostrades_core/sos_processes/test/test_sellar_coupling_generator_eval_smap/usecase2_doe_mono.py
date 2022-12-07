@@ -25,48 +25,37 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for lhs DoE and Eval on x variable of Sellar Problem
-        """
-
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['Eval.x'],
-                       'lower_bnd': [0.],
-                       'upper_bnd': [10.],
+        dspace_dict = {'variable': ['Eval.x', 'Eval.z'],
+
+                       'lower_bnd': [0., [-10., 0.]],
+                       'upper_bnd': [10., [10., 10.]],
 
                        }
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
-                                           'Eval.y_2',
-                                           'Eval.z']}
-        input_selection_x = pd.DataFrame(input_selection_x)
+        input_selection_x_z = {'selected_input': [False, True, False, False, True],
+                               'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
+                                             'Eval.y_2',
+                                             'Eval.z']}
+        input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
                                       'full_name': ['Eval.c_1', 'Eval.c_2', 'Eval.obj',
                                                     'Eval.y_1', 'Eval.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
-        repo = 'sostrades_core.sos_processes.test'
-        mod_id = 'test_sellar_coupling'
-        my_usecase = 'usecase'
-        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
-            repo, mod_id, my_usecase)
-
         disc_dict = {}
-        # DoE + Eval inputs
+        # DoE inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
-        n_samples = 20
+        n_samples = 65
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
-        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "fullfact"
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
-        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        disc_dict[f'{ns}.Eval.instance_reference'] = True
 
         # Sellar inputs
         local_dv = 10.
@@ -74,7 +63,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.y_1'] = array([1.])
         disc_dict[f'{ns}.Eval.y_2'] = array([1.])
         disc_dict[f'{ns}.Eval.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 
