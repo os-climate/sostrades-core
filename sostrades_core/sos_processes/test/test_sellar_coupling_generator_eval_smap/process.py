@@ -47,8 +47,10 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.smaps_manager.add_build_map('scenario_list', scenario_map)
 
         # shared namespace
-        self.ee.ns_manager.add_ns('ns_scatter_scenario', f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns('ns_OptimSellar', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns(
+            'ns_scatter_scenario', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns(
+            'ns_OptimSellar', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
@@ -67,14 +69,15 @@ class ProcessBuilder(BaseProcessBuilder):
         coupling_builder = self.ee.factory.create_builder_coupling(
             "SellarCoupling")
         coupling_builder.set_builder_info('cls_builder', builder_list_sellar)
-        
+
         # multi scenario driver builder
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.ee.factory.create_driver(
             'Eval', coupling_builder, map_name='scenario_list'
         )
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module('SampleGenerator', mod_cp)
+        cp_builder = self.ee.factory.get_builder_from_module(
+            'SampleGenerator', mod_cp)
 
         return multi_scenarios + [cp_builder]
