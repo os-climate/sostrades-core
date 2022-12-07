@@ -25,7 +25,7 @@ from pandas.core.frame import DataFrame
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
 
 
-def compute_len(obj):
+def compute_len(obj, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
     '''
     Return len of any python object type
     '''
@@ -36,7 +36,7 @@ def compute_len(obj):
     elif isinstance(obj, ndarray):
         return obj.size
     elif isinstance(obj, DataFrame):
-        return len(obj) * len(set(obj.columns) - set(DEFAULT_EXCLUDED_COLUMNS))
+        return len(obj) * len(set(obj.columns) - set(excluded_columns))
     elif isinstance(obj, (tuple, list)):
         computed_len = 0
         for val in obj:
