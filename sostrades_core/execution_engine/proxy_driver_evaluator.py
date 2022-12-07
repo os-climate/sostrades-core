@@ -172,6 +172,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Possible values: 'No_SP_UC_Import', 'SP_UC_Import'
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
+        self.old_ref_dict = {}
+        self.ref_changes_dict = {}
+
     def _add_optional_shared_ns(self):
         """
         Add the shared namespaces NS_DOE and NS_EVAL should they not exist.
@@ -292,14 +295,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO SUBDISCIPLINES
             if instance_reference:
-                self.set_non_trade_variables_from_reference_scenario(var_names)
+                if self.check_reference_variables_changes(var_names):
+                    self.propagate_reference_variables_changes()
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
             if var_names:
-                if instance_reference:
-                    scenario_df = self.set_reference_trade_variables_in_scenario_df(scenario_df)
+                # if instance_reference:
+                #     scenario_df = self.set_reference_trade_variables_in_scenario_df(scenario_df)
 
                 driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
                 scenarios_data_dict = {}
@@ -320,20 +324,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     # flags for structuring ? TO TEST
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
 
-    def set_reference_trade_variables_in_scenario_df(self, sce_df):
-
-        var_names = [col for col in sce_df.columns if col not in
-                     [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
-
-        index_ref_disc = self.get_reference_scenario_index()
-        for var in var_names:
-            short_name_var = var.split(".")[-1]
-            for subdisc in self.proxy_disciplines[index_ref_disc].proxy_disciplines:
-                if short_name_var in subdisc.get_data_in():
-                    value_var = subdisc.get_sosdisc_inputs(short_name_var)
-                    sce_df.at[sce_df.loc[sce_df[self.SCENARIO_NAME] == 'ReferenceScenario'].index, var] = value_var
-
-        return sce_df
+    # def set_reference_trade_variables_in_scenario_df(self, sce_df):
+    #
+    #     var_names = [col for col in sce_df.columns if col not in
+    #                  [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+    #
+    #     index_ref_disc = self.get_reference_scenario_index()
+    #     for var in var_names:
+    #         short_name_var = var.split(".")[-1]
+    #         for subdisc in self.proxy_disciplines[index_ref_disc].proxy_disciplines:
+    #             if short_name_var in subdisc.get_data_in():
+    #                 value_var = subdisc.get_sosdisc_inputs(short_name_var)
+    #                 sce_df.at[sce_df.loc[sce_df[self.SCENARIO_NAME] == 'ReferenceScenario'].index, var] = value_var
+    #
+    #     return sce_df
     def get_reference_scenario_index(self):
         index_ref = 0
         for disc in self.proxy_disciplines:
@@ -343,36 +347,50 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 index_ref += 1
         return index_ref
 
-    def set_non_trade_variables_from_reference_scenario(self, trade_vars):
+    def check_reference_variables_changes(self, trade_vars):
 
-        # First identify the reference scenario
-        index_ref_disc = self.get_reference_scenario_index()
+        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
 
-        # Take non-trade variables values from subdisciplines of reference scenario
-        ref_disc = self.proxy_disciplines[index_ref_disc]
-        ref_dict_to_adapt = {}
+        # Take reference scenario non-trade variables (num and non-num) and its values
+        ref_dict = {}
+        for key in ref_discipline.get_input_data_names():
+            if all(key.split(ref_discipline.sos_name + '.')[-1] != trade_var for trade_var in trade_vars):
+                ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 
-        for key in ref_disc.get_input_data_names():
-            if all(key.split(ref_disc.sos_name + '.')[-1] != trade_var for trade_var in trade_vars):
-                ref_dict_to_adapt[key] = ref_disc.ee.dm.get_value(key)
+        # Check if reference values have changed and select only those which have changed
+        self.ref_changes_dict = {}
+        for key in ref_dict.keys():
+            if key in self.old_ref_dict.keys():
+                if ref_dict[key] != self.old_ref_dict[key]:
+                    self.ref_changes_dict[key] = ref_dict[key]
+            else:
+                self.ref_changes_dict[key] = ref_dict[key]
 
+        if self.ref_changes_dict:
+            self.old_ref_dict = copy.deepcopy(ref_dict)
+            return True
+
+    def propagate_reference_variables_changes(self):
+
+        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
+
+        # Build other scenarios variables and values dict from reference
         dict_to_propagate = {}
-        for key in ref_dict_to_adapt.keys():
+        for key in self.ref_changes_dict.keys():
             for sc in self.scenario_names[:-1]:
-                # if key == 'root.ReferenceScenario.x' and self.sos_name == 'outer_ms':
-                #     print('fdsqfsdqf')
-                if ref_disc.sos_name in key and self.sos_name in key:
-                    new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + key.split(self.sos_name, 1)[-1].split(ref_disc.sos_name,1)[-1]
-                elif ref_disc.sos_name in key and not self.sos_name in key:
-                    new_key = key.split(ref_disc.sos_name, 1)[0] + sc + key.split(ref_disc.sos_name, 1)[-1]
+                if ref_discipline.sos_name in key and self.sos_name in key:
+                    new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
+                              key.split(self.sos_name, 1)[-1].split(ref_discipline.sos_name, 1)[-1]
+                elif ref_discipline.sos_name in key and not self.sos_name in key:
+                    new_key = key.split(ref_discipline.sos_name, 1)[0] + sc + key.split(ref_discipline.sos_name, 1)[
+                        -1]
                 else:
                     new_key = key
-                # print(key + '\n' + new_key)
                 if self.dm.check_data_in_dm(new_key):
-                    dict_to_propagate[new_key] = ref_dict_to_adapt[key]
+                    dict_to_propagate[new_key] = self.ref_changes_dict[key]
 
-        if dict_to_propagate:
-            self.ee.dm.set_values_from_dict(dict_to_propagate)
+        # Propagate other scenarios variables and values
+        self.ee.dm.set_values_from_dict(dict_to_propagate)
 
         # # Take non-trade variables values from subdisciplines of reference scenario
         # for subdisc in self.proxy_disciplines[index_ref_disc].proxy_disciplines:
@@ -659,7 +677,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         """
-        return super().is_configured() and self.subprocess_is_configured()
+        # print(self.check_reference_variables_changes())
+        return super().is_configured() and self.subprocess_is_configured() #and self.check_reference_variables_changes()
 
     def subprocess_is_configured(self):
         """

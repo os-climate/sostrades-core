@@ -214,6 +214,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                         scenario + '.Disc3.power'), self.power)
         self.exec_eng.execute()
 
+        # Change non-trade variable value from reference and check it has induced a reconfiguration and re-propagation
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = 23
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
+                                                        scenario + '.Disc3.constant'), 23)
+
         # Now, some non-trade variables from user scenarios (not ref!) are modified and checked
         dict_values[self.study_name + '.multi_scenarios.scenario_1.Disc3.constant'] = 25
         dict_values[self.study_name + '.multi_scenarios.scenario_2.Disc3.power'] = 50
