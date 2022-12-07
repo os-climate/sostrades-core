@@ -35,7 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
             mods_dict,
             ns_dict={'ns_ac': self.ee.study_name, 'ns_eval': f'{self.ee.study_name}'},
         )
-        eval_builder = self.ee.factory.create_driver_evaluator_builder(
+        eval_builder = self.ee.factory.create_driver(
             'Eval', builder_list_sellar
         )
 

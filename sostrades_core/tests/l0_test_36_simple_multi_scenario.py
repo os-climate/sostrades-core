@@ -569,12 +569,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
         disc3_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
-        builder_tool = self.exec_eng.tool_factory.create_tool_builder(
-            'scatter_name', 'ScatterTool', map_name='scenario_list')
 
         # TODO: handle autogather input order and set to True...
-        multi_scenarios = self.exec_eng.factory.create_driver_with_tool(
-            'multi_scenarios', cls_builder=builder_list, builder_tool=builder_tool)
+        multi_scenarios = self.exec_eng.factory.create_driver(
+            'multi_scenarios', cls_builder=builder_list, map_name='scenario_list')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)

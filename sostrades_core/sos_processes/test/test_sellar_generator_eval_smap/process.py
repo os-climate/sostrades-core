@@ -65,7 +65,7 @@ class ProcessBuilder(BaseProcessBuilder):
         )
 
         # multi scenario driver builder
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.ee.factory.create_driver(
             'Eval', builder_list_sellar, map_name='scenario_list'
         )
 

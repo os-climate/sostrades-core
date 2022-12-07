@@ -53,7 +53,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         self.ms_name = 'multiscenarios'
         # create scatter builder with map and coupling process
-        scatter_list = self.ee.factory.create_scatter_driver_with_tool(
+        scatter_list = self.ee.factory.create_driver(
             self.ms_name, cls_list,  'AC_list')
 
         # set scatter builder to root process

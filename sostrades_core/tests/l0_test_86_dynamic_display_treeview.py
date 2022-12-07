@@ -184,7 +184,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns_def(my_namespace)
-        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.exec_eng.factory.create_driver(
             'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
@@ -252,7 +252,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 #             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
 #         self.exec_eng.ns_manager.add_display_ns_to_builder(
 #             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.exec_eng.factory.create_driver(
             'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list')
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
@@ -324,7 +324,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.exec_eng.factory.create_driver(
             'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list', hide_coupling_in_driver=True)
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
