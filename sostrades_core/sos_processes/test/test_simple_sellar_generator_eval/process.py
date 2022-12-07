@@ -47,7 +47,7 @@ class ProcessBuilder(BaseProcessBuilder):
                 'ns_eval': f'{self.ee.study_name}',
             },
         )
-        doe_eval_builder = self.ee.factory.create_driver_evaluator_builder(
+        doe_eval_builder = self.ee.factory.create_driver(
             'Eval', builder_list_sellar, with_sample_generator=True
         )
 

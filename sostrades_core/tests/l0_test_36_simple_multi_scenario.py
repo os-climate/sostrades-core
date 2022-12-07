@@ -23,17 +23,30 @@ from pathlib import Path
 from os.path import join
 import pandas as pd
 import numpy as np
+from logging import Handler
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
+class UnitTestHandler(Handler):
+    """
+    Logging handler for UnitTest
+    """
+
+    def __init__(self):
+        Handler.__init__(self)
+        self.msg_list = []
+
+    def emit(self, record):
+        self.msg_list.append(record.msg)
 
 class TestSimpleMultiScenario(unittest.TestCase):
     """
     SoSSimpleMultiScenario test class
     """
+
 
     def setUp(self):
         '''
@@ -47,6 +60,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng = ExecutionEngine(self.namespace)
         self.factory = self.exec_eng.factory
         self.root_dir = gettempdir()
+        self.my_handler = UnitTestHandler()
+        self.exec_eng.logger.addHandler(self.my_handler)
 
         # reference var values
         self.x1 = 2.
@@ -451,23 +466,63 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_1', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
+                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+
+        error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
+        exp_tv = 'Nodes representation for Treeview MyCase\n' \
+                 '|_ MyCase\n' \
+                 '\t|_ multi_scenarios'
+
+
+        ## Exception
+        # with self.assertRaises(Exception) as cm:
+        #     self.exec_eng.load_study_from_input_dict(dict_values)
+        # self.assertEqual(str(cm.exception), error_message)
+
+        ## Logging only
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
+        self.assertIn(error_message, self.my_handler.msg_list)
+
+    def test_10_two_scenarios_with_same_name_on_2nd_config(self):
+        proc_name = 'test_multi_instance_basic'
+        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        scenario_df = pd.DataFrame(
+            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
-        with self.assertRaises(Exception) as cm:
-            self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        scenario_df['scenario_name'].iloc[2] = 'scenario_1'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
         error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
-        self.assertEqual(str(cm.exception), error_message)
+        exp_tv = 'Nodes representation for Treeview MyCase\n' \
+                 '|_ MyCase\n' \
+                 '\t|_ multi_scenarios\n' \
+                 '\t\t|_ scenario_1\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3\n' \
+                 '\t\t|_ scenario_2\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3'
 
-        # self.exec_eng.factory.set_builders_to_coupling_builder(builders)
-        # self.exec_eng.configure()
-        # scenario_df['selected_scenario'] = False
-        # dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-        #                f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
-        # self.exec_eng.load_study_from_input_dict(dict_values)
-        # pass
+        ## Exception
+        # with self.assertRaises(Exception) as cm:
+        #     self.exec_eng.load_study_from_input_dict(dict_values)
+        # self.assertEqual(str(cm.exception), error_message)
 
+        ## Logging only
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
+        self.assertIn(error_message, self.my_handler.msg_list)
 
     ## EEV3 TESTS #TODO: cleanup when nested scatter exists
     def _test_01_multi_scenario_of_scatter(self):
@@ -514,12 +569,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
         disc3_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
-        builder_tool = self.exec_eng.tool_factory.create_tool_builder(
-            'scatter_name', 'ScatterTool', map_name='scenario_list')
 
         # TODO: handle autogather input order and set to True...
-        multi_scenarios = self.exec_eng.factory.create_driver_with_tool(
-            'multi_scenarios', cls_builder=builder_list, builder_tool=builder_tool)
+        multi_scenarios = self.exec_eng.factory.create_driver(
+            'multi_scenarios', cls_builder=builder_list, map_name='scenario_list')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)

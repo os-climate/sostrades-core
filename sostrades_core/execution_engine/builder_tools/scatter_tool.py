@@ -207,9 +207,19 @@ class ScatterTool(SosTool):
 
         for builder in self.sub_builders:
             old_builder_name = builder.sos_name
-            builder.set_disc_name(f'{name}.{old_builder_name}')
+            #if flatten subprocess then the discipline will be build at coupling above the driver
+            #then the name of the driver must be inside the discipline name
+            #else the discipline is build in the driver then no need of driver_name
+            if self.flatten_subprocess :
+                driver_name = self.driver.sos_name
+                disc_name = f'{driver_name}.{name}.{old_builder_name}'
+            else :
+                disc_name = f'{name}.{old_builder_name}'
+
+            builder.set_disc_name(disc_name)
             if new_name:
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
+            self.set_father_discipline()
             disc = builder.build()
             builder.set_disc_name(old_builder_name)
             # Add the discipline only if it is a new_name

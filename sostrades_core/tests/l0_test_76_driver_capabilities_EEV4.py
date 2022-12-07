@@ -1305,9 +1305,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t|_ ReferenceScenario\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t|_ Disc3\n' \
+                      '\t|_ ReferenceScenario' \
                       '\t|_ name_1\n' \
                       '\t|_ name_2\n' \
-                      '\t|_ ReferenceScenario'
+
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
                          '|_ root.outer_ms  (ProxyDriverEvaluator) [True]\n        ' \
@@ -1338,7 +1339,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
                          '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
-
+        exec_eng.display_treeview_nodes()
         self.assertEqual(exec_eng.display_treeview_nodes(),
                          exp_ns_tree)
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),

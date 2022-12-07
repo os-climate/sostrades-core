@@ -619,7 +619,7 @@ def convert_new_type_into_array(
                             raise ValueError(msg)
                     elif var_type == 'dataframe':
                         # if value is a DataFrame
-
+                        init_values_list, init_metadata = deepcopy(values_list), deepcopy(metadata)
                         if not isinstance(dm_reduced_to_type_and_metadata, dict):
                             excluded_columns = dm_reduced_to_type_and_metadata.get_data(
                                 key, DF_EXCLUDED_COLUMNS)
@@ -627,6 +627,22 @@ def convert_new_type_into_array(
                             excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
                         values_list, metadata = convert_df_into_array(
                             var, values_list, metadata, prev_key, excluded_columns)
+                        # Define a list of dtypes to exclude and perform convert again if there are new cols to exclude
+                        dtypes_to_exclude = [object, bool, str]
+                        new_excluded_columns = deepcopy(excluded_columns)
+                        for col, metadata_dtype in zip(metadata[0]['columns'], metadata[0]['dtypes']):
+                            if metadata_dtype in dtypes_to_exclude:
+                                new_excluded_columns += [col]
+                        if new_excluded_columns != excluded_columns:
+                            values_list, metadata = convert_df_into_array(
+                                var, init_values_list, init_metadata, prev_key, new_excluded_columns)
+                            if not isinstance(dm_reduced_to_type_and_metadata, dict):
+                                dm_reduced_to_type_and_metadata.set_data(
+                                    key, {DF_EXCLUDED_COLUMNS: new_excluded_columns})
+                            else:
+                                dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]=new_excluded_columns
+
+
                     # elif var_type == 'string':
                     #     # if value is a string
                     #     metadata_dict = {}
