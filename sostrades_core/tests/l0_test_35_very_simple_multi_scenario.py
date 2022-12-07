@@ -660,11 +660,39 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         dict_values = {}
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'mono_instance'
-        # dict_values[f'{self.study_name}.multi_scenarios.name_list'] = [
-        #     'name_1', 'name_2']
-
         self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # -- set up disciplines
+        private_values = {
+            self.study_name + '.x': 10.,
+            self.study_name + '.a': 5.,
+            self.study_name + '.multi_scenarios.subprocess.Disc1.b': 25431.,
+            self.study_name + '.multi_scenarios.subprocess.Disc3.constant': 3.1416,
+            self.study_name + '.multi_scenarios.Disc3.z': 1,
+            self.study_name + '.multi_scenarios.subprocess.Disc3.power': 2}
+        self.exec_eng.load_study_from_input_dict(private_values)
+
+        input_selection_x_b = {'selected_input': [True, True],
+                               'full_name': ['x', 'multi_scenarios.subprocess.Disc1.b']}
+        input_selection_x_b = pd.DataFrame(input_selection_x_b)
+
+        output_selection_y_ind = {'selected_output': [True, True],
+                                'full_name': ['y', 'multi_scenarios.subprocess.Disc1.indicator']}
+        output_selection_y_ind = pd.DataFrame(output_selection_y_ind)
+
+
+        io_dict = {
+                     f'{self.study_name}.multi_scenarios.eval_inputs': input_selection_x_b,
+                     f'{self.study_name}.multi_scenarios.eval_outputs': output_selection_y_ind,
+                     }
+        self.exec_eng.load_study_from_input_dict(io_dict)
         self.exec_eng.display_treeview_nodes(display_variables=True)
+
+        # check the mono-instance dynamic outputs are created
+        output_data_names = self.exec_eng.root_process.get_output_data_names()
+        self.assertIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
+        self.assertIn('MyCase.y_dict', output_data_names)
+        self.assertIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
@@ -706,6 +734,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+        # check that the mono-instance dynamic inputs have been cleared
+        output_data_names = self.exec_eng.root_process.get_output_data_names()
+        self.assertNotIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
+        self.assertNotIn('MyCase.y_dict', output_data_names)
+        self.assertNotIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
 
     def _test_08_check_double_prepare_execution_and_status(self):
 
