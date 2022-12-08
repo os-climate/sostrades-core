@@ -375,8 +375,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ref_changes_dict = {}
         for key in ref_dict.keys():
             if key in self.old_ref_dict.keys():
-                if ref_dict[key] != self.old_ref_dict[key]:
-                    ref_changes_dict[key] = ref_dict[key]
+                # if key == 'root.outer_ms.ReferenceScenario.inner_ms.scenario_df':
+                #     print(key)
+                if isinstance(ref_dict[key], pd.DataFrame):
+                    if not ref_dict[key].equals(self.old_ref_dict[key]):
+                        ref_changes_dict[key] = ref_dict[key]
+                else:
+                    if ref_dict[key] != self.old_ref_dict[key]:
+                        ref_changes_dict[key] = ref_dict[key]
             else:
                 ref_changes_dict[key] = ref_dict[key]
 
