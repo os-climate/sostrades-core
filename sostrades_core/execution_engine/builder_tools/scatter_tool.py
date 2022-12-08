@@ -100,6 +100,7 @@ class ScatterTool(SosTool):
 
         if self.flatten_subprocess :
             self.coupling_per_scenario = False
+
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
 
