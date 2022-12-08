@@ -55,6 +55,27 @@ class UnitTestHandler(Handler):
 
 class TestSoSDOEScenario(unittest.TestCase):
 
+    def check_discipline_value(self, my_disc, my_data_name, target_value, print_flag=True, ioType='in'):
+        my_data = my_disc.get_data_io_from_key(
+            ioType, my_data_name)
+        my_value = my_data['value']
+        if isinstance(my_value, pd.DataFrame):
+            assert_frame_equal(target_value, my_value)
+        else:
+            self.assertEqual(target_value, my_value)
+        if print_flag:
+            print(my_data_name + ': ', my_value)
+
+    def check_discipline_values(self, my_disc, target_values_dict, print_flag=True, ioType='in'):
+        if print_flag:
+            print(
+                f'Check_discipline value for {my_disc.get_disc_full_name()}:')
+        for key in target_values_dict.keys():
+            self.check_discipline_value(
+                my_disc, key, target_value=target_values_dict[key], print_flag=print_flag, ioType=ioType)
+        if print_flag:
+            print('\n')
+
     def setUp(self):
 
         self.sampling_method_doe = 'doe_algo'
@@ -1186,11 +1207,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        self.study_name = 'MyStudy'
-        proc_name = 'test_sellar_generator_eval_smap'
+        proc_name = 'test_sellar_coupling_generator_eval_smap'
 
         #study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
-        usecase_name = 'usecase1_doe_mono'
+        usecase_name = 'usecase1_cp_multi'
+        self.study_name = usecase_name
         imported_module = import_module(
             '.'.join([self.repo, proc_name, usecase_name]))
 
@@ -1218,6 +1239,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         dict_values = {}
         dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
+
+        ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+
+        # Should be array([1.]) if succeed of import usecase
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
 
     def test_12_nested_very_simple_multi_scenarios_with_reference(self):
         from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref import Study
@@ -1273,9 +1305,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t|_ ReferenceScenario\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t|_ Disc3\n' \
+                      '\t|_ ReferenceScenario' \
                       '\t|_ name_1\n' \
                       '\t|_ name_2\n' \
-                      '\t|_ ReferenceScenario'
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
                          '|_ root.outer_ms  (ProxyDriverEvaluator) [True]\n        ' \
@@ -1306,13 +1338,14 @@ class TestSoSDOEScenario(unittest.TestCase):
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
                          '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
-
+        exec_eng.display_treeview_nodes()
         self.assertEqual(exec_eng.display_treeview_nodes(),
                          exp_ns_tree)
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-        # Execute to check all inputs have been propagated from ReferenceScenario (so execution would not give error)
+        # Execute to check all inputs have been propagated from
+        # ReferenceScenario (so execution would not give error)
         exec_eng.execute()
 
         self.constant = [1, 2]
@@ -1345,14 +1378,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Now, values are given to all the variables to check that in that case, the dm has the added values and not the
         # values propagated from the ReferenceScenario
         for i, sc in enumerate(scenario_list_outer):
-            values_dict[0][study_name + '.outer_ms.'+sc+'.Disc3.constant'] = self.constant[i]
-            values_dict[0][study_name + '.outer_ms.'+sc+'.Disc3.power'] = self.power[i]
-            values_dict[0][study_name + '.outer_ms.'+sc+'.Disc3.z'] = self.z[i]
+            values_dict[0][study_name + '.outer_ms.' +
+                           sc + '.Disc3.constant'] = self.constant[i]
+            values_dict[0][study_name + '.outer_ms.' +
+                           sc + '.Disc3.power'] = self.power[i]
+            values_dict[0][study_name + '.outer_ms.' +
+                           sc + '.Disc3.z'] = self.z[i]
             for j, name in enumerate(scenario_list_inner):
-                values_dict[0][study_name + '.outer_ms.'+sc+'.inner_ms.'+name+'.Disc1.b'] = self.b[i][j]
+                values_dict[0][study_name + '.outer_ms.' + sc +
+                               '.inner_ms.' + name + '.Disc1.b'] = self.b[i][j]
         for j, name in enumerate(scenario_list_inner):
-            values_dict[0][study_name + '.'+name+'.a'] = self.a[j]
-            values_dict[0][study_name + '.'+name+'.x'] = self.x[j]
+            values_dict[0][study_name + '.' + name + '.a'] = self.a[j]
+            values_dict[0][study_name + '.' + name + '.x'] = self.x[j]
         exec_eng.load_study_from_input_dict(values_dict[0])
 
         for i, sc in enumerate(scenario_list_outer):
@@ -1376,10 +1413,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Execute anc check outputs
         exec_eng.execute()
         for i, sc in enumerate(scenario_list_outer):
-            self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.o'),
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.o'),
                              self.constant[i] + self.z[i] ** self.power[i])
             for j, name in enumerate(scenario_list_inner):
-                self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.Disc1.indicator'),
-                                 self.a[j]*self.b[i][j])
-                self.assertEqual(exec_eng.dm.get_value(study_name+'.outer_ms.'+sc+'.inner_ms.'+name+'.y'),
-                                 self.a[j]*self.x[j]+self.b[i][j])
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.indicator'),
+                                 self.a[j] * self.b[i][j])
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
+                                 self.a[j] * self.x[j] + self.b[i][j])

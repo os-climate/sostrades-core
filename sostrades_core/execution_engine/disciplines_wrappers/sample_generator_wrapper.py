@@ -59,7 +59,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                      and SAMPLING_GENERATION_MODE == 'at_configuration_time')                          
                 |_ EVAL_INPUTS_CP (namespace: 'ns_sampling', structuring, dynamic : SAMPLING_METHOD == self.CARTESIAN_PRODUCT)
                         |_ GENERATED_SAMPLES (namespace: 'ns_sampling', structuring,                                               
-                                              dynamic: EVAL_INPUTS_CP != None and SAMPLING_GENERATION_MODE == 'at_configuration_time')                 
+                                               dynamic: EVAL_INPUTS_CP != None and SAMPLING_GENERATION_MODE == 'at_configuration_time')                 
+            |_ SAMPLING_GENERATION_MODE ('editable': False)
         |_ DESC_OUT
             |_ SAMPLES_DF (namespace: 'ns_sampling')
 

@@ -55,7 +55,7 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.ee.study_name}.Disc2')
 
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.ee.factory.create_driver(
             'multi_scenarios', cls_list, map_name='scenario_list', hide_coupling_in_driver=True)
         self.ee.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.ee.study_name}')

@@ -51,24 +51,24 @@ class TestToolBuild(unittest.TestCase):
             scatter_tool_builder.sos_name, scatter_name)
         self.assertEqual(scatter_tool_builder.cls, ScatterTool)
 
-    def test_02_create_driver_with_tool(self):
-        scatter_name = 'scatter_name'
-        scatter_tool_builder = self.exec_eng.tool_factory.create_tool_builder(
-            scatter_name, 'ScatterTool')
-
-        cls_builder = self.factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id='test_disc1_scenario')
-
-        multi_scenarios = self.factory.create_driver_with_tool(
-            'driver', cls_builder, scatter_tool_builder)
-
-        self.assertEqual(multi_scenarios[0].cls, ProxyDriverEvaluator)
-        self.assertEqual(
-            multi_scenarios[0].args['builder_tool'], scatter_tool_builder)
+    # def test_02_create_driver_with_tool(self):
+    #     scatter_name = 'scatter_name'
+    #     scatter_tool_builder = self.exec_eng.tool_factory.create_tool_builder(
+    #         scatter_name, 'ScatterTool')
+    #
+    #     cls_builder = self.factory.get_builder_from_process(repo=self.repo,
+    #                                                         mod_id='test_disc1_scenario')
+    #
+    #     multi_scenarios = self.factory.create_driver_with_tool(
+    #         'driver', cls_builder, scatter_tool_builder)
+    #
+    #     self.assertEqual(multi_scenarios[0].cls, ProxyDriverEvaluator)
+    #     self.assertEqual(
+    #         multi_scenarios[0].args['builder_tool'], scatter_tool_builder)
 
 
 if '__main__' == __name__:
     cls = TestToolBuild()
     cls.setUp()
-    cls.test_02_create_driver_with_tool()
+    cls.test_01_get_tool_from_toolfactory()
     cls.tearDown()

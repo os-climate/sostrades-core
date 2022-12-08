@@ -20,7 +20,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 import copy
 import pandas as pd
-from numpy import NaN, empty
+from numpy import NaN
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -30,7 +30,6 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
@@ -42,27 +41,38 @@ class ProxyDriverEvaluatorException(Exception):
 class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     '''
         SOSEval class which creates a sub process to evaluate
-        with different methods (Gradient,FORM,Sensitivity ANalysis, DOE, ...)
+        with different methods (Gradient,FORM,Sensitivity Analysis, DOE, ...)
 
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
+            |_ INSTANCE_REFERENCE (structuring, dynamic : builder_mode == self.MULTI_INSTANCE)
+                |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE) 
+                |_ REFERENCE_SCENARIO_NAME (structuring, dynamic :instance_referance == TRUE) #TODO
             |_ EVAL_INPUTS (namespace: NS_EVAL, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
             |_ EVAL_OUTPUTS (namespace: NS_EVAL, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
-            |_ GENERATED_SAMPLES( structuring,dynamic: self.builder_tool == True)
+            |_ GENERATED_SAMPLES ( structuring,dynamic: self.builder_tool == True)
             |_ SCENARIO_DF (structuring,dynamic: self.builder_tool == True)
-            |_ SAMPLES_DF (namespace: NS_EVAL, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
+            |_ SAMPLES_DF (namespace: NS_EVAL, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )    
+            |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)         
+            |_ 'wait_time_between_fork' (dynamic : builder_mode == self.MONO_INSTANCE)
 
         |_ DESC_OUT
             |_ samples_inputs_df (namespace: NS_EVAL, dynamic: builder_mode == self.MONO_INSTANCE)
-            |_ <var>_dict (internal namspace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 and eval_outputs not empty, for <var> in eval_outputs)
+            |_ <var>_dict (internal namespace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0
+            and eval_outputs not empty, for <var> in eval_outputs)
 
     2) Description of DESC parameters:
         |_ DESC_IN
+            |_ INSTANCE_REFERENCE 
+                |_ REFERENCE_MODE 
+                |_ REFERENCE_SCENARIO_NAME  #TODO
             |_ EVAL_INPUTS
             |_ EVAL_OUTPUTS
             |_ GENERATED_SAMPLES
             |_ SCENARIO_DF
             |_ SAMPLES_DF
+            |_ 'n_processes' 
+            |_ 'wait_time_between_fork'            
        |_ DESC_OUT
             |_ samples_inputs_df
             |_ <var observable name>_dict':     for each selected output observable doe result
@@ -91,11 +101,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
 
-    INSTANCE_REFERENCE = DriverEvaluatorWrapper.INSTANCE_REFERENCE
-    LINKED_MODE = DriverEvaluatorWrapper.LINKED_MODE
-    COPY_MODE = DriverEvaluatorWrapper.COPY_MODE
-    REFERENCE_MODE = DriverEvaluatorWrapper.REFERENCE_MODE
-    REFERENCE_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.REFERENCE_MODE_POSSIBLE_VALUES
+    INSTANCE_REFERENCE = 'instance_reference'
+    LINKED_MODE = 'linked_mode'
+    COPY_MODE = 'copy_mode'
+    REFERENCE_MODE = 'reference_mode'
+    REFERENCE_MODE_POSSIBLE_VALUES = [LINKED_MODE, COPY_MODE]
 
     SCENARIO_DF = 'scenario_df'
 
@@ -122,8 +132,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
-                 builder_tool=None,
-                 flatten_subprocess=False):
+                 map_name=None,
+                 flatten_subprocess=False,
+                 hide_coupling_in_driver=False):
         """
         Constructor
 
@@ -144,15 +155,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 'The driver evaluator builder must have a cls_builder to work')
 
         self.builder_tool = None
-        if builder_tool is not None:
-            if not isinstance(builder_tool, ToolBuilder):
-                self.logger.error(
-                    f'The given builder tool {builder_tool} is not a tool builder')
-            self.builder_tool_cls = builder_tool
-        else:
-            self.builder_tool_cls = None
 
+        self.map_name = map_name
         self.flatten_subprocess = flatten_subprocess
+        self.hide_coupling_in_driver = hide_coupling_in_driver
         self.old_builder_mode = None
         self.eval_process_builder = None
         self.eval_in_list = None
@@ -217,8 +223,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Configure the DriverEvaluator layer
         """
-        if self.builder_tool_cls:
-            self.configure_tool()
         # configure al processes stored in children
         for disc in self.get_disciplines_to_configure():
             disc.configure()
@@ -263,6 +267,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     and 'eval_inputs' in disc_in and len(self.proxy_disciplines) > 0:
                 self.set_eval_possible_values()
             elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
+                self.configure_tool()
                 self.configure_subprocesses_with_driver_input()
 
     def prepare_variables_to_propagate(self):
@@ -276,7 +281,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if instance_reference:
             # Addition of Reference Scenario
             scenario_df = scenario_df.append(
-                {self.SELECTED_SCENARIO: True, self.SCENARIO_NAME: 'ReferenceScenario'},
+                {self.SELECTED_SCENARIO: True,
+                    self.SCENARIO_NAME: 'ReferenceScenario'},
                 ignore_index=True)
 
         # NB assuming that the scenario_df entries are unique otherwise there
@@ -300,6 +306,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
         # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO SUBDISCIPLINES
         if self.subprocesses_built(scenario_names):
+            # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO
+            # SUBDISCIPLINES
             if instance_reference:
                 scenario_names_to_propagate = scenario_names[:-1]
                 ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
@@ -311,12 +319,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
+
             if trade_vars:
                 driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
                 scenarios_data_dict = {}
                 for sc in scenario_names:
-                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[
-                        0]  # assuming it is unique # TODO: as index?
+                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[0]  # assuming it is unique # TODO: as index?
                     for var in trade_vars:
                         var_full_name = self.ee.ns_manager.compose_ns(
                             [driver_evaluator_ns, sc, var])
@@ -341,6 +349,25 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     #                 sce_df.at[sce_df.loc[sce_df[self.SCENARIO_NAME] == 'ReferenceScenario'].index, var] = value_var
     #
     #     return sce_df
+    # def set_reference_trade_variables_in_scenario_df(self, sce_df):
+    #
+    #     var_names = [col for col in sce_df.columns if col not in
+    #                  [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+    #
+    #     index_ref_disc = self.get_reference_scenario_index()
+    #     # for var in var_names:
+    #     #    short_name_var = var.split(".")[-1]
+    #     #    for subdisc in self.proxy_disciplines[index_ref_disc].proxy_disciplines:
+    #     #        if short_name_var in subdisc.get_data_in():
+    #     #            value_var = subdisc.get_sosdisc_inputs(short_name_var)
+    #     #            sce_df.at[sce_df.loc[sce_df[self.SCENARIO_NAME]
+    #     #                                 == 'ReferenceScenario'].index, var] = value_var
+    #     # TODO
+    #     # This is with error in case value_var is a list-like object (numpy array, list, set, tuple etc.)
+    #     # https://stackoverflow.com/questions/48000225/must-have-equal-len-keys-and-value-when-setting-with-an-iterable
+    #     # Example variable z = array([1., 1.]) of sellar put in trade variables
+    #     return sce_df
+
     def get_reference_scenario_index(self):
         index_ref = 0
         for disc in self.proxy_disciplines:
@@ -375,8 +402,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ref_changes_dict = {}
         for key in ref_dict.keys():
             if key in self.old_ref_dict.keys():
-                # if key == 'root.outer_ms.ReferenceScenario.inner_ms.scenario_df':
-                #     print(key)
                 if isinstance(ref_dict[key], pd.DataFrame):
                     if not ref_dict[key].equals(self.old_ref_dict[key]):
                         ref_changes_dict[key] = ref_dict[key]
@@ -403,8 +428,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
                               key.split(self.sos_name, 1)[-1].split(ref_discipline.sos_name, 1)[-1]
                 elif ref_discipline.sos_name in key and not self.sos_name in key:
-                    new_key = key.split(ref_discipline.sos_name, 1)[0] + sc + key.split(ref_discipline.sos_name, 1)[
-                        -1]
+                    new_key = key.split(ref_discipline.sos_name, 1)[0] + sc + key.split(ref_discipline.sos_name, 1)[-1]
                 else:
                     new_key = key
                 if self.dm.check_data_in_dm(new_key):
@@ -738,36 +762,55 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Complete inst_desc_in with scenario_df
         '''
-        if self.builder_tool:
-            dynamic_inputs = {self.SCENARIO_DF: {
-                self.TYPE: 'dataframe',
-                self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
-                self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
-                                            self.SCENARIO_NAME: ('string', None, True)},
-                self.DATAFRAME_EDITION_LOCKED: False,
-                self.EDITABLE: True,
-                self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
+        dynamic_inputs = {self.SCENARIO_DF: {
+            self.TYPE: 'dataframe',
+            self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
+            self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
+                                        self.SCENARIO_NAME: ('string', None, True)},
+            self.DATAFRAME_EDITION_LOCKED: False,
+            self.EDITABLE: True,
+            self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
 
-            dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                            'dataframe_edition_locked': True,
-                                                            'structuring': True,
-                                                            'unit': None,
-                                                            # 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                            # 'namespace': 'ns_sampling',
-                                                            'default': pd.DataFrame(),
-                                                            # self.OPTIONAL:
-                                                            # True,
-                                                            self.USER_LEVEL: 3
-                                                            }})
-            self.add_inputs(dynamic_inputs)
-            self.add_outputs({})  # so that eventual mono-instance outputs get clear
+        dynamic_inputs.update({self.INSTANCE_REFERENCE:
+                               {SoSWrapp.TYPE: 'bool',
+                                SoSWrapp.DEFAULT: False,
+                                SoSWrapp.POSSIBLE_VALUES: [True, False],
+                                SoSWrapp.STRUCTURING: True}})
+
+        disc_in = self.get_data_in()
+        if self.INSTANCE_REFERENCE in disc_in:
+            instance_reference = self.get_sosdisc_inputs(
+                self.INSTANCE_REFERENCE)
+            if instance_reference:
+                dynamic_inputs.update({self.REFERENCE_MODE:
+                                       {SoSWrapp.TYPE: 'string',
+                                        SoSWrapp.DEFAULT: self.LINKED_MODE,
+                                        SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
+                                        SoSWrapp.STRUCTURING: True}})
+
+        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                        'dataframe_edition_locked': True,
+                                                        'structuring': True,
+                                                        'unit': None,
+                                                        # 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                        # 'namespace': 'ns_sampling',
+                                                        'default': pd.DataFrame(),
+                                                        # self.OPTIONAL:
+                                                        # True,
+                                                        self.USER_LEVEL: 3
+                                                        }})
+        self.add_inputs(dynamic_inputs)
+        # so that eventual mono-instance outputs get clear
+        self.add_outputs({})
 
     def configure_tool(self):
         '''
         Instantiate the tool if it does not and prepare it with data that he needs (the tool know what he needs)
         '''
         if self.builder_tool is None:
-            self.builder_tool = self.builder_tool_cls.instantiate()
+            builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
+                'scatter_tool', map_name=self.map_name, hide_coupling_in_driver=self.hide_coupling_in_driver)
+            self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
         self.scatter_list_valid = self.check_scatter_list_validity()
@@ -941,7 +984,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             full_id = disc.get_var_full_name(
                 data_in_key, disc_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
+                                           ]['io_type'] == 'in'
             # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc_in[data_in_key]['editable']
             is_None = disc_in[data_in_key]['value'] is None
@@ -1087,35 +1130,63 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Set sub_proc_import_usecase_status
         self.set_sub_process_usecase_status_from_user_inputs()
 
+        disc_in = self.get_data_in()
+        if self.INSTANCE_REFERENCE in disc_in and self.BUILDER_MODE in disc_in:
+            instance_reference = self.get_sosdisc_inputs(
+                self.INSTANCE_REFERENCE)
+            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+
         # Treat the case of SP_UC_Import
         if self.sub_proc_import_usecase_status == 'SP_UC_Import':
-            # 1. Add 'reference' (if not already existing) in data manager for
-            # usecase import
-            # self.add_reference_instance()
-            # 2. Add data in data manager for this analysis'reference'
-            # 2.1 get anonymized dict
+            # Get the anonymized dict
+            if 1 == 0:  # TODO (when use of Modal)
+                anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
+                    self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
+            # (without use of Modal)
             anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
-            # 2.2 put anonymized dict in context (unanonymize)
-            # input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
-            #    anonymize_input_dict_from_usecase)
-            # print(input_dict_from_usecase)
-            # self.ee.display_treeview_nodes(True)
-            # 2.3 load data in dm
-            # self.ee.load_study_from_input_dict(input_dict_from_usecase)
-            # 2.4 Update parameters
-            #     Set the status to No_SP_UC_Import'
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            #     Empty the anonymized dict in
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = anonymize_input_dict_from_usecase
-            # sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
-            # }
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
-                             self.VALUES, sub_process_inputs_dict, check_value=False)
-            #     Empty the previous_sub_process_usecase_data
-            self.previous_sub_process_usecase_data = {}
+                self.USECASE_DATA)
+
+            # LOAD REFERENCE of MULTI-INSTANCE MODE WITH USECASE DATA
+            is_ref_disc = False
+            ref_disc_name = ''
+            for disc in self.proxy_disciplines:
+                if disc.sos_name == 'ReferenceScenario':
+                    is_ref_disc = True
+                    ref_discipline_full_name = disc.get_disc_full_name()
+
+            if instance_reference and builder_mode == self.MULTI_INSTANCE and is_ref_disc:
+                # 1. Put anonymized dict in context (unanonymize) of the reference
+                # First identify the reference scenario
+                input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
+                    anonymize_input_dict_from_usecase, ref_discipline_full_name)
+                # print(input_dict_from_usecase)
+                # self.ee.display_treeview_nodes(True)
+                # 2. load data in dm (# Push the data to the reference
+                # instance)
+                self.ee.load_study_from_input_dict(input_dict_from_usecase)
+                # 3. Update parameters
+                #     Set the status to 'No_SP_UC_Import'
+                self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+                if 1 == 0:  # TODO (when use of Modal)
+                    # Empty the anonymized dict in (when use of Modal)
+                    sub_process_inputs_dict = self.get_sosdisc_inputs(
+                        self.SUB_PROCESS_INPUTS)
+                    sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
+                    }
+                    self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
+                                     self.VALUES, sub_process_inputs_dict, check_value=False)
+                if 1 == 0:  # TODO (when use of Modal)
+                    # Consequently update the previous_sub_process_usecase_data
+                    #     Empty the previous_sub_process_usecase_data
+                    self.previous_sub_process_usecase_data = {}
+                else:
+                    sub_process_usecase_data = self.get_sosdisc_inputs(
+                        self.USECASE_DATA)
+                    self.previous_sub_process_usecase_data = sub_process_usecase_data
+            else:
+                # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
+                # LOAD ALL SCENARIOS of MULTI-INSTANCE MODE WITH USECASE DATA
+                pass
 
     def set_sub_process_usecase_status_from_user_inputs(self):
         """
@@ -1124,6 +1195,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             Function needed in manage_import_inputs_from_sub_process()
         """
         disc_in = self.get_data_in()
+        # With modal #TODO Activate it when proc builder web_api eev3 migrated
+        # on eev4 and remove USECASE_DATA
         if self.SUB_PROCESS_INPUTS in disc_in:  # and self.sub_proc_build_status != 'Empty_SP'
             sub_process_inputs_dict = self.get_sosdisc_inputs(
                 self.SUB_PROCESS_INPUTS)
@@ -1133,13 +1206,50 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
                 self.previous_sub_process_usecase_name = sub_process_usecase_name
                 self.previous_sub_process_usecase_data = sub_process_usecase_data
-                # means it is not an empty dictionary
+                # not not sub_process_usecase_data True means it is not an
+                # empty dictionary
                 if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
                     self.sub_proc_import_usecase_status = 'SP_UC_Import'
             else:
                 self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+
+        # Without modal #TODO Remove when proc builder web_api eev3 migrated on
+        # eev4
+        if self.USECASE_DATA in disc_in:
+            sub_process_usecase_data = self.get_sosdisc_inputs(
+                self.USECASE_DATA)
+            if self.previous_sub_process_usecase_data != sub_process_usecase_data:
+                # not not sub_process_usecase_data True means it is not an
+                # empty dictionary
+                if not not sub_process_usecase_data:
+                    self.sub_proc_import_usecase_status = 'SP_UC_Import'
+            else:
+                self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+        else:
+            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+
+    def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase, ref_discipline_full_name):
+        """
+            Put_anonymized_input_dict in sub_process context
+            Function needed in manage_import_inputs_from_sub_process()
+        """
+        # Get unanonymized dict (i.e. dict of subprocess in driver context)
+        # from anonymized dict and context
+        # Following treatment of substitution of the new_study_placeholder of value self.ref_discipline_full_name
+        # may not to be done for all variables (see vsMS with ns_to_update that
+        # has not all the ns keys)
+
+        input_dict_from_usecase = {}
+        new_study_placeholder = ref_discipline_full_name
+        for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
+            converted_key = key_to_unanonymize.replace(
+                self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
+            # see def __unanonymize_key  in execution_engine
+            uc_d = {converted_key: value}
+            input_dict_from_usecase.update(uc_d)
+        return input_dict_from_usecase
 
     def get_disc_label(self):
 

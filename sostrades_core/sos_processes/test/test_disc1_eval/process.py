@@ -39,7 +39,7 @@ class ProcessBuilder(BaseProcessBuilder):
             },
         )
 
-        eval_builder = self.ee.factory.create_driver_evaluator_builder(
+        eval_builder = self.ee.factory.create_driver(
             'Eval', builder_list
         )
 

@@ -72,11 +72,11 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.smaps_manager.add_build_map(
             'scenario_list_outer', smap_outer_ms)
         # create the inner ms driver
-        inner_ms = self.ee.factory.create_scatter_driver_with_tool(
+        inner_ms = self.ee.factory.create_driver(
             'inner_ms',  builder_list, map_name='scenario_list_inner')
 
         # create an outer ms driver
-        outer_ms = self.ee.factory.create_scatter_driver_with_tool(
+        outer_ms = self.ee.factory.create_driver(
             'outer_ms', inner_ms, map_name='scenario_list_outer')
 
         return outer_ms

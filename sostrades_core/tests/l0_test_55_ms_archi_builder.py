@@ -61,7 +61,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         self.exec_eng.smaps_manager.add_build_map(
             'scenario_list', scenario_map)
 
-        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.exec_eng.factory.create_driver(
             'multi_scenarios',  [builder], map_name='scenario_list')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
