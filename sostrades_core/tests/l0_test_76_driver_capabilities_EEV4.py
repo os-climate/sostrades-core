@@ -1252,6 +1252,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
 
     def test_12_nested_very_simple_multi_scenarios_with_reference(self):
+
         from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref import Study
         study_name = 'root'
         ns = study_name
@@ -1271,10 +1272,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict = usecase.setup_usecase()
 
         exec_eng.load_study_from_input_dict(values_dict[0])
-        # print(exec_eng.display_treeview_nodes())
-        # print('=====')
-        # print(exec_eng.root_process.display_proxy_subtree(
-        #     callback=lambda x: x.is_configured()))
+
+        # TODO: [to discuss] whether the scenario name reordering (that might come from a scatter_tool cleaning and that
+        #  is at the source of ReferenceScenario appearing first after reconfiguration) is OK or should be handled both
+        #  by applying reordering both to proxies and to scattered namespaces.
+
+        ## TREEVIEWS WITH REFERENCESCENARIO AT THE END
         exp_ns_tree = 'Nodes representation for Treeview root' \
                       '\n|_ root\n' \
                       '\t|_ outer_ms\n' \
@@ -1305,9 +1308,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t|_ ReferenceScenario\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t|_ Disc3\n' \
-                      '\t|_ ReferenceScenario' \
                       '\t|_ name_1\n' \
                       '\t|_ name_2\n' \
+                      '\t|_ ReferenceScenario' \
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
                          '|_ root.outer_ms  (ProxyDriverEvaluator) [True]\n        ' \
@@ -1338,7 +1341,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
                          '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
-        exec_eng.display_treeview_nodes()
+
+
         self.assertEqual(exec_eng.display_treeview_nodes(),
                          exp_ns_tree)
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
