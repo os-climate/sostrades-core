@@ -152,7 +152,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.builder_tool_cls = None
 
-        self.flatten_subprocess= flatten_subprocess
+        self.flatten_subprocess = flatten_subprocess
         self.old_builder_mode = None
         self.eval_process_builder = None
         self.eval_in_list = None
@@ -164,7 +164,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
-        self.scenario_names = []
         self.scatter_list_valid = True
 
         self.previous_sub_process_usecase_name = 'Empty'
@@ -173,7 +172,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
         self.old_ref_dict = {}
-        self.ref_changes_dict = {}
+        # self.ref_changes_dict = {}
 
     def _add_optional_shared_ns(self):
         """
@@ -266,10 +265,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
                 self.configure_subprocesses_with_driver_input()
 
-    def configure_subprocesses_with_driver_input(self):
-        """
-        This function forces the trade variables values of the subprocesses in function of the driverevaluator input df.
-        """
+    def prepare_variables_to_propagate(self):
+
         # TODO: code below might need refactoring after reference_scenario
         # configuration fashion is decided upon
         scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
@@ -284,37 +281,43 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # NB assuming that the scenario_df entries are unique otherwise there
         # is some intelligence to be added
-        self.scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
+        scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
                                           == True][self.SCENARIO_NAME].values.tolist()
+        trade_vars = []
         # check that all the input scenarios have indeed been built
         # (configuration sequence allows the opposite)
-        if self.subprocesses_built(self.scenario_names):
-
-            var_names = [col for col in scenario_df.columns if col not in
+        if self.subprocesses_built(scenario_names):
+            trade_vars = [col for col in scenario_df.columns if col not in
                          [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
 
-            # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO SUBDISCIPLINES
+        return scenario_df, instance_reference, trade_vars, scenario_names
+
+    def configure_subprocesses_with_driver_input(self):
+        """
+        This function forces the trade variables values of the subprocesses in function of the driverevaluator input df.
+        """
+
+        scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
+        # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO SUBDISCIPLINES
+        if self.subprocesses_built(scenario_names):
             if instance_reference:
-                if self.check_reference_variables_changes(var_names):
-                    self.propagate_reference_variables_changes()
+                scenario_names_to_propagate = scenario_names[:-1]
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
+                if ref_changes_dict:
+                    self.propagate_reference_non_trade_variables_changes(ref_changes_dict, ref_dict, scenario_names_to_propagate)
+            else:
+                scenario_names = scenario_names
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
-            if var_names:
-                # if instance_reference:
-                #     scenario_df = self.set_reference_trade_variables_in_scenario_df(scenario_df)
-
+            if trade_vars:
                 driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
                 scenarios_data_dict = {}
-                if instance_reference:
-                    scenario_names = self.scenario_names[:-1]
-                else:
-                    scenario_names = self.scenario_names
-
                 for sc in scenario_names:
-                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[0]  # assuming it is unique # TODO: as index?
-                    for var in var_names:
+                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[
+                        0]  # assuming it is unique # TODO: as index?
+                    for var in trade_vars:
                         var_full_name = self.ee.ns_manager.compose_ns(
                             [driver_evaluator_ns, sc, var])
                         scenarios_data_dict[var_full_name] = sc_row.loc[var]
@@ -347,7 +350,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 index_ref += 1
         return index_ref
 
-    def check_reference_variables_changes(self, trade_vars):
+    def check_if_there_are_reference_variables_changes(self):
+
+        scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
+
+        ref_changes_dict = {}
+        if self.subprocesses_built(scenario_names):
+            if instance_reference:
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
+
+        return ref_changes_dict
+
+    def get_reference_non_trade_variables_changes(self, trade_vars):
 
         ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
 
@@ -358,26 +372,27 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 
         # Check if reference values have changed and select only those which have changed
-        self.ref_changes_dict = {}
+        ref_changes_dict = {}
         for key in ref_dict.keys():
             if key in self.old_ref_dict.keys():
                 if ref_dict[key] != self.old_ref_dict[key]:
-                    self.ref_changes_dict[key] = ref_dict[key]
+                    ref_changes_dict[key] = ref_dict[key]
             else:
-                self.ref_changes_dict[key] = ref_dict[key]
+                ref_changes_dict[key] = ref_dict[key]
 
-        if self.ref_changes_dict:
+        return ref_changes_dict, ref_dict
+
+    def propagate_reference_non_trade_variables_changes(self, ref_changes_dict, ref_dict, scenario_names_to_propagate):
+
+        if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
-            return True
-
-    def propagate_reference_variables_changes(self):
 
         ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
 
         # Build other scenarios variables and values dict from reference
         dict_to_propagate = {}
-        for key in self.ref_changes_dict.keys():
-            for sc in self.scenario_names[:-1]:
+        for key in ref_changes_dict.keys():
+            for sc in scenario_names_to_propagate:
                 if ref_discipline.sos_name in key and self.sos_name in key:
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
                               key.split(self.sos_name, 1)[-1].split(ref_discipline.sos_name, 1)[-1]
@@ -387,7 +402,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 else:
                     new_key = key
                 if self.dm.check_data_in_dm(new_key):
-                    dict_to_propagate[new_key] = self.ref_changes_dict[key]
+                    dict_to_propagate[new_key] = ref_changes_dict[key]
 
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
@@ -492,7 +507,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         # checking whether the dataframes are already coherent in which case the changes come probably
                         # from a load and there is no need to crush the truth
                         # values
-                        if not generated_samples.equals(scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], 1)):
+                        if not generated_samples.equals(
+                                scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], 1)):
                             # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
                             # remains as a DriverEvaluator input, othrwise
                             # another sample change check logic is needed)
@@ -517,7 +533,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             scenario_name = scenario_df[self.SCENARIO_NAME]
                             for i in scenario_name.index.tolist():
                                 scenario_name.iloc[i] = 'scenario_' + \
-                                    str(i + 1)
+                                                        str(i + 1)
                             self.logger.info(
                                 'Generated sample has changed, updating scenarios to select.')
                             self.dm.set_data(self.get_var_full_name(self.SCENARIO_DF, disc_in),
@@ -542,9 +558,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                   'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
                                   }
 
-                dynamic_outputs = {'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
-                                                         'namespace': self.NS_EVAL}
-                                   }
+                dynamic_outputs = {
+                    'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
+                                          'namespace': self.NS_EVAL}
+                    }
 
                 selected_inputs_has_changed = False
                 if 'eval_inputs' in disc_in:
@@ -665,7 +682,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                'reference_scenario': self.get_x0(),
                                'activated_elems_dspace_df': [[True, True]
                                                              if self.ee.dm.get_data(var, 'type') == 'array' else [True]
-                                                             for var in self.eval_in_list],  # TODO: Array dimensions greater than 2?
+                                                             for var in self.eval_in_list],
+                               # TODO: Array dimensions greater than 2?
                                'study_name': self.ee.study_name,
                                'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
                                'selected_inputs': self.selected_inputs,
@@ -677,8 +695,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         """
-        # print(self.check_reference_variables_changes())
-        return super().is_configured() and self.subprocess_is_configured() #and self.check_reference_variables_changes()
+        disc_in = self.get_data_in()
+        if self.BUILDER_MODE in disc_in:
+            if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE:
+                if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
+                    if self.SCENARIO_DF in disc_in:
+                        return super().is_configured() and self.subprocess_is_configured() and not self.check_if_there_are_reference_variables_changes()
+
+        return super().is_configured() and self.subprocess_is_configured()
 
     def subprocess_is_configured(self):
         """
@@ -730,7 +754,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                             self.USER_LEVEL: 3
                                                             }})
             self.add_inputs(dynamic_inputs)
-            self.add_outputs({}) # so that eventual mono-instance outputs get clear
+            self.add_outputs({})  # so that eventual mono-instance outputs get clear
 
     def configure_tool(self):
         '''
@@ -760,7 +784,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 repeated_elements = [
                     sc for sc in set_sc_names if scenario_names.count(sc) > 1]
                 msg = 'Cannot activate several scenarios with the same name (' + \
-                    repeated_elements[0]
+                      repeated_elements[0]
                 for sc in repeated_elements[1:]:
                     msg += ', ' + sc
                 msg += ').'
@@ -791,9 +815,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             # If eval process is a list of builders then we build a coupling
             # containing the eval process
-            if self.flatten_subprocess :
+            if self.flatten_subprocess:
                 disc_builder = None
-            else :
+            else:
                 disc_builder = self.create_sub_builder_coupling(
                     self.SUBCOUPLING_NAME, self.cls_builder)
                 self.hide_coupling_in_driver_for_display(disc_builder)
@@ -1081,7 +1105,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.SUB_PROCESS_INPUTS)
             sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = anonymize_input_dict_from_usecase
             # sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
-            #}
+            # }
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
                              self.VALUES, sub_process_inputs_dict, check_value=False)
             #     Empty the previous_sub_process_usecase_data
@@ -1111,8 +1135,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
-
     def get_disc_label(self):
 
         return 'DriverEvaluator'
-    
