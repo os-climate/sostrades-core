@@ -57,9 +57,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
-                |_ BUILDER_MODE (structuring)
-                |_ USECASE_DATA (structuring)                
-                |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
+            |_ BUILDER_MODE (structuring)
+            |_ USECASE_DATA (structuring)                
+            |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
    2) Description of DESC parameters:
         |_ DESC_IN
             |_ BUILDER_MODE
@@ -93,12 +93,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
     default_process_builder_parameter_type = ProcessBuilderParameterType(
         None, None, 'Empty')
 
-    INSTANCE_REFERENCE = 'instance_reference'
-    LINKED_MODE = 'linked_mode'
-    COPY_MODE = 'copy_mode'
-    REFERENCE_MODE = 'reference_mode'
-    REFERENCE_MODE_POSSIBLE_VALUES = [LINKED_MODE, COPY_MODE]
-
     DESC_IN = {
         BUILDER_MODE: {SoSWrapp.TYPE: 'string',
                        # SoSWrapp.DEFAULT: MULTI_INSTANCE,
@@ -117,14 +111,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
                        'user_level': 1,
                        'optional': False
                        },
-        INSTANCE_REFERENCE: {SoSWrapp.TYPE: 'bool',
-                             SoSWrapp.DEFAULT: False,
-                             SoSWrapp.POSSIBLE_VALUES: [True, False],
-                             SoSWrapp.STRUCTURING: True},
-        REFERENCE_MODE: {SoSWrapp.TYPE: 'string',
-                         SoSWrapp.DEFAULT: LINKED_MODE,
-                         SoSWrapp.POSSIBLE_VALUES: REFERENCE_MODE_POSSIBLE_VALUES,
-                         SoSWrapp.STRUCTURING: True}
     }
 
     def __init__(self, sos_name):

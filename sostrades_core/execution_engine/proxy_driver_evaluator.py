@@ -45,11 +45,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
+            |_ INSTANCE_REFERENCE (structuring, dynamic : builder_mode == self.MULTI_INSTANCE)
+                |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE) 
+                |_ REFERENCE_SCENARIO_NAME (structuring, dynamic :instance_referance == TRUE) #TODO
             |_ EVAL_INPUTS (namespace: NS_EVAL, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
             |_ EVAL_OUTPUTS (namespace: NS_EVAL, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
-            |_ GENERATED_SAMPLES( structuring,dynamic: self.builder_tool == True)
+            |_ GENERATED_SAMPLES ( structuring,dynamic: self.builder_tool == True)
             |_ SCENARIO_DF (structuring,dynamic: self.builder_tool == True)
-            |_ SAMPLES_DF (namespace: NS_EVAL, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
+            |_ SAMPLES_DF (namespace: NS_EVAL, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )    
+            |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)         
+            |_ 'wait_time_between_fork' (dynamic : builder_mode == self.MONO_INSTANCE)
 
         |_ DESC_OUT
             |_ samples_inputs_df (namespace: NS_EVAL, dynamic: builder_mode == self.MONO_INSTANCE)
@@ -58,11 +63,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     2) Description of DESC parameters:
         |_ DESC_IN
+            |_ INSTANCE_REFERENCE 
+                |_ REFERENCE_MODE 
+                |_ REFERENCE_SCENARIO_NAME  #TODO
             |_ EVAL_INPUTS
             |_ EVAL_OUTPUTS
             |_ GENERATED_SAMPLES
             |_ SCENARIO_DF
             |_ SAMPLES_DF
+            |_ 'n_processes' 
+            |_ 'wait_time_between_fork'            
        |_ DESC_OUT
             |_ samples_inputs_df
             |_ <var observable name>_dict':     for each selected output observable doe result
@@ -91,11 +101,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
 
-    INSTANCE_REFERENCE = DriverEvaluatorWrapper.INSTANCE_REFERENCE
-    LINKED_MODE = DriverEvaluatorWrapper.LINKED_MODE
-    COPY_MODE = DriverEvaluatorWrapper.COPY_MODE
-    REFERENCE_MODE = DriverEvaluatorWrapper.REFERENCE_MODE
-    REFERENCE_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.REFERENCE_MODE_POSSIBLE_VALUES
+    INSTANCE_REFERENCE = 'instance_reference'
+    LINKED_MODE = 'linked_mode'
+    COPY_MODE = 'copy_mode'
+    REFERENCE_MODE = 'reference_mode'
+    REFERENCE_MODE_POSSIBLE_VALUES = [LINKED_MODE, COPY_MODE]
 
     SCENARIO_DF = 'scenario_df'
 
@@ -699,7 +709,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Complete inst_desc_in with scenario_df
         '''
-
         dynamic_inputs = {self.SCENARIO_DF: {
             self.TYPE: 'dataframe',
             self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
@@ -708,6 +717,23 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.DATAFRAME_EDITION_LOCKED: False,
             self.EDITABLE: True,
             self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
+
+        dynamic_inputs.update({self.INSTANCE_REFERENCE:
+                               {SoSWrapp.TYPE: 'bool',
+                                SoSWrapp.DEFAULT: False,
+                                SoSWrapp.POSSIBLE_VALUES: [True, False],
+                                SoSWrapp.STRUCTURING: True}})
+
+        disc_in = self.get_data_in()
+        if self.INSTANCE_REFERENCE in disc_in:
+            instance_reference = self.get_sosdisc_inputs(
+                self.INSTANCE_REFERENCE)
+            if instance_reference:
+                dynamic_inputs.update({self.REFERENCE_MODE:
+                                       {SoSWrapp.TYPE: 'string',
+                                        SoSWrapp.DEFAULT: self.LINKED_MODE,
+                                        SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
+                                        SoSWrapp.STRUCTURING: True}})
 
         dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
                                                         'dataframe_edition_locked': True,
