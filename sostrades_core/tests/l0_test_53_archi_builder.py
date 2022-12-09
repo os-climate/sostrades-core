@@ -274,7 +274,7 @@ class TestArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_business',
                   'output_name': 'product_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('product_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
 
         self.exec_eng.ns_manager.add_ns_def({'ns_business': self.study_name})
 
@@ -346,7 +346,7 @@ class TestArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('product_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
 
         self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
 
@@ -425,7 +425,7 @@ class TestArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('product_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
 
         self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
 
@@ -544,7 +544,7 @@ class TestArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('product_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
 
         self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
 
@@ -731,14 +731,14 @@ class TestArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_public',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('product_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
 
         actor_map_dict = {'input_name': 'Actor_list',
                           'input_type': 'string_list',
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
-        self.exec_eng.smaps_manager.add_build_map('Actor_list', actor_map_dict)
+        self.exec_eng.scattermap_manager.add_build_map('Actor_list', actor_map_dict)
 
         sub_architecture_df = pd.DataFrame(
             {'Parent': ['Business'],
@@ -795,7 +795,7 @@ class TestArchiBuilder(unittest.TestCase):
                           'input_ns': 'ns_public',
                           'output_name': 'Actor_name',
                           'scatter_ns': 'ns_actor'}
-        self.exec_eng.smaps_manager.add_build_map('Actor_list', actor_map_dict)
+        self.exec_eng.scattermap_manager.add_build_map('Actor_list', actor_map_dict)
 
         architecture_df = pd.DataFrame(
             {'Parent': [None],
@@ -893,9 +893,9 @@ class TestArchiBuilder(unittest.TestCase):
                             'ns_to_update': ['ns_subsystem']}
 
         # add actor, subsystem and product_list maps
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'subsystem_list_map', subsystem_map)
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'product_list_map', product_list_map)
 
         architecture_df = pd.DataFrame(

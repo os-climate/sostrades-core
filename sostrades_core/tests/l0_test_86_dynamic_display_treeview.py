@@ -170,8 +170,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                            'input_ns': 'ns_eval',
                            'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        if 'scenario_list' not in self.exec_eng.smaps_manager.build_maps_dict:
-            self.exec_eng.smaps_manager.add_build_map(
+        if 'scenario_list' not in self.exec_eng.scattermap_manager.build_maps_dict:
+            self.exec_eng.scattermap_manager.add_build_map(
                 'scenario_list', my_scatter_dict)
 
         # instantiate factory by getting builder from process
@@ -225,14 +225,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         self.repo = 'sostrades_core.sos_processes.test'
 
-        my_scatter_dict = {'input_name': 'scenario_list',
-                           'input_type': 'string_list',
-                           'input_ns': 'ns_eval',
-                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
-        # >> introduce ScatterMap
-        if 'scenario_list' not in self.exec_eng.smaps_manager.build_maps_dict:
-            self.exec_eng.smaps_manager.add_build_map(
-                'scenario_list', my_scatter_dict)
 
         # instantiate factory by getting builder from process
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
@@ -246,14 +238,14 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
         self.exec_eng.ns_manager.add_ns(
-            'ns_ac', f'{self.exec_eng.study_name}.Disc1', display_value=f'{self.exec_eng.study_name}.Disc1')
+            'ns_ac', f'{self.exec_eng.study_name}', display_value=f'{self.exec_eng.study_name}.Disc1')
 
 #         self.exec_eng.ns_manager.add_display_ns_to_builder(
 #             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
 #         self.exec_eng.ns_manager.add_display_ns_to_builder(
 #             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
         multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list')
+            'multi_scenarios', [disc1_builder, disc2_builder])
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
@@ -297,14 +289,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         self.repo = 'sostrades_core.sos_processes.test'
 
-        my_scatter_dict = {'input_name': 'scenario_list',
-                           'input_type': 'string_list',
-                           'input_ns': 'ns_eval',
-                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
-        # >> introduce ScatterMap
-        if 'scenario_list' not in self.exec_eng.smaps_manager.build_maps_dict:
-            self.exec_eng.smaps_manager.add_build_map(
-                'scenario_list', my_scatter_dict)
 
         # instantiate factory by getting builder from process
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
@@ -318,14 +302,14 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
         self.exec_eng.ns_manager.add_ns(
-            'ns_ac', f'{self.exec_eng.study_name}.Disc1', display_value=f'{self.exec_eng.study_name}.Disc1')
+            'ns_ac', f'{self.exec_eng.study_name}', display_value=f'{self.exec_eng.study_name}.Disc1')
 
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
         multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', [disc1_builder, disc2_builder], map_name='scenario_list', hide_coupling_in_driver=True)
+            'multi_scenarios', [disc1_builder, disc2_builder], hide_coupling_in_driver=True)
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
