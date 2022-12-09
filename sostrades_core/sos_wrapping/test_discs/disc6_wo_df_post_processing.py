@@ -59,7 +59,7 @@ class Disc6(SoSWrapp):
         value = diags(grad) / 2
         self.set_partial_derivative('h', 'x', value)
 
-    def get_chart_filter_list(self):
+    def get_chart_filter_list(self, proxy):
 
         chart_filters = []
 

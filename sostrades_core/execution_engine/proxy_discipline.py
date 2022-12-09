@@ -2021,7 +2021,7 @@ class ProxyDiscipline(object):
         Returns: List[ChartFilter]
         """
         if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list()
+            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list(self)
         else:
             return []
 
@@ -2259,8 +2259,10 @@ class ProxyDiscipline(object):
         input_full_name_map, output_full_name_map = self.create_io_full_name_map()
         wrapper.attributes = {
             'input_full_name_map': input_full_name_map,
-            'output_full_name_map': output_full_name_map
+            'output_full_name_map': output_full_name_map,
         }
+        wrapper.inst_desc_in = self.inst_desc_in
+        wrapper.inst_desc_out = self.inst_desc_out
 
     # def set_discipline_attributes(self, discipline):
     #     """ set the attribute attributes of mdo_discipline --> not needed if using SoSMDODisciplineDriver

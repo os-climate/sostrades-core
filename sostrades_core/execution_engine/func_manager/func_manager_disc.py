@@ -771,17 +771,17 @@ class FunctionManagerDisc(SoSWrapp):
             arr = arr.astype(float64)
         return arr
 
-    def get_chart_filter_list(self):
+    def get_chart_filter_list(self, proxy):
 
         chart_filters = []
         chart_list = ['lagrangian objective', 'aggregated objectives',
                       'objectives', 'ineq_constraints', 'eq_constraints', 'objective (colored)']
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+        if proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
             chart_list.remove('ineq_constraints')
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
             chart_list.remove('eq_constraints')
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and \
-                self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and \
+                proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
             chart_list.remove('objective (colored)')
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'charts'))
@@ -800,21 +800,21 @@ class FunctionManagerDisc(SoSWrapp):
                 if chart_filter.filter_key == 'charts':
                     charts = chart_filter.selected_values
         if 'objective (colored)' in charts:
-            if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
-            self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+            if not proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
+            proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
                 optim_output_df = deepcopy(
-                    self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
+                    proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
                 new_chart = self.get_chart_obj_constraints_iterations(optim_output_df, [self.OBJECTIVE],
                                                                       'objective (colored)')
             instanciated_charts.append(new_chart)
 
-        func_df = self.get_sosdisc_inputs('function_df')
+        func_df = proxy.get_sosdisc_inputs('function_df')
         chart_list = ['lagrangian objective', 'aggregated objectives',
                       'objectives', 'ineq_constraints', 'eq_constraints', ]
 
         for chart in chart_list:
             new_chart = None
-            optim_output_df = self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)
+            optim_output_df = proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)
             parameters_df, obj_list, ineq_list, eq_list = self.get_parameters_df(
                 func_df)
             if chart in charts:
