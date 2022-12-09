@@ -72,7 +72,7 @@ def _reproduce_mda_structure_as_in_gemseo(cs, authorize_self_coupled_disciplines
             if len(coupled_disciplines) > 1 or (
                     len(coupled_disciplines) == 1
                     and cs.is_self_coupled(first_disc)
-                    and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
+#                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
                     and authorize_self_coupled_disciplines
                 ):
                 #- MDA detection 
