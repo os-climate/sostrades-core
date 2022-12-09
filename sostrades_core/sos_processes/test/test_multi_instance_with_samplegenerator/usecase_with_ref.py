@@ -42,7 +42,7 @@ class Study(StudyManager):
         list_of_values_b_z = [[], dict_of_list_values['Disc1.b'],
                               [], [], dict_of_list_values['Disc3.z']]
         input_selection_cp_b_z = pd.DataFrame({'selected_input': [False, True, False, False, True],
-                                                'full_name': ['', 'Disc1.b', '', '', 'Disc3.z'],
+                                                'full_name': ['', 'Disc1.b', '', '', 'z'],
                                                 'list_of_values': list_of_values_b_z
                                                 })
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = input_selection_cp_b_z

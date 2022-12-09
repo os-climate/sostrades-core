@@ -36,7 +36,7 @@ class ProcessBuilder(BaseProcessBuilder):
                            'scatter_ns': 'ns_ac',
                            'gather_ns': 'ns_barrierr'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.ee.smaps_manager.add_build_map('name_list', my_scatter_dict)
+        self.ee.scattermap_manager.add_build_map('name_list', my_scatter_dict)
         self.ee.ns_manager.add_ns_def(dict((my_namespace, )))
     
         # instantiate factory by getting builder from process

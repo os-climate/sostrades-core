@@ -32,7 +32,7 @@ from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFacto
 from copy import copy
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
-DEFAULT_SMAPS_MANAGER_NAME = 'default_smap_namanger'
+DEFAULT_scattermap_manager_NAME = 'default_smap_namanger'
 
 
 class ExecutionEngineException (Exception):
@@ -73,8 +73,8 @@ class ExecutionEngine:
                               study_filename=self.study_filename,
                               ns_manager=self.ns_manager,
                               logger=get_sos_logger(f'{self.logger.name}.DataManager'))
-        self.smaps_manager = ScatterMapsManager(
-            name=DEFAULT_SMAPS_MANAGER_NAME, ee=self)
+        self.scattermap_manager = ScatterMapsManager(
+            name=DEFAULT_scattermap_manager_NAME, ee=self)
 
         self.tool_factory = ToolFactory(
             self, self.study_name)

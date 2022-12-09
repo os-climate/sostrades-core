@@ -47,18 +47,18 @@ class Study(StudyManager):
         # configure the scenarios
         scenario_list_outer = ['scenario_1', 'scenario_2']
         scenario_list_inner = ['name_1', 'name_2']
+
+
         for i, sc in enumerate(scenario_list_outer):
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.builder_mode'] = 'multi_instance'
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.scenario_df'] = scenario_df_inner
             values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.constant'] = self.constant[i]
             values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.power'] = self.power[i]
-            values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.z'] = self.z[i]
+            values_dict[self.study_name + '.outer_ms.'+sc+'.z'] = self.z[i]
             for j, name in enumerate(scenario_list_inner):
                 values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.'+name+'.Disc1.b'] = self.b[i][j]
-
-        for j, name in enumerate(scenario_list_inner):
-            values_dict[self.study_name + '.'+name+'.a'] = self.a[j]
-            values_dict[self.study_name + '.'+name+'.x'] = self.x[j]
+                values_dict[self.study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'] = self.a[i]
+                values_dict[self.study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'] = self.x[i]
 
         return [values_dict]
 

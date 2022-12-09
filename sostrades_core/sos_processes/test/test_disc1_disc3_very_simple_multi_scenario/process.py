@@ -39,7 +39,7 @@ class ProcessBuilder(BaseProcessBuilder):
                   'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
 
-        self.ee.smaps_manager.add_build_map('name_list', ac_map)
+        self.ee.scattermap_manager.add_build_map('name_list', ac_map)
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
@@ -50,7 +50,7 @@ class ProcessBuilder(BaseProcessBuilder):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
 
-        self.ee.smaps_manager.add_build_map(
+        self.ee.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
 
         # shared namespace

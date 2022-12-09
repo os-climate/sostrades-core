@@ -632,7 +632,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             )
 
                         # get maps of scatter_architecture
-                        scatter_map = self.ee.smaps_manager.get_build_map_with_input_name(
+                        scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
                             args[0]
                         )
                         # get initial builders_dict and activation_dict for
@@ -763,7 +763,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
          ex : a sumbuilder at the AC node
 
         """
-        scatter_map = self.ee.smaps_manager.get_build_map_with_input_name(
+        scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
             scatter_map_name
         )
         if not isinstance(scatter_map_name, str):
@@ -989,7 +989,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             if sub_scatter_builder_map_name is not None:
                 # Add the sub list to compute the sub scatter
                 sub_scatter_builder_map = (
-                    self.ee.smaps_manager.get_build_map_with_input_name(
+                    self.ee.scattermap_manager.get_build_map_with_input_name(
                         sub_scatter_builder_map_name
                     )
                 )
@@ -1012,12 +1012,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 f'{namespace}.{val}' for val in input_value
             ]
 
-            if full_input_name not in self.ee.smaps_manager.build_maps_dict:
+            if full_input_name not in self.ee.scattermap_manager.build_maps_dict:
                 child_map = deepcopy(map.get_map())
                 if map.INPUT_NS in map.get_map():
                     del child_map[map.INPUT_NS]
 
-                self.ee.smaps_manager.add_build_map(full_input_name, child_map)
+                self.ee.scattermap_manager.add_build_map(full_input_name, child_map)
 
                 if isinstance(builder, list):
                     if namespace == self.sos_name:

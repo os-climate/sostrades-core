@@ -30,7 +30,7 @@ class Study(StudyManager):
         """
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['Eval.x'],
+        dspace_dict = {'variable': ['x'],
                        'lower_bnd': [0.],
                        'upper_bnd': [10.],
 
@@ -38,7 +38,7 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
+                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'Eval.y_1',
                                            'Eval.y_2',
                                            'Eval.z']}
         input_selection_x = pd.DataFrame(input_selection_x)

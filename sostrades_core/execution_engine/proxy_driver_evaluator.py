@@ -310,7 +310,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         var_full_name = self.ee.ns_manager.compose_ns(
                             [driver_evaluator_ns, sc, var])
                         scenarios_data_dict[var_full_name] = sc_row.loc[var]
-                if scenarios_data_dict:
+                if scenarios_data_dict and self.subprocess_is_configured():
                     # push to dm
                     # TODO: should also alter associated disciplines' reconfig.
                     # flags for structuring ? TO TEST

@@ -104,13 +104,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # configure the scenarios
         scenario_list = ['scenario_1', 'scenario_2']
-        dict_values[self.study_name + '.a'] = self.a1
-        dict_values[self.study_name + '.x'] = self.x1
+
         for scenario in scenario_list:
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = self.power
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -120,7 +119,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                       'scenario_W',
                                                       'scenario_2'],
                                     'Disc1.b': [self.b1, 1e6, self.b2],
-                                    'Disc3.z': [self.z1, 1e6, self.z2]})
+                                    'z': [self.z1, 1e6, self.z2]})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -180,13 +179,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # configure the Reference scenario
         # Non-trade variables (to propagate)
-        dict_values[self.study_name + '.a'] = self.a
-        dict_values[self.study_name + '.x'] = self.x
+        dict_values[f'{self.study_name}.multi_scenarios.ReferenceScenario.a'] = self.a
+        dict_values[f'{self.study_name}.multi_scenarios.ReferenceScenario.x'] = self.x
         dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = self.constant
         dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.power'] = self.power
         # Trade variables reference (not to propagate)
         dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc1.b'] = self.b
-        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.z'] = self.z
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.z'] = self.z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # Configure b and z of others scenarios (trade variables)
@@ -195,17 +194,19 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                       'scenario_W',
                                                       'scenario_2'],
                                     'Disc1.b': [self.b1, 1e6, self.b2],
-                                    'Disc3.z': [self.z1, 1e6, self.z2]})
+                                    'z': [self.z1, 1e6, self.z2]})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # Check trades variables are ok and that non-trade variables have been propagated to other scenarios
         self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.Disc1.b'), self.b1)
         self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.Disc1.b'), self.b2)
-        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.Disc3.z'), self.z1)
-        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.Disc3.z'), self.z2)
-        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.a'), self.a)
-        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.x'), self.x)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.z'), self.z1)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.z'), self.z2)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.a'), self.a)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.a'), self.a)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.x'), self.x)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.x'), self.x)
         scenario_list = ['scenario_1', 'scenario_2']
         for scenario in scenario_list:
             self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
@@ -311,16 +312,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # manually configure the scenarios non-varying values (~reference)
         private_val = {}
         scenario_list = ['scenario_1', 'scenario_2']
-        private_val[self.study_name + '.a'] = self.a1
-        private_val[self.study_name + '.x'] = self.x1
         for scenario in scenario_list:
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = self.power
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.z'] = self.z1
-
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
         self.exec_eng.load_study_from_input_dict(private_val)
         self.exec_eng.execute()
 
@@ -347,7 +344,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1, self.z1], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'Disc3.z'])
+            [['scenario_1', True, self.b1, self.z1], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
 
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
@@ -357,18 +354,17 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # manually configure the scenarios non-varying values (~reference)
         private_val = {}
         scenario_list = ['scenario_1', 'scenario_2']
-        private_val[self.study_name + '.a'] = self.a1
-        private_val[self.study_name + '.x'] = self.x1
         for scenario in scenario_list:
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = self.power
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+            private_val[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
         self.exec_eng.load_study_from_input_dict(private_val)
         self.exec_eng.execute()
 
         y1, o1 = (self.a1 * self.x1 + self.b1, self.constant + self.z1 ** self.power)
-        y2, o2 = (self.a1 * self.x1 + self.b2, self.constant + self.z2 ** self.power)
+        y2, o2 = (self.a1 * self.x1 + self.b2, self.constant + self.z1 ** self.power)
         dump_dir = join(self.root_dir, self.namespace)
 
         BaseStudyManager.static_dump_data(
@@ -418,15 +414,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         # manually configure the scenarios non-varying values (~reference)
         scenario_list = ['scenario_1', 'scenario_2']
-        dict_values[self.study_name + '.a'] = self.a1
-        dict_values[self.study_name + '.x'] = self.x1
         for scenario in scenario_list:
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = self.power
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.z'] = self.z1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.execute()
         y1, o1 = (self.a1 * self.x1 + self.b1, self.constant + self.z1 ** self.power)
@@ -442,7 +435,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1, self.z2], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'Disc3.z'])
+            [['scenario_1', True, self.b1, self.z2], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df']= scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.execute()
@@ -536,7 +529,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                   'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
 
-        self.exec_eng.smaps_manager.add_build_map('name_list', ac_map)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', ac_map)
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
@@ -547,7 +540,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
 
         # shared namespace
@@ -629,9 +622,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
             private_val[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
         private_val[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.z'] = 1.2
         private_val[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.z'] = 1.5
 
         self.exec_eng.load_study_from_input_dict(private_val)
 
@@ -662,7 +655,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                   'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
 
-        self.exec_eng.smaps_manager.add_build_map('name_list', ac_map)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', ac_map)
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
@@ -673,7 +666,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
 
         # shared namespace
@@ -759,9 +752,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
             private_val[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
         private_val[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.z'] = 1.2
         private_val[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.z'] = 1.5
 
         dict_values.update(private_val)
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -796,7 +789,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                   'gather_ns': 'ns_scenario',
                   'ns_to_update': ['ns_data_ac']}
 
-        self.exec_eng.smaps_manager.add_build_map('name_list', ac_map)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', ac_map)
 
         # scenario build map
         scenario_map = {'input_name': 'scenario_list',
@@ -807,7 +800,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
 
         # shared namespace
@@ -923,9 +916,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
             private_val[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
         private_val[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.z'] = 1.2
         private_val[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.z'] = 1.5
 
         self.exec_eng.load_study_from_input_dict(private_val)
 
@@ -996,9 +989,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+                    '.multi_scenarios.scenario_1.z'] = 1.2
         dict_values[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+                    '.multi_scenarios.scenario_2.z'] = 1.5
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -1081,7 +1074,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
             dict_values[self.study_name +
-                        '.multi_scenarios.' + scenario + '.Disc3.z'] = 1.2
+                        '.multi_scenarios.' + scenario + '.z'] = 1.2
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -1151,7 +1144,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
             dict_values[self.study_name +
-                        '.multi_scenarios.' + scenario + '.Disc3.z'] = 1.2
+                        '.multi_scenarios.' + scenario + '.z'] = 1.2
 
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_A.Disc1.name_1.b'] = b1
@@ -1245,7 +1238,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
             dict_values[self.study_name +
-                        '.multi_scenarios.' + scenario + '.Disc3.z'] = 1.2
+                        '.multi_scenarios.' + scenario + '.z'] = 1.2
 
             dict_values[self.study_name +
                         f'.multi_scenarios.{scenario}.Disc1.name_1.b'] = b1
@@ -1355,7 +1348,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             dict_values[self.study_name + '.multi_scenarios.' +
                         scenario + '.Disc3.power'] = 2
             dict_values[self.study_name +
-                        '.multi_scenarios.' + scenario + '.Disc3.z'] = 1.2
+                        '.multi_scenarios.' + scenario + '.z'] = 1.2
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
