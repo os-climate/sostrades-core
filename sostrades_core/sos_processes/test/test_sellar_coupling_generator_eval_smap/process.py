@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Sample Generator Smap',
+        'label': 'Core Test Sellar Coupling Sample Generator Smap',
         'description': '',
         'category': '',
         'version': '',
@@ -50,7 +50,7 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns(
             'ns_scatter_scenario', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.Eval')
+            'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
@@ -72,7 +72,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # multi scenario driver builder
         multi_scenarios = self.ee.factory.create_driver(
-            'Eval', coupling_builder, map_name='scenario_list'
+            'Eval', coupling_builder, map_name='scenario_list', flatten_subprocess=True
         )
 
         # sample generator builder

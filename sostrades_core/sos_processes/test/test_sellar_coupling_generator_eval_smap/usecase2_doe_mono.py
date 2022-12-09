@@ -26,7 +26,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['Eval.x', 'Eval.z'],
+        dspace_dict = {'variable': ['Eval.SellarCoupling.x', 'Eval.SellarCoupling.z'],
 
                        'lower_bnd': [0., [-10., 0.]],
                        'upper_bnd': [10., [10., 10.]],
@@ -35,14 +35,14 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
-                                             'Eval.y_2',
-                                             'Eval.z']}
+                               'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'Eval.SellarCoupling.x', 'Eval.SellarCoupling.y_1',
+                                             'Eval.SellarCoupling.y_2',
+                                             'Eval.SellarCoupling.z']}
         input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': ['Eval.c_1', 'Eval.c_2', 'Eval.obj',
-                                                    'Eval.y_1', 'Eval.y_2']}
+                                      'full_name': ['Eval.SellarCoupling.c_1', 'Eval.SellarCoupling.c_2', 'Eval.SellarCoupling.obj',
+                                                    'Eval.SellarCoupling.y_1', 'Eval.SellarCoupling.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         disc_dict = {}
@@ -59,10 +59,10 @@ class Study(StudyManager):
 
         # Sellar inputs
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.x'] = array([1.])
-        disc_dict[f'{ns}.Eval.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.x'] = array([1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

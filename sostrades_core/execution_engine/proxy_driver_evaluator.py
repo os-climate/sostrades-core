@@ -306,9 +306,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # check that there are indeed variable changes input, with respect
             # to reference scenario
             if var_names:
-                if instance_reference:
-                    scenario_df = self.set_reference_trade_variables_in_scenario_df(
-                        scenario_df)
+                #==============================================================
+                # if instance_reference:
+                #     scenario_df = self.set_reference_trade_variables_in_scenario_df(
+                #         scenario_df)
+                #==============================================================
 
                 driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(
                     self)
