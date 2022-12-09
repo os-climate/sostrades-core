@@ -216,7 +216,7 @@ class DesignVarDiscipline(SoSWrapp):
 
         return test
 
-    def get_chart_filter_list(self):
+    def get_chart_filter_list(self, proxy):
 
         chart_filters = []
         chart_list = ['BSpline']

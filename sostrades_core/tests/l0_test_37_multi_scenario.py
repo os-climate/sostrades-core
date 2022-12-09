@@ -426,6 +426,13 @@ class TestMultiScenario(unittest.TestCase):
         # Since reference values have been propagated, it should be able to already execute.
         self.exec_eng.execute()
 
+        # Change non-trade variable value from reference and check it has induced a reconfiguration and re-propagation
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = 23
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
+                                                        scenario + '.Disc3.constant'), 23)
+
         # Now, non-trade variables from non-ref scenarios are modified:
         scenario_list = ['scenario_1', 'scenario_2', 'scenario_4']
 

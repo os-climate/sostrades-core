@@ -30,7 +30,6 @@ class Study(StudyManager):
         """
 
         ns = f'{self.study_name}'
-        ns = f'{self.study_name}'
 
         dict_of_list_values = {
             'x': [array([3.]), array([4.])],
@@ -62,6 +61,15 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
         disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        disc_dict[f'{ns}.Eval.instance_reference'] = True
+
+        # Sellar referene inputs
+        local_dv = 10.
+        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 

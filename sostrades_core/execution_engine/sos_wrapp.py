@@ -90,7 +90,7 @@ class SoSWrapp(object):
         self.local_data = {}
         self.jac_dict = {}
         self.jac_boundaries = {}
-        self.inst_desc_in={}
+        self.inst_desc_in = {}
         self.inst_desc_out = {}
 
 
@@ -252,7 +252,7 @@ class SoSWrapp(object):
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
             self.local_data.update(outputs)
 
-    def get_chart_filter_list(self):
+    def get_chart_filter_list(self, proxy):
         """ Return a list of ChartFilter instance base on the inherited
         class post processing filtering capabilities
 
