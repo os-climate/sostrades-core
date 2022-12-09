@@ -103,7 +103,7 @@ class TreeView:
 
             if namespace in treenodes:
                 treenode = treenodes[namespace]
-                self.set_treenode_data(treenode, key, val)
+                self.set_treenode_data(treenode, key, val, disc_dict)
 
             else:
                 try:  # Todo review this code because access on exec engine attribute is not correct
@@ -112,7 +112,7 @@ class TreeView:
                     if val['io_type'] == 'in':
                         treenode = self.add_treenode(
                             None, namespace.split(NS_SEP))
-                        self.set_treenode_data(treenode, key, val)
+                        self.set_treenode_data(treenode, key, val, disc_dict)
                 except:
                     pass
 
@@ -128,11 +128,25 @@ class TreeView:
             except:
                 pass
 
-    def set_treenode_data(self, treenode, key, val):
+    def set_treenode_data(self, treenode, key, val, disc_dict):
 
         if not self.no_data:
 
             treenode.data[key] = {k: v for k, v in val.items()}
+
+            # retrieve model name full path for variable key
+            model_name_full_path = val['model_origin']
+            io_type = val['io_type']
+            if val['model_origin'] in disc_dict.keys():
+                discipline_info = disc_dict[val['model_origin']]
+                model_name_full_path = discipline_info["model_name_full_path"]
+                var_name = val['var_name']
+                # Check if the data is a stron,g coupling (the ee set it to input but it is an output)
+                if val['io_type'] == 'in' and var_name not in discipline_info['reference']._data_in.keys() \
+                    and var_name in discipline_info['reference']._data_out.keys():
+                    io_type = 'out'
+
+            treenode.data[key]['variable_key'] = treenode.create_data_key(model_name_full_path, io_type, val['var_name'])
 
             if key in treenode.disc_data:
                 treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
