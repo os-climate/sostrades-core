@@ -20,6 +20,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
+from sostrades_core.execution_engine.archi_builder import  ArchiBuilder
 import inspect
 
 def get_ns_list_in_builder_list(builder_list):
@@ -48,9 +49,12 @@ def get_ns_list_in_sub_builder(builder):
 
 
     if ProxyDisciplineBuilder in inspect.getmro(builder.cls):
-        builder_list_to_build = builder.args['cls_builder']
-        for sub_builder in builder_list_to_build:
-            ns_sub_list = get_ns_list_in_sub_builder(sub_builder)
-            ns_list.extend(ns_sub_list)
+        if builder.cls == ArchiBuilder :
+            print('Namespaces in architecture df of an archibuilder are not found to be updated : Use a scatter_map with ns_to_update if needed')
+        else :
+            builder_list_to_build = builder.args['cls_builder']
+            for sub_builder in builder_list_to_build:
+                ns_sub_list = get_ns_list_in_sub_builder(sub_builder)
+                ns_list.extend(ns_sub_list)
 
     return ns_list
