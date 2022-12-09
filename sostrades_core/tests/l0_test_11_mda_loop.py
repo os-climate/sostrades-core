@@ -1195,8 +1195,143 @@ class TestMDALoop(unittest.TestCase):
         self.assertAlmostEqual(
             abscissa_target[1], graph_list[0].series[0].abscissa[1], delta=tolerance)
 
+    def test_18_check_if_proxy_coupling_grammar_is_equal_to_GEMSEO_one_for_sellar_case(self):
+        '''
+        Context: 
+        the MDAChain is a GEMSEO object instantiated during prepare_execution phase.
+        However, during configuration, we need to mimic the input and output grammar of the MDAChain 
+        (that is not instantiated at this time) to set the ProxyCoupling i/o grammar.
+        Check:
+        We check here that the grammar of the ProxyCoupling (at configuration time) is strictly equal to the one of the MDAChain (prepare_execution).
+        Check performed on Sellar coupling ( mda with 2 disc, chained to a single disc)
+        '''
+        
+        exec_eng = ExecutionEngine(self.name)
+        coupling_name = "SellarCoupling"
+
+        # add Sellar disciplines
+        disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
+        
+        sellar_problem = exec_eng.factory.get_builder_from_module('Sellar_Problem', disc_dir + 'SellarProblem')
+        sellar2 = exec_eng.factory.get_builder_from_module('Sellar_2', disc_dir + 'Sellar2')
+        sellar1 = exec_eng.factory.get_builder_from_module('Sellar_1', disc_dir + 'Sellar1')
+        builder_list = [sellar_problem, sellar2, sellar1]
+        
+        ns_dict = {'ns_OptimSellar': exec_eng.study_name + '.SellarCoupling'}
+        
+        exec_eng.ns_manager.add_ns_def(ns_dict)
+        
+        exec_eng.factory.set_builders_to_coupling_builder(builder_list)
+        
+        exec_eng.configure()
+        
+        # define usecase inputs
+        disc_dict = {}
+        disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{self.name}.{coupling_name}.max_mda_iter'] = 100
+        disc_dict[f'{self.name}.{coupling_name}.tolerance'] = 1e-12
+        
+        # load data
+        exec_eng.load_study_from_input_dict(disc_dict)
+        
+        # prepare execution (create GEMSEO objects)
+        exec_eng.prepare_execution()
+        
+        # check if proxyCoupling grammar is the same than the MDAChain
+        proxy_in_names = sorted(exec_eng.root_process.get_input_data_names())
+        disc_in_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_input_data_names())
+        self.assertEqual(len(proxy_in_names), len(disc_in_names))
+        self.assertListEqual(proxy_in_names, disc_in_names)
+
+        proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
+        disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
+        self.assertEqual(len(proxy_out_names), len(disc_out_names))
+        self.assertListEqual(proxy_out_names, disc_out_names)
+
+#         for k1, k2 in zip(proxy_in_names, disc_in_names):
+#             flag = True
+#             for excl in list(exec_eng.root_process.DESC_IN.keys()) + list(exec_eng.root_process.NUM_DESC_IN.keys()) :
+#                 if excl in k1:
+#                     flag = False
+#                     break
+#             if flag:
+#                 print(k1, k2)
+        
+        
+    def test_19_check_if_proxy_coupling_grammar_is_equal_to_GEMSEO_one_for_sobieski_case(self):
+        '''
+        Context: 
+        The MDAChain is a GEMSEO object instantiated during prepare_execution phase.
+        However, during configuration, we need to mimic the input and output grammar of the MDAChain 
+        (that is not instantiated at this time) to set the ProxyCoupling i/o grammar.
+        Check:
+        We check here that the grammar of the ProxyCoupling (at configuration time) is strictly equal to the one of the MDAChain (prepare_execution).
+        Check performed on Sobieski case (MDA over 3 disciplines, chained with Mission discipline).
+        '''
+        # process setup
+        exec_eng = ExecutionEngine(self.name)
+        
+        mod_path0 = 'sostrades_core.sos_wrapping.test_discs.sobieski.SobieskiMission'
+        disc_name = 'SobieskiMission'
+        disc0_builder = exec_eng.factory.get_builder_from_module(disc_name, mod_path0)
+        
+        mod_path1 = 'sostrades_core.sos_wrapping.test_discs.sobieski.SobieskiStructure'
+        disc_name = 'SobieskiStructure'
+        disc1_builder = exec_eng.factory.get_builder_from_module(disc_name, mod_path1)
+        
+        mod_path2 = 'sostrades_core.sos_wrapping.test_discs.sobieski.SobieskiAerodynamics'
+        disc_name = 'SobieskiAerodynamics'
+        disc2_builder = exec_eng.factory.get_builder_from_module(disc_name, mod_path2)
+        
+        mod_path3 = 'sostrades_core.sos_wrapping.test_discs.sobieski.SobieskiPropulsion'
+        disc_name = 'SobieskiPropulsion'
+        disc3_builder = exec_eng.factory.get_builder_from_module(disc_name, mod_path3)
+        
+        ns_dict = {'ns_OptimSobieski': self.name}
+        exec_eng.ns_manager.add_ns_def(ns_dict)
+        
+        builder_list=[disc0_builder,disc1_builder,disc2_builder,disc3_builder]
+        exec_eng.factory.set_builders_to_coupling_builder(builder_list)
+        
+        exec_eng.configure()
+        
+        # load data
+        sc_name = "SobieskyCoupling"
+        disc_dict = {
+                      '{sc_name}.z': [0.05,45000,1.6,5.5,55.,1000],
+                      '{sc_name}.y_14': [50606.9,7306.20],
+                      '{sc_name}.y_24':  [4.15], 
+                      '{sc_name}.y_34': [1.10], 
+                      '{sc_name}.x_1': [0.25,1.0],
+                      '{sc_name}.y_21':  [50606.9], 
+                      '{sc_name}.y_31': [6354.32], 
+                      '{sc_name}.x_2': [1.0],
+                      '{sc_name}.y_12':  [50606.9,0.95], 
+                      '{sc_name}.y_32': [12194.2], 
+                      '{sc_name}.x_3': [0.5],
+                      '{sc_name}.y_23':  [12194.2], 
+                      }
+        exec_eng.load_study_from_input_dict(disc_dict)
+        
+        # prepare execution (create GEMSEO objects)
+        exec_eng.prepare_execution()
+        
+        # check if proxyCoupling grammar is the same than the MDAChain
+        proxy_in_names = sorted(exec_eng.root_process.get_input_data_names())
+        disc_in_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_input_data_names())
+        self.assertEqual(len(proxy_in_names), len(disc_in_names))
+        self.assertListEqual(proxy_in_names, disc_in_names)
+
+        proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
+        disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
+        self.assertEqual(len(proxy_out_names), len(disc_out_names))
+        self.assertListEqual(proxy_out_names, disc_out_names)
 
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_17_mda_loop_with_pre_run_mda_and_post_processing()
+    cls.test_19_check_if_proxy_coupling_grammar_is_equal_to_GEMSEO_one_for_sobieski_case()
