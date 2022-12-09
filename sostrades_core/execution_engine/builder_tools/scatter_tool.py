@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
-import copy
+from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -39,7 +40,8 @@ class ScatterTool(SosTool):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder, map_name, coupling_per_scenario=True, hide_coupling_in_driver=False):
+    def __init__(self, sos_name, ee, cls_builder, map_name=None, coupling_per_scenario=True,
+                 hide_coupling_in_driver=False):
         '''
         Constructor
         '''
@@ -64,9 +66,11 @@ class ScatterTool(SosTool):
         '''
         SosTool.associate_tool_to_driver(
             self, driver, cls_builder=cls_builder, associated_namespaces=associated_namespaces)
-        self.sc_map = self.ee.smaps_manager.get_build_map(self.map_name)
-        self.ee.smaps_manager.associate_disc_to_build_map(self)
-        self.sc_map.configure_map(self.sub_builders)
+
+        if self.map_name is not None:
+            self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
+            self.ee.scattermap_manager.associate_disc_to_build_map(self)
+            self.sc_map.configure_map(self.sub_builders)
 
     def prepare_tool(self):
         '''
@@ -80,16 +84,19 @@ class ScatterTool(SosTool):
             # sce_df = copy.deepcopy(scenario_df)
             if instance_reference:
                 scenario_df = scenario_df.append(
-                {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
-                ignore_index=True)
+                    {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
+                    ignore_index=True)
 
             self.set_scatter_list(scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
-                                  == True][self.driver.SCENARIO_NAME].values.tolist())
+                                              == True][self.driver.SCENARIO_NAME].values.tolist())
 
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
             self.driver)
 
-        ns_to_update_name_list = self.sc_map.get_ns_to_update()
+        if self.sc_map is None:
+            ns_to_update_name_list = get_ns_list_in_builder_list(self.sub_builders)
+        else:
+            ns_to_update_name_list = self.sc_map.get_ns_to_update()
         # store ns_to_update namespace object
         self.ns_to_update = {}
         for ns_name in ns_to_update_name_list:
@@ -98,7 +105,7 @@ class ScatterTool(SosTool):
         if self.hide_coupling_in_driver:
             self.driver_display_value = self.driver.get_disc_display_name()
 
-        if self.flatten_subprocess :
+        if self.flatten_subprocess:
             self.coupling_per_scenario = False
 
     def set_scatter_list(self, scatter_list):
@@ -173,13 +180,18 @@ class ScatterTool(SosTool):
         Return the list of namespace keys for future builder association
         All namespaces are not added in shared_ns_dict to be transparent and only associated to the right disciplines
         '''
-        ns_scatter_id = self.sc_map.modify_scatter_ns(
-            name, self.local_namespace)
 
-        ns_update_ids = self.sc_map.update_ns(
-            self.ns_to_update, name, self.local_namespace, add_in_shared_ns_dict=False)
-        ns_ids_list = [ns_scatter_id]
-        ns_ids_list.extend(ns_update_ids)
+        ns_ids_list = []
+        extra_name = f'{self.driver.sos_name}.{name}'
+        after_name = self.driver.father_executor.get_disc_full_name()
+
+        for ns_name, ns in self.ns_to_update.items():
+            updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
+                ns.get_value(), extra_name, after_name=after_name)
+            display_value= ns.get_display_value_if_exists()
+            ns_id = self.ee.ns_manager.add_ns(
+                ns_name, updated_value,display_value=display_value, add_in_shared_ns_dict=False)
+            ns_ids_list.append(ns_id)
 
         return ns_ids_list
 
@@ -208,13 +220,13 @@ class ScatterTool(SosTool):
 
         for builder in self.sub_builders:
             old_builder_name = builder.sos_name
-            #if flatten subprocess then the discipline will be build at coupling above the driver
-            #then the name of the driver must be inside the discipline name
-            #else the discipline is build in the driver then no need of driver_name
-            if self.flatten_subprocess :
+            # if flatten subprocess then the discipline will be build at coupling above the driver
+            # then the name of the driver must be inside the discipline name
+            # else the discipline is build in the driver then no need of driver_name
+            if self.flatten_subprocess:
                 driver_name = self.driver.sos_name
                 disc_name = f'{driver_name}.{name}.{old_builder_name}'
-            else :
+            else:
                 disc_name = f'{name}.{old_builder_name}'
 
             builder.set_disc_name(disc_name)

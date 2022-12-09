@@ -619,6 +619,7 @@ def convert_new_type_into_array(
                             raise ValueError(msg)
                     elif var_type == 'dataframe':
                         # if value is a DataFrame
+                        # TO DO: Create a function to get the dtypes of columns without the "big" function 'convert_df_into_array'
                         init_values_list, init_metadata = deepcopy(values_list), deepcopy(metadata)
                         if not isinstance(dm_reduced_to_type_and_metadata, dict):
                             excluded_columns = dm_reduced_to_type_and_metadata.get_data(

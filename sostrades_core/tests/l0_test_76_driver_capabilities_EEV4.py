@@ -1039,9 +1039,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t\t|_ name_2\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
-                      '\t\t\t|_ Disc3\n' \
-                      '\t|_ name_1\n' \
-                      '\t|_ name_2'
+                      '\t\t\t|_ Disc3'
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
                          '    |_ root.outer_ms  (ProxyDriverEvaluator) [True]\n' \
                          '        |_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n' \
@@ -1073,9 +1071,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                              usecase.constant[i] + usecase.z[i] ** usecase.power[i])
             for j, name in enumerate(scenario_list_inner):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.indicator'),
-                                 usecase.a[j] * usecase.b[i][j])
+                                 usecase.a[i] * usecase.b[i][j])
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
-                                 usecase.a[j] * usecase.x[j] + usecase.b[i][j])
+                                 usecase.a[i] * usecase.x[i] + usecase.b[i][j])
 
     def test_10_nested_very_simple_multi_scenarios_with_archi_builder(self):
         """

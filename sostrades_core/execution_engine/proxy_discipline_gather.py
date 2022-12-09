@@ -57,7 +57,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
         self.map_name = map_name
         self.input_map_value = None
-        self.sc_map = ee.smaps_manager.get_build_map(self.map_name)
+        self.sc_map = ee.scattermap_manager.get_build_map(self.map_name)
         self.builder = cls_builder
         mod_path = f'{self.EE_PATH}.disciplines_wrappers.discipline_gather_wrapper.DisciplineGatherWrapper'
         cls = self.__factory.get_disc_class_from_module(mod_path)

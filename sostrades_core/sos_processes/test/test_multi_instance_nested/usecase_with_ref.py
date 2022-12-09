@@ -58,11 +58,11 @@ class Study(StudyManager):
 
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.constant'] = self.constant[0]
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.power'] = self.power[0]
-        values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.z'] = self.z[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.z'] = self.z[0]
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1.b'] = self.b[0][0]
 
-        values_dict[self.study_name + '.ReferenceScenario.a'] = self.a[0]
-        values_dict[self.study_name + '.ReferenceScenario.x'] = self.x[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.a'] = self.a[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.x'] = self.x[0]
         # With the usecase filled until here, the study should be able to be executed, since all values would be
         # propagated from the respective reference scenarios from each ms.
 

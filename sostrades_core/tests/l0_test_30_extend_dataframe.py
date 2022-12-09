@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_df,\
-    convert_array_into_new_type, convert_new_type_into_array
+    convert_array_into_new_type, convert_new_type_into_array, DEFAULT_EXCLUDED_COLUMNS
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -460,6 +460,65 @@ class TestExtendDataframe(unittest.TestCase):
         self.assertListEqual(df['years'].values.tolist(),
                              metadata['years'])
 
+    def test_09_df_dtype_filtering(self):
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            disc6_builder)
+        exec_eng.configure()
+        disc6 = exec_eng.root_process.proxy_disciplines[0]
+        metadata = {'type': pd.DataFrame,
+                    'columns': ['name', 'age', 'weight', 'adult', 'favorite complex number', 'satisfaction'],
+                    'shape': (5, 6), 'size': 30,
+                    'dtypes': [str, int, float, bool, complex, float]}
+        arr_to_convert = [['Michel', 30, 50.3, 'True', 1.2j, -1.0],
+                          ['Anne', 55, 62.4, 'True', 47j, 8],
+                          ['Farid', 23, 81.9, 'True', 0.3j, -6.0],
+                          ['Yu', 10, 30.6, 'False', 4.7j, 3],
+                          ['Erling', 17, 62.3, 'False', 69j, 10]]
+        df_init = convert_array_into_df(
+            np.array(arr_to_convert), metadata)
+        exec_eng.load_study_from_input_dict({'EE.df': df_init})
+        old_value = exec_eng.dm.get_value('EE.df')
+
+        profil = cProfile.Profile()
+        profil.enable()
+
+        for i in range(1000):
+            convert_array_into_df(
+                np.array(arr_to_convert), metadata)
+
+        profil.disable()
+        result = StringIO()
+
+        ps = pstats.Stats(profil, stream=result)
+        ps.sort_stats('cumulative')
+        ps.print_stats(100)
+        result = result.getvalue()
+        # chop the string into a csv-like buffer
+        result = 'ncalls' + result.split('ncalls')[-1]
+        result = '\n'.join([','.join(line.rstrip().split(None, 5))
+                            for line in result.split('\n')])
+
+        print(result)
+
+        df_after_exec = exec_eng.dm.get_value('EE.df')
+        self.assertDictEqual(df_after_exec.to_dict(), df_init.to_dict())
+        self.assertListEqual(
+            list(df_after_exec.dtypes),
+            [object, int, float, bool, complex, float]
+        )
+        converted_array = convert_new_type_into_array({'EE.df': df_after_exec}, exec_eng.dm.reduced_dm)['EE.df']
+        self.assertEqual(converted_array.size, (6-2)*5)
+
+        excluded_col = exec_eng.dm.reduced_dm['EE.df']['dataframe_excluded_columns']
+        self.assertListEqual(excluded_col, DEFAULT_EXCLUDED_COLUMNS + ['name', 'adult'])
 
 if '__main__' == __name__:
     cls = TestExtendDataframe()

@@ -79,7 +79,6 @@ class TreeNode:
         # List of models present at current treenode
         self.models_full_path_list = []
 
-        self.discipline_full_path_list = []
         self.model_name = None
         self.model_name_full_path = None
         self.last_treenode = None
@@ -120,8 +119,6 @@ class TreeNode:
         # Serialize models_full_path_list attribute
         dict_obj.update({'models_full_path_list': self.models_full_path_list})
 
-        # Serialize models_full_path_list attribute
-        dict_obj.update({ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST: self.discipline_full_path_list})
         # Serialize markdown_documentation
         dict_obj.update(
             {'markdown_documentation': self.markdown_documentation})
@@ -147,7 +144,7 @@ class TreeNode:
 
         self.model_name_full_path = discipline.get_module()
         self.models_full_path_list.append(self.model_name_full_path)
-        self.discipline_full_path_list.append(discipline.get_disc_full_path())
+
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
         # I/O type : 'in' for data_in and 'out' for data_out
@@ -166,6 +163,7 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
+                new_disc_data["variable_key"] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_IN, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -184,6 +182,7 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
+                new_disc_data["variable_key"] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_OUT, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -218,6 +217,12 @@ class TreeNode:
         markdown_data = TreeNode.get_markdown_documentation(filepath)
         self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
+
+    def create_data_key(self, disc_name, io_type, variable_name):
+        io_type = io_type.lower()
+        return f'{disc_name}_{io_type}put_{variable_name}'
+
+
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
         :params: new_disc_data, variable data
@@ -230,7 +235,7 @@ class TreeNode:
         :type: ProxyDiscipline
         """
 
-        disc_full_path = discipline.get_disc_full_path()
+        disc_full_path = discipline.get_module()
 
         if namespace not in self.disc_data:
             self.disc_data[namespace] = new_disc_data

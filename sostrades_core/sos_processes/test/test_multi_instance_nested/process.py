@@ -30,60 +30,29 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
 
-        # scatter build map
-        ac_map = {'input_name': 'name_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_scatter_scenario',
-                  'output_name': 'ac_name',
-                  'scatter_ns': 'ns_ac',
-                  'gather_ns': 'ns_scenario',
-                  'ns_to_update': ['ns_data_ac']}
 
-        self.ee.smaps_manager.add_build_map('name_list', ac_map)
 
-        # scenario build map
-        scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
-                        'input_ns': 'ns_scatter_scenario',
-                        'output_name': 'scenario_name',
-                        'scatter_ns': 'ns_scenario',
-                        'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
-
-        self.ee.smaps_manager.add_build_map(
-            'scenario_list', scenario_map)
-
-        # shared namespace
-        self.ee.ns_manager.add_ns('ns_barrierr', self.ee.study_name)
-        self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', f'{self.ee.study_name}.outer_ms')
-        self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{self.ee.study_name}.outer_ms.Disc3')
-        self.ee.ns_manager.add_ns(
-            'ns_out_disc3', f'{self.ee.study_name}.outer_ms')
-        self.ee.ns_manager.add_ns(
-            'ns_data_ac', self.ee.study_name)
-        # ns_eval_outer = self.ee.ns_manager.add_ns(
-        #     'ns_eval', f'{self.ee.study_name}.outer_ms')
-        # ns_eval_inner = self.ee.ns_manager.add_ns(
-        #     'ns_eval', f'{self.ee.study_name}.outer_ms.subprocess.inner_ms')
 
         # get builder for disc1
         builder_disc1 = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                                  mod_id='test_disc1_scenario')
         # create an inner ms driver for disc1 only in builder_list
         builder_list = self.ee.factory.create_driver(
-            'inner_ms', builder_disc1, 'name_list')
+            'inner_ms', builder_disc1)
         # get builder for disc3 and append to builder_list
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
-        # builder_list[0].associate_namespaces(ns_eval_inner)
+        # shared namespace
+        self.ee.ns_manager.add_ns(
+            'ns_disc3', f'{self.ee.study_name}')
+        self.ee.ns_manager.add_ns(
+            'ns_out_disc3', f'{self.ee.study_name}')
 
         # create an outer ms driver
         multi_scenarios = self.ee.factory.create_driver(
-            'outer_ms', builder_list, 'scenario_list')
+            'outer_ms', builder_list)
         # multi_scenarios[0].associate_namespaces(ns_eval_outer)
         return multi_scenarios
 

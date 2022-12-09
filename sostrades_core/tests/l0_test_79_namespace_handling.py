@@ -145,16 +145,16 @@ class TestNamespaceHandling(unittest.TestCase):
         builder_list2 = exec_eng.factory.get_builder_from_process(
             'sostrades_core.sos_processes.test', 'test_driver')
         ns_list_standard = deepcopy(exec_eng.ns_manager.ns_list)
-        ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
-            'Scatter1', after_name=exec_eng.study_name)
+        # ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
+        #     'Scatter1', after_name=exec_eng.study_name)
         for builder in builder_list1:
             builder.set_disc_name(f'Scatter1.{builder.sos_name}')
-            builder.associate_namespaces(ns_scatter1)
-        ns_scatter2 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
-            'Scatter2', after_name=exec_eng.study_name, namespace_list=ns_list_standard)
+            # builder.associate_namespaces(ns_scatter1)
+        # ns_scatter2 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
+        #     'Scatter2', after_name=exec_eng.study_name, namespace_list=ns_list_standard)
         for builder in builder_list2:
             builder.set_disc_name(f'Scatter2.{builder.sos_name}')
-            builder.associate_namespaces(ns_scatter2)
+            # builder.associate_namespaces(ns_scatter2)
         builder_list1.extend(builder_list2)
         exec_eng.factory.set_builders_to_coupling_builder(builder_list1)
         exec_eng.configure()

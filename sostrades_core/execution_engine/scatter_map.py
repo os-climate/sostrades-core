@@ -35,7 +35,6 @@ class ScatterMap:
     GATHER_NS_IN = 'gather_ns_in'
     GATHER_NS_OUT = 'gather_ns_out'
     NS_TO_UPDATE = 'ns_to_update'
-    NS_TO_UPDATE_WITH_ACTOR = 'ns_to_update_with_actor'
     ASSOCIATED_INPUTS = 'associated_inputs'
     DEFAULT = 'default'
 
@@ -58,7 +57,7 @@ class ScatterMap:
             scatter_column_name is only necessary when the input_type is a dataframe
         '''
         self.name = name
-        self.map = s_map
+        self.__map = s_map
         self.ee = ee
         self.dependency_disc_list = []  # list of dependency disciplines
         self.builder = None  # builder associated to the scatter_map
@@ -67,103 +66,72 @@ class ScatterMap:
         '''
         Mechanism to update value
         '''
-        self.map = s_map
+        self.__map = s_map
 
     def get_map(self):
         '''
         Get the map in the ScatterMap
         '''
-        return self.map
+        return self.__map
 
     def configure_map(self, builder):
 
         self.builder = builder
 
-    def modify_scatter_ns(self, scatter_name, local_namespace):
-        '''
-        Modify disc scatter_ns value and add it to ns_manager 
-        '''
-        scatter_namespace_name = self.get_scatter_ns()
-
-        if scatter_namespace_name in self.ee.ns_manager.shared_ns_dict:
-            display_value = self.ee.ns_manager.shared_ns_dict[scatter_namespace_name].get_display_value(
-            )
-        else:
-            display_value = None
-        ns_id = self.ee.ns_manager.add_ns(
-            scatter_namespace_name, f'{local_namespace}.{scatter_name}', display_value=display_value, add_in_shared_ns_dict=False)
-
-        return ns_id
-
-    def update_ns(self, old_ns, name, after_name, add_in_shared_ns_dict=True):
-        '''
-        Create namespaces for ns_to_update and add to shared_ns_dict
-        '''
-        ns_ids = []
-
-        for ns_name in old_ns:
-            updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
-                old_ns[ns_name].get_value(), name, after_name=after_name)
-            ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value, add_in_shared_ns_dict=add_in_shared_ns_dict)
-            ns_ids.append(ns_id)
-
-        return ns_ids
-
     def get_input_name(self):
         '''
         Get the input_name in the map
         '''
-        return self.map[self.INPUT_NAME]
+        return self.__map[self.INPUT_NAME]
 
     def get_input_type(self):
         '''
         Get the input_type in the map
         '''
-        return self.map[self.INPUT_TYPE]
+        return self.__map[self.INPUT_TYPE]
 
     def get_input_ns(self):
         '''
         Get the input_ns in the map of output_ns
         '''
-        if self.INPUT_NS in self.map:
-            return self.map[self.INPUT_NS]
+        if self.INPUT_NS in self.__map:
+            return self.__map[self.INPUT_NS]
         else:
-            return self.map[self.OUTPUT_NS]
+            return self.__map[self.OUTPUT_NS]
 
     def get_output_name(self):
         '''
         Get the output_name in the map
         '''
-        return self.map[self.OUTPUT_NAME]
+        return self.__map[self.OUTPUT_NAME]
 
     def get_output_type(self):
         '''
         Get the output_type in the map
         '''
-        return self.map[self.OUTPUT_TYPE]
+        return self.__map[self.OUTPUT_TYPE]
 
     def get_output_ns(self):
         '''
         Get the output_ns in the map
         '''
-        if self.OUTPUT_NS in self.map:
-            return self.map[self.OUTPUT_NS]
+        if self.OUTPUT_NS in self.__map:
+            return self.__map[self.OUTPUT_NS]
         else:
-            return self.map[self.INPUT_NS]
+            return self.__map[self.INPUT_NS]
 
     def get_scatter_var_name(self):
         '''
         Get the scatter_var_name in the map (input_name of the scatter build map associated)
         '''
-        return self.map[self.SCATTER_VAR_NAME]
+        return self.__map[self.SCATTER_VAR_NAME]
 
     def get_scatter_column_name(self):
         '''
         Get the scatter_column_name in the map (input_name of the scatter build map associated). Only necessary when input_type is a dataframe
         '''
-        if self.SCATTER_COLUMN_NAME in self.map:
-            return self.map[self.SCATTER_COLUMN_NAME]
+        if self.SCATTER_COLUMN_NAME in self.__map:
+            return self.__map[self.SCATTER_COLUMN_NAME]
         else:
             return []
 
@@ -171,23 +139,25 @@ class ScatterMap:
         '''
         Get the scatter namespace name in the map (namespace associated to the map)
         '''
-        return self.map[self.SCATTER_NS]
-
+        if self.SCATTER_NS in self.__map :
+            return self.__map[self.SCATTER_NS]
+        else :
+            return None
     def get_gather_ns(self):
         '''
         Get the gather namespace name if gather_ns in map
         '''
-        if self.GATHER_NS in self.map:
-            return self.map[self.GATHER_NS]
+        if self.GATHER_NS in self.__map:
+            return self.__map[self.GATHER_NS]
         else:
-            return self.map[self.INPUT_NS]
+            return self.__map[self.INPUT_NS]
 
     def get_gather_ns_in(self):
         '''
         Get the gather input namespace name if gather_ns_in in map else return ns_gather
         '''
-        if self.GATHER_NS_IN in self.map:
-            return self.map[self.GATHER_NS_IN]
+        if self.GATHER_NS_IN in self.__map:
+            return self.__map[self.GATHER_NS_IN]
         else:
             return self.get_gather_ns()
 
@@ -195,8 +165,8 @@ class ScatterMap:
         '''
         Get the gather output namespace name if gather_ns in map else return ns_gather
         '''
-        if self.GATHER_NS_OUT in self.map:
-            return self.map[self.GATHER_NS_OUT]
+        if self.GATHER_NS_OUT in self.__map:
+            return self.__map[self.GATHER_NS_OUT]
         else:
             return self.get_gather_ns()
 
@@ -204,17 +174,8 @@ class ScatterMap:
         '''
         Get dependent namespaces if ns_to_update in map
         '''
-        if self.NS_TO_UPDATE in self.map:
-            return self.map[self.NS_TO_UPDATE]
-        else:
-            return []
-
-    def get_ns_to_update_with_actor(self):
-        '''
-        Get dependent namespaces if ns_to_update in map
-        '''
-        if self.NS_TO_UPDATE_WITH_ACTOR in self.map:
-            return self.map[self.NS_TO_UPDATE_WITH_ACTOR]
+        if self.NS_TO_UPDATE in self.__map:
+            return self.__map[self.NS_TO_UPDATE]
         else:
             return []
 
@@ -228,8 +189,8 @@ class ScatterMap:
         '''
         Get the associated_inputs on this scatterMap
         '''
-        if self.ASSOCIATED_INPUTS in self.map:
-            return self.map[self.ASSOCIATED_INPUTS]
+        if self.ASSOCIATED_INPUTS in self.__map:
+            return self.__map[self.ASSOCIATED_INPUTS]
         else:
             return []
 
@@ -237,8 +198,8 @@ class ScatterMap:
         '''
         Get default input value on this scatterMap
         '''
-        if self.DEFAULT in self.map:
-            return self.map[self.DEFAULT]
+        if self.DEFAULT in self.__map:
+            return self.__map[self.DEFAULT]
         else:
             return None
 
