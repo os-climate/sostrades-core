@@ -114,5 +114,15 @@ if '__main__' == __name__:
         'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.x')
     a16 = uc_cls.ee.dm.get_value(
         'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.z')
+    a17 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.generated_samples')
+    # print(a17.to_markdown())
+    a18 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.scenario_df')
+    # print(a18.to_markdown())
+    a19 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.usecase_data')
+    import pprint
+    pprint.pprint(a19)
 
     uc_cls.run()

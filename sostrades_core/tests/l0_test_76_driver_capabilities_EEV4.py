@@ -1216,10 +1216,13 @@ class TestSoSDOEScenario(unittest.TestCase):
             '.'.join([self.repo, proc_name, usecase_name]))
 
         study_dump = getattr(
-            imported_module, 'Study')()
+            imported_module, 'Study')(run_usecase=True)
 
         study_dump.load_data()
+        a15 = study_dump.ee.dm.get_value(
+            'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.x')
 
+        study_dump.run()
         # import du usecase usecase_1_doe_mono
 
         ################ Start checks ##########################
@@ -1277,7 +1280,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         #  is at the source of ReferenceScenario appearing first after reconfiguration) is OK or should be handled both
         #  by applying reordering both to proxies and to scattered namespaces.
 
-        ## TREEVIEWS WITH REFERENCESCENARIO AT THE END
+        # TREEVIEWS WITH REFERENCESCENARIO AT THE END
         exp_ns_tree = 'Nodes representation for Treeview root' \
                       '\n|_ root\n' \
                       '\t|_ outer_ms\n' \
@@ -1341,7 +1344,6 @@ class TestSoSDOEScenario(unittest.TestCase):
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
                          '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
                          '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
-
 
         self.assertEqual(exec_eng.display_treeview_nodes(),
                          exp_ns_tree)
