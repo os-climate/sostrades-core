@@ -100,8 +100,13 @@ class ScatterTool(SosTool):
         # store ns_to_update namespace object
         self.ns_to_update = {}
         for ns_name in ns_to_update_name_list:
-            self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
+            if not self.flatten_subprocess :
+                self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
                                                                                  ns_name)
+            else :
+                #if flatten subprocess then the father evaluator for a nested scatter is always the root coupling
+                # and we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
+                self.ns_to_update[ns_name]= self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
         if self.hide_coupling_in_driver:
             self.driver_display_value = self.driver.get_disc_display_name()
 

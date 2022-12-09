@@ -1198,7 +1198,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
     def test_11_usecase_import(self):
         """
-        This test checks the usecase import capability.
+        This test checks the usecase import capability. It also uses the flatten_subprocess flag.
         """
         from os.path import join, dirname
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
@@ -1213,12 +1213,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         imported_module = import_module(
             '.'.join([self.repo, proc_name, usecase_name]))
 
-        study_dump = getattr(
-            imported_module, 'Study')(run_usecase=True)
+        study_dump = imported_module.Study(run_usecase=True)
 
         study_dump.load_data()
-        a15 = study_dump.ee.dm.get_value(
-            'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.x')
+        study_dump.run()
 
         # import du usecase usecase_1_doe_mono
 
