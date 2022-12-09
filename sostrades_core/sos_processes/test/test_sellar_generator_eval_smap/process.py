@@ -36,11 +36,18 @@ class ProcessBuilder(BaseProcessBuilder):
         # simple 2-disc process NOT USING nested scatters
 
         # shared namespace
+
+        # if Mono_instance
+        # self.ee.ns_manager.add_ns(
+        #    'ns_OptimSellar', f'{self.ee.study_name}.Eval')
+        # if Multi_instance
         self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', f'{self.ee.study_name}')
-        self.ee.ns_manager.add_ns('ns_OptimSellar', f'{self.ee.study_name}')
-        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
-        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
+            'ns_OptimSellar', f'{self.ee.study_name}')
+
+        # self.ee.ns_manager.add_ns(
+        #    'ns_scatter_scenario', f'{self.ee.study_name}')
+        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'

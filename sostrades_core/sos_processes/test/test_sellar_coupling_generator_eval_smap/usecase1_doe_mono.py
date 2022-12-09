@@ -30,7 +30,7 @@ class Study(StudyManager):
         """
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['SellarCoupling.x'],
+        dspace_dict = {'variable': ['Eval.SellarCoupling.x'],
                        'lower_bnd': [0.],
                        'upper_bnd': [10.],
 
@@ -38,14 +38,14 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'SellarCoupling.x', 'SellarCoupling.y_1',
-                                           'SellarCoupling.y_2',
-                                           'SellarCoupling.z']}
+                             'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'Eval.SellarCoupling.x', 'Eval.SellarCoupling.y_1',
+                                           'Eval.SellarCoupling.y_2',
+                                           'Eval.SellarCoupling.z']}
         input_selection_x = pd.DataFrame(input_selection_x)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': ['SellarCoupling.c_1', 'SellarCoupling.c_2', 'SellarCoupling.obj',
-                                                    'SellarCoupling.y_1', 'SellarCoupling.y_2']}
+                                      'full_name': ['Eval.SellarCoupling.c_1', 'Eval.SellarCoupling.c_2', 'Eval.SellarCoupling.obj',
+                                                    'Eval.SellarCoupling.y_1', 'Eval.SellarCoupling.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         repo = 'sostrades_core.sos_processes.test'
@@ -63,16 +63,16 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{ns}.eval_inputs'] = input_selection_x
-        disc_dict[f'{ns}.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
+        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
         disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar inputs
         local_dv = 10.
-        disc_dict[f'{ns}.SellarCoupling.x'] = array([1.])
-        disc_dict[f'{ns}.SellarCoupling.y_1'] = array([1.])
-        disc_dict[f'{ns}.SellarCoupling.y_2'] = array([1.])
-        disc_dict[f'{ns}.SellarCoupling.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.x'] = array([1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.SellarCoupling.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

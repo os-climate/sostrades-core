@@ -34,15 +34,15 @@ class Study(StudyManager):
         dict_of_list_values = {
             'x': [array([3.]), array([4.])],
             'z': [array([-10., 0.])],
-            'Eval.Sellar_Problem.local_dv': [10.],
+            'Sellar_Problem.local_dv': [10.],
             'y_1': [array([1.])],
             'y_2': [array([1.])]
         }
-        list_of_values = [dict_of_list_values['Eval.Sellar_Problem.local_dv'], dict_of_list_values['x'],
+        list_of_values = [dict_of_list_values['Sellar_Problem.local_dv'], dict_of_list_values['x'],
                           dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
 
         input_selection_cp_x_z = {'selected_input': [True, True, True, True, True],
-                                  'full_name': ['Eval.Sellar_Problem.local_dv', 'x', 'y_1',
+                                  'full_name': ['Sellar_Problem.local_dv', 'x', 'y_1',
                                                 'y_2',
                                                 'z'],
                                   'list_of_values': list_of_values

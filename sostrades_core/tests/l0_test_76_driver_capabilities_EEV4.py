@@ -1216,7 +1216,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         study_dump = imported_module.Study(run_usecase=True)
 
         study_dump.load_data()
-        study_dump.run()
+        # study_dump.run()
 
         # import du usecase usecase_1_doe_mono
 
