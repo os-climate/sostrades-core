@@ -56,10 +56,10 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # create the inner ms driver
         inner_ms = self.ee.factory.create_driver(
-            'inner_ms',  builder_list, map_name='scenario_list_inner')
+            'inner_ms',  builder_list)
 
         # create an outer ms driver
         outer_ms = self.ee.factory.create_driver(
-            'outer_ms', inner_ms, map_name='scenario_list_outer')
+            'outer_ms', inner_ms)
 
         return outer_ms
