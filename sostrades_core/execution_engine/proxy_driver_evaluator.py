@@ -309,10 +309,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO
             # SUBDISCIPLINES
             if instance_reference:
-                scenario_names_to_propagate = scenario_names[:-1]
+                scenario_names = scenario_names[:-1]
                 ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
                 if ref_changes_dict:
-                    self.propagate_reference_non_trade_variables_changes(ref_changes_dict, ref_dict, scenario_names_to_propagate)
+                    self.propagate_reference_non_trade_variables_changes(ref_changes_dict, ref_dict, scenario_names)
             else:
                 scenario_names = scenario_names
 
