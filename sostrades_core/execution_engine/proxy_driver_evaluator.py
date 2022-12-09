@@ -21,6 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import copy
 import pandas as pd
 from numpy import NaN
+import numpy as np
 
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -288,13 +289,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # NB assuming that the scenario_df entries are unique otherwise there
         # is some intelligence to be added
         scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                                          == True][self.SCENARIO_NAME].values.tolist()
+                                     == True][self.SCENARIO_NAME].values.tolist()
         trade_vars = []
         # check that all the input scenarios have indeed been built
         # (configuration sequence allows the opposite)
         if self.subprocesses_built(scenario_names):
             trade_vars = [col for col in scenario_df.columns if col not in
-                         [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+                          [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
 
         return scenario_df, instance_reference, trade_vars, scenario_names
 
@@ -310,9 +311,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # SUBDISCIPLINES
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
+                    trade_vars)
                 if ref_changes_dict:
-                    self.propagate_reference_non_trade_variables_changes(ref_changes_dict, ref_dict, scenario_names)
+                    self.propagate_reference_non_trade_variables_changes(
+                        ref_changes_dict, ref_dict, scenario_names)
             else:
                 scenario_names = scenario_names
 
@@ -320,10 +323,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # check that there are indeed variable changes input, with respect
             # to reference scenario
             if trade_vars:
-                driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
+                driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(
+                    self)
                 scenarios_data_dict = {}
                 for sc in scenario_names:
-                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME] == sc].iloc[0]  # assuming it is unique # TODO: as index?
+                    # assuming it is unique # TODO: as index?
+                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME]
+                                         == sc].iloc[0]
                     for var in trade_vars:
                         var_full_name = self.ee.ns_manager.compose_ns(
                             [driver_evaluator_ns, sc, var])
@@ -383,26 +389,33 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ref_changes_dict = {}
         if self.subprocesses_built(scenario_names):
             if instance_reference:
-                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
+                    trade_vars)
 
         return ref_changes_dict
 
     def get_reference_non_trade_variables_changes(self, trade_vars):
 
-        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
+        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index(
+        )]
 
-        # Take reference scenario non-trade variables (num and non-num) and its values
+        # Take reference scenario non-trade variables (num and non-num) and its
+        # values
         ref_dict = {}
         for key in ref_discipline.get_input_data_names():
             if all(key.split(ref_discipline.sos_name + '.')[-1] != trade_var for trade_var in trade_vars):
                 ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 
-        # Check if reference values have changed and select only those which have changed
+        # Check if reference values have changed and select only those which
+        # have changed
         ref_changes_dict = {}
         for key in ref_dict.keys():
             if key in self.old_ref_dict.keys():
                 if isinstance(ref_dict[key], pd.DataFrame):
                     if not ref_dict[key].equals(self.old_ref_dict[key]):
+                        ref_changes_dict[key] = ref_dict[key]
+                elif isinstance(ref_dict[key], np.ndarray):
+                    if not (np.array_equal(ref_dict[key], self.old_ref_dict[key])):
                         ref_changes_dict[key] = ref_dict[key]
                 else:
                     if ref_dict[key] != self.old_ref_dict[key]:
@@ -417,7 +430,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
 
-        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
+        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index(
+        )]
 
         # Build other scenarios variables and values dict from reference
         dict_to_propagate = {}
@@ -425,9 +439,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             for sc in scenario_names_to_propagate:
                 if ref_discipline.sos_name in key and self.sos_name in key:
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
-                              key.split(self.sos_name, 1)[-1].split(ref_discipline.sos_name, 1)[-1]
+                        key.split(self.sos_name,
+                                  1)[-1].split(ref_discipline.sos_name, 1)[-1]
                 elif ref_discipline.sos_name in key and not self.sos_name in key:
-                    new_key = key.split(ref_discipline.sos_name, 1)[0] + sc + key.split(ref_discipline.sos_name, 1)[-1]
+                    new_key = key.split(ref_discipline.sos_name, 1)[
+                        0] + sc + key.split(ref_discipline.sos_name, 1)[-1]
                 else:
                     new_key = key
                 if self.dm.check_data_in_dm(new_key):
@@ -590,7 +606,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 dynamic_outputs = {
                     'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
                                           'namespace': self.NS_EVAL}
-                    }
+                }
 
                 selected_inputs_has_changed = False
                 if 'eval_inputs' in disc_in:
@@ -705,7 +721,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
 
         # specific to mono-instance
-        if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE:
+        if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE and self.eval_in_list is not None:
             eval_attributes = {'eval_in_list': self.eval_in_list,
                                'eval_out_list': self.eval_out_list,
                                'reference_scenario': self.get_x0(),

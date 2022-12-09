@@ -36,9 +36,11 @@ class ProcessBuilder(BaseProcessBuilder):
         # simple 2-disc process NOT USING nested scatters
 
         # shared namespace
-        self.ee.ns_manager.add_ns('ns_scatter_scenario', f'{self.ee.study_name}')
+        self.ee.ns_manager.add_ns(
+            'ns_scatter_scenario', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns('ns_OptimSellar', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
+        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
 
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
@@ -56,6 +58,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module('SampleGenerator', mod_cp)
+        cp_builder = self.ee.factory.get_builder_from_module(
+            'SampleGenerator', mod_cp)
 
         return multi_scenarios + [cp_builder]

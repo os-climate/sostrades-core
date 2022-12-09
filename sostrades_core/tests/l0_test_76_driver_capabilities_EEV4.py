@@ -1220,7 +1220,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         a15 = study_dump.ee.dm.get_value(
             'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.x')
 
-        study_dump.run()
         # import du usecase usecase_1_doe_mono
 
         ################ Start checks ##########################

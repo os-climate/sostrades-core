@@ -33,26 +33,16 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-        # simple 2-disc process NOT USING nested scatters
-        scenario_map = {
-            'input_name': 'scenario_list',
-            'input_type': 'string_list',
-            'input_ns': 'ns_scatter_scenario',
-            'output_name': 'scenario_name',
-            'scatter_ns': 'ns_scenario',
-            'gather_ns': 'ns_scatter_scenario',
-            'ns_to_update': ['ns_OptimSellar'],
-        }
 
-        self.ee.smaps_manager.add_build_map('scenario_list', scenario_map)
+        # simple 2-disc process NOT USING nested scatters
 
         # shared namespace
         self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', f'{self.ee.study_name}.Eval')
+            'ns_scatter_scenario', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
-        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
+            'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
+        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
+        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
 
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
@@ -72,7 +62,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # multi scenario driver builder
         multi_scenarios = self.ee.factory.create_driver(
-            'Eval', coupling_builder, map_name='scenario_list', flatten_subprocess=True
+            'Eval', coupling_builder, flatten_subprocess=True
         )
 
         # sample generator builder
