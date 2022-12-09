@@ -47,7 +47,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
         # get instantiator from local Process
         builder_list = self.factory.get_builder_from_process(repo=self.repo,
@@ -127,7 +127,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         # instantiate factory # get instantiator from Discipline class
@@ -198,7 +198,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
@@ -207,7 +207,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('scenario_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('scenario_list', mydict)
 
         # instantiate factory # get instantiator from Discipline class
 
@@ -310,7 +310,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
@@ -319,7 +319,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('scenario_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('scenario_list', mydict)
 
         # instantiate factory # get instantiator from Discipline class
 
@@ -428,7 +428,7 @@ class TestBuildScatter(unittest.TestCase):
                   'gather_ns_in': 'ns_barrierr',
                   'gather_ns_out': 'ns_barrierr'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         # instantiate factory # get instantiator from Discipline class
@@ -545,7 +545,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
@@ -554,7 +554,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('scenario_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('scenario_list', mydict)
 
         mydict = {'input_name': 'toplevel_list',
 
@@ -562,7 +562,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'toplevel_name',
                   'scatter_ns': 'ns_toplevel'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('toplevel_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('toplevel_list', mydict)
 
         mydict = {'input_name': 'secondlevel_list',
 
@@ -570,7 +570,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'secondlevel_name',
                   'scatter_ns': 'ns_secondlevel'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('secondlevel_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('secondlevel_list', mydict)
 
         builder_list = self.factory.get_builder_from_process(repo=self.repo,
                                                              mod_id=self.sub_proc)
@@ -693,7 +693,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
 
         mydict = {'input_name': 'scenario_list',
@@ -702,7 +702,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'scenario_name',
                   'scatter_ns': 'ns_scenario'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('scenario_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('scenario_list', mydict)
 
         mydict = {'input_name': 'toplevel_list',
 
@@ -710,7 +710,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'toplevel_name',
                   'scatter_ns': 'ns_toplevel'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('toplevel_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('toplevel_list', mydict)
 
         mydict = {'input_name': 'secondlevel_list',
 
@@ -718,7 +718,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'secondlevel_name',
                   'scatter_ns': 'ns_secondlevel'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('secondlevel_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('secondlevel_list', mydict)
         # instantiate factory # get instantiator from Discipline class
 
         builder_list = self.factory.get_builder_from_process(repo=self.repo,
@@ -779,7 +779,7 @@ class TestBuildScatter(unittest.TestCase):
                   'output_name': 'ac_name',
                   'scatter_ns': 'ns_ac'}  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        self.exec_eng.smaps_manager.add_build_map('name_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('name_list', mydict)
         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
         # get instantiator from local Process
         builder_list = self.factory.get_builder_from_process(repo=self.repo,

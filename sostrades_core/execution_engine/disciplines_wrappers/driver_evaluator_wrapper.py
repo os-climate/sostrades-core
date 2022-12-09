@@ -57,12 +57,13 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
-                |_ BUILDER_MODE (structuring)
-                |_ USECASE_DATA (structuring)                
-                |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
+            |_ BUILDER_MODE (structuring)
+            |_ USECASE_DATA (structuring)                
+            |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
    2) Description of DESC parameters:
         |_ DESC_IN
             |_ BUILDER_MODE
+            |_ USECASE_DATA
             |_ SUB_PROCESS_INPUTS:               All inputs for driver builder in the form of ProcessBuilderParameterType type
                                                     PROCESS_REPOSITORY:   folder root of the sub processes to be nested inside the DoE.
                                                                           If 'None' then it uses the sos_processes python for doe creation.
@@ -97,7 +98,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
                        # SoSWrapp.DEFAULT: MULTI_INSTANCE,
                        SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
                        SoSWrapp.STRUCTURING: True},
-        # TODO V1
+        # TODO V1 Activate it when proc builder web_api eev3 migrated on eev4 and remove USECASE_DATA
         # SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
         #                     'structuring': True,
         #                     'default': default_process_builder_parameter_type.to_data_manager_dict(),
@@ -109,10 +110,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
                        'default': {},
                        'user_level': 1,
                        'optional': False
-                       }
-
-
-
+                       },
     }
 
     def __init__(self, sos_name):

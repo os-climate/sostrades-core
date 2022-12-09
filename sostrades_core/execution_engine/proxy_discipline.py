@@ -1285,6 +1285,17 @@ class ProxyDiscipline(object):
 
         return data_dict
 
+    # def get_non_numerical_variables_and_values_dict(self):
+    #
+    #     non_num_dict = {}
+    #     data_in = self.get_data_in()
+    #
+    #     for var in data_in.keys():
+    #         if not data_in[var]['numerical']:
+    #             non_num_dict[self.get_var_full_name(var,data_in)] = data_in[var]['value']
+    #
+    #     return non_num_dict
+
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
         Accessor for the inputs values as a list or dict.
@@ -1725,7 +1736,8 @@ class ProxyDiscipline(object):
         disc_dict_info['reference'] = self
         disc_dict_info['classname'] = self.__class__.__name__
 #         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
-        disc_dict_info['model_name_full_path'] = self.get_disc_full_path()
+        disc_dict_info['model_name_full_path'] = self.get_module()
+        disc_dict_info['disc_label'] = self.get_disc_label()
         disc_dict_info['treeview_order'] = 'no'
         disc_dict_info[self.NS_REFERENCE] = self.ee.ns_manager.get_local_namespace(
             self)
@@ -2009,7 +2021,7 @@ class ProxyDiscipline(object):
         Returns: List[ChartFilter]
         """
         if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list()
+            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list(self)
         else:
             return []
 
@@ -2247,8 +2259,10 @@ class ProxyDiscipline(object):
         input_full_name_map, output_full_name_map = self.create_io_full_name_map()
         wrapper.attributes = {
             'input_full_name_map': input_full_name_map,
-            'output_full_name_map': output_full_name_map
+            'output_full_name_map': output_full_name_map,
         }
+        wrapper.inst_desc_in = self.inst_desc_in
+        wrapper.inst_desc_out = self.inst_desc_out
 
     # def set_discipline_attributes(self, discipline):
     #     """ set the attribute attributes of mdo_discipline --> not needed if using SoSMDODisciplineDriver
@@ -2286,16 +2300,21 @@ class ProxyDiscipline(object):
         return disc_module
     # useful for debugging
 
+    def get_disc_label(self):
+        '''
+        Get the label of the discipline which will be displayed in the GUI
+        '''
+
+        disc_label = self.get_disc_full_name()
+
+        return disc_label
+
     def get_disc_full_path(self):
         '''
-        Module of a discipline cannot be enough to identify a discipline when two disciplines with same wrapp are at the same node (with display treeview)
-        Then the disc_full_path gives info of the module AND the execution full name
+        Get the discipline full path which is a combination of the module and the label of the discipline
         '''
 
-        disc_module = self.get_module()
-        disc_name = self.get_disc_full_name()
-
-        disc_full_path = f'{disc_module} : {disc_name}'
+        disc_full_path = f'{self.get_module()} : {self.get_disc_label()}'
 
         return disc_full_path
 

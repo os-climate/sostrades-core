@@ -35,8 +35,8 @@ class ProcessBuilder(BaseProcessBuilder):
                            'input_ns': 'ns_eval',
                            'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
         # >> introduce ScatterMap
-        if 'scenario_list' not in self.ee.smaps_manager.build_maps_dict:
-            self.ee.smaps_manager.add_build_map(
+        if 'scenario_list' not in self.ee.scattermap_manager.build_maps_dict:
+            self.ee.scattermap_manager.add_build_map(
                 'scenario_list', my_scatter_dict)
 
         # instantiate factory by getting builder from process
@@ -55,7 +55,7 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.ee.study_name}.Disc2')
 
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.ee.factory.create_driver(
             'multi_scenarios', cls_list, map_name='scenario_list', hide_coupling_in_driver=True)
         self.ee.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.ee.study_name}')

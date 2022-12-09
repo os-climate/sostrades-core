@@ -902,6 +902,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         return ordered_list
 
-    def get_module(self):
+    def get_disc_label(self):
 
         return 'ProxyCoupling'

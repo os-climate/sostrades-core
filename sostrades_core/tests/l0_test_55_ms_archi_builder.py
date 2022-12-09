@@ -58,10 +58,10 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                         'input_ns': 'ns_scatter_scenario',
                         'scatter_ns': 'ns_scenario'}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
 
-        multi_scenarios = self.exec_eng.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.exec_eng.factory.create_driver(
             'multi_scenarios',  [builder], map_name='scenario_list')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
@@ -157,7 +157,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('AC_list', mydict)
 
         # subsystem scatter map dict
         subsystem_services_map_dict = {'input_name': 'subsystems_list',
@@ -173,7 +173,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                                        }
 
         # add subsystem map
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'subsystems_list', subsystem_services_map_dict)
 
         vb_builder_name = 'Business'
@@ -197,7 +197,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_ac', 'ns_services', 'ns_coc', 'ns_rc', 'ns_nrc', 'ns_market']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
@@ -328,7 +328,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('AC_list', mydict)
 
         vb_builder_name = 'Business'
 
@@ -350,7 +350,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_ac', 'ns_services', 'ns_coc', 'ns_rc', 'ns_nrc', 'ns_market']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
@@ -414,7 +414,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('AC_list', mydict)
 
         vb_builder_name = 'Business'
 
@@ -443,7 +443,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_ac', 'ns_services', 'ns_coc', 'ns_rc', 'ns_nrc', 'ns_market']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')
@@ -529,7 +529,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                   'input_ns': 'ns_scenario',
                   'output_name': 'AC_name',
                   'scatter_ns': 'ns_ac'}
-        self.exec_eng.smaps_manager.add_build_map('AC_list', mydict)
+        self.exec_eng.scattermap_manager.add_build_map('AC_list', mydict)
 
         vb_builder_name = 'Business'
 
@@ -558,7 +558,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
                         'gather_ns': 'ns_scatter_scenario',
                         'ns_to_update': ['ns_ac', 'ns_services', 'ns_coc', 'ns_rc', 'ns_nrc', 'ns_market']}
 
-        self.exec_eng.smaps_manager.add_build_map(
+        self.exec_eng.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
         self.exec_eng.ns_manager.add_ns(
             'ns_scatter_scenario', 'MyCase.multi_scenarios')

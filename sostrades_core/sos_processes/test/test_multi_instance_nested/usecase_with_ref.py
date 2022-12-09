@@ -36,6 +36,7 @@ class Study(StudyManager):
                                                             'name_2']})
         values_dict[f'{self.study_name}.outer_ms.builder_mode'] = 'multi_instance'
         values_dict[f'{self.study_name}.outer_ms.scenario_df'] = scenario_df_outer
+        values_dict[f'{self.study_name}.outer_ms.instance_reference'] = True
 
         self.constant = [1, 2]
         self.power = [1, 2]
@@ -50,15 +51,20 @@ class Study(StudyManager):
         for i, sc in enumerate(scenario_list_outer):
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.builder_mode'] = 'multi_instance'
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.scenario_df'] = scenario_df_inner
-            values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.constant'] = self.constant[i]
-            values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.power'] = self.power[i]
-            values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.z'] = self.z[i]
-            for j, name in enumerate(scenario_list_inner):
-                values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.'+name+'.Disc1.b'] = self.b[i][j]
+            values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.instance_reference'] = True
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.builder_mode'] = 'multi_instance'
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.scenario_df'] = scenario_df_inner
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.instance_reference'] = True
 
-        for j, name in enumerate(scenario_list_inner):
-            values_dict[self.study_name + '.'+name+'.a'] = self.a[j]
-            values_dict[self.study_name + '.'+name+'.x'] = self.x[j]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.constant'] = self.constant[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.power'] = self.power[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.z'] = self.z[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1.b'] = self.b[0][0]
+
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.a'] = self.a[0]
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.x'] = self.x[0]
+        # With the usecase filled until here, the study should be able to be executed, since all values would be
+        # propagated from the respective reference scenarios from each ms.
 
         return [values_dict]
 

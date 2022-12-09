@@ -53,18 +53,22 @@ class Study(StudyManager):
         disc_dict[self.study_name + '.a'] = self.a1
         disc_dict[self.study_name + '.x'] = self.x1
         for scenario in scenario_list:
-            disc_dict[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
-            disc_dict[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = self.power
+            disc_dict[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            disc_dict[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
 
+
+            disc_dict[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            disc_dict[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+        disc_dict[f'{self.study_name}.multi_scenarios.scenario_1.Disc3.z'] = self.z1
+        disc_dict[f'{self.study_name}.multi_scenarios.scenario_2.Disc3.z'] = self.z2
         # configure b from a dataframe
+        #usecase_without_ref.multi_scenarios.scenario_1.Disc3.z
         scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_W',
                                                       'scenario_2'],
                                     'Disc1.b': [self.b1, 1e6, self.b2],
-                                    'Disc3.z': [self.z1, 1e6, self.z2]})
+                                    'z': [self.z1, 1e6, self.z2]})
         disc_dict[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
 
         return [disc_dict]

@@ -49,12 +49,12 @@ class ProcessBuilder(BaseProcessBuilder):
                         'input_ns': 'ns_scatter_scenario',
                         'scatter_ns': 'ns_scenario'}
 
-        self.ee.smaps_manager.add_build_map(
+        self.ee.scattermap_manager.add_build_map(
             'scenario_list', scenario_map)
         self.ee.ns_manager.add_ns_def(
             {'ns_scatter_scenario': f'{self.ee.study_name}.multi_scenarios'})
 
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
+        multi_scenarios = self.ee.factory.create_driver(
             'multi_scenarios',  [builder], map_name='scenario_list')
 
         return multi_scenarios

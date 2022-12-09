@@ -297,12 +297,11 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_driver_evaluator_builder(self, sos_name, cls_builder=None, driver_wrapper_mod=None, builder_tool=None,
-                                        with_sample_generator=False,flatten_subprocess=False):
+    def create_driver(self, sos_name, cls_builder,map_name=None,with_sample_generator=False,flatten_subprocess=False, hide_coupling_in_driver=False):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
-        if driver_wrapper_mod is None:
-            driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
+
+        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
         driver_wrapper_cls = self.get_disc_class_from_module(
             driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
@@ -314,23 +313,21 @@ class SosFactory:
             else:
                 builder.set_builder_info('cls_builder', [cls_builder])
 
+        builder.set_builder_info('map_name', map_name)
         builder.set_builder_info('flatten_subprocess',flatten_subprocess)
-        if builder_tool is not None:
-            builder.set_builder_info('builder_tool', builder_tool)
-
-        if builder_tool is None and cls_builder is None:
-            raise Exception(
-                'The driver evaluator builder must have either a cls_builder either a builder_tool to work')
+        builder.set_builder_info('hide_coupling_in_driver', hide_coupling_in_driver)
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
-        if with_sample_generator == False:
-            return builder
-        else:
+        builder_list = [builder]
+        if with_sample_generator:
+
             sampling_builder = self.get_builder_from_module('SampleGenerator',
                                                             'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper')
             self.__execution_engine.ns_manager.add_ns('ns_sampling',
                                                       self.__execution_engine.ns_manager.get_shared_ns_dict()['ns_eval'].value)
-            return [sampling_builder, builder]
+            builder_list.insert(0,sampling_builder)
+
+        return builder_list
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
         # TODO: recode when driver classes are properly merged, at the moment
@@ -346,59 +343,6 @@ class SosFactory:
             builder.set_builder_info('cls_builder', [cls_builder])
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
         return builder
-
-    # def create_evaluator_builder(self, sos_name, eval_type, cls_builder):
-    #     """
-    #     create a builder for an evaluator defined by its eval_type
-    #     """
-    #     # : can be refactored with calls to other methods, do when classes
-    #     # are merged
-    #     if eval_type == 'sensitivity':
-    #         module_struct_list = (
-    #             f'{self.GENERIC_MODS_PATH}.sensitivity_analysis.SensitivityAnalysis'
-    #         )
-    #     elif eval_type == 'gradient':
-    #         module_struct_list = (
-    #             f'{self.GENERIC_MODS_PATH}.gradient_analysis.GradientAnalysis'
-    #         )
-    #     elif eval_type == 'FORM':
-    #         module_struct_list = f'{self.GENERIC_MODS_PATH}.form_analysis.FORMAnalysis'
-    #     elif eval_type == 'morphological_matrix':
-    #         module_struct_list = (
-    #             f'{self.EE_PATH}.sos_morph_matrix_eval.SoSMorphMatrixEval'
-    #         )
-    #     # elif eval_type == 'doe_eval':
-    #     #     # : should use DriverEvaluator objects, once the DoEEval tests
-    #     #     # are adapted
-    #     #     module_struct_list = f'{self.EE_PATH}.proxy_doe_eval.ProxyDoeEval'
-    #     #     driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.doe_eval.DoeEval'
-    #     elif eval_type == 'eval':
-    #         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
-    #         driver_wrapper_mod_path = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
-    #     elif eval_type == 'build_doe_eval':
-    #         module_struct_list = f'{self.GENERIC_MODS_PATH}.build_doe_eval.BuildDoeEval'
-    #     elif eval_type == 'grid_search':
-    #         module_struct_list = (
-    #             f'{self.GENERIC_MODS_PATH}.grid_search_eval.GridSearchEval'
-    #         )
-    #
-    #     else:
-    #         raise Exception(
-    #             'The evaluation type should be sensitivity,gradient or FORM'
-    #         )
-    #
-    #     cls = self.get_disc_class_from_module(
-    #         module_struct_list)  # cls of ProxyEval specialization
-    #     driver_wrapper_cls = self.get_disc_class_from_module(
-    #         driver_wrapper_mod_path)  # cls of driver wrapper
-    #     builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-    #     if isinstance(cls_builder, list):  # cls builder of subprocess
-    #         builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
-    #     else:
-    #         builder.set_builder_info('cls_builder', [cls_builder])
-    #     builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
-    #
-    #     return builder
 
     def create_value_block_builder(
         self,
@@ -596,14 +540,12 @@ class SosFactory:
         map_name,
         cls_builder,
         autogather=False,
-        gather_node=None,
-        business_post_proc=False,
     ):
         """
         create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
         """
         builder_list = self.convert_builder_to_list(cls_builder)
-        builder = self.create_driver_evaluator_builder(sos_name, builder_list)
+        builder = self.create_driver(sos_name, builder_list)
         builder.set_builder_info('map_name', map_name)
         # builder.set_builder_info('autogather', autogather) #TODO: not adressed
         # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
@@ -635,55 +577,14 @@ class SosFactory:
 #                     list_builder.append(gather)
         return list_builder
 
-    def create_scatter_driver_with_tool(
-        self,
-        sos_name,
-        cls_builder,
-        map_name,
-        hide_coupling_in_driver=False,
-        flatten_subprocess = False
-    ):
+    def create_scatter_tool_builder(self, tool_name,map_name,hide_coupling_in_driver=False):
         """
-        create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
+        create a scatter tool builder with the tool factory
         """
-        scatter_tool = self.tool_factory.create_tool_builder(
-            'scatter_name', 'ScatterTool', map_name=map_name, hide_coupling_in_driver=hide_coupling_in_driver)
-
-        # TODO: handle autogather input order and set to True...
-        multi_scenarios = self.create_driver_with_tool(
-            sos_name, cls_builder, scatter_tool,flatten_subprocess=flatten_subprocess)
-
-        return multi_scenarios
-
-    def create_tool_builder(
-        self, tool_type,
-        map_name=None,
-    ):
-        """
-        create a  tool builder
-        """
-        tool_builder = self.tool_factory.get_tool_builder(tool_type)
-        scatter_tool_path = f'{self.EE_PATH}.scatter_tool.ScatterTool'
-
-        scatter_tool = self.get_disc_class_from_module(scatter_tool_path)
-        tool_builder.set_builder_info('map_name', map_name)
+        scatter_tool = self.tool_factory.create_tool_builder(tool_name,'ScatterTool', map_name=map_name, hide_coupling_in_driver=hide_coupling_in_driver)
 
         return scatter_tool
 
-    def create_driver_with_tool(
-        self,
-        sos_name, cls_builder, builder_tool,flatten_subprocess=False
-    ):
-        """
-        create a driver associated with a tool to build cls_builder
-        """
-
-        builder = self.create_driver_evaluator_builder(
-            sos_name, cls_builder=cls_builder, builder_tool=builder_tool,flatten_subprocess=flatten_subprocess)
-
-        list_builder = [builder]
-
-        return list_builder
 
     def create_scatter_data_builder(self, sos_name, map_name):
         """

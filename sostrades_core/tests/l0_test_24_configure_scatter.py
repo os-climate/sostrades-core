@@ -33,18 +33,6 @@ class TestScatterDiscipline(unittest.TestCase):
         self.name = 'Root'
         self.ee = ExecutionEngine(self.name)
 
-        # set scatter build map
-        mydict = {'input_name': 'AC_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_barrierr',
-                  'output_name': 'ac_name',
-                  'scatter_ns': 'ns_ac',
-                  'gather_ns': 'ns_barrierr'
-                  }
-        self.ee.smaps_manager.add_build_map('AC_list', mydict)
-
-        # set namespace definition
-        self.ee.ns_manager.add_ns('ns_barrierr', self.name)
 
         # get coupling process builder
         sub_proc = 'test_disc1_disc2_coupling'
@@ -53,8 +41,8 @@ class TestScatterDiscipline(unittest.TestCase):
 
         self.ms_name = 'multiscenarios'
         # create scatter builder with map and coupling process
-        scatter_list = self.ee.factory.create_scatter_driver_with_tool(
-            self.ms_name, cls_list,  'AC_list')
+        scatter_list = self.ee.factory.create_driver(
+            self.ms_name, cls_list)
 
         # set scatter builder to root process
         self.ee.factory.set_builders_to_coupling_builder(scatter_list)

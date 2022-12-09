@@ -55,6 +55,27 @@ class UnitTestHandler(Handler):
 
 class TestSoSDOEScenario(unittest.TestCase):
 
+    def check_discipline_value(self, my_disc, my_data_name, target_value, print_flag=True, ioType='in'):
+        my_data = my_disc.get_data_io_from_key(
+            ioType, my_data_name)
+        my_value = my_data['value']
+        if isinstance(my_value, pd.DataFrame):
+            assert_frame_equal(target_value, my_value)
+        else:
+            self.assertEqual(target_value, my_value)
+        if print_flag:
+            print(my_data_name + ': ', my_value)
+
+    def check_discipline_values(self, my_disc, target_values_dict, print_flag=True, ioType='in'):
+        if print_flag:
+            print(
+                f'Check_discipline value for {my_disc.get_disc_full_name()}:')
+        for key in target_values_dict.keys():
+            self.check_discipline_value(
+                my_disc, key, target_value=target_values_dict[key], print_flag=print_flag, ioType=ioType)
+        if print_flag:
+            print('\n')
+
     def setUp(self):
 
         self.sampling_method_doe = 'doe_algo'
@@ -979,7 +1000,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase import Study
+        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_without_ref import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1018,9 +1039,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t\t|_ name_2\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
-                      '\t\t\t|_ Disc3\n' \
-                      '\t|_ name_1\n' \
-                      '\t|_ name_2'
+                      '\t\t\t|_ Disc3'
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
                          '    |_ root.outer_ms  (ProxyDriverEvaluator) [True]\n' \
                          '        |_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n' \
@@ -1052,9 +1071,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                              usecase.constant[i] + usecase.z[i] ** usecase.power[i])
             for j, name in enumerate(scenario_list_inner):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.indicator'),
-                                 usecase.a[j] * usecase.b[i][j])
+                                 usecase.a[i] * usecase.b[i][j])
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
-                                 usecase.a[j] * usecase.x[j] + usecase.b[i][j])
+                                 usecase.a[i] * usecase.x[i] + usecase.b[i][j])
 
     def test_10_nested_very_simple_multi_scenarios_with_archi_builder(self):
         """
@@ -1177,27 +1196,27 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-    def test_10_usecase_import(self):
+    def test_11_usecase_import(self):
         """
-        This test checks the usecase import capability.
+        This test checks the usecase import capability. It also uses the flatten_subprocess flag.
         """
         from os.path import join, dirname
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        self.study_name = 'MyStudy'
-        proc_name = 'test_sellar_generator_eval_smap'
+        proc_name = 'test_sellar_coupling_generator_eval_smap'
 
         #study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
-        usecase_name = 'usecase1_doe_mono'
+        usecase_name = 'usecase1_cp_multi'
+        self.study_name = usecase_name
         imported_module = import_module(
             '.'.join([self.repo, proc_name, usecase_name]))
 
-        study_dump = getattr(
-            imported_module, 'Study')()
+        study_dump = imported_module.Study(run_usecase=True)
 
         study_dump.load_data()
+        study_dump.run()
 
         # import du usecase usecase_1_doe_mono
 
@@ -1218,3 +1237,188 @@ class TestSoSDOEScenario(unittest.TestCase):
         dict_values = {}
         dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
+
+        ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+
+        # Should be array([1.]) if succeed of import usecase
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+    def test_12_nested_very_simple_multi_scenarios_with_reference(self):
+
+        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref import Study
+        study_name = 'root'
+        ns = study_name
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        proc_name = "test_multi_instance_nested"
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                        mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            eval_builder)
+
+        exec_eng.configure()
+
+        usecase = Study(execution_engine=exec_eng)
+        usecase.study_name = ns
+        values_dict = usecase.setup_usecase()
+
+        exec_eng.load_study_from_input_dict(values_dict[0])
+
+        # TODO: [to discuss] whether the scenario name reordering (that might come from a scatter_tool cleaning and that
+        #  is at the source of ReferenceScenario appearing first after reconfiguration) is OK or should be handled both
+        #  by applying reordering both to proxies and to scattered namespaces.
+
+        ## TREEVIEWS WITH REFERENCESCENARIO AT THE END
+        exp_ns_tree = 'Nodes representation for Treeview root' \
+                      '\n|_ root\n' \
+                      '\t|_ outer_ms\n' \
+                      '\t\t|_ scenario_1\n' \
+                      '\t\t\t|_ inner_ms\n' \
+                      '\t\t\t\t|_ name_1\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ name_2\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ ReferenceScenario\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t|_ Disc3\n' \
+                      '\t\t|_ scenario_2\n' \
+                      '\t\t\t|_ inner_ms\n' \
+                      '\t\t\t\t|_ name_1\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ name_2\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ ReferenceScenario\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t|_ Disc3\n' \
+                      '\t\t|_ ReferenceScenario\n' \
+                      '\t\t\t|_ inner_ms\n' \
+                      '\t\t\t\t|_ name_1\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ name_2\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t\t|_ ReferenceScenario\n' \
+                      '\t\t\t\t\t|_ Disc1\n' \
+                      '\t\t\t|_ Disc3\n' \
+                      '\t|_ name_1\n' \
+                      '\t|_ name_2\n' \
+                      '\t|_ ReferenceScenario' \
+
+        exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
+                         '|_ root.outer_ms  (ProxyDriverEvaluator) [True]\n        ' \
+                         '|_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n            ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms  (ProxyDriverEvaluator) [True]\n                ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
+                         '|_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n        ' \
+                         '|_ root.outer_ms.scenario_2  (ProxyCoupling) [True]\n            ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms  (ProxyDriverEvaluator) [True]\n                ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
+                         '|_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]\n        ' \
+                         '|_ root.outer_ms.ReferenceScenario  (ProxyCoupling) [True]\n            ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms  (ProxyDriverEvaluator) [True]\n                ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
+                         '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
+
+
+        self.assertEqual(exec_eng.display_treeview_nodes(),
+                         exp_ns_tree)
+        self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
+                         exp_proxy_tree)
+
+        # Execute to check all inputs have been propagated from
+        # ReferenceScenario (so execution would not give error)
+        exec_eng.execute()
+
+        self.constant = [1, 2]
+        self.power = [1, 2]
+        self.z = [1, 2]
+        self.a = [0, 10]
+        self.x = [0, 10]
+        self.b = [[1, 2], [3, 4]]
+
+        scenario_list_outer = ['scenario_1', 'scenario_2']
+        scenario_list_inner = ['name_1', 'name_2']
+        for i, sc in enumerate(scenario_list_outer):
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.constant'),
+                             self.constant[0])
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.power'),
+                             self.power[0])
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.z'),
+                             self.z[0])
+            for j, name in enumerate(scenario_list_inner):
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b'),
+                                 self.b[0][0])
+        for j, name in enumerate(scenario_list_inner):
+            self.assertEqual(
+                exec_eng.dm.get_value(study_name + '.' + name + '.a'),
+                self.a[0])
+            self.assertEqual(
+                exec_eng.dm.get_value(study_name + '.' + name + '.x'),
+                self.x[0])
+
+        # Now, values are given to all the variables to check that in that case, the dm has the added values and not the
+        # values propagated from the ReferenceScenario
+        for i, sc in enumerate(scenario_list_outer):
+            values_dict[0][study_name + '.outer_ms.' +
+                           sc + '.Disc3.constant'] = self.constant[i]
+            values_dict[0][study_name + '.outer_ms.' +
+                           sc + '.Disc3.power'] = self.power[i]
+            values_dict[0][study_name + '.outer_ms.' +
+                           sc + '.Disc3.z'] = self.z[i]
+            for j, name in enumerate(scenario_list_inner):
+                values_dict[0][study_name + '.outer_ms.' + sc +
+                               '.inner_ms.' + name + '.Disc1.b'] = self.b[i][j]
+        for j, name in enumerate(scenario_list_inner):
+            values_dict[0][study_name + '.' + name + '.a'] = self.a[j]
+            values_dict[0][study_name + '.' + name + '.x'] = self.x[j]
+        exec_eng.load_study_from_input_dict(values_dict[0])
+
+        for i, sc in enumerate(scenario_list_outer):
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.constant'),
+                             self.constant[i])
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.power'),
+                             self.power[i])
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.z'),
+                             self.z[i])
+            for j, name in enumerate(scenario_list_inner):
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b'),
+                                 self.b[i][j])
+        for j, name in enumerate(scenario_list_inner):
+            self.assertEqual(
+                exec_eng.dm.get_value(study_name + '.' + name + '.a'),
+                self.a[j])
+            self.assertEqual(
+                exec_eng.dm.get_value(study_name + '.' + name + '.x'),
+                self.x[j])
+
+        # Execute anc check outputs
+        exec_eng.execute()
+        for i, sc in enumerate(scenario_list_outer):
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.o'),
+                             self.constant[i] + self.z[i] ** self.power[i])
+            for j, name in enumerate(scenario_list_inner):
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.indicator'),
+                                 self.a[j] * self.b[i][j])
+                self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
+                                 self.a[j] * self.x[j] + self.b[i][j])

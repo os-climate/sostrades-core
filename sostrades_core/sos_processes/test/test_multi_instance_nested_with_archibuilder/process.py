@@ -54,29 +54,12 @@ class ProcessBuilder(BaseProcessBuilder):
         # builders of the core process
         builder_list = [builder_production, builder_business]
 
-        # inner ms scatter map
-        smap_inner_ms = {'input_name': 'scenario_list_inner',
-                         'input_type': 'string_list',
-                         'input_ns': 'ns_scatter_scenario',
-                         'scatter_ns': 'ns_scenario_inner'}
-        self.ee.smaps_manager.add_build_map(
-            'scenario_list_inner', smap_inner_ms)
-        self.ee.ns_manager.add_ns_def(
-            {'ns_scatter_scenario': f'{self.ee.study_name}.outer_ms'})
-
-        # outer ms scatter map
-        smap_outer_ms = {'input_name': 'scenario_list_outer',
-                         'input_type': 'string_list',
-                         'input_ns': 'ns_scatter_scenario',
-                         'scatter_ns': 'ns_scenario_outer'}
-        self.ee.smaps_manager.add_build_map(
-            'scenario_list_outer', smap_outer_ms)
         # create the inner ms driver
-        inner_ms = self.ee.factory.create_scatter_driver_with_tool(
-            'inner_ms',  builder_list, map_name='scenario_list_inner')
+        inner_ms = self.ee.factory.create_driver(
+            'inner_ms',  builder_list)
 
         # create an outer ms driver
-        outer_ms = self.ee.factory.create_scatter_driver_with_tool(
-            'outer_ms', inner_ms, map_name='scenario_list_outer')
+        outer_ms = self.ee.factory.create_driver(
+            'outer_ms', inner_ms)
 
         return outer_ms

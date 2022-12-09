@@ -51,13 +51,19 @@ class Namespace:
 
     def get_display_value(self):
         '''
-        Get the display value in the Namespace
+        Get the display value in the Namespace if NOne return value
         '''
         if self.__display_value is None:
             return self.value
         else:
             return self.__display_value
 
+    def get_display_value_if_exists(self):
+        '''
+        Get the display value in the Namespace if None return NOne
+        '''
+
+        return self.__display_value
     def is_display_value(self):
 
         return self.__display_value is not None

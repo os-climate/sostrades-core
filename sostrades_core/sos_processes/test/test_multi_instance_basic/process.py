@@ -30,27 +30,13 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
         # simple 2-disc process NOT USING nested scatters
-        scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
-                        'input_ns': 'ns_scatter_scenario',
-                        'output_name': 'scenario_name',
-                        'scatter_ns': 'ns_scenario',
-                        'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3', 'ns_ac']}
 
-        self.ee.smaps_manager.add_build_map(
-            'scenario_list', scenario_map)
-
-        # shared namespace
-        self.ee.ns_manager.add_ns('ns_barrierr', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns(
-            'ns_scatter_scenario', f'{self.ee.study_name}.multi_scenarios')
+            'ns_disc3', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{self.ee.study_name}.multi_scenarios.Disc3')
+            'ns_out_disc3', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns(
-            'ns_out_disc3', f'{self.ee.study_name}.multi_scenarios')
-        self.ee.ns_manager.add_ns(
-            'ns_ac', f'{self.ee.study_name}.multi_scenarios')
+            'ns_ac', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns(
             'ns_data_ac', f'{self.ee.study_name}')
 
@@ -66,7 +52,7 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_list = [disc1_builder, disc3_builder]
 
         # multi scenario driver builder
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
-            'multi_scenarios', builder_list, map_name='scenario_list')
+        multi_scenarios = self.ee.factory.create_driver(
+            'multi_scenarios', builder_list)
 
         return multi_scenarios

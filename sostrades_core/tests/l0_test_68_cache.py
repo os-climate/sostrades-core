@@ -1405,7 +1405,7 @@ class TestCache(unittest.TestCase):
                         'scatter_ns': 'ns_ac'}
         self.ee.ns_manager.add_ns('ns_barrierr', self.name)
 
-        self.ee.smaps_manager.add_build_map('name_list', mydict_build)
+        self.ee.scattermap_manager.add_build_map('name_list', mydict_build)
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
         builder_list = self.factory.get_builder_from_module('Disc1', mod_list)
 

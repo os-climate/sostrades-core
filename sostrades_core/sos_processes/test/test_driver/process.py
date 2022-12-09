@@ -22,32 +22,19 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Coupling Of Scatter Process',
+        'label': 'Core Test Driver Process',
         'description': '',
         'category': '',
         'version': '',
     }
 
     def get_builders(self):
-        my_namespace = {'ns_barrierr': self.ee.study_name,
-                        'ns_ac': f'{self.ee.study_name}.Disc1',
-                        'ns_eval': f'{self.ee.study_name}.multi_scenarios'}
-
-        my_scatter_dict = {'input_name': 'scenario_list',
-                           'input_type': 'string_list',
-                           'input_ns': 'ns_eval',
-                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
-        # >> introduce ScatterMap
-        if 'scenario_list' not in self.ee.smaps_manager.build_maps_dict:
-            self.ee.smaps_manager.add_build_map(
-                'scenario_list', my_scatter_dict)
 
         # instantiate factory by getting builder from process
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                             mod_id='test_disc1_disc2_coupling')
 
-        self.ee.ns_manager.add_ns_def(my_namespace)
-        multi_scenarios = self.ee.factory.create_scatter_driver_with_tool(
-            'multi_scenarios', cls_list, map_name='scenario_list')
+        multi_scenarios = self.ee.factory.create_driver(
+            'multi_scenarios', cls_list)
 
         return multi_scenarios

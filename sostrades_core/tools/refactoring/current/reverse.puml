@@ -168,7 +168,7 @@ sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDi
 sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelLinearization --* sos_trades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain.SoSParallelChain : parallel_lin
 sos_trades_core.execution_engine.parallel_execution.sos_parallel_execution.SoSDiscParallelLinearization --* sos_trades_core.execution_engine.sos_jacobian_assembly.SoSJacobianAssembly : parallel_linearize
 sos_trades_core.execution_engine.post_processing_manager.PostProcessingManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : __post_processing_manager
-sos_trades_core.execution_engine.scattermaps_manager.ScatterMapsManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : smaps_manager
+sos_trades_core.execution_engine.scattermaps_manager.ScatterMapsManager --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : scattermap_manager
 sos_trades_core.execution_engine.sos_builder.SoSBuilder --* sos_trades_core.execution_engine.sos_factory.SosFactory : coupling_builder
 sos_trades_core.execution_engine.sos_factory.SosFactory --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : __factory
 

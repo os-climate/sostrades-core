@@ -90,6 +90,9 @@ class SoSWrapp(object):
         self.local_data = {}
         self.jac_dict = {}
         self.jac_boundaries = {}
+        self.inst_desc_in = {}
+        self.inst_desc_out = {}
+
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
         """
@@ -249,7 +252,7 @@ class SoSWrapp(object):
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
             self.local_data.update(outputs)
 
-    def get_chart_filter_list(self):
+    def get_chart_filter_list(self, proxy):
         """ Return a list of ChartFilter instance base on the inherited
         class post processing filtering capabilities
 
@@ -364,11 +367,17 @@ class SoSWrapp(object):
     def get_boundary_jac_for_columns(self, key, column, io_type):
         if io_type == self.IO_TYPE_IN:
             #var_full_name = self.attributes['input_full_name_map'][key]
-            key_type = self.DESC_IN[key]['type']
+            if key not in self.DESC_IN:
+                key_type = self.inst_desc_in[key]['type']
+            else:
+                key_type = self.DESC_IN[key]['type']
             value = self.get_sosdisc_inputs(key)
         if io_type == self.IO_TYPE_OUT:
             #var_full_name = self.attributes['output_full_name_map'][key]
-            key_type = self.DESC_OUT[key]['type']
+            if key not in self.DESC_OUT:
+                key_type = self.inst_desc_out[key]['type']
+            else:
+                key_type = self.DESC_OUT[key]['type']
             value = self.get_sosdisc_outputs(key)
         self.DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
         if key_type == 'dataframe':

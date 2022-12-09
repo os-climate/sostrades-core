@@ -103,7 +103,6 @@ class Study(StudyManager):
 
         return [disc_dict]
 
-
 if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
