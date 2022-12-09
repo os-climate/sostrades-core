@@ -319,7 +319,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
-
             if trade_vars:
                 driver_evaluator_ns = self.ee.ns_manager.get_local_namespace_value(self)
                 scenarios_data_dict = {}

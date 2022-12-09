@@ -32,19 +32,19 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
 
         dict_of_list_values = {
-            'x': [array([3.]), array([4.])],
-            'z': [array([-10., 0.])],
+            'SellarCoupling.x': [array([3.]), array([4.])],
+            'SellarCoupling.z': [array([-10., 0.])],
             'SellarCoupling.Sellar_Problem.local_dv': [10.],
-            'y_1': [array([1.])],
-            'y_2': [array([1.])]
+            'SellarCoupling.y_1': [array([1.])],
+            'SellarCoupling.y_2': [array([1.])]
         }
-        list_of_values = [dict_of_list_values['SellarCoupling.Sellar_Problem.local_dv'], dict_of_list_values['x'],
-                          dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
+        list_of_values = [dict_of_list_values['SellarCoupling.Sellar_Problem.local_dv'], dict_of_list_values['SellarCoupling.x'],
+                          dict_of_list_values['SellarCoupling.y_1'], dict_of_list_values['SellarCoupling.y_2'], dict_of_list_values['SellarCoupling.z']]
 
         input_selection_cp_x_z = {'selected_input': [True, True, True, True, True],
-                                  'full_name': ['SellarCoupling.Sellar_Problem.local_dv', 'x', 'y_1',
-                                                'y_2',
-                                                'z'],
+                                  'full_name': ['SellarCoupling.Sellar_Problem.local_dv', 'SellarCoupling.x', 'SellarCoupling.y_1',
+                                                'SellarCoupling.y_2',
+                                                'SellarCoupling.z'],
                                   'list_of_values': list_of_values
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
@@ -65,10 +65,14 @@ class Study(StudyManager):
 
         # Sellar referene inputs
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = array([
+                                                                           2.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = array([
+                                                                             1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_2'] = array([
+                                                                             1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = array([
+                                                                           1., 1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
@@ -78,4 +82,37 @@ if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-    # uc_cls.run()
+
+    my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+    a1 = my_disc.get_data_io_from_key('in', 'x')['value']
+    a2 = my_disc.get_data_io_from_key('in', 'y_2')['value']
+    a3 = my_disc.get_data_io_from_key('in', 'z')['value']
+
+    my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_2')[0]
+    a4 = my_disc.get_data_io_from_key('in', 'y_1')['value']
+    a5 = my_disc.get_data_io_from_key('in', 'z')['value']
+
+    my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem')[0]
+    a6 = my_disc.get_data_io_from_key('in', 'x')['value']
+    a7 = my_disc.get_data_io_from_key('in', 'y_1')['value']
+    a8 = my_disc.get_data_io_from_key('in', 'y_2')['value']
+    a9 = my_disc.get_data_io_from_key('in', 'z')['value']
+    a10 = my_disc.get_data_io_from_key('in', 'local_dv')['value']
+
+    a11 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.x')
+    a12 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.z')
+    a13 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.y_1')
+    a14 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.y_2')
+    a15 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.x')
+    a16 = uc_cls.ee.dm.get_value(
+        'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.z')
+
+    uc_cls.run()

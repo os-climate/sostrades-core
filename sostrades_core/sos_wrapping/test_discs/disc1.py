@@ -52,7 +52,7 @@ class Disc1(SoSWrapp):
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 
-    def get_chart_filter_list(self):
+    def get_chart_filter_list(self, proxy):
 
         chart_filters = []
 
