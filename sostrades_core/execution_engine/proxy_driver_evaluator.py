@@ -447,10 +447,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                               ref_dict)
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                self.ee.dm.set_data(key, 'editable', False)
+                if 'ReferenceScenario' in key:
+                    pass
+                else:
+                    self.ee.dm.set_data(key, 'editable', False)
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                self.ee.dm.set_data(key, 'editable', True)
+                if 'ReferenceScenario' in key:
+                    pass
+                else:
+                    self.ee.dm.set_data(key, 'editable', True)
 
     def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
 
