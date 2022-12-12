@@ -67,11 +67,11 @@ class ProcessBuilder(BaseProcessBuilder):
                 'cls_builder', builder_list_sellar)
 
         # if Mono_instance
-        # self.ee.ns_manager.add_ns(
-        #   'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
-        # if Multi_instance
         self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
+           'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
+        # if Multi_instance
+        #self.ee.ns_manager.add_ns(
+        #    'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
 
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')

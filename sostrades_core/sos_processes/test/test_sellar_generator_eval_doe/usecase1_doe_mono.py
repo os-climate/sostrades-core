@@ -30,7 +30,7 @@ class Study(StudyManager):
         """
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['x'],
+        dspace_dict = {'variable': ['Eval.x'],
                        'lower_bnd': [0.],
                        'upper_bnd': [10.],
 
@@ -38,7 +38,7 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'Eval.y_1',
+                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'Eval.x', 'Eval.y_1',
                                            'Eval.y_2',
                                            'Eval.z']}
         input_selection_x = pd.DataFrame(input_selection_x)
@@ -63,10 +63,10 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
+
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
         disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        disc_dict[f'{ns}.Eval.instance_reference'] = True
 
         # Sellar inputs
         local_dv = 10.
