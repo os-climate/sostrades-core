@@ -272,7 +272,7 @@ class ScatterTool(SosTool):
             del self.__scattered_disciplines[disc]
 
     def clean_all_disciplines_from_tool(self):
-        all_disc_list = self.get_all_builded_disciplines()
+        all_disc_list = self.get_all_built_disciplines()
         self.clean_from_driver(all_disc_list)
 
     def clean_from_driver(self, disc_list):
@@ -292,6 +292,9 @@ class ScatterTool(SosTool):
         else:
             self.__scattered_disciplines.update({name: [disc]})
 
-    def get_all_builded_disciplines(self):
+    def get_all_built_disciplines(self):
 
         return [disc for disc_list in self.__scattered_disciplines.values() for disc in disc_list]
+
+    def get_all_built_disciplines_names(self):
+        return list(self.__scattered_disciplines.keys())

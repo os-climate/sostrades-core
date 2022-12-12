@@ -159,6 +159,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.map_name = map_name
         self.flatten_subprocess = flatten_subprocess
+        self.scenarios = [] # to keep track of subdisciplines in a flatten_subprocess case
         self.hide_coupling_in_driver = hide_coupling_in_driver
         self.old_builder_mode = None
         self.eval_process_builder = None
@@ -224,6 +225,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Configure the DriverEvaluator layer
         """
+        # set the scenarios references, for flattened subprocess configuration
+        if self.flatten_subprocess and self.builder_tool:
+            self.scenarios = self.builder_tool.get_all_built_disciplines()
+        else:
+            self.scenarios = self.proxy_disciplines
+
         # configure al processes stored in children
         for disc in self.get_disciplines_to_configure():
             disc.configure()
@@ -311,7 +318,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # SUBDISCIPLINES
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-                ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
+                ref_discipline = self.scenarios[self.get_reference_scenario_index()]
                 ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
 
                 # Modification of read-only or editable depending on LINKED_MODE or COPY_MODE
@@ -378,8 +385,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def get_reference_scenario_index(self):
         index_ref = 0
-        for disc in self.proxy_disciplines:
-            if disc.sos_name == 'ReferenceScenario':
+        for disc in self.scenarios:
+            if disc.sos_name == 'ReferenceScenario' \
+                    or self.ee.ns_manager.compose_ns([self.sos_name, 'ReferenceScenario']) in disc.sos_name: # for flatten_subprocess
+                    #TODO: better implement this 2nd condition ?
                 break
             else:
                 index_ref += 1
@@ -398,9 +407,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return ref_changes_dict
 
     def get_reference_non_trade_variables_changes(self, trade_vars):
-
-        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index(
-        )]
+        ref_discipline = self.scenarios[self.get_reference_scenario_index()]
 
         # Take reference scenario non-trade variables (num and non-num) and its
         # values
@@ -432,6 +439,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
+
+        ref_discipline = self.scenarios[self.get_reference_scenario_index()]
 
         # Build other scenarios variables and values dict from reference
         dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
@@ -539,7 +548,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             scenario_names (list[string]): expected names of the subproxies.
         """
         # TODO: if scenario_names is None get it?
-        proxies_names = [disc.sos_name for disc in self.proxy_disciplines]
+        if self.flatten_subprocess and self.builder_tool:
+            proxies_names = self.builder_tool.get_all_built_disciplines_names()
+        else:
+            proxies_names = [disc.sos_name for disc in self.scenarios]
         # # assuming self.coupling_per_scenario is true so bock below commented
         # if self.coupling_per_scenario:
         #     builder_names = [b.sos_name for b in self.cls_builder]
@@ -719,7 +731,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         # prepare_execution of proxy_disciplines as in coupling
         # TODO: move to builder ?
-        for disc in self.proxy_disciplines:
+        for disc in self.scenarios:
             disc.prepare_execution()
         # TODO : cache mgmt of children necessary ? here or in
         # SoSMDODisciplineDriver ?
@@ -790,6 +802,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # to accommodate the DriverEvaluator that holds te build until inputs
         # are available
         return self.get_disciplines_to_configure() == []  # or len(self.cls_builder) == 0
+
+    def get_disciplines_to_configure(self):
+        return self._get_disciplines_to_configure(self.scenarios)
 
     def prepare_multi_instance_build(self):
         """
@@ -1193,7 +1208,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
                     is_ref_disc = False
                     ref_disc_name = ''
-                    for disc in self.proxy_disciplines:  # PB : in flatten mode self.proxy_disciplines =[]
+                    for disc in self.scenarios:  # PB : in flatten mode self.proxy_disciplines =[]
                         if disc.sos_name == 'ReferenceScenario':
                             is_ref_disc = True
                             ref_discipline_full_name = disc.get_disc_full_name()

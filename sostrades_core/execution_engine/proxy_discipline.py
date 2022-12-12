@@ -2113,15 +2113,23 @@ class ProxyDiscipline(object):
         for disc in disc_list:
             self.add_disc_to_config_dependency_disciplines(disc)
 
+    @staticmethod
+    def _get_disciplines_to_configure(disc_list):
+        '''
+        Get sub disciplines list to configure according to their is_configured method (coupling, eval, etc.) from a
+        discipline list
+        '''
+        disc_to_configure = []
+        for disc in disc_list:
+            if not disc.is_configured():
+                disc_to_configure.append(disc)
+        return disc_to_configure
+
     def get_disciplines_to_configure(self):
         '''
         Get sub disciplines list to configure according to their is_configured method (coupling, eval, etc.)
         '''
-        disc_to_configure = []
-        for disc in self.proxy_disciplines:
-            if not disc.is_configured():
-                disc_to_configure.append(disc)
-        return disc_to_configure
+        return self._get_disciplines_to_configure(self.proxy_disciplines)
 
     def check_structuring_variables_changes(self):
         '''
