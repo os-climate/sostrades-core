@@ -394,13 +394,13 @@ class TestMultiScenario(unittest.TestCase):
         self.z = 12
         # configure the Reference scenario
         # Non-trade variables (to propagate)
-        dict_values[self.study_name + '.a'] = self.a
-        dict_values[self.study_name + '.x'] = self.x
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.a'] = self.a
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.x'] = self.x
         dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = self.constant
         dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.power'] = self.power
         # Trade variables reference (not to propagate)
         dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc1.b'] = self.b
-        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.z'] = self.z
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.z'] = self.z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # Check trades variables are ok and that non-trade variables have been propagated to other scenarios

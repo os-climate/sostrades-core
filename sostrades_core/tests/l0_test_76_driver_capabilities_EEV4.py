@@ -1305,10 +1305,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t\t|_ ReferenceScenario\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
-                      '\t\t\t|_ Disc3\n' \
-                      '\t|_ name_1\n' \
-                      '\t|_ name_2\n' \
-                      '\t|_ ReferenceScenario' \
+                      '\t\t\t|_ Disc3'
+
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
                          '|_ root.outer_ms  (ProxyDriverEvaluator) [True]\n        ' \
@@ -1363,18 +1361,17 @@ class TestSoSDOEScenario(unittest.TestCase):
                              self.constant[0])
             self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.power'),
                              self.power[0])
-            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.z'),
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.z'),
                              self.z[0])
             for j, name in enumerate(scenario_list_inner):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b'),
                                  self.b[0][0])
-        for j, name in enumerate(scenario_list_inner):
-            self.assertEqual(
-                exec_eng.dm.get_value(study_name + '.' + name + '.a'),
-                self.a[0])
-            self.assertEqual(
-                exec_eng.dm.get_value(study_name + '.' + name + '.x'),
-                self.x[0])
+                self.assertEqual(
+                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'),
+                    self.a[0])
+                self.assertEqual(
+                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'),
+                    self.x[0])
 
         # Now, values are given to all the variables to check that in that case, the dm has the added values and not the
         # values propagated from the ReferenceScenario
@@ -1384,13 +1381,12 @@ class TestSoSDOEScenario(unittest.TestCase):
             values_dict[0][study_name + '.outer_ms.' +
                            sc + '.Disc3.power'] = self.power[i]
             values_dict[0][study_name + '.outer_ms.' +
-                           sc + '.Disc3.z'] = self.z[i]
+                           sc + '.z'] = self.z[i]
             for j, name in enumerate(scenario_list_inner):
                 values_dict[0][study_name + '.outer_ms.' + sc +
                                '.inner_ms.' + name + '.Disc1.b'] = self.b[i][j]
-        for j, name in enumerate(scenario_list_inner):
-            values_dict[0][study_name + '.' + name + '.a'] = self.a[j]
-            values_dict[0][study_name + '.' + name + '.x'] = self.x[j]
+                values_dict[0][study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'] = self.a[j]
+                values_dict[0][study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'] = self.x[j]
         exec_eng.load_study_from_input_dict(values_dict[0])
 
         for i, sc in enumerate(scenario_list_outer):
@@ -1398,18 +1394,17 @@ class TestSoSDOEScenario(unittest.TestCase):
                              self.constant[i])
             self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.power'),
                              self.power[i])
-            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.Disc3.z'),
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.z'),
                              self.z[i])
             for j, name in enumerate(scenario_list_inner):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b'),
                                  self.b[i][j])
-        for j, name in enumerate(scenario_list_inner):
-            self.assertEqual(
-                exec_eng.dm.get_value(study_name + '.' + name + '.a'),
-                self.a[j])
-            self.assertEqual(
-                exec_eng.dm.get_value(study_name + '.' + name + '.x'),
-                self.x[j])
+                self.assertEqual(
+                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'),
+                    self.a[j])
+                self.assertEqual(
+                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'),
+                    self.x[j])
 
         # Execute anc check outputs
         exec_eng.execute()
