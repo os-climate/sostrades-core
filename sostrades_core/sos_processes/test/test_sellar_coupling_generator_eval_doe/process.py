@@ -35,14 +35,6 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         # simple 2-disc process NOT USING nested scatters
 
-        # shared namespace
-        # self.ee.ns_manager.add_ns(
-        #    'ns_scatter_scenario', f'{self.ee.study_name}')
-        # self.ee.ns_manager.add_ns(
-        #    'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
-        #self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
-        #self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
-
         # add disciplines Sellar
         if 1 == 1:
             repo = 'sostrades_core.sos_processes.test'
@@ -66,11 +58,19 @@ class ProcessBuilder(BaseProcessBuilder):
             coupling_builder.set_builder_info(
                 'cls_builder', builder_list_sellar)
 
+        # shared namespace
+        # self.ee.ns_manager.add_ns(
+        #    'ns_scatter_scenario', f'{self.ee.study_name}')
+        # self.ee.ns_manager.add_ns(
+        #    'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
+        #self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
+        #self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
+
         # if Mono_instance
         self.ee.ns_manager.add_ns(
-           'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
+            'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
         # if Multi_instance
-        #self.ee.ns_manager.add_ns(
+        # self.ee.ns_manager.add_ns(
         #    'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
 
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')

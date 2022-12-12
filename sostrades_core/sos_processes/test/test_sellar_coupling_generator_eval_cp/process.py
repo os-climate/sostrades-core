@@ -35,14 +35,6 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         # simple 2-disc process NOT USING nested scatters
 
-        # shared namespace
-        # self.ee.ns_manager.add_ns(
-        #    'ns_scatter_scenario', f'{self.ee.study_name}')
-        # self.ee.ns_manager.add_ns(
-        #    'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
-        #self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
-        #self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
-
         # add disciplines Sellar
         if 1 == 1:
             repo = 'sostrades_core.sos_processes.test'
@@ -66,6 +58,14 @@ class ProcessBuilder(BaseProcessBuilder):
             coupling_builder.set_builder_info(
                 'cls_builder', builder_list_sellar)
 
+        # shared namespace
+        # self.ee.ns_manager.add_ns(
+        #    'ns_scatter_scenario', f'{self.ee.study_name}')
+        # self.ee.ns_manager.add_ns(
+        #    'ns_OptimSellar', f'{self.ee.study_name}.SellarCoupling')
+        #self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}')
+        #self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}')
+
         # if Mono_instance
         # self.ee.ns_manager.add_ns(
         #   'ns_OptimSellar', f'{self.ee.study_name}.Eval.SellarCoupling')
@@ -77,8 +77,13 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
         # multi scenario driver builder
-        multi_scenarios = self.ee.factory.create_driver(
-            'Eval', coupling_builder, flatten_subprocess=True)
+        flatten_subprocess = False
+        if flatten_subprocess:
+            multi_scenarios = self.ee.factory.create_driver(
+                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
+        else:
+            multi_scenarios = self.ee.factory.create_driver(
+                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'

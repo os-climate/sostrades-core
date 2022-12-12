@@ -49,7 +49,11 @@ class Study(StudyManager):
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
-        anonymize_input_dict_from_usecase = {}
+        repo = 'sostrades_core.sos_processes.test'
+        mod_id = 'test_sellar_coupling'
+        my_usecase = 'usecase'
+        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
+            repo, mod_id, my_usecase)
 
         disc_dict = {}
         # CP + Eval inputs
@@ -60,16 +64,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.instance_reference'] = True
 
         # Sellar referene inputs
-        local_dv = 10.
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = array([
-                                                                           2.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = array([
-                                                                             1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_2'] = array([
-                                                                             1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = array([
-                                                                           1., 1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
+        # Provided by usecase import
 
         return [disc_dict]
 
@@ -93,7 +88,6 @@ if '__main__' == __name__:
 #
 #     my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
 #         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem')[0]
-#
 #     a6 = my_disc.get_data_io_from_key('in', 'x')['value']
 #     a7 = my_disc.get_data_io_from_key('in', 'y_1')['value']
 #     a8 = my_disc.get_data_io_from_key('in', 'y_2')['value']
