@@ -1232,6 +1232,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 if builder_mode == self. MONO_INSTANCE:
                     # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
                     ref_discipline_full_name = f'{self.ee.study_name}.Eval'
+                    #ref_discipline_full_name = f'{self.ee.study_name}.Eval.subprocess'
                     self.update_reference_from_anonymised_dict(
                         anonymize_input_dict_from_usecase, ref_discipline_full_name)
             else:
@@ -1254,7 +1255,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         as_in_eev3 = False
 
-        if as_in_eev3:  # We get an infinite loop et never do the last in the sequence
+        if as_in_eev3:  # We sometimes in multi instance get an infinite loop and never do the last in the sequence
             self.ee.load_study_from_input_dict(
                 input_dict_from_usecase)
         else:  # This is what was done before the bellow correction. It doesn't work with dynamic subproc or if a data kay is not yet in the dm

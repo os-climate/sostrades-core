@@ -1563,7 +1563,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                     1.])
                 anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
                     1., 1.])
-                #anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
+                anonymize_input_dict_from_usecase['<study_ph>.subprocess.Sellar_Problem.local_dv'] = 10.
 
         # Update the reference from the selected imported usecase anonymised
         # dict
