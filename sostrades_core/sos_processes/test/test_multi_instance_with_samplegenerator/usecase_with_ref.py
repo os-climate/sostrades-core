@@ -47,6 +47,23 @@ class Study(StudyManager):
                                                 })
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = input_selection_cp_b_z
 
+        # reference var values
+        self.x = 2.
+        self.a = 3
+        self.b = 8
+        self.z = 12
+        self.constant = 3
+        self.power = 2
+        # configure the Reference scenario
+        # Non-trade variables (to propagate)
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.a'] = self.a
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.x'] = self.x
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = self.constant
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.power'] = self.power
+        # Trade variables reference (not to propagate)
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc1.b'] = self.b
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.z'] = self.z
+
         return [dict_values]
 
 if '__main__' == __name__:
