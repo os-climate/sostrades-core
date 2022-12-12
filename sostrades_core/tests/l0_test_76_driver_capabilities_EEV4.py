@@ -1196,19 +1196,36 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-    def test_11_usecase_import(self):
+    def test_11_usecase_import_multi_instances(self):
         """
-        This test checks the usecase import capability. It also uses the flatten_subprocess flag.
+        This test checks the usecase import capability.
         """
         from os.path import join, dirname
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        proc_name = 'test_sellar_coupling_generator_eval_smap'
+        with_coupling = False
+
+        # The generator eval process
+        #proc_name = 'test_sellar_coupling_generator_eval_smap'
+
+        if with_coupling:
+            proc_name = 'test_sellar_coupling_generator_eval_cp'
+        else:
+            proc_name = 'test_sellar_generator_eval_cp'
 
         #study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
         usecase_name = 'usecase1_cp_multi'
+
+        # Associated nested subprocess
+        if with_coupling:
+            sub_process_name = 'test_sellar_coupling'
+        else:
+            sub_process_name = 'test_sellar_list'
+
+        sub_process_usecase_name = 'usecase'
+
         self.study_name = usecase_name
         imported_module = import_module(
             '.'.join([self.repo, proc_name, usecase_name]))
@@ -1227,22 +1244,24 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.exec_eng.display_treeview_nodes(True)
 
-        sub_process_name = 'test_sellar_coupling'
-        usecase_name = 'usecase'
-
         anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
-            self.repo, sub_process_name, usecase_name)
+            self.repo, sub_process_name, sub_process_usecase_name)
 
         # print(anonymize_input_dict_from_usecase)
         dict_values = {}
         dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
 
-        ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
-            f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+        if with_coupling:
+            ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+        else:
+            ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.ReferenceScenario.Sellar_1')[0]
 
-        # Should be array([1.]) if succeed of import usecase
-        target_x = array([2.])
+        # Should be array([1.]) and not Should be array([2.]) if succeed of
+        # import usecase
+        target_x = array([1.])
         target_values_dict = {}
         target_values_dict['x'] = target_x
         print_flag = False
@@ -1307,7 +1326,6 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t|_ Disc3'
 
-
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
                          '|_ root.outer_ms  (ProxyDriverEvaluator) [True]\n        ' \
                          '|_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n            ' \
@@ -1367,10 +1385,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b'),
                                  self.b[0][0])
                 self.assertEqual(
-                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'),
+                    exec_eng.dm.get_value(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'),
                     self.a[0])
                 self.assertEqual(
-                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'),
+                    exec_eng.dm.get_value(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'),
                     self.x[0])
 
         # Now, values are given to all the variables to check that in that case, the dm has the added values and not the
@@ -1385,8 +1405,10 @@ class TestSoSDOEScenario(unittest.TestCase):
             for j, name in enumerate(scenario_list_inner):
                 values_dict[0][study_name + '.outer_ms.' + sc +
                                '.inner_ms.' + name + '.Disc1.b'] = self.b[i][j]
-                values_dict[0][study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'] = self.a[j]
-                values_dict[0][study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'] = self.x[j]
+                values_dict[0][study_name + '.outer_ms.' +
+                               sc + '.inner_ms.' + name + '.a'] = self.a[j]
+                values_dict[0][study_name + '.outer_ms.' +
+                               sc + '.inner_ms.' + name + '.x'] = self.x[j]
         exec_eng.load_study_from_input_dict(values_dict[0])
 
         for i, sc in enumerate(scenario_list_outer):
@@ -1400,10 +1422,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b'),
                                  self.b[i][j])
                 self.assertEqual(
-                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'),
+                    exec_eng.dm.get_value(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a'),
                     self.a[j])
                 self.assertEqual(
-                    exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'),
+                    exec_eng.dm.get_value(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x'),
                     self.x[j])
 
         # Execute anc check outputs
@@ -1416,3 +1440,28 @@ class TestSoSDOEScenario(unittest.TestCase):
                                  self.a[j] * self.b[i][j])
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
                                  self.a[j] * self.x[j] + self.b[i][j])
+
+    def test_13_sellar_coupling_multi_instances_flatten(self):
+        """
+        This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val. 
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        with_coupling = False
+
+        # The generator eval process
+        proc_name = 'test_sellar_coupling_generator_eval_cp_flatten'
+
+        usecase_name = 'usecase1_cp_multi'
+
+        self.study_name = usecase_name
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = imported_module.Study(run_usecase=True)
+
+        study_dump.load_data()
+        study_dump.run()

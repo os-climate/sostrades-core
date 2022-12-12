@@ -175,7 +175,7 @@ class MDODisciplineWrapp(object):
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
                 **proxy._get_numerical_inputs(),
-                authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs('authorize_self_coupled_disciplines'))
+                authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES))
 
             self.mdo_discipline = mdo_discipline
 

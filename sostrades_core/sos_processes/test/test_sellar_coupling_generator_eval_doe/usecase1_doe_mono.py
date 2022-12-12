@@ -51,8 +51,7 @@ class Study(StudyManager):
         repo = 'sostrades_core.sos_processes.test'
         mod_id = 'test_sellar_coupling'
         my_usecase = 'usecase'
-        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
-            repo, mod_id, my_usecase)
+        anonymize_input_dict_from_usecase = {}
 
         disc_dict = {}
         # DoE + Eval inputs

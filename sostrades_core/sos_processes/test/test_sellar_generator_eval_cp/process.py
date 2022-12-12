@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Sample Generator Smap',
+        'label': 'Core Test Sellar Sample Generator CP',
         'description': '',
         'category': '',
         'version': '',
@@ -35,6 +35,21 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         # simple 2-disc process NOT USING nested scatters
 
+        # add disciplines Sellar
+        if 1 == 1:
+            repo = 'sostrades_core.sos_processes.test'
+            sub_proc = 'test_sellar_list'
+            builder_list_sellar = self.ee.factory.get_builder_from_process(
+                repo=repo, mod_id=sub_proc)
+        else:
+            disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
+            mods_dict = {
+                'Sellar_Problem': disc_dir + 'SellarProblem',
+                'Sellar_2': disc_dir + 'Sellar2',
+                'Sellar_1': disc_dir + 'Sellar1',
+            }
+            builder_list_sellar = self.create_builder_list(mods_dict)
+
         # shared namespace
 
         # if Mono_instance
@@ -42,21 +57,12 @@ class ProcessBuilder(BaseProcessBuilder):
         #    'ns_OptimSellar', f'{self.ee.study_name}.Eval')
         # if Multi_instance
         self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}')
+            'ns_OptimSellar', f'{self.ee.study_name}')  # NB: we could not set this as already set
 
         # self.ee.ns_manager.add_ns(
         #    'ns_scatter_scenario', f'{self.ee.study_name}')
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
-
-        # add disciplines Sellar
-        disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-        mods_dict = {
-            'Sellar_Problem': disc_dir + 'SellarProblem',
-            'Sellar_2': disc_dir + 'Sellar2',
-            'Sellar_1': disc_dir + 'Sellar1',
-        }
-        builder_list_sellar = self.create_builder_list(mods_dict)
 
         # multi scenario driver builder
         multi_scenarios = self.ee.factory.create_driver(
