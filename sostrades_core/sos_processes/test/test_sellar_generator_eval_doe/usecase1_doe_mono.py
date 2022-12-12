@@ -67,7 +67,7 @@ class Study(StudyManager):
 
         # Sellar inputs
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.x'] = array([1.])
+        disc_dict[f'{ns}.Eval.x'] = array([2.])
         disc_dict[f'{ns}.Eval.y_1'] = array([1.])
         disc_dict[f'{ns}.Eval.y_2'] = array([1.])
         disc_dict[f'{ns}.Eval.z'] = array([1., 1.])

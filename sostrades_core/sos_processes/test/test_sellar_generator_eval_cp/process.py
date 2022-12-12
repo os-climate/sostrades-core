@@ -69,6 +69,14 @@ class ProcessBuilder(BaseProcessBuilder):
             'Eval', builder_list_sellar
         )
 
+        flatten_subprocess = False
+        if flatten_subprocess:
+            multi_scenarios = self.ee.factory.create_driver(
+                'Eval', builder_list_sellar, flatten_subprocess=flatten_subprocess)
+        else:
+            multi_scenarios = self.ee.factory.create_driver(
+                'Eval', builder_list_sellar, flatten_subprocess=flatten_subprocess)
+
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         cp_builder = self.ee.factory.get_builder_from_module(

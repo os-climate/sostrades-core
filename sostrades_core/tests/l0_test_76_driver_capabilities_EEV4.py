@@ -1198,24 +1198,21 @@ class TestSoSDOEScenario(unittest.TestCase):
 
     def test_11_usecase_import_multi_instances(self):
         """
-        This test checks the usecase import capability.
+        This test checks the usecase import capability in multi instance mode.
         """
         from os.path import join, dirname
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        with_coupling = False
+        with_coupling = True
 
         # The generator eval process
-        #proc_name = 'test_sellar_coupling_generator_eval_smap'
-
         if with_coupling:
             proc_name = 'test_sellar_coupling_generator_eval_cp'
         else:
             proc_name = 'test_sellar_generator_eval_cp'
 
-        #study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
         usecase_name = 'usecase1_cp_multi'
 
         # Associated nested subprocess
@@ -1226,6 +1223,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         sub_process_usecase_name = 'usecase'
 
+        # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
             '.'.join([self.repo, proc_name, usecase_name]))
@@ -1233,25 +1231,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         study_dump = imported_module.Study(run_usecase=True)
 
         study_dump.load_data()
-        # study_dump.run()
 
-        # import du usecase usecase_1_doe_mono
+        # Check the created study
 
-        ################ Start checks ##########################
         self.ns = f'{self.study_name}'
 
         self.exec_eng = study_dump.ee
 
         self.exec_eng.display_treeview_nodes(True)
-
-        anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
-            self.repo, sub_process_name, sub_process_usecase_name)
-
-        # print(anonymize_input_dict_from_usecase)
-        dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        study_dump.load_data(from_input_dict=dict_values)
-
         if with_coupling:
             ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
                 f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
@@ -1259,8 +1246,30 @@ class TestSoSDOEScenario(unittest.TestCase):
             ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
                 f'{self.study_name}.Eval.ReferenceScenario.Sellar_1')[0]
 
-        # Should be array([1.]) and not Should be array([2.]) if succeed of
-        # import usecase
+        # In the study creation it is provided x = array([2.])
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+        # Load the anonymized dict from associated selected sub_process
+
+        anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+            self.repo, sub_process_name, sub_process_usecase_name)
+
+        # Update the reference from the selected imported usecase anonymised
+        # dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # Check that the reference has been updated
+
+        # In the anonymised dict of the selected usecase it is provided x =
+        # array([2.])
         target_x = array([1.])
         target_values_dict = {}
         target_values_dict['x'] = target_x
@@ -1465,3 +1474,109 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         study_dump.load_data()
         study_dump.run()
+
+    def test_14_usecase_import_mono_instances(self):
+        """
+        This test checks the usecase import capability in mono instance mode
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        with_coupling = False
+
+        # The generator eval process
+        if with_coupling:
+            proc_name = 'test_sellar_coupling_generator_eval_doe'
+        else:
+            proc_name = 'test_sellar_generator_eval_doe'
+
+        usecase_name = 'usecase1_doe_mono'
+
+        # Associated nested subprocess
+        if with_coupling:
+            sub_process_name = 'test_sellar_coupling'
+        else:
+            sub_process_name = 'test_sellar_list'
+
+        sub_process_usecase_name = 'usecase'
+
+        # Creation of the study from the associated usecase
+        self.study_name = usecase_name
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = imported_module.Study(run_usecase=True)
+
+        study_dump.load_data()
+
+        # Check the created study
+
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        self.exec_eng.display_treeview_nodes(True)
+
+        if with_coupling:
+            ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.SellarCoupling.Sellar_1')[0]
+        else:
+            ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.subprocess.Sellar_1')[0]
+
+        # In the study creation it is provided x = array([2.])
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+        # Load the anonymized dict from associated selected sub_process
+
+        if 0 == 1:  # full anonymized dict with numerical keys
+            anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+                self.repo, sub_process_name, sub_process_usecase_name)
+        else:
+            if with_coupling:
+                anonymize_input_dict_from_usecase = {}
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([
+                                                                                         1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([
+                                                                                           1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([
+                                                                                           1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([
+                                                                                         1., 1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+            else:
+                anonymize_input_dict_from_usecase = {}
+                anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
+                    1.])
+                anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
+                    1.])
+                anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
+                    1.])
+                anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
+                    1., 1.])
+                #anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
+
+        # Update the reference from the selected imported usecase anonymised
+        # dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # Check that the reference has been updated
+
+        # In the anonymised dict of the selected usecase it is provided x =
+        # array([2.])
+        target_x = array([1.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
