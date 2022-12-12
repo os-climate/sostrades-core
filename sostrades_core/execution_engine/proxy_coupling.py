@@ -38,6 +38,8 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 
+from collections import ChainMap
+
 if platform.system() != 'Windows':
     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
@@ -55,6 +57,82 @@ def get_available_linear_solvers():
     del lsf
 
     return algos
+
+def _reproduce_mda_structure_as_in_gemseo(cs, authorize_self_coupled_disciplines):
+    ''' Based on GEMSEO create_mdo_chain function, in MDAChain.py
+        returns a list of disciplines (weak couplings) or list (strong couplings / MDAs) :
+        - if a MDA loop is detected, put disciplines in a sub-list
+        - if no MDA loop, the current discipline is added in the main list
+    '''
+    chained_disciplines = []
+    
+    for parallel_tasks in cs.sequence:
+        for coupled_disciplines in parallel_tasks:
+            first_disc = coupled_disciplines[0]
+            if len(coupled_disciplines) > 1 or (
+                    len(coupled_disciplines) == 1
+                    and cs.is_self_coupled(first_disc)
+#                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
+                    and authorize_self_coupled_disciplines
+                ):
+                #- MDA detection 
+                # in this case, mda i/o is the union of all i/o (different from MDOChain)
+                sub_mda_disciplines = []
+                # order the MDA disciplines the same way as the
+                # original disciplines 
+                # -> works only if the disciplines are built following the same order than proxy ones
+                for disc in cs.disciplines:
+                    if disc in coupled_disciplines:
+                        sub_mda_disciplines.append(disc)
+                        
+                chained_disciplines.append(sub_mda_disciplines)
+            else:
+                # single discipline
+                chained_disciplines.append(first_disc)
+                
+    return chained_disciplines
+    
+def _get_discipline_io(disc, io_type=None):
+    ''' returns a tuple (data_in, data_out) or data_in or outputs, of the provided discipline
+    '''
+    get_data = disc.get_data_io_with_full_name
+    if io_type == None:
+        return get_data(disc.IO_TYPE_IN, as_namespaced_tuple=True), get_data(disc.IO_TYPE_OUT, as_namespaced_tuple=True)
+    elif io_type==disc.IO_TYPE_IN:
+        return get_data(disc.IO_TYPE_IN, as_namespaced_tuple=True)
+    elif io_type==disc.IO_TYPE_OUT:
+        return get_data(disc.IO_TYPE_OUT, as_namespaced_tuple=True)        
+    else:
+        available_types = ["None", disc.IO_TYPE_IN, disc.IO_TYPE_OUT]
+        raise ValueError("IO_TYPE %s is not among"%str(io_type, available_types))
+    
+def _get_MDA_io(disc_list):
+    ''' returns a tuple of the i/o dict {(local_name, ns ID) : value} (data_io formatting) of provided disciplines,
+    according to GEMSEO rules for MDAs grammar creation : 
+    MDA input grammar is built as the union of inputs of all sub-disciplines, same for outputs
+    '''
+    list_of_data_in = [_get_discipline_io(d, io_type=d.IO_TYPE_IN) for d in disc_list]
+    data_in = ChainMap(*list_of_data_in) # merge list of dict in 1 dict
+    
+    list_of_data_out = [_get_discipline_io(d, io_type=d.IO_TYPE_OUT) for d in disc_list]
+    data_out = ChainMap(*list_of_data_out)
+    return data_in, data_out
+
+
+def _get_MDOChain_io(data_in, data_out):
+    ''' 
+    in_names is a list of tuple of inputs (and outputs for out_names)
+    returns a tuple (input names, output names) of the provided disciplines,
+    according to GEMSEO convention for MDOChain grammar creation : 
+    '''
+    mdo_inputs = {}
+    mdo_outputs = {}
+    for d_in, d_out in zip(data_in, data_out):
+        # add discipline input tuple (name, id) if tuple not already in outputs
+        mdo_inputs.update({t:v for (t,v) in d_in.items() if t not in mdo_outputs})
+        # add discipline output name in outputs
+        mdo_outputs.update(d_out)
+    return mdo_inputs, mdo_outputs
 
 
 class ProxyCoupling(ProxyDisciplineBuilder):
@@ -394,119 +472,75 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
         self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
 
-    # def _build_data_io(self):
-    #     """
-    #     Build data_in and data_out from sub proxies data_in and out
-    #     we build also data_in_with_full_name and data_out_with_full_name
-    #     to be able to retrieve inputs and outputs with same short name
-    #     in sub proxies
-    #     """
-    #     #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
-    #     subprocess_data_in_ns_tuple, subprocess_data_out_ns_tuple = self.__compute_mdachain_gemseo_based_data_io()
-    #
-    #     #- data_i/o setup
-    #     #- TODO: check if we can remove _data_in_with_full_name
-    #     # self._data_in_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
-    #     #                                 self._data_in.items()
-    #     # if key in self.DESC_IN or key in self.NUM_DESC_IN}
-    #     self._data_in_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
-    #                               self._data_in.items()
-    #                               if key in self.DESC_IN or key in self.NUM_DESC_IN}
-    #     self._data_in = {key: value for key, value in self._data_in.items(
-    #     ) if
-    #         key in self.DESC_IN or key in self.NUM_DESC_IN}
-    #
-    #     # add inputs - that are not outputs - of all children disciplines in
-    #     # data_in
-    #     self._data_in_ns_tuple.update(subprocess_data_in_ns_tuple)
-    #     # for k_full in data_in:
-    #     #     self._data_in_with_full_name[k_full] = data_in[k_full]
-    #     # if not self.ee.dm.get_data(k_full, self.NUMERICAL): #TODO: check if we can avoid this call to the DM, may be interesting to use data_in directly (perfo improvements)
-    #     #     self._data_in[k] = self.dm.get_data(k_full)
-    #
-    #     # self._data_out_with_full_name = {f'{self.get_disc_full_name()}.{key}': value for key, value in
-    #     #                                 self._data_out.items()
-    #     #                                 if key in self.DESC_OUT}
-    #     self._data_out_ns_tuple = {(key, id(value[self.NS_REFERENCE])): value for key, value in
-    #                                self._data_out.items()
-    #                                if key in self.DESC_OUT}
-    #     self._data_out = {key: value for key, value in self._data_out.items(
-    #     ) if
-    #         key in self.DESC_OUT}
-    #
-    #     # # keep residuals_history if in data_out
-    #     # if self.RESIDUALS_HISTORY in self._data_out:
-    #     #     self._data_out_with_full_name = {
-    #     #         f'{self.get_disc_full_name()}.{self.RESIDUALS_HISTORY}': self._data_out[self.RESIDUALS_HISTORY]}
-    #     #     self._data_out = {
-    #     #         self.RESIDUALS_HISTORY: self._data_out[self.RESIDUALS_HISTORY]} #TODO: shouldn't overwrite data_out
-    #     # else:
-    #     #     self._data_out_with_full_name = {}
-    #     #     self._data_out = {}
-    #
-    #     # add outputs of all children disciplines in data_out
-    #     self._data_out_ns_tuple.update(subprocess_data_out_ns_tuple)
-    #     # for k in data_out:
-    #     #     k_full = self.get_var_full_name(k, data_out)
-    #     #     self._data_out_with_full_name[k_full] = data_out[k]
-    #     #     if not self.ee.dm.get_data(k_full, self.NUMERICAL):
-    #     #         self._data_out[k] = self.dm.get_data(k_full)
-
     def __compute_mdachain_gemseo_based_data_io(self):
-        ''' mimics the definition of MDA i/o grammar
+        ''' mimics the definition of MDAChain i/o grammar
         '''
-        #- identify i/o grammars like in GEMSEO (like in initialize_grammar method in MDOChain)
-        mda_outputs = []
-        mda_inputs = []
-        get_data = self.dm.get_data
-        data_in = {}
-        data_out = {}
-        for d in self.proxy_disciplines:
-            # disc_in = d.get_input_data_names(as_namespaced_tuple=True)
-            # disc_out = d.get_output_data_names(as_namespaced_tuple=True)
-            # mda_outputs += disc_out
-            #
-            # # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
-            # # get all inputs that are not in known outputs
-            # mda_inputs += list(set(disc_in) - set(mda_outputs))
-            # d_data_in = {k_full: get_data(k_full) for k_full in disc_in if k_full not in mda_outputs}
-            # data_in.update(d_data_in)
-            #
-            # # get all outputs
-            # d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
-            # data_out.update(d_data_out)
-
-            disc_in = d.get_data_io_with_full_name(
-                self.IO_TYPE_IN, as_namespaced_tuple=True)
-            disc_out = d.get_data_io_with_full_name(
-                self.IO_TYPE_OUT, as_namespaced_tuple=True)
-            mda_outputs += disc_out
-            d_data_in = {key: value for key,
-                         value in disc_in.items() if key not in mda_outputs}
-            data_in.update(d_data_in)
-            data_out.update(disc_out)
-
-        return data_in, data_out
-
-    # def get_input_data_names(self):
-    #     '''
-    #     Returns:
-    #         (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
-    #     '''
-    #     return list(self._data_in_with_full_name.keys())
-    #
-    # def get_output_data_names(self):
-    #     '''
-    #     Returns:
-    #         (List[string]) output data full names based on i/o and namespaces declarations in the user wrapper
-    #     '''
-    #     return list(self._data_out_with_full_name.keys())
+        #- identify i/o grammars like in GEMSEO
+        # get discipline structure of the MDAChain 
+        # e.g, in Sellar : [[Sellar1, Sellar2], SellarProblem]
+        disciplines = _reproduce_mda_structure_as_in_gemseo(self.coupling_structure, 
+                                                            self.get_sosdisc_inputs("authorize_self_coupled_disciplines", full_name_keys=False)
+                                                            )
+        # build associated i/o grammar
+        chain_inputs = []
+        chain_outputs = []
+        for group in disciplines:
+            if isinstance(group, list):
+                # if MDA, i.e. group of disciplines (e.g. [Sellar1, Sellar2])
+                # we gather all the i/o of the sub-disciplines (MDA-like i/o grammar)
+                mda_inputs, mda_outputs = _get_MDA_io(group) 
+                chain_inputs.append(mda_inputs)
+                chain_outputs.append(mda_outputs)
+            else:
+                # if the group is composed of single discipline (e.g. SellarProblem])
+                # we add the i/o to the chain i/o
+                disc_inputs, disc_outputs = _get_discipline_io(group)
+                chain_inputs.append(disc_inputs)
+                chain_outputs.append(disc_outputs)
+         
+        # compute MDOChain-like i/o grammar
+        return _get_MDOChain_io(chain_inputs, chain_outputs)
+        
+#     def __compute_mdachain_gemseo_based_data_io(self):
+#         ''' mimics the definition of MDA i/o grammar
+#         '''
+#         #- identify i/o grammars like in GEMSEO (like in initialize_grammar method in MDOChain)
+#         mda_outputs = []
+#         mda_inputs = []
+#         get_data = self.dm.get_data
+#         data_in = {}
+#         data_out = {}
+#         for d in self.proxy_disciplines:
+#             # disc_in = d.get_input_data_names(as_namespaced_tuple=True)
+#             # disc_out = d.get_output_data_names(as_namespaced_tuple=True)
+#             # mda_outputs += disc_out
+#             #
+#             # # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
+#             # # get all inputs that are not in known outputs
+#             # mda_inputs += list(set(disc_in) - set(mda_outputs))
+#             # d_data_in = {k_full: get_data(k_full) for k_full in disc_in if k_full not in mda_outputs}
+#             # data_in.update(d_data_in)
+#             #
+#             # # get all outputs
+#             # d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
+#             # data_out.update(d_data_out)
+# 
+#             disc_in = d.get_data_io_with_full_name(
+#                 self.IO_TYPE_IN, as_namespaced_tuple=True)
+#             disc_out = d.get_data_io_with_full_name(
+#                 self.IO_TYPE_OUT, as_namespaced_tuple=True)
+#             mda_outputs += disc_out
+#             d_data_in = {key: value for key,
+#                          value in disc_in.items() if key not in mda_outputs}
+#             data_in.update(d_data_in)
+#             data_out.update(disc_out)
+# 
+#         return data_in, data_out
 
     def _build_coupling_structure(self):
         """
         Build MDOCouplingStructure
         """
-
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
                                                             self.coupling_structure.strong_couplings(),
