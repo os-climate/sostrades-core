@@ -356,11 +356,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Get sub disciplines list to configure
         """
-        disc_to_configure = []
-        for disc in self.proxy_disciplines:
-            if not disc.is_configured():
-                disc_to_configure.append(disc)
-        return disc_to_configure
+        # TODO: not yet adapted ProxyOptim to case self.flatten_subprocess == True
+        return self._get_disciplines_to_configure(self.proxy_disciplines)
 
     def set_edition_inputs_if_eval_mode(self):
         '''

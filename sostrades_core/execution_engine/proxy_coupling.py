@@ -13,30 +13,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from gemseo.core.chain import MDOChain
-from gemseo.mda.sequential_mda import MDASequential
-from sostrades_core.tools.filter.filter import filter_variables_to_convert
-from gemseo.mda.mda_chain import MDAChain
-from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.execution_engine.archi_builder import ArchiBuilder
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
-
 from pandas import DataFrame
 import platform
 import logging
+
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.filter.filter import filter_variables_to_convert
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.archi_builder import ArchiBuilder
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
 
@@ -57,83 +54,6 @@ def get_available_linear_solvers():
     del lsf
 
     return algos
-
-def _reproduce_mda_structure_as_in_gemseo(cs, authorize_self_coupled_disciplines):
-    ''' Based on GEMSEO create_mdo_chain function, in MDAChain.py
-        returns a list of disciplines (weak couplings) or list (strong couplings / MDAs) :
-        - if a MDA loop is detected, put disciplines in a sub-list
-        - if no MDA loop, the current discipline is added in the main list
-    '''
-    chained_disciplines = []
-    
-    for parallel_tasks in cs.sequence:
-        for coupled_disciplines in parallel_tasks:
-            first_disc = coupled_disciplines[0]
-            if len(coupled_disciplines) > 1 or (
-                    len(coupled_disciplines) == 1
-                    and cs.is_self_coupled(first_disc)
-#                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
-                    and authorize_self_coupled_disciplines
-                ):
-                #- MDA detection 
-                # in this case, mda i/o is the union of all i/o (different from MDOChain)
-                sub_mda_disciplines = []
-                # order the MDA disciplines the same way as the
-                # original disciplines 
-                # -> works only if the disciplines are built following the same order than proxy ones
-                for disc in cs.disciplines:
-                    if disc in coupled_disciplines:
-                        sub_mda_disciplines.append(disc)
-                        
-                chained_disciplines.append(sub_mda_disciplines)
-            else:
-                # single discipline
-                chained_disciplines.append(first_disc)
-                
-    return chained_disciplines
-    
-def _get_discipline_io(disc, io_type=None):
-    ''' returns a tuple (data_in, data_out) or data_in or outputs, of the provided discipline
-    '''
-    get_data = disc.get_data_io_with_full_name
-    if io_type == None:
-        return get_data(disc.IO_TYPE_IN, as_namespaced_tuple=True), get_data(disc.IO_TYPE_OUT, as_namespaced_tuple=True)
-    elif io_type==disc.IO_TYPE_IN:
-        return get_data(disc.IO_TYPE_IN, as_namespaced_tuple=True)
-    elif io_type==disc.IO_TYPE_OUT:
-        return get_data(disc.IO_TYPE_OUT, as_namespaced_tuple=True)        
-    else:
-        available_types = ["None", disc.IO_TYPE_IN, disc.IO_TYPE_OUT]
-        raise ValueError("IO_TYPE %s is not among"%str(io_type, available_types))
-    
-def _get_MDA_io(disc_list):
-    ''' returns a tuple of the i/o dict {(local_name, ns ID) : value} (data_io formatting) of provided disciplines,
-    according to GEMSEO rules for MDAs grammar creation : 
-    MDA input grammar is built as the union of inputs of all sub-disciplines, same for outputs
-    '''
-    list_of_data_in = [_get_discipline_io(d, io_type=d.IO_TYPE_IN) for d in disc_list]
-    data_in = ChainMap(*list_of_data_in) # merge list of dict in 1 dict
-    
-    list_of_data_out = [_get_discipline_io(d, io_type=d.IO_TYPE_OUT) for d in disc_list]
-    data_out = ChainMap(*list_of_data_out)
-    return data_in, data_out
-
-
-def _get_MDOChain_io(data_in, data_out):
-    ''' 
-    in_names is a list of tuple of inputs (and outputs for out_names)
-    returns a tuple (input names, output names) of the provided disciplines,
-    according to GEMSEO convention for MDOChain grammar creation : 
-    '''
-    mdo_inputs = {}
-    mdo_outputs = {}
-    for d_in, d_out in zip(data_in, data_out):
-        # add discipline input tuple (name, id) if tuple not already in outputs
-        mdo_inputs.update({t:v for (t,v) in d_in.items() if t not in mdo_outputs})
-        # add discipline output name in outputs
-        mdo_outputs.update(d_out)
-    return mdo_inputs, mdo_outputs
-
 
 class ProxyCoupling(ProxyDisciplineBuilder):
     """
@@ -164,6 +84,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"
+    AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
@@ -265,11 +186,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'group_mda_disciplines': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
                                   ProxyDiscipline.DEFAULT: False, ProxyDiscipline.USER_LEVEL: 3,
                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
-        'authorize_self_coupled_disciplines': {ProxyDiscipline.TYPE: 'bool',
-                                               ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                               ProxyDiscipline.DEFAULT: False,
-                                               ProxyDiscipline.USER_LEVEL: 3,
-                                               ProxyDiscipline.STRUCTURING: True}
+        AUTHORIZE_SELF_COUPLED_DISCIPLINES: {ProxyDiscipline.TYPE: 'bool',
+                                             ProxyDiscipline.POSSIBLE_VALUES: [True, False],
+                                             ProxyDiscipline.DEFAULT: False,
+                                             ProxyDiscipline.USER_LEVEL: 3,
+                                             ProxyDiscipline.STRUCTURING: True}
     }
 
     DESC_OUT = {
@@ -478,9 +399,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         #- identify i/o grammars like in GEMSEO
         # get discipline structure of the MDAChain 
         # e.g, in Sellar : [[Sellar1, Sellar2], SellarProblem]
-        disciplines = _reproduce_mda_structure_as_in_gemseo(self.coupling_structure, 
-                                                            self.get_sosdisc_inputs("authorize_self_coupled_disciplines", full_name_keys=False)
-                                                            )
+        disciplines = self._get_mda_structure_as_in_gemseo()
         # build associated i/o grammar
         chain_inputs = []
         chain_outputs = []
@@ -488,55 +407,23 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             if isinstance(group, list):
                 # if MDA, i.e. group of disciplines (e.g. [Sellar1, Sellar2])
                 # we gather all the i/o of the sub-disciplines (MDA-like i/o grammar)
-                mda_inputs, mda_outputs = _get_MDA_io(group) 
+                list_of_data_in = [d.get_data_io_with_full_name(d.IO_TYPE_IN, as_namespaced_tuple=True) for d in group]
+                list_of_data_out = [d.get_data_io_with_full_name(d.IO_TYPE_OUT, as_namespaced_tuple=True) for d in group]
+    
+                mda_inputs, mda_outputs = self.__get_MDA_io(list_of_data_in, list_of_data_out) 
                 chain_inputs.append(mda_inputs)
                 chain_outputs.append(mda_outputs)
             else:
                 # if the group is composed of single discipline (e.g. SellarProblem])
                 # we add the i/o to the chain i/o
-                disc_inputs, disc_outputs = _get_discipline_io(group)
+                disc_inputs = group.get_data_io_with_full_name(group.IO_TYPE_IN, as_namespaced_tuple=True)
+                disc_outputs = group.get_data_io_with_full_name(group.IO_TYPE_OUT, as_namespaced_tuple=True)
                 chain_inputs.append(disc_inputs)
                 chain_outputs.append(disc_outputs)
          
         # compute MDOChain-like i/o grammar
-        return _get_MDOChain_io(chain_inputs, chain_outputs)
+        return self.__get_MDOChain_io(chain_inputs, chain_outputs)
         
-#     def __compute_mdachain_gemseo_based_data_io(self):
-#         ''' mimics the definition of MDA i/o grammar
-#         '''
-#         #- identify i/o grammars like in GEMSEO (like in initialize_grammar method in MDOChain)
-#         mda_outputs = []
-#         mda_inputs = []
-#         get_data = self.dm.get_data
-#         data_in = {}
-#         data_out = {}
-#         for d in self.proxy_disciplines:
-#             # disc_in = d.get_input_data_names(as_namespaced_tuple=True)
-#             # disc_out = d.get_output_data_names(as_namespaced_tuple=True)
-#             # mda_outputs += disc_out
-#             #
-#             # # TODO [to discuss]: aren't these zips problematic with repeated short names that are crushed in data_in?
-#             # # get all inputs that are not in known outputs
-#             # mda_inputs += list(set(disc_in) - set(mda_outputs))
-#             # d_data_in = {k_full: get_data(k_full) for k_full in disc_in if k_full not in mda_outputs}
-#             # data_in.update(d_data_in)
-#             #
-#             # # get all outputs
-#             # d_data_out = {k_full: get_data(k_full) for k_full in disc_out}
-#             # data_out.update(d_data_out)
-# 
-#             disc_in = d.get_data_io_with_full_name(
-#                 self.IO_TYPE_IN, as_namespaced_tuple=True)
-#             disc_out = d.get_data_io_with_full_name(
-#                 self.IO_TYPE_OUT, as_namespaced_tuple=True)
-#             mda_outputs += disc_out
-#             d_data_in = {key: value for key,
-#                          value in disc_in.items() if key not in mda_outputs}
-#             data_in.update(d_data_in)
-#             data_out.update(disc_out)
-# 
-#         return data_in, data_out
-
     def _build_coupling_structure(self):
         """
         Build MDOCouplingStructure
@@ -905,3 +792,70 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def get_disc_label(self):
 
         return 'ProxyCoupling'
+    
+    def _get_mda_structure_as_in_gemseo(self):
+        """ Based on GEMSEO create_mdo_chain function, in MDAChain.py
+            returns a list of disciplines (weak couplings) or list (strong couplings / MDAs) :
+            - if a MDA loop is detected, put disciplines in a sub-list
+            - if no MDA loop, the current discipline is added in the main list
+        """
+        chained_disciplines = []
+        
+        for parallel_tasks in self.coupling_structure.sequence:
+            for coupled_disciplines in parallel_tasks:
+                first_disc = coupled_disciplines[0]
+                if len(coupled_disciplines) > 1 or (
+                        len(coupled_disciplines) == 1
+                        and self.coupling_structure.is_self_coupled(first_disc)
+    #                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
+                        and self.get_sosdisc_inputs(self.AUTHORIZE_SELF_COUPLED_DISCIPLINES)
+                    ):
+                    #- MDA detection 
+                    # in this case, mda i/o is the union of all i/o (different from MDOChain)
+                    sub_mda_disciplines = []
+                    # order the MDA disciplines the same way as the
+                    # original disciplines 
+                    # -> works only if the disciplines are built following the same order than proxy ones
+                    for disc in self.coupling_structure.disciplines:
+                        if disc in coupled_disciplines:
+                            sub_mda_disciplines.append(disc)
+                            
+                    chained_disciplines.append(sub_mda_disciplines)
+                else:
+                    # single discipline
+                    chained_disciplines.append(first_disc)
+                    
+        return chained_disciplines
+    
+    def __get_MDA_io(self, data_in_list, data_out_list):
+        """ Returns a tuple of the i/o dict {(local_name, ns ID) : value} (data_io formatting) of provided list of data_io,
+        according to GEMSEO rules for MDAs grammar creation : 
+        MDA input grammar is built as the union of inputs of all sub-disciplines, same for outputs.
+        
+        Args:
+        data_in_list : list of data_in (one per discipline)
+        data_out_list : list of data_out (one per discipline)
+        """
+        data_in = ChainMap(*data_in_list) # merge list of dict in 1 dict
+        data_out = ChainMap(*data_out_list)
+        return data_in, data_out
+    
+    
+    def __get_MDOChain_io(self, data_in_list, data_out_list):
+        """ Returns a tuple of dictionaries (data_in, data_out) of the provided disciplines,
+        according to GEMSEO convention for MDOChain grammar creation : 
+        
+        Args:
+        data_in_list : list of data_in (one per discipline)
+        data_out_list : list of data_out (one per discipline)
+        """
+        mdo_inputs = {}
+        mdo_outputs = {}
+        
+        for d_in, d_out in zip(data_in_list, data_out_list):
+            # add discipline input tuple (name, id) if tuple not already in outputs
+            mdo_inputs.update({t:v for (t,v) in d_in.items() if t not in mdo_outputs})
+            # add discipline output name in outputs
+            mdo_outputs.update(d_out)
+            
+        return mdo_inputs, mdo_outputs

@@ -1232,6 +1232,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         study_dump.load_data()
 
+        study_dump.run()
+
         # Check the created study
 
         self.ns = f'{self.study_name}'
