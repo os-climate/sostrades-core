@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Coupling Sample Generator CP',
+        'label': 'Core Test Sellar Coupling Sample Generator CP in flatten mode',
         'description': '',
         'category': '',
         'version': '',
@@ -77,13 +77,8 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
         # multi scenario driver builder
-        flatten_subprocess = False
-        if flatten_subprocess:
-            multi_scenarios = self.ee.factory.create_driver(
-                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
-        else:
-            multi_scenarios = self.ee.factory.create_driver(
-                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
+        multi_scenarios = self.ee.factory.create_driver(
+            'Eval', coupling_builder, flatten_subprocess=True)
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
