@@ -30,15 +30,6 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
 
-        my_scatter_dict = {'input_name': 'scenario_list',
-                           'input_type': 'string_list',
-                           'input_ns': 'ns_eval',
-                           'scatter_ns': 'ns_ac', }  # or object ScatterMapBuild
-        # >> introduce ScatterMap
-        if 'scenario_list' not in self.ee.scattermap_manager.build_maps_dict:
-            self.ee.scattermap_manager.add_build_map(
-                'scenario_list', my_scatter_dict)
-
         # instantiate factory by getting builder from process
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                             mod_id='test_disc1_disc2_coupling')
@@ -56,7 +47,7 @@ class ProcessBuilder(BaseProcessBuilder):
             disc2_builder, f'{self.ee.study_name}.Disc2')
 
         multi_scenarios = self.ee.factory.create_driver(
-            'multi_scenarios', cls_list, map_name='scenario_list', hide_coupling_in_driver=True)
+            'multi_scenarios', cls_list, hide_coupling_in_driver=True)
         self.ee.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.ee.study_name}')
         return multi_scenarios
