@@ -52,8 +52,8 @@ class Study(StudyManager):
         x2 = 4
         a2 = 6
         b2 = 2
-        private_val[self.study_name + '.multi_scenarios.scenario_1.x'] = x1
-        private_val[self.study_name + '.multi_scenarios.scenario_2.x'] = x2
+        private_val[self.study_name + '.multi_scenarios.scenario_1.Disc1.x'] = x1
+        private_val[self.study_name + '.multi_scenarios.scenario_2.Disc1.x'] = x2
         private_val[self.study_name +
                     '.multi_scenarios.scenario_1.Disc1.a'] = a1
         private_val[self.study_name +

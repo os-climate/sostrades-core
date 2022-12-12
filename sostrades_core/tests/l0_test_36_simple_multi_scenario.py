@@ -166,6 +166,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
+        dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
@@ -216,20 +217,27 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.execute()
 
         # Change non-trade variable value from reference and check it has induced a reconfiguration and re-propagation
-        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = 23
+        new_constant_ref = 23
+        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = new_constant_ref
         self.exec_eng.load_study_from_input_dict(dict_values)
         for scenario in scenario_list:
             self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
-                                                        scenario + '.Disc3.constant'), 23)
-
-        # Now, some non-trade variables from user scenarios (not ref!) are modified and checked
-        dict_values[self.study_name + '.multi_scenarios.scenario_1.Disc3.constant'] = 25
-        dict_values[self.study_name + '.multi_scenarios.scenario_2.Disc3.power'] = 50
-        self.exec_eng.load_study_from_input_dict(dict_values)
-        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.Disc3.constant'), 25)
-        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.Disc3.power'), 50)
+                                                        scenario + '.Disc3.constant'), new_constant_ref)
 
         self.exec_eng.execute()
+
+        # Now, check that, since we are in LINKED_MODE, that the non-trade variables from non-reference scenarios have
+        # 'editable' in False.
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.a', 'editable'), False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.a', 'editable'), False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.x', 'editable'), False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.x', 'editable'), False)
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                        scenario + '.Disc3.constant', 'editable'), False)
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                        scenario + '.Disc3.power', 'editable'), False)
 
         self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),
                          ['scenario_1', 'scenario_W', 'scenario_2'])
@@ -238,31 +246,21 @@ class TestSimpleMultiScenario(unittest.TestCase):
         for sc in ['scenario_1','scenario_2']:
             assert sc in ms_sub_disc_names
 
-        scenario_list = ['scenario_1', 'scenario_2']
-        dict_values[self.study_name + '.a'] = self.a1
-        dict_values[self.study_name + '.x'] = self.x1
-        for scenario in scenario_list:
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = self.constant
-            dict_values[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = self.power
-        dict_values[self.study_name + '.multi_scenarios.ReferenceScenario.Disc1.b'] = self.b
+        # Now, change to REFERENCE_MODE to COPY_MODE and check that the non-trade variables from non-reference scenarios have
+        # 'editable' in True.
+        dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'copy_mode'
         self.exec_eng.load_study_from_input_dict(dict_values)
-        self.exec_eng.execute()
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.x', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.x', 'editable'), True)
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.constant', 'editable'), True)
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.power', 'editable'), True)
 
-        y1 = self.a1 * self.x1 + self.b1
-        y2 = self.a1 * self.x1 + self.b2
-        o1 = self.constant + self.z1 ** self.power
-        o2 = self.constant + self.z2 ** self.power
-
-        self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.y'), y1)
-        self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.y'), y2)
-        self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.o'), o1)
-        self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.o'), o2)
 
     def test_03_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters

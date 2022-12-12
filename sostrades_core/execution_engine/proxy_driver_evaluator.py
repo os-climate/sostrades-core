@@ -311,13 +311,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # SUBDISCIPLINES
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
-                    trade_vars)
+                ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index()]
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
+
+                # Modification of read-only or editable depending on LINKED_MODE or COPY_MODE
+                self.modify_editable_attribute_according_to_reference_mode(ref_discipline, scenario_names, ref_dict)
+                # Propagation to other scenarios if necessary
                 if ref_changes_dict:
-                    self.propagate_reference_non_trade_variables_changes(
-                        ref_changes_dict, ref_dict, scenario_names)
-            else:
-                scenario_names = scenario_names
+                    self.propagate_reference_non_trade_variables_changes(ref_changes_dict, ref_dict, ref_discipline, scenario_names)
+            # else:
+            #     scenario_names = scenario_names
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
@@ -425,18 +428,35 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         return ref_changes_dict, ref_dict
 
-    def propagate_reference_non_trade_variables_changes(self, ref_changes_dict, ref_dict, scenario_names_to_propagate):
+    def propagate_reference_non_trade_variables_changes(self, ref_changes_dict, ref_dict, ref_discipline, scenario_names_to_propagate):
 
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
 
-        ref_discipline = self.proxy_disciplines[self.get_reference_scenario_index(
-        )]
-
         # Build other scenarios variables and values dict from reference
-        dict_to_propagate = {}
-        for key in ref_changes_dict.keys():
-            for sc in scenario_names_to_propagate:
+        dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+                                                                                  scenario_names_to_propagate,
+                                                                                  ref_changes_dict)
+        # Propagate other scenarios variables and values
+        self.ee.dm.set_values_from_dict(dict_to_propagate)
+
+    def modify_editable_attribute_according_to_reference_mode(self,ref_discipline,scenario_names_to_propagate,ref_dict):
+
+        scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+                                                                                              scenario_names_to_propagate,
+                                                                                              ref_dict)
+        if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
+            for key in scenarios_non_trade_vars_dict.keys():
+                self.ee.dm.set_data(key, 'editable', False)
+        elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
+            for key in scenarios_non_trade_vars_dict.keys():
+                self.ee.dm.set_data(key, 'editable', True)
+
+    def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
+
+        transformed_to_other_scenarios_dict = {}
+        for key in dict_from_ref.keys():
+            for sc in scenario_names:
                 if ref_discipline.sos_name in key and self.sos_name in key:
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
                         key.split(self.sos_name,
@@ -447,10 +467,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 else:
                     new_key = key
                 if self.dm.check_data_in_dm(new_key):
-                    dict_to_propagate[new_key] = ref_changes_dict[key]
+                    transformed_to_other_scenarios_dict[new_key] = dict_from_ref[key]
 
-        # Propagate other scenarios variables and values
-        self.ee.dm.set_values_from_dict(dict_to_propagate)
+        return transformed_to_other_scenarios_dict
 
         # # Take non-trade variables values from subdisciplines of reference scenario
         # for subdisc in self.proxy_disciplines[index_ref_disc].proxy_disciplines:
