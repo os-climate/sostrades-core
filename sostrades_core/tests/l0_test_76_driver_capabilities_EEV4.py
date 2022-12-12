@@ -1196,7 +1196,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-    def test_11_usecase_import(self):
+    def test_11_usecase_import_multi_instances(self):
         """
         This test checks the usecase import capability. It also uses the flatten_subprocess flag.
         """
@@ -1205,10 +1205,19 @@ class TestSoSDOEScenario(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        proc_name = 'test_sellar_coupling_generator_eval_smap'
+        # The generator eval process
+        #proc_name = 'test_sellar_coupling_generator_eval_smap'
+        proc_name = 'test_sellar_coupling_generator_eval_cp'
+        #proc_name = 'test_sellar_generator_eval_cp'
 
         #study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
         usecase_name = 'usecase1_cp_multi'
+
+        # Associated nested subprocess
+        sub_process_name = 'test_sellar_coupling'
+        #sub_process_name = 'test_sellar_list'
+        sub_process_usecase_name = 'usecase'
+
         self.study_name = usecase_name
         imported_module = import_module(
             '.'.join([self.repo, proc_name, usecase_name]))
@@ -1227,11 +1236,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.exec_eng.display_treeview_nodes(True)
 
-        sub_process_name = 'test_sellar_coupling'
-        usecase_name = 'usecase'
-
         anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
-            self.repo, sub_process_name, usecase_name)
+            self.repo, sub_process_name, sub_process_usecase_name)
 
         # print(anonymize_input_dict_from_usecase)
         dict_values = {}
@@ -1241,8 +1247,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
 
-        # Should be array([1.]) if succeed of import usecase
-        target_x = array([2.])
+        # Should be array([1.]) and not Should be array([2.]) if succeed of
+        # import usecase
+        target_x = array([1.])
         target_values_dict = {}
         target_values_dict['x'] = target_x
         print_flag = False

@@ -48,8 +48,11 @@ class Study(StudyManager):
                                                     'Eval.y_1', 'Eval.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
+        repo = 'sostrades_core.sos_processes.test'
+        mod_id = 'test_sellar_list'
         my_usecase = 'usecase'
-        anonymize_input_dict_from_usecase = {}
+        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
+            repo, mod_id, my_usecase)
 
         disc_dict = {}
         # DoE + Eval inputs
@@ -65,13 +68,8 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
         disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
-        # Sellar inputs
-        local_dv = 10.
-        disc_dict[f'{ns}.Eval.x'] = array([1.])
-        disc_dict[f'{ns}.Eval.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        # Sellar referene inputs
+        # Provided by usecase import
 
         return [disc_dict]
 

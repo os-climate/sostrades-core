@@ -28,7 +28,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase import Study
+from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_without_ref import Study
 
 
 class TestMultiScenario(unittest.TestCase):
@@ -365,7 +365,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_05_multi_scenario_from_process_with_basic_config_from_usecase_and_with_ref(self):
 
-        from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_with_ref import Study
+        from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_without_ref import Study
 
         builder_process = self.exec_eng.factory.get_builder_from_process(
             self.repo, 'test_multi_instance_with_samplegenerator')
@@ -385,6 +385,8 @@ class TestMultiScenario(unittest.TestCase):
         scenario_df = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.scenario_df')
         scenario_df['selected_scenario'] = [True, True, False, True]
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
+        dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
         # self.exec_eng.load_study_from_input_dict(dict_values)
 
         # reference var values
@@ -435,10 +437,7 @@ class TestMultiScenario(unittest.TestCase):
 
         ms_disc = self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['ReferenceScenario',
-                                             'scenario_1',
-                                             'scenario_2',
-                                             'scenario_4'])
+        self.assertEqual(ms_sub_disc_names, ['scenario_1', 'scenario_2', 'scenario_4', 'ReferenceScenario'])
 
         # Now, check that, since we are in LINKED_MODE, that the non-trade variables from non-reference scenarios have
         # 'editable' in False.

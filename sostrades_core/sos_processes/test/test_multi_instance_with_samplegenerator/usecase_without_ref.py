@@ -46,6 +46,20 @@ class Study(StudyManager):
                                                 })
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = input_selection_cp_b_z
 
+        self.x1 = 2.
+        self.a1 = 3
+        self.constant = 3
+        self.power = 2
+        self.z1 = 1.2
+
+        scenario_list = ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4']
+        for scenario in scenario_list:
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
+
         return [dict_values]
 
 if '__main__' == __name__:
