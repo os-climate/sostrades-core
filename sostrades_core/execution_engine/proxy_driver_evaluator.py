@@ -173,6 +173,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
         self.scatter_list_valid = True
+        self.scatter_list_integrity_msg = ''
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -888,17 +889,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-        self.scatter_list_valid = self.check_scatter_list_validity()
+        self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
         if self.scatter_list_valid:
             self.builder_tool.prepare_tool()
+        else:
+            self.logger.error(self.scatter_list_integrity_msg)
 
     def build_tool(self):
         if self.builder_tool is not None and self.scatter_list_valid:
             self.builder_tool.build()
 
     def check_scatter_list_validity(self):
-        # TODO: include as a case of check data integrity ?
         # checking for duplicates
+        msg = ''
         if self.SCENARIO_DF in self.get_data_in():
             scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
             scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
@@ -912,11 +915,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 for sc in repeated_elements[1:]:
                     msg += ', ' + sc
                 msg += ').'
-                self.logger.error(msg)
-                # raise Exception(msg)
-                return False
+                return False, msg
         # in any other case the list is valid
-        return True
+        return True, msg
+
+    def check_data_integrity(self):
+        # checking for duplicates
+        disc_in = self.get_data_in()
+        if self.SCENARIO_DF in disc_in and not self.scatter_list_valid:
+            self.dm.set_data(
+                self.get_var_full_name(self.SCENARIO_DF, disc_in), 
+                self.CHECK_INTEGRITY_MSG, self.scatter_list_integrity_msg)
 
     # MONO INSTANCE PROCESS
     def _get_disc_shared_ns_value(self):

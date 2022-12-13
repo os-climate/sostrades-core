@@ -484,6 +484,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
         self.assertIn(error_message, self.my_handler.msg_list)
 
+        runtime_error_message =  'Variable MyCase.multi_scenarios.scenario_df : ' \
+                                 'Cannot activate several scenarios with the same name (scenario_1).'
+        ## data integrity Exception
+        with self.assertRaises(ValueError) as cm:
+            self.exec_eng.execute()
+        self.assertIn(runtime_error_message, str(cm.exception))
+
     def test_10_two_scenarios_with_same_name_on_2nd_config(self):
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -522,8 +529,15 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
         self.assertIn(error_message, self.my_handler.msg_list)
 
+        runtime_error_message =  'Variable MyCase.multi_scenarios.scenario_df : ' \
+                                 'Cannot activate several scenarios with the same name (scenario_1).'
+        ## data integrity Exception
+        with self.assertRaises(ValueError) as cm:
+            self.exec_eng.execute()
+        self.assertIn(runtime_error_message, str(cm.exception))
+
     ## EEV3 TESTS #TODO: cleanup when nested scatter exists
-    def _test_01_multi_scenario_of_scatter(self):
+    def _test_01_multi_scenario_ogtf_scatter(self):
 
         # scatter build map
         ac_map = {'input_name': 'name_list',
