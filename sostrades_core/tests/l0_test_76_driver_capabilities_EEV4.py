@@ -1477,6 +1477,56 @@ class TestSoSDOEScenario(unittest.TestCase):
         study_dump.load_data()
         study_dump.run()
 
+        # check that the DriverEvaluator has no i/o of the subprocess:
+        driver_disc = study_dump.ee.dm.get_disciplines_with_name('usecase1_cp_multi.Eval')[0]
+        for var_name in driver_disc.get_input_data_names():
+            self.assertFalse('ReferenceScenario' in var_name)
+            self.assertFalse('scenario_1' in var_name)
+            self.assertFalse('scenario_2' in var_name)
+        self.assertEqual(driver_disc.get_output_data_names(), [])
+
+        # check that the namespace treeview is proper
+        exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi\n' \
+                    '|_ usecase1_cp_multi\n' \
+                    '\t|_ Eval\n' \
+                    '\t\t|_ ReferenceScenario\n' \
+                    '\t\t\t|_ SellarCoupling\n' \
+                    '\t\t\t\t|_ Sellar_Problem\n' \
+                    '\t\t\t\t|_ Sellar_2\n' \
+                    '\t\t\t\t|_ Sellar_1\n' \
+                    '\t\t|_ scenario_1\n' \
+                    '\t\t\t|_ SellarCoupling\n' \
+                    '\t\t\t\t|_ Sellar_Problem\n' \
+                    '\t\t\t\t|_ Sellar_2\n' \
+                    '\t\t\t\t|_ Sellar_1\n' \
+                    '\t\t|_ scenario_2\n' \
+                    '\t\t\t|_ SellarCoupling\n' \
+                    '\t\t\t\t|_ Sellar_Problem\n' \
+                    '\t\t\t\t|_ Sellar_2\n' \
+                    '\t\t\t\t|_ Sellar_1\n' \
+                    '\t|_ SampleGenerator'
+
+        self.assertEqual(study_dump.ee.display_treeview_nodes(), exp_ns_tv)
+
+        # check that the proxy tree has put the subprocess at the same level as the evaluator and all proxies have run
+        exp_proxy_tv_with_status = '|_ usecase1_cp_multi  (ProxyCoupling) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi.Eval  (ProxyDriverEvaluator) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi.SampleGenerator  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling  (ProxyCoupling) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling  (ProxyCoupling) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling  (ProxyCoupling) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]'
+
+        self.assertEqual(study_dump.ee.root_process.display_proxy_subtree(lambda x: x.status), exp_proxy_tv_with_status)
+
     def test_14_usecase_import_mono_instances(self):
         """
         This test checks the usecase import capability in mono instance mode
