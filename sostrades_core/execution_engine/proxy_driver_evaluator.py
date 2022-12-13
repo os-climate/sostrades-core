@@ -470,7 +470,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                               ref_dict)
         if self.save_editable_attr:
             self.save_original_editable_attr_from_non_trade_variables(ref_dict, scenarios_non_trade_vars_dict)
-            self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
+            # self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
+            self.original_editability_dict = {**self.original_editable_dict_ref, **self.original_editable_dict_non_ref}
             self.save_editable_attr = False
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
