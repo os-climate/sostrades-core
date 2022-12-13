@@ -333,8 +333,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 if ref_changes_dict:
                     self.propagate_reference_non_trade_variables_changes(
                         ref_changes_dict, ref_dict, ref_discipline, scenario_names)
-            # else:
-            #     scenario_names = scenario_names
+            else:
+                if self.original_editable_dict:
+                    for key in self.original_editable_dict.keys():
+                        self.ee.dm.set_data(key, 'editable', self.original_editable_dict[key])
+
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
