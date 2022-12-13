@@ -33,6 +33,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -151,6 +152,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                          associated_namespaces=associated_namespaces)
         if cls_builder is not None:
             self.cls_builder = cls_builder
+            self.sub_builder_namespaces = get_ns_list_in_builder_list(self.cls_builder)
         else:
             raise Exception(
                 'The driver evaluator builder must have a cls_builder to work')
@@ -888,6 +890,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.
         '''
+        updated_ns_list = self.update_sub_builders_namespaces()
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
         elif len(self.cls_builder) == 1:
@@ -906,6 +909,28 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.hide_coupling_in_driver_for_display(disc_builder)
 
         self.eval_process_builder = disc_builder
+
+        self.eval_process_builder.add_namespace_list_in_associated_namespaces(updated_ns_list)
+
+    def update_sub_builders_namespaces(self):
+        '''
+        Update sub builders namespaces with the driver name in monoinstance case
+        '''
+
+        ns_ids_list = []
+        extra_name = f'{self.sos_name}'
+        after_name = self.father_executor.get_disc_full_name()
+
+        for ns_name in self.sub_builder_namespaces:
+            old_ns = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
+            updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
+                old_ns.get_value(), extra_name, after_name=after_name)
+            display_value= old_ns.get_display_value_if_exists()
+            ns_id = self.ee.ns_manager.add_ns(
+                ns_name, updated_value,display_value=display_value, add_in_shared_ns_dict=False)
+            ns_ids_list.append(ns_id)
+
+        return ns_ids_list
 
     def hide_coupling_in_driver_for_display(self, disc_builder):
         '''

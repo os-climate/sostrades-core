@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
-from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -94,7 +93,8 @@ class ScatterTool(SosTool):
             self.driver)
 
         if self.sc_map is None:
-            ns_to_update_name_list = get_ns_list_in_builder_list(self.sub_builders)
+            ns_to_update_name_list = self.driver.sub_builder_namespaces
+
         else:
             ns_to_update_name_list = self.sc_map.get_ns_to_update()
         # store ns_to_update namespace object
