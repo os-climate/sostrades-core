@@ -333,8 +333,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.modify_editable_attribute_according_to_reference_mode(
                     ref_discipline, scenario_names, ref_dict)
                 # Propagation to other scenarios if necessary
-                if ref_changes_dict:
-                    self.propagate_reference_non_trade_variables_changes(
+                self.propagate_reference_non_trade_variables(
                         ref_changes_dict, ref_dict, ref_discipline, scenario_names)
             else:
                 if self.original_editable_dict_non_ref:
@@ -449,7 +448,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         return ref_changes_dict, ref_dict
 
-    def propagate_reference_non_trade_variables_changes(self, ref_changes_dict, ref_dict, ref_discipline, scenario_names_to_propagate):
+    def propagate_reference_non_trade_variables(self, ref_changes_dict, ref_dict, ref_discipline, scenario_names_to_propagate):
 
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
@@ -457,14 +456,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ref_discipline = self.scenarios[self.get_reference_scenario_index()]
 
         # Build other scenarios variables and values dict from reference
+        dict_to_propagate = {}
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE: # Propagate all reference
             dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
                                                                                       scenario_names_to_propagate,
                                                                                       ref_dict)
-        elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE: # Propagate reference changes
+        elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE and ref_changes_dict: # Propagate reference changes
             dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
-                                                                                  scenario_names_to_propagate,
-                                                                                  ref_changes_dict)
+                                                                                      scenario_names_to_propagate,
+                                                                                      ref_changes_dict)
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
 
