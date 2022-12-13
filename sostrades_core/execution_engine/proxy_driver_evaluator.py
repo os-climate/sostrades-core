@@ -182,7 +182,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_ref_dict = {}
         self.save_editable_attr = True
-        self.original_editable_dict = {}
+        self.original_editability_dict = {}
+        self.original_editable_dict_ref = {}
+        self.original_editable_dict_non_ref = {}
 
     def _add_optional_shared_ns(self):
         """
@@ -334,8 +336,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 if ref_changes_dict:
                     self.propagate_reference_non_trade_variables_changes(
                         ref_changes_dict, ref_dict, ref_discipline, scenario_names)
-            # else:
-            #     scenario_names = scenario_names
+            else:
+                if self.original_editable_dict_non_ref:
+                    for key in self.original_editable_dict_non_ref.keys():
+                        self.ee.dm.set_data(key, 'editable', self.original_editable_dict_non_ref[key])
+
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
@@ -466,6 +471,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                               ref_dict)
         if self.save_editable_attr:
             self.save_original_editable_attr_from_non_trade_variables(ref_dict, scenarios_non_trade_vars_dict)
+            # self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
+            self.original_editability_dict = {**self.original_editable_dict_ref, **self.original_editable_dict_non_ref}
             self.save_editable_attr = False
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
@@ -473,7 +480,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.ee.dm.set_data(key, 'editable', False)
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                if self.original_editable_dict[key] == False:
+                if self.original_editability_dict[key] == False:
                     pass
                 else:
                     self.ee.dm.set_data(key, 'editable', True)
@@ -481,9 +488,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def save_original_editable_attr_from_non_trade_variables(self, ref_dict, scenarios_non_trade_vars_dict):
 
         for key in ref_dict:
-            self.original_editable_dict[key] = self.dm.get_data(key, 'editable')
+            self.original_editable_dict_ref[key] = self.dm.get_data(key, 'editable')
         for key in scenarios_non_trade_vars_dict:
-            self.original_editable_dict[key] = self.dm.get_data(key, 'editable')
+            self.original_editable_dict_non_ref[key] = self.dm.get_data(key, 'editable')
 
 
     def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
