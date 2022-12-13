@@ -457,7 +457,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ref_discipline = self.scenarios[self.get_reference_scenario_index()]
 
         # Build other scenarios variables and values dict from reference
-        dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+        if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE: # Propagate all reference
+            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+                                                                                      scenario_names_to_propagate,
+                                                                                      ref_dict)
+        elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE: # Propagate reference changes
+            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
                                                                                   scenario_names_to_propagate,
                                                                                   ref_changes_dict)
         # Propagate other scenarios variables and values
