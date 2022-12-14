@@ -19,21 +19,14 @@ from sostrades_core.tools.filter.filter import filter_variables_to_convert
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from gemseo.mda.sequential_mda import MDASequential
-import logging
-from copy import deepcopy, copy
+
 from multiprocessing import cpu_count
 
 from pandas import DataFrame
 from numpy import ndarray, floating
 from itertools import repeat
-import platform
-
-if platform.system() != 'Windows':
-    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 from gemseo.core.chain import MDOChain
-# from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.api import create_mda
@@ -104,15 +97,12 @@ class SoSMDAChain(MDAChain):
                  linear_solver_tolerance=1e-12,  # type: float
                  use_lu_fact=False,  # type: bool
                  grammar_type=MDAChain.JSON_GRAMMAR_TYPE,  # type: str
-                 # type: Optional[MDOCouplingStructure]
                  coupling_structure=None,
-                 # type: Optional[Iterable[MDOCouplingStructure]]
                  sub_coupling_structures=None,
                  log_convergence=False,  # type: bool
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  authorize_self_coupled_disciplines=False,  # type: bool
-                 # type: Optional[Union[float, int, bool, str]]
                  ** sub_mda_options
                  ):
         ''' Constructor
