@@ -434,8 +434,8 @@ class CheckDataIntegrity():
                 for parameter in parameter_list:
                     if parameter not in self.formula_dict.keys():
                         sympy_formula = SympyFormula(self.formula_dict[key])
-                        filled_dict = self.__fill_formula_dict(sympy_formula)
-                        self.__update_dict(twin_dict, filled_dict)
+                        self.__fill_formula_dict(sympy_formula)
+                        self.__update_dict(twin_dict, self.formula_dict)
         # if updates were made, a new check is performed. else, all parameter
         # needed are known
         if twin_dict != self.formula_dict:
