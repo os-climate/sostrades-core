@@ -861,80 +861,80 @@ class TestCache(unittest.TestCase):
         self.assertEqual(
             disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
 
-    def _test_10_cache_on_sellar_optim_gemseo_scenario(self):
-        '''
-        Test commented because it builds the process with MDODiscipline objects without using Execution Engine,
-        so that can't call SoSDiscipline method (_convert_new_type_into_array in MDA)
-        '''
-
-        disciplines = [Sellar1(residual_form=False),
-                       Sellar2(residual_form=False),
-                       SellarSystem()]
-
-        design_space = SellarDesignSpace()
-
-        scenario = MDOScenario(disciplines,
-                               formulation="MDF",  # "DisciplinaryOpt",
-                               objective_name='obj',
-                               design_space=design_space,
-                               tolerance=1e-8,
-                               sub_mda_class='MDAGaussSeidel')  # 'MDAJacobi'
-        scenario.set_differentiation_method("user")  # user
-
-        # add constraints
-        scenario.add_constraint("c_1", "ineq")
-        scenario.add_constraint("c_2", "ineq")
-
-        run_inputs = {'max_iter': 10, 'algo': "SLSQP"}
-
-        dtype = "float64"
-        mda_data = {'x_local': np.array([1.], dtype=dtype),
-                    'x_shared': np.array([4., 3.], dtype=dtype),
-                    'y_0': np.array([1.], dtype=dtype),
-                    'y_1': np.array([1.], dtype=dtype)
-                    }
-
-        # Run MDA
-        print("\n ***** Run MDA\n")
-        scenario.formulation.mda.execute(mda_data)
-
-        for disc in scenario.formulation.disciplines:
-            print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
-                  ", n_calls_linearize: " + str(disc.n_calls))
-            for k, v in disc.local_data.items():
-                print("\t | " + str(k) + " " + str(v))
-        print("\n \t in MDA")
-        for k, v in scenario.formulation.mda.local_data.items():
-            print("\t | " + str(k) + " " + str(v))
-
-        # run optimization
-        print("\n ***** Run Optim\n")
-        scenario.execute(run_inputs)
-
-        for disc in scenario.formulation.disciplines:
-            print("\t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
-                  ", n_calls_linearize: " + str(disc.n_calls))
-            for k, v in disc.local_data.items():
-                print("\t | " + str(k) + " " + str(v))
-        print("\n \t in MDA")
-        for k, v in scenario.formulation.mda.local_data.items():
-            print("\t | " + str(k) + " " + str(v))
-
-        # run evaluate_function
-        print("\n ***** Evaluate functions\n")
-        scenario.formulation.opt_problem.evaluate_functions()
-
-        for disc in scenario.formulation.disciplines:
-            print("\n \t " + str(disc.name))
-            print("\t | n_calls: " + str(disc.n_calls) +
-                  ", n_calls_linearize: " + str(disc.n_calls))
-            for k, v in disc.local_data.items():
-                print("\t | " + str(k) + " " + str(v))
-        print("\n \t in MDA")
-        for k, v in scenario.formulation.mda.local_data.items():
-            print("\t | " + str(k) + " " + str(v))
+    # def _test_10_cache_on_sellar_optim_gemseo_scenario(self):
+    #     '''
+    #     Test commented because it builds the process with MDODiscipline objects without using Execution Engine,
+    #     so that can't call SoSDiscipline method (_convert_new_type_into_array in MDA)
+    #     '''
+    #
+    #     disciplines = [Sellar1(residual_form=False),
+    #                    Sellar2(residual_form=False),
+    #                    SellarSystem()]
+    #
+    #     design_space = SellarDesignSpace()
+    #
+    #     scenario = MDOScenario(disciplines,
+    #                            formulation="MDF",  # "DisciplinaryOpt",
+    #                            objective_name='obj',
+    #                            design_space=design_space,
+    #                            tolerance=1e-8,
+    #                            sub_mda_class='MDAGaussSeidel')  # 'MDAJacobi'
+    #     scenario.set_differentiation_method("user")  # user
+    #
+    #     # add constraints
+    #     scenario.add_constraint("c_1", "ineq")
+    #     scenario.add_constraint("c_2", "ineq")
+    #
+    #     run_inputs = {'max_iter': 10, 'algo': "SLSQP"}
+    #
+    #     dtype = "float64"
+    #     mda_data = {'x_local': np.array([1.], dtype=dtype),
+    #                 'x_shared': np.array([4., 3.], dtype=dtype),
+    #                 'y_0': np.array([1.], dtype=dtype),
+    #                 'y_1': np.array([1.], dtype=dtype)
+    #                 }
+    #
+    #     # Run MDA
+    #     print("\n ***** Run MDA\n")
+    #     scenario.formulation.mda.execute(mda_data)
+    #
+    #     for disc in scenario.formulation.disciplines:
+    #         print("\t " + str(disc.name))
+    #         print("\t | n_calls: " + str(disc.n_calls) +
+    #               ", n_calls_linearize: " + str(disc.n_calls))
+    #         for k, v in disc.local_data.items():
+    #             print("\t | " + str(k) + " " + str(v))
+    #     print("\n \t in MDA")
+    #     for k, v in scenario.formulation.mda.local_data.items():
+    #         print("\t | " + str(k) + " " + str(v))
+    #
+    #     # run optimization
+    #     print("\n ***** Run Optim\n")
+    #     scenario.execute(run_inputs)
+    #
+    #     for disc in scenario.formulation.disciplines:
+    #         print("\t " + str(disc.name))
+    #         print("\t | n_calls: " + str(disc.n_calls) +
+    #               ", n_calls_linearize: " + str(disc.n_calls))
+    #         for k, v in disc.local_data.items():
+    #             print("\t | " + str(k) + " " + str(v))
+    #     print("\n \t in MDA")
+    #     for k, v in scenario.formulation.mda.local_data.items():
+    #         print("\t | " + str(k) + " " + str(v))
+    #
+    #     # run evaluate_function
+    #     print("\n ***** Evaluate functions\n")
+    #     scenario.formulation.opt_problem.evaluate_functions()
+    #
+    #     for disc in scenario.formulation.disciplines:
+    #         print("\n \t " + str(disc.name))
+    #         print("\t | n_calls: " + str(disc.n_calls) +
+    #               ", n_calls_linearize: " + str(disc.n_calls))
+    #         for k, v in disc.local_data.items():
+    #             print("\t | " + str(k) + " " + str(v))
+    #     print("\n \t in MDA")
+    #     for k, v in scenario.formulation.mda.local_data.items():
+    #         print("\t | " + str(k) + " " + str(v))
 
     def _test_11_recursive_cache_activation(self):
 

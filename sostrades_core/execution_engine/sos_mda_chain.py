@@ -603,7 +603,6 @@ class SoSMDAChain(MDAChain):
                 has_nan = True
         return has_nan
 
-    # type: (...) -> List[str]
     def get_input_data_names(self, filtered_inputs=False):
         """
         Retrieve the names of the input variables from the input_grammar.
@@ -620,7 +619,6 @@ class SoSMDAChain(MDAChain):
             return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
                                                logger=LOGGER)
 
-    # type: (...) -> List[str]
     def get_output_data_names(self, filtered_outputs=False):
         """
         Retrieve the names of the output variables from the output_grammar
