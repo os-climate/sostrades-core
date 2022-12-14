@@ -116,20 +116,20 @@ class SoSMDAChain(MDAChain):
         self.reduced_dm = reduced_dm
 
         MDAChain.__init__(self,
-                          disciplines,  # type: Sequence[MDODiscipline]
-                          sub_mda_class=sub_mda_class,  # type: str
-                          max_mda_iter=max_mda_iter,  # type: int
-                          name=name,  # type: Optional[str]
-                          n_processes=n_processes,  # type: int
-                          chain_linearize=chain_linearize,  # type: bool
-                          tolerance=tolerance,  # type: float
-                          linear_solver_tolerance=linear_solver_tolerance,  # type: float
-                          use_lu_fact=use_lu_fact,  # type: bool
-                          grammar_type=grammar_type,  # type: str
+                          disciplines,
+                          sub_mda_class=sub_mda_class,
+                          max_mda_iter=max_mda_iter,
+                          name=name,
+                          n_processes=n_processes,
+                          chain_linearize=chain_linearize,
+                          tolerance=tolerance,
+                          linear_solver_tolerance=linear_solver_tolerance,
+                          use_lu_fact=use_lu_fact,
+                          grammar_type=grammar_type,
                           coupling_structure=coupling_structure,
                           sub_coupling_structures=sub_coupling_structures,
-                          log_convergence=log_convergence,  # type: bool
-                          linear_solver=linear_solver,  # type: str
+                          log_convergence=log_convergence,
+                          linear_solver=linear_solver,
                           linear_solver_options=linear_solver_options,
                           ** sub_mda_options
                           )
@@ -387,7 +387,7 @@ class SoSMDAChain(MDAChain):
 
         if self.check_min_max_gradients:
             print("IN CHECK of soscoupling")
-            self._check_min_max_gradients(self, self.jac)
+            self._check_min_max_gradients(self.jac)
 
     def _create_mdo_chain(
             self,
