@@ -107,6 +107,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     COPY_MODE = 'copy_mode'
     REFERENCE_MODE = 'reference_mode'
     REFERENCE_MODE_POSSIBLE_VALUES = [LINKED_MODE, COPY_MODE]
+    REFERENCE_SCENARIO_NAME = 'ReferenceScenario'
+
 
     SCENARIO_DF = 'scenario_df'
 
@@ -302,7 +304,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # Addition of Reference Scenario
             scenario_df = scenario_df.append(
                 {self.SELECTED_SCENARIO: True,
-                    self.SCENARIO_NAME: 'ReferenceScenario'},
+                    self.SCENARIO_NAME: self.REFERENCE_SCENARIO_NAME},
                 ignore_index=True)
 
         # NB assuming that the scenario_df entries are unique otherwise there
@@ -437,8 +439,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def get_reference_scenario_index(self):
         index_ref = 0
         for disc in self.scenarios:
-            if disc.sos_name == 'ReferenceScenario' \
-                    or self.ee.ns_manager.compose_ns([self.sos_name, 'ReferenceScenario']) in disc.sos_name:  # for flatten_subprocess
+            if disc.sos_name == self.REFERENCE_SCENARIO_NAME \
+                    or self.ee.ns_manager.compose_ns([self.sos_name, self.REFERENCE_SCENARIO_NAME]) in disc.sos_name:  # for flatten_subprocess
                     # TODO: better implement this 2nd condition ?
                 break
             else:
@@ -464,7 +466,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # values
         ref_dict = {}
         for key in ref_discipline.get_input_data_names():
-            if all(key.split(ref_discipline.sos_name + '.')[-1] != trade_var for trade_var in trade_vars):
+            if all(key.split(self.REFERENCE_SCENARIO_NAME + '.')[-1] != trade_var for trade_var in trade_vars):
                 ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 
         # Check if reference values have changed and select only those which
@@ -534,13 +536,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         transformed_to_other_scenarios_dict = {}
         for key in dict_from_ref.keys():
             for sc in scenario_names:
-                if ref_discipline.sos_name in key and self.sos_name in key:
+                if self.REFERENCE_SCENARIO_NAME in key and self.sos_name in key:
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
                         key.split(self.sos_name,
-                                  1)[-1].split(ref_discipline.sos_name, 1)[-1]
-                elif ref_discipline.sos_name in key and not self.sos_name in key:
-                    new_key = key.split(ref_discipline.sos_name, 1)[
-                        0] + sc + key.split(ref_discipline.sos_name, 1)[-1]
+                                  1)[-1].split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
+                elif self.REFERENCE_SCENARIO_NAME in key and not self.sos_name in key:
+                    new_key = key.split(self.REFERENCE_SCENARIO_NAME, 1)[
+                        0] + sc + key.split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
                 else:
                     new_key = key
                 if self.dm.check_data_in_dm(new_key):

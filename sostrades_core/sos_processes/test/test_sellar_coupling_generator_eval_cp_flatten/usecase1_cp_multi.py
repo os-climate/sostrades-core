@@ -41,7 +41,7 @@ class Study(StudyManager):
         list_of_values = [dict_of_list_values['SellarCoupling.Sellar_Problem.local_dv'], dict_of_list_values['SellarCoupling.x'],
                           dict_of_list_values['SellarCoupling.y_1'], dict_of_list_values['SellarCoupling.y_2'], dict_of_list_values['SellarCoupling.z']]
 
-        input_selection_cp_x_z = {'selected_input': [True, True, True, True, True],
+        input_selection_cp_x_z = {'selected_input': [False, True, True, True, True],
                                   'full_name': ['SellarCoupling.Sellar_Problem.local_dv', 'SellarCoupling.x', 'SellarCoupling.y_1',
                                                 'SellarCoupling.y_2',
                                                 'SellarCoupling.z'],
