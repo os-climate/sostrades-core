@@ -1024,166 +1024,168 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.display_treeview_nodes(display_variables='var_name')
         self.exec_eng.execute()
 
-    def _test_04_consecutive_configure(self):
-
-        # scatter build map
-        ac_map = {'input_name': 'name_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_scatter_scenario',
-                  'output_name': 'ac_name',
-                  'scatter_ns': 'ns_ac',
-                  'gather_ns': 'ns_scenario',
-                  'ns_to_update': ['ns_data_ac']}
-
-        self.exec_eng.scattermap_manager.add_build_map('name_list', ac_map)
-
-        # scenario build map
-        scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
-                        'input_ns': 'ns_scatter_scenario',
-                        'output_name': 'scenario_name',
-                        'scatter_ns': 'ns_scenario',
-                        'gather_ns': 'ns_scatter_scenario',
-                        'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
-
-        self.exec_eng.scattermap_manager.add_build_map(
-            'scenario_list', scenario_map)
-
-        # shared namespace
-        self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
-        self.exec_eng.ns_manager.add_ns(
-            'ns_scatter_scenario', 'MyCase.multi_scenarios')
-        self.exec_eng.ns_manager.add_ns(
-            'ns_disc3', 'MyCase.multi_scenarios.Disc3')
-        self.exec_eng.ns_manager.add_ns(
-            'ns_out_disc3', 'MyCase.multi_scenarios')
-        self.exec_eng.ns_manager.add_ns(
-            'ns_data_ac', 'MyCase')
-
-        # instantiate factory # get instantiator from Discipline class
-        builder_list = self.factory.get_builder_from_process(repo=self.repo,
-                                                             mod_id='test_disc1_scenario')
-
-        scatter_list = self.exec_eng.factory.create_multi_scatter_builder_from_list(
-            'name_list', builder_list=builder_list, autogather=True)
-
-        mod_path = f'{self.base_path}.disc3_scenario.Disc3'
-        disc3_builder = self.exec_eng.factory.get_builder_from_module(
-            'Disc3', mod_path)
-        scatter_list.append(disc3_builder)
-
-        multi_scenarios = self.exec_eng.factory.create_multi_scenario_builder(
-            'multi_scenarios', 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing', business_post_proc=True)
-
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            multi_scenarios)
-        self.exec_eng.configure()
-        self.exec_eng.display_treeview_nodes()
-
-        x1 = 2
-        x2 = 4
-
-        dict_values = {f'{self.study_name}.multi_scenarios.x_trade': [x1, x2],
-                       f'{self.study_name}.multi_scenarios.trade_variables': {'x': 'float'},
-                       f'{self.study_name}.multi_scenarios.name_list': ['name_1', 'name_2']}
-
-        self.exec_eng.load_study_from_input_dict(dict_values)
-        self.exec_eng.display_treeview_nodes()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, SoSMultiScenario):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1', 'scenario_2'])
-
-        dict_values = {self.study_name + '.multi_scenarios.x_trade': [2]}
-
-        self.exec_eng.load_study_from_input_dict(dict_values)
-        self.exec_eng.display_treeview_nodes()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, SoSMultiScenario):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1'])
-
-        dict_values = {
-            self.study_name + '.multi_scenarios.name_list': ['name_1', 'name_2', 'name_3']}
-
-        self.exec_eng.load_study_from_input_dict(dict_values)
-        self.exec_eng.display_treeview_nodes()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, SoSMultiScenario):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1'])
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scenario_1.Disc1'):
-            if isinstance(disc, SoSDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'name_1', 'name_2', 'name_3'])
-
-        dict_values = {self.study_name + '.multi_scenarios.x_trade': [2, 4],
-                       self.study_name + '.multi_scenarios.name_list': ['name_1', 'name_2']}
-
-        self.exec_eng.load_study_from_input_dict(dict_values)
-        self.exec_eng.display_treeview_nodes()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, SoSMultiScenario):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'scenario_1', 'scenario_2'])
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scenario_1.Disc1'):
-            if isinstance(disc, SoSDisciplineScatter):
-                self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
-                                     'name_1', 'name_2'])
-
-        private_val = {}
-        scenario_list = ['scenario_1', 'scenario_2']
-        for scenario in scenario_list:
-            a1 = 3
-            b1 = 4
-            a2 = 6
-            b2 = 2
-
-            private_val[self.study_name + '.name_1.a'] = a1
-            private_val[self.study_name + '.name_2.a'] = a2
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc1.name_1.b'] = b1
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc1.name_2.b'] = b2
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.constant'] = 3
-            private_val[self.study_name + '.multi_scenarios.' +
-                        scenario + '.Disc3.power'] = 2
-        private_val[self.study_name +
-                    '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
-        private_val[self.study_name +
-                    '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
-
-        self.exec_eng.load_study_from_input_dict(private_val)
-
-        self.exec_eng.execute()
-
-        for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
-            if isinstance(disc, SoSMultiScenario):
-                self.assertListEqual(
-                    [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['trade_variables', 'scenario_list', 'x_trade', 'scenario_dict'])
-                self.assertListEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.x_trade'), [2, 4])
-                self.assertListEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_1', 'scenario_2'])
-                self.assertDictEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.Post-processing.Business.scenario_dict'), {'scenario_1': {'x': 2}, 'scenario_2': {'x': 4}})
-
-            elif isinstance(disc, SoSScatterData):
-                self.assertListEqual(
-                    [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['x_dict', 'scenario_list'])
-                self.assertListEqual(
-                    list(disc.get_data_io_dict('out').keys()), ['scenario_1.x', 'scenario_2.x'])
-                self.assertDictEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.x_dict'), {'scenario_1': 2, 'scenario_2': 4})
-                self.assertEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_1.x'), 2)
-                self.assertEqual(self.exec_eng.dm.get_value(
-                    f'{self.study_name}.multi_scenarios.scenario_2.x'), 4)
+#=========================================================================
+#     def _test_04_consecutive_configure(self):
+#
+#         # scatter build map
+#         ac_map = {'input_name': 'name_list',
+#                   'input_type': 'string_list',
+#                   'input_ns': 'ns_scatter_scenario',
+#                   'output_name': 'ac_name',
+#                   'scatter_ns': 'ns_ac',
+#                   'gather_ns': 'ns_scenario',
+#                   'ns_to_update': ['ns_data_ac']}
+#
+#         self.exec_eng.scattermap_manager.add_build_map('name_list', ac_map)
+#
+#         # scenario build map
+#         scenario_map = {'input_name': 'scenario_list',
+#                         'input_type': 'string_list',
+#                         'input_ns': 'ns_scatter_scenario',
+#                         'output_name': 'scenario_name',
+#                         'scatter_ns': 'ns_scenario',
+#                         'gather_ns': 'ns_scatter_scenario',
+#                         'ns_to_update': ['ns_disc3', 'ns_barrierr', 'ns_out_disc3']}
+#
+#         self.exec_eng.scattermap_manager.add_build_map(
+#             'scenario_list', scenario_map)
+#
+#         # shared namespace
+#         self.exec_eng.ns_manager.add_ns('ns_barrierr', 'MyCase')
+#         self.exec_eng.ns_manager.add_ns(
+#             'ns_scatter_scenario', 'MyCase.multi_scenarios')
+#         self.exec_eng.ns_manager.add_ns(
+#             'ns_disc3', 'MyCase.multi_scenarios.Disc3')
+#         self.exec_eng.ns_manager.add_ns(
+#             'ns_out_disc3', 'MyCase.multi_scenarios')
+#         self.exec_eng.ns_manager.add_ns(
+#             'ns_data_ac', 'MyCase')
+#
+#         # instantiate factory # get instantiator from Discipline class
+#         builder_list = self.factory.get_builder_from_process(repo=self.repo,
+#                                                              mod_id='test_disc1_scenario')
+#
+#         scatter_list = self.exec_eng.factory.create_multi_scatter_builder_from_list(
+#             'name_list', builder_list=builder_list, autogather=True)
+#
+#         mod_path = f'{self.base_path}.disc3_scenario.Disc3'
+#         disc3_builder = self.exec_eng.factory.get_builder_from_module(
+#             'Disc3', mod_path)
+#         scatter_list.append(disc3_builder)
+#
+#         multi_scenarios = self.exec_eng.factory.create_multi_scenario_builder(
+#             'multi_scenarios', 'scenario_list', scatter_list, autogather=True, gather_node='Post-processing', business_post_proc=True)
+#
+#         self.exec_eng.factory.set_builders_to_coupling_builder(
+#             multi_scenarios)
+#         self.exec_eng.configure()
+#         self.exec_eng.display_treeview_nodes()
+#
+#         x1 = 2
+#         x2 = 4
+#
+#         dict_values = {f'{self.study_name}.multi_scenarios.x_trade': [x1, x2],
+#                        f'{self.study_name}.multi_scenarios.trade_variables': {'x': 'float'},
+#                        f'{self.study_name}.multi_scenarios.name_list': ['name_1', 'name_2']}
+#
+#         self.exec_eng.load_study_from_input_dict(dict_values)
+#         self.exec_eng.display_treeview_nodes()
+#
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+#             if isinstance(disc, SoSMultiScenario):
+#                 self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+#                                      'scenario_1', 'scenario_2'])
+#
+#         dict_values = {self.study_name + '.multi_scenarios.x_trade': [2]}
+#
+#         self.exec_eng.load_study_from_input_dict(dict_values)
+#         self.exec_eng.display_treeview_nodes()
+#
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+#             if isinstance(disc, SoSMultiScenario):
+#                 self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+#                                      'scenario_1'])
+#
+#         dict_values = {
+#             self.study_name + '.multi_scenarios.name_list': ['name_1', 'name_2', 'name_3']}
+#
+#         self.exec_eng.load_study_from_input_dict(dict_values)
+#         self.exec_eng.display_treeview_nodes()
+#
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+#             if isinstance(disc, SoSMultiScenario):
+#                 self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+#                                      'scenario_1'])
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scenario_1.Disc1'):
+#             if isinstance(disc, SoSDisciplineScatter):
+#                 self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+#                                      'name_1', 'name_2', 'name_3'])
+#
+#         dict_values = {self.study_name + '.multi_scenarios.x_trade': [2, 4],
+#                        self.study_name + '.multi_scenarios.name_list': ['name_1', 'name_2']}
+#
+#         self.exec_eng.load_study_from_input_dict(dict_values)
+#         self.exec_eng.display_treeview_nodes()
+#
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+#             if isinstance(disc, SoSMultiScenario):
+#                 self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+#                                      'scenario_1', 'scenario_2'])
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios.scenario_1.Disc1'):
+#             if isinstance(disc, SoSDisciplineScatter):
+#                 self.assertListEqual(list(disc.get_scattered_disciplines().keys()), [
+#                                      'name_1', 'name_2'])
+#
+#         private_val = {}
+#         scenario_list = ['scenario_1', 'scenario_2']
+#         for scenario in scenario_list:
+#             a1 = 3
+#             b1 = 4
+#             a2 = 6
+#             b2 = 2
+#
+#             private_val[self.study_name + '.name_1.a'] = a1
+#             private_val[self.study_name + '.name_2.a'] = a2
+#             private_val[self.study_name + '.multi_scenarios.' +
+#                         scenario + '.Disc1.name_1.b'] = b1
+#             private_val[self.study_name + '.multi_scenarios.' +
+#                         scenario + '.Disc1.name_2.b'] = b2
+#             private_val[self.study_name + '.multi_scenarios.' +
+#                         scenario + '.Disc3.constant'] = 3
+#             private_val[self.study_name + '.multi_scenarios.' +
+#                         scenario + '.Disc3.power'] = 2
+#         private_val[self.study_name +
+#                     '.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+#         private_val[self.study_name +
+#                     '.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+#
+#         self.exec_eng.load_study_from_input_dict(private_val)
+#
+#         self.exec_eng.execute()
+#
+#         for disc in self.exec_eng.dm.get_disciplines_with_name('MyCase.multi_scenarios'):
+#             if isinstance(disc, SoSMultiScenario):
+#                 self.assertListEqual(
+#                     [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['trade_variables', 'scenario_list', 'x_trade', 'scenario_dict'])
+#                 self.assertListEqual(self.exec_eng.dm.get_value(
+#                     f'{self.study_name}.multi_scenarios.x_trade'), [2, 4])
+#                 self.assertListEqual(self.exec_eng.dm.get_value(
+#                     f'{self.study_name}.multi_scenarios.scenario_list'), ['scenario_1', 'scenario_2'])
+#                 self.assertDictEqual(self.exec_eng.dm.get_value(
+#                     f'{self.study_name}.Post-processing.Business.scenario_dict'), {'scenario_1': {'x': 2}, 'scenario_2': {'x': 4}})
+#
+#             elif isinstance(disc, SoSScatterData):
+#                 self.assertListEqual(
+#                     [key for key in list(disc.get_data_io_dict('in').keys()) if key not in disc.NUM_DESC_IN], ['x_dict', 'scenario_list'])
+#                 self.assertListEqual(
+#                     list(disc.get_data_io_dict('out').keys()), ['scenario_1.x', 'scenario_2.x'])
+#                 self.assertDictEqual(self.exec_eng.dm.get_value(
+#                     f'{self.study_name}.multi_scenarios.x_dict'), {'scenario_1': 2, 'scenario_2': 4})
+#                 self.assertEqual(self.exec_eng.dm.get_value(
+#                     f'{self.study_name}.multi_scenarios.scenario_1.x'), 2)
+#                 self.assertEqual(self.exec_eng.dm.get_value(
+#                     f'{self.study_name}.multi_scenarios.scenario_2.x'), 4)
+#=========================================================================
 
     def _test_05_dump_and_load_after_execute(self):
 

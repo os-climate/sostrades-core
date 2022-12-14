@@ -1706,20 +1706,22 @@ class ProxyDiscipline(object):
             new_names.append(new_name)
         return new_names
 
-    def update_meta_data_out(self, new_data_dict):
-        """
-        update meta data of _data_out and DESC_OUT
-
-        Arguments:
-            new_data_dict (Dict[dict]): contains the metadata to be updated
-                                        in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
-        """
-        disc_out = self.get_data_out()
-        for key in new_data_dict.keys():
-            for meta_data in new_data_dict[key].keys():
-                disc_out[key][meta_data] = new_data_dict[key][meta_data]
-                if meta_data in self.DESC_OUT[key].keys():
-                    self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
+#=========================================================================
+#     def update_meta_data_out(self, new_data_dict):
+#         """
+#         update meta data of _data_out and DESC_OUT
+#
+#         Arguments:
+#             new_data_dict (Dict[dict]): contains the metadata to be updated
+#                                         in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
+#         """
+#         disc_out = self.get_data_out()
+#         for key in new_data_dict.keys():
+#             for meta_data in new_data_dict[key].keys():
+#                 disc_out[key][meta_data] = new_data_dict[key][meta_data]
+#                 if meta_data in self.DESC_OUT[key].keys():
+#                     self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
+#=========================================================================
 
     def clean_dm_from_disc(self):
         """

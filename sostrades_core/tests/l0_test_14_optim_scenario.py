@@ -281,8 +281,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -358,8 +360,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -373,7 +377,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                        f'\t\t|_ {self.c_name}',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1',]
+                       '\t\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -435,8 +439,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -450,7 +456,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                        f'\t\t|_ {self.c_name}',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1',]
+                       '\t\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -519,9 +525,12 @@ class TestSoSOptimScenario(unittest.TestCase):
             # Sellar inputs
             local_dv = 10.
             values_dict = {}
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([
+                                                                             1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                               1.])
+            values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                               1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                 1., 1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -535,7 +544,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                            f'\t\t|_ {self.c_name}',
                            '\t\t\t|_ Sellar_Problem',
                            '\t\t\t|_ Sellar_2',
-                           '\t\t\t|_ Sellar_1',]
+                           '\t\t\t|_ Sellar_1', ]
             exp_tv_str = '\n'.join(exp_tv_list)
             exec_eng.display_treeview_nodes(True)
             assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -613,7 +622,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                        f'\t\t|_ {self.c_name}',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1',]
+                       '\t\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -669,8 +678,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([2.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-16
@@ -770,8 +781,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.sub_mda_class'] = 'MDANewtonRaphson'
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([2.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
 
@@ -782,7 +795,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.execute()
 
         # Get the jacobian of each functions (constraints + objective)
-        computed_jac = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac
+        computed_jac = exec_eng.root_process.proxy_disciplines[
+            0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac
 
         self.assertListEqual(sorted(list(computed_jac.keys())), sorted([
             f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))
@@ -919,8 +933,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -934,7 +950,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                        f'\t\t|_ {self.c_name}',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1',]
+                       '\t\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -954,7 +970,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check that in dm we have xopt value
         z = exec_eng.dm.get_value(f'{self.ns}.{self.sc_name}.{self.c_name}.z')
         opt_z = array([5., 2.])
-        print('before array_almost_equal, z=',z)
+        print('before array_almost_equal, z=', z)
         assert_array_almost_equal(
             z, opt_z, err_msg="the value of z in dm does not have the optimal value")
 
@@ -1005,8 +1021,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1020,34 +1038,36 @@ class TestSoSOptimScenario(unittest.TestCase):
                        f'\t\t|_ {self.c_name}',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1',]
+                       '\t\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
         res = exec_eng.execute()
 
-    def _test_14_optim_sellar_idf_process(self):
-
-        exec_eng = ExecutionEngine(self.study_name)
-        builder_process = exec_eng.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_sellar_opt_idf')
-
-        exec_eng.factory.set_builders_to_coupling_builder(builder_process)
-
-        exec_eng.configure()
-
-        study_dremio = study_sellar_idf()
-        study_dremio.study_name = self.study_name
-        dict_values_list = study_dremio.setup_usecase()
-
-        dict_values = {}
-        for dict_val in dict_values_list:
-            dict_values.update(dict_val)
-
-        exec_eng.load_study_from_input_dict(dict_values)
-
-        exec_eng.execute()
+#=========================================================================
+#     def _test_14_optim_sellar_idf_process(self):
+#
+#         exec_eng = ExecutionEngine(self.study_name)
+#         builder_process = exec_eng.factory.get_builder_from_process(
+#             'sostrades_core.sos_processes.test', 'test_sellar_opt_idf')
+#
+#         exec_eng.factory.set_builders_to_coupling_builder(builder_process)
+#
+#         exec_eng.configure()
+#
+#         study_dremio = study_sellar_idf()
+#         study_dremio.study_name = self.study_name
+#         dict_values_list = study_dremio.setup_usecase()
+#
+#         dict_values = {}
+#         for dict_val in dict_values_list:
+#             dict_values.update(dict_val)
+#
+#         exec_eng.load_study_from_input_dict(dict_values)
+#
+#         exec_eng.execute()
+#=========================================================================
 
     def test_16_test_post_run(self):
         print("\n Test 16 : Sellar optim check post run exception")
@@ -1092,8 +1112,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1107,7 +1129,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                        f'\t\t|_ {self.c_name}',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1',]
+                       '\t\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -1132,8 +1154,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1196,8 +1220,10 @@ class TestSoSOptimScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1206,11 +1232,11 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.configure()
         exec_eng.prepare_execution()
         res = exec_eng.execute()
-        
+
         # retrieve discipline to get information to check
         opt_disc = exec_eng.dm.get_disciplines_with_name(
             "optim." + self.sc_name)[0].mdo_discipline_wrapp.mdo_discipline
-            
+
         assert opt_disc.formulation.opt_problem.fd_step == fd_step
 
         # check optimal x and f
