@@ -49,10 +49,24 @@ class Study(StudyManager):
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         repo = 'sostrades_core.sos_processes.test'
-        mod_id = 'test_sellar_list'
-        my_usecase = 'usecase'
-        anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
-            repo, mod_id, my_usecase)
+
+        if 1 == 0:  #
+            mod_id = 'test_sellar_list'
+            my_usecase = 'usecase'
+            anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
+                repo, mod_id, my_usecase)
+        else:
+            anonymize_input_dict_from_usecase = {}
+            anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
+                1.])
+            anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
+                1.])
+            anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
+                1.])
+            anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
+                1., 1.])
+            anonymize_input_dict_from_usecase['<study_ph>.subprocess.Sellar_Problem.local_dv'] = 10.
+            # if .subprocess. added then it is OK
 
         disc_dict = {}
         # DoE + Eval inputs

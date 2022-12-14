@@ -274,6 +274,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.BUILDER_MODE in disc_in:
             if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE \
                     and 'eval_inputs' in disc_in and len(self.proxy_disciplines) > 0:
+
+                # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
+                # Manage usecase import
+                ref_discipline_full_name = f'{self.ee.study_name}.Eval'
+                self.manage_import_inputs_from_sub_process(
+                    ref_discipline_full_name)
+                # SET EVAL POSSIBLE VALUES
                 self.set_eval_possible_values()
             elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
                 self.configure_tool()
@@ -315,13 +322,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
         # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO SUBDISCIPLINES
         if self.subprocesses_built(scenario_names):
+            # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO
             # SUBDISCIPLINES
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-
                 ref_discipline = self.scenarios[self.get_reference_scenario_index(
                 )]
+                ref_discipline_full_name = ref_discipline.get_disc_full_name()
+
+                # Manage usecase import
+                self.manage_import_inputs_from_sub_process(
+                    ref_discipline_full_name)
+
                 ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
                     trade_vars)
 
@@ -336,8 +349,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             else:
                 if self.original_editable_dict:
                     for key in self.original_editable_dict.keys():
-                        self.ee.dm.set_data(key, 'editable', self.original_editable_dict[key])
-
+                        self.ee.dm.set_data(
+                            key, 'editable', self.original_editable_dict[key])
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
@@ -460,14 +473,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
 
-
-    def modify_editable_attribute_according_to_reference_mode(self,ref_discipline,scenario_names,ref_dict):
+    def modify_editable_attribute_according_to_reference_mode(self, ref_discipline, scenario_names, ref_dict):
 
         scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
                                                                                               scenario_names,
                                                                                               ref_dict)
         if self.save_editable_attr:
-            self.save_original_editable_attr_from_non_trade_variables(ref_dict, scenarios_non_trade_vars_dict)
+            self.save_original_editable_attr_from_non_trade_variables(
+                ref_dict, scenarios_non_trade_vars_dict)
             self.save_editable_attr = False
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
@@ -483,10 +496,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def save_original_editable_attr_from_non_trade_variables(self, ref_dict, scenarios_non_trade_vars_dict):
 
         for key in ref_dict:
-            self.original_editable_dict[key] = self.dm.get_data(key, 'editable')
+            self.original_editable_dict[key] = self.dm.get_data(
+                key, 'editable')
         for key in scenarios_non_trade_vars_dict:
-            self.original_editable_dict[key] = self.dm.get_data(key, 'editable')
-
+            self.original_editable_dict[key] = self.dm.get_data(
+                key, 'editable')
 
     def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
 
@@ -713,9 +727,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # super().setup_sos_disciplines() # TODO: manage custom driver wrapper
         # case
 
-        # check and import usecase
-        self.manage_import_inputs_from_sub_process()
-
     def prepare_build(self):
         """
         Get the actual drivers of the subprocesses of the DriverEvaluator.
@@ -803,9 +814,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE:
                 if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
                     if self.SCENARIO_DF in disc_in:
-                        # and self.sub_proc_import_usecase_status ==
-                        # 'No_SP_UC_Import'
-                        return super().is_configured() and self.subprocess_is_configured() and not self.check_if_there_are_reference_variables_changes()
+                        return super().is_configured() and self.subprocess_is_configured() and not self.check_if_there_are_reference_variables_changes() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+            elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE:
+                return super().is_configured() and self.subprocess_is_configured()
+                # This condition is not needed (and not working)
+                # self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
 
         return super().is_configured() and self.subprocess_is_configured()
 
@@ -1201,9 +1214,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             builder.add_namespace_list_in_associated_namespaces(
                 self.associated_namespaces)
 
-    def manage_import_inputs_from_sub_process(self):
+    def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
-            Function needed in setup_sos_disciplines()
         """
         # Set sub_proc_import_usecase_status
         self.set_sub_process_usecase_status_from_user_inputs()
@@ -1223,39 +1235,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             # LOAD REFERENCE of MULTI-INSTANCE MODE WITH USECASE DATA
             if self.INSTANCE_REFERENCE in disc_in:
-                instance_reference = self.get_sosdisc_inputs(
-                    self.INSTANCE_REFERENCE)
-                if instance_reference:
-                    is_ref_disc = False
-                    ref_disc_name = ''
+                #method  ='load_study'
+                method = 'set_values'
+                self.update_reference_from_anonymised_dict(
+                    anonymize_input_dict_from_usecase, ref_discipline_full_name, method)
 
-                    disc_list = self.proxy_disciplines
-                    #disc_full_path_list = self.dm.disciplines_id_map.keys()
-
-                    for disc in disc_list:  # PB : in flatten mode self.proxy_disciplines =[]
-                        if disc.sos_name == 'ReferenceScenario':
-                            is_ref_disc = True
-                            ref_discipline_full_name = disc.get_disc_full_name()
-                    if is_ref_disc:
-                        self.update_reference_from_anonymised_dict(
-                            anonymize_input_dict_from_usecase, ref_discipline_full_name)
-                    else:  # TODO Should we have USECASE_DATAwidget only available in Mono or Multi with instance_reference =True ??
-                        pass
             elif self.BUILDER_MODE in disc_in:
                 builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
                 if builder_mode == self. MONO_INSTANCE:
                     # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
-                    ref_discipline_full_name = f'{self.ee.study_name}.Eval'
-                    #ref_discipline_full_name = f'{self.ee.study_name}.Eval.subprocess'
+                    #method = 'load_study'
+                    method = 'set_values'
                     self.update_reference_from_anonymised_dict(
-                        anonymize_input_dict_from_usecase, ref_discipline_full_name)
+                        anonymize_input_dict_from_usecase, ref_discipline_full_name, method)
             else:
                 # We are in multi instance qithout reference
                 # LOAD ALL SCENARIOS of MULTI-INSTANCE MODE WITH USECASE DATA
-                # (Not needed?
+                # (Not needed as already covered)
                 pass
 
-    def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name):
+    def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name, method):
         """
         """
         # 1. Put anonymized dict in context (unanonymize) of the reference
@@ -1267,34 +1266,36 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # 2. load data in dm (# Push the data to the reference
         # instance)
 
-        as_in_eev3 = False
+        filtered_import_dict = {}
+        for key in input_dict_from_usecase:
+            if self.ee.dm.check_data_in_dm(key):
+                filtered_import_dict[key] = input_dict_from_usecase[key]
 
-        if as_in_eev3:  # We sometimes in multi instance get an infinite loop and never do the last in the sequence
-            self.ee.load_study_from_input_dict(
-                input_dict_from_usecase)
-        else:  # This is what was done before the bellow correction. It doesn't work with dynamic subproc or if a data kay is not yet in the dm
-            self.ee.dm.set_values_from_dict(
-                input_dict_from_usecase)
+        self.ee.dm.set_values_from_dict(filtered_import_dict)
 
-        # 3. Update parameters
-        #     Set the status to 'No_SP_UC_Import'
-        self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-        if 1 == 0:  # TODO (when use of Modal)
-            # Empty the anonymized dict in (when use of Modal)
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
-            }
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
-                             self.VALUES, sub_process_inputs_dict, check_value=False)
-        if 1 == 0:  # TODO (when use of Modal)
-            # Consequently update the previous_sub_process_usecase_data
-            #     Empty the previous_sub_process_usecase_data
-            self.previous_sub_process_usecase_data = {}
-        else:
-            sub_process_usecase_data = self.get_sosdisc_inputs(
-                self.USECASE_DATA)
-            self.previous_sub_process_usecase_data = sub_process_usecase_data
+        are_all_data_set = len(filtered_import_dict.keys()) == len(
+            input_dict_from_usecase.keys())
+
+        if are_all_data_set:
+            # 3. Update parameters
+            #     Set the status to 'No_SP_UC_Import'
+            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+            if 1 == 0:  # TODO (when use of Modal)
+                # Empty the anonymized dict in (when use of Modal)
+                sub_process_inputs_dict = self.get_sosdisc_inputs(
+                    self.SUB_PROCESS_INPUTS)
+                sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
+                }
+                self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
+                                 self.VALUES, sub_process_inputs_dict, check_value=False)
+            if 1 == 0:  # TODO (when use of Modal)
+                # Consequently update the previous_sub_process_usecase_data
+                #     Empty the previous_sub_process_usecase_data
+                self.previous_sub_process_usecase_data = {}
+            else:
+                sub_process_usecase_data = self.get_sosdisc_inputs(
+                    self.USECASE_DATA)
+                self.previous_sub_process_usecase_data = sub_process_usecase_data
 
     def set_sub_process_usecase_status_from_user_inputs(self):
         """

@@ -1478,7 +1478,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         study_dump.run()
 
         # check that the DriverEvaluator has no i/o of the subprocess:
-        driver_disc = study_dump.ee.dm.get_disciplines_with_name('usecase1_cp_multi.Eval')[0]
+        driver_disc = study_dump.ee.dm.get_disciplines_with_name(
+            'usecase1_cp_multi.Eval')[0]
         for var_name in driver_disc.get_input_data_names():
             self.assertFalse('ReferenceScenario' in var_name)
             self.assertFalse('scenario_1' in var_name)
@@ -1508,7 +1509,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertEqual(study_dump.ee.display_treeview_nodes(), exp_ns_tv)
 
-        # check that the proxy tree has put the subprocess at the same level as the evaluator and all proxies have run
+        # check that the proxy tree has put the subprocess at the same level as
+        # the evaluator and all proxies have run
         exp_proxy_tv_with_status = '|_ usecase1_cp_multi  (ProxyCoupling) [DONE]\n' \
                                    '    |_ usecase1_cp_multi.Eval  (ProxyDriverEvaluator) [DONE]\n' \
                                    '    |_ usecase1_cp_multi.SampleGenerator  (ProxyDiscipline) [DONE]\n' \
@@ -1525,7 +1527,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                                    '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
                                    '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]'
 
-        self.assertEqual(study_dump.ee.root_process.display_proxy_subtree(lambda x: x.status), exp_proxy_tv_with_status)
+        self.assertEqual(study_dump.ee.root_process.display_proxy_subtree(
+            lambda x: x.status), exp_proxy_tv_with_status)
 
     def test_14_usecase_import_mono_instances(self):
         """
@@ -1588,7 +1591,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 0 == 1:  # full anonymized dict with numerical keys
+        if 1 == 1:  # full anonymized dict with numerical keys
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
@@ -1614,6 +1617,88 @@ class TestSoSDOEScenario(unittest.TestCase):
                 anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
                     1., 1.])
                 anonymize_input_dict_from_usecase['<study_ph>.subprocess.Sellar_Problem.local_dv'] = 10.
+
+        # Update the reference from the selected imported usecase anonymised
+        # dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # Check that the reference has been updated
+
+        # In the anonymised dict of the selected usecase it is provided x =
+        # array([2.])
+        target_x = array([1.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+    def _test_15_usecase_import_multi_instances_flatten(self):
+        """
+        This test checks the usecase import capability in multi instance mode.
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        proc_name = 'test_sellar_coupling_generator_eval_cp_flatten'
+        usecase_name = 'usecase1_cp_multi'
+
+        # Associated nested subprocess
+
+        sub_process_name = 'test_sellar_coupling'
+        sub_process_usecase_name = 'usecase'
+
+        # Creation of the study from the associated usecase
+        self.study_name = usecase_name
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = imported_module.Study(run_usecase=True)
+
+        study_dump.load_data()
+
+        study_dump.run()
+
+        # Check the created study
+
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        self.exec_eng.display_treeview_nodes(True)
+
+        ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+
+        # In the study creation it is provided x = array([2.])
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+        # Load the anonymized dict from associated selected sub_process
+
+        if 1 == 1:  # full anonymized dict with numerical keys
+            anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+                self.repo, sub_process_name, sub_process_usecase_name)
+        else:
+            anonymize_input_dict_from_usecase = {}
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([
+                                                                                     1.])
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([
+                                                                                       1.])
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([
+                                                                                       1.])
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([
+                                                                                     1., 1.])
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
 
         # Update the reference from the selected imported usecase anonymised
         # dict

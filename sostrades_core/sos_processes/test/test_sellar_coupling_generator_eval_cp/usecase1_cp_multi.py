@@ -77,51 +77,5 @@ class Study(StudyManager):
 if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
-    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-
-#=========================================================================
-#     my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
-#     a1 = my_disc.get_data_io_from_key('in', 'x')['value']
-#     a2 = my_disc.get_data_io_from_key('in', 'y_2')['value']
-#     a3 = my_disc.get_data_io_from_key('in', 'z')['value']
-#
-#     my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_2')[0]
-#     a4 = my_disc.get_data_io_from_key('in', 'y_1')['value']
-#     a5 = my_disc.get_data_io_from_key('in', 'z')['value']
-#
-#     my_disc = uc_cls.execution_engine.dm.get_disciplines_with_name(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem')[0]
-#
-#     a6 = my_disc.get_data_io_from_key('in', 'x')['value']
-#     a7 = my_disc.get_data_io_from_key('in', 'y_1')['value']
-#     a8 = my_disc.get_data_io_from_key('in', 'y_2')['value']
-#     a9 = my_disc.get_data_io_from_key('in', 'z')['value']
-#     a10 = my_disc.get_data_io_from_key('in', 'local_dv')['value']
-#
-#     a11 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.x')
-#     a12 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.z')
-#     a13 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.y_1')
-#     a14 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.y_2')
-#     a15 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.x')
-#     a16 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.scenario_1.SellarCoupling.z')
-#     a17 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.generated_samples')
-#     # print(a17.to_markdown())
-#     a18 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.scenario_df')
-#     # print(a18.to_markdown())
-#     a19 = uc_cls.ee.dm.get_value(
-#         'usecase1_cp_multi.Eval.usecase_data')
-#     import pprint
-#     pprint.pprint(a19)
-#=========================================================================
-
+    uc_cls.execution_engine.display_treeview_nodes()
     uc_cls.run()
