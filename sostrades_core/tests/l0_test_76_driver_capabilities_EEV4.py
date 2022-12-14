@@ -1196,7 +1196,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-    def test_11_usecase_import_multi_instances(self):
+    def _test_11_usecase_import_multi_instances(self):
         """
         This test checks the usecase import capability in multi instance mode.
         """
@@ -1452,7 +1452,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
                                  self.a[j] * self.x[j] + self.b[i][j])
 
-    def test_13_sellar_coupling_multi_instances_flatten(self):
+    def _test_13_sellar_coupling_multi_instances_flatten(self):
         """
         This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val. 
         """

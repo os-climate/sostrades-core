@@ -215,7 +215,7 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_4.o'), o4)
 
-    def test_02_multiscenario_with_sample_generator_cp_sellar(self):
+    def _test_02_multiscenario_with_sample_generator_cp_sellar(self):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_sellar_generator_eval_cp'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -247,7 +247,7 @@ class TestMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-    def test_03_multiscenario_with_sample_generator_cp_sellar_study(self):
+    def _test_03_multiscenario_with_sample_generator_cp_sellar_study(self):
         # # simple 2-disc process NOT USING nested scatters
 
         from os.path import join, dirname
