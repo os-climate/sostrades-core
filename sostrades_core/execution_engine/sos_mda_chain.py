@@ -126,15 +126,11 @@ class SoSMDAChain(MDAChain):
                           linear_solver_tolerance=linear_solver_tolerance,  # type: float
                           use_lu_fact=use_lu_fact,  # type: bool
                           grammar_type=grammar_type,  # type: str
-                          # type: Optional[MDOCouplingStructure]
                           coupling_structure=coupling_structure,
-                          # type: Optional[Iterable[MDOCouplingStructure]]
                           sub_coupling_structures=sub_coupling_structures,
                           log_convergence=log_convergence,  # type: bool
                           linear_solver=linear_solver,  # type: str
-                          # type: Mapping[str,Any]
                           linear_solver_options=linear_solver_options,
-                          # type: Optional[Union[float, int, bool, str]]
                           ** sub_mda_options
                           )
 
