@@ -173,6 +173,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
         self.scatter_list_valid = True
+        self.scatter_list_integrity_msg = ''
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -181,7 +182,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_ref_dict = {}
         self.save_editable_attr = True
-        self.original_editable_dict = {}
+        self.original_editability_dict = {}
+        self.original_editable_dict_ref = {}
+        self.original_editable_dict_non_ref = {}
 
     def _add_optional_shared_ns(self):
         """
@@ -343,14 +346,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.modify_editable_attribute_according_to_reference_mode(
                     ref_discipline, scenario_names, ref_dict)
                 # Propagation to other scenarios if necessary
-                if ref_changes_dict:
-                    self.propagate_reference_non_trade_variables_changes(
-                        ref_changes_dict, ref_dict, ref_discipline, scenario_names)
+                self.propagate_reference_non_trade_variables(
+                    ref_changes_dict, ref_dict, ref_discipline, scenario_names)
             else:
-                if self.original_editable_dict:
-                    for key in self.original_editable_dict.keys():
+                if self.original_editable_dict_non_ref:
+                    for key in self.original_editable_dict_non_ref.keys():
                         self.ee.dm.set_data(
-                            key, 'editable', self.original_editable_dict[key])
+                            key, 'editable', self.original_editable_dict_non_ref[key])
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
@@ -459,7 +461,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         return ref_changes_dict, ref_dict
 
-    def propagate_reference_non_trade_variables_changes(self, ref_changes_dict, ref_dict, ref_discipline, scenario_names_to_propagate):
+    def propagate_reference_non_trade_variables(self, ref_changes_dict, ref_dict, ref_discipline, scenario_names_to_propagate):
 
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
@@ -467,9 +469,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ref_discipline = self.scenarios[self.get_reference_scenario_index()]
 
         # Build other scenarios variables and values dict from reference
-        dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
-                                                                                  scenario_names_to_propagate,
-                                                                                  ref_changes_dict)
+        dict_to_propagate = {}
+        # Propagate all reference
+        if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
+            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+                                                                                      scenario_names_to_propagate,
+                                                                                      ref_dict)
+        # Propagate reference changes
+        elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE and ref_changes_dict:
+            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+                                                                                      scenario_names_to_propagate,
+                                                                                      ref_changes_dict)
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
 
@@ -481,6 +491,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.save_editable_attr:
             self.save_original_editable_attr_from_non_trade_variables(
                 ref_dict, scenarios_non_trade_vars_dict)
+            # self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
+            self.original_editability_dict = {
+                **self.original_editable_dict_ref, **self.original_editable_dict_non_ref}
             self.save_editable_attr = False
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
@@ -488,7 +501,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.ee.dm.set_data(key, 'editable', False)
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                if self.original_editable_dict[key] == False:
+                if self.original_editability_dict[key] == False:
                     pass
                 else:
                     self.ee.dm.set_data(key, 'editable', True)
@@ -496,10 +509,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def save_original_editable_attr_from_non_trade_variables(self, ref_dict, scenarios_non_trade_vars_dict):
 
         for key in ref_dict:
-            self.original_editable_dict[key] = self.dm.get_data(
+            self.original_editable_dict_ref[key] = self.dm.get_data(
                 key, 'editable')
         for key in scenarios_non_trade_vars_dict:
-            self.original_editable_dict[key] = self.dm.get_data(
+            self.original_editable_dict_non_ref[key] = self.dm.get_data(
                 key, 'editable')
 
     def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
@@ -904,17 +917,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-        self.scatter_list_valid = self.check_scatter_list_validity()
+        self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
         if self.scatter_list_valid:
             self.builder_tool.prepare_tool()
+        else:
+            self.logger.error(self.scatter_list_integrity_msg)
 
     def build_tool(self):
         if self.builder_tool is not None and self.scatter_list_valid:
             self.builder_tool.build()
 
     def check_scatter_list_validity(self):
-        # TODO: include as a case of check data integrity ?
         # checking for duplicates
+        msg = ''
         if self.SCENARIO_DF in self.get_data_in():
             scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
             scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
@@ -928,11 +943,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 for sc in repeated_elements[1:]:
                     msg += ', ' + sc
                 msg += ').'
-                self.logger.error(msg)
-                # raise Exception(msg)
-                return False
+                return False, msg
         # in any other case the list is valid
-        return True
+        return True, msg
+
+    def check_data_integrity(self):
+        # checking for duplicates
+        disc_in = self.get_data_in()
+        if self.SCENARIO_DF in disc_in and not self.scatter_list_valid:
+            self.dm.set_data(
+                self.get_var_full_name(self.SCENARIO_DF, disc_in),
+                self.CHECK_INTEGRITY_MSG, self.scatter_list_integrity_msg)
 
     # MONO INSTANCE PROCESS
     def _get_disc_shared_ns_value(self):
