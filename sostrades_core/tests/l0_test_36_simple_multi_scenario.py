@@ -226,6 +226,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
+
         # Now, check that, since we are in LINKED_MODE, that the non-trade variables from non-reference scenarios have
         # 'editable' in False.
         self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.a', 'editable'), False)
@@ -246,6 +247,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         for sc in ['scenario_1','scenario_2']:
             assert sc in ms_sub_disc_names
 
+
         # Now, change to REFERENCE_MODE to COPY_MODE and check that the non-trade variables from non-reference scenarios have
         # 'editable' in True.
         dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'copy_mode'
@@ -261,6 +263,84 @@ class TestSimpleMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
                                                        scenario + '.Disc3.power', 'editable'), True)
 
+
+        # Now check that after un-instantiating the reference from linked mode, the non-trade variables go back to True.
+        dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.x', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.x', 'editable'), True)
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.constant', 'editable'), True)
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.power', 'editable'), True)
+
+
+        # Now check that, having an instantiated reference in linked mode, adding a new scenario, we will find the new
+        # scenario with proper propagation and editability state.
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
+        dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        # Value propagation
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.a'), self.a)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_W.a'), self.a)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.a'), self.a)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_1.x'), self.x)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_W.x'), self.x)
+        self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.scenario_2.x'), self.x)
+        scenario_list = ['scenario_1', 'scenario_2', 'scenario_W']
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
+                                                        scenario + '.Disc3.constant'), new_constant_ref)
+            self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
+                                                        scenario + '.Disc3.power'), self.power)
+        # Editability propagation
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.a', 'editable'),
+                         False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_W.a', 'editable'),
+                         False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.a', 'editable'),
+                         False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.x', 'editable'),
+                         False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_W.x', 'editable'),
+                         False)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.x', 'editable'),
+                         False)
+        scenario_list = ['scenario_1', 'scenario_2', 'scenario_W']
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.constant', 'editable'), False)
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.power', 'editable'), False)
+
+
+        # Now check that un_instantiating the reference from linked_mode, the new added scenario_W comes back to the
+        # proper editability state
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_W.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.a', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_1.x', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_W.x', 'editable'), True)
+        self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.scenario_2.x', 'editable'), True)
+        scenario_list = ['scenario_1', 'scenario_2', 'scenario_W']
+        for scenario in scenario_list:
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.constant', 'editable'), True)
+            self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
+                                                       scenario + '.Disc3.power', 'editable'), True)
 
     def test_03_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters

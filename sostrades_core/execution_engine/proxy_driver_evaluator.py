@@ -181,6 +181,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
         self.old_ref_dict = {}
+        self.old_scenario_names = []
         self.save_editable_attr = True
         self.original_editability_dict = {}
         self.original_editable_dict_ref = {}
@@ -330,29 +331,41 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # SUBDISCIPLINES
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-                ref_discipline = self.scenarios[self.get_reference_scenario_index(
-                )]
+                ref_discipline = self.scenarios[self.get_reference_scenario_index()]
                 ref_discipline_full_name = ref_discipline.get_disc_full_name()
-
                 # Manage usecase import
-                self.manage_import_inputs_from_sub_process(
-                    ref_discipline_full_name)
+                self.manage_import_inputs_from_sub_process(ref_discipline_full_name)
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
 
-                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
-                    trade_vars)
+                scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
+                                                                                                      scenario_names,
+                                                                                                      ref_dict)
 
-                # Modification of read-only or editable depending on
-                # LINKED_MODE or COPY_MODE
-                self.modify_editable_attribute_according_to_reference_mode(
-                    ref_discipline, scenario_names, ref_dict)
+                # Update of original editability state in case modification scenario df
+                if (not set(scenario_names) == set(self.old_scenario_names)) and self.old_scenario_names != []:
+                    new_scenarios = set(scenario_names) - set(self.old_scenario_names)
+                    for new_scenario in new_scenarios:
+                        new_scenario_non_trade_vars_dict = {key: value
+                                                           for key,value in scenarios_non_trade_vars_dict.items()
+                                                           if new_scenario in key}
+
+                        new_scenario_editable_dict = self.save_original_editable_attr_from_non_trade_variables(new_scenario_non_trade_vars_dict)
+                        self.original_editable_dict_non_ref.update(new_scenario_editable_dict)
+                self.old_scenario_names = scenario_names
+
+                # Save the original editability state in case reference is un-instantiated.
+                self.save_original_editability_state(ref_dict, scenarios_non_trade_vars_dict)
+                # Modification of read-only or editable depending on LINKED_MODE or COPY_MODE
+                self.modify_editable_attribute_according_to_reference_mode(scenarios_non_trade_vars_dict)
                 # Propagation to other scenarios if necessary
-                self.propagate_reference_non_trade_variables(
-                    ref_changes_dict, ref_dict, ref_discipline, scenario_names)
+                self.propagate_reference_non_trade_variables(ref_changes_dict, ref_dict, ref_discipline, scenario_names)
             else:
                 if self.original_editable_dict_non_ref:
-                    for key in self.original_editable_dict_non_ref.keys():
-                        self.ee.dm.set_data(
-                            key, 'editable', self.original_editable_dict_non_ref[key])
+                    for sc in scenario_names:
+                        for key in self.original_editable_dict_non_ref.keys():
+                            if sc in key:
+                                self.ee.dm.set_data(key, 'editable', self.original_editable_dict_non_ref[key])
+
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
@@ -408,6 +421,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     #     # https://stackoverflow.com/questions/48000225/must-have-equal-len-keys-and-value-when-setting-with-an-iterable
     #     # Example variable z = array([1., 1.]) of sellar put in trade variables
     #     return sce_df
+
+    def save_original_editability_state(self, ref_dict, non_ref_dict):  # These dicts are of non-trade variables
+
+        if self.save_editable_attr:
+            # self.original_editable_dict_ref = self.save_original_editable_attr_from_non_trade_variables(
+            #     ref_dict)
+            self.original_editable_dict_non_ref = self.save_original_editable_attr_from_non_trade_variables(
+                non_ref_dict)
+            # self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
+            # self.original_editability_dict = {**self.original_editable_dict_ref,
+            #                                   **self.original_editable_dict_non_ref}
+            self.save_editable_attr = False
 
     def get_reference_scenario_index(self):
         index_ref = 0
@@ -483,37 +508,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
 
-    def modify_editable_attribute_according_to_reference_mode(self, ref_discipline, scenario_names, ref_dict):
-
-        scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
-                                                                                              scenario_names,
-                                                                                              ref_dict)
-        if self.save_editable_attr:
-            self.save_original_editable_attr_from_non_trade_variables(
-                ref_dict, scenarios_non_trade_vars_dict)
-            # self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
-            self.original_editability_dict = {
-                **self.original_editable_dict_ref, **self.original_editable_dict_non_ref}
-            self.save_editable_attr = False
+    def modify_editable_attribute_according_to_reference_mode(self,scenarios_non_trade_vars_dict):
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
                 self.ee.dm.set_data(key, 'editable', False)
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                if self.original_editability_dict[key] == False:
+                if self.original_editable_dict_non_ref[key] == False:
                     pass
                 else:
                     self.ee.dm.set_data(key, 'editable', True)
 
-    def save_original_editable_attr_from_non_trade_variables(self, ref_dict, scenarios_non_trade_vars_dict):
+    def save_original_editable_attr_from_non_trade_variables(self, dict):
 
-        for key in ref_dict:
-            self.original_editable_dict_ref[key] = self.dm.get_data(
-                key, 'editable')
-        for key in scenarios_non_trade_vars_dict:
-            self.original_editable_dict_non_ref[key] = self.dm.get_data(
-                key, 'editable')
+        dict_out = {}
+        for key in dict:
+            dict_out[key] = self.dm.get_data(key, 'editable')
+
+        return dict_out
+
 
     def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
 
