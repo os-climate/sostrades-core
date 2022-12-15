@@ -795,6 +795,8 @@ class FunctionManagerDisc(SoSWrapp):
         instanciated_charts = []
         charts = []
 
+        func_df = proxy.get_sosdisc_inputs('function_df')
+
         if filters is not None:
             for chart_filter in filters:
                 if chart_filter.filter_key == 'charts':
@@ -804,11 +806,10 @@ class FunctionManagerDisc(SoSWrapp):
             proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
                 optim_output_df = deepcopy(
                     proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
-                new_chart = self.get_chart_obj_constraints_iterations(optim_output_df, [self.OBJECTIVE],
+                new_chart = self.get_chart_obj_constraints_iterations(func_df, optim_output_df, [self.OBJECTIVE],
                                                                       'objective (colored)')
             instanciated_charts.append(new_chart)
 
-        func_df = proxy.get_sosdisc_inputs('function_df')
         chart_list = ['lagrangian objective', 'aggregated objectives',
                       'objectives', 'ineq_constraints', 'eq_constraints', ]
 
@@ -1306,7 +1307,7 @@ class FunctionManagerDisc(SoSWrapp):
             fig, chart_name=chart_name, default_title=True)
         return new_chart
 
-    def get_chart_obj_constraints_iterations(self, optim_output, objectives, name):
+    def get_chart_obj_constraints_iterations(self, func_df, optim_output, objectives, name):
         """
         Function to create a summary post proc of the optim problem
         In black : the aggregated objective 
@@ -1327,7 +1328,7 @@ class FunctionManagerDisc(SoSWrapp):
             fig.add_trace(go.Scatter(x=list(x), y=list(
                 y), name=obj, line=dict(color='black')))
         func_dict = {row['variable'] + '_mod': row['ftype']
-                     for i, row in self.get_sosdisc_inputs('function_df').iterrows()}
+                     for i, row in func_df.iterrows()}
 
         for col in optim_output.columns:
             if col not in ['iteration', ]:
