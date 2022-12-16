@@ -1741,3 +1741,86 @@ class TestSoSDOEScenario(unittest.TestCase):
         print_flag = False
         self.check_discipline_values(
             ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+    def test_16_usecase_import_multi_instances_basic_Disc1Disc3(self):
+        """
+        This test checks the usecase import capability in multi instance mode.
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        # The generator eval process
+        proc_name = 'test_multi_instance_basic'
+        usecase_name = 'usecase_with_ref'
+
+        # Creation of the study from the associated usecase
+        self.study_name = usecase_name
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = imported_module.Study(run_usecase=True)
+
+        study_dump.load_data()
+
+        study_dump.run()
+
+        # Check the created study
+
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        self.exec_eng.display_treeview_nodes()
+        ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.multi_scenarios.ReferenceScenario.Disc1')[0]
+
+        # In the study creation it is provided x = 2.0
+        target_x = 2.0
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+        # Load the anonymized dict from associated selected sub_process
+
+        if 1 == 0:
+            pass
+            # Associated nested subprocess #TODO
+            #==================================================================
+            #  sub_process_name = 'test_sellar_coupling'
+            #  sub_process_usecase_name = 'usecase'
+            #  test_multi_instance_basic is not based on its nested sub_proc
+            # anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+            #     self.repo, sub_process_name, sub_process_usecase_name)
+            #==================================================================
+        else:
+            anonymize_input_dict_from_usecase = {}
+            anonymize_input_dict_from_usecase['<study_ph>.a'] = 3.0
+            anonymize_input_dict_from_usecase['<study_ph>.x'] = 3.0
+            anonymize_input_dict_from_usecase['<study_ph>.z'] = 1.2
+            #anonymize_input_dict_from_usecase['<study_ph>.Disc3.z'] = 1.2
+            anonymize_input_dict_from_usecase['<study_ph>.Disc1.b'] = 4.0
+            anonymize_input_dict_from_usecase['<study_ph>.Disc3.constant'] = 3.0
+            anonymize_input_dict_from_usecase['<study_ph>.Disc3.power'] = 2
+
+        # Update the reference from the selected imported usecase anonymised
+        # dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # Check that the reference has been updated
+
+        # In the anonymised dict of the selected usecase it is provided x = 3.0
+        target_x = 3.0
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        #======================================================================
+        # self.check_discipline_values(
+        #     ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+        #======================================================================
