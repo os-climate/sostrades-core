@@ -1196,7 +1196,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-    def _test_11_usecase_import_multi_instances(self):
+    def test_11_usecase_import_multi_instances(self):
         """
         This test checks the usecase import capability in multi instance mode.
         """
@@ -1258,8 +1258,32 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
-            self.repo, sub_process_name, sub_process_usecase_name)
+        if 1 == 0:
+            anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+                self.repo, sub_process_name, sub_process_usecase_name)
+        else:
+            if with_coupling:
+                anonymize_input_dict_from_usecase = {}
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([
+                                                                                         1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([
+                                                                                           1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([
+                                                                                           1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([
+                                                                                         1., 1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+            else:
+                anonymize_input_dict_from_usecase = {}
+                anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
+                    1.])
+                anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
+                    1.])
+                anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
+                    1.])
+                anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
+                    1., 1.])
+                anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
 
         # Update the reference from the selected imported usecase anonymised
         # dict
@@ -1271,7 +1295,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Check that the reference has been updated
 
         # In the anonymised dict of the selected usecase it is provided x =
-        # array([2.])
+        # array([1.])
         target_x = array([1.])
         target_values_dict = {}
         target_values_dict['x'] = target_x
@@ -1628,7 +1652,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Check that the reference has been updated
 
         # In the anonymised dict of the selected usecase it is provided x =
-        # array([2.])
+        # array([1.])
         target_x = array([1.])
         target_values_dict = {}
         target_values_dict['x'] = target_x
@@ -1710,7 +1734,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Check that the reference has been updated
 
         # In the anonymised dict of the selected usecase it is provided x =
-        # array([2.])
+        # array([1.])
         target_x = array([1.])
         target_values_dict = {}
         target_values_dict['x'] = target_x
