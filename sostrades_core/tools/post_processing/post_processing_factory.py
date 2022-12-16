@@ -83,7 +83,7 @@ class PostProcessingFactory:
             current_bundle = None
             if len(found_bundles) == 0:
                 current_bundle = PostProcessingBundle(
-                    discipline.get_module(), [], [])
+                    discipline.get_module(),discipline.get_disc_label(), [], [])
                 all_post_processings_bundle[discipline_full_name].append(
                     current_bundle)
             else:
@@ -124,7 +124,7 @@ class PostProcessingFactory:
                 current_bundle = None
                 if len(found_bundles) == 0:
                     current_bundle = PostProcessingBundle(
-                        PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME, [], [])
+                        PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME, PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME, [], [])
                     all_post_processings_bundle[associated_namespace.value].append(
                         current_bundle)
                 else:

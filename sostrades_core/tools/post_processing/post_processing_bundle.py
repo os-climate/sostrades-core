@@ -25,13 +25,16 @@ class PostProcessingBundle:
     """
 
     NAME = 'name'
+    DISCIPLINE_NAME = 'discipline_name'
     FILTERS = 'filters'
     POST_PROCESSINGS = 'post_processings'
 
-    def __init__(self, name, filters, post_processings):
+    def __init__(self, name, discipline_name, filters, post_processings):
         """ Constructor
 
         :params: name, name of current post processings bundle
+        :type: str
+        :params: discipline_name, name of current discipline hosting the post processings bundle
         :type: str
         :params: filters, filter list used for this post-processings bundle
         :type: ChartFilter[]
@@ -41,6 +44,7 @@ class PostProcessingBundle:
         """
 
         self.name = name
+        self.discipline_name = discipline_name
         self.filters = filters
         self.post_processings = post_processings
 
@@ -53,6 +57,7 @@ class PostProcessingBundle:
         """
 
         series_string = [f'\nname: {self.name}',
+                         f'discipline_name: {self.discipline_name}',
                          f'filters: {self.filters}',
                          f'post-processings: {self.post_processings}'
                          ]
@@ -66,6 +71,9 @@ class PostProcessingBundle:
         dict_obj = {}
         # Serialize name attribute
         dict_obj.update({PostProcessingBundle.NAME: self.name})
+
+        # Serialize discipline name attribute
+        dict_obj.update({PostProcessingBundle.DISCIPLINE_NAME: self.discipline_name})
 
         # Serialize filters parameter attribute
         dict_obj.update(
@@ -85,10 +93,16 @@ class PostProcessingBundle:
         # Serialize name attribute
         name = dict_obj[PostProcessingBundle.NAME]
 
+        # Deserialize discipline name attribute
+        discipline_name = ''
+        if PostProcessingBundle.DISCIPLINE_NAME in dict_obj:
+            discipline_name = dict_obj[PostProcessingBundle.DISCIPLINE_NAME]
+
+
         # Serialize filters parameter attribute
         filters = dict_obj[PostProcessingBundle.FILTERS]
 
         # Serialize post-processings values parameter attribute
         post_processings = dict_obj[PostProcessingBundle.POST_PROCESSINGS]
 
-        return PostProcessingBundle(name, filters, post_processings)
+        return PostProcessingBundle(name, discipline_name, filters, post_processings)

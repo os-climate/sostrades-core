@@ -17,6 +17,8 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
 from json import dumps
+
+from sostrades_core.tools.tree.data_management_discipline import DataManagementDiscipline
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from os.path import dirname, isdir, isfile, join
 import inspect
@@ -79,6 +81,12 @@ class TreeNode:
         # List of models present at current treenode
         self.models_full_path_list = []
 
+        # List of disciplines at this node
+        self.data_management_disciplines = {}
+
+        # List of discipline_full_path_list for each variables
+        self.disciplines_by_variable = {}
+
         self.model_name = None
         self.model_name_full_path = None
         self.last_treenode = None
@@ -119,6 +127,12 @@ class TreeNode:
         # Serialize models_full_path_list attribute
         dict_obj.update({'models_full_path_list': self.models_full_path_list})
 
+        # Serialize data_management_disciplines attribute
+        json_data_management_disciplines = {}
+        for key in self.data_management_disciplines.keys():
+            json_data_management_disciplines[key] = self.data_management_disciplines[key].to_json() 
+        dict_obj.update({'data_management_disciplines': json_data_management_disciplines})
+
         # Serialize markdown_documentation
         dict_obj.update(
             {'markdown_documentation': self.markdown_documentation})
@@ -144,6 +158,13 @@ class TreeNode:
 
         self.model_name_full_path = discipline.get_module()
         self.models_full_path_list.append(self.model_name_full_path)
+        
+        # add a new data_management_discipline
+        data_management_discipline = DataManagementDiscipline()
+        data_management_discipline.namespace = self.full_namespace
+        data_management_discipline.model_name_full_path = self.model_name_full_path
+        data_management_discipline.discipline_label = discipline.get_disc_label()
+        
 
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
@@ -158,15 +179,29 @@ class TreeNode:
                 # else:
                 #     namespaced_key = discipline.get_var_display_name(
                 #         key, disc_in)
-                new_disc_data = {
-                    needed_key: data_key[needed_key] for needed_key in self.needed_variables}
+                new_disc_data = {k: v for k, v in data_key.items()}
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
-                new_disc_data["variable_key"] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_IN, key)
+                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_IN, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
+                if not namespaced_key in self.disciplines_by_variable.keys():
+                    self.disciplines_by_variable[namespaced_key] = []
+                self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
+                if new_disc_data[ProxyDiscipline.NUMERICAL]:
+                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
+                                                                    namespaced_key, 
+                                                                    data_management_discipline.model_name_full_path,
+                                                                    data_management_discipline.numerical_parameters)
+                else:
+                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
+                                                                    namespaced_key, 
+                                                                    data_management_discipline.model_name_full_path,
+                                                                    data_management_discipline.disciplinary_inputs)
+                
+                
         disc_out = discipline.get_data_out()
         if not no_data:
             for key, data_key in disc_out.items():
@@ -182,9 +217,23 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
-                new_disc_data["variable_key"] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_OUT, key)
+                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_OUT, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
+
+                if not namespaced_key in self.disciplines_by_variable.keys():
+                    self.disciplines_by_variable[namespaced_key] = []
+                self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
+                if new_disc_data[ProxyDiscipline.NUMERICAL]:
+                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
+                                                                    namespaced_key, 
+                                                                    data_management_discipline.model_name_full_path,
+                                                                    data_management_discipline.numerical_parameters)
+                else:
+                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
+                                                                    namespaced_key, 
+                                                                    data_management_discipline.model_name_full_path,
+                                                                    data_management_discipline.disciplinary_outputs)
 
         self.__manage_status(discipline.status)
 
@@ -211,6 +260,10 @@ class TreeNode:
         else:
             s_mat = ''
         self.maturity = s_mat
+
+        # save maturity in discipline data
+        data_management_discipline.maturity = o_mat
+        self.data_management_disciplines[f'{data_management_discipline.discipline_label}'] = data_management_discipline
 
         # Manage markdown documentation
         filepath = inspect.getfile(discipline.__class__)
@@ -245,6 +298,28 @@ class TreeNode:
                 self.disc_data[namespace][key] = value
             if disc_full_path not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
                 self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(disc_full_path)
+
+    def add_disc_data_in_data_management_discipline(self, new_disc_data, namespace, disc_full_path, discipline_variable_list):
+        """ Set variable from discipline into treenode disc_data
+        :params: new_disc_data, variable data
+        :type: ProxyDiscipline variable data_dict
+
+        :params: namespace, namespace of the variable
+        :type: string
+
+        :params: discipline to set into the treenode
+        :type: ProxyDiscipline
+        """
+        # because variable is in discipline, it is not initialy editable. If it is also in data it will be
+        new_disc_data[ProxyDiscipline.EDITABLE] = False
+        if namespace not in discipline_variable_list:
+            discipline_variable_list[namespace] = new_disc_data
+            discipline_variable_list[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = [disc_full_path]
+        else:
+            for key, value in new_disc_data.items():
+                discipline_variable_list[namespace][key] = value
+            if disc_full_path not in discipline_variable_list[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
+                discipline_variable_list[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(disc_full_path)
 
     def add_markdown_documentation(self, markdown_data, key):
         """ Add a markdon documentation to the treenode
