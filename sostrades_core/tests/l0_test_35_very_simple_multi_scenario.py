@@ -606,11 +606,11 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(private_values)
 
         input_selection_x_b = {'selected_input': [True, True],
-                               'full_name': ['x', 'multi_scenarios.subprocess.Disc1.b']}
+                               'full_name': ['x', 'subprocess.Disc1.b']}
         input_selection_x_b = pd.DataFrame(input_selection_x_b)
 
         output_selection_y_ind = {'selected_output': [True, True],
-                                'full_name': ['y', 'multi_scenarios.subprocess.Disc1.indicator']}
+                                'full_name': ['y', 'subprocess.Disc1.indicator']}
         output_selection_y_ind = pd.DataFrame(output_selection_y_ind)
 
 
@@ -625,7 +625,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         output_data_names = self.exec_eng.root_process.get_output_data_names()
         self.assertIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
         self.assertIn('MyCase.y_dict', output_data_names)
-        self.assertIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
+        self.assertIn('MyCase.subprocess.Disc1.indicator_dict', output_data_names)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',

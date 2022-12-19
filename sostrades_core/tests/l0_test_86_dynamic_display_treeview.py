@@ -204,8 +204,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                        f'\t|_ multi_scenarios',
                        f'\t\t|_ subprocess',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t|_ Disc1']
+                       f'\t\t\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
@@ -215,8 +214,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                        f'|_ {self.study_name}',
                        f'\t|_ multi_scenarios',
                        f'\t\t|_ Disc1',
-                       f'\t\t|_ Disc2',
-                       f'\t|_ Disc1']
+                       f'\t\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()

@@ -47,13 +47,14 @@ class ProcessBuilder(BaseProcessBuilder):
                 'ns_eval': f'{self.ee.study_name}',
             },
         )
+        eval_name = 'Eval'
         doe_eval_builder = self.ee.factory.create_driver(
-            'Eval', builder_list_sellar, with_sample_generator=True
+            eval_name , builder_list_sellar, with_sample_generator=True
         )
 
         mods_dict2 = {'Simple_Disc': disc_dir + 'simple_disc.SimpleDisc'}
         builder_list2 = self.create_builder_list(
-            mods_dict2, ns_dict={'ns_OptimSellar': self.ee.study_name}
+            mods_dict2, ns_dict={'ns_z': f'{self.ee.study_name}.Eval'}
         )
 
         builder_list2.append(doe_eval_builder)

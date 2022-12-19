@@ -186,10 +186,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
-        values_dict[f'{self.ns}.z_in'] = 2 * array([1., 1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z_in'] = 2 * array([1., 1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -294,10 +295,10 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines
         private_values = {
-            self.study_name + '.x': array([10.]),
+            self.study_name + '.Eval.x': array([10.]),
             self.study_name + '.DoEEvalUpper.DoEEvalLower.Disc1.a': array([5.]),
             self.study_name + '.DoEEvalUpper.DoEEvalLower.Disc1.b': array([25431.]),
-            self.study_name + '.y': array([4.])}
+            self.study_name + '.Eval.y': array([4.])}
         exec_eng.load_study_from_input_dict(private_values)
 
         input_selection_upper_b = {'selected_input': [False, False, True],
@@ -445,11 +446,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         # values_dict = {}
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
-        values_dict[f'{self.ns}.z_in'] = 2 * \
+        values_dict[f'{self.ns}.Eval.z_in'] = 2 * \
             array([1., 1.])  # Input of SimpleDisc1
         # values_dict[f'{self.ns}.c_1'] = array([1.])            #Input of
         # SimpleDisc2
@@ -565,10 +566,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
-        values_dict[f'{self.ns}.z_in'] = 2 * array([1., 1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z_in'] = 2 * array([1., 1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -608,13 +609,13 @@ class TestSoSDOEScenario(unittest.TestCase):
             2].proxy_disciplines[0].proxy_disciplines[0]
         ns_id_cache_disc_sellar_problem_own_data_structure = proxy_disc_sellar_problem._io_ns_map_out[
             'c_1']
-        ns_id_cache_disc_sellar_problem_ns_manager = id(
-            exec_eng.ns_manager.get_shared_ns_dict()['ns_OptimSellar'])
-        self.assertEqual(ns_id_cache_disc_sellar_problem_own_data_structure,
-                         ns_id_cache_disc_sellar_problem_ns_manager)
+        # ns_id_cache_disc_sellar_problem_ns_manager = id(
+        #     exec_eng.ns_manager.get_shared_ns_dict()['ns_OptimSellar'])
+        # self.assertEqual(ns_id_cache_disc_sellar_problem_own_data_structure,
+        #                  ns_id_cache_disc_sellar_problem_ns_manager)
 
         data_out_proxy_disc_sellar_problem = proxy_disc_sellar_problem._data_out
-        var_dict_dm_out = exec_eng.dm.get_data('doe.c_1')
+        var_dict_dm_out = exec_eng.dm.get_data('doe.Eval.c_1')
         var_dict_data_out = data_out_proxy_disc_sellar_problem[(
             'c_1', ns_id_cache_disc_sellar_problem_own_data_structure)]
         var_dict_data_out_root = exec_eng.root_process._data_out[(
@@ -657,11 +658,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- Eval inputs
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
-                                'full_name': ['y', 'Eval.Disc1.indicator']}
+                                'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
@@ -670,7 +671,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         a_values = [array([2.0]), array([4.0]), array(
             [6.0]), array([8.0]), array([10.0])]
 
-        samples_dict = {'Eval.Disc1.a': a_values}
+        samples_dict = {'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
@@ -678,17 +679,17 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- Discipline inputs
         private_values = {
-            f'{ns}.x': array([10.]),
+            f'{ns}.Eval.x': array([10.]),
             f'{ns}.Eval.Disc1.a': array([5.]),
             f'{ns}.Eval.Disc1.b': array([25431.]),
-            f'{ns}.y': array([4.]),
+            f'{ns}.Eval.y': array([4.]),
             f'{ns}.Eval.Disc1.indicator': array([53.])}
         exec_eng.load_study_from_input_dict(private_values)
 
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
+        self.assertIn('root.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
@@ -696,16 +697,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
         self.assertEqual(
-            list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
+            list(eval_disc_samples['Disc1.a'][0:-1]), a_values)
 
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
-            'Eval.Disc1.indicator_dict')
+            'Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 6)
         i = 0
         for key in eval_disc_ind.keys():
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i][0])
             i += 1
 
     def test_7_Coupling_of_Coupling_to_check_data_io(self):
@@ -741,7 +742,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             study_name + '.x': array([10.]),
             study_name + '.UpperCoupling.LowerCoupling.Disc1.a': array([5.]),
             study_name + '.UpperCoupling.LowerCoupling.Disc1.b': array([7.]),
-            study_name + '.y': array([4.]),
+            study_name + '.Eval.y': array([4.]),
             study_name + '.UpperCoupling.LowerCoupling.Disc2.power': array([3.]),
             study_name + '.UpperCoupling.LowerCoupling.Disc2.constant': array([4.]),
         }
@@ -790,11 +791,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- Eval inputs
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
-                                'full_name': ['y', 'Eval.Disc1.indicator']}
+                                'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
@@ -804,7 +805,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         #     [6.0]), array([8.0]), array([10.0])]
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
 
-        samples_dict = {'Eval.Disc1.a': a_values}
+        samples_dict = {'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
@@ -818,17 +819,17 @@ class TestSoSDOEScenario(unittest.TestCase):
         #     f'{ns}.y': array([4.]),
         #     f'{ns}.Eval.Disc1.indicator': array([53.])}
         private_values = {
-            f'{ns}.x': 10.,
+            f'{ns}.Eval.x': 10.,
             f'{ns}.Eval.Disc1.a': 5.,
             f'{ns}.Eval.Disc1.b': 25431.,
-            f'{ns}.y': 4.,
+            f'{ns}.Eval.y': 4.,
             f'{ns}.Eval.Disc1.indicator': 53.}
         exec_eng.load_study_from_input_dict(private_values)
 
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
+        self.assertIn('root.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
@@ -836,21 +837,21 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
         self.assertEqual(
-            list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
+            list(eval_disc_samples['Disc1.a'][0:-1]), a_values)
 
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
-            'Eval.Disc1.indicator_dict')
+            'Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 6)
         i = 0
         for key in eval_disc_ind.keys():
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i])
             i += 1
 
         # 1. Samples and eval_inputs equal
         input_selection_a_b = {'selected_input': [False, True, True],
-                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                               'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a_b = pd.DataFrame(input_selection_a_b)
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a_b
 
@@ -858,7 +859,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # b_values = [array([1.0]), array([3.0]), array(
         #     [5.0]), array([1.0]), array([1.0])]
         b_values = [1.0, 3.0, 5.0, 7.0, 9.0]
-        new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
+        new_samples_dict = {'Disc1.a': a_values, 'Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
 
@@ -872,19 +873,19 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
         self.assertEqual(
-            list(eval_disc_samples['Eval.Disc1.a'][0:-1]), a_values)
+            list(eval_disc_samples['Disc1.a'][0:-1]), a_values)
         self.assertEqual(
-            list(eval_disc_samples['Eval.Disc1.b'][0:-1]), b_values)
+            list(eval_disc_samples['Disc1.b'][0:-1]), b_values)
 
         # 2. More eval_inputs than samples and sample included in eval_inputs
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [True, True, False],
-                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                               'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        new_samples_dict2 = {'Eval.Disc1.a': a_values}
+        new_samples_dict2 = {'Disc1.a': a_values}
         new_samples_df2 = pd.DataFrame(new_samples_dict2)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df2
 
@@ -897,7 +898,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc_samples = eval_disc.get_sosdisc_inputs(
             'samples_df')
         # self.assertEqual(list(eval_disc_samples['x'][0:-1]), x_values)
-        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
+        self.assertEqual(list(eval_disc_samples['Disc1.a']), a_values)
         x_all_None = True
         for element in list(eval_disc_samples['x']):
             if math.isnan(element):
@@ -910,12 +911,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         # 3. More eval_inputs than samples and samples not included in eval_inputs
         # Change of eval_inputs
         input_selection_x_b = {'selected_input': [True, False, True],
-                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                               'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_b = pd.DataFrame(input_selection_x_b)
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_b
 
         # Change of samples
-        new_samples_dict3 = {'Eval.Disc1.a': a_values}
+        new_samples_dict3 = {'Disc1.a': a_values}
         new_samples_df3 = pd.DataFrame(new_samples_dict3)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df3
 
@@ -939,7 +940,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert x_all_nan == True
 
         b_all_nan = True
-        for element in list(eval_disc_samples['Eval.Disc1.b']):
+        for element in list(eval_disc_samples['Disc1.b']):
             if math.isnan(element):
                 pass
             else:
@@ -950,12 +951,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         # 4. More samples than eval_inputs and samples partially included in eval_inputs
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [False, True, False],
-                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                               'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
+        new_samples_dict = {'Disc1.a': a_values, 'Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
 
@@ -967,17 +968,17 @@ class TestSoSDOEScenario(unittest.TestCase):
             study_name + '.Eval')[0]
         eval_disc_samples = eval_disc.get_sosdisc_inputs(
             'samples_df')
-        self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
+        self.assertEqual(list(eval_disc_samples['Disc1.a']), a_values)
 
         # 5. Eval_inputs and samples do not coincide at all.
         # Change of eval_inputs
         input_selection_x_a = {'selected_input': [True, False, False],
-                               'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                               'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        new_samples_dict = {'Eval.Disc1.a': a_values, 'Eval.Disc1.b': b_values}
+        new_samples_dict = {'Disc1.a': a_values, 'Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
 

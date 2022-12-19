@@ -21,9 +21,9 @@ class SimpleDisc(SoSWrapp):
     """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
     """
     _maturity = 'Fake'
-    DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_z'}}
 
-    DESC_OUT = {'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_z'}}
 
     def run(self):
         """ Discipline 1 execution

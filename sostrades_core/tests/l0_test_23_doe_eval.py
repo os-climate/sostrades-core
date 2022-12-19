@@ -81,26 +81,26 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.dspace_optim = pd.DataFrame(dspace_dict_optim)
 
         input_selection_local_dv_x = {'selected_input': [True, True, False, False, False],
-                                      'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                      'full_name': ['subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                                     'y_2',
                                                     'z']}
         self.input_selection_local_dv_x = pd.DataFrame(
             input_selection_local_dv_x)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                               'full_name': ['subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                              'y_2',
                                              'z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                             'full_name': ['subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                            'y_2',
                                            'z']}
         self.input_selection_x = pd.DataFrame(input_selection_x)
 
         input_selection_local_dv = {'selected_input': [True, False, False, False, False],
-                                    'full_name': ['Eval.subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
+                                    'full_name': ['subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
                                                   'y_2',
                                                   'z']}
         self.input_selection_local_dv = pd.DataFrame(input_selection_local_dv)
@@ -154,10 +154,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
-        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -237,8 +237,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Sellar inputs
         local_dv = 10.
-        values_dict = {f'{ns}.x': array([1.]), f'{ns}.y_1': array([1.]), f'{ns}.y_2': array([1.]),
-                       f'{ns}.z': array([1., 1.]),
+        values_dict = {f'{ns}.Eval.x': array([1.]), f'{ns}.Eval.y_1': array([1.]), f'{ns}.Eval.y_2': array([1.]),
+                       f'{ns}.Eval.z': array([1., 1.]),
                        f'{ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -332,10 +332,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
-        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -383,7 +383,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # we check that at the end of the run the dm contains the reference (or
         # initial ) point
-        self.assertEqual(exec_eng.dm.get_value('doe.x'), array([1.0]))
+        self.assertEqual(exec_eng.dm.get_value('doe.Eval.x'), array([1.0]))
 
     def test_4_doe_eval_options_and_design_space_after_reconfiguration(self):
         """ different configurations of doe eval are tested here The aim is to assert that doe_eval configuration
@@ -442,10 +442,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{self.ns}.x'] = array([1.])
-        values_dict[f'{self.ns}.y_1'] = array([1.])
-        values_dict[f'{self.ns}.y_2'] = array([1.])
-        values_dict[f'{self.ns}.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
         values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -573,11 +573,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             ['Eval.subprocess.Sellar_Problem.local_dv', 'x'])
+                             ['subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             ['Eval.subprocess.Sellar_Problem.local_dv'])
+                             ['subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -598,8 +598,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Sellar inputs
         local_dv = 10.
-        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
-                       f'{self.ns}.z': array([1., 1.]), f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
+        values_dict = {f'{self.ns}.Eval.x': array([1.]), f'{self.ns}.Eval.y_1': array([1.]), f'{self.ns}.Eval.y_2': array([1.]),
+                       f'{self.ns}.Eval.z': array([1., 1.]), f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
@@ -619,9 +619,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that at the end of doe eval dm still contains initial
         # (reference) point
-        self.assertEqual(exec_eng.dm.get_value('doe.x'), 1.0)
+        self.assertEqual(exec_eng.dm.get_value('doe.Eval.x'), 1.0)
         self.assertEqual(exec_eng.dm.get_value(
-            'doe.z').tolist(), array([1., 1.]).tolist())
+            'doe.Eval.z').tolist(), array([1., 1.]).tolist())
 
     def test_6_doe_eval_design_space_normalisation(self):
         """ This tests aims at proving the ability of the
@@ -669,8 +669,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # Subprocess disciplines
-        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
-                       f'{self.ns}.z': array([1., 1.]), f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': 10}
+        values_dict = {f'{self.ns}.Eval.x': array([1.]), f'{self.ns}.Eval.y_1': array([1.]), f'{self.ns}.Eval.y_2': array([1.]),
+                       f'{self.ns}.Eval.z': array([1., 1.]), f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': 10}
         exec_eng.load_study_from_input_dict(values_dict)
 
         # configure disciplines with the algo lhs and check that generated
@@ -753,7 +753,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv_values = x_values
 
         samples_dict = {'x': x_values,
-                        'Eval.subprocess.Sellar_Problem.local_dv': local_dv_values}
+                        'subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
 
@@ -761,8 +761,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Sellar inputs
         local_dv = 10.
-        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
-                       f'{self.ns}.z': array([1., 1.]),
+        values_dict = {f'{self.ns}.Eval.x': array([1.]), f'{self.ns}.Eval.y_1': array([1.]), f'{self.ns}.Eval.y_2': array([1.]),
+                       f'{self.ns}.Eval.z': array([1., 1.]),
                        f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -836,8 +836,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Sellar inputs
         local_dv = 10.
-        values_dict = {f'{self.ns}.x': array([1.]), f'{self.ns}.y_1': array([1.]), f'{self.ns}.y_2': array([1.]),
-                       f'{self.ns}.z': array([1., 1.]), f'{self.ns}.DoEEval.subprocess.Sellar_Problem.local_dv': local_dv}
+        values_dict = {f'{self.ns}.DoEEval.x': array([1.]), f'{self.ns}.DoEEval.y_1': array([1.]), f'{self.ns}.DoEEval.y_2': array([1.]),
+                       f'{self.ns}.DoEEval.z': array([1., 1.]), f'{self.ns}.DoEEval.subprocess.Sellar_Problem.local_dv': local_dv}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
@@ -882,7 +882,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         with the same short name
         """
 
-        dspace_dict = {'variable': ['x', 'Eval.subprocess.Disc1.a'],
+        dspace_dict = {'variable': ['x', 'subprocess.Disc1.a'],
 
                        'lower_bnd': [0., 50.],
                        'upper_bnd': [100., 200.],
@@ -916,20 +916,20 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines
         private_values = {
-            self.study_name + '.x': 10.,
+            self.study_name + '.Eval.x': 10.,
             self.study_name + '.Eval.subprocess.Disc1.a': 5.,
             self.study_name + '.Eval.subprocess.Disc1.b': 25431.,
-            self.study_name + '.y': 4.,
+            self.study_name + '.Eval.y': 4.,
             self.study_name + '.Eval.subprocess.Disc2.constant': 3.1416,
             self.study_name + '.Eval.subprocess.Disc2.power': 2}
         exec_eng.load_study_from_input_dict(private_values)
 
         input_selection_x_a = {'selected_input': [True, True],
-                               'full_name': ['x', 'Eval.subprocess.Disc1.a']}
+                               'full_name': ['x', 'subprocess.Disc1.a']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
 
         output_selection_z_z = {'selected_output': [True, True],
-                                'full_name': ['z', 'Eval.subprocess.Disc1.z']}
+                                'full_name': ['z', 'subprocess.Disc1.z']}
         output_selection_z_z = pd.DataFrame(output_selection_z_z)
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
@@ -942,7 +942,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         self.assertEqual(len(exec_eng.dm.get_value(
-            'doe.Eval.subprocess.Disc1.z_dict')), 11)
+            'doe.subprocess.Disc1.z_dict')), 11)
         self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')), 11)
 
         # Check coherence between ProxyCoupling of Eval and SoSMDAChain:
@@ -958,7 +958,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                       exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names())
         # Check that the root process does not crush variables with the same
         # short name:
-        for var in ['doe.z_dict', 'doe.Eval.subprocess.Disc1.z_dict', 'doe.z', 'doe.Eval.subprocess.Disc1.z']:
+        for var in ['doe.z_dict', 'doe.subprocess.Disc1.z_dict', 'doe.Eval.z', 'doe.Eval.subprocess.Disc1.z']:
             self.assertIn(var, exec_eng.root_process.get_output_data_names())
 
     def test_10_warning_in_case_of_a_wrong_inputs_outputs_in_doe_eval(self):
@@ -996,7 +996,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines
-        values_dict = {f'{self.ns}.x': 1., f'{self.ns}.y_1': 1., f'{self.ns}.y_2': 1., f'{self.ns}.z': array([1., 1.]),
+        values_dict = {f'{self.ns}.Eval.x': 1., f'{self.ns}.Eval.y_1': 1., f'{self.ns}.Eval.y_2': 1., f'{self.ns}.Eval.z': array([1., 1.]),
                        f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': 10}
 
         # configure disciplines with the algo lhs
@@ -1139,8 +1139,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Sellar inputs
         local_dv = 10.
-        values_dict = {f'{ns}.x': array([1.]), f'{ns}.y_1': array([1.]), f'{ns}.y_2': array([1.]),
-                       f'{ns}.z': array([1., 1.]),
+        values_dict = {f'{ns}.Eval.x': array([1.]), f'{ns}.Eval.y_1': array([1.]), f'{ns}.Eval.y_2': array([1.]),
+                       f'{ns}.Eval.z': array([1., 1.]),
                        f'{ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -1226,10 +1226,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         # array([1.])
-        values_dict[f'{same_usecase_name}.x'] = array([1.])
-        values_dict[f'{same_usecase_name}.y_1'] = array([1.])
-        values_dict[f'{same_usecase_name}.y_2'] = array([1.])
-        values_dict[f'{same_usecase_name}.z'] = array([1., 1.])
+        values_dict[f'{same_usecase_name}.Eval.x'] = array([1.])
+        values_dict[f'{same_usecase_name}.Eval.y_1'] = array([1.])
+        values_dict[f'{same_usecase_name}.Eval.y_2'] = array([1.])
+        values_dict[f'{same_usecase_name}.Eval.z'] = array([1., 1.])
         values_dict[f'{same_usecase_name}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
@@ -1299,17 +1299,17 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines
         private_values = {
-            self.study_name + '.x': array([10.]),
+            self.study_name + '.Eval.x': array([10.]),
             self.study_name + '.Eval.Disc1.a': array([5.]),
             self.study_name + '.Eval.Disc1.b': array([25431.]),
-            self.study_name + '.y': array([4.])}
+            self.study_name + '.Eval.y': array([4.])}
         exec_eng.load_study_from_input_dict(private_values)
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
-                                'full_name': ['y', 'Eval.Disc1.indicator']}
+                                'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
@@ -1329,13 +1329,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
-            'Eval.Disc1.indicator_dict')
+            'Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 11)
         i = 0
         for key in eval_disc_ind.keys():
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[self.study_name + '.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
+                                   private_values[self.study_name + '.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i][0])
             i += 1
 
     def test_15_DoE_OT_FACTORIAL_Eval(self):
@@ -1344,14 +1344,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         """
 
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
-                                'full_name': ['y', 'Eval.Disc1.indicator']}
+                                'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
-        dspace_dict_a = {'variable': ['Eval.Disc1.a'],
+        dspace_dict_a = {'variable': ['Disc1.a'],
 
                          'lower_bnd': [0.],
                          'upper_bnd': [1.],
@@ -1406,17 +1406,17 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- Discipline inputs
         private_values = {
-            f'{ns}.x': array([10.]),
+            f'{ns}.Eval.x': array([10.]),
             f'{ns}.Eval.Disc1.a': array([0.5]),
             f'{ns}.Eval.Disc1.b': array([25431.]),
-            f'{ns}.y': array([4.]),
+            f'{ns}.Eval.y': array([4.]),
             f'{ns}.Eval.Disc1.indicator': array([53.])}
         exec_eng.load_study_from_input_dict(private_values)
 
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('doe.Eval.Disc1.indicator_dict', root_outputs)
+        self.assertIn('doe.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
@@ -1425,13 +1425,13 @@ class TestSoSDOEScenario(unittest.TestCase):
             'samples_inputs_df')
 
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
-            'Eval.Disc1.indicator_dict')
+            'Disc1.indicator_dict')
 
         i = 0
         for key in eval_disc_ind.keys():
-            self.assertTrue(0. <= eval_disc_samples['Eval.Disc1.a'][i] <= 1.)
+            self.assertTrue(0. <= eval_disc_samples['Disc1.a'][i] <= 1.)
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Eval.Disc1.a'][i][0])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i][0])
             i += 1
 
 

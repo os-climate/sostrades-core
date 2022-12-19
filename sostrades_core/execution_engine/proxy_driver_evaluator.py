@@ -750,7 +750,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         # output
                         for out_var in self.eval_out_list:
                             dynamic_outputs.update(
-                                {f'{out_var.split(self.ee.study_name + ".", 1)[1]}_dict': {'type': 'dict',
+                                {f'{out_var.split(f"{self.get_disc_full_name()}.", 1)[1]}_dict': {'type': 'dict',
                                                                                            'visibility': 'Shared',
                                                                                            'namespace': self.NS_DOE}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
@@ -840,7 +840,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                              if self.ee.dm.get_data(var, 'type') == 'array' else [True]
                                                              for var in self.eval_in_list],
                                # TODO: Array dimensions greater than 2?
-                               'study_name': self.ee.study_name,
+                               'driver_name': self.get_disc_full_name(),
                                'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
                                'selected_inputs': self.selected_inputs,
                                'selected_outputs': self.selected_outputs,
@@ -1067,9 +1067,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
         self.eval_in_list = [
-            f'{self.ee.study_name}.{element}' for element in in_list]
+            f'{self.get_disc_full_name()}.{element}' for element in in_list]
         self.eval_out_list = [
-            f'{self.ee.study_name}.{element}' for element in out_list]
+            f'{self.get_disc_full_name()}.{element}' for element in out_list]
 
     def set_eval_possible_values(self):
         '''
@@ -1164,7 +1164,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # sake of simplicity
                 if is_input_type:
                     poss_in_values_full.append(
-                        full_id.split(self.ee.study_name + ".", 1)[1])
+                        full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
                     # poss_in_values_full.append(full_id)
 
                 # if is_input_multiplier_type and not is_None:
@@ -1185,7 +1185,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
                 poss_out_values_full.append(
-                    full_id.split(self.ee.study_name + ".", 1)[1])
+                    full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
                 # poss_out_values_full.append(full_id)
         return poss_in_values_full, poss_out_values_full
 
@@ -1221,10 +1221,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
         dataframe_descriptor = {}
         for i, key in enumerate(self.selected_inputs):
-            cle = key
             var = tuple([self.ee.dm.get_data(
                 self.eval_in_list[i], 'type'), None, True])
-            dataframe_descriptor[cle] = var
+            dataframe_descriptor[key] = var
 
         dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                          'dataframe_descriptor': dataframe_descriptor,
