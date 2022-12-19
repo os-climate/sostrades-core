@@ -15,44 +15,32 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.study_manager import StudyManager
+import pandas as pd
 
 
 class Study(StudyManager):
     '''This is an example of usecase study for
-     the test_disc1_disc3_coupling.
-    This process instantiates the coupling of (disc1_scenario,disc3_scenario).
     '''
 
     def __init__(self, execution_engine=None):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for disc1 disc2 coupling
-        """
         ######### Numerical values   ####
-        x = 3.
-        a = 3.
-        b = 4.
-        constant = 3.
-        power = 2
-        z = 1.2
+        x = 5.0
+        b = 3.0
         ######### Fill the dictionary for dm   ####
+        values_dict = {}
+        values_dict[f'{self.study_name}.Disc10.Model_Type'] = 'Affine'
+        values_dict[f'{self.study_name}.Disc10.x'] = x
+        values_dict[f'{self.study_name}.Disc10.b'] = b
+        # default value a is not provided
 
-        coupling_name = 'D1_D3_Coupling'
-        dict_values = {}
-        dict_values[f'{self.ee.study_name}.{coupling_name}.x'] = x
-        dict_values[f'{self.ee.study_name}.{coupling_name}.a'] = a
-        dict_values[f'{self.ee.study_name}.{coupling_name}.z'] = z
-        dict_values[f'{self.ee.study_name}.{coupling_name}.Disc1.b'] = b
-        dict_values[f'{self.ee.study_name}.{coupling_name}.Disc3.constant'] = constant
-        dict_values[f'{self.ee.study_name}.{coupling_name}.Disc3.power'] = power
-        dict_values[f'{self.ee.study_name}.{coupling_name}.cache_type'] = 'SimpleCache'
-        return [dict_values]
+        return [values_dict]
 
 
 if __name__ == '__main__':
     uc_cls = Study()
     uc_cls.load_data()
-    uc_cls.execution_engine.display_treeview_nodes()
+    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.run(for_test=True)

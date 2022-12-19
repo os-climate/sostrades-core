@@ -25,7 +25,9 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        # setup the driver and the sample generator jointly
+        """
+        Usecase for disc1 disc2 eval generator cp without reference
+        """
         dict_values = {}
         dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'

@@ -215,10 +215,10 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_4.o'), o4)
 
-    def _test_02_multiscenario_with_sample_generator_cp_sellar(self):
+    def test_02_multiscenario_with_sample_generator_cp_sellar(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_sellar_generator_eval_cp'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        proc_name = 'test_sellar_eval_generator_cp'
+        builders = self.exec_eng.factory.get_builder_from_process(self.repo + '.sellar',
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -247,7 +247,7 @@ class TestMultiScenario(unittest.TestCase):
 
         self.exec_eng.execute()
 
-    def _test_03_multiscenario_with_sample_generator_cp_sellar_study(self):
+    def test_03_multiscenario_with_sample_generator_cp_sellar_study(self):
         # # simple 2-disc process NOT USING nested scatters
 
         from os.path import join, dirname
@@ -256,12 +256,13 @@ class TestMultiScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         self.study_name = 'MyStudy'
-        proc_name = 'test_sellar_generator_eval_cp'
+        proc_name = 'test_sellar_eval_generator_cp'
 
         # get the sample generator inputs
         self.setUp_cp_sellar()
 
-        study_dump = BaseStudyManager(self.repo, proc_name, self.study_name)
+        study_dump = BaseStudyManager(
+            self.repo + '.sellar', proc_name, self.study_name)
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
@@ -293,7 +294,8 @@ class TestMultiScenario(unittest.TestCase):
         study_dump.run()
 
         ########################
-        study_load = BaseStudyManager(self.repo, proc_name, self.study_name)
+        study_load = BaseStudyManager(
+            self.repo + '.sellar', proc_name, self.study_name)
         study_load.load_data(from_path=dump_dir)
         # print(study_load.ee.dm.get_data_dict_values())
         study_load.run()

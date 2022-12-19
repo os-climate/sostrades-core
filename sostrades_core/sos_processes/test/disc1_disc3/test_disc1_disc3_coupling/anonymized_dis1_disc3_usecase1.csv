@@ -1,7 +1,7 @@
 variable,value
-<study_ph>.D1_D3_Coupling.a, 3.0
-<study_ph>.D1_D3_Coupling.x, 3.0
-<study_ph>.D1_D3_Coupling.z, 1.2
-<study_ph>.D1_D3_Coupling.Disc1.b, 4.0
-<study_ph>.Disc3.constant, 3.0
-<study_ph>.D1_D3_Coupling.Disc3.power, 2
+<study_ph>.D1_D3_Coupling.a,3.0
+<study_ph>.D1_D3_Coupling.x,3.0
+<study_ph>.D1_D3_Coupling.z,1.2
+<study_ph>.D1_D3_Coupling.Disc1.b,4.0
+<study_ph>.Disc3.constant,3.0
+<study_ph>.D1_D3_Coupling.Disc3.power,2

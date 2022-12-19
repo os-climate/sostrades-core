@@ -235,7 +235,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def test_2_usecase_import_mono_instances_eval_generator_doe_disc1_disc3(self):
+    def test_3_usecase_import_mono_instances_eval_generator_doe_disc1_disc3(self):
         """
         This test checks the usecase import capability in mono instance mode with doe algo product generator + eval
         It uses the test_disc1_disc3_list nested process 
@@ -314,7 +314,95 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def test_4_usecase_import_multi_instances_sellar(self):
+    def test_4_usecase_import_multi_instances_eval_simple_sellar(self):
+        """
+        This test checks the usecase import capability in multi instance mode with eval 
+        It uses the sellar_coupling nested process
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        with_coupling = False  # In multi instances only False is of interest
+
+        # The generator eval process
+        self.repo = self.repo + '.sellar'
+        proc_name = 'test_sellar_eval_simple'
+
+        usecase_name = 'usecase1_with_ref'
+
+        # Associated nested subprocess
+        sub_process_name = 'test_sellar_list'
+        sub_process_usecase_name = 'usecase'
+
+        # Creation of the study from the associated usecase
+        self.study_name = usecase_name
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = imported_module.Study(run_usecase=True)
+
+        study_dump.load_data()
+
+        study_dump.run()
+
+        # Check the created study
+
+        self.exec_eng = study_dump.ee
+
+        self.exec_eng.display_treeview_nodes()
+        if with_coupling:
+            ref_disc = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+        else:
+            ref_disc = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.ReferenceScenario.Sellar_1')[0]
+
+        # In the study creation it is provided x = array([2.])
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc, target_values_dict, print_flag=print_flag)
+
+        # Load the anonymized dict from associated selected sub_process
+
+        if 1 == 1:
+            anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+                self.repo, sub_process_name, sub_process_usecase_name)
+        else:
+            anonymize_input_dict_from_usecase = {}
+            anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
+                1.])
+            anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
+                1.])
+            anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
+                1.])
+            anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
+                1., 1.])
+            anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
+
+        # Update the reference from the selected imported usecase anonymised
+        # dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # Check that the reference has been updated
+
+        # In the anonymised dict of the selected usecase it is provided x =
+        # array([1.])
+        target_x = array([1.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc, target_values_dict, print_flag=print_flag)
+
+    def test_5_usecase_import_multi_instances_eval_generator_cp_sellar(self):
         """
         This test checks the usecase import capability in multi instance mode with generator + eval
         It uses the sellar_coupling nested process
@@ -324,15 +412,16 @@ class TestSoSimportUsecase(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        with_coupling = False
+        with_coupling = False  # In multi instances only False is of interest
 
         # The generator eval process
+        self.repo = self.repo + '.sellar'
         if with_coupling:
-            proc_name = 'test_sellar_coupling_generator_eval_cp'
+            proc_name = 'test_sellar_coupling_eval_generator_cp'
         else:
-            proc_name = 'test_sellar_generator_eval_cp'
+            proc_name = 'test_sellar_eval_generator_cp'
 
-        usecase_name = 'usecase1_cp_multi'
+        usecase_name = 'usecase1_cp_multi_with_ref'
 
         # Associated nested subprocess
         if with_coupling:
@@ -420,7 +509,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def test_5_usecase_import_mono_instances_sellar(self):
+    def test_6_usecase_import_mono_instances_eval_generator_doe_sellar(self):
         """
         This test checks the usecase import capability in mono instance mode with generator  + eval
         It uses the sellar_coupling nested process
@@ -430,13 +519,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        with_coupling = True
+        with_coupling = True  # In mono instance only True is of interest
 
         # The generator eval process
+        self.repo = self.repo + '.sellar'
         if with_coupling:
-            proc_name = 'test_sellar_coupling_generator_eval_doe'
+            proc_name = 'test_sellar_coupling_eval_generator_doe'
         else:
-            proc_name = 'test_sellar_generator_eval_doe'
+            proc_name = 'test_sellar_eval_generator_doe'
 
         usecase_name = 'usecase1_doe_mono'
 
@@ -525,9 +615,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def _test_6_usecase_import_multi_instances_flatten(self):
-        # KO Line 337 we have
-        # 'usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling' !!!
+    def _test_7_usecase_import_multi_instances_eval_generator_cp_sellar_flatten(self):
+        # KO root process is not configured after 100 iterations
         """
         This test checks the usecase import capability in multi instance mode.
         """
@@ -536,8 +625,9 @@ class TestSoSimportUsecase(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        proc_name = 'test_sellar_coupling_generator_eval_cp_flatten'
-        usecase_name = 'usecase1_cp_multi'
+        self.repo = self.repo + '.sellar'
+        proc_name = 'test_sellar_coupling_eval_generator_cp_flatten'
+        usecase_name = 'usecase1_cp_multi_with_ref'
 
         # Associated nested subprocess
 
@@ -608,7 +698,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def test_7_usecase_import_multi_instances_basic_Disc1Disc3(self):
+    def test_8_usecase_import_multi_instances_basic_Disc1Disc3(self):
         """
         This test checks the usecase import capability in multi instance mode with eval and without generator (very simple MultiScenario)
         It uses the test_disc1_disc3_list nested process 
@@ -651,7 +741,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        if 1 == 0:
             sub_process_repo = self.repo + '.disc1_disc3'
             sub_process_name = 'test_disc1_disc3_list'
             sub_process_usecase_name = 'usecase'
@@ -690,7 +780,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def test_8_usecase_import_multi_instances_cp_Disc1Disc3(self):
+    def test_9_usecase_import_multi_instances_cp_Disc1Disc3(self):
         """
         This test checks the usecase import capability in multi instance mode with cartesian product generator + eval
         It uses the test_disc1_disc3_list nested process 

@@ -26,20 +26,12 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase for disc1 disc2 eval simple with reference
+        Usecase for Eval simple on  Sellar Problem
         """
 
-        # reference var values
-        self.x = 2.
-        self.a = 3
-        self.constant = 3
-        self.power = 2
-        self.b = 8
-        self.z = 12
-        self.b1 = 4
-        self.b2 = 2
-        self.z1 = 1.2
-        self.z2 = 1.5
+        ns = f'{self.study_name}'
+
+        anonymize_input_dict_from_usecase = {}
 
         disc_dict = {}
         # build the scenarios
@@ -48,21 +40,18 @@ class Study(StudyManager):
                                                       'scenario_W',
                                                       'scenario_2']})
         disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
-        disc_dict[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
-        disc_dict[f'{self.study_name}.Eval.instance_reference'] = True
+        disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
+        disc_dict[f'{ns}.Eval.instance_reference'] = True
         disc_dict[f'{self.study_name}.Eval.reference_mode'] = 'copy_mode'
+        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
-        # configure the Reference scenario
-        # Non-trade variables (to propagate)
-        disc_dict[f'{self.study_name}.Eval.ReferenceScenario.a'] = self.a
-        disc_dict[f'{self.study_name}.Eval.ReferenceScenario.x'] = self.x
-        disc_dict[self.study_name +
-                  '.Eval.ReferenceScenario.Disc3.constant'] = self.constant
-        disc_dict[self.study_name +
-                  '.Eval.ReferenceScenario.Disc3.power'] = self.power
-        # Trade variables reference (not to propagate)
-        disc_dict[self.study_name + '.Eval.ReferenceScenario.Disc1.b'] = self.b
-        disc_dict[self.study_name + '.Eval.ReferenceScenario.z'] = self.z
+        # Sellar referene inputs
+        local_dv = 10.
+        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 
