@@ -15,7 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.study_manager import StudyManager
-
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 class Study(StudyManager):
 
@@ -40,3 +40,12 @@ if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run()
+    ppf = PostProcessingFactory()
+
+    all_post_processings = ppf.get_all_post_processings(uc_cls.execution_engine, False, as_json=False, for_test=False)
+
+    for namespace, post_proc_list in all_post_processings.items():
+        for chart in post_proc_list:
+            for fig in chart.post_processings:
+                fig.to_plotly().show()
+
