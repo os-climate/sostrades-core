@@ -1402,7 +1402,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(driver_disc.get_output_data_names(), [])
 
         # check that the namespace treeview is proper
-        exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi\n' \
+        exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi_with_ref\n' \
                     '|_ usecase1_cp_multi_with_ref\n' \
                     '\t|_ Eval\n' \
                     '\t\t|_ ReferenceScenario\n' \
