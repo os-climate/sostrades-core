@@ -109,7 +109,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     REFERENCE_MODE_POSSIBLE_VALUES = [LINKED_MODE, COPY_MODE]
     REFERENCE_SCENARIO_NAME = 'ReferenceScenario'
 
-
     SCENARIO_DF = 'scenario_df'
 
     SELECTED_SCENARIO = 'selected_scenario'
@@ -333,41 +332,53 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # SUBDISCIPLINES
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-                ref_discipline = self.scenarios[self.get_reference_scenario_index()]
+                ref_discipline = self.scenarios[self.get_reference_scenario_index(
+                )]
                 ref_discipline_full_name = ref_discipline.get_disc_full_name()
                 # Manage usecase import
-                self.manage_import_inputs_from_sub_process(ref_discipline_full_name)
-                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(trade_vars)
+                self.manage_import_inputs_from_sub_process(
+                    ref_discipline_full_name)
+                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
+                    trade_vars)
 
                 scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
                                                                                                       scenario_names,
                                                                                                       ref_dict)
 
-                # Update of original editability state in case modification scenario df
+                # Update of original editability state in case modification
+                # scenario df
                 if (not set(scenario_names) == set(self.old_scenario_names)) and self.old_scenario_names != []:
-                    new_scenarios = set(scenario_names) - set(self.old_scenario_names)
+                    new_scenarios = set(scenario_names) - \
+                        set(self.old_scenario_names)
                     for new_scenario in new_scenarios:
                         new_scenario_non_trade_vars_dict = {key: value
-                                                           for key,value in scenarios_non_trade_vars_dict.items()
-                                                           if new_scenario in key}
+                                                            for key, value in scenarios_non_trade_vars_dict.items()
+                                                            if new_scenario in key}
 
-                        new_scenario_editable_dict = self.save_original_editable_attr_from_non_trade_variables(new_scenario_non_trade_vars_dict)
-                        self.original_editable_dict_non_ref.update(new_scenario_editable_dict)
+                        new_scenario_editable_dict = self.save_original_editable_attr_from_non_trade_variables(
+                            new_scenario_non_trade_vars_dict)
+                        self.original_editable_dict_non_ref.update(
+                            new_scenario_editable_dict)
                 self.old_scenario_names = scenario_names
 
-                # Save the original editability state in case reference is un-instantiated.
-                self.save_original_editability_state(ref_dict, scenarios_non_trade_vars_dict)
-                # Modification of read-only or editable depending on LINKED_MODE or COPY_MODE
-                self.modify_editable_attribute_according_to_reference_mode(scenarios_non_trade_vars_dict)
+                # Save the original editability state in case reference is
+                # un-instantiated.
+                self.save_original_editability_state(
+                    ref_dict, scenarios_non_trade_vars_dict)
+                # Modification of read-only or editable depending on
+                # LINKED_MODE or COPY_MODE
+                self.modify_editable_attribute_according_to_reference_mode(
+                    scenarios_non_trade_vars_dict)
                 # Propagation to other scenarios if necessary
-                self.propagate_reference_non_trade_variables(ref_changes_dict, ref_dict, ref_discipline, scenario_names)
+                self.propagate_reference_non_trade_variables(
+                    ref_changes_dict, ref_dict, ref_discipline, scenario_names)
             else:
                 if self.original_editable_dict_non_ref:
                     for sc in scenario_names:
                         for key in self.original_editable_dict_non_ref.keys():
                             if sc in key:
-                                self.ee.dm.set_data(key, 'editable', self.original_editable_dict_non_ref[key])
-
+                                self.ee.dm.set_data(
+                                    key, 'editable', self.original_editable_dict_non_ref[key])
 
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
@@ -424,7 +435,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     #     # Example variable z = array([1., 1.]) of sellar put in trade variables
     #     return sce_df
 
-    def save_original_editability_state(self, ref_dict, non_ref_dict):  # These dicts are of non-trade variables
+    # These dicts are of non-trade variables
+    def save_original_editability_state(self, ref_dict, non_ref_dict):
 
         if self.save_editable_attr:
             # self.original_editable_dict_ref = self.save_original_editable_attr_from_non_trade_variables(
@@ -510,7 +522,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
 
-    def modify_editable_attribute_according_to_reference_mode(self,scenarios_non_trade_vars_dict):
+    def modify_editable_attribute_according_to_reference_mode(self, scenarios_non_trade_vars_dict):
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
@@ -529,7 +541,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             dict_out[key] = self.dm.get_data(key, 'editable')
 
         return dict_out
-
 
     def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
 
@@ -843,11 +854,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE:
                 if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
                     if self.SCENARIO_DF in disc_in:
-                        return super().is_configured() and self.subprocess_is_configured() and not self.check_if_there_are_reference_variables_changes() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+                        config_status = super().is_configured() and self.subprocess_is_configured()
+                        config_status = config_status and (
+                            not self.check_if_there_are_reference_variables_changes())
+                        config_status = config_status and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+                        return config_status
             elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE:
-                return super().is_configured() and self.subprocess_is_configured()
-                # This condition is not needed (and not working)
-                # self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+                config_status = super().is_configured() and self.subprocess_is_configured()
+                # The next condition is not needed (and not working)
+                # config_status = config_status and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+                return config_status
 
         return super().is_configured() and self.subprocess_is_configured()
 
@@ -1279,10 +1295,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             elif self.BUILDER_MODE in disc_in:
                 builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
-                if builder_mode == self. MONO_INSTANCE:
+                if builder_mode == self.MONO_INSTANCE:
                     # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
-                    #method = 'load_study'
-                    method = 'set_values'
+                    method = 'load_study'
+                    #method = 'set_values'
                     self.update_reference_from_anonymised_dict(
                         anonymize_input_dict_from_usecase, ref_discipline_full_name, method)
             else:
@@ -1303,6 +1319,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # 2. load data in dm (# Push the data to the reference
         # instance)
 
+        #======================================================================
+        # if method == 'load_study':  # We sometimes in multi instance get an infinite loop and never do the last in the sequence
+        #     self.ee.load_study_from_input_dict(
+        #         input_dict_from_usecase)
+        # elif method =='set_values':  # This is what was done before the bellow correction. It doesn't work with dynamic subproc or if a data kay is not yet in the dm
+        #     self.ee.dm.set_values_from_dict(
+        #         input_dict_from_usecase)
+        # self.ee.dm.set_values_from_dict(filtered_import_dict)
+        #======================================================================
+
+        # Here is a NEW method : with filtering. With this method something is
+        # added in is_configured function
         filtered_import_dict = {}
         for key in input_dict_from_usecase:
             if self.ee.dm.check_data_in_dm(key):
@@ -1312,6 +1340,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         are_all_data_set = len(filtered_import_dict.keys()) == len(
             input_dict_from_usecase.keys())
+
+        # Remark 1: This condition will be a problem if the users is putting a bad key of variable in its anonymized dict
+        # It may be ok if the anonymized dict comes from a uses case ? --> so
+        # having wrong keys may be not needed to be treated
+
+        # Remark 2: however with this filtering we should verify that we will always have all the variable pushed at the end
+        # (we should not miss data that were provided in the anonymized dict)
 
         if are_all_data_set:
             # 3. Update parameters

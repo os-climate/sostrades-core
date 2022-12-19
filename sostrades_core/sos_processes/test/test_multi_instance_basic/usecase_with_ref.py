@@ -56,11 +56,15 @@ class Study(StudyManager):
         # Non-trade variables (to propagate)
         disc_dict[f'{self.study_name}.multi_scenarios.ReferenceScenario.a'] = self.a
         disc_dict[f'{self.study_name}.multi_scenarios.ReferenceScenario.x'] = self.x
-        disc_dict[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.constant'] = self.constant
-        disc_dict[self.study_name + '.multi_scenarios.ReferenceScenario.Disc3.power'] = self.power
+        disc_dict[self.study_name +
+                  '.multi_scenarios.ReferenceScenario.Disc3.constant'] = self.constant
+        disc_dict[self.study_name +
+                  '.multi_scenarios.ReferenceScenario.Disc3.power'] = self.power
         # Trade variables reference (not to propagate)
-        disc_dict[self.study_name + '.multi_scenarios.ReferenceScenario.Disc1.b'] = self.b
-        disc_dict[self.study_name + '.multi_scenarios.ReferenceScenario.z'] = self.z
+        disc_dict[self.study_name +
+                  '.multi_scenarios.ReferenceScenario.Disc1.b'] = self.b
+        disc_dict[self.study_name +
+                  '.multi_scenarios.ReferenceScenario.z'] = self.z
 
         # # configure the scenarios
         # scenario_list = ['scenario_1', 'scenario_2']
@@ -74,7 +78,7 @@ class Study(StudyManager):
         # disc_dict[f'{self.study_name}.multi_scenarios.scenario_1.Disc3.z'] = self.z1
         # disc_dict[f'{self.study_name}.multi_scenarios.scenario_2.Disc3.z'] = self.z2
         # configure b from a dataframe
-        #usecase_without_ref.multi_scenarios.scenario_1.Disc3.z
+        # usecase_without_ref.multi_scenarios.scenario_1.Disc3.z
         scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_W',
@@ -89,4 +93,5 @@ class Study(StudyManager):
 if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
+    uc_cls.execution_engine.display_treeview_nodes(True)
     uc_cls.run()
