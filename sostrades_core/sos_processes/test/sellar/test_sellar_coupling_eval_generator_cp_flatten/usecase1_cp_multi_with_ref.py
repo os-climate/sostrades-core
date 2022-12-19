@@ -26,7 +26,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase for lhs DoE and Eval on x variable of Sellar Problem
+        Usecase for Eval and generator cp with reference of Sellar Problem in flatten mode
         """
 
         ns = f'{self.study_name}'

@@ -26,38 +26,24 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase for lhs DoE and Eval on x variable of Sellar Problem
+        Usecase for Eval simple on  Sellar Problem
         """
 
         ns = f'{self.study_name}'
 
-        dict_of_list_values = {
-            'x': [array([3.]), array([4.])],
-            'z': [array([-10., 0.])],
-            'Sellar_Problem.local_dv': [10.],
-            'y_1': [array([1.])],
-            'y_2': [array([1.])]
-        }
-        list_of_values = [dict_of_list_values['Sellar_Problem.local_dv'], dict_of_list_values['x'],
-                          dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
-
-        input_selection_cp_x_z = {'selected_input': [True, True, True, True, True],
-                                  'full_name': ['Sellar_Problem.local_dv', 'x', 'y_1',
-                                                'y_2',
-                                                'z'],
-                                  'list_of_values': list_of_values
-                                  }
-        input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
-
         anonymize_input_dict_from_usecase = {}
 
         disc_dict = {}
-        # CP + Eval inputs
+        # build the scenarios
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2']})
+        disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
-        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
-        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         disc_dict[f'{ns}.Eval.instance_reference'] = True
+        disc_dict[f'{self.study_name}.Eval.reference_mode'] = 'copy_mode'
+        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar referene inputs
         local_dv = 10.

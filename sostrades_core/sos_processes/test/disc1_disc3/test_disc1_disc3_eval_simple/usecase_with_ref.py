@@ -26,7 +26,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase from test_01_multi_instance_configuration_from_df_without_reference_scenario
+        Usecase for disc1 disc2 eval simple with reference
         """
 
         # reference var values
@@ -50,7 +50,7 @@ class Study(StudyManager):
         disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
         disc_dict[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{self.study_name}.Eval.instance_reference'] = True
-        disc_dict[f'{self.study_name}.Eval.reference_mode'] = 'linked_mode'
+        disc_dict[f'{self.study_name}.Eval.reference_mode'] = 'copy_mode'
 
         # configure the Reference scenario
         # Non-trade variables (to propagate)

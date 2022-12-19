@@ -27,6 +27,9 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
+        """
+        Usecase for disc1 disc2 coupling
+        """
         ######### Numerical values   ####
         x = 3.
         a = 3.

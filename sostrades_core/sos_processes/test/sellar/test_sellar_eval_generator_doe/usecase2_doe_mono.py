@@ -25,8 +25,13 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
+        """
+        Usecase for lhs DoE and Eval on x variable of Sellar Problem
+        """
+
+        coupling_name = 'subprocess'
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['Eval.SellarCoupling.x', 'Eval.SellarCoupling.z'],
+        dspace_dict = {'variable': [f'Eval.{coupling_name}.x', f'Eval.{coupling_name}.z'],
 
                        'lower_bnd': [0., [-10., 0.]],
                        'upper_bnd': [10., [10., 10.]],
@@ -35,14 +40,14 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
-                               'full_name': ['Eval.SellarCoupling.Sellar_Problem.local_dv', 'Eval.SellarCoupling.x', 'Eval.SellarCoupling.y_1',
-                                             'Eval.SellarCoupling.y_2',
-                                             'Eval.SellarCoupling.z']}
+                               'full_name': [f'Eval.{coupling_name}.Sellar_Problem.local_dv', f'Eval.{coupling_name}.x', f'Eval.{coupling_name}.y_1',
+                                             f'Eval.{coupling_name}.y_2',
+                                             f'Eval.{coupling_name}.z']}
         input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': ['Eval.SellarCoupling.c_1', 'Eval.SellarCoupling.c_2', 'Eval.SellarCoupling.obj',
-                                                    'Eval.SellarCoupling.y_1', 'Eval.SellarCoupling.y_2']}
+                                      'full_name': [f'Eval.{coupling_name}.c_1', f'Eval.{coupling_name}.c_2', f'Eval.{coupling_name}.obj',
+                                                    f'Eval.{coupling_name}.y_1', f'Eval.{coupling_name}.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         disc_dict = {}
@@ -59,11 +64,11 @@ class Study(StudyManager):
 
         # Sellar inputs
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.SellarCoupling.x'] = array([1.])
-        disc_dict[f'{ns}.Eval.SellarCoupling.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.SellarCoupling.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.SellarCoupling.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]
 

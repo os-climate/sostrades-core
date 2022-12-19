@@ -26,7 +26,7 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase from test_01_multi_instance_configuration_from_df_without_reference_scenario
+        Usecase for disc1 disc2 eval simple without reference
         """
 
         # reference var values

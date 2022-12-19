@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Sample Generator doe',
+        'label': 'Core Test Sellar Coupling Eval Generator doe',
         'description': '',
         'category': '',
         'version': '',
@@ -33,45 +33,34 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-        # simple 2-disc process NOT USING nested scatters
+        # Select the netsted subprocess
+        repo = 'sostrades_core.sos_processes.test.sellar'
+        sub_proc = 'test_sellar_coupling'
+        coupling_builder = self.ee.factory.get_builder_from_process(
+            repo=repo, mod_id=sub_proc)
 
-        # shared namespace
+        coupling_name = 'SellarCoupling'
 
-        # add disciplines Sellar
-        if 1 == 1:
-            repo = 'sostrades_core.sos_processes.test'
-            sub_proc = 'test_sellar_list'
-            builder_list_sellar = self.ee.factory.get_builder_from_process(
-                repo=repo, mod_id=sub_proc)
+        # driver builder
+        flatten_subprocess = False
+        if flatten_subprocess:
+            eval_driver = self.ee.factory.create_driver(
+                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
         else:
-            disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-            mods_dict = {
-                'Sellar_Problem': disc_dir + 'SellarProblem',
-                'Sellar_2': disc_dir + 'Sellar2',
-                'Sellar_1': disc_dir + 'Sellar1',
-            }
-            builder_list_sellar = self.create_builder_list(mods_dict)
+            eval_driver = self.ee.factory.create_driver(
+                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
 
-        # if Mono_instance
+        # shift nested subprocess namespaces
         self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.Eval')  # In mono instance we have to shift namespace
-        # if Multi_instance
-        # self.ee.ns_manager.add_ns(
-        #    'ns_OptimSellar', f'{self.ee.study_name}')
+            'ns_OptimSellar', f'{self.ee.study_name}.Eval.{coupling_name}')
 
-        # self.ee.ns_manager.add_ns(
-        #    'ns_scatter_scenario', f'{self.ee.study_name}')
+        # driver namespaces
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
-
-        # multi scenario driver builder
-        multi_scenarios = self.ee.factory.create_driver(
-            'Eval', builder_list_sellar
-        )
 
         # sample generator builder
         mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         cp_builder = self.ee.factory.get_builder_from_module(
             'SampleGenerator', mod_cp)
 
-        return multi_scenarios + [cp_builder]
+        return eval_driver + [cp_builder]

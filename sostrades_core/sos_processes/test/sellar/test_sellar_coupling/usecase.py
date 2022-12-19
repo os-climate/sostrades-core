@@ -23,17 +23,21 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
+        """
+        Usecase for a coupling of Sellar Problem
+        """
         ns = f'{self.study_name}'
+        coupling_name = "SellarCoupling"
 
         disc_dict = {}
         # Sellar inputs
-        disc_dict[f'{ns}.x'] = array([1.])
-        disc_dict[f'{ns}.y_1'] = array([1.])
-        disc_dict[f'{ns}.y_2'] = array([1.])
-        disc_dict[f'{ns}.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Sellar_Problem.local_dv'] = 10.
-        disc_dict[f'{ns}.max_mda_iter'] = 100
-        disc_dict[f'{ns}.tolerance'] = 1e-12
+        disc_dict[f'{ns}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{ns}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{ns}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{ns}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{ns}.{coupling_name}.max_mda_iter'] = 100
+        disc_dict[f'{ns}.{coupling_name}.tolerance'] = 1e-12
 
         return [disc_dict]
 
@@ -43,3 +47,4 @@ if '__main__' == __name__:
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.run()
+#     uc_cls.execution_engine.root_process.coupling_structure.graph.write_full_graph("here.pdf")

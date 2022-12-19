@@ -1379,13 +1379,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
-        proc_name = 'test_sellar_coupling_generator_eval_cp_flatten'
+        proc_name = 'test_sellar_coupling_eval_generator_cp_flatten'
 
-        usecase_name = 'usecase1_cp_multi'
+        usecase_name = 'usecase1_cp_multi_with_ref'
 
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([self.repo + '.sellar', proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -1394,7 +1394,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that the DriverEvaluator has no i/o of the subprocess:
         driver_disc = study_dump.ee.dm.get_disciplines_with_name(
-            'usecase1_cp_multi.Eval')[0]
+            f'{usecase_name}.Eval')[0]
         for var_name in driver_disc.get_input_data_names():
             self.assertFalse('ReferenceScenario' in var_name)
             self.assertFalse('scenario_1' in var_name)
@@ -1403,7 +1403,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that the namespace treeview is proper
         exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi\n' \
-                    '|_ usecase1_cp_multi\n' \
+                    '|_ usecase1_cp_multi_with_ref\n' \
                     '\t|_ Eval\n' \
                     '\t\t|_ ReferenceScenario\n' \
                     '\t\t\t|_ SellarCoupling\n' \
@@ -1426,21 +1426,21 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that the proxy tree has put the subprocess at the same level as
         # the evaluator and all proxies have run
-        exp_proxy_tv_with_status = '|_ usecase1_cp_multi  (ProxyCoupling) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi.Eval  (ProxyDriverEvaluator) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi.SampleGenerator  (ProxyDiscipline) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling  (ProxyCoupling) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.ReferenceScenario.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling  (ProxyCoupling) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.scenario_1.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling  (ProxyCoupling) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
-                                   '        |_ usecase1_cp_multi.Eval.scenario_2.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]'
+        exp_proxy_tv_with_status = '|_ usecase1_cp_multi_with_ref  (ProxyCoupling) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval  (ProxyDriverEvaluator) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.SampleGenerator  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling  (ProxyCoupling) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval.scenario_1.SellarCoupling  (ProxyCoupling) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.scenario_1.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.scenario_1.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.scenario_1.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval.scenario_2.SellarCoupling  (ProxyCoupling) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.scenario_2.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.scenario_2.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
+                                   '        |_ usecase1_cp_multi_with_ref.Eval.scenario_2.SellarCoupling.Sellar_1  (ProxyDiscipline) [DONE]'
 
         self.assertEqual(study_dump.ee.root_process.display_proxy_subtree(
             lambda x: x.status), exp_proxy_tv_with_status)
