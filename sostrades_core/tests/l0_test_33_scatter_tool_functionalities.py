@@ -284,6 +284,42 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_list_value = self.exec_eng.dm.get_value(scenario_list_full_name)
 
         self.assertEqual(scenario_list_value, self.scenario_list)
+
+    def test_05_scatter_name_output_capability(self):
+        '''
+        Check that the scatter_list is correctly created in output of the driver
+        '''
+        scatter_name = 'scenario_name'
+        self.exec_eng.scattermap_manager.add_build_map('new_map', {'scatter_name': scatter_name})
+
+        multi_scenarios = self.exec_eng.factory.create_driver(
+            'multi_scenarios', self.builder_list, map_name='new_map')
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            multi_scenarios)
+        self.exec_eng.configure()
+
+        dict_values = {}
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
+                                    'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        scenario_name_list = self.exec_eng.dm.get_all_namespaces_from_var_name(scatter_name)
+
+        self.assertEqual(scenario_name_list,
+                         [f'{self.study_name}.multi_scenarios.{scenario}.{scatter_name}' for scenario in
+                          self.scenario_list])
+
+        for scenario in self.scenario_list:
+            scenario_name_value = self.exec_eng.dm.get_value(
+                f'{self.study_name}.multi_scenarios.{scenario}.{scatter_name}')
+
+            self.assertEqual(scenario_name_value, scenario)
+
+
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
