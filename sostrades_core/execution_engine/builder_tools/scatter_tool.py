@@ -54,7 +54,6 @@ class ScatterTool(SosTool):
         self.__scattered_disciplines = {}
         self.sub_coupling_builder_dict = {}
         self.__scatter_list = None
-        self.local_namespace = None
         self.input_name = None
         self.ns_to_update = None
         self.sc_map = None
@@ -86,31 +85,56 @@ class ScatterTool(SosTool):
                     {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
                     ignore_index=True)
 
-            self.set_scatter_list(scenario_df[scenario_df[self.driver.SELECTED_SCENARIO]
-                                              == True][self.driver.SCENARIO_NAME].values.tolist())
+            self.set_scatter_list(
+                scenario_df[scenario_df[self.driver.SELECTED_SCENARIO] == True][
+                    self.driver.SCENARIO_NAME].values.tolist())
 
-        self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
-            self.driver)
+        self.get_values_for_namespaces_to_update()
 
-        ns_to_update_name_list = self.get_ns_to_update_name_list()
-
-        # store ns_to_update namespace object
-        self.ns_to_update = {}
-        for ns_name in ns_to_update_name_list:
-            if not self.flatten_subprocess :
-                self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
-                                                                                 ns_name)
-            else:
-                # if flatten subprocess then the father evaluator for a nested scatter is always the root coupling
-                # and we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
-                self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
         if self.hide_coupling_in_driver:
             self.driver_display_value = self.driver.get_disc_display_name()
 
         if self.flatten_subprocess:
             self.coupling_per_scenario = False
 
+    def get_values_for_namespaces_to_update(self):
+        '''
+        Get the values of the namespace list defined in the namespace manager
+        '''
+        ns_to_update_name_list = self.get_ns_to_update_name_list()
+
+        # store ns_to_update namespace object
+        self.ns_to_update = {}
+        for ns_name in ns_to_update_name_list:
+            if not self.flatten_subprocess:
+                self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
+                                                                                     ns_name)
+            else:
+                # if flatten subprocess then the father evaluator for a nested scatter is always the root coupling
+                # and we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
+                self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
+
+    def get_dynamic_output_from_tool(self):
+        '''
+        Add the scatter list output name into dynamic desc_out in the behalf of the driver
+        this scatter_list is depending on scenario_df configuration
+        '''
+        dynamic_outputs = {}
+        if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
+            scatter_list_name, scatter_list_ns = self.sc_map.get_scatter_list_name_and_namespace()
+            dynamic_outputs = {scatter_list_name: {'type': 'list',
+                                                   'visibility': 'Shared',
+                                                   'namespace': scatter_list_ns,
+                                                   'value': self.__scatter_list}}
+
+        return dynamic_outputs
+
     def get_ns_to_update_name_list(self):
+        '''
+        Returns the list of namespace to update depending if there is a scatter map or not
+        If there is a scatter map build the list with ns_to_update or ns_not_to_update
+        If not build the list with namespaces in sub builders
+        '''
         if self.sc_map is None:
             ns_to_update_name_list = self.driver.sub_builder_namespaces
         else:
@@ -126,7 +150,11 @@ class ScatterTool(SosTool):
 
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
-
+        if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
+            scatter_list_name, scatter_list_namespace = self.sc_map.get_scatter_list_name_and_namespace()
+            if scatter_list_name in self.driver.get_data_out():
+                self.ee.dm.set_data(self.driver.get_var_full_name(
+                    scatter_list_name, self.driver.get_data_out()), 'value', self.__scatter_list)
     def build(self):
         ''' 
         Configuration of the SoSscatter : 
