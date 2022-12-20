@@ -52,17 +52,8 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
-
-        scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
-                        'input_ns': 'ns_scatter_scenario',
-                        'scatter_ns': 'ns_scenario'}
-
-        self.exec_eng.scattermap_manager.add_build_map(
-            'scenario_list', scenario_map)
-
         multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios',  [builder], map_name='scenario_list')
+            'multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)

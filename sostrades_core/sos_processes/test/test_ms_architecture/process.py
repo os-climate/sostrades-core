@@ -44,17 +44,10 @@ class ProcessBuilder(BaseProcessBuilder):
         builder = self.ee.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        scenario_map = {'input_name': 'scenario_list',
-                        'input_type': 'string_list',
-                        'input_ns': 'ns_scatter_scenario',
-                        'scatter_ns': 'ns_scenario'}
-
-        self.ee.scattermap_manager.add_build_map(
-            'scenario_list', scenario_map)
         self.ee.ns_manager.add_ns_def(
             {'ns_scatter_scenario': f'{self.ee.study_name}.multi_scenarios'})
 
         multi_scenarios = self.ee.factory.create_driver(
-            'multi_scenarios',  [builder], map_name='scenario_list')
+            'multi_scenarios', [builder])
 
         return multi_scenarios
