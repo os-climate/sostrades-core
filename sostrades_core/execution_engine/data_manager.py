@@ -288,7 +288,7 @@ class DataManager:
         '''
         namespace_list = []
         for key in self.data_id_map.keys():
-            if key.endswith(var_name):
+            if key.endswith(f'.{var_name}'):
                 # if key == var_name:
                 namespace_list.append(key)
 

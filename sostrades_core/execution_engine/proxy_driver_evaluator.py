@@ -1035,7 +1035,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             old_ns = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
                 old_ns.get_value(), extra_name, after_name=after_name)
-            display_value= old_ns.get_display_value_if_exists()
+            display_value = old_ns.get_display_value_if_exists()
             ns_id = self.ee.ns_manager.add_ns(
                 ns_name, updated_value,display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)

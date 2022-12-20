@@ -35,6 +35,7 @@ class ScatterMap:
     GATHER_NS_IN = 'gather_ns_in'
     GATHER_NS_OUT = 'gather_ns_out'
     NS_TO_UPDATE = 'ns_to_update'
+    NS_NOT_TO_UPDATE = 'ns_not_to_update'
     ASSOCIATED_INPUTS = 'associated_inputs'
     DEFAULT = 'default'
 
@@ -57,15 +58,26 @@ class ScatterMap:
             scatter_column_name is only necessary when the input_type is a dataframe
         '''
         self.name = name
+        self.check_map(s_map)
         self.__map = s_map
         self.ee = ee
         self.dependency_disc_list = []  # list of dependency disciplines
         self.builder = None  # builder associated to the scatter_map
 
+    def check_map(self, map_dict):
+        '''
+        Check if the map is valid
+        '''
+
+        if self.NS_TO_UPDATE in map_dict and self.NS_NOT_TO_UPDATE in map_dict:
+            raise Exception(
+                f'The scatter map {self.name} can not have both {self.NS_TO_UPDATE} and {self.NS_NOT_TO_UPDATE} keys')
+
     def update_map(self, s_map):
         '''
         Mechanism to update value
         '''
+        self.check_map(s_map)
         self.__map = s_map
 
     def get_map(self):
@@ -178,6 +190,28 @@ class ScatterMap:
             return self.__map[self.NS_TO_UPDATE]
         else:
             return []
+
+    def get_ns_not_to_update(self):
+        '''
+        Get dependent namespaces if ns_to_update in map
+        '''
+        if self.NS_NOT_TO_UPDATE in self.__map:
+            return self.__map[self.NS_NOT_TO_UPDATE]
+        else:
+            return []
+
+    def is_ns_to_update_or_not(self):
+        '''
+        Returns True if ns_to_update is in scatter_map
+        Returns False if ns_to_update is in scatter_map
+        Returns None if none of them are in scatter_map
+        '''
+        if self.NS_TO_UPDATE in self.__map:
+            return True
+        elif self.NS_NOT_TO_UPDATE in self.__map:
+            return False
+        else:
+            return None
 
     def get_dependency_disc_list(self):
         '''

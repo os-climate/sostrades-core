@@ -92,26 +92,37 @@ class ScatterTool(SosTool):
         self.local_namespace = self.ee.ns_manager.get_local_namespace_value(
             self.driver)
 
-        if self.sc_map is None:
-            ns_to_update_name_list = self.driver.sub_builder_namespaces
+        ns_to_update_name_list = self.get_ns_to_update_name_list()
 
-        else:
-            ns_to_update_name_list = self.sc_map.get_ns_to_update()
         # store ns_to_update namespace object
         self.ns_to_update = {}
         for ns_name in ns_to_update_name_list:
             if not self.flatten_subprocess :
                 self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
                                                                                  ns_name)
-            else :
-                #if flatten subprocess then the father evaluator for a nested scatter is always the root coupling
+            else:
+                # if flatten subprocess then the father evaluator for a nested scatter is always the root coupling
                 # and we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
-                self.ns_to_update[ns_name]= self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
+                self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
         if self.hide_coupling_in_driver:
             self.driver_display_value = self.driver.get_disc_display_name()
 
         if self.flatten_subprocess:
             self.coupling_per_scenario = False
+
+    def get_ns_to_update_name_list(self):
+        if self.sc_map is None:
+            ns_to_update_name_list = self.driver.sub_builder_namespaces
+        else:
+            if self.sc_map.is_ns_to_update_or_not() is None:
+                ns_to_update_name_list = self.driver.sub_builder_namespaces
+            elif self.sc_map.is_ns_to_update_or_not():
+                ns_to_update_name_list = self.sc_map.get_ns_to_update()
+            else:
+                ns_not_to_update_name_list = self.sc_map.get_ns_not_to_update()
+                ns_to_update_name_list = [ns_name for ns_name in self.driver.sub_builder_namespaces if
+                                          ns_name not in ns_not_to_update_name_list]
+        return ns_to_update_name_list
 
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
