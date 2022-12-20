@@ -27,6 +27,7 @@ class ScatterMap:
     NS_NOT_TO_UPDATE = 'ns_not_to_update'
     SCATTER_LIST_TUPLE = 'scatter_list'
     SCATTER_NAME = 'scatter_name'
+    POSSIBLE_KEYS = [NS_TO_UPDATE, NS_NOT_TO_UPDATE, SCATTER_LIST_TUPLE, SCATTER_NAME]
     def __init__(self, ee, name, s_map):
         '''
         Class to describe a scatter map and manage several instances of the same scatter map
@@ -57,6 +58,10 @@ class ScatterMap:
         Check if the map is valid
         '''
 
+        for key in map_dict.keys():
+            if key not in self.POSSIBLE_KEYS:
+                raise Exception(
+                    f'The scatter map {self.name} contains a key not in possible capabilities : {self.POSSIBLE_KEYS}')
         if self.NS_TO_UPDATE in map_dict and self.NS_NOT_TO_UPDATE in map_dict:
             raise Exception(
                 f'The scatter map {self.name} can not have both {self.NS_TO_UPDATE} and {self.NS_NOT_TO_UPDATE} keys')
