@@ -355,6 +355,7 @@ class ProxyDiscipline(object):
         """
         self.mdo_discipline_wrapp = MDODisciplineWrapp(
             name, wrapper, wrapping_mode)
+        self.assign_proxy_to_wrapper()
 
     @property
     def status(self):  # type: (...) -> str
@@ -439,6 +440,10 @@ class ProxyDiscipline(object):
             # set the status to pending on GEMSEO side (so that it does not
             # stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
+
+        # clear the proxy from the wrapper before execution
+        self.clear_proxy_from_wrapper()
+        # status and flags
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
         self._reset_debug_mode = False
@@ -940,11 +945,26 @@ class ProxyDiscipline(object):
             self.get_data_io_dict(
                 io_type)[var_name][self.VALUE] = new_default_value
 
+    def assign_proxy_to_wrapper(self):
+        """
+        Assign the proxy (self) to the SoSWrapp for configuration actions.
+        """
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+            self.mdo_discipline_wrapp.wrapper.assign_proxy(self)
+
+    def clear_proxy_from_wrapper(self):
+        """
+        Clears the proxy (self) from the SoSWrapp object for serialization and execution.
+        """
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+            self.mdo_discipline_wrapp.wrapper.clear_proxy()
+
     # -- Configure handling
     def configure(self):
         '''
         Configure the ProxyDiscipline
         '''
+        self.assign_proxy_to_wrapper()
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
         # it

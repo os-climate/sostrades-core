@@ -92,7 +92,23 @@ class SoSWrapp(object):
         self.jac_boundaries = {}
         self.inst_desc_in = {}
         self.inst_desc_out = {}
+        self.proxy = None
 
+    def clear_proxy(self):
+        """
+        Clears the ProxyDiscipline instance attribute from the SoSWrapp instance for serialization purposes (so that the
+        proxy is not in attribute of the GEMSEO objects during execution).
+        """
+        del self.proxy
+        self.proxy = None
+
+    def assign_proxy(self, proxy):
+        """
+        Assigns a ProxyDiscipline instance to the self.proxy attribute (so that the proxy is available to the wrapper
+        during the configuration sequence).
+        """
+        if self.proxy is None:
+            self.proxy = proxy
 
     def setup_sos_disciplines(self, proxy):  # type: (...) -> None
         """
