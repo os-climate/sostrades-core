@@ -43,15 +43,17 @@ class ProcessBuilder(BaseProcessBuilder):
             'Eval', coupling_builder
         )
 
-        # shift nested subprocess namespaces
-        self.ee.ns_manager.add_ns(
-            'ns_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
-        self.ee.ns_manager.add_ns(
-            'ns_out_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
-        self.ee.ns_manager.add_ns(
-            'ns_ac', f'{self.ee.study_name}.Eval.{coupling_name}')
-        self.ee.ns_manager.add_ns(
-            'ns_data_ac', f'{self.ee.study_name}.Eval.{coupling_name}')
+        #======================================================================
+        # # shift nested subprocess namespaces
+        # self.ee.ns_manager.add_ns(
+        #     'ns_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
+        # self.ee.ns_manager.add_ns(
+        #     'ns_out_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
+        # self.ee.ns_manager.add_ns(
+        #     'ns_ac', f'{self.ee.study_name}.Eval.{coupling_name}')
+        # self.ee.ns_manager.add_ns(
+        #     'ns_data_ac', f'{self.ee.study_name}.Eval.{coupling_name}')
+        #======================================================================
 
         # driver namespaces
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
