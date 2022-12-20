@@ -59,12 +59,12 @@ class DesignVarDiscipline(SoSWrapp):
         'design_space_last_ite': {'type': 'dataframe', 'user_level': 3}
     }
 
-    def setup_sos_disciplines(self, proxy):
+    def setup_sos_disciplines(self):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        inputs_dict = proxy.get_sosdisc_inputs()
+        inputs_dict = self.proxy.get_sosdisc_inputs()
 
         # loops over the output descriptor to add dynamic inputs and outputs from the loaded usecase.
         # The structure of the output descriptor dict is checked prior its use
@@ -80,16 +80,16 @@ class DesignVarDiscipline(SoSWrapp):
                             'type': design_var_descriptor[key]['out_type'],
                             'visibility': SoSWrapp.SHARED_VISIBILITY,
                             'namespace': design_var_descriptor[key]['namespace_out']}
-            proxy.add_inputs(dynamic_inputs)
-            proxy.add_outputs(dynamic_outputs)
+            self.proxy.add_inputs(dynamic_inputs)
+            self.proxy.add_outputs(dynamic_outputs)
         self.inst_desc_in = dynamic_inputs
         self.inst_desc_out = dynamic_outputs
 
         self.iter = 0
 
-    def init_execution(self, proxy):
-        super().init_execution(proxy)
-        inputs_dict = proxy.get_sosdisc_inputs()
+    def init_execution(self):
+        super().init_execution()
+        inputs_dict = self.proxy.get_sosdisc_inputs()
         self.design = DesignVar(inputs_dict)
         self.dict_last_ite = None
 
@@ -216,7 +216,7 @@ class DesignVarDiscipline(SoSWrapp):
 
         return test
 
-    def get_chart_filter_list(self, proxy):
+    def get_chart_filter_list(self):
 
         chart_filters = []
         chart_list = ['BSpline']
@@ -229,7 +229,7 @@ class DesignVarDiscipline(SoSWrapp):
 
         return chart_filters
 
-    def get_post_processing_list(self, proxy, filters=None):
+    def get_post_processing_list(self, filters=None):
 
         # For the outputs, making a graph for block fuel vs range and blocktime vs
         # range
@@ -249,10 +249,10 @@ class DesignVarDiscipline(SoSWrapp):
             init_xvect = False
 
         if 'BSpline' in charts:
-            list_dv = proxy.get_sosdisc_inputs('design_var_descriptor')
+            list_dv = self.proxy.get_sosdisc_inputs('design_var_descriptor')
             for parameter in list_dv.keys():
                 new_chart = self.get_chart_BSpline(
-                    proxy, parameter, init_xvect)
+                    self.proxy, parameter, init_xvect)
                 if new_chart is not None:
                     instanciated_charts.append(new_chart)
 

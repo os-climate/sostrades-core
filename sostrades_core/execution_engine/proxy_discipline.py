@@ -1069,8 +1069,7 @@ class ProxyDiscipline(object):
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
         DESC_IN = {'X': {'structuring':True}}
         """
-
-        self.mdo_discipline_wrapp.setup_sos_disciplines(self)
+        self.mdo_discipline_wrapp.setup_sos_disciplines()
 
     def set_dynamic_default_values(self, default_values_dict):
         """
@@ -2044,7 +2043,8 @@ class ProxyDiscipline(object):
         Returns: List[ChartFilter]
         """
         if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list(self)
+            self.assign_proxy_to_wrapper()  # to allow for direct calls after run, without reconfiguration
+            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list()
         else:
             return []
 
@@ -2059,8 +2059,8 @@ class ProxyDiscipline(object):
             post processing instance list
         """
         if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            return self.mdo_discipline_wrapp.wrapper.get_post_processing_list(self, filters)
-
+            self.assign_proxy_to_wrapper()  # to allow for direct calls after run, without reconfiguration
+            return self.mdo_discipline_wrapp.wrapper.get_post_processing_list(filters)
         else:
             return []
 

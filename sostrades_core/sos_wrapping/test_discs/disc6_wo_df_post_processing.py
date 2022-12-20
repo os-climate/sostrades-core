@@ -59,7 +59,7 @@ class Disc6(SoSWrapp):
         value = diags(grad) / 2
         self.set_partial_derivative('h', 'x', value)
 
-    def get_chart_filter_list(self, proxy):
+    def get_chart_filter_list(self):
 
         chart_filters = []
 
@@ -70,7 +70,7 @@ class Disc6(SoSWrapp):
 
         return chart_filters
 
-    def get_post_processing_list(self, proxy, filters=None):
+    def get_post_processing_list(self, filters=None):
 
         instanciated_charts = []
 
@@ -84,8 +84,8 @@ class Disc6(SoSWrapp):
 
             chart_name = 'h vs x'
 
-            h = list(proxy.get_sosdisc_outputs('h'))
-            x = list(proxy.get_sosdisc_inputs('x') * np.array([0., 1.]))
+            h = list(self.proxy.get_sosdisc_outputs('h'))
+            x = list(self.proxy.get_sosdisc_inputs('x') * np.array([0., 1.]))
 
             new_chart = TwoAxesInstanciatedChart('x (-)', 'h (-)',
                                                  chart_name=chart_name)

@@ -176,15 +176,15 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.eval_inputs_cp_validity = True
         self.samples_gene_df = None
 
-    def setup_sos_disciplines(self, proxy):
+    def setup_sos_disciplines(self):
         '''
         Overload of setup_sos_disciplines to specify the specific dynamic inputs of sample generator
         '''
 
-        disc_in = proxy.get_data_in()
+        disc_in = self.proxy.get_data_in()
 
         if len(disc_in) != 0:
-            self.sampling_method = proxy.get_sosdisc_inputs(
+            self.sampling_method = self.proxy.get_sosdisc_inputs(
                 self.SAMPLING_METHOD)
             self.instantiate_sampling_tool()
 
@@ -208,7 +208,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # It was tested that it also works
 
                 dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method(
-                    proxy)
+                    self.proxy)
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
                 # (cleaning)
@@ -223,7 +223,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # self.sampling_generation_mode = self.AT_RUN_TIME # It was
                 # tested that it also works
 
-                dynamic_inputs, dynamic_outputs = self.setup_cp_method(proxy)
+                dynamic_inputs, dynamic_outputs = self.setup_cp_method(self.proxy)
             elif self.sampling_method is not None:
                 raise Exception(
                     f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
@@ -235,8 +235,8 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs = {}
             dynamic_outputs = {}
 
-        proxy.add_inputs(dynamic_inputs)
-        proxy.add_outputs(dynamic_outputs)
+        self.proxy.add_inputs(dynamic_inputs)
+        self.proxy.add_outputs(dynamic_outputs)
 
     def run(self):
         '''
