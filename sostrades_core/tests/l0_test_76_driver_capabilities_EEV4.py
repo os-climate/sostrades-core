@@ -1197,7 +1197,94 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
                          exp_proxy_tree)
 
-    def test_11_nested_very_simple_multi_scenarios_with_reference(self):
+    def _test_11_usecase_import_multi_instances(self):
+        """
+        This test checks the usecase import capability in multi instance mode.
+        """
+        from os.path import join, dirname
+        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+        ref_dir = join(dirname(__file__), 'data')
+        dump_dir = join(ref_dir, 'dump_load_cache')
+
+        with_coupling = True
+
+        # The generator eval process
+        if with_coupling:
+            proc_name = 'test_sellar_coupling_generator_eval_cp'
+        else:
+            proc_name = 'test_sellar_generator_eval_cp'
+
+        usecase_name = 'usecase1_cp_multi'
+
+        # Associated nested subprocess
+        if with_coupling:
+            sub_process_name = 'test_sellar_coupling'
+        else:
+            sub_process_name = 'test_sellar_list'
+
+        sub_process_usecase_name = 'usecase'
+
+        # Creation of the study from the associated usecase
+        self.study_name = usecase_name
+        imported_module = import_module(
+            '.'.join([self.repo, proc_name, usecase_name]))
+
+        study_dump = imported_module.Study(run_usecase=True)
+
+        study_dump.load_data()
+
+        study_dump.run()
+
+        # Check the created study
+
+        self.ns = f'{self.study_name}'
+
+        self.exec_eng = study_dump.ee
+
+        self.exec_eng.display_treeview_nodes(True)
+        if with_coupling:
+            ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
+        else:
+            ref_disc_sellar_1 = self.exec_eng.dm.get_disciplines_with_name(
+                f'{self.study_name}.Eval.ReferenceScenario.Sellar_1')[0]
+
+        # In the study creation it is provided x = array([2.])
+        target_x = array([2.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+        # Load the anonymized dict from associated selected sub_process
+
+        anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
+            self.repo, sub_process_name, sub_process_usecase_name)
+
+        # Update the reference from the selected imported usecase anonymised
+        # dict
+
+        dict_values = {}
+        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        study_dump.load_data(from_input_dict=dict_values)
+
+        # Check that the reference has been updated
+
+        # In the anonymised dict of the selected usecase it is provided x =
+        # array([2.])
+        target_x = array([1.])
+        target_values_dict = {}
+        target_values_dict['x'] = target_x
+        print_flag = False
+        self.check_discipline_values(
+            ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
+
+    def test_12_nested_very_simple_multi_scenarios_with_reference(self):
+        '''
+        Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
+        are non-trade variables.
+        '''
 
         from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref import Study
         study_name = 'root'
@@ -1370,7 +1457,111 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
                                  self.a[j] * self.x[j] + self.b[i][j])
 
-    def test_12_sellar_coupling_multi_instances_flatten(self):
+        # Now, editability propagation will be checked for differente reference modes combinatios of outer and inner ms
+        # 1- Outer in linked and inner in linked (everything non-editable/read-only)
+        values_dict_test = {}
+        values_dict_test[f'{study_name}.outer_ms.instance_reference'] = True
+        values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'linked_mode'
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.instance_reference'] = True
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'linked_mode'
+        exec_eng.load_study_from_input_dict(values_dict_test)
+        for sc in scenario_list_outer:
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.constant', 'editable'),
+                             False)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.power', 'editable'),
+                             False)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.z', 'editable'),
+                             False)
+            for name in scenario_list_inner:
+                self.assertEqual(
+                    exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b', 'editable'),
+                    False)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a', 'editable'),
+                    False)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x', 'editable'),
+                    False)
+
+        # 2- Outer in linked and inner in copy (outer should have priority; everything non-editable/read-only)
+        values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'linked_mode'
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'copy_mode'
+        exec_eng.load_study_from_input_dict(values_dict_test)
+        self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'), 'linked_mode')
+        for sc in scenario_list_outer:
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.constant', 'editable'),
+                             False)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.power', 'editable'),
+                             False)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.z', 'editable'),
+                             False)
+            for name in scenario_list_inner:
+                self.assertEqual(
+                    exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b', 'editable'),
+                    False)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a', 'editable'),
+                    False)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x', 'editable'),
+                    False)
+
+        # 3- Outer in copy and inner in copy (everything editable)
+        values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'copy_mode'
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'copy_mode'
+        exec_eng.load_study_from_input_dict(values_dict_test)
+        for sc in scenario_list_outer:
+            self.assertEqual(
+                exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.constant', 'editable'),
+                True)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.power', 'editable'),
+                             True)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.z', 'editable'),
+                             True)
+            for name in scenario_list_inner:
+                self.assertEqual(
+                    exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b',
+                                         'editable'),
+                    True)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a', 'editable'),
+                    True)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x', 'editable'),
+                    True)
+
+        # 4- Outer in copy and inner in linked (outer editable, inner read-only)
+        values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'copy_mode'
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'linked_mode'
+        exec_eng.load_study_from_input_dict(values_dict_test)
+        for sc in scenario_list_outer:
+            self.assertEqual(
+                exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.constant', 'editable'),
+                True)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.Disc3.power', 'editable'),
+                             True)
+            self.assertEqual(exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.z', 'editable'),
+                             True)
+            for name in scenario_list_inner:
+                self.assertEqual(
+                    exec_eng.dm.get_data(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.Disc1.b',
+                                         'editable'),
+                    False)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.a', 'editable'),
+                    False)
+                self.assertEqual(
+                    exec_eng.dm.get_data(
+                        study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x', 'editable'),
+                    False)
+    def test_13_sellar_coupling_multi_instances_flatten(self):
         """
         This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val. 
         """
