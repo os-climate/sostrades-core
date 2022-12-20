@@ -32,22 +32,45 @@ class Study(StudyManager):
         coupling_name = 'SellarCoupling'
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': [f'Eval.{coupling_name}.x'],
+
+        #======================================================================
+        # dspace_dict = {'variable': [f'Eval.{coupling_name}.x'],
+        #                'lower_bnd': [0.],
+        #                'upper_bnd': [10.],
+        #                }
+        #======================================================================
+
+        dspace_dict = {'variable': [f'{coupling_name}.x'],
                        'lower_bnd': [0.],
                        'upper_bnd': [10.],
-
                        }
+
         dspace = pd.DataFrame(dspace_dict)
 
+        #======================================================================
+        # input_selection_x = {'selected_input': [False, True, False, False, False],
+        #                      'full_name': [f'Eval.{coupling_name}.Sellar_Problem.local_dv', f'Eval.{coupling_name}.x', f'Eval.{coupling_name}.y_1',
+        #                                    f'Eval.{coupling_name}.y_2',
+        #                                    f'Eval.{coupling_name}.z']}
+        #======================================================================
+
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': [f'Eval.{coupling_name}.Sellar_Problem.local_dv', f'Eval.{coupling_name}.x', f'Eval.{coupling_name}.y_1',
-                                           f'Eval.{coupling_name}.y_2',
-                                           f'Eval.{coupling_name}.z']}
+                             'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x', f'{coupling_name}.y_1',
+                                           f'{coupling_name}.y_2',
+                                           f'{coupling_name}.z']}
+
         input_selection_x = pd.DataFrame(input_selection_x)
 
+        #======================================================================
+        # output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
+        #                               'full_name': [f'Eval.{coupling_name}.c_1', f'Eval.{coupling_name}.c_2', f'Eval.{coupling_name}.obj',
+        #                                             f'Eval.{coupling_name}.y_1', f'Eval.{coupling_name}.y_2']}
+        #======================================================================
+
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': [f'Eval.{coupling_name}.c_1', f'Eval.{coupling_name}.c_2', f'Eval.{coupling_name}.obj',
-                                                    f'Eval.{coupling_name}.y_1', f'Eval.{coupling_name}.y_2']}
+                                      'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2', f'{coupling_name}.obj',
+                                                    f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
+
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         repo = 'sostrades_core.sos_processes.test'

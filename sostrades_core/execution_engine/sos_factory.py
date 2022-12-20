@@ -106,7 +106,7 @@ class SosFactory:
         for proxy in self.__proxy_disciplines:
             factory = proxy.mdo_discipline_wrapp
             if factory.wrapper is not None:
-                factory.wrapper.init_execution(proxy)
+                factory.wrapper.init_execution()
 
     @property
     def sos_name(self):

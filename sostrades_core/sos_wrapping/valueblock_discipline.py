@@ -44,15 +44,15 @@ class ValueBlockDiscipline(SoSWrapp):
                         'dataframe_descriptor', 'dataframe_edition_locked',
                         'default', 'optional', 'numerical']
 
-    def setup_sos_disciplines(self, proxy):
+    def setup_sos_disciplines(self):
         '''
            We add to the desc_in all the outputs of each child 
            We add to the desc_out the dict which will gather all inputs by name 
         '''
-        dynamic_inputs, dynamic_outputs = self.build_dynamic_io(proxy)
+        dynamic_inputs, dynamic_outputs = self.build_dynamic_io(self.proxy)
 
-        proxy.add_inputs(dynamic_inputs)
-        proxy.add_outputs(dynamic_outputs)
+        self.proxy.add_inputs(dynamic_inputs)
+        self.proxy.add_outputs(dynamic_outputs)
 
     def build_dynamic_io(self, proxy):
         dynamic_inputs = {}
@@ -101,10 +101,10 @@ class ValueBlockDiscipline(SoSWrapp):
 
         self.store_sos_outputs_values(output_dict)
 
-    def get_chart_filter_list(self, proxy):
+    def get_chart_filter_list(self):
 
         chart_filters = []
-        output_dict = proxy.get_sosdisc_outputs()
+        output_dict = self.proxy.get_sosdisc_outputs()
 
         chart_list = [key.replace('_gather', '')
                       for key in output_dict.keys() if key.endswith('_gather')]

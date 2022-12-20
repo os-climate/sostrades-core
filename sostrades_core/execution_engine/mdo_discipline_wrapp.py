@@ -81,7 +81,7 @@ class MDODisciplineWrapp(object):
         """
         return self.mdo_discipline.get_output_data_names(filtered_outputs)
 
-    def setup_sos_disciplines(self, proxy):  # type: (...) -> None
+    def setup_sos_disciplines(self):  # type: (...) -> None
         """
         Dynamic setup delegated to the wrapper using the proxy for i/o configuration.
 
@@ -89,7 +89,7 @@ class MDODisciplineWrapp(object):
             proxy (ProxyDiscipline): corresponding proxy discipline
         """
         if self.wrapper is not None:
-            self.wrapper.setup_sos_disciplines(proxy)
+            self.wrapper.setup_sos_disciplines()
 
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
         """

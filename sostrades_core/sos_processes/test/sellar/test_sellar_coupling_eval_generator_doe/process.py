@@ -50,9 +50,11 @@ class ProcessBuilder(BaseProcessBuilder):
             eval_driver = self.ee.factory.create_driver(
                 'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
 
-        # shift nested subprocess namespaces
-        self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.Eval.{coupling_name}')
+        #======================================================================
+        # # shift nested subprocess namespaces
+        # self.ee.ns_manager.add_ns(
+        #     'ns_OptimSellar', f'{self.ee.study_name}.Eval.{coupling_name}')
+        #======================================================================
 
         # driver namespaces
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
