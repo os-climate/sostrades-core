@@ -939,7 +939,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                         }})
         self.add_inputs(dynamic_inputs)
         # so that eventual mono-instance outputs get clear
-        self.add_outputs({})
+        if self.builder_tool is not None:
+            dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
+            self.add_outputs(dynamic_output_from_tool)
 
     def configure_tool(self):
         '''

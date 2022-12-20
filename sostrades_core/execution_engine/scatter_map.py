@@ -22,23 +22,10 @@ class ScatterMap:
     '''
     Specification: ScatterMap class allows to define parameters to build Scatter and Gather disciplines
     '''
-    INPUT_NAME = 'input_name'
-    INPUT_TYPE = 'input_type'
-    INPUT_NS = 'input_ns'
-    OUTPUT_NAME = 'output_name'
-    OUTPUT_TYPE = 'output_type'
-    OUTPUT_NS = 'output_ns'
-    SCATTER_VAR_NAME = 'scatter_var_name'
-    SCATTER_COLUMN_NAME = 'scatter_column_name'
-    SCATTER_NS = 'scatter_ns'
-    GATHER_NS = 'gather_ns'
-    GATHER_NS_IN = 'gather_ns_in'
-    GATHER_NS_OUT = 'gather_ns_out'
+
     NS_TO_UPDATE = 'ns_to_update'
     NS_NOT_TO_UPDATE = 'ns_not_to_update'
-    ASSOCIATED_INPUTS = 'associated_inputs'
-    DEFAULT = 'default'
-
+    SCATTER_LIST_TUPLE = 'scatter_list'
     def __init__(self, ee, name, s_map):
         '''
         Class to describe a scatter map and manage several instances of the same scatter map
@@ -72,7 +59,18 @@ class ScatterMap:
         if self.NS_TO_UPDATE in map_dict and self.NS_NOT_TO_UPDATE in map_dict:
             raise Exception(
                 f'The scatter map {self.name} can not have both {self.NS_TO_UPDATE} and {self.NS_NOT_TO_UPDATE} keys')
-
+        if self.NS_TO_UPDATE in map_dict and not isinstance(map_dict[self.NS_TO_UPDATE], list) and any(
+                isinstance(val, str) for val in map_dict[self.NS_TO_UPDATE]):
+            raise Exception(
+                f'The {self.NS_TO_UPDATE} key in scatter map {self.name} must be a string list')
+        if self.NS_NOT_TO_UPDATE in map_dict and not isinstance(map_dict[self.NS_NOT_TO_UPDATE], list) and any(
+                isinstance(val, str) for val in map_dict[self.NS_NOT_TO_UPDATE]):
+            raise Exception(
+                f'The {self.NS_NOT_TO_UPDATE} key in scatter map {self.name} must be a string list')
+        if self.SCATTER_LIST_TUPLE in map_dict and not isinstance(map_dict[self.SCATTER_LIST_TUPLE], tuple) and any(
+                isinstance(val, str) for val in map_dict[self.SCATTER_LIST_TUPLE]):
+            raise Exception(
+                f'The {self.SCATTER_LIST_TUPLE} key in scatter map {self.name} must be a tuple composed with (scatter_list name,scatter_list namespace)')
     def update_map(self, s_map):
         '''
         Mechanism to update value
@@ -89,98 +87,6 @@ class ScatterMap:
     def configure_map(self, builder):
 
         self.builder = builder
-
-    def get_input_name(self):
-        '''
-        Get the input_name in the map
-        '''
-        return self.__map[self.INPUT_NAME]
-
-    def get_input_type(self):
-        '''
-        Get the input_type in the map
-        '''
-        return self.__map[self.INPUT_TYPE]
-
-    def get_input_ns(self):
-        '''
-        Get the input_ns in the map of output_ns
-        '''
-        if self.INPUT_NS in self.__map:
-            return self.__map[self.INPUT_NS]
-        else:
-            return self.__map[self.OUTPUT_NS]
-
-    def get_output_name(self):
-        '''
-        Get the output_name in the map
-        '''
-        return self.__map[self.OUTPUT_NAME]
-
-    def get_output_type(self):
-        '''
-        Get the output_type in the map
-        '''
-        return self.__map[self.OUTPUT_TYPE]
-
-    def get_output_ns(self):
-        '''
-        Get the output_ns in the map
-        '''
-        if self.OUTPUT_NS in self.__map:
-            return self.__map[self.OUTPUT_NS]
-        else:
-            return self.__map[self.INPUT_NS]
-
-    def get_scatter_var_name(self):
-        '''
-        Get the scatter_var_name in the map (input_name of the scatter build map associated)
-        '''
-        return self.__map[self.SCATTER_VAR_NAME]
-
-    def get_scatter_column_name(self):
-        '''
-        Get the scatter_column_name in the map (input_name of the scatter build map associated). Only necessary when input_type is a dataframe
-        '''
-        if self.SCATTER_COLUMN_NAME in self.__map:
-            return self.__map[self.SCATTER_COLUMN_NAME]
-        else:
-            return []
-
-    def get_scatter_ns(self):
-        '''
-        Get the scatter namespace name in the map (namespace associated to the map)
-        '''
-        if self.SCATTER_NS in self.__map :
-            return self.__map[self.SCATTER_NS]
-        else :
-            return None
-    def get_gather_ns(self):
-        '''
-        Get the gather namespace name if gather_ns in map
-        '''
-        if self.GATHER_NS in self.__map:
-            return self.__map[self.GATHER_NS]
-        else:
-            return self.__map[self.INPUT_NS]
-
-    def get_gather_ns_in(self):
-        '''
-        Get the gather input namespace name if gather_ns_in in map else return ns_gather
-        '''
-        if self.GATHER_NS_IN in self.__map:
-            return self.__map[self.GATHER_NS_IN]
-        else:
-            return self.get_gather_ns()
-
-    def get_gather_ns_out(self):
-        '''
-        Get the gather output namespace name if gather_ns in map else return ns_gather
-        '''
-        if self.GATHER_NS_OUT in self.__map:
-            return self.__map[self.GATHER_NS_OUT]
-        else:
-            return self.get_gather_ns()
 
     def get_ns_to_update(self):
         '''
@@ -213,29 +119,20 @@ class ScatterMap:
         else:
             return None
 
+    def get_scatter_list_name_and_namespace(self):
+        '''
+        Get scatter list name and namespaces for scenario_df propagation
+        '''
+        if self.SCATTER_LIST_TUPLE in self.__map:
+            return self.__map[self.SCATTER_LIST_TUPLE]
+        else:
+            return None
+
     def get_dependency_disc_list(self):
         '''
         Get the list of disciplines dependent on this scatterMap
         '''
         return self.dependency_disc_list
-
-    def get_associated_inputs(self):
-        '''
-        Get the associated_inputs on this scatterMap
-        '''
-        if self.ASSOCIATED_INPUTS in self.__map:
-            return self.__map[self.ASSOCIATED_INPUTS]
-        else:
-            return []
-
-    def get_default_input(self):
-        '''
-        Get default input value on this scatterMap
-        '''
-        if self.DEFAULT in self.__map:
-            return self.__map[self.DEFAULT]
-        else:
-            return None
 
     def add_dependency(self, disc):
         '''
