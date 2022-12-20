@@ -51,8 +51,8 @@ class ValueBlockDiscipline(SoSWrapp):
         '''
         dynamic_inputs, dynamic_outputs = self.build_dynamic_io(self.proxy)
 
-        self.proxy.add_inputs(dynamic_inputs)
-        self.proxy.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
 
     def build_dynamic_io(self, proxy):
         dynamic_inputs = {}

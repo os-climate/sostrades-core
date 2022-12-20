@@ -66,7 +66,7 @@ class Disc10(SoSWrapp):
                     {'b': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
                 dynamic_inputs.update({'power': {'type': 'float', 'default': 2.,
                                                  'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
-        self.proxy.add_inputs(dynamic_inputs)
+        self.add_inputs(dynamic_inputs)
 
     def run(self):
         input_dict = self.get_sosdisc_inputs()

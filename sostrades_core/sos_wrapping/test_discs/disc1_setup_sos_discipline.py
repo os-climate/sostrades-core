@@ -68,8 +68,8 @@ class Disc1(SoSWrapp):
                 self.proxy.update_default_value(
                     'dyn_input_2', self.proxy.IO_TYPE_IN, default_df)
 
-        self.proxy.add_inputs(dynamic_inputs)
-        self.proxy.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
 
     def run(self):
         input_dict = self.get_sosdisc_inputs()

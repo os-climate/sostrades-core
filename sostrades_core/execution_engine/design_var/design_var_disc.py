@@ -80,8 +80,8 @@ class DesignVarDiscipline(SoSWrapp):
                             'type': design_var_descriptor[key]['out_type'],
                             'visibility': SoSWrapp.SHARED_VISIBILITY,
                             'namespace': design_var_descriptor[key]['namespace_out']}
-            self.proxy.add_inputs(dynamic_inputs)
-            self.proxy.add_outputs(dynamic_outputs)
+            self.add_inputs(dynamic_inputs)
+            self.add_outputs(dynamic_outputs)
         self.inst_desc_in = dynamic_inputs
         self.inst_desc_out = dynamic_outputs
 

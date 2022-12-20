@@ -23,6 +23,14 @@ from numpy import zeros, array, ndarray, complex128
 LOGGER = logging.getLogger(__name__)
 
 
+# decorator for delegating function to the proxy
+def at_proxy(func):
+    def proxy_do(self, *args, **kwargs):
+        proxy_func = getattr(self.proxy, func.__name__)
+        return proxy_func(*args, **kwargs)
+    return proxy_do
+
+
 class SoSWrappException(Exception):
     pass
 
@@ -109,6 +117,20 @@ class SoSWrapp(object):
         """
         if self.proxy is None:
             self.proxy = proxy
+
+    @at_proxy
+    def add_inputs(self):
+        """
+        Method delegated to proxy
+        """
+        pass
+
+    @at_proxy
+    def add_outputs(self):
+        """
+        Method delegated to proxy
+        """
+        pass
 
     def setup_sos_disciplines(self):  # type: (...) -> None
         """

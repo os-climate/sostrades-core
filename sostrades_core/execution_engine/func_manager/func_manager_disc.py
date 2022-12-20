@@ -213,8 +213,8 @@ class FunctionManagerDisc(SoSWrapp):
         dynamic_outputs[self.OBJECTIVE_LAGR] = {'type': 'array', 'visibility': 'Shared',
                                                     'namespace': 'ns_optim'}
         self.iter, self.last_len_database = 0, 0
-        self.proxy.add_inputs(dynamic_inputs)
-        self.proxy.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
         self.inst_desc_in = dynamic_inputs
         self.inst_desc_out = dynamic_outputs
         # self.DESC_IN.update(proxy.inst_desc_in)
