@@ -92,9 +92,25 @@ class SoSWrapp(object):
         self.jac_boundaries = {}
         self.inst_desc_in = {}
         self.inst_desc_out = {}
+        self.proxy = None
 
+    def clear_proxy(self):
+        """
+        Clears the ProxyDiscipline instance attribute from the SoSWrapp instance for serialization purposes (so that the
+        proxy is not in attribute of the GEMSEO objects during execution).
+        """
+        del self.proxy
+        self.proxy = None
 
-    def setup_sos_disciplines(self, proxy):  # type: (...) -> None
+    def assign_proxy(self, proxy):
+        """
+        Assigns a ProxyDiscipline instance to the self.proxy attribute (so that the proxy is available to the wrapper
+        during the configuration sequence).
+        """
+        if self.proxy is None:
+            self.proxy = proxy
+
+    def setup_sos_disciplines(self):  # type: (...) -> None
         """
         Define the set_up_sos_discipline of its proxy
 
@@ -105,7 +121,7 @@ class SoSWrapp(object):
         """
         pass
 
-    def init_execution(self, proxy):  # type: (...) -> None
+    def init_execution(self):  # type: (...) -> None
         """
         Define the init_execution of its proxy
 
@@ -252,7 +268,7 @@ class SoSWrapp(object):
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
             self.local_data.update(outputs)
 
-    def get_chart_filter_list(self, proxy):
+    def get_chart_filter_list(self):
         """ Return a list of ChartFilter instance base on the inherited
         class post processing filtering capabilities
 
@@ -260,7 +276,7 @@ class SoSWrapp(object):
         """
         return []
 
-    def get_post_processing_list(self, proxy, filters=None):
+    def get_post_processing_list(self, filters=None):
         """ Return a list of post processing instance using the ChartFilter list given
         as parameter, to be overload in subclasses
 

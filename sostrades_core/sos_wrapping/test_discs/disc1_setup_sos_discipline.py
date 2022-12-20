@@ -47,13 +47,13 @@ class Disc1(SoSWrapp):
         'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
-    def setup_sos_disciplines(self,proxy):
+    def setup_sos_disciplines(self):
 
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        if 'AC_list' in proxy.get_data_in():
-            AC_list = proxy.get_sosdisc_inputs('AC_list')
+        if 'AC_list' in self.proxy.get_data_in():
+            AC_list = self.proxy.get_sosdisc_inputs('AC_list')
 
             for ac in AC_list:
                 dynamic_inputs.update(
@@ -64,12 +64,12 @@ class Disc1(SoSWrapp):
             dynamic_inputs.update(
                 {'dyn_input_2': {'type': 'dataframe', 'default': default_df, 'structuring': True}})
 
-            if 'dyn_input_2' in proxy.get_data_in() and proxy.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
-                proxy.update_default_value(
-                    'dyn_input_2', proxy.IO_TYPE_IN, default_df)
+            if 'dyn_input_2' in self.proxy.get_data_in() and self.proxy.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
+                self.proxy.update_default_value(
+                    'dyn_input_2', self.proxy.IO_TYPE_IN, default_df)
 
-        proxy.add_inputs(dynamic_inputs)
-        proxy.add_outputs(dynamic_outputs)
+        self.proxy.add_inputs(dynamic_inputs)
+        self.proxy.add_outputs(dynamic_outputs)
 
     def run(self):
         input_dict = self.get_sosdisc_inputs()

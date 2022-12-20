@@ -118,6 +118,7 @@ class ScatterTool(SosTool):
         '''
         Add the scatter list output name into dynamic desc_out in the behalf of the driver
         this scatter_list is depending on scenario_df configuration
+        Add then all scenario_name for each scenario
         '''
         dynamic_outputs = {}
         if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
@@ -126,7 +127,12 @@ class ScatterTool(SosTool):
                                                    'visibility': 'Shared',
                                                    'namespace': scatter_list_ns,
                                                    'value': self.__scatter_list}}
-
+        if self.sc_map is not None and self.sc_map.get_scatter_name() is not None:
+            scatter_name = self.sc_map.get_scatter_name()
+            for scatter_value in self.__scatter_list:
+                dynamic_outputs.update({f'{scatter_value}.{scatter_name}':
+                                            {'type': 'string',
+                                             'value': scatter_value}})
         return dynamic_outputs
 
     def get_ns_to_update_name_list(self):

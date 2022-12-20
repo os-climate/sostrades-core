@@ -52,7 +52,7 @@ class Disc1(SoSWrapp):
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 
-    def get_chart_filter_list(self, proxy):
+    def get_chart_filter_list(self):
 
         chart_filters = []
 
@@ -63,7 +63,7 @@ class Disc1(SoSWrapp):
 
         return chart_filters
 
-    def get_post_processing_list(self, proxy, filters=None):
+    def get_post_processing_list(self, filters=None):
 
         instanciated_charts = []
 
@@ -77,8 +77,8 @@ class Disc1(SoSWrapp):
 
             chart_name = 'y vs x'
 
-            y = proxy.get_sosdisc_outputs('y')
-            x = proxy.get_sosdisc_inputs('x')
+            y = self.proxy.get_sosdisc_outputs('y')
+            x = self.proxy.get_sosdisc_inputs('x')
             print(y, x)
             new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
                                                  chart_name=chart_name)
