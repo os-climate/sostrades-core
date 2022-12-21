@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 def at_proxy(f):
     @wraps(f)
     def proxy_do(self, *args, **kwargs):
-        proxy_func = getattr(self.proxy, f.__name__)
+        proxy_func = getattr(self.__proxy, f.__name__)
         return proxy_func(*args, **kwargs)
     return proxy_do
 
@@ -103,26 +103,34 @@ class SoSWrapp(object):
         self.inst_desc_out = {}
 
         # dynamic attributes that easen access to proxy and dm during configuration and get cleaned at runtime
-        self.proxy = None
-        self.dm = None
+        self.__proxy = None
+        self.__dm = None
+
+    @property
+    def proxy(self):
+        return self.__proxy
+
+    @property
+    def dm(self):
+        return self.__dm
 
     def clear_proxy(self):
         """
         Clears the ProxyDiscipline instance attribute from the SoSWrapp instance for serialization purposes (so that the
         proxy is not in attribute of the GEMSEO objects during execution).
         """
-        del self.proxy, self.dm
-        self.proxy = None
-        self.dm = None
+        del self.__proxy, self.__dm
+        self.__proxy = None
+        self.__dm = None
 
     def assign_proxy(self, proxy):
         """
         Assigns a ProxyDiscipline instance to the self.proxy attribute (so that the proxy is available to the wrapper
         during the configuration sequence).
         """
-        if self.proxy is None:
-            self.proxy = proxy
-            self.dm = proxy.dm
+        if self.__proxy is None:
+            self.__proxy = proxy
+            self.__dm = proxy.dm
 
     # methods delegated to the proxy partially (because they might be called during the run)
     def get_sosdisc_inputs(self, *args, **kwargs):
