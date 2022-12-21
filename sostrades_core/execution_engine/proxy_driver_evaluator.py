@@ -34,6 +34,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -153,7 +154,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                          associated_namespaces=associated_namespaces)
         if cls_builder is not None:
             self.cls_builder = cls_builder
-            self.sub_builder_namespaces = get_ns_list_in_builder_list(self.cls_builder)
+            self.sub_builder_namespaces = get_ns_list_in_builder_list(
+                self.cls_builder)
         else:
             raise Exception(
                 'The driver evaluator builder must have a cls_builder to work')
@@ -485,13 +487,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # Check if reference values have changed and select only those which
         # have changed
+
         ref_changes_dict = {}
         for key in ref_dict.keys():
             if key in self.old_ref_dict.keys():
                 if isinstance(ref_dict[key], pd.DataFrame):
                     if not ref_dict[key].equals(self.old_ref_dict[key]):
                         ref_changes_dict[key] = ref_dict[key]
-                elif isinstance(ref_dict[key], np.ndarray):
+                elif isinstance(ref_dict[key], (np.ndarray)):
+                    if not (np.array_equal(ref_dict[key], self.old_ref_dict[key])):
+                        ref_changes_dict[key] = ref_dict[key]
+                elif isinstance(ref_dict[key], (list)):
                     if not (np.array_equal(ref_dict[key], self.old_ref_dict[key])):
                         ref_changes_dict[key] = ref_dict[key]
                 else:
@@ -499,6 +505,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         ref_changes_dict[key] = ref_dict[key]
             else:
                 ref_changes_dict[key] = ref_dict[key]
+
+        # TODO: replace the above code by a more general function ...
+        #======================================================================
+        # ref_changes_dict = {}
+        # if self.old_ref_dict == {}:
+        #     ref_changes_dict = ref_dict
+        # else:
+        #     # See Test 01 of test_69_compare_dict_compute_len
+        #     compare_dict(ref_dict, self.old_ref_dict, '',
+        #                  ref_changes_dict, df_equals=True)
+        #     # We cannot use compare_dict as if: maybe we choude add a diff_compare_dict as an adaptation of compare_dict
+        #======================================================================
 
         return ref_changes_dict, ref_dict
 
@@ -527,29 +545,35 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def get_other_evaluators_names_and_mode_under_current_one(self):
         other_evaluators_names_and_mode = []
         for disc in self.scenarios:
-            name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(disc)
+            name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(
+                disc)
             if name_and_modes != []:
                 other_evaluators_names_and_mode.append(name_and_modes)
 
         return other_evaluators_names_and_mode
 
-    def search_evaluator_names_and_modify_mode_iteratively(self,disc):
+    def search_evaluator_names_and_modify_mode_iteratively(self, disc):
 
         list = []
         for subdisc in disc.proxy_disciplines:
             if subdisc.__class__.__name__ == 'ProxyDriverEvaluator':
                 if subdisc.get_sosdisc_inputs(self.INSTANCE_REFERENCE) == True:
-                    # If upper ProxyDriverEvaluator is in linked mode, all lower ProxyDriverEvaluator shall be as well.
+                    # If upper ProxyDriverEvaluator is in linked mode, all
+                    # lower ProxyDriverEvaluator shall be as well.
                     if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
-                        subdriver_full_name = self.ee.ns_manager.get_local_namespace_value(subdisc)
-                        self.ee.dm.set_data(subdriver_full_name + '.reference_mode', 'value', self.LINKED_MODE)
-                    list=[subdisc.sos_name, subdisc.get_sosdisc_inputs(self.REFERENCE_MODE)]
+                        subdriver_full_name = self.ee.ns_manager.get_local_namespace_value(
+                            subdisc)
+                        self.ee.dm.set_data(
+                            subdriver_full_name + '.reference_mode', 'value', self.LINKED_MODE)
+                    list = [subdisc.sos_name,
+                            subdisc.get_sosdisc_inputs(self.REFERENCE_MODE)]
                 else:
-                    list=[subdisc.sos_name, 'None']
+                    list = [subdisc.sos_name, 'None']
             elif subdisc.__class__.__name__ == 'ProxyDiscipline':
                 pass
             else:
-                name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(subdisc)
+                name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(
+                    subdisc)
                 list.append(name_and_modes)
 
         return list
@@ -565,7 +589,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             for key in scenarios_non_trade_vars_dict.keys():
                 if other_evaluators_names_and_mode != []:   # This means there are evaluators under current one
                     for element in other_evaluators_names_and_mode:
-                        if element[0] in key: # Ignore variables from inner ProxyDriverEvaluators
+                        if element[0] in key:  # Ignore variables from inner ProxyDriverEvaluators
                             pass
                         else:
                             if self.original_editable_dict_non_ref[key] == False:
@@ -793,8 +817,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         for out_var in self.eval_out_list:
                             dynamic_outputs.update(
                                 {f'{out_var.split(f"{self.get_disc_full_name()}.", 1)[1]}_dict': {'type': 'dict',
-                                                                                           'visibility': 'Shared',
-                                                                                           'namespace': self.NS_DOE}})
+                                                                                                  'visibility': 'Shared',
+                                                                                                  'namespace': self.NS_DOE}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
                 self.add_inputs(dynamic_inputs)
@@ -1064,7 +1088,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.eval_process_builder = disc_builder
 
-        self.eval_process_builder.add_namespace_list_in_associated_namespaces(updated_ns_list)
+        self.eval_process_builder.add_namespace_list_in_associated_namespaces(
+            updated_ns_list)
 
     def update_sub_builders_namespaces(self):
         '''
@@ -1081,7 +1106,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 old_ns.get_value(), extra_name, after_name=after_name)
             display_value = old_ns.get_display_value_if_exists()
             ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value,display_value=display_value, add_in_shared_ns_dict=False)
+                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)
 
         return ns_ids_list

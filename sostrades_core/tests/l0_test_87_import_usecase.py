@@ -170,7 +170,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # The generator eval process
         self.repo = self.repo + '.disc1_disc3'
-        proc_name = 'test_disc1_disc3_eval_generator_cp'
+        proc_name = 'test_disc1_disc3_eval_generator'
         usecase_name = 'usecase_with_ref'
 
         # Creation of the study from the associated usecase
@@ -247,7 +247,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # The generator eval process
         self.repo = self.repo + '.disc1_disc3'
-        proc_name = 'test_disc1_disc3_eval_generator_doe'
+        proc_name = 'test_disc1_disc3_coupling_eval_generator'
         usecase_name = 'usecase1_doe_mono'
         coupling_name = 'D1_D3_Coupling'
 
@@ -324,8 +324,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
-        with_coupling = False  # In multi instances only False is of interest
-
         # The generator eval process
         self.repo = self.repo + '.sellar'
         proc_name = 'test_sellar_eval_simple'
@@ -345,19 +343,16 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         study_dump.load_data()
 
-        study_dump.run()
+        # study_dump.run() # I remove run to be as in GUI test
 
         # Check the created study
 
         self.exec_eng = study_dump.ee
 
         self.exec_eng.display_treeview_nodes()
-        if with_coupling:
-            ref_disc = self.exec_eng.dm.get_disciplines_with_name(
-                f'{self.study_name}.Eval.ReferenceScenario.SellarCoupling.Sellar_1')[0]
-        else:
-            ref_disc = self.exec_eng.dm.get_disciplines_with_name(
-                f'{self.study_name}.Eval.ReferenceScenario.Sellar_1')[0]
+
+        ref_disc = self.exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.Eval.ReferenceScenario.Sellar_1')[0]
 
         # In the study creation it is provided x = array([2.])
         target_x = array([2.])
@@ -369,19 +364,27 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        if 1 == 0:
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
+            # Below was as it was done in the console first
+            #==================================================================
+            # anonymize_input_dict_from_usecase = {}
+            # anonymize_input_dict_from_usecase['<study_ph>.x'] = array([1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.z'] = array([1., 1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
+            #==================================================================
+
+            # Here is as it has been modified to be as in the GUI and/or  csv
+            # anonymised dict import.
             anonymize_input_dict_from_usecase = {}
-            anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
-                1.])
-            anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
-                1.])
-            anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
-                1.])
-            anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
-                1., 1.])
+            anonymize_input_dict_from_usecase['<study_ph>.x'] = [1.]
+            anonymize_input_dict_from_usecase['<study_ph>.y_1'] = [1.]
+            anonymize_input_dict_from_usecase['<study_ph>.y_2'] = [1.]
+            anonymize_input_dict_from_usecase['<study_ph>.z'] = [1., 1.]
             anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
 
         # Update the reference from the selected imported usecase anonymised
@@ -402,6 +405,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
+        # study_dump.run()
+
     def test_5_usecase_import_multi_instances_eval_generator_cp_sellar(self):
         """
         This test checks the usecase import capability in multi instance mode with generator + eval
@@ -417,9 +422,9 @@ class TestSoSimportUsecase(unittest.TestCase):
         # The generator eval process
         self.repo = self.repo + '.sellar'
         if with_coupling:
-            proc_name = 'test_sellar_coupling_eval_generator_cp'
+            proc_name = 'test_sellar_coupling_eval_generator'
         else:
-            proc_name = 'test_sellar_eval_generator_cp'
+            proc_name = 'test_sellar_eval_generator'
 
         usecase_name = 'usecase1_cp_multi_with_ref'
 
@@ -440,7 +445,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         study_dump.load_data()
 
-        study_dump.run()
+        # study_dump.run() # I remove run to be as in GUI test
 
         # Check the created study
 
@@ -464,32 +469,53 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        if 1 == 0:
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
             if with_coupling:
+                # Below was as it was done in the console first
+                #==============================================================
+                # anonymize_input_dict_from_usecase = {}
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([1., 1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+                #==============================================================
+
+                # Here is as it has been modified to be as in the GUI and/or
+                # csv anonymised dict import.
                 anonymize_input_dict_from_usecase = {}
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([
-                                                                                         1.])
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([
-                                                                                           1.])
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([
-                                                                                           1.])
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([
-                                                                                         1., 1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = [
+                    1., 1.]
                 anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+
             else:
+                # Below was as it was done in the console first
+                #==============================================================
+                # anonymize_input_dict_from_usecase = {}
+                # anonymize_input_dict_from_usecase['<study_ph>.x'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.z'] = array([1., 1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
+                #==============================================================
+
+                # Here is as it has been modified to be as in the GUI and/or
+                # csv anonymised dict import.
                 anonymize_input_dict_from_usecase = {}
-                anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
-                    1.])
-                anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
-                    1.])
-                anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
-                    1.])
-                anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
-                    1., 1.])
-                anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
+                anonymize_input_dict_from_usecase['<study_ph>.x'] = [1.]
+                anonymize_input_dict_from_usecase['<study_ph>.y_1'] = [1.]
+                anonymize_input_dict_from_usecase['<study_ph>.y_2'] = [1.]
+                anonymize_input_dict_from_usecase['<study_ph>.z'] = [1., 1.]
+                anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10
 
         # Update the reference from the selected imported usecase anonymised
         # dict
@@ -509,6 +535,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
+        # study_dump.run()
+
     def test_6_usecase_import_mono_instances_eval_generator_doe_sellar(self):
         """
         This test checks the usecase import capability in mono instance mode with generator  + eval
@@ -524,9 +552,9 @@ class TestSoSimportUsecase(unittest.TestCase):
         # The generator eval process
         self.repo = self.repo + '.sellar'
         if with_coupling:
-            proc_name = 'test_sellar_coupling_eval_generator_doe'
+            proc_name = 'test_sellar_coupling_eval_generator'
         else:
-            proc_name = 'test_sellar_eval_generator_doe'
+            proc_name = 'test_sellar_subprocess_eval_generator'
 
         usecase_name = 'usecase1_doe_mono'
 
@@ -546,6 +574,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         study_dump = imported_module.Study(run_usecase=True)
 
         study_dump.load_data()
+
+        # study_dump.run() # I remove run to be as in GUI test
 
         # Check the created study
 
@@ -570,31 +600,56 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:  # full anonymized dict with numerical keys
+        if 1 == 0:  # full anonymized dict with numerical keys
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
             if with_coupling:
+                # Below was as it was done in the console first
+                #==============================================================
+                # anonymize_input_dict_from_usecase = {}
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([1., 1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+                #==============================================================
+
+                # Here is as it has been modified to be as in the GUI and/or
+                # csv anonymised dict import.
                 anonymize_input_dict_from_usecase = {}
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([
-                                                                                         1.])
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([
-                                                                                           1.])
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([
-                                                                                           1.])
-                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([
-                                                                                         1., 1.])
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = [
+                    1., 1.]
                 anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+
             else:
+                # Below was as it was done in the console first
+                #==============================================================
+                # anonymize_input_dict_from_usecase = {}
+                # anonymize_input_dict_from_usecase['<study_ph>.x'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.z'] = array([1., 1.])
+                # anonymize_input_dict_from_usecase['<study_ph>.subprocess.Sellar_Problem.local_dv'] = 10.
+                #==============================================================
+
+                # Here is as it has been modified to be as in the GUI and/or
+                # csv anonymised dict import.
                 anonymize_input_dict_from_usecase = {}
-                anonymize_input_dict_from_usecase['<study_ph>.x'] = array([
-                    1.])
-                anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([
-                    1.])
-                anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([
-                    1.])
-                anonymize_input_dict_from_usecase['<study_ph>.z'] = array([
-                    1., 1.])
+                anonymize_input_dict_from_usecase['<study_ph>.subprocess.x'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.subprocess.y_1'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.subprocess.y_2'] = [
+                    1.]
+                anonymize_input_dict_from_usecase['<study_ph>.subprocess.z'] = [
+                    1., 1.]
                 anonymize_input_dict_from_usecase['<study_ph>.subprocess.Sellar_Problem.local_dv'] = 10.
 
         # Update the reference from the selected imported usecase anonymised
@@ -615,8 +670,11 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
+        # study_dump.run()
+
     def _test_7_usecase_import_multi_instances_eval_generator_cp_sellar_flatten(self):
-        # KO root process is not configured after 100 iterations
+        # KO root process is not configured after 100 iterations: and so import
+        # of usecase is KO To be fixed
         """
         This test checks the usecase import capability in multi instance mode.
         """
@@ -626,7 +684,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         self.repo = self.repo + '.sellar'
-        proc_name = 'test_sellar_coupling_eval_generator_cp_flatten'
+        proc_name = 'test_sellar_coupling_eval_generator_flatten'
         usecase_name = 'usecase1_cp_multi_with_ref'
 
         # Associated nested subprocess
@@ -668,15 +726,27 @@ class TestSoSimportUsecase(unittest.TestCase):
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
+            # Below was as it was done in the console first
+            #==================================================================
+            # anonymize_input_dict_from_usecase = {}
+            # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([1., 1.])
+            # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
+            #==================================================================
+
+            # Here is as it has been modified to be as in the GUI and/or
+            # csv anonymised dict import
             anonymize_input_dict_from_usecase = {}
-            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([
-                                                                                     1.])
-            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([
-                                                                                       1.])
-            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([
-                                                                                       1.])
-            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([
-                                                                                     1., 1.])
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = [
+                1.]
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = [
+                1.]
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = [
+                1.]
+            anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = [
+                1., 1.]
             anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
 
         # Update the reference from the selected imported usecase anonymised

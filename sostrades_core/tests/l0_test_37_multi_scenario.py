@@ -217,7 +217,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_02_multiscenario_with_sample_generator_cp_sellar(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_sellar_eval_generator_cp'
+        proc_name = 'test_sellar_eval_generator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo + '.sellar',
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -256,7 +256,7 @@ class TestMultiScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         self.study_name = 'MyStudy'
-        proc_name = 'test_sellar_eval_generator_cp'
+        proc_name = 'test_sellar_eval_generator'
 
         # get the sample generator inputs
         self.setUp_cp_sellar()

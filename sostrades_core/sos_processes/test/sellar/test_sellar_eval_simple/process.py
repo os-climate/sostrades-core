@@ -33,7 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-        # Select the netsted subprocess
+        # Select the nested subprocess
         repo = 'sostrades_core.sos_processes.test.sellar'
         sub_proc = 'test_sellar_list'
         coupling_builder = self.ee.factory.get_builder_from_process(

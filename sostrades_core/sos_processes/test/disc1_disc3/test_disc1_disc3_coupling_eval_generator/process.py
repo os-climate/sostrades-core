@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Test Disc1 Disc3 eval generator doe',
+        'label': 'Test Disc1 Disc3 Coupling Eval Generator',
         'description': '',
         'category': '',
         'version': '',
@@ -30,21 +30,19 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
 
-        # Select the netsted subprocess
+        # Select the nested subprocess
         repo = 'sostrades_core.sos_processes.test.disc1_disc3'
         sub_proc = 'test_disc1_disc3_coupling'
         coupling_builder = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
 
-        coupling_name = 'D1_D3_Coupling'
-
         # driver builder
         eval_driver = self.ee.factory.create_driver(
             'Eval', coupling_builder
         )
-
         #======================================================================
         # # shift nested subprocess namespaces
+        # coupling_name = 'D1_D3_Coupling'
         # self.ee.ns_manager.add_ns(
         #     'ns_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
         # self.ee.ns_manager.add_ns(
@@ -59,8 +57,8 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
         # sample generator builder
-        mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module(
-            'Sample_Generator', mod_cp)
+        mod_generator = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
+        generator_builder = self.ee.factory.get_builder_from_module(
+            'Sample_Generator', mod_generator)
 
-        return eval_driver + [cp_builder]
+        return eval_driver + [generator_builder]
