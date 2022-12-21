@@ -507,7 +507,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
 
-        ref_discipline = self.scenarios[self.get_reference_scenario_index()]
+        # ref_discipline = self.scenarios[self.get_reference_scenario_index()]
 
         # Build other scenarios variables and values dict from reference
         dict_to_propagate = {}
@@ -524,17 +524,59 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Propagate other scenarios variables and values
         self.ee.dm.set_values_from_dict(dict_to_propagate)
 
+    def get_other_evaluators_names_and_mode_under_current_one(self):
+        other_evaluators_names_and_mode = []
+        for disc in self.scenarios:
+            name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(disc)
+            if name_and_modes != []:
+                other_evaluators_names_and_mode.append(name_and_modes)
+
+        return other_evaluators_names_and_mode
+
+    def search_evaluator_names_and_modify_mode_iteratively(self,disc):
+
+        list = []
+        for subdisc in disc.proxy_disciplines:
+            if subdisc.__class__.__name__ == 'ProxyDriverEvaluator':
+                if subdisc.get_sosdisc_inputs(self.INSTANCE_REFERENCE) == True:
+                    # If upper ProxyDriverEvaluator is in linked mode, all lower ProxyDriverEvaluator shall be as well.
+                    if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
+                        subdriver_full_name = self.ee.ns_manager.get_local_namespace_value(subdisc)
+                        self.ee.dm.set_data(subdriver_full_name + '.reference_mode', 'value', self.LINKED_MODE)
+                    list=[subdisc.sos_name, subdisc.get_sosdisc_inputs(self.REFERENCE_MODE)]
+                else:
+                    list=[subdisc.sos_name, 'None']
+            elif subdisc.__class__.__name__ == 'ProxyDiscipline':
+                pass
+            else:
+                name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(subdisc)
+                list.append(name_and_modes)
+
+        return list
+
     def modify_editable_attribute_according_to_reference_mode(self, scenarios_non_trade_vars_dict):
+
+        other_evaluators_names_and_mode = self.get_other_evaluators_names_and_mode_under_current_one()
 
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
                 self.ee.dm.set_data(key, 'editable', False)
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                if self.original_editable_dict_non_ref[key] == False:
-                    pass
+                if other_evaluators_names_and_mode != []:   # This means there are evaluators under current one
+                    for element in other_evaluators_names_and_mode:
+                        if element[0] in key: # Ignore variables from inner ProxyDriverEvaluators
+                            pass
+                        else:
+                            if self.original_editable_dict_non_ref[key] == False:
+                                pass
+                            else:
+                                self.ee.dm.set_data(key, 'editable', True)
                 else:
-                    self.ee.dm.set_data(key, 'editable', True)
+                    if self.original_editable_dict_non_ref[key] == False:
+                        pass
+                    else:
+                        self.ee.dm.set_data(key, 'editable', True)
 
     def save_original_editable_attr_from_non_trade_variables(self, dict):
 
