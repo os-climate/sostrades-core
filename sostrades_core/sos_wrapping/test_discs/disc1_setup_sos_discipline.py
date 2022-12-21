@@ -85,3 +85,13 @@ class Disc1(SoSWrapp):
             dict_values[f'{ac}.dyn_output'] = dyn_output
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
+
+
+class Disc1ProxyCheck(Disc1):
+    def run(self):
+        if self.proxy is not None:
+            raise Exception('proxy remains assigned during run')
+        elif self.dm is not None:
+            raise Exception('dm remains assigned during run')
+        else:
+            super().run()
