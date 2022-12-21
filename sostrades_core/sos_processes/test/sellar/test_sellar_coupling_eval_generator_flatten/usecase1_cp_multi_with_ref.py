@@ -31,13 +31,24 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
+        #======================================================================
+        # dict_of_list_values = {
+        #     'SellarCoupling.x': [array([3.]), array([4.])],
+        #     'SellarCoupling.z': [array([-10., 0.])],
+        #     'SellarCoupling.Sellar_Problem.local_dv': [10.],
+        #     'SellarCoupling.y_1': [array([1.])],
+        #     'SellarCoupling.y_2': [array([1.])]
+        # }
+        #======================================================================
+
         dict_of_list_values = {
-            'SellarCoupling.x': [array([3.]), array([4.])],
-            'SellarCoupling.z': [array([-10., 0.])],
+            'SellarCoupling.x': [[3.], [4.]],
+            'SellarCoupling.z': [[-10., 0.]],
             'SellarCoupling.Sellar_Problem.local_dv': [10.],
-            'SellarCoupling.y_1': [array([1.])],
-            'SellarCoupling.y_2': [array([1.])]
+            'SellarCoupling.y_1': [[1.]],
+            'SellarCoupling.y_2': [[1.]]
         }
+
         list_of_values = [dict_of_list_values['SellarCoupling.Sellar_Problem.local_dv'], dict_of_list_values['SellarCoupling.x'],
                           dict_of_list_values['SellarCoupling.y_1'], dict_of_list_values['SellarCoupling.y_2'], dict_of_list_values['SellarCoupling.z']]
 
@@ -60,15 +71,20 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.instance_reference'] = True
 
         # Sellar referene inputs
+        #======================================================================
+        # local_dv = 10.
+        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = array([2.])
+        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = array([1.])
+        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_2'] = array([1.])
+        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = array([1., 1.])
+        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
+        #======================================================================
+
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = array([
-                                                                           2.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = array([
-                                                                             1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_2'] = array([
-                                                                             1.])
-        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = array([
-                                                                           1., 1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = [2.]
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = [1.]
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_2'] = [1.]
+        disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = [1., 1.]
         disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

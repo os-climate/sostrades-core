@@ -30,10 +30,18 @@ class Study(StudyManager):
 
         disc_dict = {}
         # Sellar inputs
-        disc_dict[f'{ns}.x'] = array([1.])
-        disc_dict[f'{ns}.y_1'] = array([1.])
-        disc_dict[f'{ns}.y_2'] = array([1.])
-        disc_dict[f'{ns}.z'] = array([1., 1.])
+        #======================================================================
+        # disc_dict[f'{ns}.x'] = array([1.])
+        # disc_dict[f'{ns}.y_1'] = array([1.])
+        # disc_dict[f'{ns}.y_2'] = array([1.])
+        # disc_dict[f'{ns}.z'] = array([1., 1.])
+        #======================================================================
+
+        disc_dict[f'{ns}.x'] = [1.]
+        disc_dict[f'{ns}.y_1'] = [1.]
+        disc_dict[f'{ns}.y_2'] = [1.]
+        disc_dict[f'{ns}.z'] = [1., 1.]
+
         disc_dict[f'{ns}.Sellar_Problem.local_dv'] = 10.
         disc_dict[f'{ns}.max_mda_iter'] = 100
         disc_dict[f'{ns}.tolerance'] = 1e-12

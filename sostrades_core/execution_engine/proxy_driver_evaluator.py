@@ -456,10 +456,31 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.save_editable_attr = False
 
     def get_reference_scenario_index(self):
+        """
+        """
         index_ref = 0
+        my_root = self.ee.ns_manager.compose_ns(
+            [self.sos_name, self.REFERENCE_SCENARIO_NAME])
+
+        def is_string_at_the_end(sub_string, my_string):
+            if sub_string in my_string:
+                remaining_string = my_string.split(sub_string, 1)[1]
+                #remaining_string = my_string.partition(sub_string)[2]
+                if remaining_string == '':
+                    return True
+                else:
+                    return False
+            else:
+                return False
+
         for disc in self.scenarios:
+            # In self.scenarios we have
+            # 'Eval.ReferenceScenario.SellarCoupling',
+            # 'Eval.scenario_1.SellarCoupling', ,
+            # 'Eval.scenario_2.SellarCoupling',
             if disc.sos_name == self.REFERENCE_SCENARIO_NAME \
-                    or self.ee.ns_manager.compose_ns([self.sos_name, self.REFERENCE_SCENARIO_NAME]) in disc.sos_name:  # for flatten_subprocess
+                    or my_root in disc.sos_name:  # for flatten_subprocess
+                    # or is_string_at_the_end(my_root, disc.sos_name):  # for flatten_subprocess
                     # TODO: better implement this 2nd condition ?
                 break
             else:
@@ -1442,7 +1463,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # having wrong keys may be not needed to be treated
 
         # Remark 2: however with this filtering we should verify that we will always have all the variable pushed at the end
-        # (we should not miss data that were provided in the anonymized dict)
+        # (we should not miss data that were provided in the anonymized dict) : but this will be the case all valid keys
+        # will be set in the dm if it is a appropriate key (based on the
+        # dynamic configuration)
+
+        # Remark 3: TODO What could be done is: if we reach the 100 iterations limit because are_all_data_set is still not True
+        # then provide a warning with the list of variables keys that makes
+        # are_all_data_set still be False
+
+        # Remark 4:  TODO (Better improvement)  next Provide another mechanism at eev4 level in which you always can push data in dm provide check and
+        # warning when you reach the end of the configuration.
 
         if are_all_data_set:
             # 3. Update parameters

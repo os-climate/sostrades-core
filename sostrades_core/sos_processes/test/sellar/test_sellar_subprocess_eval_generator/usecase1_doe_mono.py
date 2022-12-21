@@ -54,9 +54,9 @@ class Study(StudyManager):
         #======================================================================
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': [f'.{coupling_name}.Sellar_Problem.local_dv', f'.{coupling_name}.x', f'.{coupling_name}.y_1',
-                                           f'.{coupling_name}.y_2',
-                                           f'.{coupling_name}.z']}
+                             'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x', f'{coupling_name}.y_1',
+                                           f'{coupling_name}.y_2',
+                                           f'{coupling_name}.z']}
 
         input_selection_x = pd.DataFrame(input_selection_x)
 
@@ -67,8 +67,8 @@ class Study(StudyManager):
         #======================================================================
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': [f'.{coupling_name}.c_1', f'.{coupling_name}.c_2', f'.{coupling_name}.obj',
-                                                    f'.{coupling_name}.y_1', f'.{coupling_name}.y_2']}
+                                      'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2', f'{coupling_name}.obj',
+                                                    f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
 
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
@@ -88,11 +88,20 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar inputs
+        #======================================================================
+        # local_dv = 10.
+        # disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([2.])
+        # disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
+        # disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
+        # disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
+        # disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
+        #======================================================================
+
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([2.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = [2.]
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = [1.]
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = [1.]
+        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = [1., 1.]
         disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

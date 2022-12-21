@@ -59,14 +59,23 @@ class Study(StudyManager):
                 repo, mod_id, my_usecase)
         else:
             anonymize_input_dict_from_usecase = {}
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = array([
-                1.])
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = array([
-                1.])
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = array([
-                1.])
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = array([
-                1., 1.])
+            #==================================================================
+            # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = array([ 1.])
+            # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = array([1.])
+            # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = array([1.])
+            # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = array([1., 1.])
+            # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+            #==================================================================
+
+            anonymize_input_dict_from_usecase = {}
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = [
+                1.]
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = [
+                1.]
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = [
+                1.]
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = [
+                1., 1.]
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
         disc_dict = {}

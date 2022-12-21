@@ -31,13 +31,24 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
+        #======================================================================
+        # dict_of_list_values = {
+        #     'x': [array([3.]), array([4.])],
+        #     'z': [array([-10., 0.])],
+        #     'Sellar_Problem.local_dv': [10.],
+        #     'y_1': [array([1.])],
+        #     'y_2': [array([1.])]
+        # }
+        #======================================================================
+
         dict_of_list_values = {
-            'x': [array([3.]), array([4.])],
-            'z': [array([-10., 0.])],
+            'x': [[3.], [4.]],
+            'z': [[-10., 0.]],
             'Sellar_Problem.local_dv': [10.],
-            'y_1': [array([1.])],
-            'y_2': [array([1.])]
+            'y_1': [[1.]],
+            'y_2': [[1.]]
         }
+
         list_of_values = [dict_of_list_values['Sellar_Problem.local_dv'], dict_of_list_values['x'],
                           dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
 

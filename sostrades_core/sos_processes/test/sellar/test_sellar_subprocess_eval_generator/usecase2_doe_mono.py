@@ -49,6 +49,7 @@ class Study(StudyManager):
                                       'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2', f'{coupling_name}.obj',
                                                     f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
+        anonymize_input_dict_from_usecase = {}
 
         disc_dict = {}
         # DoE inputs
@@ -69,6 +70,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
         disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         return [disc_dict]
 
