@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 def at_proxy(f):
     @wraps(f)
     def proxy_do(self, *args, **kwargs):
-        proxy_func = getattr(self.__proxy, f.__name__)
+        proxy_func = getattr(self.proxy, f.__name__)
         return proxy_func(*args, **kwargs)
     return proxy_do
 
