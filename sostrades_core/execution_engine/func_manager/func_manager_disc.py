@@ -116,7 +116,7 @@ class FunctionManagerDisc(SoSWrapp):
         # initialization of func_manager
         self.func_manager.reinit()
 
-        inputs_dict= self.proxy.get_sosdisc_inputs()
+        inputs_dict= self.get_sosdisc_inputs()
 
         if 'eps2' in inputs_dict.keys():
             self.func_manager.configure_smooth_log(inputs_dict['smooth_log'], inputs_dict['eps2'])
@@ -170,11 +170,11 @@ class FunctionManagerDisc(SoSWrapp):
                     else:
                         namespace = 'ns_functions'
 
-                    namespaces = self.proxy.dm.get_all_namespaces_from_var_name(f)
+                    namespaces = self.dm.get_all_namespaces_from_var_name(f)
 
                     if namespaces != []:
                         variable_full_name = namespaces[0]
-                        var_type = self.proxy.dm.get_data(variable_full_name)['type']
+                        var_type = self.dm.get_data(variable_full_name)['type']
                     else:
                         var_type = 'dataframe'
                     dynamic_inputs[f] = {
@@ -213,8 +213,8 @@ class FunctionManagerDisc(SoSWrapp):
         dynamic_outputs[self.OBJECTIVE_LAGR] = {'type': 'array', 'visibility': 'Shared',
                                                     'namespace': 'ns_optim'}
         self.iter, self.last_len_database = 0, 0
-        self.proxy.add_inputs(dynamic_inputs)
-        self.proxy.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
         self.inst_desc_in = dynamic_inputs
         self.inst_desc_out = dynamic_outputs
         # self.DESC_IN.update(proxy.inst_desc_in)
@@ -776,12 +776,12 @@ class FunctionManagerDisc(SoSWrapp):
         chart_filters = []
         chart_list = ['lagrangian objective', 'aggregated objectives',
                       'objectives', 'ineq_constraints', 'eq_constraints', 'objective (colored)']
-        if self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
             chart_list.remove('ineq_constraints')
-        if self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
             chart_list.remove('eq_constraints')
-        if self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and \
-                self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and \
+                self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
             chart_list.remove('objective (colored)')
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'charts'))
@@ -795,17 +795,17 @@ class FunctionManagerDisc(SoSWrapp):
         instanciated_charts = []
         charts = []
 
-        func_df = self.proxy.get_sosdisc_inputs('function_df')
+        func_df = self.get_sosdisc_inputs('function_df')
 
         if filters is not None:
             for chart_filter in filters:
                 if chart_filter.filter_key == 'charts':
                     charts = chart_filter.selected_values
         if 'objective (colored)' in charts:
-            if not self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
-            self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+            if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
+            self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
                 optim_output_df = deepcopy(
-                    self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
+                    self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
                 new_chart = self.get_chart_obj_constraints_iterations(func_df, optim_output_df, [self.OBJECTIVE],
                                                                       'objective (colored)')
             instanciated_charts.append(new_chart)
@@ -815,7 +815,7 @@ class FunctionManagerDisc(SoSWrapp):
 
         for chart in chart_list:
             new_chart = None
-            optim_output_df = self.proxy.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)
+            optim_output_df = self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)
             parameters_df, obj_list, ineq_list, eq_list = self.get_parameters_df(
                 func_df)
             if chart in charts:

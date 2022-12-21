@@ -52,21 +52,23 @@ class Disc10(SoSWrapp):
               'visibility': SoSWrapp.SHARED_VISIBILITY,
               'namespace': 'ns_ac'}
     }
+    # ns_b is a new namespace defined for a dynamic variable in setup_sos_disciplines
+    DYNAMIC_VAR_NAMESPACE_LIST = ['ns_b']
 
     def setup_sos_disciplines(self):
         dynamic_inputs = {}
-        if 'Model_Type' in self.proxy.get_data_in():
-            Model_Type = self.proxy.get_sosdisc_inputs('Model_Type')
+        if 'Model_Type' in self.get_data_in():
+            Model_Type = self.get_sosdisc_inputs('Model_Type')
             if Model_Type == 'Affine':
                 dynamic_inputs.update({'b': {'type': 'float',
                                              'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                             'namespace': 'ns_ac'}})
+                                             'namespace': 'ns_b'}})
             elif Model_Type == 'Polynomial':
                 dynamic_inputs.update(
-                    {'b': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
+                    {'b': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_b'}})
                 dynamic_inputs.update({'power': {'type': 'float', 'default': 2.,
                                                  'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
-        self.proxy.add_inputs(dynamic_inputs)
+        self.add_inputs(dynamic_inputs)
 
     def run(self):
         input_dict = self.get_sosdisc_inputs()

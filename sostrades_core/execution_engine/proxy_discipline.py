@@ -355,7 +355,9 @@ class ProxyDiscipline(object):
         """
         self.mdo_discipline_wrapp = MDODisciplineWrapp(
             name, wrapper, wrapping_mode)
-        self.assign_proxy_to_wrapper()
+        # self.assign_proxy_to_wrapper()
+        # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
+        # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
 
     @property
     def status(self):  # type: (...) -> str

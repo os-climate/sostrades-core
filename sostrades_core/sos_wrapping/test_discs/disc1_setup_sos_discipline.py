@@ -52,8 +52,8 @@ class Disc1(SoSWrapp):
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        if 'AC_list' in self.proxy.get_data_in():
-            AC_list = self.proxy.get_sosdisc_inputs('AC_list')
+        if 'AC_list' in self.get_data_in():
+            AC_list = self.get_sosdisc_inputs('AC_list')
 
             for ac in AC_list:
                 dynamic_inputs.update(
@@ -64,12 +64,12 @@ class Disc1(SoSWrapp):
             dynamic_inputs.update(
                 {'dyn_input_2': {'type': 'dataframe', 'default': default_df, 'structuring': True}})
 
-            if 'dyn_input_2' in self.proxy.get_data_in() and self.proxy.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
-                self.proxy.update_default_value(
-                    'dyn_input_2', self.proxy.IO_TYPE_IN, default_df)
+            if 'dyn_input_2' in self.get_data_in() and self.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
+                self.update_default_value(
+                    'dyn_input_2', self.IO_TYPE_IN, default_df)
 
-        self.proxy.add_inputs(dynamic_inputs)
-        self.proxy.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
 
     def run(self):
         input_dict = self.get_sosdisc_inputs()
@@ -85,3 +85,13 @@ class Disc1(SoSWrapp):
             dict_values[f'{ac}.dyn_output'] = dyn_output
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
+
+
+class Disc1ProxyCheck(Disc1):
+    def run(self):
+        if self.proxy is not None:
+            raise Exception('proxy remains assigned during run')
+        elif self.dm is not None:
+            raise Exception('dm remains assigned during run')
+        else:
+            super().run()
