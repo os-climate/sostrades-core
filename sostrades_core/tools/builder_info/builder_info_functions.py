@@ -46,12 +46,14 @@ def get_ns_list_in_sub_builder(builder):
         ns_list_out = [value_dict['namespace'] for value_dict in builder.cls.DESC_OUT.values() if
                        'namespace' in value_dict]
         ns_list.extend(ns_list_out)
-
+    if hasattr(builder.cls, 'DYNAMIC_VAR_NAMESPACE_LIST'):
+        ns_list.extend(builder.cls.DYNAMIC_VAR_NAMESPACE_LIST)
 
     if ProxyDisciplineBuilder in inspect.getmro(builder.cls):
-        if builder.cls == ArchiBuilder :
-            print('Namespaces in architecture df of an archibuilder are not found to be updated : Use a scatter_map with ns_to_update if needed')
-        else :
+        if builder.cls == ArchiBuilder:
+            print(
+                'Namespaces in architecture df of an archibuilder are not found to be updated : Use a scatter_map with ns_to_update if needed')
+        else:
             builder_list_to_build = builder.args['cls_builder']
             for sub_builder in builder_list_to_build:
                 ns_sub_list = get_ns_list_in_sub_builder(sub_builder)

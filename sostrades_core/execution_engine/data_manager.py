@@ -488,20 +488,20 @@ class DataManager:
                         # disc are coherent
                         self.check_var_data_input_mismatch(
                             var_name, var_f_name, disc_id, self.data_dict[var_id], disc_dict[var_name])
-
-                        # reference the parameter from the data manager to the
-                        # discipline...
-                        # ...but keep original namespace in disc_dict!
-                        if 'namespace' in disc_dict[var_name].keys():
-                            original_namespace = disc_dict[var_name]['namespace']
-                        if 'ns_reference' in disc_dict[var_name].keys():
-                            original_ns_reference = disc_dict[var_name]['ns_reference']
-                        disc_dict[var_name] = deepcopy(self.data_dict[var_id])
-                        disc_dict[var_name]['var_name'] = var_name
-                        if 'namespace' in disc_dict[var_name].keys():
-                            disc_dict[var_name]['namespace'] = original_namespace
-                        if 'ns_reference' in disc_dict[var_name].keys():
-                            disc_dict[var_name]['ns_reference'] = original_ns_reference
+                        disc_dict[var_name] = self.data_dict[var_id]
+                        # # reference the parameter from the data manager to the
+                        # # discipline...
+                        # # ...but keep original namespace in disc_dict!
+                        # if 'namespace' in disc_dict[var_name].keys():
+                        #     original_namespace = disc_dict[var_name]['namespace']
+                        # if 'ns_reference' in disc_dict[var_name].keys():
+                        #     original_ns_reference = disc_dict[var_name]['ns_reference']
+                        # disc_dict[var_name] = deepcopy(self.data_dict[var_id])
+                        # disc_dict[var_name]['var_name'] = var_name
+                        # if 'namespace' in disc_dict[var_name].keys():
+                        #     disc_dict[var_name]['namespace'] = original_namespace
+                        # if 'ns_reference' in disc_dict[var_name].keys():
+                        #     disc_dict[var_name]['ns_reference'] = original_ns_reference
                     # else data already exist as OUTPUT and has priority!
                     # => do nothing
                 else:
