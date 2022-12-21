@@ -188,6 +188,13 @@ class SoSWrapp(object):
         """
         pass
 
+    @at_proxy
+    def get_disc_full_name(self):
+        """
+        Method get_disc_full_name delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
     def setup_sos_disciplines(self):  # type: (...) -> None
         """
         Define the set_up_sos_discipline of its proxy
