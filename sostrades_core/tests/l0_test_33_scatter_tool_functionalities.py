@@ -319,6 +319,38 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
             self.assertEqual(scenario_name_value, scenario)
 
+    def test_06_multi_scenario_driver_with_dynamic_new_namespace(self):
+
+        dynamic_builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                                     mod_id='test_disc10_dynamic')
+        multi_scenarios = self.exec_eng.factory.create_driver(
+            'multi_scenarios', dynamic_builder_list)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            multi_scenarios)
+        self.exec_eng.configure()
+
+        dict_values = {}
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
+                                    'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        for scenario in self.scenario_list:
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc10.Model_Type'] = 'Affine'
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc10.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc10.b'] = 2
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        b_list = self.exec_eng.dm.get_all_namespaces_from_var_name('b')
+
+        self.assertEqual(b_list,
+                         [f'{self.study_name}.multi_scenarios.{scenario}.Disc10.b' for scenario in self.scenario_list])
+
+        self.exec_eng.execute()
+
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()

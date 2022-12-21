@@ -73,7 +73,7 @@ class SoSWrapp(object):
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
-
+    DYNAMIC_VAR_NAMESPACE_LIST = []
     def __init__(self, sos_name):
         """
         Constructor.

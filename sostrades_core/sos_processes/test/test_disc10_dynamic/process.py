@@ -35,6 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
             disc_name, mod_path)
         builder_list = [disc_builder]
         ns_dict = {
-            'ns_ac': f'{self.ee.study_name}.Disc10'}
+            'ns_ac': f'{self.ee.study_name}.Disc10',
+            'ns_b': f'{self.ee.study_name}.Disc10'}
         self.ee.ns_manager.add_ns_def(ns_dict)
         return builder_list
