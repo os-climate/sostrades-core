@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Eval Generator doe',
+        'label': 'Core Test Sellar Coupling Eval Generator',
         'description': '',
         'category': '',
         'version': '',
@@ -33,13 +33,12 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-        # Select the netsted subprocess
+
+        # Select the nested subprocess
         repo = 'sostrades_core.sos_processes.test.sellar'
-        sub_proc = 'test_sellar_list'
+        sub_proc = 'test_sellar_coupling'
         coupling_builder = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
-
-        coupling_name = 'subprocess'
 
         # driver builder
         flatten_subprocess = False
@@ -51,22 +50,21 @@ class ProcessBuilder(BaseProcessBuilder):
                 'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
 
         #======================================================================
-        # # shift nested subprocess namespaces
+        # shift nested subprocess namespaces: multi instances
+        # no need to shift
+        # # shift nested subprocess namespaces: mono instances
+        #  coupling_name = 'SellarCoupling'
         # self.ee.ns_manager.add_ns(
         #     'ns_OptimSellar', f'{self.ee.study_name}.Eval.{coupling_name}')
         #======================================================================
 
-        # shift nested subprocess namespaces
-        self.ee.ns_manager.add_ns(
-            'ns_OptimSellar', f'{self.ee.study_name}.{coupling_name}')
-
         # driver namespaces
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
-        #self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
-        # sample generator builder
-        mod_cp = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        cp_builder = self.ee.factory.get_builder_from_module(
-            'SampleGenerator', mod_cp)
+        # Add sample generator builder
+        mod_generator = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
+        generator_builder = self.ee.factory.get_builder_from_module(
+            'SampleGenerator', mod_generator)
 
-        return eval_driver + [cp_builder]
+        return eval_driver + [generator_builder]

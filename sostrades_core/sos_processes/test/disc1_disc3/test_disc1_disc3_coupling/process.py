@@ -35,7 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
 
-        # Select the netsted subprocess
+        # Select the nested subprocess
         repo = 'sostrades_core.sos_processes.test.disc1_disc3'
         sub_proc = 'test_disc1_disc3_list'
         list_builder = self.ee.factory.get_builder_from_process(
