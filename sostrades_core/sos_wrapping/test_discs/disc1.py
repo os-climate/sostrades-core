@@ -77,8 +77,8 @@ class Disc1(SoSWrapp):
 
             chart_name = 'y vs x'
 
-            y = self.proxy.get_sosdisc_outputs('y')
-            x = self.proxy.get_sosdisc_inputs('x')
+            y = self.get_sosdisc_outputs('y')
+            x = self.get_sosdisc_inputs('x')
             print(y, x)
             new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
                                                  chart_name=chart_name)
