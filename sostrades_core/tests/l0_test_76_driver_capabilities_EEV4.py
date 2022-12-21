@@ -1570,11 +1570,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                         study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.x', 'editable'),
                     False)
 
-        # 5- Outer in copy and non-ref inner in linked (outer editable, inner
-        # read-only)
+        # 5- Outer in copy, ref-inner in linked and non-ref inner in linked
         values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'copy_mode'
-        # Will be propagated
-        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'copy_mode'
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'copy_mode' # Will be propagated
         exec_eng.load_study_from_input_dict(values_dict_test)
         self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.scenario_1.inner_ms.reference_mode'),
                          'copy_mode')
@@ -1607,8 +1605,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # 6- ref-Outer in copy, ref-inner in linked and non-ref inner in copy
         # (outer editable, inner read-only)
         values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'copy_mode'
-        # Will be propagated
-        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'linked_mode'
+        values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'linked_mode' # Will be propagated
         exec_eng.load_study_from_input_dict(values_dict_test)
         self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.scenario_1.inner_ms.reference_mode'),
                          'linked_mode')
