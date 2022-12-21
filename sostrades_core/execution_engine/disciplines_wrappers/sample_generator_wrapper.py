@@ -181,10 +181,10 @@ class SampleGeneratorWrapper(SoSWrapp):
         Overload of setup_sos_disciplines to specify the specific dynamic inputs of sample generator
         '''
 
-        disc_in = self.proxy.get_data_in()
+        disc_in = self.get_data_in()
 
         if len(disc_in) != 0:
-            self.sampling_method = self.proxy.get_sosdisc_inputs(
+            self.sampling_method = self.get_sosdisc_inputs(
                 self.SAMPLING_METHOD)
             self.instantiate_sampling_tool()
 

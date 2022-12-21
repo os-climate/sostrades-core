@@ -19,14 +19,15 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import logging
 from sostrades_core.tools.base_functions.compute_len import compute_len
 from numpy import zeros, array, ndarray, complex128
-
+from functools import wraps
 LOGGER = logging.getLogger(__name__)
 
 
-# decorator for delegating function to the proxy
-def at_proxy(func):
+# decorator for delegating a method to the ProxyDiscipline object during configuration
+def at_proxy(f):
+    @wraps(f)
     def proxy_do(self, *args, **kwargs):
-        proxy_func = getattr(self.proxy, func.__name__)
+        proxy_func = getattr(self.proxy, f.__name__)
         return proxy_func(*args, **kwargs)
     return proxy_do
 
@@ -100,15 +101,19 @@ class SoSWrapp(object):
         self.jac_boundaries = {}
         self.inst_desc_in = {}
         self.inst_desc_out = {}
+
+        # dynamic attributes that easen access to proxy and dm during configuration and get cleaned at runtime
         self.proxy = None
+        self.dm = None
 
     def clear_proxy(self):
         """
         Clears the ProxyDiscipline instance attribute from the SoSWrapp instance for serialization purposes (so that the
         proxy is not in attribute of the GEMSEO objects during execution).
         """
-        del self.proxy
+        del self.proxy, self.dm
         self.proxy = None
+        self.dm = None
 
     def assign_proxy(self, proxy):
         """
@@ -117,18 +122,69 @@ class SoSWrapp(object):
         """
         if self.proxy is None:
             self.proxy = proxy
+            self.dm = proxy.dm
 
+    # methods delegated to the proxy partially (because they might be called during the run)
+    def get_sosdisc_inputs(self, *args, **kwargs):
+        """
+        Interface for the method get_sosdisc_inputs implementing a call to the ProxyDiscipline object, at configuration
+        time vs. a call to the homonym protected method of the SoSWrapp object, at runtime.
+        """
+        if self.proxy is not None:
+            return self.proxy.get_sosdisc_inputs(*args, **kwargs)
+        else:
+            return self._get_sosdisc_inputs(*args, **kwargs)
+
+    def get_sosdisc_outputs(self, *args, **kwargs):
+        """
+        Interface for the method get_sosdisc_outputs implementing a call to the ProxyDiscipline object, at configuration
+        time vs. a call to the homonym protected method of the SoSWrapp object, at runtime.
+        """
+        if self.proxy is not None:
+            return self.proxy.get_sosdisc_outputs(*args, **kwargs)
+        else:
+            return self._get_sosdisc_outputs(*args, **kwargs)
+
+    # methods delegated to the proxy totally (that only make sense at configuration time)
     @at_proxy
     def add_inputs(self):
         """
-        Method delegated to proxy
+        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
     @at_proxy
     def add_outputs(self):
         """
-        Method delegated to proxy
+        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_data_in(self):
+        """
+        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_data_out(self):
+        """
+        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def set_dynamic_default_values(self):
+        """
+        Method set_dynamic_default_values delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def update_default_value(self):
+        """
+        Method update_default_value delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
@@ -162,9 +218,9 @@ class SoSWrapp(object):
         """
         raise NotImplementedError()
 
-    def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
+    def _get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
-        Accessor for the inputs values as a list or dict.
+        Accessor for the inputs values as a list or dict to be used by the SoSWrapp object at runtime.
 
         Arguments:
             keys (List): the input short or full names list (depending on value of full_name_keys)
@@ -195,10 +251,9 @@ class SoSWrapp(object):
             else:
                 return list(inputs.values())[0]
 
-    def get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys=False):
+    def _get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
-        Accessor for the outputs values as a list or dict.
-
+        Accessor for the outputs values as a list or dict to be used by the SoSWrapp object at runtime.
         Arguments:
             keys (List): the output short or full names list (depending on value of full_name_keys)
             in_dict (bool): if output format is dict

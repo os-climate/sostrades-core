@@ -64,7 +64,7 @@ class DesignVarDiscipline(SoSWrapp):
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        inputs_dict = self.proxy.get_sosdisc_inputs()
+        inputs_dict = self.get_sosdisc_inputs()
 
         # loops over the output descriptor to add dynamic inputs and outputs from the loaded usecase.
         # The structure of the output descriptor dict is checked prior its use
@@ -89,7 +89,7 @@ class DesignVarDiscipline(SoSWrapp):
 
     def init_execution(self):
         super().init_execution()
-        inputs_dict = self.proxy.get_sosdisc_inputs()
+        inputs_dict = self.get_sosdisc_inputs()
         self.design = DesignVar(inputs_dict)
         self.dict_last_ite = None
 
@@ -249,7 +249,7 @@ class DesignVarDiscipline(SoSWrapp):
             init_xvect = False
 
         if 'BSpline' in charts:
-            list_dv = self.proxy.get_sosdisc_inputs('design_var_descriptor')
+            list_dv = self.get_sosdisc_inputs('design_var_descriptor')
             for parameter in list_dv.keys():
                 new_chart = self.get_chart_BSpline(
                     self.proxy, parameter, init_xvect)

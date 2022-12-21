@@ -52,8 +52,8 @@ class Disc1(SoSWrapp):
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        if 'AC_list' in self.proxy.get_data_in():
-            AC_list = self.proxy.get_sosdisc_inputs('AC_list')
+        if 'AC_list' in self.get_data_in():
+            AC_list = self.get_sosdisc_inputs('AC_list')
 
             for ac in AC_list:
                 dynamic_inputs.update(
@@ -64,9 +64,9 @@ class Disc1(SoSWrapp):
             dynamic_inputs.update(
                 {'dyn_input_2': {'type': 'dataframe', 'default': default_df, 'structuring': True}})
 
-            if 'dyn_input_2' in self.proxy.get_data_in() and self.proxy.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
-                self.proxy.update_default_value(
-                    'dyn_input_2', self.proxy.IO_TYPE_IN, default_df)
+            if 'dyn_input_2' in self.get_data_in() and self.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
+                self.update_default_value(
+                    'dyn_input_2', self.IO_TYPE_IN, default_df)
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)

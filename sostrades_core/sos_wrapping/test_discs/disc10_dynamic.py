@@ -55,8 +55,8 @@ class Disc10(SoSWrapp):
 
     def setup_sos_disciplines(self):
         dynamic_inputs = {}
-        if 'Model_Type' in self.proxy.get_data_in():
-            Model_Type = self.proxy.get_sosdisc_inputs('Model_Type')
+        if 'Model_Type' in self.get_data_in():
+            Model_Type = self.get_sosdisc_inputs('Model_Type')
             if Model_Type == 'Affine':
                 dynamic_inputs.update({'b': {'type': 'float',
                                              'visibility': SoSWrapp.SHARED_VISIBILITY,

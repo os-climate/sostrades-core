@@ -84,8 +84,8 @@ class Disc6(SoSWrapp):
 
             chart_name = 'h vs x'
 
-            h = list(self.proxy.get_sosdisc_outputs('h'))
-            x = list(self.proxy.get_sosdisc_inputs('x') * np.array([0., 1.]))
+            h = list(self.get_sosdisc_outputs('h'))
+            x = list(self.get_sosdisc_inputs('x') * np.array([0., 1.]))
 
             new_chart = TwoAxesInstanciatedChart('x (-)', 'h (-)',
                                                  chart_name=chart_name)

@@ -63,8 +63,8 @@ class KnapsackProblem(SoSWrapp):
     }
 
     def init_execution(self):
-        values, weights = self.proxy.get_sosdisc_inputs(["items_value", "items_weight"])
-        capacity_items, capacity_weight = self.proxy.get_sosdisc_inputs(["capacity_items", "capacity_weight"])
+        values, weights = self.get_sosdisc_inputs(["items_value", "items_weight"])
+        capacity_items, capacity_weight = self.get_sosdisc_inputs(["capacity_items", "capacity_weight"])
         n_items_available = len(values)
         self.model = Knapsack(
             values,

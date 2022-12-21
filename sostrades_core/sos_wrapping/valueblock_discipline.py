@@ -104,7 +104,7 @@ class ValueBlockDiscipline(SoSWrapp):
     def get_chart_filter_list(self):
 
         chart_filters = []
-        output_dict = self.proxy.get_sosdisc_outputs()
+        output_dict = self.get_sosdisc_outputs()
 
         chart_list = [key.replace('_gather', '')
                       for key in output_dict.keys() if key.endswith('_gather')]
@@ -114,7 +114,7 @@ class ValueBlockDiscipline(SoSWrapp):
 
         return chart_filters
 
-    def get_post_processing_list(self, proxy, chart_filters=None):
+    def get_post_processing_list(self, chart_filters=None):
 
         instanciated_charts = []
         #scenario_name = self.get_sosdisc_inputs('shared_scenario_name')
@@ -125,13 +125,13 @@ class ValueBlockDiscipline(SoSWrapp):
                 if chart_filter.filter_key == 'Charts gather':
                     graphs_list = chart_filter.selected_values
 
-        output_dict = proxy.get_sosdisc_outputs()
+        output_dict = self.get_sosdisc_outputs()
 
         for output_key, output_value in output_dict.items():
             if output_key.endswith('_gather'):
 
                 chart_name = output_key.replace('_gather', '')
-                chart_unit = proxy.get_data_out()[output_key][self.UNIT]
+                chart_unit = self.get_data_out()[output_key][self.UNIT]
 
                 if isinstance(list(output_value.values())[0], DataFrame):
                     if 'years' in list(output_value.values())[0].columns:
