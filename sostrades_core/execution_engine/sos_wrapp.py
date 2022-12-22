@@ -502,3 +502,7 @@ class SoSWrapp(object):
             index_column = dict_keys.index(column)
 
         return lines_nb, index_column
+
+    @at_proxy
+    def get_inst_desc_in(self):
+        pass
