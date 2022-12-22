@@ -21,6 +21,7 @@ from time import time
 from pandas._testing import assert_frame_equal
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -79,6 +80,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def setUp(self):
 
         self.repo = 'sostrades_core.sos_processes.test'
+        self.with_modal = False
 
     def test_1_usecase_import_multi_instances_eval_simple_disc1_disc3(self):
         """
@@ -124,7 +126,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        based_on_uc_name = True
+        if based_on_uc_name:
             sub_process_name = 'test_disc1_disc3_list'
             sub_process_usecase_name = 'usecase'
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
@@ -142,10 +145,15 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # No warning in case of a wrong above path with Eval #TODO  Check why
-        # no warning
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -201,7 +209,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        based_on_uc_name = True
+        if based_on_uc_name:
             sub_process_name = 'test_disc1_disc3_list'
             sub_process_usecase_name = 'usecase'
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
@@ -219,10 +228,15 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # No warning in case of a wrong above path with Eval #TODO  Check why
-        # no warning
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -280,7 +294,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        based_on_uc_name = True
+        if based_on_uc_name:
             sub_process_name = 'test_disc1_disc3_coupling'
             sub_process_usecase_name = 'usecase'
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
@@ -298,10 +313,15 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # No warning in case of a wrong above path with Eval #TODO  Check why
-        # no warning
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -364,7 +384,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 0:
+        based_on_uc_name = True
+        if based_on_uc_name:
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
@@ -391,7 +412,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -469,7 +497,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 0:
+        based_on_uc_name = True
+        if based_on_uc_name:
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
@@ -521,7 +550,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -599,8 +635,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             ref_disc, target_values_dict, print_flag=print_flag)
 
         # Load the anonymized dict from associated selected sub_process
-
-        if 1 == 0:  # full anonymized dict with numerical keys
+        # Find anonymised dict
+        based_on_uc_name = True
+        if based_on_uc_name:  # full anonymized dict with numerical keys
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
@@ -654,9 +691,16 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Update the reference from the selected imported usecase anonymised
         # dict
-
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -672,9 +716,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # study_dump.run()
 
-    def _test_7_usecase_import_multi_instances_eval_generator_cp_sellar_flatten(self):
-        # KO root process is not configured after 100 iterations: and so import
-        # of usecase is KO To be fixed
+    def test_7_usecase_import_multi_instances_eval_generator_cp_sellar_flatten(self):
         """
         This test checks the usecase import capability in multi instance mode.
         """
@@ -722,7 +764,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 0:  # full anonymized dict with numerical keys
+        based_on_uc_name = True
+        if based_on_uc_name:  # full anonymized dict with numerical keys
             anonymize_input_dict_from_usecase = study_dump.static_load_raw_usecase_data(
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
@@ -753,7 +796,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
 
         self.exec_eng.display_treeview_nodes(True)
@@ -773,6 +823,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode with eval and without generator (very simple MultiScenario)
         It uses the test_disc1_disc3_list nested process 
         """
+        # Old test that could be depreciated: already covered by test 1
         from os.path import join, dirname
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
@@ -811,7 +862,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 0:
+        based_on_uc_name = True
+        if based_on_uc_name:
             sub_process_repo = self.repo + '.disc1_disc3'
             sub_process_name = 'test_disc1_disc3_list'
             sub_process_usecase_name = 'usecase'
@@ -834,10 +886,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.usecase_data'] = anonymize_input_dict_from_usecase
-        # dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # No warning in case of a wrong above path with Eval #TODO  Check why
-        # no warning
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.multi_scenarios.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.multi_scenarios.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated
@@ -855,6 +911,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode with cartesian product generator + eval
         It uses the test_disc1_disc3_list nested process 
         """
+        # Old test that could be depreciated: already covered by test 2
         from os.path import join, dirname
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
@@ -893,7 +950,8 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # Load the anonymized dict from associated selected sub_process
 
-        if 1 == 1:
+        based_on_uc_name = True
+        if based_on_uc_name:
             sub_process_repo = self.repo + '.disc1_disc3'
             sub_process_name = 'test_disc1_disc3_list'
             sub_process_usecase_name = 'usecase'
@@ -916,10 +974,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         # dict
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.usecase_data'] = anonymize_input_dict_from_usecase
-        # dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
-        # No warning in case of a wrong above path with Eval #TODO  Check why
-        # no warning
+        if self.with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                self.repo, sub_process_name, sub_process_usecase_name)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            #process_builder_parameter_type.usecase_data = {}
+            dict_values[f'{self.study_name}.multi_scenarios.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            dict_values[f'{self.study_name}.multi_scenarios.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
 
         # Check that the reference has been updated

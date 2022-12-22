@@ -17,6 +17,7 @@ import pandas as pd
 from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 
 class Study(StudyManager):

@@ -17,6 +17,7 @@ import pandas as pd
 from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 
 class Study(StudyManager):
@@ -70,8 +71,6 @@ class Study(StudyManager):
 
         output_selection_obj_y_o = pd.DataFrame(output_selection_obj_y_o)
 
-        anonymize_input_dict_from_usecase = {}
-
         disc_dict = {}
         # DoE + Eval inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
@@ -84,7 +83,19 @@ class Study(StudyManager):
 
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_b_z
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y_o
-        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
+        with_modal = False
+        anonymize_input_dict_from_usecase = {}
+        if with_modal:
+            repo = 'sostrades_core.sos_processes.test.disc1_disc3'
+            mod_id = 'test_disc1_disc3_coupling'
+            my_usecase = 'Empty'
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            disc_dict[f'{ns}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Nested process inputs
         self.a = 3

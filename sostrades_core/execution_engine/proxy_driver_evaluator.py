@@ -259,7 +259,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_cache_inputs()
 
         if self.REFERENCE_MODE in self.get_data_in():
-            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
+            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in(
+            )) + ',' + str(self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
             # if (self.get_var_full_name('reference_mode', self.get_data_in()) + ',' +
             #     self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))\
             #         == 'root.outer_ms.scenario_1.inner_ms.reference_mode,copy_mode':
@@ -268,6 +269,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             #     self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))\
             #         == 'root.outer_ms.scenario_1.inner_ms.reference_mode,linked_mode':
             #     print('sqfqsfd')
+
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
@@ -350,7 +352,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 scenario_names = scenario_names[:-1]
                 ref_discipline = self.scenarios[self.get_reference_scenario_index(
                 )]
-                ref_discipline_full_name = ref_discipline.get_disc_full_name()
+
+                # ref_discipline_full_name =
+                # ref_discipline.get_disc_full_name() # do provide the sting
+                # path of data in flatten
+                driver_evaluator_ns = self.get_disc_full_name()
+                reference_scenario_ns = self.ee.ns_manager.compose_ns(
+                    [driver_evaluator_ns, self.REFERENCE_SCENARIO_NAME])
+                # ref_discipline_full_name may need to be renamed has it is not
+                # true in flatten mode
+                ref_discipline_full_name = reference_scenario_ns
+
                 # Manage usecase import
                 self.manage_import_inputs_from_sub_process(
                     ref_discipline_full_name)
@@ -364,7 +376,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # Update of original editability state in case modification
                 # scenario df
                 if (not set(scenario_names) == set(self.old_scenario_names)) and self.old_scenario_names != []:
-                    new_scenarios = set(scenario_names) - set(self.old_scenario_names)
+                    new_scenarios = set(scenario_names) - \
+                        set(self.old_scenario_names)
                     for new_scenario in new_scenarios:
                         new_scenario_non_trade_vars_dict = {key: value
                                                             for key, value in scenarios_non_trade_vars_dict.items()
@@ -470,25 +483,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         my_root = self.ee.ns_manager.compose_ns(
             [self.sos_name, self.REFERENCE_SCENARIO_NAME])
 
-        def is_string_at_the_end(sub_string, my_string):
-            if sub_string in my_string:
-                remaining_string = my_string.split(sub_string, 1)[1]
-                #remaining_string = my_string.partition(sub_string)[2]
-                if remaining_string == '':
-                    return True
-                else:
-                    return False
-            else:
-                return False
-
         for disc in self.scenarios:
-            # In self.scenarios we have
-            # 'Eval.ReferenceScenario.SellarCoupling',
-            # 'Eval.scenario_1.SellarCoupling', ,
-            # 'Eval.scenario_2.SellarCoupling',
             if disc.sos_name == self.REFERENCE_SCENARIO_NAME \
                     or my_root in disc.sos_name:  # for flatten_subprocess
-                    # or is_string_at_the_end(my_root, disc.sos_name):  # for flatten_subprocess
                     # TODO: better implement this 2nd condition ?
                 break
             else:
@@ -574,7 +571,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Propagate other scenarios variables and values
         if ref_changes_dict and dict_to_propagate:
             self.ee.dm.set_values_from_dict(dict_to_propagate)
-
 
     def get_other_evaluators_names_and_mode_under_current_one(self):
         other_evaluators_names_and_mode = []
@@ -1398,14 +1394,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         """
         # Set sub_proc_import_usecase_status
-        self.set_sub_process_usecase_status_from_user_inputs()
+        with_modal = False
+        self.set_sub_process_usecase_status_from_user_inputs(with_modal)
 
         disc_in = self.get_data_in()
 
         # Treat the case of SP_UC_Import
         if self.sub_proc_import_usecase_status == 'SP_UC_Import':
             # Get the anonymized dict
-            if 1 == 0:  # TODO (when use of Modal)
+            if with_modal:  # TODO (when use of Modal)
                 anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
                     self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
             else:
@@ -1415,26 +1412,24 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             # LOAD REFERENCE of MULTI-INSTANCE MODE WITH USECASE DATA
             if self.INSTANCE_REFERENCE in disc_in:
-                #method  ='load_study'
-                method = 'set_values'
+                #method = 'set_values'
                 self.update_reference_from_anonymised_dict(
-                    anonymize_input_dict_from_usecase, ref_discipline_full_name, method)
+                    anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
             elif self.BUILDER_MODE in disc_in:
                 builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
                 if builder_mode == self.MONO_INSTANCE:
                     # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
-                    method = 'load_study'
-                    #method = 'set_values'
+                    #method = 'load_study'
                     self.update_reference_from_anonymised_dict(
-                        anonymize_input_dict_from_usecase, ref_discipline_full_name, method)
+                        anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
             else:
                 # We are in multi instance qithout reference
                 # LOAD ALL SCENARIOS of MULTI-INSTANCE MODE WITH USECASE DATA
                 # (Not needed as already covered)
                 pass
 
-    def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name, method):
+    def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal):
         """
         """
         # 1. Put anonymized dict in context (unanonymize) of the reference
@@ -1485,67 +1480,69 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # warning when you reach the end of the configuration.
 
         if are_all_data_set:
+            # TODO Bug if 100 config reached ( a bad key in anonymised dict) .
+            # In this case are_all_data_set always False and we do not reset all parameters as it should !
             # 3. Update parameters
             #     Set the status to 'No_SP_UC_Import'
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            if 1 == 0:  # TODO (when use of Modal)
+            if with_modal:  # TODO (when use of Modal)
                 # Empty the anonymized dict in (when use of Modal)
                 sub_process_inputs_dict = self.get_sosdisc_inputs(
                     self.SUB_PROCESS_INPUTS)
                 sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA] = {
                 }
-                self.dm.set_data(f'{self.get_disc_full_name()}.{self.SUB_PROCESS_INPUTS}',
-                                 self.VALUES, sub_process_inputs_dict, check_value=False)
-            if 1 == 0:  # TODO (when use of Modal)
                 # Consequently update the previous_sub_process_usecase_data
-                #     Empty the previous_sub_process_usecase_data
+                sub_process_usecase_name = sub_process_inputs_dict[
+                    ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+                sub_process_usecase_data = sub_process_inputs_dict[
+                    ProcessBuilderParameterType.USECASE_DATA]
+                self.previous_sub_process_usecase_name = sub_process_usecase_name
+                self.previous_sub_process_usecase_data = sub_process_usecase_data
                 self.previous_sub_process_usecase_data = {}
             else:
+                # Consequently update the previous_sub_process_usecase_data
                 sub_process_usecase_data = self.get_sosdisc_inputs(
                     self.USECASE_DATA)
                 self.previous_sub_process_usecase_data = sub_process_usecase_data
 
-    def set_sub_process_usecase_status_from_user_inputs(self):
+    def set_sub_process_usecase_status_from_user_inputs(self, with_modal):
         """
             State subprocess usecase import status
             The uscase is defined by its name and its anonimized dict
             Function needed in manage_import_inputs_from_sub_process()
         """
         disc_in = self.get_data_in()
-        # With modal #TODO Activate it when proc builder web_api eev3 migrated
-        # on eev4 and remove USECASE_DATA
-        if self.SUB_PROCESS_INPUTS in disc_in:  # and self.sub_proc_build_status != 'Empty_SP'
-            sub_process_inputs_dict = self.get_sosdisc_inputs(
-                self.SUB_PROCESS_INPUTS)
-            sub_process_usecase_name = sub_process_inputs_dict[
-                ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
-            sub_process_usecase_data = sub_process_inputs_dict[ProcessBuilderParameterType.USECASE_DATA]
-            if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
-                self.previous_sub_process_usecase_name = sub_process_usecase_name
-                self.previous_sub_process_usecase_data = sub_process_usecase_data
-                # not not sub_process_usecase_data True means it is not an
-                # empty dictionary
-                if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
-                    self.sub_proc_import_usecase_status = 'SP_UC_Import'
-            else:
-                self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-        else:
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
-        # Without modal #TODO Remove when proc builder web_api eev3 migrated on
-        # eev4
-        if self.USECASE_DATA in disc_in:
-            sub_process_usecase_data = self.get_sosdisc_inputs(
-                self.USECASE_DATA)
-            if self.previous_sub_process_usecase_data != sub_process_usecase_data:
-                # not not sub_process_usecase_data True means it is not an
-                # empty dictionary
-                if not not sub_process_usecase_data:
-                    self.sub_proc_import_usecase_status = 'SP_UC_Import'
+        if with_modal:
+            if self.SUB_PROCESS_INPUTS in disc_in:  # and self.sub_proc_build_status != 'Empty_SP'
+                sub_process_inputs_dict = self.get_sosdisc_inputs(
+                    self.SUB_PROCESS_INPUTS)
+                sub_process_usecase_name = sub_process_inputs_dict[
+                    ProcessBuilderParameterType.USECASE_INFO][ProcessBuilderParameterType.USECASE_NAME]
+                sub_process_usecase_data = sub_process_inputs_dict[
+                    ProcessBuilderParameterType.USECASE_DATA]
+                if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
+                    # not not sub_process_usecase_data True means it is not an
+                    # empty dictionary
+                    if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
+                        self.sub_proc_import_usecase_status = 'SP_UC_Import'
+                else:
+                    self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
             else:
                 self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
         else:
-            self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+            if self.USECASE_DATA in disc_in:
+                sub_process_usecase_data = self.get_sosdisc_inputs(
+                    self.USECASE_DATA)
+                if self.previous_sub_process_usecase_data != sub_process_usecase_data:
+                    # not not sub_process_usecase_data True means it is not an
+                    # empty dictionary
+                    if not not sub_process_usecase_data:
+                        self.sub_proc_import_usecase_status = 'SP_UC_Import'
+                else:
+                    self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
+            else:
+                self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
     def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase, ref_discipline_full_name):
         """

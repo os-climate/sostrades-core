@@ -17,6 +17,7 @@ import pandas as pd
 from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 
 class Study(StudyManager):
@@ -60,9 +61,12 @@ class Study(StudyManager):
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
+        # Subprocess and usecase
         repo = 'sostrades_core.sos_processes.test.sellar'
         mod_id = 'test_sellar_list'
         my_usecase = 'usecase'
+
+        # Find anonymised dict
         anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
             repo, mod_id, my_usecase)
 
@@ -71,8 +75,17 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
-        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         disc_dict[f'{ns}.Eval.instance_reference'] = True
+        disc_dict[f'{ns}.Eval.reference_mode'] = 'linked_mode'
+
+        with_modal = False
+        if with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            disc_dict[f'{ns}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar referene inputs
         # Provided by usecase import
