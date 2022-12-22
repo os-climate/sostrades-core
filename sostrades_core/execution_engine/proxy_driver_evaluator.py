@@ -362,8 +362,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # Update of original editability state in case modification
                 # scenario df
                 if (not set(scenario_names) == set(self.old_scenario_names)) and self.old_scenario_names != []:
-                    new_scenarios = set(scenario_names) - \
-                        set(self.old_scenario_names)
+                    new_scenarios = set(scenario_names) - set(self.old_scenario_names)
                     for new_scenario in new_scenarios:
                         new_scenario_non_trade_vars_dict = {key: value
                                                             for key, value in scenarios_non_trade_vars_dict.items()
@@ -572,8 +571,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                       ref_changes_dict)
         # Propagate other scenarios variables and values
         if dict_to_propagate:
-            if 'root.outer_ms.scenario_1.inner_ms.reference_mode' in dict_to_propagate.keys():
-                self.logger.error('root.outer_ms.scenario_1.inner_ms.reference_mode will be propagated with mode: ' + dict_to_propagate['root.outer_ms.scenario_1.inner_ms.reference_mode'])
             self.ee.dm.set_values_from_dict(dict_to_propagate)
 
 
@@ -598,12 +595,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
                         subdriver_full_name = self.ee.ns_manager.get_local_namespace_value(
                             subdisc)
-                        self.ee.dm.set_data(
-                            subdriver_full_name + '.reference_mode', 'value', self.LINKED_MODE)
-                    list = [subdisc.sos_name,
-                            subdisc.get_sosdisc_inputs(self.REFERENCE_MODE)]
+                        if 'ReferenceScenario' in subdriver_full_name:
+                            self.ee.dm.set_data(
+                                subdriver_full_name + '.reference_mode', 'value', self.LINKED_MODE)
+                    list = [subdisc.sos_name]
                 else:
-                    list = [subdisc.sos_name, 'None']
+                    list = [subdisc.sos_name]
             elif subdisc.__class__.__name__ == 'ProxyDiscipline':
                 pass
             else:
