@@ -1457,10 +1457,17 @@ class TestSoSDOEScenario(unittest.TestCase):
                 self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.' + sc + '.inner_ms.' + name + '.y'),
                                  self.a[j] * self.x[j] + self.b[i][j])
 
+        # Now, a variable would be modified in the inner_ms ReferenceScenario and its propagation inside
+        # that inner_ms is going to be checked.
+        values_dict_test = {}
+        values_dict_test[f'{study_name}.outer_ms.scenario_1.inner_ms.ReferenceScenario.a'] = 80
+        exec_eng.load_study_from_input_dict(values_dict_test)
+        for name in scenario_list_inner:
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.scenario_1.inner_ms.' + name + '.a'), 80)
+
         # Now, editability propagation will be checked for differente reference modes combinatios of outer and inner ms
         # 1- Outer in linked and inner in linked (everything
         # non-editable/read-only)
-        values_dict_test = {}
         values_dict_test[f'{study_name}.outer_ms.instance_reference'] = True
         values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'linked_mode'
         values_dict_test[f'{study_name}.outer_ms.ReferenceScenario.inner_ms.instance_reference'] = True
@@ -1829,7 +1836,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict_test[f'{study_name}.outer_ms.scenario_1.inner_ms.reference_mode'] = 'linked_mode'
         exec_eng.load_study_from_input_dict(values_dict_test)
         self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.scenario_1.inner_ms.reference_mode'),
-                         'linked_mode')     # This works as in GUI.
+                         'linked_mode')     # TODO: THIS SHOULD LEAD TO ERROR as in GUI!!!!!
         for sc in scenario_list_outer:
             self.assertEqual(
                 exec_eng.dm.get_data(

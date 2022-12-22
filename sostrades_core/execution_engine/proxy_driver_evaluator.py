@@ -344,6 +344,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO
             # SUBDISCIPLINES
+            # if self.sos_name == 'inner_ms':
+            #     print('dfqsfdqs')
             if instance_reference:
                 scenario_names = scenario_names[:-1]
                 ref_discipline = self.scenarios[self.get_reference_scenario_index(
@@ -570,7 +572,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                       scenario_names_to_propagate,
                                                                                       ref_changes_dict)
         # Propagate other scenarios variables and values
-        if dict_to_propagate:
+        if ref_changes_dict and dict_to_propagate:
             self.ee.dm.set_values_from_dict(dict_to_propagate)
 
 
