@@ -573,7 +573,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # Propagate other scenarios variables and values
         if dict_to_propagate:
             if 'root.outer_ms.scenario_1.inner_ms.reference_mode' in dict_to_propagate.keys():
-                self.logger.info('root.outer_ms.scenario_1.inner_ms.reference_mode will be propagated with mode: ' + dict_to_propagate['root.outer_ms.scenario_1.inner_ms.reference_mode'])
+                self.logger.error('root.outer_ms.scenario_1.inner_ms.reference_mode will be propagated with mode: ' + dict_to_propagate['root.outer_ms.scenario_1.inner_ms.reference_mode'])
             self.ee.dm.set_values_from_dict(dict_to_propagate)
 
 
