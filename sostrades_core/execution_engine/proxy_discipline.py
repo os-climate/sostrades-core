@@ -2347,3 +2347,6 @@ class ProxyDiscipline(object):
                              + '  (' + self.__class__.__name__ + ')' + callback_string)
         for disc in self.proxy_disciplines:
             disc.get_proxy_subtree_rec(proxy_subtree, indent + 1, callback)
+
+    def get_inst_desc_in(self):
+        return self.inst_desc_in
