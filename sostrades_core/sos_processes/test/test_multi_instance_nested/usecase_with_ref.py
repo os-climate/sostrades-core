@@ -37,6 +37,7 @@ class Study(StudyManager):
         values_dict[f'{self.study_name}.outer_ms.builder_mode'] = 'multi_instance'
         values_dict[f'{self.study_name}.outer_ms.scenario_df'] = scenario_df_outer
         values_dict[f'{self.study_name}.outer_ms.instance_reference'] = True
+        values_dict[f'{self.study_name}.outer_ms.reference_mode'] = 'linked_mode'
 
         self.constant = [1, 2]
         self.power = [1, 2]
@@ -55,6 +56,7 @@ class Study(StudyManager):
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.builder_mode'] = 'multi_instance'
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.scenario_df'] = scenario_df_inner
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.instance_reference'] = True
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'linked_mode'
 
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.constant'] = self.constant[0]
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.Disc3.power'] = self.power[0]

@@ -259,8 +259,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_cache_inputs()
 
         if self.REFERENCE_MODE in self.get_data_in():
-            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))
-
+            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
+            # if (self.get_var_full_name('reference_mode', self.get_data_in()) + ',' +
+            #     self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))\
+            #         == 'root.outer_ms.scenario_1.inner_ms.reference_mode,copy_mode':
+            #     print('sqfqsfd')
+            # if (self.get_var_full_name('reference_mode', self.get_data_in()) + ',' +
+            #     self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))\
+            #         == 'root.outer_ms.scenario_1.inner_ms.reference_mode,linked_mode':
+            #     print('sqfqsfd')
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
@@ -564,7 +571,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                       scenario_names_to_propagate,
                                                                                       ref_changes_dict)
         # Propagate other scenarios variables and values
-        self.ee.dm.set_values_from_dict(dict_to_propagate)
+        if dict_to_propagate:
+            if 'root.outer_ms.scenario_1.inner_ms.reference_mode' in dict_to_propagate.keys():
+                self.logger.info('root.outer_ms.scenario_1.inner_ms.reference_mode will be propagated with mode: ' + dict_to_propagate['root.outer_ms.scenario_1.inner_ms.reference_mode'])
+            self.ee.dm.set_values_from_dict(dict_to_propagate)
+
 
     def get_other_evaluators_names_and_mode_under_current_one(self):
         other_evaluators_names_and_mode = []
@@ -1012,7 +1023,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if instance_reference:
                 dynamic_inputs.update({self.REFERENCE_MODE:
                                        {SoSWrapp.TYPE: 'string',
-                                        SoSWrapp.DEFAULT: self.LINKED_MODE,
+                                        # SoSWrapp.DEFAULT: self.LINKED_MODE,
                                         SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
                                         SoSWrapp.STRUCTURING: True}})
 

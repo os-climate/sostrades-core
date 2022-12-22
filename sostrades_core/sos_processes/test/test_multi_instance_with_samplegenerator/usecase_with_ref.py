@@ -30,6 +30,7 @@ class Study(StudyManager):
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
+        dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
 
         b1 = 4
         b2 = 2

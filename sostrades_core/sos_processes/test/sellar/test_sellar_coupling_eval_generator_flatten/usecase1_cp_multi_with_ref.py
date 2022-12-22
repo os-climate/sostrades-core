@@ -69,6 +69,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
         disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         disc_dict[f'{ns}.Eval.instance_reference'] = True
+        disc_dict[f'{ns}.Eval.reference_mode'] = 'linked_mode'
 
         # Sellar referene inputs
         #======================================================================
