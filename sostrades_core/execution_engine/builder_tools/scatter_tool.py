@@ -57,8 +57,9 @@ class ScatterTool(SosTool):
         self.input_name = None
         self.ns_to_update = None
         self.sc_map = None
+        self.hide_under_coupling = False
 
-    def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
+    def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None, hide_under_coupling=False):
         '''    
         MEthod that associate tool to the driver and add scatter map
         '''
@@ -69,7 +70,7 @@ class ScatterTool(SosTool):
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
             self.ee.scattermap_manager.associate_disc_to_build_map(self)
             self.sc_map.configure_map(self.sub_builders)
-
+        self.hide_under_coupling = hide_under_coupling
     def prepare_tool(self):
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
@@ -203,6 +204,9 @@ class ScatterTool(SosTool):
         # Call scatter map to modify the associated namespace
 
         if new_name:
+            if self.hide_under_coupling:
+                display_value = f'{self.driver.get_disc_full_name()}.{name}'
+                self.ee.ns_manager.add_display_ns_to_builder_list(self.sub_builders, display_value)
             coupling_builder = self.driver.create_sub_builder_coupling(
                 name, self.sub_builders)
 
@@ -282,6 +286,10 @@ class ScatterTool(SosTool):
             builder.set_disc_name(disc_name)
             if new_name:
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
+                if self.hide_under_coupling:
+                    display_value = disc_name.replace(f'.{old_builder_name}', '')
+                    self.ee.ns_manager.add_display_ns_to_builder(
+                        builder, display_value)
             self.set_father_discipline()
             disc = builder.build()
             builder.set_disc_name(old_builder_name)

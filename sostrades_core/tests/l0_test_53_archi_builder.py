@@ -267,16 +267,16 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_04_check_architecture_df(self):
+    def test_04_check_architecture_df(self):
 
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_business',
-                  'output_name': 'product_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        self.exec_eng.ns_manager.add_ns_def({'ns_business': self.study_name})
+        # mydict = {'input_name': 'product_list',
+        #           'input_type': 'string_list',
+        #           'input_ns': 'ns_business',
+        #           'output_name': 'product_name',
+        #           'scatter_ns': 'ns_ac'}
+        # self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
+        #
+        # self.exec_eng.ns_manager.add_ns_def({'ns_business': self.study_name})
 
         vb_builder_name = 'ArchiBuilder'
 
@@ -290,8 +290,10 @@ class TestArchiBuilder(unittest.TestCase):
         architecture_df = pd.DataFrame(
             {'Parent': ['ArchiBuilder', 'ArchiBuilder', 'Standard1', 'Standard2', 'Standard2'],
              'Current': ['Standard1', 'Standard2', 'Scatter', 'SubArchi', 'ScatterArchi'],
-             'Type': ['ValueBlockDiscipline', 'ValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'), ('standard'), ('scatter', 'product_list', 'ValueBlockDiscipline'), ('standard'), ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', sub_architecture_df)],
+             'Type': ['ValueBlockDiscipline', 'ValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), ('scatter', 'product_list', 'ValueBlockDiscipline'), ('standard'),
+                        ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', sub_architecture_df)],
              'Activation': [False, False, False, False, False], })
 
         print('architecture df: \n', architecture_df)
@@ -304,6 +306,19 @@ class TestArchiBuilder(unittest.TestCase):
         self.exec_eng.configure()
         self.exec_eng.load_study_from_input_dict({})
         self.exec_eng.display_treeview_nodes()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Standard1',
+                       '\t\t\t|_ Scatter',
+                       '\t\t\t\t|_ driver',
+                       '\t\t|_ Standard2',
+                       '\t\t\t|_ SubArchi',
+                       '\t\t\t|_ ScatterArchi',
+                       '\t\t\t\t|_ driver', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
@@ -339,16 +354,16 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertDictEqual(activation_df.to_dict(), self.exec_eng.dm.get_value(
             'MyCase.ArchiBuilder.activation_df').to_dict())
 
-    def _test_05_build_architecture_scatter(self):
+    def test_05_build_architecture_scatter(self):
 
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_public',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
+        # mydict = {'input_name': 'product_list',
+        #           'input_type': 'string_list',
+        #           'input_ns': 'ns_public',
+        #           'output_name': 'AC_name',
+        #           'scatter_ns': 'ns_ac'}
+        # self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
+        #
+        # self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
 
         vb_builder_name = 'Business'
 
@@ -418,7 +433,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_06_build_architecture_scatter_with_multiple_configure(self):
+    def test_06_build_architecture_scatter_with_multiple_configure(self):
 
         mydict = {'input_name': 'product_list',
                   'input_type': 'string_list',
@@ -537,7 +552,7 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertListEqual(self.exec_eng.dm.get_value(
             'MyCase.Business.Tomato.CAPEX.product_list'), ['B737'])
 
-    def _test_07_architecture_multi_level(self):
+    def test_07_architecture_multi_level(self):
 
         mydict = {'input_name': 'product_list',
                   'input_type': 'string_list',
@@ -722,7 +737,7 @@ class TestArchiBuilder(unittest.TestCase):
         for disc in self.exec_eng.factory.proxy_disciplines:
             self.assertEqual(disc.status, 'DONE')
 
-    def _test_09_build_scatter_architecture_at_architecture_node(self):
+    def test_09_build_scatter_architecture_at_architecture_node(self):
 
         vb_builder_name = 'Business'
 
@@ -786,7 +801,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_10_build_scatter_at_architecture_node(self):
+    def test_10_build_scatter_at_architecture_node(self):
 
         vb_builder_name = 'Business'
 
@@ -871,7 +886,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_12_architecture_without_archi_name_in_architecture_df(self):
+    def test_12_architecture_without_archi_name_in_architecture_df(self):
 
         # add namespaces definition
         self.exec_eng.ns_manager.add_ns_def({'ns_public': self.exec_eng.study_name,

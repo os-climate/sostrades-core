@@ -23,7 +23,6 @@ from importlib import import_module
 import numpy as np
 import pandas as pd
 
-from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
@@ -57,24 +56,25 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     ACTIVATION = 'Activation'
     ARCHI_COLUMNS = [PARENT, CURRENT, BUILDER_TYPE, ACTION, ACTIVATION]
     ROOT_NODE = '@root_node@'
-#     POSSIBLE_ACTIONS = {
-#         'standard': 'standard',
-#         'scatter': ('scatter', 'var_name', 'builder_class', 'builder_first_scatter'),
-#         'architecture': ('architecture', 'architecture_df'),
-#         'scatter_architecture': (
-#             'scatter_architecture',
-#             'var_name',
-#             'builder_class',
-#             'architecture_df',
-#         ),
-#    }
     POSSIBLE_ACTIONS = {
-        'standard': 'standard'}
+        'standard': 'standard',
+        'scatter': ('scatter', 'var_name', 'builder_class', 'builder_first_scatter'),
+        'architecture': ('architecture', 'architecture_df'),
+        'scatter_architecture': (
+            'scatter_architecture',
+            'var_name',
+            'builder_class',
+            'architecture_df',
+        ),
+    }
+    SELECTED_SCENARIO = 'selected_scenario'
+    SCENARIO_NAME = 'scenario_name'
     ACTIVATION_DF = 'activation_df'
 
     DEFAULT_VB_FOLDER_LIST = ['sostrades_core.sos_wrapping']
 
-    def __init__(self, sos_name, ee, architecture_df, cls_builder=None, associated_namespaces=None, custom_vb_folder_list=None):
+    def __init__(self, sos_name, ee, architecture_df, cls_builder=None, associated_namespaces=None,
+                 custom_vb_folder_list=None):
         """
         Constructor
         """
@@ -92,6 +92,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         self.activation_columns = []
         self.activation_file_name_dict = {}
         self.vb_folder_list = []
+        self.special_builders = {}
+        self.driver_input_to_fill = {}
 
         # set the value block folder list as the custom one given as parameter
         full_vb_folder_list = []
@@ -191,32 +193,25 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     raise ArchiBuilderException(
                         f'Invalid Action in architecture dataframe. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
                     )
-#             elif isinstance(action, tuple):
-#                 if action[0] in self.POSSIBLE_ACTIONS:
-#                     if action[0] == 'scatter':
-#                         if len(action) not in [3, 4]:
-#                             possible_actions_basic_tuple = copy(
-#                                 list(self.POSSIBLE_ACTIONS[action[0]])
-#                             )
-#                             possible_actions_basic_tuple.pop(-1)
-#                             raise ArchiBuilderException(
-#                                 f'Invalid Action: {action}. The action \'{action[0]}\' must be defined by: {self.POSSIBLE_ACTIONS[action[0]]} or {tuple(possible_actions_basic_tuple)}'
-#                             )
-#                     elif len(action) != len(self.POSSIBLE_ACTIONS[action[0]]):
-#                         raise ArchiBuilderException(
-#                             f'Invalid Action: {action}. The action \'{action[0]}\' must be defined by: {self.POSSIBLE_ACTIONS[action[0]]}'
-#                         )
-#                 else:
-#                     raise ArchiBuilderException(
-#                         f'Invalid Action in architecture dataframe. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
-#                     )
-            else:
-                #                 raise ArchiBuilderException(
-                #                     f'Invalid Action in architecture dataframe. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
-                #                 )
-                raise ArchiBuilderException(
-                    f'Action not supported in EEV4. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
-                )
+            elif isinstance(action, tuple):
+                if action[0] in self.POSSIBLE_ACTIONS:
+                    if action[0] == 'scatter':
+                        if len(action) not in [3, 4]:
+                            possible_actions_basic_tuple = copy(
+                                list(self.POSSIBLE_ACTIONS[action[0]])
+                            )
+                            possible_actions_basic_tuple.pop(-1)
+                            raise ArchiBuilderException(
+                                f'Invalid Action: {action}. The action \'{action[0]}\' must be defined by: {self.POSSIBLE_ACTIONS[action[0]]} or {tuple(possible_actions_basic_tuple)}'
+                            )
+                    elif len(action) != len(self.POSSIBLE_ACTIONS[action[0]]):
+                        raise ArchiBuilderException(
+                            f'Invalid Action: {action}. The action \'{action[0]}\' must be defined by: {self.POSSIBLE_ACTIONS[action[0]]}'
+                        )
+                else:
+                    raise ArchiBuilderException(
+                        f'Invalid Action in architecture dataframe. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
+                    )
 
     def check_activation_df(self):
         """
@@ -482,13 +477,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # build activated builders
         for namespace in self.builder_dict.keys():
             if namespace in activ_builder_dict:
+
                 # len(activ_builder_dict[namespace]) == 1 or
                 # isinstance(self.builder_dict[namespace], list):
                 for builder in activ_builder_dict[namespace]:
                     disc = self.build_value_block(builder, namespace)
 
-#                     if disc not in self.proxy_disciplines:
-#                         self.proxy_disciplines.append(disc)
                     if namespace not in self.archi_disciplines:
                         self.ee.factory.add_discipline(disc)
                         self.archi_disciplines[namespace] = [disc]
@@ -504,7 +498,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
         self.activated_builders = activ_builder_dict
 
-        self.send_children_to_father()
+        # self.send_children_to_father()
 
     def build_value_block(self, builder, namespace):
         """
@@ -531,9 +525,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         Recursive method to get builder_dict and activ_builder_dict by reading archi_df
         """
         activ_builder_dict = {}
-
         new_builder_dict_list = []
         new_activ_builder_dict_list = []
+
         for namespace, builder_list in builder_dict.items():
             for builder in builder_list:
                 if '.' in namespace:
@@ -548,148 +542,159 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     else:
                         activ_builder_dict[namespace] = [builder]
 
-                    if action == 'architecture':
-                        # First add the current builder to the activated builder
-                        # if self.is_builder_activated(namespace,
-                        # builder_name):
+                    if f'{builder}@{action}' in self.special_builders:
+                        activ_builder_dict[namespace].extend(self.special_builders[f'{builder}@{action}'])
 
-                        # Check the arguments of the action architecture
-                        if not isinstance(args[0], pd.DataFrame):
-                            raise ArchiBuilderException(
-                                f'Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS[action[0]]}, with a dataframe \'architecture_df\''
-                            )
-                        # build with this architecture
-                        new_builder_dict, new_activation_dict = self.get_subarchi_builders(
-                            args[0], namespace
-                        )
+                    else:
 
-                        self.activation_dict.update(new_activation_dict)
+                        if action == 'architecture':
+                            # First add the current builder to the activated builder
+                            # if self.is_builder_activated(namespace,
+                            # builder_name):
 
-                        (
-                            new_activ_builder_dict,
-                            new_builder_dict,
-                        ) = self.build_action_from_builder_dict(new_builder_dict, args[0])
-
-                        # Store new infos in global variables
-                        # Check if the new architecture is already in
-                        # self.architecture_df (by checking isin and size of
-                        # df)
-
-                        if args[0][['Parent', 'Current']].isin(self.architecture_df[['Parent', 'Current']]).to_numpy().sum() != np.prod(
-                            list(args[0][['Parent', 'Current']].shape)
-                        ):
-                            self.architecture_df = pd.concat(
-                                [self.architecture_df, args[0]], ignore_index=True
-                            )
-
-                        # store new builders of sub architecture
-                        new_builder_dict_list.append(new_builder_dict)
-                        # store new activates builders of sub architecture
-                        new_activ_builder_dict_list.append(
-                            new_activ_builder_dict)
-
-                    elif action == 'scatter':
-
-                        if isinstance(args[1], tuple):
-                            # get builder of scatter of scatter
-                            if len(args) > 2:
-                                # if first_scatter_builder option exists in archi_df,
-                                # build first_scatter_builder on first scatter
-                                # node
-                                first_scatter_builder = (
-                                    self.get_builder_from_factory(
-                                        builder.sos_name, args[2])
+                            # Check the arguments of the action architecture
+                            if not isinstance(args[0], pd.DataFrame):
+                                raise ArchiBuilderException(
+                                    f'Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS[action[0]]}, with a dataframe \'architecture_df\''
                                 )
-                                activ_builders = self.build_scatter_of_scatter(
-                                    namespace, args, builder_name, first_scatter_builder
+                            # build with this architecture
+                            new_builder_dict, new_activation_dict = self.get_subarchi_builders(
+                                args[0], namespace
+                            )
+
+                            self.activation_dict.update(new_activation_dict)
+
+                            (
+                                new_activ_builder_dict,
+                                new_builder_dict,
+                            ) = self.build_action_from_builder_dict(new_builder_dict, args[0])
+
+                            # Store new infos in global variables
+                            # Check if the new architecture is already in
+                            # self.architecture_df (by checking isin and size of
+                            # df)
+
+                            if args[0][['Parent', 'Current']].isin(
+                                    self.architecture_df[['Parent', 'Current']]).to_numpy().sum() != np.prod(
+                                list(args[0][['Parent', 'Current']].shape)
+                            ):
+                                self.architecture_df = pd.concat(
+                                    [self.architecture_df, args[0]], ignore_index=True
+                                )
+
+                            # store new builders of sub architecture
+                            new_builder_dict_list.append(new_builder_dict)
+                            # store new activates builders of sub architecture
+                            new_activ_builder_dict_list.append(
+                                new_activ_builder_dict)
+
+                        elif action == 'scatter':
+
+                            if isinstance(args[1], tuple):
+                                # get builder of scatter of scatter
+                                if len(args) > 2:
+                                    # if first_scatter_builder option exists in archi_df,
+                                    # build first_scatter_builder on first scatter
+                                    # node
+                                    first_scatter_builder = (
+                                        self.get_builder_from_factory(
+                                            builder.sos_name, args[2])
+                                    )
+                                    activ_builders = self.build_scatter_of_scatter(
+                                        namespace, args, builder_name, first_scatter_builder
+                                    )
+                                else:
+                                    # build builder on first scatter node
+                                    activ_builders = self.build_scatter_of_scatter(
+                                        namespace, args, builder_name, builder
+                                    )
+                            else:
+                                # get builder of scatter
+                                scatter_builder = self.get_builder_from_factory(
+                                    namespace, args[1])
+                                activ_builders = self.build_action_scatter(
+                                    namespace, args[0], scatter_builder, builder_name
+                                )
+
+                            self.special_builders[f'{builder}@{action}'] = activ_builders
+                            # add builders of scatter if not already in
+                            # activ_builder_dict
+                            for scatter_activ_builder in activ_builders:
+                                if scatter_activ_builder not in activ_builder_dict[namespace]:
+                                    activ_builder_dict[namespace].append(
+                                        scatter_activ_builder)
+
+                        elif action == 'scatter_architecture':
+                            if not isinstance(
+                                    args[2], pd.DataFrame
+                            ):
+                                raise ArchiBuilderException(
+                                    f'Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS[action[0]]}, with a string \'var_name\', a string \'builder_class\' and a dataframe \'architecture_df\''
+                                )
+
+                            if args[0] is not None:
+                                # get maps of scatter_architecture
+                                scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
+                                    args[0]
                                 )
                             else:
-                                # build builder on first scatter node
-                                activ_builders = self.build_scatter_of_scatter(
-                                    namespace, args, builder_name, builder
+                                scatter_map = None
+                            # get initial builders_dict and activation_dict for
+                            # sub architecture
+                            new_builder_dict, new_activation_dict = self.get_subarchi_builders(
+                                args[2], namespace
+                            )
+
+                            self.activation_dict.update(new_activation_dict)
+
+                            (
+                                new_activ_builder_dict,
+                                new_builder_dict,
+                            ) = self.build_action_from_builder_dict(new_builder_dict, args[2])
+
+                            archi_builder_list = [
+                                bd
+                                for sublist in list(new_activ_builder_dict.values())
+                                for bd in sublist
+                            ]
+
+                            # Need to modify names of builder
+                            for builder_list in archi_builder_list:
+                                builder_list.set_disc_name(
+                                    builder_list.sos_name.split(
+                                        f'{builder_name}.')[-1]
                                 )
-                        else:
-                            # get builder of scatter
-                            scatter_builder = self.get_builder_from_factory(
-                                namespace, args[1])
-                            activ_builders = self.build_action_scatter(
-                                namespace, args[0], scatter_builder, builder_name
+                            # if scatter_map is None:
+                            #     raise ArchiBuilderException(
+                            #         f'No build map defined for \'{args[0]}\''
+                            #     )
+
+                            # get builders of scatter_architecture
+                            # possibility to instantiate several builder at scatter node
+                            # builders are stored in a list even if there is only
+                            # one
+                            if isinstance(args[1], list):
+                                scatter_builder_cls_list = [self.get_builder_from_factory(
+                                    namespace, builder_def) for builder_def in args[1]]
+
+                            else:
+                                scatter_builder_cls_list = [self.get_builder_from_factory(
+                                    namespace, args[1])]
+
+                            # we send a  list of scatter_builder_cls_list to
+                            # prevent from multiple builders at scatter node
+                            activ_builders = self.get_scatter_builder(
+                                namespace,
+                                scatter_map,
+                                archi_builder_list,
+                                builder_name,
+                                scatter_node_cls_list=scatter_builder_cls_list,
                             )
 
-                        # add builders of scatter if not already in
-                        # activ_builder_dict
-                        for scatter_activ_builder in activ_builders:
-                            if scatter_activ_builder not in activ_builder_dict[namespace]:
-                                activ_builder_dict[namespace].append(
-                                    scatter_activ_builder)
-
-                    elif action == 'scatter_architecture':
-                        if not isinstance(args[0], str) or not isinstance(
-                            args[2], pd.DataFrame
-                        ):
-                            raise ArchiBuilderException(
-                                f'Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS[action[0]]}, with a string \'var_name\', a string \'builder_class\' and a dataframe \'architecture_df\''
-                            )
-
-                        # get maps of scatter_architecture
-                        scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
-                            args[0]
-                        )
-                        # get initial builders_dict and activation_dict for
-                        # sub architecture
-                        new_builder_dict, new_activation_dict = self.get_subarchi_builders(
-                            args[2], namespace
-                        )
-
-                        self.activation_dict.update(new_activation_dict)
-
-                        (
-                            new_activ_builder_dict,
-                            new_builder_dict,
-                        ) = self.build_action_from_builder_dict(new_builder_dict, args[2])
-
-                        archi_builder_list = [
-                            bd
-                            for sublist in list(new_activ_builder_dict.values())
-                            for bd in sublist
-                        ]
-
-                        # Need to modify names of builder
-                        for builder_list in archi_builder_list:
-                            builder_list.set_disc_name(
-                                builder_list.sos_name.split(
-                                    f'{builder_name}.')[-1]
-                            )
-                        if scatter_map is None:
-                            raise ArchiBuilderException(
-                                f'No build map defined for \'{args[0]}\''
-                            )
-
-                        # get builders of scatter_architecture
-                        # possibility to instantiate several builder at scatter node
-                        # builders are stored in a list even if there is only
-                        # one
-                        if isinstance(args[1], list):
-                            scatter_builder_cls_list = [self.get_builder_from_factory(
-                                namespace, builder_def) for builder_def in args[1]]
-
-                        else:
-                            scatter_builder_cls_list = [self.get_builder_from_factory(
-                                namespace, args[1])]
-
-                        # we send a  list of scatter_builder_cls_list to
-                        # prevent from multiple builders at scatter node
-                        activ_builders = self.get_scatter_builder(
-                            namespace,
-                            scatter_map,
-                            archi_builder_list,
-                            builder_name,
-                            scatter_node_cls_list=scatter_builder_cls_list,
-                        )
-
-                        # add scatter_architecture builders in
-                        # activ_builder_dict
-                        activ_builder_dict[namespace].extend(activ_builders)
+                            # add scatter_architecture builders in
+                            # activ_builder_dict
+                            self.special_builders[f'{builder}@{action}'] = activ_builders
+                            activ_builder_dict[namespace].extend(activ_builders)
 
         # add builders of sub architectures in builder_dict
         for new_builder_dict in new_builder_dict_list:
@@ -763,6 +768,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
          ex : a sumbuilder at the AC node
 
         """
+
         scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
             scatter_map_name
         )
@@ -771,13 +777,15 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 f"Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS['scatter']}, with a string \'var_name\' and a string \'builder_class\'"
             )
         if scatter_map is None:
-            raise ArchiBuilderException(
-                f'No build map defined for \'{scatter_map_name}\''
-            )
+            scatter_list_name = scatter_map_name
+
+        #     raise ArchiBuilderException(
+        #         f'No build map defined for \'{scatter_map_name}\''
+        #     )
 
         activ_builders = self.get_scatter_builder(
             namespace,
-            scatter_map,
+            scatter_list_name,
             scatter_builder,
             builder_name,
             sub_scatter_builder_map_name=sub_scatter_builder,
@@ -884,220 +892,210 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 #                                 disc.add_disc_list_to_children_list(
 #                                     other_children)
 
-    def set_input_name_value(self, scatter_map, input_name):
+    def setup_sos_disciplines(self):
         """
-        Set scatter input_name value by reading activation_df input and store it in data_in
+        Set scenario_df value by reading activation_df input
         """
-        if input_name not in self.get_data_in():
-            if scatter_map.INPUT_NS in scatter_map.get_map():
-                dict_input = {
-                    input_name: {
-                        # ProxyDisciplineBuilder.TYPE:
-                        # scatter_map.get_input_type(),
-                        ProxyDisciplineBuilder.TYPE: 'list',
-                        ProxyDisciplineBuilder.SUBTYPE: {'list': 'string'},
-                        ProxyDisciplineBuilder.VISIBILITY: self.SHARED_VISIBILITY,
-                        ProxyDisciplineBuilder.NAMESPACE: scatter_map.get_input_ns(),
-                        ProxyDisciplineBuilder.EDITABLE: False,
-                        ProxyDisciplineBuilder.STRUCTURING: True,
-                    }
-                }
-            else:
-                dict_input = {
-                    input_name: {
-                        # ProxyDisciplineBuilder.TYPE:
-                        # scatter_map.get_input_type(),
-                        ProxyDisciplineBuilder.TYPE: 'list',
-                        ProxyDisciplineBuilder.SUBTYPE: {'list': 'string'},
-                        ProxyDisciplineBuilder.VISIBILITY: self.LOCAL_VISIBILITY,
-                        ProxyDisciplineBuilder.EDITABLE: False,
-                        ProxyDisciplineBuilder.STRUCTURING: True,
-                    }
-                }
-            self.add_inputs(dict_input, clean_inputs=False)
-        else:
-            activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
-            indexes = np.unique(
-                [val for val in activation_df[input_name] if val is not None],
-                return_index=True,
-            )[1]
-            input_value = [
-                activation_df[input_name][index] for index in sorted(indexes)
-            ]
+        dynamic_outputs = {}
+        for driver_name, input_name in self.driver_input_to_fill.items():
 
-            self.ee.dm.set_data(
-                self.get_var_full_name(input_name, self.get_data_in()),
-                self.VALUE,
-                input_value,
+            if f'{driver_name}.scenario_df' in self.get_data_out():
+                activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
+                indexes = np.unique(
+                    [val for val in activation_df[input_name] if val is not None],
+                    return_index=True,
+                )[1]
+                input_value = [
+                    activation_df[input_name][index] for index in sorted(indexes)
+                ]
+                scenario_full_name = self.get_var_full_name(f'{driver_name}.scenario_df', self.get_data_out())
+                self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
+                                                                            self.SELECTED_SCENARIO: True}),
+                                 check_value=False)
+            dynamic_outputs.update(
+                {f'{driver_name}.scenario_df': {'type': 'dataframe',
+                                                'default': pd.DataFrame(
+                                                    columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
+                 f'{driver_name}.builder_mode': {'type': 'string',
+                                                 'value': 'multi_instance'}},
             )
-            self.ee.dm.set_data(
-                self.get_var_full_name(
-                    input_name, self.get_data_in()), self.EDITABLE, False
-            )
+
+        self.add_outputs(dynamic_outputs)
 
     def get_scatter_builder(
-        self,
-        namespace,
-        map,
-        builder,
-        builder_name,
-        scatter_node_cls_list=None,
-        sub_scatter_builder_map_name=None,
-        builder_on_first_scatter=None,
+            self,
+            namespace,
+            scatter_list_name,
+            builder,
+            builder_name,
+            scatter_node_cls_list=None,
+            sub_scatter_builder_map_name=None,
+            builder_on_first_scatter=None,
     ):
         """
         Get builders list for scatter action at namespace node
         """
         # get input_name of scatter
-        input_name = map.get_input_name()
+
+        #
+        # # get input_value = list to scatter
+        # input_value = self.get_scatter_input_value(
+        #     namespace, input_name, builder_name)
+        #
+        # # build full name of namespace builder
+        # if self.sos_name in namespace:
+        #     disc_ns = self.get_disc_full_name().split(f'.{self.sos_name}')[0]
+        # else:
+        #     disc_ns = self.get_disc_full_name()
+        # new_input_name = f'{namespace}.{input_name}'
+        # full_input_name = f'{disc_ns}.{new_input_name}'
+        #
+        # # check if input_value has changed
+        # if (
+        #     full_input_name in self.ee.dm.data_id_map
+        #     and self.ee.dm.get_value(full_input_name) is not None
+        #     and input_value != self.ee.dm.get_value(full_input_name)
+        # ):
+        #     input_value_has_changed = True
+        #     ns_old_builder = namespace.split(f'{self.sos_name}.')[-1]
+        #     # get builder names to remove with old scatter input values
+        #     old_discipline_names = [
+        #         f'{ns_old_builder}.{old_name}'
+        #         for old_name in self.ee.dm.get_value(full_input_name)
+        #     ]
+        # else:
+        #     input_value_has_changed = False
+        #
+        # self.set_scatter_list_under_scatter(full_input_name, input_value)
+        result_builder_list = []
+        # if len(input_value) > 0:
+        #
+        #     if sub_scatter_builder_map_name is not None:
+        #         # Add the sub list to compute the sub scatter
+        #         sub_scatter_builder_map = (
+        #             self.ee.scattermap_manager.get_build_map_with_input_name(
+        #                 sub_scatter_builder_map_name
+        #             )
+        #         )
+        #         sub_input_name = sub_scatter_builder_map.get_input_name()
+        #
+        #         for input_v in input_value:
+        #             sub_input_value = self.get_scatter_input_value(
+        #                 namespace,
+        #                 sub_input_name,
+        #                 builder_name,
+        #                 condition_dict={input_name: input_v},
+        #             )
+        #             self.set_scatter_list_under_scatter(
+        #                 '.'.join(
+        #                     [disc_ns, namespace, input_v, sub_input_name]),
+        #                 sub_input_value,
+        #             )
+        #
+        #     self.children_dict[namespace] = [
+        #         f'{namespace}.{val}' for val in input_value
+        #     ]
+
+        # if full_input_name not in self.ee.scattermap_manager.build_maps_dict:
+        #     child_map = deepcopy(map.get_map())
+        #     if map.INPUT_NS in map.get_map():
+        #         del child_map[map.INPUT_NS]
+        #
+        #     self.ee.scattermap_manager.add_build_map(full_input_name, child_map)
+        if namespace == self.sos_name:
+            # if namespace is architecture name
+            builder_name = namespace
+        else:
+            # else split to get builder_name
+            builder_name = f"{namespace.split('.', 1)[1]}"
+
+        driver_name = f'{builder_name}.driver'
+        if isinstance(builder, list):
+
+            builder_scatter = self.ee.factory.create_driver(driver_name, builder)
+
+            # builder_scatter = self.ee.factory.create_scatter_builder(
+            #     builder_name, full_input_name, builder
+            # )
+            # create a scatter for each builder you want at the scatter node
+            # if only one no modifications
+            # for scatter_node_cls in scatter_node_cls_list:
+            #     scatter_node = (
+            #         self.ee.factory.create_multi_scatter_builder_from_list(
+            #             full_input_name, [scatter_node_cls], False
+            #         )
+            #     )
+            #     scatter_node[0].set_disc_name(
+            #         namespace.replace(f'{self.name}.', '')
+            #     )
+            #     scatter_node.append(builder_scatter)
+            #     result_builder_list.extend(scatter_node)
+        else:
+            builder.set_disc_name(builder.sos_name.split('.')[-1])
+            builder_scatter = self.ee.factory.create_driver(driver_name, [builder], hide_under_coupling=True)
+            # builder_scatter = (
+            #     self.ee.factory.create_multi_scatter_builder_from_list(
+            #         full_input_name, [builder], False
+            #     )
+            # )
+            # builder_scatter[0].set_disc_name(
+            #     namespace.replace(f'{self.name}.', '')
+            # )
+        self.ee.ns_manager.add_display_ns_to_builder(
+            builder_scatter[0], f'{self.get_disc_full_name()}.{builder_name}')
+        result_builder_list.extend(builder_scatter)
+
+        input_name = scatter_list_name
         # set input_name value in data_in by reading activated children in
         # activation_df input
-        self.set_input_name_value(map, input_name)
+        self.driver_input_to_fill[driver_name] = input_name
 
-        # get input_value = list to scatter
-        input_value = self.get_scatter_input_value(
-            namespace, input_name, builder_name)
-
-        # build full name of namespace builder
-        if self.sos_name in namespace:
-            disc_ns = self.get_disc_full_name().split(f'.{self.sos_name}')[0]
-        else:
-            disc_ns = self.get_disc_full_name()
-        new_input_name = f'{namespace}.{input_name}'
-        full_input_name = f'{disc_ns}.{new_input_name}'
-
-        # check if input_value has changed
-        if (
-            full_input_name in self.ee.dm.data_id_map
-            and self.ee.dm.get_value(full_input_name) is not None
-            and input_value != self.ee.dm.get_value(full_input_name)
-        ):
-            input_value_has_changed = True
-            ns_old_builder = namespace.split(f'{self.sos_name}.')[-1]
-            # get builder names to remove with old scatter input values
-            old_discipline_names = [
-                f'{ns_old_builder}.{old_name}'
-                for old_name in self.ee.dm.get_value(full_input_name)
-            ]
-        else:
-            input_value_has_changed = False
-
-        self.set_scatter_list_under_scatter(full_input_name, input_value)
-        result_builder_list = []
-        if len(input_value) > 0:
-
-            if sub_scatter_builder_map_name is not None:
-                # Add the sub list to compute the sub scatter
-                sub_scatter_builder_map = (
-                    self.ee.scattermap_manager.get_build_map_with_input_name(
-                        sub_scatter_builder_map_name
-                    )
-                )
-                sub_input_name = sub_scatter_builder_map.get_input_name()
-
-                for input_v in input_value:
-                    sub_input_value = self.get_scatter_input_value(
-                        namespace,
-                        sub_input_name,
-                        builder_name,
-                        condition_dict={input_name: input_v},
-                    )
-                    self.set_scatter_list_under_scatter(
-                        '.'.join(
-                            [disc_ns, namespace, input_v, sub_input_name]),
-                        sub_input_value,
-                    )
-
-            self.children_dict[namespace] = [
-                f'{namespace}.{val}' for val in input_value
-            ]
-
-            if full_input_name not in self.ee.scattermap_manager.build_maps_dict:
-                child_map = deepcopy(map.get_map())
-                if map.INPUT_NS in map.get_map():
-                    del child_map[map.INPUT_NS]
-
-                self.ee.scattermap_manager.add_build_map(full_input_name, child_map)
-
-                if isinstance(builder, list):
-                    if namespace == self.sos_name:
-                        # if namespace is architecture name
-                        builder_name = namespace
-                    else:
-                        # else split to get builder_name
-                        builder_name = namespace.split('.', 1)[1]
-                    builder_scatter = self.ee.factory.create_scatter_builder(
-                        builder_name, full_input_name, builder
-                    )
-                    # create a scatter for each builder you want at the scatter node
-                    # if only one no modifications
-                    for scatter_node_cls in scatter_node_cls_list:
-                        scatter_node = (
-                            self.ee.factory.create_multi_scatter_builder_from_list(
-                                full_input_name, [scatter_node_cls], False
-                            )
-                        )
-                        scatter_node[0].set_disc_name(
-                            namespace.replace(f'{self.name}.', '')
-                        )
-                        scatter_node.append(builder_scatter)
-                        result_builder_list.extend(scatter_node)
-                else:
-                    builder_scatter = (
-                        self.ee.factory.create_multi_scatter_builder_from_list(
-                            full_input_name, [builder], False
-                        )
-                    )
-                    builder_scatter[0].set_disc_name(
-                        namespace.replace(f'{self.name}.', '')
-                    )
-                    result_builder_list.extend(builder_scatter)
-                if sub_scatter_builder_map_name is not None:
-                    for input_v in input_value:
-                        builder_by_ac = SoSBuilder(
-                            f'{builder_on_first_scatter.sos_name}.{input_v}',
-                            self.ee,
-                            builder_on_first_scatter.cls,
-                        )
-                        result_builder_list.append(builder_by_ac)
-            else:
-                if namespace in self.activated_builders:
-
-                    if (
-                        sub_scatter_builder_map_name is not None
-                        and input_value_has_changed
-                    ):
-                        # if input_value of scatter input_name has changed,
-                        # then build builder_on_first_scatter and remove old
-                        # builders in activated_builders
-                        for input_v in input_value:
-                            # build new builder_on_first_scatter with
-                            # input_value
-                            builder_by_ac = SoSBuilder(
-                                f'{builder_on_first_scatter.sos_name}.{input_v}',
-                                self.ee,
-                                builder_on_first_scatter.cls,
-                            )
-                            result_builder_list.append(builder_by_ac)
-                        # remove old builders with previous input_value
-                        builders_to_remove = []
-                        disciplines_to_remove = []
-                        for builder in self.activated_builders[namespace]:
-                            if builder.sos_name in old_discipline_names:
-                                builders_to_remove.append(builder)
-                                disciplines_to_remove.append(builder.disc)
-                                self.archi_disciplines[namespace].remove(
-                                    builder.disc)
-                        self.activated_builders[namespace] = [
-                            builder
-                            for builder in self.activated_builders[namespace]
-                            if not builder in builders_to_remove
-                        ]
-                        self.clean_children(disciplines_to_remove)
-
-                    # update result_builder_list with other builders
-                    result_builder_list.extend(
-                        self.activated_builders[namespace])
+        #     if sub_scatter_builder_map_name is not None:
+        #         for input_v in input_value:
+        #             builder_by_ac = SoSBuilder(
+        #                 f'{builder_on_first_scatter.sos_name}.{input_v}',
+        #                 self.ee,
+        #                 builder_on_first_scatter.cls,
+        #             )
+        #             result_builder_list.append(builder_by_ac)
+        # else:
+        # if namespace in self.activated_builders:
+        #
+        #     if (
+        #         sub_scatter_builder_map_name is not None
+        #         and input_value_has_changed
+        #     ):
+        #         # if input_value of scatter input_name has changed,
+        #         # then build builder_on_first_scatter and remove old
+        #         # builders in activated_builders
+        #         for input_v in input_value:
+        #             # build new builder_on_first_scatter with
+        #             # input_value
+        #             builder_by_ac = SoSBuilder(
+        #                 f'{builder_on_first_scatter.sos_name}.{input_v}',
+        #                 self.ee,
+        #                 builder_on_first_scatter.cls,
+        #             )
+        #             result_builder_list.append(builder_by_ac)
+        #         # remove old builders with previous input_value
+        #         builders_to_remove = []
+        #         disciplines_to_remove = []
+        #         for builder in self.activated_builders[namespace]:
+        #             if builder.sos_name in old_discipline_names:
+        #                 builders_to_remove.append(builder)
+        #                 disciplines_to_remove.append(builder.disc)
+        #                 self.archi_disciplines[namespace].remove(
+        #                     builder.disc)
+        #         self.activated_builders[namespace] = [
+        #             builder
+        #             for builder in self.activated_builders[namespace]
+        #             if not builder in builders_to_remove
+        #         ]
+        #         self.clean_children(disciplines_to_remove)
+        #
+        #     # update result_builder_list with other builders
+        #     result_builder_list.extend(
+        #         self.activated_builders[namespace])
 
         return result_builder_list
 
