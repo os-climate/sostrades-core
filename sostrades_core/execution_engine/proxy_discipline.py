@@ -616,11 +616,8 @@ class ProxyDiscipline(object):
             desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
             # TODO: check if it is OK to update dm during config. rather than
             # at the very end of it (dynamic ns)
-            self.update_dm_with_data_dict(desc_in)
-            inputs_var_ns_tuples = self._extract_var_ns_tuples(desc_in)
-            self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
-            self._update_data_io(
-                zip(inputs_var_ns_tuples, desc_in.values()), self.IO_TYPE_IN)
+            self.update_data_io_and_nsmap(desc_in, self.IO_TYPE_IN)
+
             # Deal with numerical parameters inside the sosdiscipline
             self.add_numerical_param_to_data_in()
 
@@ -628,11 +625,7 @@ class ProxyDiscipline(object):
             desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
             self.set_shared_namespaces_dependencies(desc_out)
             desc_out = self._prepare_data_dict(self.IO_TYPE_OUT, desc_out)
-            self.update_dm_with_data_dict(desc_out)
-            outputs_var_ns_tuples = self._extract_var_ns_tuples(desc_out)
-            self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
-            self._update_data_io(
-                zip(outputs_var_ns_tuples, desc_out.values()), self.IO_TYPE_OUT)
+            self.update_data_io_and_nsmap(desc_out, self.IO_TYPE_OUT)
 
     def get_desc_in_out(self, io_type):
         """
@@ -662,10 +655,8 @@ class ProxyDiscipline(object):
         Returns:
             list[tuple] : [(var_short_name, id(ns_ref)), ...]
         """
-        try:
-            return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
-        except:
-            print('vuhdidi')
+
+        return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
 
     def _update_io_ns_map(self, var_ns_tuples, io_type):
         """
@@ -696,7 +687,7 @@ class ProxyDiscipline(object):
         Raises:
             Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
         """
-        io_types = []
+
         if io_type is None:
             io_types = [self.IO_TYPE_IN, self.IO_TYPE_OUT]
         elif io_type == self.IO_TYPE_IN or io_type == self.IO_TYPE_OUT:
@@ -705,11 +696,9 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
         if self.IO_TYPE_IN in io_types:
-            self._data_in = {(key, id(
-                value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
+            self._data_in = {(key, id_ns): self._data_in[(key, id_ns)] for key, id_ns in self._io_ns_map_in.items()}
         if self.IO_TYPE_OUT in io_types:
-            self._data_out = {(key, id(
-                value[self.NS_REFERENCE])): value for key, value in self.get_data_out().items()}
+            self._data_out = {(key, id_ns): self._data_out[(key, id_ns)] for key, id_ns in self._io_ns_map_out.items()}
 
     def _update_data_io(self, data_dict, io_type, data_dict_in_short_names=False):
         """
@@ -748,11 +737,7 @@ class ProxyDiscipline(object):
         num_data_in = deepcopy(self.NUM_DESC_IN)
         num_data_in = self._prepare_data_dict(
             self.IO_TYPE_IN, data_dict=num_data_in)
-        num_inputs_var_ns_tuples = self._extract_var_ns_tuples(num_data_in)
-        self._update_io_ns_map(num_inputs_var_ns_tuples, self.IO_TYPE_IN)
-        self.update_dm_with_data_dict(num_data_in)
-        self._update_data_io(zip(num_inputs_var_ns_tuples,
-                                 num_data_in.values()), self.IO_TYPE_IN)
+        self.update_data_io_and_nsmap(num_data_in, self.IO_TYPE_IN)
 
     def update_data_io_with_inst_desc_io(self):
         """
@@ -770,26 +755,26 @@ class ProxyDiscipline(object):
             self.set_shared_namespaces_dependencies(new_inputs)
             completed_new_inputs = self._prepare_data_dict(
                 self.IO_TYPE_IN, new_inputs)
-            self.update_dm_with_data_dict(
-                completed_new_inputs)
-            inputs_var_ns_tuples = self._extract_var_ns_tuples(
-                completed_new_inputs)
-            self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
-            self._update_data_io(
-                zip(inputs_var_ns_tuples, completed_new_inputs.values()), self.IO_TYPE_IN)
+            self.update_data_io_and_nsmap(completed_new_inputs, self.IO_TYPE_IN)
 
         # add new outputs from inst_desc_out to data_out
         if len(new_outputs) > 0:
             self.set_shared_namespaces_dependencies(new_outputs)
             completed_new_outputs = self._prepare_data_dict(
                 self.IO_TYPE_OUT, new_outputs)
-            self.update_dm_with_data_dict(
-                completed_new_outputs)
-            outputs_var_ns_tuples = self._extract_var_ns_tuples(
-                completed_new_outputs)
-            self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
-            self._update_data_io(
-                zip(outputs_var_ns_tuples, completed_new_outputs.values()), self.IO_TYPE_OUT)
+            self.update_data_io_and_nsmap(completed_new_outputs, self.IO_TYPE_OUT)
+
+    def update_data_io_and_nsmap(self, new_data_dict, io_type):
+        '''
+        Function to update data_in with a new data_dict and update also the ns_map related to the tuple key in the data_in
+        '''
+        var_ns_tuples = self._extract_var_ns_tuples(
+            new_data_dict)
+        self._update_io_ns_map(var_ns_tuples, io_type)
+        self.update_dm_with_data_dict(
+            new_data_dict)
+        self._update_data_io(
+            zip(var_ns_tuples, new_data_dict.values()), self.io_type)
 
     def get_built_disciplines_ids(self):
         """
@@ -1414,7 +1399,6 @@ class ProxyDiscipline(object):
         values_dict = {}
         for key, q_key in zip(keys, query_keys):
             if q_key not in self.dm.data_id_map:
-                print('toto')
                 raise Exception(
                     f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
             # get data in local_data during run or linearize steps
