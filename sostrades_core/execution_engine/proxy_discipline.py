@@ -774,7 +774,7 @@ class ProxyDiscipline(object):
         self.update_dm_with_data_dict(
             new_data_dict)
         self._update_data_io(
-            zip(var_ns_tuples, new_data_dict.values()), self.io_type)
+            zip(var_ns_tuples, new_data_dict.values()), io_type)
 
     def get_built_disciplines_ids(self):
         """
