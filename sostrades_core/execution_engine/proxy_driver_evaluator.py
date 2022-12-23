@@ -1394,7 +1394,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         """
         # Set sub_proc_import_usecase_status
-        with_modal = False
+        with_modal = True
         self.set_sub_process_usecase_status_from_user_inputs(with_modal)
 
         disc_in = self.get_data_in()

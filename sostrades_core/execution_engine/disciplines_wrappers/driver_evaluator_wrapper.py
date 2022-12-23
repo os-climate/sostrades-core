@@ -99,7 +99,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
                        SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
                        SoSWrapp.STRUCTURING: True}}
 
-    with_modal = False
+    with_modal = True
     if with_modal:
         DESC_IN.update({SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
                                              'structuring': True,

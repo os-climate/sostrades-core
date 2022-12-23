@@ -80,7 +80,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def setUp(self):
 
         self.repo = 'sostrades_core.sos_processes.test'
-        self.with_modal = False
+        self.with_modal = True
 
     def test_1_usecase_import_multi_instances_eval_simple_disc1_disc3(self):
         """

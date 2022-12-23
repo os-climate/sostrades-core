@@ -78,7 +78,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.instance_reference'] = True
         disc_dict[f'{ns}.Eval.reference_mode'] = 'linked_mode'
 
-        with_modal = False
+        with_modal = True
         if with_modal:
             process_builder_parameter_type = ProcessBuilderParameterType(
                 mod_id, repo, my_usecase)

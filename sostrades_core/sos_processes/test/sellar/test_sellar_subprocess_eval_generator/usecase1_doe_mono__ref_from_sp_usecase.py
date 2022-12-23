@@ -95,7 +95,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
 
-        with_modal = False
+        with_modal = True
         if with_modal:
             process_builder_parameter_type = ProcessBuilderParameterType(
                 mod_id, repo, my_usecase)
