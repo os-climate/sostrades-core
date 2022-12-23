@@ -49,21 +49,21 @@ class ValueBlockDiscipline(SoSWrapp):
            We add to the desc_in all the outputs of each child 
            We add to the desc_out the dict which will gather all inputs by name 
         '''
-        dynamic_inputs, dynamic_outputs = self.build_dynamic_io(self.proxy)
+        dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def build_dynamic_io(self, proxy):
+    def build_dynamic_io(self):
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        children_list = proxy.config_dependency_disciplines
+        children_list = self.config_dependency_disciplines
         for child in children_list:
             #child_name = child.sos_name.replace(f'{self.sos_name}.', '')
             child_name = child.get_disc_full_name().split(
                 f'{self.sos_name}.')[-1]
-            for output, output_dict in child.get_data_io_dict(proxy.IO_TYPE_OUT).items():
+            for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
                 data_in_dict = {
                     key: value for key, value in output_dict.items() if key in self.NEEDED_DATA_KEYS}
                 dynamic_inputs[f'{child_name}.{output}'] = data_in_dict
@@ -72,7 +72,7 @@ class ValueBlockDiscipline(SoSWrapp):
                 else:
                     output_name = f'{output}_gather'
                 dynamic_outputs[output_name] = data_in_dict.copy()
-                dynamic_outputs[output_name][proxy.TYPE] = 'dict'
+                dynamic_outputs[output_name][self.TYPE] = 'dict'
         return dynamic_inputs, dynamic_outputs
 
     def run(self):

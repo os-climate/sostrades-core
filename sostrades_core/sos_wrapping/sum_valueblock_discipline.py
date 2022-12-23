@@ -38,16 +38,16 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
     }
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
 
-    def build_dynamic_io(self, proxy):
+    def build_dynamic_io(self):
         """
         The sum is stored in the same name as the inputs found in the children_list
         """
-        dynamic_inputs, dynamic_outputs = super().build_dynamic_io(proxy)
+        dynamic_inputs, dynamic_outputs = super().build_dynamic_io()
         self.input_to_sum = {}
 
-        children_list = proxy.config_dependency_disciplines
+        children_list = self.config_dependency_disciplines
         for child in children_list:
-            for output, output_dict in child.get_data_io_dict(proxy.IO_TYPE_OUT).items():
+            for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
                 data_out_dict = {
                     key: value
                     for key, value in output_dict.items()

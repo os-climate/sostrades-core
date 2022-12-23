@@ -24,13 +24,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 # decorator for delegating a method to the ProxyDiscipline object during configuration
-def at_proxy(f):
-    @wraps(f)
-    def proxy_do(self, *args, **kwargs):
-        proxy_func = getattr(self.proxy, f.__name__)
-        return proxy_func(*args, **kwargs)
-    return proxy_do
-
 
 class SoSWrappException(Exception):
     pass
@@ -103,34 +96,38 @@ class SoSWrapp(object):
         self.inst_desc_out = {}
 
         # dynamic attributes that easen access to proxy and dm during configuration and get cleaned at runtime
-        self.__proxy = None
-        self.__dm = None
+        self.__proxy = None     # stores the proxy during configuration, decorator below to expose methods and properties
+        self.dm = AccessOnlyProxy()   # object to proxy the dm during configuration allowing use avoiding wrong referencing
 
-    @property
-    def proxy(self):
-        return self.__proxy
-
-    @property
-    def dm(self):
-        return self.__dm
+    # decorator to expose methods and properties delegated to ProxyDiscipline object during configuration
+    # TODO: change by a decorator outside the class + an AccessOnlyProxy object  ? Or by a __getattr__ overload ?
+    def at_proxy(f):
+        @wraps(f)
+        def proxy_do(self, *args, **kwargs):
+            proxy_attr = getattr(self.__proxy, f.__name__)
+            if callable(proxy_attr):
+                return proxy_attr(*args, **kwargs)
+            else: #otherwise it is a property getter
+                return proxy_attr
+        return proxy_do
 
     def clear_proxy(self):
         """
         Clears the ProxyDiscipline instance attribute from the SoSWrapp instance for serialization purposes (so that the
         proxy is not in attribute of the GEMSEO objects during execution).
         """
-        del self.__proxy, self.__dm
+        del self.__proxy
         self.__proxy = None
-        self.__dm = None
+        self.dm.clear_ref()
 
     def assign_proxy(self, proxy):
         """
-        Assigns a ProxyDiscipline instance to the self.proxy attribute (so that the proxy is available to the wrapper
+        Assigns a ProxyDiscipline instance to the self.__proxy attribute (so that the proxy is available to the wrapper
         during the configuration sequence).
         """
         if self.__proxy is None:
             self.__proxy = proxy
-            self.__dm = proxy.dm
+            self.dm.set_ref(proxy.dm)
 
     # methods delegated to the proxy partially (because they might be called during the run)
     def get_sosdisc_inputs(self, *args, **kwargs):
@@ -138,8 +135,8 @@ class SoSWrapp(object):
         Interface for the method get_sosdisc_inputs implementing a call to the ProxyDiscipline object, at configuration
         time vs. a call to the homonym protected method of the SoSWrapp object, at runtime.
         """
-        if self.proxy is not None:
-            return self.proxy.get_sosdisc_inputs(*args, **kwargs)
+        if self.__proxy is not None:
+            return self.__proxy.get_sosdisc_inputs(*args, **kwargs)
         else:
             return self._get_sosdisc_inputs(*args, **kwargs)
 
@@ -148,8 +145,8 @@ class SoSWrapp(object):
         Interface for the method get_sosdisc_outputs implementing a call to the ProxyDiscipline object, at configuration
         time vs. a call to the homonym protected method of the SoSWrapp object, at runtime.
         """
-        if self.proxy is not None:
-            return self.proxy.get_sosdisc_outputs(*args, **kwargs)
+        if self.__proxy is not None:
+            return self.__proxy.get_sosdisc_outputs(*args, **kwargs)
         else:
             return self._get_sosdisc_outputs(*args, **kwargs)
 
@@ -201,6 +198,22 @@ class SoSWrapp(object):
         """
         Method get_disc_full_name delegated to associated ProxyDiscipline object during configuration.
         """
+        pass
+
+    @property
+    @at_proxy
+    def config_dependency_disciplines(self):
+        """
+        Property config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_inst_desc_in(self):
+        """
+        Method get_inst_desc_in delegated to associated ProxyDiscipline object during configuration.
+        """
+        #TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
         pass
 
     def setup_sos_disciplines(self):  # type: (...) -> None
@@ -500,9 +513,24 @@ class SoSWrapp(object):
             dict_keys = list(value.keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
-
         return lines_nb, index_column
 
-    @at_proxy
-    def get_inst_desc_in(self):
-        pass
+
+class AccessOnlyProxy:
+    """
+    Class that proxies an object providing access but avoiding its erroneous referencing. Unrelated to ProxyDiscipline.
+    """
+    #TODO: move to a tool?
+    def __init__(self):
+        self.__obj = None
+
+    def __getattr__(self, item):
+        return getattr(self.__obj, item)
+
+    def set_ref(self, obj):
+        self.__obj = obj
+
+    def clear_ref(self):
+        del self.__obj
+        self.__obj = None
+
