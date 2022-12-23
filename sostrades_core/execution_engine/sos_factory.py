@@ -297,7 +297,8 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_driver(self, sos_name, cls_builder,map_name=None,with_sample_generator=False,flatten_subprocess=False, hide_coupling_in_driver=False):
+    def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, flatten_subprocess=False,
+                      hide_coupling_in_driver=False, hide_under_coupling=False):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
 
@@ -316,6 +317,7 @@ class SosFactory:
         builder.set_builder_info('map_name', map_name)
         builder.set_builder_info('flatten_subprocess',flatten_subprocess)
         builder.set_builder_info('hide_coupling_in_driver', hide_coupling_in_driver)
+        builder.set_builder_info('hide_under_coupling', hide_under_coupling)
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
         builder_list = [builder]
@@ -581,7 +583,8 @@ class SosFactory:
         """
         create a scatter tool builder with the tool factory
         """
-        scatter_tool = self.tool_factory.create_tool_builder(tool_name,'ScatterTool', map_name=map_name, hide_coupling_in_driver=hide_coupling_in_driver)
+        scatter_tool = self.tool_factory.create_tool_builder(tool_name, 'ScatterTool', map_name=map_name,
+                                                             hide_coupling_in_driver=hide_coupling_in_driver)
 
         return scatter_tool
 

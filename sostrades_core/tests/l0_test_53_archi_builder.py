@@ -267,16 +267,16 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_04_check_architecture_df(self):
+    def test_04_check_architecture_df(self):
 
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_business',
-                  'output_name': 'product_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        self.exec_eng.ns_manager.add_ns_def({'ns_business': self.study_name})
+        # mydict = {'input_name': 'product_list',
+        #           'input_type': 'string_list',
+        #           'input_ns': 'ns_business',
+        #           'output_name': 'product_name',
+        #           'scatter_ns': 'ns_ac'}
+        # self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
+        #
+        # self.exec_eng.ns_manager.add_ns_def({'ns_business': self.study_name})
 
         vb_builder_name = 'ArchiBuilder'
 
@@ -290,8 +290,10 @@ class TestArchiBuilder(unittest.TestCase):
         architecture_df = pd.DataFrame(
             {'Parent': ['ArchiBuilder', 'ArchiBuilder', 'Standard1', 'Standard2', 'Standard2'],
              'Current': ['Standard1', 'Standard2', 'Scatter', 'SubArchi', 'ScatterArchi'],
-             'Type': ['ValueBlockDiscipline', 'ValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'), ('standard'), ('scatter', 'product_list', 'ValueBlockDiscipline'), ('standard'), ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', sub_architecture_df)],
+             'Type': ['ValueBlockDiscipline', 'ValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), ('scatter', 'product_list', 'ValueBlockDiscipline'), ('standard'),
+                        ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', sub_architecture_df)],
              'Activation': [False, False, False, False, False], })
 
         print('architecture df: \n', architecture_df)
@@ -304,6 +306,19 @@ class TestArchiBuilder(unittest.TestCase):
         self.exec_eng.configure()
         self.exec_eng.load_study_from_input_dict({})
         self.exec_eng.display_treeview_nodes()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Standard1',
+                       '\t\t\t|_ Scatter',
+                       '\t\t\t\t|_ driver',
+                       '\t\t|_ Standard2',
+                       '\t\t\t|_ SubArchi',
+                       '\t\t\t|_ ScatterArchi',
+                       '\t\t\t\t|_ driver', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
@@ -339,16 +354,16 @@ class TestArchiBuilder(unittest.TestCase):
         self.assertDictEqual(activation_df.to_dict(), self.exec_eng.dm.get_value(
             'MyCase.ArchiBuilder.activation_df').to_dict())
 
-    def _test_05_build_architecture_scatter(self):
+    def test_05_build_architecture_scatter(self):
 
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_public',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
+        # mydict = {'input_name': 'product_list',
+        #           'input_type': 'string_list',
+        #           'input_ns': 'ns_public',
+        #           'output_name': 'AC_name',
+        #           'scatter_ns': 'ns_ac'}
+        # self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
+        #
+        # self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
 
         vb_builder_name = 'Business'
 
@@ -391,7 +406,7 @@ class TestArchiBuilder(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(
             {'MyCase.Business.activation_df': activation_df})
 
-        self.exec_eng.display_treeview_nodes(display_variables=True)
+        self.exec_eng.display_treeview_nodes()
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
@@ -418,16 +433,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_06_build_architecture_scatter_with_multiple_configure(self):
-
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_public',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
+    def test_06_build_architecture_scatter_with_multiple_configure(self):
 
         vb_builder_name = 'Business'
 
@@ -490,13 +496,11 @@ class TestArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.product_list'), ['A320', 'A321', 'B737'])
+            'MyCase.Business.Remy.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['A320', 'A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.CAPEX.product_list'), ['A320', 'A321'])
+            'MyCase.Business.Remy.Opex.driver.scenario_df')['scenario_name'].values.tolist(), ['A320'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.product_list'), ['A320'])
-        self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Tomato.CAPEX.product_list'), ['B737'])
+            'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['B737'])
 
         # test configure and cleaning
 
@@ -528,25 +532,15 @@ class TestArchiBuilder(unittest.TestCase):
 
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.product_list'), ['A320', 'A321', 'B737'])
-        self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.CAPEX.product_list'), ['A321'])
-        self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.product_list'), ['A320', 'A321'])
-        self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Tomato.CAPEX.product_list'), ['B737'])
 
-    def _test_07_architecture_multi_level(self):
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Remy.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['A321'])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Remy.Opex.driver.scenario_df')['scenario_name'].values.tolist(), ['A320', 'A321'])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['B737'])
 
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_public',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
+    def test_07_architecture_multi_level(self):
 
         self.repo_business = 'business_case.sos_wrapping.'
         vb_builder_name = 'Business'
@@ -595,7 +589,7 @@ class TestArchiBuilder(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
 
         self.exec_eng.configure()
-
+        self.exec_eng.load_study_from_input_dict({})
         activation_df = pd.DataFrame({'Business': ['Remy', 'Remy', 'Tomato', 'Tomato'],
                                       'product_list': ['AC1', 'AC2', 'AC3', 'AC4'],
                                       'CAPEX': [True, True, True, True],
@@ -640,16 +634,14 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.product_list')), ['AC1', 'AC2', 'AC3', 'AC4'])
-        self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.CAPEX.product_list')), ['AC1', 'AC2'])
-        self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Tomato.CAPEX.product_list')), ['AC3', 'AC4'])
-        self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.FHS.product_list')), ['AC1', 'AC2'])
-        self.assertListEqual(list(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.Delivery.product_list')), ['AC1', 'AC2'])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Remy.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['AC3', 'AC4'])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Remy.Opex.FHS.driver.scenario_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
+        self.assertListEqual(self.exec_eng.dm.get_value(
+            'MyCase.Business.Remy.Opex.Delivery.driver.scenario_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
 
     def test_08_process_simple_architecture_execution(self):
 
@@ -722,27 +714,13 @@ class TestArchiBuilder(unittest.TestCase):
         for disc in self.exec_eng.factory.proxy_disciplines:
             self.assertEqual(disc.status, 'DONE')
 
-    def _test_09_build_scatter_architecture_at_architecture_node(self):
+    def test_09_build_scatter_architecture_at_architecture_node(self):
 
         vb_builder_name = 'Business'
 
-        mydict = {'input_name': 'product_list',
-                  'input_type': 'string_list',
-                  'input_ns': 'ns_public',
-                  'output_name': 'AC_name',
-                  'scatter_ns': 'ns_ac'}
-        self.exec_eng.scattermap_manager.add_build_map('product_list', mydict)
-
-        actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
-                          'input_ns': 'ns_public',
-                          'output_name': 'Actor_name',
-                          'scatter_ns': 'ns_actor'}
-        self.exec_eng.scattermap_manager.add_build_map('Actor_list', actor_map_dict)
-
         sub_architecture_df = pd.DataFrame(
             {'Parent': ['Business'],
-             'Current': ['Flight Hour'],
+             'Current': ['Cooking'],
              'Type': ['SumValueBlockDiscipline'],
              'Action': ['standard'],
              'Activation': [False], })
@@ -772,7 +750,7 @@ class TestArchiBuilder(unittest.TestCase):
         activation_df = pd.DataFrame(
             {'Actor_list': ['Remy', 'Tomato', 'Zucchini'],
              'Business': [True, True, False],
-             'Flight Hour': [True, True, False]})
+             'Cooking': [True, True, False]})
         self.exec_eng.load_study_from_input_dict(
             {'MyCase.Business.activation_df': activation_df})
 
@@ -780,22 +758,15 @@ class TestArchiBuilder(unittest.TestCase):
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
                        '\t\t|_ Remy',
-                       '\t\t\t|_ Flight Hour',
+                       '\t\t\t|_ Cooking',
                        '\t\t|_ Tomato',
-                       '\t\t\t|_ Flight Hour']
+                       '\t\t\t|_ Cooking']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def _test_10_build_scatter_at_architecture_node(self):
+    def test_10_build_scatter_at_architecture_node(self):
 
         vb_builder_name = 'Business'
-
-        actor_map_dict = {'input_name': 'Actor_list',
-                          'input_type': 'string_list',
-                          'input_ns': 'ns_public',
-                          'output_name': 'Actor_name',
-                          'scatter_ns': 'ns_actor'}
-        self.exec_eng.scattermap_manager.add_build_map('Actor_list', actor_map_dict)
 
         architecture_df = pd.DataFrame(
             {'Parent': [None],
@@ -868,172 +839,6 @@ class TestArchiBuilder(unittest.TestCase):
         #                f'\t\t|_ Manhour',
         #                f'\t\t|_ Cooking',
         #                f'\t\t|_ Energy']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
-
-    def _test_12_architecture_without_archi_name_in_architecture_df(self):
-
-        # add namespaces definition
-        self.exec_eng.ns_manager.add_ns_def({'ns_public': self.exec_eng.study_name,
-                                             'ns_ac': f'{self.exec_eng.study_name}.Business',
-                                             'ns_subsystem': f'{self.exec_eng.study_name}.Business'})
-
-        # actor, subsystem and product_list scatter maps dict
-        subsystem_map = {'input_name': 'subsystem_list',
-                         'input_type': 'string_list',
-                         'input_ns': 'ns_subsystem',
-                         'output_name': 'subsystem',
-                         'scatter_ns': 'ns_subsystem_scatter'}
-
-        product_list_map = {'input_name': 'product_list',
-                            'input_type': 'string_list',
-                            'input_ns': 'ns_ac',
-                            'output_name': 'AC_name',
-                            'scatter_ns': 'ns_ac_scatter',
-                            'ns_to_update': ['ns_subsystem']}
-
-        # add actor, subsystem and product_list maps
-        self.exec_eng.scattermap_manager.add_build_map(
-            'subsystem_list_map', subsystem_map)
-        self.exec_eng.scattermap_manager.add_build_map(
-            'product_list_map', product_list_map)
-
-        architecture_df = pd.DataFrame(
-            {'Parent': ['Opex', 'Opex', 'Opex', 'Opex', None],
-             'Current': ['Delivery', 'FHS', 'Pool', 'TSP', 'Sales'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline',
-                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('scatter', 'product_list', ('scatter', 'subsystem_list', 'ValueBlockDiscipline')), ('scatter', 'product_list', ('scatter', 'subsystem_list', 'ValueBlockDiscipline')), ('scatter', 'product_list', ('scatter', 'subsystem_list', 'ValueBlockDiscipline')), ('scatter', 'product_list', ('scatter', 'subsystem_list', 'ValueBlockDiscipline')), ('scatter', 'product_list', ('scatter', 'subsystem_list', 'ValueBlockDiscipline'))],
-             'Activation': [False, False, False, False, False]})
-
-        builder_architecture = self.exec_eng.factory.create_architecture_builder(
-            'Business', architecture_df)
-
-        self.exec_eng.factory.set_builders_to_coupling_builder(
-            builder_architecture)
-        self.exec_eng.load_study_from_input_dict({})
-        self.exec_eng.display_treeview_nodes()
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
-                       f'|_ {self.namespace}',
-                       f'\t|_ Business',
-                       f'\t\t|_ Opex',
-                       f'\t\t\t|_ Delivery',
-                       f'\t\t\t|_ FHS',
-                       f'\t\t\t|_ Pool',
-                       f'\t\t\t|_ TSP',
-                       f'\t\t|_ Sales']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
-
-        activation_df = pd.DataFrame({'product_list': ['NSA-300', 'NSA-300', 'NSA-400', 'NSA-400'],
-                                      'subsystem_list': ['Airframe', 'Propulsion', 'Airframe', 'Propulsion'],
-                                      'Delivery': [True, True, True, True],
-                                      'FHS': [True, True, True, True],
-                                      'Pool': [True, True, True, True],
-                                      'TSP': [True, True, True, True],
-                                      'Sales': [True, True, True, True]})
-
-        dict_values = {}
-        dict_values[f'{self.study_name}.Business.activation_df'] = activation_df
-
-        self.exec_eng.load_study_from_input_dict(dict_values)
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
-                       f'|_ {self.namespace}',
-                       f'\t|_ Business',
-                       f'\t\t|_ Opex',
-                       f'\t\t\t|_ Delivery',
-                       f'\t\t\t\t|_ NSA-300',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t\t|_ NSA-400',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t|_ FHS',
-                       f'\t\t\t\t|_ NSA-300',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t\t|_ NSA-400',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t|_ Pool',
-                       f'\t\t\t\t|_ NSA-300',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t\t|_ NSA-400',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t|_ TSP',
-                       f'\t\t\t\t|_ NSA-300',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t\t|_ NSA-400',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t|_ Sales',
-                       f'\t\t\t|_ NSA-300',
-                       f'\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t|_ Propulsion',
-                       f'\t\t\t|_ NSA-400',
-                       f'\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t|_ Propulsion']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
-
-        activation_df = pd.DataFrame({'product_list': ['NSA-300', 'NSA-300', 'NSA-400', 'NSA-400'],
-                                      'subsystem_list': ['Airframe', 'Propulsion', 'Airframe', 'Propulsion'],
-                                      'Delivery': [False, False, True, True],
-                                      'FHS': [True, False, True, False],
-                                      'Pool': [False, False, False, False],
-                                      'TSP': [True, True, False, False],
-                                      'Sales': [True, False, False, True]})
-
-        dict_values = {}
-        dict_values[f'{self.study_name}.Business.activation_df'] = activation_df
-
-        self.exec_eng.load_study_from_input_dict(dict_values)
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
-                       f'|_ {self.namespace}',
-                       f'\t|_ Business',
-                       f'\t\t|_ Opex',
-                       f'\t\t\t|_ Delivery',
-                       f'\t\t\t\t|_ NSA-400',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t\t|_ FHS',
-                       f'\t\t\t\t|_ NSA-300',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t|_ NSA-400',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t|_ TSP',
-                       f'\t\t\t\t|_ NSA-300',
-                       f'\t\t\t\t\t|_ Airframe',
-                       f'\t\t\t\t\t|_ Propulsion',
-                       f'\t\t|_ Sales',
-                       f'\t\t\t|_ NSA-300',
-                       f'\t\t\t\t|_ Airframe',
-                       f'\t\t\t|_ NSA-400',
-                       f'\t\t\t\t|_ Propulsion']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
-
-        activation_df = pd.DataFrame({'product_list': ['NSA-300', 'NSA-300', 'NSA-400', 'NSA-400'],
-                                      'subsystem_list': ['Airframe', 'Propulsion', 'Airframe', 'Propulsion'],
-                                      'Delivery': [False, False, False, False],
-                                      'FHS': [False, False, False, False],
-                                      'Pool': [False, False, False, False],
-                                      'TSP': [False, False, False, False],
-                                      'Sales': [False, False, False, False]})
-
-        dict_values = {}
-        dict_values[f'{self.study_name}.Business.activation_df'] = activation_df
-        self.exec_eng.load_study_from_input_dict(dict_values)
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
-                       f'|_ {self.namespace}',
-                       f'\t|_ Business']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
