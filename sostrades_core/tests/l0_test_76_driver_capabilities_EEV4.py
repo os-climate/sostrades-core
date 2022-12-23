@@ -1648,7 +1648,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-
         from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref_2 import Study
         study_name = 'root'
         ns = study_name
@@ -1666,7 +1665,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         usecase = Study(execution_engine=exec_eng)
         usecase.study_name = ns
         values_dict = usecase.setup_usecase()
-
         exec_eng.load_study_from_input_dict(values_dict[0])
         self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.reference_mode'),
                          'copy_mode')
@@ -1835,8 +1833,13 @@ class TestSoSDOEScenario(unittest.TestCase):
                          'copy_mode')
         values_dict_test[f'{study_name}.outer_ms.scenario_1.inner_ms.reference_mode'] = 'linked_mode'
         exec_eng.load_study_from_input_dict(values_dict_test)
+        self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.reference_mode'),
+                         'copy_mode')
+        self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'),
+                         'copy_mode')
         self.assertEqual(exec_eng.dm.get_value(f'{study_name}.outer_ms.scenario_1.inner_ms.reference_mode'),
-                         'linked_mode')     # TODO: THIS SHOULD LEAD TO ERROR as in GUI!!!!!
+                         'linked_mode')     # TODO: THIS SHOULD LEAD TO ERROR as in GUI!!!!! In GUI, it does not change from copy to linked
+
         for sc in scenario_list_outer:
             self.assertEqual(
                 exec_eng.dm.get_data(
@@ -1859,6 +1862,11 @@ class TestSoSDOEScenario(unittest.TestCase):
                 exec_eng.dm.get_data(
                     study_name + '.outer_ms.' + 'scenario_1' + '.inner_ms.' + name + '.x', 'editable'),
                 False)
+
+        values_dict_test[f'{study_name}.outer_ms.scenario_1.inner_ms.ReferenceScenario.a'] = 80
+        exec_eng.load_study_from_input_dict(values_dict_test)
+        for name in scenario_list_inner:
+            self.assertEqual(exec_eng.dm.get_value(study_name + '.outer_ms.scenario_1.inner_ms.' + name + '.a'), 80)
 
         # Now, change of outer_ms to linked mode and verify linked mode propagation
         values_dict_test[f'{study_name}.outer_ms.reference_mode'] = 'linked_mode'
