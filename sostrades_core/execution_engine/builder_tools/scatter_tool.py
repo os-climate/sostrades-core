@@ -204,9 +204,6 @@ class ScatterTool(SosTool):
         # Call scatter map to modify the associated namespace
 
         if new_name:
-            if self.hide_under_coupling:
-                display_value = f'{self.driver.get_disc_full_name()}.{name}'
-                self.ee.ns_manager.add_display_ns_to_builder_list(self.sub_builders, display_value)
             coupling_builder = self.driver.create_sub_builder_coupling(
                 name, self.sub_builders)
 
@@ -286,12 +283,12 @@ class ScatterTool(SosTool):
             builder.set_disc_name(disc_name)
             if new_name:
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
-                if self.hide_under_coupling:
-                    display_value = disc_name.replace(f'.{old_builder_name}', '')
-                    self.ee.ns_manager.add_display_ns_to_builder(
-                        builder, display_value)
             self.set_father_discipline()
             disc = builder.build()
+            if self.hide_under_coupling:
+                local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
+                display_value = f'{self.driver.get_disc_display_name()}.{name}'
+                local_ns_disc.set_display_value(display_value)
             builder.set_disc_name(old_builder_name)
             # Add the discipline only if it is a new_name
             if new_name:

@@ -230,12 +230,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 and activation_df.columns.equals(self.default_activation_df.columns)
             ):
                 rows_to_delete = []
+                modified_activation_df = deepcopy(activation_df)
                 for (colname, colval) in activation_df.iteritems():
                     if self.default_df_descriptor[colname][0] == 'string':
                         # if 'string' type is defined in default_df_descriptor, then
                         # convert values into string
                         if not all(activation_df[colname].isnull()):
-                            activation_df[colname] = colval.map(str)
+                            modified_activation_df[colname] = colval.map(str)
                         # check if possibles values are defined from
                         # architecture_df
                         if not all(self.default_activation_df[colname].isnull()):
@@ -273,8 +274,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                                     self.ee.logger.error(
                                         f'Invalid Value Block Activation Configuration: value block {colname} not available for {list(set(activation_df.loc[activation_df[vb].isin(unavailable_vb)][activation_df[colname]][vb].values.tolist()))}'
                                     )
-                                    activation_df.loc[
-                                        activation_df[vb].isin(
+                                    modified_activation_df.loc[
+                                        modified_activation_df[vb].isin(
                                             unavailable_vb), colname
                                     ] = False
                         # if colname value block is desactivated, then
@@ -284,13 +285,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                                 colname, self.architecture_df
                             )
                             if len(children_names) > 0:
-                                activation_df.loc[
-                                    ~activation_df[colname], children_names
+                                modified_activation_df.loc[
+                                    ~modified_activation_df[colname], children_names
                                 ] = False
 
                 if len(rows_to_delete) > 0:
                     # remove rows with values not among possible_values
-                    self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = activation_df.drop(
+                    self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
                         rows_to_delete
                     )
 
@@ -498,26 +499,15 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
         self.activated_builders = activ_builder_dict
 
-        # self.send_children_to_father()
+        self.send_children_to_father()
 
     def build_value_block(self, builder, namespace):
         """
         Method to build discipline with builder and namespace
         """
-        if namespace == self.sos_name:
-            # if namespace is architecture name, remove architecture name to
-            # current_ns to build discipline at same node as architecture
-            # FIXME: this implies building both disciplines in same node which is no longer permitted, remember to
-            #  refactor when ArchiBuilder as a tool and namespace display devs are ready
-            current_ns = self.ee.ns_manager.current_disc_ns
-            self.ee.ns_manager.set_current_disc_ns(
-                current_ns.split(f'.{namespace}')[0])
-            discipline = builder.build()
-            # reset current_ns after build
-            self.ee.ns_manager.set_current_disc_ns(current_ns)
-        else:
-            # build discipline below architecture
-            discipline = builder.build()
+        # build discipline below architecture
+        discipline = builder.build()
+
         return discipline
 
     def build_action_from_builder_dict(self, builder_dict, archi_df):
@@ -533,7 +523,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 if '.' in namespace:
                     builder_name = namespace.split('.')[-1]
                 else:
+                    # builder name at architecture node
                     builder_name = namespace
+                    if not builder.sos_name.endswith('@archi_node'):
+                        builder.set_disc_name(f'{builder.sos_name}@archi_node')
+                        self.ee.ns_manager.add_display_ns_to_builder(builder, builder.sos_name)
                 action, args = self.get_action_builder(namespace, archi_df)
 
                 if self.is_builder_activated(namespace, builder_name):
@@ -631,14 +625,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                                 raise ArchiBuilderException(
                                     f'Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS[action[0]]}, with a string \'var_name\', a string \'builder_class\' and a dataframe \'architecture_df\''
                                 )
-
-                            if args[0] is not None:
-                                # get maps of scatter_architecture
-                                scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
-                                    args[0]
-                                )
-                            else:
-                                scatter_map = None
+                            scatter_list_name = args[0]
+                            # if args[0] is not None:
+                            #     # get maps of scatter_architecture
+                            #     scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
+                            #         args[0]
+                            #     )
+                            # else:
+                            #     scatter_map = None
                             # get initial builders_dict and activation_dict for
                             # sub architecture
                             new_builder_dict, new_activation_dict = self.get_subarchi_builders(
@@ -685,9 +679,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             # prevent from multiple builders at scatter node
                             activ_builders = self.get_scatter_builder(
                                 namespace,
-                                scatter_map,
+                                scatter_list_name,
                                 archi_builder_list,
-                                builder_name,
                                 scatter_node_cls_list=scatter_builder_cls_list,
                             )
 
@@ -729,7 +722,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             subscatter_builder = self.get_builder_from_factory(
                 namespace, args[1][2])
             scatter_builder = self.build_action_scatter(
-                namespace, args[1][1], subscatter_builder, builder_name
+                namespace, args[1][1], subscatter_builder
             )
             if len(scatter_builder) == 1:
                 scatter_builder = scatter_builder[0]
@@ -737,7 +730,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 namespace,
                 args[0],
                 scatter_builder,
-                builder_name,
                 sub_scatter_builder=args[1][1],
                 builder_on_first_scatter=builder_on_first_scatter,
             )
@@ -750,44 +742,27 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return activ_builders
 
     def build_action_scatter(
-        self,
-        namespace,
-        scatter_map_name,
-        scatter_builder,
-        builder_name,
-        sub_scatter_builder=None,
-        builder_on_first_scatter=None,
+            self,
+            namespace,
+            scatter_list_name,
+            scatter_builder,
+            sub_scatter_builder=None,
+            builder_on_first_scatter=None,
     ):
         """
         Build a scatter under a node
          namespace : namespace of the node where to build the scatter
          scatter_map_name : name ot he scatter_map associatd to the scatter
-         builder_name : name of the builder to scatter,
          sub_scatter_builder : in case of scatter of scatter the builder to scatter at the last level
          builder_on_first_scatter : in case of scatter of scatter, the builder to build at the place of the scattered_name
          ex : a sumbuilder at the AC node
 
         """
 
-        scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
-            scatter_map_name
-        )
-        if not isinstance(scatter_map_name, str):
-            raise ArchiBuilderException(
-                f"Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS['scatter']}, with a string \'var_name\' and a string \'builder_class\'"
-            )
-        if scatter_map is None:
-            scatter_list_name = scatter_map_name
-
-        #     raise ArchiBuilderException(
-        #         f'No build map defined for \'{scatter_map_name}\''
-        #     )
-
         activ_builders = self.get_scatter_builder(
             namespace,
             scatter_list_name,
             scatter_builder,
-            builder_name,
             sub_scatter_builder_map_name=sub_scatter_builder,
             builder_on_first_scatter=builder_on_first_scatter,
         )
@@ -823,15 +798,15 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         attribute children_list
         """
         for ns, disc_list in self.archi_disciplines.items():
-            scatter_in_node = False
-            scattered_disciplines = {}
+            # scatter_in_node = False
+            # scattered_disciplines = {}
             for disc in disc_list:
-
                 disc_children_list = [
                     child
                     for ns_child in self.children_dict[ns]
                     if ns_child in self.archi_disciplines
                     for child in self.archi_disciplines[ns_child]
+                    if not hasattr(child, 'LINKED_MODE')
                 ]
                 disc.add_disc_list_to_config_dependency_disciplines(
                     disc_children_list)
@@ -900,14 +875,32 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         for driver_name, input_name in self.driver_input_to_fill.items():
 
             if f'{driver_name}.scenario_df' in self.get_data_out():
-                activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
-                indexes = np.unique(
-                    [val for val in activation_df[input_name] if val is not None],
-                    return_index=True,
-                )[1]
+                activation_df = deepcopy(self.get_sosdisc_inputs(self.ACTIVATION_DF))
+
+                if driver_name == 'driver':
+                    # means that we have a driver at archi node
+                    namespace = self.sos_name
+                    builder_name = self.sos_name
+                else:
+                    driver_display_name = driver_name.replace('.driver', '')
+                    namespace = f"{self.sos_name}.{driver_display_name}"
+                    builder_name = driver_display_name.split('.')[-1]
+
+                for var, activ_dict in self.activation_dict.items():
+                    if namespace in activ_dict:
+                        activation_df = activation_df.loc[
+                            activation_df[var] == activ_dict[namespace]]
+                        break
+                try:
+                    subactivation_df = activation_df.loc[activation_df[builder_name]]
+                except:
+                    pass
                 input_value = [
-                    activation_df[input_name][index] for index in sorted(indexes)
+                    val for val in subactivation_df[input_name] if val is not None
                 ]
+                indexes = np.unique(input_value, return_index=True)[1]
+                input_value = [input_value[index] for index in sorted(indexes)]
+
                 scenario_full_name = self.get_var_full_name(f'{driver_name}.scenario_df', self.get_data_out())
                 self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
                                                                             self.SELECTED_SCENARIO: True}),
@@ -927,7 +920,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             namespace,
             scatter_list_name,
             builder,
-            builder_name,
             scatter_node_cls_list=None,
             sub_scatter_builder_map_name=None,
             builder_on_first_scatter=None,
@@ -995,54 +987,34 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         #     self.children_dict[namespace] = [
         #         f'{namespace}.{val}' for val in input_value
         #     ]
-
-        # if full_input_name not in self.ee.scattermap_manager.build_maps_dict:
-        #     child_map = deepcopy(map.get_map())
-        #     if map.INPUT_NS in map.get_map():
-        #         del child_map[map.INPUT_NS]
-        #
-        #     self.ee.scattermap_manager.add_build_map(full_input_name, child_map)
+        # case when scatter is on archi_node or scatter on other node at root level
         if namespace == self.sos_name:
-            # if namespace is architecture name
-            builder_name = namespace
-        else:
-            # else split to get builder_name
+            driver_name = 'driver'
+        # standard case
+        elif self.sos_name in namespace:
             builder_name = f"{namespace.split('.', 1)[1]}"
-
-        driver_name = f'{builder_name}.driver'
+            driver_name = f'{builder_name}.driver'
+            # case when no archi_node is specified in architecture_df
+        else:
+            builder_name = namespace
+            driver_name = f'{builder_name}.driver'
         if isinstance(builder, list):
 
             builder_scatter = self.ee.factory.create_driver(driver_name, builder)
-
-            # builder_scatter = self.ee.factory.create_scatter_builder(
-            #     builder_name, full_input_name, builder
-            # )
-            # create a scatter for each builder you want at the scatter node
-            # if only one no modifications
-            # for scatter_node_cls in scatter_node_cls_list:
-            #     scatter_node = (
-            #         self.ee.factory.create_multi_scatter_builder_from_list(
-            #             full_input_name, [scatter_node_cls], False
-            #         )
-            #     )
-            #     scatter_node[0].set_disc_name(
-            #         namespace.replace(f'{self.name}.', '')
-            #     )
-            #     scatter_node.append(builder_scatter)
-            #     result_builder_list.extend(scatter_node)
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
-            builder_scatter = self.ee.factory.create_driver(driver_name, [builder], hide_under_coupling=True)
-            # builder_scatter = (
-            #     self.ee.factory.create_multi_scatter_builder_from_list(
-            #         full_input_name, [builder], False
-            #     )
-            # )
-            # builder_scatter[0].set_disc_name(
-            #     namespace.replace(f'{self.name}.', '')
-            # )
-        self.ee.ns_manager.add_display_ns_to_builder(
-            builder_scatter[0], f'{self.get_disc_full_name()}.{builder_name}')
+            builder_scatter = self.ee.factory.create_driver(driver_name, [builder], hide_under_coupling=True,
+                                                            flatten_subprocess=True)
+        if namespace == self.sos_name:
+            self.ee.ns_manager.add_display_ns_to_builder(
+                builder_scatter[0], self.get_disc_full_name())
+        elif len(namespace.split('.')) == 1:
+            self.ee.ns_manager.add_display_ns_to_builder(
+                builder_scatter[0], self.get_disc_full_name().replace(self.sos_name, namespace))
+        else:
+            # builder_name = f"{namespace.split('.', 1)[1]}"
+            self.ee.ns_manager.add_display_ns_to_builder(
+                builder_scatter[0], f'{self.get_disc_full_name()}.{builder_name}')
         result_builder_list.extend(builder_scatter)
 
         input_name = scatter_list_name
