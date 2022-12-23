@@ -43,7 +43,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.instance_reference'] = True
         disc_dict[f'{ns}.Eval.reference_mode'] = 'copy_mode'
 
-        with_modal = False
+        with_modal = True
         anonymize_input_dict_from_usecase = {}
         if with_modal:
             repo = 'sostrades_core.sos_processes.test.sellar'

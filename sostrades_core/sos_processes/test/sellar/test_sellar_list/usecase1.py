@@ -24,26 +24,25 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         """
-        Usecase for a coupling of Sellar Problem
+        Usecase for a list of Sellar Problem
         """
         ns = f'{self.study_name}'
-        coupling_name = "SellarCoupling"
 
         disc_dict = {}
         # Sellar inputs
         #======================================================================
-        # disc_dict[f'{ns}.{coupling_name}.x'] = array([1.])
-        # disc_dict[f'{ns}.{coupling_name}.y_1'] = array([1.])
-        # disc_dict[f'{ns}.{coupling_name}.y_2'] = array([1.])
-        # disc_dict[f'{ns}.{coupling_name}.z'] = array([1., 1.])
-        # disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        # disc_dict[f'{ns}.x'] = array([1.])
+        # disc_dict[f'{ns}.y_1'] = array([1.])
+        # disc_dict[f'{ns}.y_2'] = array([1.])
+        # disc_dict[f'{ns}.z'] = array([1., 1.])
         #======================================================================
 
-        disc_dict[f'{ns}.{coupling_name}.x'] = [1.]
-        disc_dict[f'{ns}.{coupling_name}.y_1'] = [1.]
-        disc_dict[f'{ns}.{coupling_name}.y_2'] = [1.]
-        disc_dict[f'{ns}.{coupling_name}.z'] = [1., 1.]
-        disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{ns}.x'] = [11.]
+        disc_dict[f'{ns}.y_1'] = [11.]
+        disc_dict[f'{ns}.y_2'] = [11.]
+        disc_dict[f'{ns}.z'] = [11., 11.]
+
+        disc_dict[f'{ns}.Sellar_Problem.local_dv'] = 10.
 
         return [disc_dict]
 
@@ -53,4 +52,3 @@ if '__main__' == __name__:
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.run()
-#     uc_cls.execution_engine.root_process.coupling_structure.graph.write_full_graph("here.pdf")
