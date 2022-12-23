@@ -88,10 +88,55 @@ class Disc1(SoSWrapp):
 
 
 class Disc1ProxyCheck(Disc1):
+    """
+    Modification of Disc1 with implementational checks for proper proxy and dm un-assignation during run.
+    """
     def run(self):
-        if self.proxy is not None:
+        if self._SoSWrapp__proxy is not None:
             raise Exception('proxy remains assigned during run')
-        elif self.dm is not None:
+        elif self.dm._AccessOnlyProxy__obj is not None:
             raise Exception('dm remains assigned during run')
         else:
             super().run()
+
+
+class Disc1ConfigActionAtRunTime(Disc1):
+    """
+    Modification of Disc1 requesting a proxy-delegated configuration action at run-time (will crash).
+    """
+    def run(self):
+        self.add_inputs({})
+
+
+class Disc1RecursiveObjectDictCheck(Disc1):
+    """
+    Modification
+    """
+    def run(self):
+        ObjectDictCheck(self, [])
+
+
+def ObjectDictCheck(obj, checked):
+    from collections import Iterable
+    objid = id(obj)
+    if objid not in checked:
+        ElementCheck(obj)
+        checked.append(objid)
+        if hasattr(obj, '__dict__'):
+            for subobj in obj.__dict__.values():
+                ObjectDictCheck(subobj, checked)
+        if isinstance(obj, dict):
+            for subobj in obj.values():
+                ObjectDictCheck(subobj, checked)
+        elif isinstance(obj, Iterable):
+            for subobj in obj:
+                ObjectDictCheck(subobj, checked)
+
+
+def ElementCheck(element):
+    if element.__class__.__name__ == 'DataManager':
+        raise Exception('reference leak to data manager in SoSWrapp')
+    elif element.__class__.__name__ == 'ProxyDiscipline':
+        raise Exception('reference leak to ProxyDiscipline '+element.sos_name+' in SoSWrapp')
+    else:
+        pass

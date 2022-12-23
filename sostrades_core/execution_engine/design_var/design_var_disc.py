@@ -251,14 +251,13 @@ class DesignVarDiscipline(SoSWrapp):
         if 'BSpline' in charts:
             list_dv = self.get_sosdisc_inputs('design_var_descriptor')
             for parameter in list_dv.keys():
-                new_chart = self.get_chart_BSpline(
-                    self.proxy, parameter, init_xvect)
+                new_chart = self.get_chart_BSpline(parameter, init_xvect)
                 if new_chart is not None:
                     instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
-    def get_chart_BSpline(self, proxy, parameter, init_xvect=False):
+    def get_chart_BSpline(self, parameter, init_xvect=False):
         """
         Function to create post-proc for the design variables with display of the control points used to 
         calculate the B-Splines.
@@ -268,8 +267,8 @@ class DesignVarDiscipline(SoSWrapp):
         Output: InstantiatedPlotlyNativeChart
         """
 
-        design_space = proxy.get_sosdisc_inputs('design_space')
-        pts = proxy.get_sosdisc_inputs(parameter)
+        design_space = self.get_sosdisc_inputs('design_space')
+        pts = self.get_sosdisc_inputs(parameter)
         ctrl_pts = list(pts)
         starting_pts = list(
             design_space[design_space['variable'] == parameter]['value'].values[0])
@@ -280,18 +279,18 @@ class DesignVarDiscipline(SoSWrapp):
                                                     == parameter, 'value'].to_list()[0][i])
         eval_pts = None
 
-        design_var_descriptor = proxy.get_sosdisc_inputs('design_var_descriptor')
+        design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
         out_name = design_var_descriptor[parameter]['out_name']
         out_type = design_var_descriptor[parameter]['out_type']
         index = design_var_descriptor[parameter]['index']
         index_name = design_var_descriptor[parameter]['index_name']
 
         if out_type == 'array':
-            eval_pts = proxy.get_sosdisc_outputs(out_name)
+            eval_pts = self.get_sosdisc_outputs(out_name)
 
         elif out_type == 'dataframe':
             col_name = design_var_descriptor[parameter]['key']
-            eval_pts = proxy.get_sosdisc_outputs(out_name)[col_name].values
+            eval_pts = self.get_sosdisc_outputs(out_name)[col_name].values
 
         if eval_pts is None:
             print('eval pts not found in sos_disc_outputs')

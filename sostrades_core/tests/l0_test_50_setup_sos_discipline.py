@@ -41,7 +41,7 @@ class TestSetupSoSDiscipline(unittest.TestCase):
 
     def check_proxy_and_dm_assigned(self, proxy, expected=True):
         proxy_assigned = proxy.mdo_discipline_wrapp.wrapper._SoSWrapp__proxy is proxy
-        dm_assigned = proxy.mdo_discipline_wrapp.wrapper._SoSWrapp__dm is self.ee.dm
+        dm_assigned = proxy.mdo_discipline_wrapp.wrapper.dm._AccessOnlyProxy__obj is self.ee.dm
         self.assertTrue(proxy_assigned == expected)
         self.assertTrue(dm_assigned == expected)
 
