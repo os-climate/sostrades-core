@@ -32,11 +32,11 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
 
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
-                                'full_name': ['y', 'Eval.Disc1.indicator']}
+                                'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {}
@@ -48,7 +48,7 @@ class Study(StudyManager):
         # a_values = [array([2.0]), array([4.0]), array(
         #     [6.0]), array([8.0]), array([10.0])]
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
-        samples_dict = {'Eval.Disc1.a': a_values}
+        samples_dict = {'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
 
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -59,7 +59,7 @@ class Study(StudyManager):
         # disc_dict[f'{ns}.Eval.Disc1.b'] = array([25.])
         # disc_dict[f'{ns}.y'] = array([4.])
         # disc_dict[f'{ns}.Eval.Disc1.indicator'] = array([53.])
-        disc_dict[f'{ns}.x'] = 10.
+        disc_dict[f'{ns}.Eval.x'] = 10.
         disc_dict[f'{ns}.Eval.Disc1.a'] = 5.
         disc_dict[f'{ns}.Eval.Disc1.b'] = 25.
         disc_dict[f'{ns}.y'] = 4.

@@ -97,21 +97,21 @@ class DriverEvaluatorWrapper(SoSWrapp):
         BUILDER_MODE: {SoSWrapp.TYPE: 'string',
                        # SoSWrapp.DEFAULT: MULTI_INSTANCE,
                        SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
-                       SoSWrapp.STRUCTURING: True},
-        # TODO V1 Activate it when proc builder web_api eev3 migrated on eev4 and remove USECASE_DATA
-        # SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-        #                     'structuring': True,
-        #                     'default': default_process_builder_parameter_type.to_data_manager_dict(),
-        #                     'user_level': 1,
-        #                     'optional': False
-        #                     }
-        USECASE_DATA: {'type': 'dict',
-                       'structuring': True,
-                       'default': {},
-                       'user_level': 1,
-                       'optional': False
-                       },
-    }
+                       SoSWrapp.STRUCTURING: True}}
+
+    with_modal = True
+    if with_modal:
+        DESC_IN.update({SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
+                                             'structuring': True,
+                                             'default': default_process_builder_parameter_type.to_data_manager_dict(),
+                                             'user_level': 1,
+                                             'optional': False}})
+    else:
+        DESC_IN.update({USECASE_DATA: {'type': 'dict',
+                                       'structuring': True,
+                                       'default': {},
+                                       'user_level': 1,
+                                       'optional': False}})
 
     def __init__(self, sos_name):
         """

@@ -17,6 +17,7 @@ import pandas as pd
 from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 
 class Study(StudyManager):
@@ -49,15 +50,19 @@ class Study(StudyManager):
                                                     f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
-        if 1 == 0:  # full anonymized dict with numerical keys
+        # Subprocess and usecase
+        repo = 'sostrades_core.sos_processes.test.sellar'
+        mod_id = 'test_sellar_list'
+        my_usecase = 'usecase'
+
+        # Find anonymised dict
+        based_on_uc_name = False
+        if based_on_uc_name:   # Full dictionary based on usecase name and process
             # This can not work as the added coupling_name 'subprocess'  is
             # missing
-            repo = 'sostrades_core.sos_processes.test.sellar'
-            mod_id = 'test_sellar_list'
-            my_usecase = 'usecase'
             anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
                 repo, mod_id, my_usecase)
-        else:
+        else:  # Manually provided restricted dictionary
             anonymize_input_dict_from_usecase = {}
             #==================================================================
             # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = array([ 1.])
@@ -89,7 +94,15 @@ class Study(StudyManager):
             'n_samples': n_samples}
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
-        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
+        with_modal = True
+        if with_modal:
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            disc_dict[f'{ns}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar inputs
         # Provided by usecase import

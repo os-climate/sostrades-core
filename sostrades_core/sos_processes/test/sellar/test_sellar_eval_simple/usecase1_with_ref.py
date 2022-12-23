@@ -17,6 +17,7 @@ import pandas as pd
 from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 
 class Study(StudyManager):
@@ -31,8 +32,6 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
-        anonymize_input_dict_from_usecase = {}
-
         disc_dict = {}
         # build the scenarios
         scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
@@ -42,10 +41,22 @@ class Study(StudyManager):
         disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
         disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.Eval.instance_reference'] = True
-        disc_dict[f'{self.study_name}.Eval.reference_mode'] = 'copy_mode'
-        disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+        disc_dict[f'{ns}.Eval.reference_mode'] = 'copy_mode'
 
-        # Sellar referene inputs
+        with_modal = False
+        anonymize_input_dict_from_usecase = {}
+        if with_modal:
+            repo = 'sostrades_core.sos_processes.test.sellar'
+            mod_id = 'test_sellar_list'
+            my_usecase = 'Empty'
+            process_builder_parameter_type = ProcessBuilderParameterType(
+                mod_id, repo, my_usecase)
+            process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
+            disc_dict[f'{ns}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+        else:
+            disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
+
+        # Sellar reference inputs
         #======================================================================
         # local_dv = 10.
         # disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
