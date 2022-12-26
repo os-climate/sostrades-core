@@ -84,7 +84,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_b_z
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y_o
 
-        with_modal = False
+        with_modal = True
         anonymize_input_dict_from_usecase = {}
         if with_modal:
             repo = 'sostrades_core.sos_processes.test.disc1_disc3'

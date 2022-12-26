@@ -138,7 +138,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  associated_namespaces=None,
                  map_name=None,
                  flatten_subprocess=False,
-                 hide_coupling_in_driver=False):
+                 hide_coupling_in_driver=False,
+                 hide_under_coupling=False):
         """
         Constructor
 
@@ -166,6 +167,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.flatten_subprocess = flatten_subprocess
         self.scenarios = []  # to keep track of subdisciplines in a flatten_subprocess case
         self.hide_coupling_in_driver = hide_coupling_in_driver
+        self.hide_under_coupling = hide_under_coupling
         self.old_builder_mode = None
         self.eval_process_builder = None
         self.eval_in_list = None
@@ -191,6 +193,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.original_editability_dict = {}
         self.original_editable_dict_ref = {}
         self.original_editable_dict_non_ref = {}
+        self.there_are_new_scenarios = False
 
     def _add_optional_shared_ns(self):
         """
@@ -259,16 +262,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_cache_inputs()
 
         if self.REFERENCE_MODE in self.get_data_in():
-            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in(
-            )) + ',' + str(self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
-            # if (self.get_var_full_name('reference_mode', self.get_data_in()) + ',' +
-            #     self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))\
-            #         == 'root.outer_ms.scenario_1.inner_ms.reference_mode,copy_mode':
-            #     print('sqfqsfd')
-            # if (self.get_var_full_name('reference_mode', self.get_data_in()) + ',' +
-            #     self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in())))\
-            #         == 'root.outer_ms.scenario_1.inner_ms.reference_mode,linked_mode':
-            #     print('sqfqsfd')
+            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
 
     def update_data_io_with_subprocess_io(self):
         """
@@ -376,8 +370,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # Update of original editability state in case modification
                 # scenario df
                 if (not set(scenario_names) == set(self.old_scenario_names)) and self.old_scenario_names != []:
-                    new_scenarios = set(scenario_names) - \
-                        set(self.old_scenario_names)
+                    new_scenarios = set(scenario_names) - set(self.old_scenario_names)
+                    self.there_are_new_scenarios = True
                     for new_scenario in new_scenarios:
                         new_scenario_non_trade_vars_dict = {key: value
                                                             for key, value in scenarios_non_trade_vars_dict.items()
@@ -569,8 +563,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                       scenario_names_to_propagate,
                                                                                       ref_changes_dict)
         # Propagate other scenarios variables and values
-        if ref_changes_dict and dict_to_propagate:
-            self.ee.dm.set_values_from_dict(dict_to_propagate)
+        if self.there_are_new_scenarios:
+            if dict_to_propagate:
+                self.ee.dm.set_values_from_dict(dict_to_propagate)
+        else:
+            if ref_changes_dict and dict_to_propagate:
+                self.ee.dm.set_values_from_dict(dict_to_propagate)
 
     def get_other_evaluators_names_and_mode_under_current_one(self):
         other_evaluators_names_and_mode = []
@@ -1048,7 +1046,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 'scatter_tool', map_name=self.map_name, hide_coupling_in_driver=self.hide_coupling_in_driver)
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
-                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
+                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces,
+                hide_under_coupling=self.hide_under_coupling)
         self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
         if self.scatter_list_valid:
             self.builder_tool.prepare_tool()
