@@ -28,7 +28,7 @@ class KnapsackProblem(SoSWrapp):
 
     # ontology information
     _ontology_data = {
-        "label": "sos_trades_core.sos_wrapping.test_discs.knapsack",
+        "label": "sostrades_core.sos_wrapping.test_discs.knapsack",
         "type": "Research",
         "source": "SoSTrades Project",
         "validated": "",

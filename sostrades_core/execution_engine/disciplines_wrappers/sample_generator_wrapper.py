@@ -269,10 +269,10 @@ class SampleGeneratorWrapper(SoSWrapp):
            Instantiate SampleGenerator once and only if needed
         """
         if self.sampling_method == self.DOE_ALGO:
-            if self.sample_generator_doe == None:
+            if self.sample_generator_doe is None:
                 self.sample_generator_doe = DoeSampleGenerator()
         elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
-            if self.sample_generator_cp == None:
+            if self.sample_generator_cp is None:
                 self.sample_generator_cp = CartesianProductSampleGenerator()
 
     def get_algo_default_options(self, algo_name):
@@ -414,6 +414,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         '''
+        # FIXME: clean code below with class variables etc
         if self.sampling_method == self.DOE_ALGO:
             # Get possible values for sampling algorithm name
             available_doe_algorithms = self.sample_generator_doe.get_available_algo_names()
@@ -450,6 +451,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             Arguments:
                 dynamic_inputs (dict): the dynamic input dict to be updated
         '''
+        # FIXME: clean code below with class variables etc
         disc_in = self.get_data_in()
         # Dynamic input of algo_options
         if self.ALGO in disc_in:
@@ -459,7 +461,6 @@ class SampleGeneratorWrapper(SoSWrapp):
             # if self.previous_algo_name != algo_name:
             #     algo_name_has_changed = True
             #     self.previous_algo_name = algo_name
-
             if algo_name is not None:  # and algo_name_has_changed:
                 default_dict = self.get_algo_default_options(algo_name)
                 dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
@@ -646,6 +647,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         '''
+        # TODO [to discuss]: shouldn't the i/o methods belong to the generator for modularity ?
         default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
                                                  'full_name': [''],
                                                  'list_of_values': [[]]})

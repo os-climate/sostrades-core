@@ -695,7 +695,7 @@ class BaseStudyManager():
         :type folder_path: str
 
         :param rw_strategy: read/write execution strategy instance
-        :type rw_strategy: sos_trades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
+        :type rw_strategy: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
 
         if not isinstance(rw_strategy, AbstractLoadDump):
