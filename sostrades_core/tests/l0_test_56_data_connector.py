@@ -230,7 +230,7 @@ class TestDataConnector(unittest.TestCase):
             self.assertTrue(
                 ProxyDiscipline.CONNECTOR_DATA in data_to_read.keys(), 'no metadata in file')
     
-    def _test_05_write_data(self):
+    def test_05_write_data(self):
         """
         Test to write data with connector
         """
