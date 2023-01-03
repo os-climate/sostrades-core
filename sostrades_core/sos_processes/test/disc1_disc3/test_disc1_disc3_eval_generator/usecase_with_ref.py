@@ -51,7 +51,7 @@ class Study(StudyManager):
                                                })
         dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = input_selection_cp_b_z
 
-        with_modal = False
+        with_modal = True
         anonymize_input_dict_from_usecase = {}
         if with_modal:
             repo = 'sostrades_core.sos_processes.test.disc1_disc3'

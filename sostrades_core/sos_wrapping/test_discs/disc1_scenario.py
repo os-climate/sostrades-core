@@ -20,7 +20,7 @@ class Disc1(SoSWrapp):
 
     # ontology information
     _ontology_data = {
-        'label': 'sos_trades_core.sos_wrapping.test_discs.disc1_scenario',
+        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_scenario',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',

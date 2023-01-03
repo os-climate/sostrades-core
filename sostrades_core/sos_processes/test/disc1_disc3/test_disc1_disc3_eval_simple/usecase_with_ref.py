@@ -53,7 +53,7 @@ class Study(StudyManager):
         disc_dict[f'{self.study_name}.Eval.instance_reference'] = True
         disc_dict[f'{self.study_name}.Eval.reference_mode'] = 'copy_mode'
 
-        with_modal = False
+        with_modal = True
         anonymize_input_dict_from_usecase = {}
         if with_modal:
             repo = 'sostrades_core.sos_processes.test.disc1_disc3'
