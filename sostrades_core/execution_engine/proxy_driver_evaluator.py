@@ -138,8 +138,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  associated_namespaces=None,
                  map_name=None,
                  flatten_subprocess=False,
-                 hide_coupling_in_driver=False,
-                 hide_under_coupling=False):
+                 display_options=None):
         """
         Constructor
 
@@ -166,8 +165,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.map_name = map_name
         self.flatten_subprocess = flatten_subprocess
         self.scenarios = []  # to keep track of subdisciplines in a flatten_subprocess case
-        self.hide_coupling_in_driver = hide_coupling_in_driver
-        self.hide_under_coupling = hide_under_coupling
+
+        self.display_options = display_options
+
         self.old_builder_mode = None
         self.eval_process_builder = None
         self.eval_in_list = None
@@ -1043,11 +1043,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         if self.builder_tool is None:
             builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
-                'scatter_tool', map_name=self.map_name, hide_coupling_in_driver=self.hide_coupling_in_driver)
+                'scatter_tool', map_name=self.map_name,
+                display_options=self.display_options)
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
-                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces,
-                hide_under_coupling=self.hide_under_coupling)
+                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
         self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
         if self.scatter_list_valid:
             self.builder_tool.prepare_tool()

@@ -38,9 +38,11 @@ class ScatterTool(SosTool):
         'icon': 'fas fa-indent fa-fw',
         'version': '',
     }
+    DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
+                                     'group_scenarios_under_disciplines']
 
     def __init__(self, sos_name, ee, cls_builder, map_name=None, coupling_per_scenario=True,
-                 hide_coupling_in_driver=False):
+                 display_options=False):
         '''
         Constructor
         '''
@@ -49,7 +51,8 @@ class ScatterTool(SosTool):
 
         self.map_name = map_name
         self.coupling_per_scenario = coupling_per_scenario
-        self.hide_coupling_in_driver = hide_coupling_in_driver
+        self.display_options = {disp_option: False for disp_option in self.DISPLAY_OPTIONS_POSSIBILITIES}
+        self.set_display_options(display_options)
         self.driver_display_value = None
         self.__scattered_disciplines = {}
         self.sub_coupling_builder_dict = {}
@@ -57,9 +60,25 @@ class ScatterTool(SosTool):
         self.input_name = None
         self.ns_to_update = None
         self.sc_map = None
-        self.hide_under_coupling = False
 
-    def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None, hide_under_coupling=False):
+    def set_display_options(self, display_options_dict):
+        '''
+        Set the display options dictionnary for the driver
+        '''
+
+        if display_options_dict is not None:
+            if not isinstance(display_options_dict, dict):
+                raise Exception(
+                    'The display options parameter for the driver creation should be a dict')
+            else:
+                for key in display_options_dict:
+                    if key not in self.DISPLAY_OPTIONS_POSSIBILITIES:
+                        raise Exception(
+                            f'Display options should be in the possible list : {self.DISPLAY_OPTIONS_POSSIBILITIES}')
+                    else:
+                        self.display_options[key] = display_options_dict[key]
+
+    def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
         '''    
         MEthod that associate tool to the driver and add scatter map
         '''
@@ -70,7 +89,6 @@ class ScatterTool(SosTool):
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
             self.ee.scattermap_manager.associate_disc_to_build_map(self)
             self.sc_map.configure_map(self.sub_builders)
-        self.hide_under_coupling = hide_under_coupling
     def prepare_tool(self):
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
@@ -92,8 +110,11 @@ class ScatterTool(SosTool):
 
         self.get_values_for_namespaces_to_update()
 
-        if self.hide_coupling_in_driver:
+        if self.display_options['hide_coupling_in_driver']:
             self.driver_display_value = self.driver.get_disc_display_name()
+
+        if self.display_options['group_scenarios_under_disciplines']:
+            self.flatten_subprocess = True
 
         if self.flatten_subprocess:
             self.coupling_per_scenario = False
@@ -207,7 +228,7 @@ class ScatterTool(SosTool):
             coupling_builder = self.driver.create_sub_builder_coupling(
                 name, self.sub_builders)
 
-            if self.hide_coupling_in_driver:
+            if self.display_options['hide_coupling_in_driver']:
                 self.ee.ns_manager.add_display_ns_to_builder(
                     coupling_builder, self.driver_display_value)
 
@@ -233,15 +254,16 @@ class ScatterTool(SosTool):
         '''
 
         ns_ids_list = []
+
         extra_name = f'{self.driver.sos_name}.{name}'
         after_name = self.driver.father_executor.get_disc_full_name()
 
         for ns_name, ns in self.ns_to_update.items():
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
                 ns.get_value(), extra_name, after_name=after_name)
-            display_value= ns.get_display_value_if_exists()
+            display_value = ns.get_display_value_if_exists()
             ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value,display_value=display_value, add_in_shared_ns_dict=False)
+                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)
 
         return ns_ids_list
@@ -285,9 +307,13 @@ class ScatterTool(SosTool):
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
             self.set_father_discipline()
             disc = builder.build()
-            if self.hide_under_coupling:
+            if self.display_options['hide_under_coupling']:
                 local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
                 display_value = f'{self.driver.get_disc_display_name()}.{name}'
+                local_ns_disc.set_display_value(display_value)
+            elif self.display_options['group_scenarios_under_disciplines']:
+                local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
+                display_value = f'{self.driver.get_disc_display_name()}.{old_builder_name}.{name}'
                 local_ns_disc.set_display_value(display_value)
             builder.set_disc_name(old_builder_name)
             # Add the discipline only if it is a new_name

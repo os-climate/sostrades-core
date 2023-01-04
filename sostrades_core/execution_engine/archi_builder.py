@@ -1003,7 +1003,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_scatter = self.ee.factory.create_driver(driver_name, builder)
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
-            builder_scatter = self.ee.factory.create_driver(driver_name, [builder], hide_under_coupling=True,
+            builder_scatter = self.ee.factory.create_driver(driver_name, [builder],
+                                                            display_options={'hide_under_coupling': True},
                                                             flatten_subprocess=True)
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(
