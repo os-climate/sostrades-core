@@ -134,29 +134,6 @@ class SosFactory:
         else:
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
-    def create_multi_scatter_builder_from_list(
-        self, map_name, builder_list, autogather=False, path_sum=None
-    ):
-        """
-        If autogather then add a gather builder too
-        Return the list of scatter builders
-        """
-        multi_builder_list = []
-        for builder in builder_list:
-            scatter = self.create_scatter_builder(
-                builder.sos_name, map_name, builder)
-            multi_builder_list.append(scatter)
-            if autogather:
-                gather = self.create_gather_builder(
-                    builder.sos_name, map_name, builder)
-                multi_builder_list.append(gather)
-            if path_sum is not None:
-                child_builder = self.create_sum_builder(
-                    builder.sos_name, path_sum)
-                multi_builder_list.append(child_builder)
-
-        return multi_builder_list
-
     def add_discipline(self, discipline):
         """
         Add a discipline to the list of factory disciplines AND to the sos_discipline of the current sos_coupling
@@ -345,29 +322,6 @@ class SosFactory:
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
         return builder
 
-    def create_value_block_builder(
-        self,
-        builder_name,
-        own_map_name,
-        connected_map_name,
-        associated_builder_list,
-        autogather=False,
-        builder_child_path=None,
-    ):
-        """
-        create a builder  defined by a type SoSMultiScatterBuilder
-        """
-        mod_path = f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-        cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(builder_name, self.__execution_engine, cls)
-        builder.set_builder_info('own_map_name', own_map_name)
-        builder.set_builder_info('child_map_name', connected_map_name)
-        builder.set_builder_info(
-            'associated_builder_list', associated_builder_list)
-        builder.set_builder_info('autogather', autogather)
-        builder.set_builder_info('builder_child_path', builder_child_path)
-        return builder
-
     def create_architecture_builder(
         self, builder_name, architecture_df, custom_vb_folder_list=None
     ):
@@ -388,195 +342,6 @@ class SosFactory:
                 'custom_vb_folder_list', custom_vb_folder_list)
 
         return builder
-
-    def create_multi_scenario_builder(
-        self,
-        sos_name,
-        map_name,
-        cls_builder,
-        autogather=False,
-        gather_node=None,
-        business_post_proc=False,
-    ):
-        """
-        create a builder  defined by a multi-scenarios type SoSMultiScenario
-        """
-        builder_list = self.convert_builder_to_list(cls_builder)
-        mod_path = f'{self.EE_PATH}.sos_multi_scenario.SoSMultiScenario'
-        cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('autogather', autogather)
-        builder.set_builder_info('gather_node', gather_node)
-        builder.set_builder_info('cls_builder', builder_list)
-        builder.set_builder_info('business_post_proc', business_post_proc)
-
-        list_builder = [builder]
-
-        if autogather:
-
-            mod_path = f'{self.EE_PATH}.sos_discipline_scatter.SoSDisciplineScatter'
-            cls_scatter = self.get_disc_class_from_module(mod_path)
-            mod_path_multi_scatter = (
-                f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-            )
-            cls_multi_scatter = self.get_disc_class_from_module(
-                mod_path_multi_scatter)
-            for sub_builder in builder_list:
-                if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
-
-                    if gather_node is None:
-                        complete_name = sub_builder.sos_name
-                    else:
-                        complete_name = f'{gather_node}.{sub_builder.sos_name}'
-
-                    gather = self.create_gather_builder(
-                        complete_name, map_name, sub_builder
-                    )
-                    list_builder.append(gather)
-
-        return list_builder
-
-    def create_simple_multi_scenario_builder(
-        self,
-        sos_name,
-        map_name,
-        cls_builder,
-        autogather=False,
-        gather_node=None,
-        business_post_proc=False,
-    ):
-        """
-        create a builder  defined by a simple multi-scenarios type SoSSimpleMultiScenario
-        """
-        builder_list = self.convert_builder_to_list(cls_builder)
-        mod_path = f'{self.EE_PATH}.sos_simple_multi_scenario.SoSSimpleMultiScenario'
-        cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('autogather', autogather)
-        builder.set_builder_info('gather_node', gather_node)
-        builder.set_builder_info('cls_builder', builder_list)
-        builder.set_builder_info('business_post_proc', business_post_proc)
-
-        list_builder = [builder]
-
-        if autogather:
-
-            mod_path = f'{self.EE_PATH}.sos_discipline_scatter.SoSDisciplineScatter'
-            cls_scatter = self.get_disc_class_from_module(mod_path)
-            mod_path_multi_scatter = (
-                f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-            )
-            cls_multi_scatter = self.get_disc_class_from_module(
-                mod_path_multi_scatter)
-            for sub_builder in builder_list:
-                if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
-
-                    if gather_node is None:
-                        complete_name = sub_builder.sos_name
-                    else:
-                        complete_name = f'{gather_node}.{sub_builder.sos_name}'
-
-                    gather = self.create_gather_builder(
-                        complete_name, map_name, sub_builder
-                    )
-                    list_builder.append(gather)
-
-        return list_builder
-
-    def create_very_simple_multi_scenario_builder(
-        self,
-        sos_name,
-        map_name,
-        cls_builder,
-        autogather=False,
-        gather_node=None,
-        business_post_proc=False,
-    ):
-        """
-        create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
-        """
-        builder_list = self.convert_builder_to_list(cls_builder)
-        mod_path = (
-            f'{self.EE_PATH}.sos_very_simple_multi_scenario.SoSVerySimpleMultiScenario'
-        )
-        cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('autogather', autogather)
-        builder.set_builder_info('gather_node', gather_node)
-        builder.set_builder_info('cls_builder', builder_list)
-        builder.set_builder_info('business_post_proc', business_post_proc)
-
-        list_builder = [builder]
-
-        if autogather:
-
-            mod_path = f'{self.EE_PATH}.sos_discipline_scatter.SoSDisciplineScatter'
-            cls_scatter = self.get_disc_class_from_module(mod_path)
-            mod_path_multi_scatter = (
-                f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-            )
-            cls_multi_scatter = self.get_disc_class_from_module(
-                mod_path_multi_scatter)
-            for sub_builder in builder_list:
-                if sub_builder.cls not in [cls_scatter, cls_multi_scatter]:
-
-                    if gather_node is None:
-                        complete_name = sub_builder.sos_name
-                    else:
-                        complete_name = f'{gather_node}.{sub_builder.sos_name}'
-
-                    gather = self.create_gather_builder(
-                        complete_name, map_name, sub_builder
-                    )
-                    list_builder.append(gather)
-
-        return list_builder
-
-    def create_very_simple_multi_scenario_driver(
-        self,
-        sos_name,
-        map_name,
-        cls_builder,
-        autogather=False,
-    ):
-        """
-        create a builder  defined by a very simple multi-scenarios type SoSVerySimpleMultiScenario
-        """
-        builder_list = self.convert_builder_to_list(cls_builder)
-        builder = self.create_driver(sos_name, builder_list)
-        builder.set_builder_info('map_name', map_name)
-        # builder.set_builder_info('autogather', autogather) #TODO: not adressed
-        # builder.set_builder_info('gather_node', gather_node) #TODO: not adressed
-        # builder.set_builder_info('business_post_proc', business_post_proc)
-        # #TODO: not adressed
-        list_builder = [builder]
-
-        # TODO: address autogather
-        if autogather:
-            raise Exception('autogather still not yet implemented')
-#             proxy_scatter_mod_path = f'{self.EE_PATH}.proxy_discipline_scatter.ProxyDisciplineScatter'
-#             proxy_scatter_cls = self.get_disc_class_from_module(
-#                 proxy_scatter_mod_path)
-#             # TODO: multiscatter?
-#             # mod_path_multi_scatter = (
-#             #     f'{self.EE_PATH}.sos_multi_scatter_builder.SoSMultiScatterBuilder'
-#             # )
-#             # cls_multi_scatter = self.get_disc_class_from_module(mod_path_multi_scatter)
-#             for sub_builder in builder_list:
-#                 # not in [cls_scatter, cls_multi_scatter]:
-#                 if sub_builder.cls is not proxy_scatter_cls:
-#                     if gather_node is None:
-#                         complete_name = sub_builder.sos_name
-#                     else:
-#                         complete_name = f'{gather_node}.{sub_builder.sos_name}'
-#                     gather = self.create_gather_builder(
-#                         complete_name, map_name, sub_builder
-#                     )
-#                     list_builder.append(gather)
-        return list_builder
 
     def create_scatter_tool_builder(self, tool_name, map_name, display_options=None):
         """
@@ -610,26 +375,6 @@ class SosFactory:
 
         return builder
 
-    def create_sum_builder(self, sos_name, path):
-        """
-        create a builder  defined by a scatter data type SoSScatterScatter
-        """
-        module_struct_list = path
-        cls = self.get_disc_class_from_module(module_struct_list)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-
-        return builder
-
-    def create_gather_builder(self, sos_name, map_name, cls_builder):
-        """
-        create a builder  defined by a gather type ProxyDisciplineGather
-        """
-        mod_path = f'{self.EE_PATH}.proxy_discipline_gather.ProxyDisciplineGather'
-        cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('cls_builder', cls_builder)
-        return builder
 
     def create_builder_coupling(self, sos_name):
         """
@@ -644,19 +389,6 @@ class SosFactory:
         """creates the builder of the optim scenario"""
         mod_path = f'{self.EE_PATH}.proxy_optim.ProxyOptim'
         cls = self.get_disc_class_from_module(mod_path)
-        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
-        builder.set_builder_info('cls_builder', cls_builder)
-        return builder
-
-    def create_doe_builder(self, sos_name, cls_builder):
-        """creates the builder of the doe scenario
-        Created on November, 2021
-        @author: MARGERIT_D
-        """
-        module_struct_list = (
-            'sostrades_core.execution_engine.sos_doe_scenario.SoSDOEScenario'
-        )
-        cls = self.get_disc_class_from_module(module_struct_list)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         builder.set_builder_info('cls_builder', cls_builder)
         return builder
