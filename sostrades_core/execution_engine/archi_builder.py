@@ -586,28 +586,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
                             if isinstance(args[1], tuple):
                                 # get builder of scatter of scatter
-                                if len(args) > 2:
-                                    # if first_scatter_builder option exists in archi_df,
-                                    # build first_scatter_builder on first scatter
-                                    # node
-                                    first_scatter_builder = (
-                                        self.get_builder_from_factory(
-                                            builder.sos_name, args[2])
-                                    )
-                                    activ_builders = self.build_scatter_of_scatter(
-                                        namespace, args, builder_name, first_scatter_builder
-                                    )
-                                else:
-                                    # build builder on first scatter node
-                                    activ_builders = self.build_scatter_of_scatter(
-                                        namespace, args, builder_name, builder
-                                    )
+                                raise Exception('Nested scatters in architecture builder not implemented')
                             else:
                                 # get builder of scatter
                                 scatter_builder = self.get_builder_from_factory(
                                     namespace, args[1])
                                 activ_builders = self.build_action_scatter(
-                                    namespace, args[0], scatter_builder, builder_name
+                                    namespace, args[0], scatter_builder
                                 )
 
                             self.special_builders[f'{builder}@{action}'] = activ_builders
@@ -626,13 +611,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                                     f'Action for builder \'{builder_name}\' must be defined by a tuple: {self.POSSIBLE_ACTIONS[action[0]]}, with a string \'var_name\', a string \'builder_class\' and a dataframe \'architecture_df\''
                                 )
                             scatter_list_name = args[0]
-                            # if args[0] is not None:
-                            #     # get maps of scatter_architecture
-                            #     scatter_map = self.ee.scattermap_manager.get_build_map_with_input_name(
-                            #         args[0]
-                            #     )
-                            # else:
-                            #     scatter_map = None
                             # get initial builders_dict and activation_dict for
                             # sub architecture
                             new_builder_dict, new_activation_dict = self.get_subarchi_builders(
@@ -658,10 +636,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                                     builder_list.sos_name.split(
                                         f'{builder_name}.')[-1]
                                 )
-                            # if scatter_map is None:
-                            #     raise ArchiBuilderException(
-                            #         f'No build map defined for \'{args[0]}\''
-                            #     )
 
                             # get builders of scatter_architecture
                             # possibility to instantiate several builder at scatter node
@@ -680,8 +654,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             activ_builders = self.get_scatter_builder(
                                 namespace,
                                 scatter_list_name,
-                                archi_builder_list,
-                                scatter_node_cls_list=scatter_builder_cls_list,
+                                archi_builder_list
                             )
 
                             # add scatter_architecture builders in
@@ -711,43 +684,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
         return activ_builder_dict, builder_dict
 
-    def build_scatter_of_scatter(
-        self, namespace, args, builder_name, builder_on_first_scatter
-    ):
-        """
-        Build scatter of scatter
-        TODO  : make this action recursive !
-        """
-        if args[1][0] == 'scatter':
-            subscatter_builder = self.get_builder_from_factory(
-                namespace, args[1][2])
-            scatter_builder = self.build_action_scatter(
-                namespace, args[1][1], subscatter_builder
-            )
-            if len(scatter_builder) == 1:
-                scatter_builder = scatter_builder[0]
-            activ_builders = self.build_action_scatter(
-                namespace,
-                args[0],
-                scatter_builder,
-                sub_scatter_builder=args[1][1],
-                builder_on_first_scatter=builder_on_first_scatter,
-            )
-
-        else:
-            raise Exception(
-                'Problem in definition of the action tuple inside the scatter'
-            )
-
-        return activ_builders
-
     def build_action_scatter(
             self,
             namespace,
             scatter_list_name,
             scatter_builder,
-            sub_scatter_builder=None,
-            builder_on_first_scatter=None,
     ):
         """
         Build a scatter under a node
@@ -762,9 +703,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         activ_builders = self.get_scatter_builder(
             namespace,
             scatter_list_name,
-            scatter_builder,
-            sub_scatter_builder_map_name=sub_scatter_builder,
-            builder_on_first_scatter=builder_on_first_scatter,
+            scatter_builder
         )
 
         return activ_builders
@@ -810,62 +749,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 ]
                 disc.add_disc_list_to_config_dependency_disciplines(
                     disc_children_list)
-                # children_name_list = self.children_dict[ns]
-                # for children_name in children_name_list:
-                #     if children_name in self.archi_disciplines.keys():
-                #
-                #         for discipline in self.archi_disciplines[children_name]:
-                #             if(discipline.get_disc_full_name().endswith(children_name)):
-                #                 disc.children_list.append(discipline)
-
-                # Get back all scattered disciplines of a scatter
-#                 if isinstance(disc, SoSDisciplineScatter):
-#                     scatter_in_node = True
-#                     # store each scattered_disciplines in a dict wiuth the key
-#                     # beeing the name of its scatter
-#                     scattered_disciplines[disc.get_disc_full_name()] = [
-#                         scat_disc
-#                         for scat_disc_list in disc.get_scattered_disciplines().values()
-#                         for scat_disc in scat_disc_list
-#                     ]
-#                     # In the case of scatter of scatter we need to gt back
-#                     # children of children
-#                     for subdisc in scattered_disciplines[disc.get_disc_full_name()]:
-#                         if isinstance(subdisc, SoSDisciplineScatter):
-#                             scattered_disciplines[subdisc.get_disc_full_name()] = [
-#                                 scat_disc
-#                                 for scat_disc_list in subdisc.get_scattered_disciplines().values()
-#                                 for scat_disc in scat_disc_list
-#                             ]
-
-            # Associate this children to all disciplines at the node of the
-            # scatter that are not a scater itself
-            # Be careful at the name of the discipline to append only children
-            # of itself
-            # check if the add_disc_list_to_children_list function
-            # is in each discipline (only here if the disc heritates from
-            # valueblockdiscipline)
-#             if scatter_in_node:
-#                 for disc in disc_list:
-#                     if (
-#                         not isinstance(disc, SoSDisciplineScatter)
-#                         and disc.get_disc_full_name() in scattered_disciplines
-#                         and hasattr(disc, 'add_disc_list_to_children_list')
-#                     ):
-#                         disc.add_disc_list_to_children_list(
-#                             scattered_disciplines[disc.get_disc_full_name()]
-#                         )
-#                         for subdisc in scattered_disciplines[disc.get_disc_full_name()]:
-#                             if isinstance(subdisc, SoSDisciplineScatter):
-#                                 other_children = [
-#                                     disc_sum
-#                                     for disc_sum in disc_list
-#                                     if disc_sum.get_disc_full_name()
-#                                     == subdisc.get_disc_full_name()
-#                                 ]
-#
-#                                 disc.add_disc_list_to_children_list(
-#                                     other_children)
 
     def setup_sos_disciplines(self):
         """
@@ -920,73 +803,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             namespace,
             scatter_list_name,
             builder,
-            scatter_node_cls_list=None,
-            sub_scatter_builder_map_name=None,
-            builder_on_first_scatter=None,
     ):
         """
         Get builders list for scatter action at namespace node
         """
-        # get input_name of scatter
 
-        #
-        # # get input_value = list to scatter
-        # input_value = self.get_scatter_input_value(
-        #     namespace, input_name, builder_name)
-        #
-        # # build full name of namespace builder
-        # if self.sos_name in namespace:
-        #     disc_ns = self.get_disc_full_name().split(f'.{self.sos_name}')[0]
-        # else:
-        #     disc_ns = self.get_disc_full_name()
-        # new_input_name = f'{namespace}.{input_name}'
-        # full_input_name = f'{disc_ns}.{new_input_name}'
-        #
-        # # check if input_value has changed
-        # if (
-        #     full_input_name in self.ee.dm.data_id_map
-        #     and self.ee.dm.get_value(full_input_name) is not None
-        #     and input_value != self.ee.dm.get_value(full_input_name)
-        # ):
-        #     input_value_has_changed = True
-        #     ns_old_builder = namespace.split(f'{self.sos_name}.')[-1]
-        #     # get builder names to remove with old scatter input values
-        #     old_discipline_names = [
-        #         f'{ns_old_builder}.{old_name}'
-        #         for old_name in self.ee.dm.get_value(full_input_name)
-        #     ]
-        # else:
-        #     input_value_has_changed = False
-        #
-        # self.set_scatter_list_under_scatter(full_input_name, input_value)
         result_builder_list = []
-        # if len(input_value) > 0:
-        #
-        #     if sub_scatter_builder_map_name is not None:
-        #         # Add the sub list to compute the sub scatter
-        #         sub_scatter_builder_map = (
-        #             self.ee.scattermap_manager.get_build_map_with_input_name(
-        #                 sub_scatter_builder_map_name
-        #             )
-        #         )
-        #         sub_input_name = sub_scatter_builder_map.get_input_name()
-        #
-        #         for input_v in input_value:
-        #             sub_input_value = self.get_scatter_input_value(
-        #                 namespace,
-        #                 sub_input_name,
-        #                 builder_name,
-        #                 condition_dict={input_name: input_v},
-        #             )
-        #             self.set_scatter_list_under_scatter(
-        #                 '.'.join(
-        #                     [disc_ns, namespace, input_v, sub_input_name]),
-        #                 sub_input_value,
-        #             )
-        #
-        #     self.children_dict[namespace] = [
-        #         f'{namespace}.{val}' for val in input_value
-        #     ]
         # case when scatter is on archi_node or scatter on other node at root level
         if namespace == self.sos_name:
             driver_name = 'driver'
@@ -998,6 +820,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         else:
             builder_name = namespace
             driver_name = f'{builder_name}.driver'
+
         if isinstance(builder, list):
 
             builder_scatter = self.ee.factory.create_driver(driver_name, builder)
@@ -1022,53 +845,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # set input_name value in data_in by reading activated children in
         # activation_df input
         self.driver_input_to_fill[driver_name] = input_name
-
-        #     if sub_scatter_builder_map_name is not None:
-        #         for input_v in input_value:
-        #             builder_by_ac = SoSBuilder(
-        #                 f'{builder_on_first_scatter.sos_name}.{input_v}',
-        #                 self.ee,
-        #                 builder_on_first_scatter.cls,
-        #             )
-        #             result_builder_list.append(builder_by_ac)
-        # else:
-        # if namespace in self.activated_builders:
-        #
-        #     if (
-        #         sub_scatter_builder_map_name is not None
-        #         and input_value_has_changed
-        #     ):
-        #         # if input_value of scatter input_name has changed,
-        #         # then build builder_on_first_scatter and remove old
-        #         # builders in activated_builders
-        #         for input_v in input_value:
-        #             # build new builder_on_first_scatter with
-        #             # input_value
-        #             builder_by_ac = SoSBuilder(
-        #                 f'{builder_on_first_scatter.sos_name}.{input_v}',
-        #                 self.ee,
-        #                 builder_on_first_scatter.cls,
-        #             )
-        #             result_builder_list.append(builder_by_ac)
-        #         # remove old builders with previous input_value
-        #         builders_to_remove = []
-        #         disciplines_to_remove = []
-        #         for builder in self.activated_builders[namespace]:
-        #             if builder.sos_name in old_discipline_names:
-        #                 builders_to_remove.append(builder)
-        #                 disciplines_to_remove.append(builder.disc)
-        #                 self.archi_disciplines[namespace].remove(
-        #                     builder.disc)
-        #         self.activated_builders[namespace] = [
-        #             builder
-        #             for builder in self.activated_builders[namespace]
-        #             if not builder in builders_to_remove
-        #         ]
-        #         self.clean_children(disciplines_to_remove)
-        #
-        #     # update result_builder_list with other builders
-        #     result_builder_list.extend(
-        #         self.activated_builders[namespace])
 
         return result_builder_list
 
@@ -1281,12 +1057,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             [input in self.get_data_in().keys()
              for input in self.inst_desc_in.keys()]
         )
-
-    def run(self):
-        """
-        Overloaded SoSDiscipline method
-        """
-        pass
 
     def remove_discipline_list(self, disc_list):
         """remove one discipline from coupling"""
