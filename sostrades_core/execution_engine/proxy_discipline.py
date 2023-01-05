@@ -612,8 +612,6 @@ class ProxyDiscipline(object):
         """
         if self._data_in == {}:
             desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
-            self.set_shared_namespaces_dependencies(desc_in)
-            desc_in = self._prepare_data_dict(self.IO_TYPE_IN, desc_in)
             # TODO: check if it is OK to update dm during config. rather than
             # at the very end of it (dynamic ns)
             self.update_data_io_and_nsmap(desc_in, self.IO_TYPE_IN)
@@ -623,8 +621,6 @@ class ProxyDiscipline(object):
 
         if self._data_out == {}:
             desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
-            self.set_shared_namespaces_dependencies(desc_out)
-            desc_out = self._prepare_data_dict(self.IO_TYPE_OUT, desc_out)
             self.update_data_io_and_nsmap(desc_out, self.IO_TYPE_OUT)
 
     def get_desc_in_out(self, io_type):
@@ -735,8 +731,6 @@ class ProxyDiscipline(object):
         Add numerical parameters to the data_in
         """
         num_data_in = deepcopy(self.NUM_DESC_IN)
-        num_data_in = self._prepare_data_dict(
-            self.IO_TYPE_IN, data_dict=num_data_in)
         self.update_data_io_and_nsmap(num_data_in, self.IO_TYPE_IN)
 
     def update_data_io_with_inst_desc_io(self):
@@ -752,29 +746,27 @@ class ProxyDiscipline(object):
             if not key in self.get_data_out().keys():
                 new_outputs[key] = value
         if len(new_inputs) > 0:
-            self.set_shared_namespaces_dependencies(new_inputs)
-            completed_new_inputs = self._prepare_data_dict(
-                self.IO_TYPE_IN, new_inputs)
-            self.update_data_io_and_nsmap(completed_new_inputs, self.IO_TYPE_IN)
+            self.update_data_io_and_nsmap(new_inputs, self.IO_TYPE_IN)
 
         # add new outputs from inst_desc_out to data_out
         if len(new_outputs) > 0:
-            self.set_shared_namespaces_dependencies(new_outputs)
-            completed_new_outputs = self._prepare_data_dict(
-                self.IO_TYPE_OUT, new_outputs)
-            self.update_data_io_and_nsmap(completed_new_outputs, self.IO_TYPE_OUT)
+            self.update_data_io_and_nsmap(new_outputs, self.IO_TYPE_OUT)
 
     def update_data_io_and_nsmap(self, new_data_dict, io_type):
         '''
         Function to update data_in with a new data_dict and update also the ns_map related to the tuple key in the data_in
         '''
+        self.set_shared_namespaces_dependencies(new_data_dict)
+        completed_new_inputs = self._prepare_data_dict(
+            io_type, new_data_dict)
+
         var_ns_tuples = self._extract_var_ns_tuples(
-            new_data_dict)
+            completed_new_inputs)
         self._update_io_ns_map(var_ns_tuples, io_type)
         self.update_dm_with_data_dict(
-            new_data_dict)
+            completed_new_inputs)
         self._update_data_io(
-            zip(var_ns_tuples, new_data_dict.values()), io_type)
+            zip(var_ns_tuples, completed_new_inputs.values()), io_type)
 
     def get_built_disciplines_ids(self):
         """
@@ -1202,10 +1194,8 @@ class ProxyDiscipline(object):
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             data_dict (Dict[dict]): the data dict to prepare
         """
-        # if data_dict is None:
-        #     data_dict = self.get_data_io_dict(io_type)
-        for key in data_dict.keys():
-            curr_data = data_dict[key]
+
+        for key, curr_data in data_dict.items():
             data_keys = curr_data.keys()
             curr_data[self.IO_TYPE] = io_type
             curr_data[self.TYPE_METADATA] = None
@@ -1220,13 +1210,13 @@ class ProxyDiscipline(object):
                 curr_data[self.DESCRIPTION] = None
             if self.POSSIBLE_VALUES not in data_keys:
                 curr_data[self.POSSIBLE_VALUES] = None
-            if data_dict[key]['type'] in ['array', 'dict', 'dataframe']:
+            if curr_data['type'] in ['array', 'dict', 'dataframe']:
                 if self.DATAFRAME_DESCRIPTOR not in data_keys:
                     curr_data[self.DATAFRAME_DESCRIPTOR] = None
                 if self.DATAFRAME_EDITION_LOCKED not in data_keys:
                     curr_data[self.DATAFRAME_EDITION_LOCKED] = True
             # For dataframes but also dict of dataframes...
-            if data_dict[key]['type'] in ['dict', 'dataframe']:
+            if curr_data['type'] in ['dict', 'dataframe']:
                 if self.DF_EXCLUDED_COLUMNS not in data_keys:
                     curr_data[self.DF_EXCLUDED_COLUMNS] = self.DEFAULT_EXCLUDED_COLUMNS
 
@@ -1241,7 +1231,7 @@ class ProxyDiscipline(object):
                 else:
                     curr_data[self.DEFAULT] = None
             else:
-                curr_data[self.VALUE] = data_dict[key][self.DEFAULT]
+                curr_data[self.VALUE] = curr_data[self.DEFAULT]
             # -- Initialize VALUE to None by default
             if self.VALUE not in data_keys:
                 curr_data[self.VALUE] = None
