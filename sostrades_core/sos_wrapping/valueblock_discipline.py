@@ -64,8 +64,12 @@ class ValueBlockDiscipline(SoSWrapp):
             child_name = child.get_disc_full_name().split(
                 f'{self.sos_name}.')[-1]
             for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
+
                 data_in_dict = {
                     key: value for key, value in output_dict.items() if key in self.NEEDED_DATA_KEYS}
+                # if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
+                #     data_in_dict[self.VISIBILITY] == self.SHARED_VISIBILITY
+                #     data_in_dict[self.NAMESPACE] == child.get_ns_reference().name
                 dynamic_inputs[f'{child_name}.{output}'] = data_in_dict
                 if output.endswith('_gather'):
                     output_name = output

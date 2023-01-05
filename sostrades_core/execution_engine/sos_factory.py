@@ -39,7 +39,7 @@ class SosFactory:
     """
 
     EE_PATH = 'sostrades_core.execution_engine'
-    GENERIC_MODS_PATH = 'sostrades_core.sos_wrapping.analysis_discs'
+    GENERIC_MODS_PATH = 'sostrades_core.sos_wrapping'
     BUILDERS_FUNCTION_NAME = 'get_builders'
     SETUP_FUNCTION_NAME = 'setup_process'
     PROCESS_BUILDER = 'ProcessBuilder'
@@ -272,6 +272,13 @@ class SosFactory:
         """
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        return builder
+
+    def add_gather_builder(self, sos_name):
+
+        module_struct_list = f'{self.GENERIC_MODS_PATH}.valueblock_discipline.ValueBlockDiscipline'
+        builder = self.get_builder_from_module(sos_name, module_struct_list)
+
         return builder
 
     def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, flatten_subprocess=False,
