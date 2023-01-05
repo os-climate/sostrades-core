@@ -281,6 +281,13 @@ class SosFactory:
 
         return builder
 
+    def add_uq_builder(self, sos_name):
+        mod_path = 'sostrades_core.sos_wrapping.analysis_discs.uncertainty_quantification.UncertaintyQuantification'
+        builder = self.get_builder_from_module(
+            sos_name, mod_path)
+
+        return builder
+
     def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, flatten_subprocess=False,
                       display_options=None, ):
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
