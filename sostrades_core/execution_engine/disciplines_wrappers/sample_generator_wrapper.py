@@ -703,6 +703,8 @@ class SampleGeneratorWrapper(SoSWrapp):
         if eval_inputs is not None:
             pass
 
+        return eval_inputs
+
     def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, dynamic_inputs):
         '''.
         Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES

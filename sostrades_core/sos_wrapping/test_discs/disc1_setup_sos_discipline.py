@@ -18,7 +18,7 @@ import numpy as np
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-
+from collections import Iterable
 
 class Disc1(SoSWrapp):
 
@@ -117,7 +117,6 @@ class Disc1RecursiveObjectDictCheck(Disc1):
 
 
 def ObjectDictCheck(obj, checked):
-    from collections import Iterable
     objid = id(obj)
     if objid not in checked:
         ElementCheck(obj)

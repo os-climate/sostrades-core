@@ -101,14 +101,15 @@ class SoSWrapp(object):
 
     # decorator to expose methods and properties delegated to ProxyDiscipline object during configuration
     # TODO: change by a decorator outside the class + an AccessOnlyProxy object  ? Or by a __getattr__ overload ?
-    def at_proxy(f):
+    def at_proxy(self, f):
         @wraps(f)
         def proxy_do(self, *args, **kwargs):
             proxy_attr = getattr(self.__proxy, f.__name__)
             if callable(proxy_attr):
                 return proxy_attr(*args, **kwargs)
-            else: #otherwise it is a property getter
+            else:  # otherwise it is a property getter
                 return proxy_attr
+
         return proxy_do
 
     def clear_proxy(self):
@@ -152,14 +153,14 @@ class SoSWrapp(object):
 
     # methods delegated to the proxy totally (that only make sense at configuration time)
     @at_proxy
-    def add_inputs(self):
+    def add_inputs(self, input_dict):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
     @at_proxy
-    def add_outputs(self):
+    def add_outputs(self, output_dict):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
@@ -180,14 +181,14 @@ class SoSWrapp(object):
         pass
 
     @at_proxy
-    def set_dynamic_default_values(self):
+    def set_dynamic_default_values(self, default_values_dict):
         """
         Method set_dynamic_default_values delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
     @at_proxy
-    def update_default_value(self):
+    def update_default_value(self, var_name, io_type, new_default_value):
         """
         Method update_default_value delegated to associated ProxyDiscipline object during configuration.
         """
