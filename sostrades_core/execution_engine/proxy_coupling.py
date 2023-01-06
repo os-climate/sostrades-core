@@ -789,9 +789,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         return ordered_list
 
-    def get_disc_label(self):
-
-        return 'ProxyCoupling'
     
     def _get_mda_structure_as_in_gemseo(self):
         """ Based on GEMSEO create_mdo_chain function, in MDAChain.py
