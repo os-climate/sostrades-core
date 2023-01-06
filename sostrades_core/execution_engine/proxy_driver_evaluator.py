@@ -1564,6 +1564,3 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
 
-    def get_disc_label(self):
-
-        return 'DriverEvaluator'

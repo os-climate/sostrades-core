@@ -73,18 +73,19 @@ class PostProcessingFactory:
 
             discipline = value[DataManager.DISC_REF]
             discipline_full_name = discipline.get_disc_full_name()
+            discipline_label =  discipline.get_disc_label()
 
             if discipline_full_name not in all_post_processings_bundle:
-                all_post_processings_bundle[discipline_full_name] = []
+                all_post_processings_bundle[discipline_label] = []
 
             found_bundles = list(
-                filter(lambda b: b.name == discipline.get_module(), all_post_processings_bundle[discipline_full_name]))
+                filter(lambda b: b.name == discipline.get_module(), all_post_processings_bundle[discipline_label]))
 
             current_bundle = None
             if len(found_bundles) == 0:
                 current_bundle = PostProcessingBundle(
-                    discipline.get_module(),discipline.get_disc_label(), [], [])
-                all_post_processings_bundle[discipline_full_name].append(
+                    discipline.get_module(), discipline_label, [], [])
+                all_post_processings_bundle[discipline_label].append(
                     current_bundle)
             else:
                 current_bundle = found_bundles[0]
