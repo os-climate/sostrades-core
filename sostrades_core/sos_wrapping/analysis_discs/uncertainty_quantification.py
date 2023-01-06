@@ -208,7 +208,7 @@ class UncertaintyQuantification(SoSWrapp):
                         parameter: [parameter, None] for parameter in parameter_list
                     }
 
-                    possible_distrib = ['Normal', 'PERT', 'LogNormal', 'Triangular']
+                    # possible_distrib = ['Normal', 'PERT', 'LogNormal', 'Triangular']
 
                     # distrib = [possible_distrib[random.randrange(
                     # len(possible_distrib))] for i in range(len(in_param))]

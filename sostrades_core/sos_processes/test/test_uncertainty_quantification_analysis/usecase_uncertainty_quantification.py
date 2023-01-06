@@ -55,12 +55,17 @@ class Study(StudyManager):
             'full_name': ['COC', 'RC', 'NRC'],
         })
 
+        data_details_df = pd.DataFrame({'type': ['input'] * 3 + ['output'] * 3,
+                                        'variable': ['COC', 'RC', 'NRC', 'output1', 'output2', 'output3'],
+                                        'name': ['COC', 'RC', 'NRC', 'output1', 'output2', 'output3'],
+                                        'unit': '$'})
         dict_values = {
             f'{self.study_name}.{self.uncertainty_quantification}.eval_inputs': self.input_selection,
             f'{self.study_name}.{self.uncertainty_quantification}.eval_outputs': self.output_selection,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.study_name}.{self.uncertainty_quantification}.design_space': dspace,
+            f'{self.study_name}.{self.uncertainty_quantification}.data_details_df': data_details_df,
 
         }
 
