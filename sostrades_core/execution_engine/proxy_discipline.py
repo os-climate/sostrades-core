@@ -562,6 +562,24 @@ class ProxyDiscipline(object):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
+    def get_data_io_dict_tuple_keys(self, io_type):
+        '''
+        Get the DESC_IN+NUM_DESC_IN+inst_desc_in or the DESC_OUT+inst_desc_out tuple keys depending on the io_type
+
+        Arguments:
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
+        Returns:
+            (list of keys) _data_in or _data_out tuple keys
+        '''
+        if io_type == self.IO_TYPE_IN:
+            return self._data_in.keys()
+        elif io_type == self.IO_TYPE_OUT:
+            return self._data_out.keys()
+        else:
+            raise Exception(
+                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
+
     def get_data_io_from_key(self, io_type, var_name):
         '''
         Return the namespace and the data_in/data_out of a single variable (short name)
@@ -652,8 +670,8 @@ class ProxyDiscipline(object):
             list[tuple] : [(var_short_name, id(ns_ref)), ...]
         """
 
-        return list(zip(short_name_data_dict.keys(), [id(v[self.NS_REFERENCE]) for v in short_name_data_dict.values()]))
-
+        return [(key[0], id(v[self.NS_REFERENCE])) if isinstance(key, tuple) else (key, id(v[self.NS_REFERENCE])) for
+                key, v in short_name_data_dict.items()]
     def _update_io_ns_map(self, var_ns_tuples, io_type):
         """
         Updates the variable _io_ns_map_in/_io_ns_map_out in the form {'var_short_name': id(ns_ref)}.
@@ -737,20 +755,31 @@ class ProxyDiscipline(object):
         """
         Update data_in and data_out with inst_desc_in and inst_desc_out
         """
-        new_inputs = {}
-        new_outputs = {}
-        for key, value in self.inst_desc_in.items():
-            if not key in self.get_data_in().keys():
-                new_inputs[key] = value
-        for key, value in self.inst_desc_out.items():
-            if not key in self.get_data_out().keys():
-                new_outputs[key] = value
+        new_inputs = self.get_new_variables_in_dict(self.inst_desc_in, self.IO_TYPE_IN)
+        new_outputs = self.get_new_variables_in_dict(self.inst_desc_out, self.IO_TYPE_OUT)
+
         if len(new_inputs) > 0:
             self.update_data_io_and_nsmap(new_inputs, self.IO_TYPE_IN)
 
         # add new outputs from inst_desc_out to data_out
         if len(new_outputs) > 0:
             self.update_data_io_and_nsmap(new_outputs, self.IO_TYPE_OUT)
+
+    def get_new_variables_in_dict(self, var_dict, io_type):
+        '''
+
+        Args:
+            var_dict: The variable dict to compare with data_io
+            io_type: the type of variable input or output
+
+        Returns:
+            the dict filtered with variables that are not yet in data_io
+        '''
+        new_var_dict = {key: value for key, value in var_dict.items() if
+                        not key in self.get_data_io_dict_keys(io_type) and not key in self.get_data_io_dict_tuple_keys(
+                            io_type)}
+
+        return new_var_dict
 
     def update_data_io_and_nsmap(self, new_data_dict, io_type):
         '''
@@ -891,21 +920,26 @@ class ProxyDiscipline(object):
         '''
         for var_name in var_name_list:
             if io_type == self.IO_TYPE_IN:
+                del self.inst_desc_in[var_name]
+                if isinstance(var_name, tuple):
+                    var_name = var_name[0]
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_in()))
 
                 del self._data_in[(var_name, self._io_ns_map_in[var_name])]
                 del self._io_ns_map_in[var_name]
 
-                del self.inst_desc_in[var_name]
+
             elif io_type == self.IO_TYPE_OUT:
+                del self.inst_desc_out[var_name]
+                if isinstance(var_name, tuple):
+                    var_name = var_name[0]
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
 
                 del self._data_out[(var_name, self._io_ns_map_out[var_name])]
                 del self._io_ns_map_out[var_name]
 
-                del self.inst_desc_out[var_name]
             if var_name in self._structuring_variables:
                 del self._structuring_variables[var_name]
 
@@ -1199,7 +1233,10 @@ class ProxyDiscipline(object):
             data_keys = curr_data.keys()
             curr_data[self.IO_TYPE] = io_type
             curr_data[self.TYPE_METADATA] = None
-            curr_data[self.VAR_NAME] = key
+            if isinstance(key, tuple):
+                curr_data[self.VAR_NAME] = key[0]
+            else:
+                curr_data[self.VAR_NAME] = key
             if self.USER_LEVEL not in data_keys:
                 curr_data[self.USER_LEVEL] = 1
             if self.RANGE not in data_keys:
@@ -2111,6 +2148,9 @@ class ProxyDiscipline(object):
         '''
         for disc in disc_list:
             self.add_disc_to_config_dependency_disciplines(disc)
+
+    def add_new_shared_ns(self, shared_ns):
+        self.ee.ns_manager.add_new_shared_ns_for_disc(self, shared_ns)
 
     @staticmethod
     def _get_disciplines_to_configure(disc_list):

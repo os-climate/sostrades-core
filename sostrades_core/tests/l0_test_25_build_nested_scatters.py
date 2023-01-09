@@ -140,7 +140,7 @@ class TestBuildScatter(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
 
-    def _test_02_autogather_with_coupling_of_scatter(self):
+    def test_02_autogather_with_coupling_of_scatter(self):
         '''
         Execution treeview is the same but display treeview should look like :
         |_disc
@@ -193,6 +193,8 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
+                       f'\t\t|_ Disc1',
+                       f'\t\t|_ Disc2',
                        f'\t\t|_ scatter1',
                        f'\t\t\t|_ Disc1',
                        f'\t\t\t|_ Disc2',

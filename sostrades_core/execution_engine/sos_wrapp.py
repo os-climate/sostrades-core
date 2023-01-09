@@ -55,6 +55,7 @@ class SoSWrapp(object):
     INTERNAL_VISIBILITY = 'Internal'
     SHARED_VISIBILITY = 'Shared'
     NAMESPACE = 'namespace'
+    NS_REFERENCE = 'ns_reference'
     VALUE = 'value'
     DEFAULT = 'default'
     EDITABLE = 'editable'
@@ -214,7 +215,14 @@ class SoSWrapp(object):
         """
         Method get_inst_desc_in delegated to associated ProxyDiscipline object during configuration.
         """
-        #TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
+        # TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
+        pass
+
+    @at_proxy
+    def add_new_shared_ns(self, shared_ns):
+        """
+        Method add_new_shared_ns delegated to associated ProxyDiscipline object during configuration.
+        """
         pass
 
     def setup_sos_disciplines(self):  # type: (...) -> None

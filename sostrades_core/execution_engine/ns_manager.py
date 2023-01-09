@@ -383,6 +383,13 @@ class NamespaceManager:
         else:
             self.disc_ns_dict[pt] = disc_ns_info
 
+    def add_new_shared_ns_for_disc(self, disc, shared_ns):
+
+        if disc not in self.disc_ns_dict:
+            raise Exception(f'The discipline {disc} has not been created')
+        else:
+            self.disc_ns_dict[disc]['others_ns'].update({shared_ns.name: shared_ns})
+
     def get_disc_ns_info(self, disc):
         '''
         get the disc_ns_info of a specified discipline disc 

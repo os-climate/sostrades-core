@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from pandas import DataFrame
-
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
+from copy import copy
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
+    TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
@@ -42,7 +43,8 @@ class ValueBlockDiscipline(SoSWrapp):
 
     NEEDED_DATA_KEYS = ['type', 'unit', 'user_level', 'range', 'possible_values',
                         'dataframe_descriptor', 'dataframe_edition_locked',
-                        'default', 'optional', 'numerical']
+                        'default', 'optional', 'numerical', SoSWrapp.VISIBILITY, SoSWrapp.NAMESPACE,
+                        SoSWrapp.NS_REFERENCE]
 
     def setup_sos_disciplines(self):
         '''
@@ -60,17 +62,29 @@ class ValueBlockDiscipline(SoSWrapp):
 
         children_list = self.config_dependency_disciplines
         for child in children_list:
-            #child_name = child.sos_name.replace(f'{self.sos_name}.', '')
-            child_name = child.get_disc_full_name().split(
-                f'{self.sos_name}.')[-1]
+            # child_name = child.sos_name.replace(f'{self.sos_name}.', '')
+            # child_name = child.get_disc_full_name().split(
+            #     f'{self.sos_name}.')[-1]
             for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
 
                 data_in_dict = {
                     key: value for key, value in output_dict.items() if key in self.NEEDED_DATA_KEYS}
-                # if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
-                #     data_in_dict[self.VISIBILITY] == self.SHARED_VISIBILITY
-                #     data_in_dict[self.NAMESPACE] == child.get_ns_reference().name
-                dynamic_inputs[f'{child_name}.{output}'] = data_in_dict
+
+                # if input is local : then put it to shared visibility and add the local namespace from child to the gather discipline as shared namespace
+                # if input is shared : copy the namespace and rename it (at least two namespaces with same name but different value since it is a gather)
+                # then add it as shared namespace for the gather discipline
+                output_namespace = copy(data_in_dict[self.NS_REFERENCE])
+                if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
+                    data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
+                else:
+                    output_namespace.name = output_namespace.value.split('.', 1)[-1]
+
+                output_namespace_name = output_namespace.name
+
+                self.add_new_shared_ns(output_namespace)
+                data_in_dict[self.NAMESPACE] = output_namespace_name
+
+                dynamic_inputs[(output, output_namespace_name)] = data_in_dict
                 if output.endswith('_gather'):
                     output_name = output
                 else:
