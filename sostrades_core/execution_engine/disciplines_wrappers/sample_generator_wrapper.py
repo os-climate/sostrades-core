@@ -128,6 +128,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     DOE_ALGO = 'doe_algo'
     CARTESIAN_PRODUCT = 'cartesian_product'
     GRID_SEARCH = 'grid_search'
+    FULLFACT = 'fullfact'
     available_sampling_methods = [DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
@@ -194,7 +195,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             # TODO: Here we start from scratch each time we switch from one method to the other
             #       ... but maybe we would like to keep selected eval_inputs or eval_inputs_cp ?
 
-            if self.sampling_method == self.DOE_ALGO:
+            if self.sampling_method in [self.DOE_ALGO, self.GRID_SEARCH]:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
                 # Reset parameters of the other method to initial values
                 # (cleaning)
@@ -203,6 +204,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 self.eval_inputs_cp_validity = True
 
                 # setup_doe_algo_method
+                # TODO: configuration-time sampling not implemented yet for doe and gridsearch
                 self.sampling_generation_mode = self.AT_RUN_TIME
                 disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_RUN_TIME
 
@@ -210,17 +212,6 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # It was tested that it also works
 
                 dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
-
-            elif self.sampling_method == self.GRID_SEARCH:
-                # TODO: configuration-time sampling not implemented yet for grid search
-                # setup_doe_algo_method
-                self.sampling_generation_mode = self.AT_RUN_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_RUN_TIME
-
-                # self.sampling_generation_mode = self.AT_CONFIGURATION_TIME #
-                # It was tested that it also works
-                dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
-
 
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
@@ -258,7 +249,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         '''
         samples_df = None
 
-        if self.sampling_method == self.DOE_ALGO:
+        if self.sampling_method in [self.DOE_ALGO, self.GRID_SEARCH]:
             samples_df = self.run_doe()
         elif self.sampling_method == self.CARTESIAN_PRODUCT:
             samples_df = self.run_cp()
@@ -278,10 +269,11 @@ class SampleGeneratorWrapper(SoSWrapp):
         """
            Instantiate SampleGenerator once and only if needed
         """
-        if self.sampling_method == self.DOE_ALGO:
+        #TODO: refactor OO?
+        if self.sampling_method in [self.DOE_ALGO, self.GRID_SEARCH]:
             if self.sample_generator_doe is None:
                 self.sample_generator_doe = DoeSampleGenerator()
-        elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
+        elif self.sampling_method == self.CARTESIAN_PRODUCT:
             if self.sample_generator_cp is None:
                 self.sample_generator_cp = CartesianProductSampleGenerator()
 
@@ -424,7 +416,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         '''
-        # FIXME: clean code below with class variables etc
+        # FIXME: clean code below with class variables etc. Well actually this code should be inside generator...
         if self.sampling_method == self.DOE_ALGO:
             # Get possible values for sampling algorithm name
             available_doe_algorithms = self.sample_generator_doe.get_available_algo_names()
@@ -432,6 +424,15 @@ class SampleGeneratorWrapper(SoSWrapp):
                                    {'type': 'string', 'structuring': True,
                                     'possible_values': available_doe_algorithms}
                                    })
+        elif self.sampling_method == self.GRID_SEARCH:
+            dynamic_inputs.update({'sampling_algo':
+                                   {'type': 'string', 'structuring': True,
+                                    'default': self.FULLFACT,
+                                    'possible_values': [self.FULLFACT],
+                                    'editable': False,
+                                    'user_level': 99}
+                                   })
+
         dynamic_inputs.update({'eval_inputs':
                                {'type': 'dataframe',
                                 'dataframe_descriptor': {'selected_input': ('bool', None, True),
@@ -473,12 +474,17 @@ class SampleGeneratorWrapper(SoSWrapp):
             #     self.previous_algo_name = algo_name
             if algo_name is not None:  # and algo_name_has_changed:
                 default_dict = self.get_algo_default_options(algo_name)
-                dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
+                algo_options_dict = {'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
                                                         'dataframe_edition_locked': False,
                                                         'structuring': True,
                                                         'dataframe_descriptor': {
                                                             self.VARIABLES: ('string', None, False),
-                                                            self.VALUES: ('string', None, True)}}})
+                                                            self.VALUES: ('string', None, True)}}}
+                if self.sampling_method == self.GRID_SEARCH:
+                    algo_options_dict['algo_options'][self.USER_LEVEL] = 99
+                    algo_options_dict['algo_options'][self.EDITABLE] = False
+
+                dynamic_inputs.update(algo_options_dict)
                 all_options = list(default_dict.keys())
                 # if 'algo_options' in disc_in and algo_name_has_changed:
                 #     disc_in['algo_options']['value'] = default_dict
@@ -488,6 +494,10 @@ class SampleGeneratorWrapper(SoSWrapp):
                         disc_in['algo_options']['value'], default_dict)
                     disc_in['algo_options']['value'] = {
                         key: options_map[key] for key in all_options}
+
+                if self.sampling_method == self.GRID_SEARCH and self.DESIGN_SPACE in disc_in:
+                    dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+                    disc_in['algo_options']['value']['levels'] = dspace_df['nb_points'].tolist()
             # else:
             #     dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: {},
             #                                             'dataframe_edition_locked': False,
@@ -520,12 +530,18 @@ class SampleGeneratorWrapper(SoSWrapp):
                     selected_inputs_has_changed = True
                     self.selected_inputs = selected_inputs
 
-                default_design_space = pd.DataFrame({'variable': self.selected_inputs,
-                                                     'lower_bnd': [None] * len(self.selected_inputs),
-                                                     'upper_bnd': [None] * len(self.selected_inputs)
-                                                     })
-                if self.sampling_method == self.GRID_SEARCH:
-                    default_design_space['nb_points'] = [None] * len(self.selected_inputs) #[2] ?
+                default_design_space = pd.DataFrame()
+                if self.sampling_method == self.DOE_ALGO:
+                    default_design_space = pd.DataFrame({'variable': self.selected_inputs,
+                                                         'lower_bnd': [None] * len(self.selected_inputs),
+                                                         'upper_bnd': [None] * len(self.selected_inputs)
+                                                         })
+                elif self.sampling_method == self.GRID_SEARCH:
+                    default_design_space = pd.DataFrame({'variable': self.selected_inputs,
+                                                         'lower_bnd': [0.0] * len(self.selected_inputs),
+                                                         'upper_bnd': [100.0] * len(self.selected_inputs),
+                                                         'nb_points': [2] * len(self.selected_inputs)
+                                                         })
 
 
                 dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space,
@@ -550,7 +566,9 @@ class SampleGeneratorWrapper(SoSWrapp):
                         else:
                             elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
                             if self.sampling_method == self.GRID_SEARCH:
-                                elem_dict['nb_points'] = None
+                                elem_dict['lower_bnd'] = 0.0
+                                elem_dict['upper_bnd'] = 100.0
+                                elem_dict['nb_points'] = 2
                             final_dataframe = final_dataframe.append(
                                 elem_dict, ignore_index=True)
                     disc_in['design_space']['value'] = final_dataframe
@@ -622,7 +640,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         Outputs:
             self.SAMPLES_DF (dataframe) : prepared samples for evaluation
         '''
-        # TODO: GridSearch impl. here with OT_FULLFACT ?
+        # TODO: GridSearch impl. here with fullfact  ?
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
