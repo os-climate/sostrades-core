@@ -482,7 +482,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 # len(activ_builder_dict[namespace]) == 1 or
                 # isinstance(self.builder_dict[namespace], list):
                 for builder in activ_builder_dict[namespace]:
-                    disc = self.build_value_block(builder, namespace)
+                    disc = self.build_value_block(builder)
 
                     if namespace not in self.archi_disciplines:
                         self.ee.factory.add_discipline(disc)
@@ -501,11 +501,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
         self.send_children_to_father()
 
-    def build_value_block(self, builder, namespace):
+    def build_value_block(self, builder):
         """
         Method to build discipline with builder and namespace
         """
         # build discipline below architecture
+        self.associate_namespace_to_sub_builder(builder)
         discipline = builder.build()
 
         return discipline

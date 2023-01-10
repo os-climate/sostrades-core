@@ -125,7 +125,7 @@ class PostProcessingFactory:
                 current_bundle = None
                 if len(found_bundles) == 0:
                     current_bundle = PostProcessingBundle(
-                        PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME, PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME, [], [])
+                        PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME, associated_namespace.value, [], [])
                     all_post_processings_bundle[associated_namespace.value].append(
                         current_bundle)
                 else:
