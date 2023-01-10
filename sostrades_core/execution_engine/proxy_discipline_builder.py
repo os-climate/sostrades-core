@@ -79,9 +79,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         for builder in builder_list:
             # A builder of disciplines should propagate its associated namespaces
             # and has the priority over associated namespaces already set
-            if self.associated_namespaces != []:
-                builder.add_namespace_list_in_associated_namespaces(
-                    self.associated_namespaces)
+            self.associate_namespace_to_sub_builder(builder)
 
             proxy_disc = builder.build()
 
@@ -102,6 +100,14 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #     def clear_cache(self):
     #         self.mdo_chain.cache.clear()
     #         ProxyDisciplineBuilder.clear_cache(self)
+
+    def associate_namespace_to_sub_builder(self, builder):
+        '''
+        Associate namespaces in associated namespaces list to sub builders
+        '''
+        if self.associated_namespaces != []:
+            builder.add_namespace_list_in_associated_namespaces(
+                self.associated_namespaces)
 
     def set_father_discipline(self):
         '''
