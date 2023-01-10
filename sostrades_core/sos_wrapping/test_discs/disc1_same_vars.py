@@ -34,7 +34,8 @@ class Disc1(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {('a', 'local'): {'type': 'float'},
-               'a': {'type': 'float'}
+               'a': {'type': 'float'},
+               ('a', 'local2'): {'type': 'float'},
 
                }
     DESC_OUT = {

@@ -224,4 +224,13 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.execute()
 
         y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.y_gather')
+        y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
+            f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
+
+        self.assertDictEqual(y_gather, y_gather_th)
+
         indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.indicator_gather')
+        indicator_gather_th = {scatter_name: self.exec_eng.dm.get_value(
+            f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
+
+        self.assertDictEqual(indicator_gather, indicator_gather_th)

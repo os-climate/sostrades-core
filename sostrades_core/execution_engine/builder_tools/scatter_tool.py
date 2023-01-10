@@ -323,7 +323,7 @@ class ScatterTool(SosTool):
         Apply the display options proposed by the driver in multiinstance mode
         1. hide_under_coupling  : Hide all the disicplines instanciated under the high level coupling
         2. group_scenarios_under_disciplines : Group All the scenario under each discipline in display treeview (the exec treeview remains the same)
-        3. autogather : Add a valueblockdiscipline which will autogather disciplines
+        3. autogather : Add a Gather discipline which will autogather disciplines
         '''
 
         if self.display_options['hide_under_coupling']:
@@ -339,7 +339,7 @@ class ScatterTool(SosTool):
 
     def add_gather(self):
         '''
-            Add gather discipline (valueblockdiscipline) for autogather
+            Add gather discipline for autogather
             the gather discipline name will automatically be the name of the builder
         '''
 
