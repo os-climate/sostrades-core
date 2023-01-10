@@ -222,3 +222,6 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
+
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.y_gather')
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.indicator_gather')

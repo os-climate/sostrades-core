@@ -388,6 +388,7 @@ class NamespaceManager:
         if disc not in self.disc_ns_dict:
             raise Exception(f'The discipline {disc} has not been created')
         else:
+            self.ns_object_map[id(shared_ns)] = shared_ns
             self.disc_ns_dict[disc]['others_ns'].update({shared_ns.name: shared_ns})
 
     def get_disc_ns_info(self, disc):
@@ -483,9 +484,12 @@ class NamespaceManager:
         """
         get variable full name from a tuple('var_name', id(ns_ref))
         """
-        var_name = ns_tuple[0]
-        ns_reference = self.ee.ns_manager.ns_object_map[ns_tuple[1]]
-        return self.ee.ns_manager.compose_ns([ns_reference.value, var_name])
+        if isinstance(ns_tuple[0], tuple):
+            var_name = ns_tuple[0][0]
+        else:
+            var_name = ns_tuple[0]
+        ns_reference = self.ns_object_map[ns_tuple[1]]
+        return self.compose_ns([ns_reference.value, var_name])
 
     def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
         '''

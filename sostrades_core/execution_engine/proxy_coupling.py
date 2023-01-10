@@ -461,7 +461,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     var_name_out = var_name_k
                 else:
                     var_name_out_list = [
-                        key for key in data_io.keys() if coupling_key.endswith(NS_SEP + key)]
+                        key for key, data_dict in data_io.items() if
+                        coupling_key.endswith(NS_SEP + data_dict[self.VAR_NAME])]
                     # To be modified
                     if len(var_name_out_list) != 0:
                         var_name_out = var_name_out_list[0]

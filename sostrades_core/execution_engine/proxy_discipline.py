@@ -508,8 +508,10 @@ class ProxyDiscipline(object):
             ns_list (List[Namespace]): list of namespaces [???]
         '''
         if self.VISIBILITY in item and item[self.VISIBILITY] == self.SHARED_VISIBILITY:
-            ns_list.append(item[self.NAMESPACE])
-
+            try:
+                ns_list.append(item[self.NAMESPACE])
+            except:
+                pass
     def get_input_data_names(self, as_namespaced_tuple=False):
         '''
         Returns:
@@ -670,7 +672,7 @@ class ProxyDiscipline(object):
             list[tuple] : [(var_short_name, id(ns_ref)), ...]
         """
 
-        return [(key[0], id(v[self.NS_REFERENCE])) if isinstance(key, tuple) else (key, id(v[self.NS_REFERENCE])) for
+        return [(key, id(v[self.NS_REFERENCE])) for
                 key, v in short_name_data_dict.items()]
     def _update_io_ns_map(self, var_ns_tuples, io_type):
         """

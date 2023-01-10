@@ -91,6 +91,9 @@ class ValueBlockDiscipline(SoSWrapp):
                     output_name = f'{output}_gather'
                 dynamic_outputs[output_name] = data_in_dict.copy()
                 dynamic_outputs[output_name][self.TYPE] = 'dict'
+                dynamic_outputs[output_name][self.VISIBILITY] = self.LOCAL_VISIBILITY
+                del dynamic_outputs[output_name][self.NS_REFERENCE]
+                del dynamic_outputs[output_name][self.NAMESPACE]
         return dynamic_inputs, dynamic_outputs
 
     def run(self):
@@ -106,16 +109,15 @@ class ValueBlockDiscipline(SoSWrapp):
                 var_key = out_key.replace('_gather', '')
 
                 for input_key in input_dict:
-                    if input_key.endswith(f'.{out_key}'):
+                    if isinstance(input_key, tuple) and input_key[0] == out_key:
                         # Then input_dict[input_key] is a dict
                         for input_input_key in input_dict[input_key]:
                             new_key = '.'.join([input_key.replace(
                                 f'.{out_key}', ''), input_input_key])
                             output_dict[out_key][new_key] = input_dict[input_key][input_input_key]
 
-                    elif input_key.endswith(f'.{var_key}'):
-                        output_dict[out_key][input_key.replace(
-                            f'.{var_key}', '')] = input_dict[input_key]
+                    if isinstance(input_key, tuple) and input_key[0] == var_key:
+                        output_dict[out_key][input_key[1]] = input_dict[input_key]
 
         self.store_sos_outputs_values(output_dict)
 
