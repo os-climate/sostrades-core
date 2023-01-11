@@ -140,7 +140,7 @@ class TestBuildScatter(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
 
-    def _test_02_autogather_with_coupling_of_scatter(self):
+    def test_02_autogather_with_coupling_of_scatter(self):
         '''
         Execution treeview is the same but display treeview should look like :
         |_disc
@@ -193,6 +193,8 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
+                       f'\t\t|_ Disc1',
+                       f'\t\t|_ Disc2',
                        f'\t\t|_ scatter1',
                        f'\t\t\t|_ Disc1',
                        f'\t\t\t|_ Disc2',
@@ -220,3 +222,15 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
+
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.y_gather')
+        y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
+            f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
+
+        self.assertDictEqual(y_gather, y_gather_th)
+
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.indicator_gather')
+        indicator_gather_th = {scatter_name: self.exec_eng.dm.get_value(
+            f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
+
+        self.assertDictEqual(indicator_gather, indicator_gather_th)

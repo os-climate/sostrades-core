@@ -275,13 +275,18 @@ class SosFactory:
         return builder
 
     def add_gather_builder(self, sos_name):
-
-        module_struct_list = f'{self.GENERIC_MODS_PATH}.valueblock_discipline.ValueBlockDiscipline'
+        '''
+        Add Gather Discipline builder
+        '''
+        module_struct_list = f'{self.EE_PATH}.gather_discipline.GatherDiscipline'
         builder = self.get_builder_from_module(sos_name, module_struct_list)
 
         return builder
 
     def add_uq_builder(self, sos_name):
+        '''
+        Add Uncertainty Quantification builder
+        '''
         mod_path = 'sostrades_core.sos_wrapping.analysis_discs.uncertainty_quantification.UncertaintyQuantification'
         builder = self.get_builder_from_module(
             sos_name, mod_path)

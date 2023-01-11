@@ -72,7 +72,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
                 sub_input_dict = {
                     key: value
                     for key, value in input_dict.items()
-                    if key.endswith(f'.{input_to_sum}') and len(key.split('.')) == 2
+                    if isinstance(key, tuple) and key[0] == input_to_sum
                 }
 
                 if len(list(sub_input_dict.keys())) >= 2:

@@ -79,7 +79,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Remy')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'debug_mode', 'CAPEX.output']
+                           'cache_type', 'cache_file_path', 'debug_mode', ('output', 'CAPEX')]
         self.assertListEqual(
             list(disc_Remy.get_data_in().keys()), data_in_th_list)
 
@@ -92,7 +92,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Tomato')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path', 'debug_mode', 'CAPEX.output', 'OPEX.output']
+                           'cache_file_path', 'debug_mode', ('output', 'CAPEX'), ('output', 'OPEX')]
         self.assertListEqual(
             list(disc_Tomato.get_data_in().keys()), data_in_th_list)
         data_out_th_list = ['output_gather', 'output']
@@ -142,7 +142,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Remy')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'debug_mode', 'CAPEX.output_gather']
+                           'cache_type', 'cache_file_path', 'debug_mode', ('output_gather', 'CAPEX')]
         self.assertListEqual(
             list(disc_Remy.get_data_in().keys()), data_in_th_list)
 
@@ -155,7 +155,7 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Tomato')[0]
         self.maxDiff = None
         data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path',  'debug_mode', 'OPEX.output_gather', 'OPEX.output']
+                           'cache_file_path', 'debug_mode', ('output_gather', 'OPEX'), ('output', 'OPEX')]
         self.assertListEqual(
             list(disc_Tomato.get_data_in().keys()), data_in_th_list)
         data_out_th_list = ['output_gather', 'output']
@@ -206,10 +206,10 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Remy.output_gather')
 
         self.assertDictEqual(output_OPEX_gather, {'Manhour': output_Manhour})
-        self.assertDictEqual(output_OPEX,  output_Manhour)
+        self.assertDictEqual(output_OPEX, output_Manhour)
 
         self.assertDictEqual(output_Remy_gather, {'CAPEX': output_sales,
-                                                  'OPEX.Manhour': output_Manhour,
+                                                  'Manhour': output_Manhour,
                                                   'OPEX': output_OPEX})
 
 
