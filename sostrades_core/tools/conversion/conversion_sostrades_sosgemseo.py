@@ -569,10 +569,7 @@ def convert_new_type_into_array(
         else:
             var_type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
         if var_type in NEW_VAR_TYPE:
-            if isinstance(var, VAR_TYPE_MAP['array']):
-                #TODO: discuss if this is OK especially regarding metadata management
-                pass
-            elif not isinstance(
+            if not isinstance(
                     var, VAR_TYPE_MAP[var_type]) and var is not None:
                 msg = f"Variable {key} has type {type(var)}, "
                 msg += f"however type {VAR_TYPE_MAP[var_type]} was expected."
