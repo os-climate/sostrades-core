@@ -82,7 +82,7 @@ class GatherDiscipline(SoSWrapp):
                 output_namespace_name = output_namespace.name
 
                 short_alias = '.'.join([substr for substr in output_namespace_name.split('.') if
-                                        substr not in self.get_disc_full_name().split('.')])
+                                        substr not in self.get_disc_display_name().split('.')])
                 self.add_new_shared_ns(output_namespace)
                 data_in_dict[self.NAMESPACE] = output_namespace_name
 

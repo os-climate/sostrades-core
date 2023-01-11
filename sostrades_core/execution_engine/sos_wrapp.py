@@ -202,6 +202,13 @@ class SoSWrapp(object):
         """
         pass
 
+    @at_proxy
+    def get_disc_display_name(self):
+        """
+        Method get_disc_display_name delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
     @property
     @at_proxy
     def config_dependency_disciplines(self):
