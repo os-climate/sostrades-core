@@ -18,7 +18,7 @@ import numpy as np
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from collections import Iterable
+from collections.abc import Iterable
 
 class Disc1(SoSWrapp):
 
