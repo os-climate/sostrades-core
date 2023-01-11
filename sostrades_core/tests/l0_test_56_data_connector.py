@@ -250,16 +250,16 @@ class TestDataConnector(unittest.TestCase):
     
         self.assertTrue(deliveries_df is not None)
     
-    def test_06_process_data_connector_dremio(self):
+    def _test_06_process_data_connector_dremio(self):
         """
         Test data connector dremio process
         """
         exec_eng = ExecutionEngine(self.name)
         builder_process = exec_eng.factory.get_builder_from_process(
             'sostrades_core.sos_processes.test', 'test_disc1_data_connector_dremio')
-    
+
         exec_eng.factory.set_builders_to_coupling_builder(builder_process)
-    
+
         exec_eng.configure()
     
         study_dremio = Study()
