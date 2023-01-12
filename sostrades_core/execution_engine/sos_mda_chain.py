@@ -155,6 +155,7 @@ class SoSMDAChain(MDAChain):
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case
             self.status = self.STATUS_FAILED
+            self.mdo_chain.status = self.STATUS_FAILED
             raise error
 
         # save residual history
