@@ -17,7 +17,7 @@ limitations under the License.
 from sostrades_core.study_manager.study_manager import StudyManager
 import pandas as pd
 
-from tools.post_processing.post_processing_factory import PostProcessingFactory
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 
 class Study(StudyManager):
