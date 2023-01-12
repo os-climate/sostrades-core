@@ -102,7 +102,7 @@ class SoSWrapp(object):
 
     # decorator to expose methods and properties delegated to ProxyDiscipline object during configuration
     # TODO: change by a decorator outside the class + an AccessOnlyProxy object  ? Or by a __getattr__ overload ?
-    def at_proxy(f):
+    def at_proxy(f):  # pylint: disable=E0213
         @wraps(f)
         def proxy_do(self, *args, **kwargs):
             proxy_attr = getattr(self.__proxy, f.__name__)
@@ -199,6 +199,13 @@ class SoSWrapp(object):
     def get_disc_full_name(self):
         """
         Method get_disc_full_name delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_disc_display_name(self):
+        """
+        Method get_disc_display_name delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 

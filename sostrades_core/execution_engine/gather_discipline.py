@@ -82,7 +82,7 @@ class GatherDiscipline(SoSWrapp):
                 output_namespace_name = output_namespace.name
 
                 short_alias = '.'.join([substr for substr in output_namespace_name.split('.') if
-                                        substr not in self.get_disc_full_name().split('.')])
+                                        substr not in self.get_disc_display_name().split('.')])
                 self.add_new_shared_ns(output_namespace)
                 data_in_dict[self.NAMESPACE] = output_namespace_name
 
@@ -152,8 +152,8 @@ class GatherDiscipline(SoSWrapp):
 
                 chart_name = output_key.replace('_gather', '')
                 chart_unit = self.get_data_out()[output_key][self.UNIT]
-
-                if isinstance(list(output_value.values())[0], DataFrame):
+                first_value = list(output_value.values())[0]
+                if isinstance(first_value, DataFrame):
                     if 'years' in list(output_value.values())[0].columns:
 
                         for column in list(output_value.values())[0].columns:
@@ -178,4 +178,14 @@ class GatherDiscipline(SoSWrapp):
                                             new_chart.series.append(
                                                 product_serie)
                                     instanciated_charts.append(new_chart)
+                elif isinstance(first_value, (float, int)):
+                    new_chart = TwoAxesInstanciatedChart('scenarios', f'{chart_name} [{chart_unit}]',
+                                                         chart_name=f'{chart_name} comparison')
+                    for gathered_key, gathered_output in output_value.items():
+                        serie = InstanciatedSeries(
+                            [gathered_key],
+                            [gathered_output], f'{gathered_key}', 'bar')
+                        new_chart.series.append(
+                            serie)
+                    instanciated_charts.append(new_chart)
         return instanciated_charts
