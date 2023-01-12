@@ -129,12 +129,12 @@ class SoSMDODiscipline(MDODiscipline):
 
         try:
             self.local_data = super().execute(input_data)
-            return self.local_data
         except Exception as error:
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case
-            self.status=self.STATUS_FAILED
+            self.status = self.STATUS_FAILED
             raise error
+        return self.local_data
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
                   exec_before_linearize=True):
