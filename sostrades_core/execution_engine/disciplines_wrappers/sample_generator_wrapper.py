@@ -174,6 +174,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.dict_desactivated_elem = {}
 
         self.previous_eval_inputs_cp = None
+        self.eval_inputs_cp_has_changed = False
         self.eval_inputs_cp_filtered = None
         self.eval_inputs_cp_validity = True
         self.samples_gene_df = None
@@ -233,10 +234,9 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # TODO: configuration-time sampling not implemented yet for doe and gridsearch
                 self.sampling_generation_mode = self.AT_RUN_TIME
                 disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_RUN_TIME
-                # self.sampling_generation_mode = self.AT_RUN_TIME # It was
-                # tested that it also works
-
+                # most setup is similar to doe_algo
                 dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
+
                 self.setup_gs(dynamic_inputs)
 
             elif self.sampling_method is not None:
@@ -652,7 +652,6 @@ class SampleGeneratorWrapper(SoSWrapp):
         Outputs:
             self.SAMPLES_DF (dataframe) : prepared samples for evaluation
         '''
-        # TODO: GridSearch impl. here with fullfact  ?
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
@@ -703,6 +702,12 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                      'default': default_in_eval_input_cp}})
 
     def setup_gs(self, dynamic_inputs):
+        '''.
+        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
+        with specificities for the GridSearch sampling method.
+        Arguments:
+            dynamic_inputs (dict): the dynamic input dict to be updated
+        '''
         #TODO: refactor, comment...
         disc_in = self.get_data_in()
         self.eval_inputs_cp_has_changed = False
@@ -710,26 +715,43 @@ class SampleGeneratorWrapper(SoSWrapp):
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
             eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
-            # 1. Manage update status of EVAL_INPUTS_CP
-            # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-            if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
-                self.eval_inputs_cp_has_changed = True
-                self.previous_eval_inputs_cp = eval_inputs_cp
-            # 2. Manage selection in EVAL_INPUTS_CP
-            if eval_inputs_cp is not None:
-                # reformat eval_inputs_cp to take into account only useful
-                # informations
-                self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
-                    eval_inputs_cp)
-                # Check selected input cp validity
-                self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
-                    self.eval_inputs_cp_filtered)
-                # Setup GENERATED_SAMPLES for cartesian product
-                if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-                    self.setup_generated_samples_for_cp(dynamic_inputs)
+            self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
+
+    def setup_eval_inputs_cp_and_generated_samples(self, dynamic_inputs, eval_inputs_cp):
+        '''.
+        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
+        Arguments:
+            dynamic_inputs (dict): the dynamic input dict to be updated
+            eval_inputs_cp (dataframe): the variables and possible values for the sample
+        '''
+        # 1. Manage update status of EVAL_INPUTS_CP
+        # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
+        if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
+            self.eval_inputs_cp_has_changed = True
+            self.previous_eval_inputs_cp = eval_inputs_cp
+        # 2. Manage selection in EVAL_INPUTS_CP
+        if eval_inputs_cp is not None:
+            # reformat eval_inputs_cp to take into account only useful
+            # informations
+            self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
+                eval_inputs_cp)
+            # Check selected input cp validity
+            self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
+                self.eval_inputs_cp_filtered)
+            # Setup GENERATED_SAMPLES for cartesian product
+            if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+                self.setup_generated_samples_for_cp(dynamic_inputs)
 
     def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space):
-        # FIXME: implement
+        """
+        Method that modifies Doe-type eval_inputs into eval_inputs_cp to use CartesianProduct for GridSearch.
+
+        Arguments:
+            eval_inputs(dataframe): Doe-like eval_inputs.
+            design_space(dataframe): GridSearch design space with nb_points.
+        Returns:
+            eval_inputs_cp(dataframe): with extra column with the values for CartesianProduct SampleGenerator.
+        """
         if eval_inputs is not None and design_space is not None:
             lists_of_values = []
             for idx, var_row in eval_inputs.iterrows():
@@ -757,23 +779,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         disc_in = self.get_data_in()
         if self.EVAL_INPUTS_CP in disc_in:
             eval_inputs_cp = self.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
-            # 1. Manage update status of EVAL_INPUTS_CP
-            # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-            if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
-                self.eval_inputs_cp_has_changed = True
-                self.previous_eval_inputs_cp = eval_inputs_cp
-            # 2. Manage selection in EVAL_INPUTS_CP
-            if eval_inputs_cp is not None:
-                # reformat eval_inputs_cp to take into account only useful
-                # informations
-                self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
-                    eval_inputs_cp)
-                # Check selected input cp validity
-                self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
-                    self.eval_inputs_cp_filtered)
-                # Setup GENERATED_SAMPLES for cartesian product
-                if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-                    self.setup_generated_samples_for_cp(dynamic_inputs)
+            self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
 
     def setup_generated_samples_for_cp(self, dynamic_inputs):
         '''

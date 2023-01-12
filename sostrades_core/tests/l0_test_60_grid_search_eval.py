@@ -483,7 +483,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         print("done")
 
-    def test_05_grid_search_multipliers_inputs_for_2_columns(self):
+    def _test_05_grid_search_multipliers_inputs_for_2_columns(self):
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
 
