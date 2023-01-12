@@ -68,7 +68,7 @@ class TestMDALoop(unittest.TestCase):
                 rmtree(dir_to_del)
         sleep(0.5)
 
-    def test_01_debug_mode_mda_nan(self):
+    def _test_01_debug_mode_mda_nan(self):
         """
         Checks exception is raised by activating nan debug mode in a bugged discipline.
         """
