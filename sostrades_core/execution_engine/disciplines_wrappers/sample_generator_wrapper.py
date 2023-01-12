@@ -207,7 +207,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # setup_doe_algo_method
                 # TODO: configuration-time sampling not implemented yet for doe and gridsearch
                 self.sampling_generation_mode = self.AT_RUN_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_RUN_TIME
+                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_RUN_TIME
 
                 # self.sampling_generation_mode = self.AT_CONFIGURATION_TIME #
                 # It was tested that it also works
@@ -223,7 +223,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # setup_cp_method
 
                 self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_CONFIGURATION_TIME
+                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
                 # self.sampling_generation_mode = self.AT_RUN_TIME # It was
                 # tested that it also works
 
@@ -233,7 +233,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # setup_cp_method
                 # TODO: configuration-time sampling not implemented yet for doe and gridsearch
                 self.sampling_generation_mode = self.AT_RUN_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE]['value'] = self.AT_RUN_TIME
+                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_RUN_TIME
                 # most setup is similar to doe_algo
                 dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
 
@@ -421,19 +421,19 @@ class SampleGeneratorWrapper(SoSWrapp):
         return dynamic_inputs, dynamic_outputs
 
     def setup_dynamic_inputs_for_doe_generator_method(self, dynamic_inputs):
-        '''
+        """
         Method that setup dynamic inputs in case of DOE_ALGO selection: i.e. EVAL_INPUTS and SAMPLING_ALGO
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
 
-        '''
-        # FIXME: clean code below with class variables etc. Well actually this code should be inside generator...
+        """
         if self.sampling_method == self.DOE_ALGO:
             # Get possible values for sampling algorithm name
             available_doe_algorithms = self.sample_generator_doe.get_available_algo_names()
             dynamic_inputs.update({'sampling_algo':
-                                   {'type': 'string', 'structuring': True,
-                                    'possible_values': available_doe_algorithms}
+                                   {self.TYPE: 'string',
+                                    self.STRUCTURING: True,
+                                    self.POSSIBLE_VALUES: available_doe_algorithms}
                                    })
         # elif self.sampling_method == self.GRID_SEARCH:
         #     dynamic_inputs.update({'sampling_algo':
@@ -445,13 +445,13 @@ class SampleGeneratorWrapper(SoSWrapp):
         #                            })
 
         dynamic_inputs.update({'eval_inputs':
-                               {'type': 'dataframe',
-                                'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                         'full_name': ('string', None, False)},
-                                'dataframe_edition_locked': False,
-                                'structuring': True,
-                                'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                'namespace': 'ns_sampling'}
+                               {self.TYPE: 'dataframe',
+                                self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                            'full_name': ('string', None, False)},
+                                self.DATAFRAME_EDITION_LOCKED: False,
+                                self.STRUCTURING: True,
+                                self.VISIBILITY: self.SHARED_VISIBILITY,
+                                self.NAMESPACE: 'ns_sampling'}
                                })
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
@@ -468,63 +468,39 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.setup_generated_samples_for_doe(dynamic_inputs)
 
     def setup_algo_options(self, dynamic_inputs):
-        '''
+        """
             Method that setup 'algo_options'
             Arguments:
                 dynamic_inputs (dict): the dynamic input dict to be updated
-        '''
-        # FIXME: clean code below with class variables etc /clean from GRIDSEARCH!
+        """
         disc_in = self.get_data_in()
         # Dynamic input of algo_options
         if self.ALGO in disc_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
-
-            # algo_name_has_changed = False
-            # if self.previous_algo_name != algo_name:
-            #     algo_name_has_changed = True
-            #     self.previous_algo_name = algo_name
             if algo_name is not None:  # and algo_name_has_changed:
                 default_dict = self.get_algo_default_options(algo_name)
-                algo_options_dict = {'algo_options': {'type': 'dict', self.DEFAULT: default_dict,
-                                                        'dataframe_edition_locked': False,
-                                                        'structuring': True,
-                                                        'dataframe_descriptor': {
+                algo_options_dict = {self.ALGO_OPTIONS: {self.TYPE: 'dict', self.DEFAULT: default_dict,
+                                                      self.DATAFRAME_EDITION_LOCKED: False,
+                                                      self.STRUCTURING: True,
+                                                      self.DATAFRAME_DESCRIPTOR: {
                                                             self.VARIABLES: ('string', None, False),
                                                             self.VALUES: ('string', None, True)}}}
-                # if self.sampling_method == self.GRID_SEARCH:
-                #     algo_options_dict['algo_options'][self.USER_LEVEL] = 99
-                #     algo_options_dict['algo_options'][self.EDITABLE] = False
-
                 dynamic_inputs.update(algo_options_dict)
                 all_options = list(default_dict.keys())
-                # if 'algo_options' in disc_in and algo_name_has_changed:
-                #     disc_in['algo_options']['value'] = default_dict
-                if 'algo_options' in disc_in and disc_in['algo_options']['value'] is not None and list(
-                        disc_in['algo_options']['value'].keys()) != all_options:
+                if self.ALGO_OPTIONS in disc_in and disc_in[self.ALGO_OPTIONS][self.VALUE] is not None and list(
+                        disc_in[self.ALGO_OPTIONS][self.VALUE].keys()) != all_options:
                     options_map = ChainMap(
-                        disc_in['algo_options']['value'], default_dict)
-                    disc_in['algo_options']['value'] = {
+                        disc_in[self.ALGO_OPTIONS][self.VALUE], default_dict)
+                    disc_in[self.ALGO_OPTIONS][self.VALUE] = {
                         key: options_map[key] for key in all_options}
-
-                # if self.sampling_method == self.GRID_SEARCH and self.DESIGN_SPACE in disc_in:
-                #     dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-                #     disc_in['algo_options']['value']['levels'] = dspace_df['nb_points'].tolist()
-            # else:
-            #     dynamic_inputs.update({'algo_options': {'type': 'dict', self.DEFAULT: {},
-            #                                             'dataframe_edition_locked': False,
-            #                                             'structuring': True,
-            #                                             'editable': False,
-            #                                             'dataframe_descriptor': {
-            #                                                 self.VARIABLES: ('string', None, False),
-            # self.VALUES: ('string', None, True)}}})
 
 
     def setup_design_space(self, dynamic_inputs):
-        '''
+        """
         Method that setup 'design_space'
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
-        '''
+        """
         selected_inputs_has_changed = False
         disc_in = self.get_data_in()
         # Dynamic input of default design space
@@ -556,15 +532,16 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                          })
 
 
-                dynamic_inputs.update({'design_space': {'type': 'dataframe', self.DEFAULT: default_design_space,
-                                                        'structuring': True
+                dynamic_inputs.update({'design_space': {self.TYPE: 'dataframe',
+                                                        self.DEFAULT: default_design_space,
+                                                        self.STRUCTURING: True
                                                         }})
 
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,
                 # so that the bound are kept instead of set to default None.
                 if 'design_space' in disc_in and selected_inputs_has_changed:
                     from_design_space = list(
-                        disc_in['design_space']['value']['variable'])
+                        disc_in['design_space'][self.VALUE]['variable'])
                     from_eval_inputs = self.selected_inputs
 
                     df_cols = ['variable', 'lower_bnd', 'upper_bnd'] + (['nb_points'] if self.sampling_method == self.GRID_SEARCH else [])
@@ -573,8 +550,8 @@ class SampleGeneratorWrapper(SoSWrapp):
 
                     for element in from_eval_inputs:
                         if element in from_design_space:
-                            final_dataframe = final_dataframe.append(disc_in['design_space']['value']
-                                                                     [disc_in['design_space']['value']['variable'] == element])
+                            final_dataframe = final_dataframe.append(disc_in['design_space'][self.VALUE]
+                                                                     [disc_in['design_space'][self.VALUE]['variable'] == element])
                         else:
                             elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
                             if self.sampling_method == self.GRID_SEARCH:
@@ -583,28 +560,28 @@ class SampleGeneratorWrapper(SoSWrapp):
                                 elem_dict['nb_points'] = 2
                             final_dataframe = final_dataframe.append(
                                 elem_dict, ignore_index=True)
-                    disc_in['design_space']['value'] = final_dataframe
+                    disc_in['design_space'][self.VALUE] = final_dataframe
 
     def reformat_eval_inputs(self, eval_inputs):
-        '''
+        """
         Method that reformat eval_input depending on user's selection
         Arguments:
-            eval_inputs (dataframe): 
+            eval_inputs (dataframe):
         Returns:
             eval_inputs_filtered (dataframe) :
 
-        '''
+        """
         logic_1 = eval_inputs['selected_input'] == True
         eval_inputs_filtered = eval_inputs[logic_1]
         eval_inputs_filtered = eval_inputs_filtered['full_name']
         return eval_inputs_filtered
 
     def setup_generated_samples_for_doe(self, dynamic_inputs):
-        '''
+        """
          Method that setup GENERATED_SAMPLES for doe_algo at configuration time
          Arguments:
              dynamic_inputs (dict): the dynamic input dict to be updated
-         '''
+         """
         # if self.eval_inputs_validity:
         #    if self.eval_inputs_has_changed:
         disc_in = self.get_data_in()
@@ -616,25 +593,25 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.samples_gene_df = self.generate_sample_for_doe(
                 algo_name, algo_options, dspace_df)
 
-            dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                            'dataframe_edition_locked': True,
-                                                            'structuring': True,
-                                                            'unit': None,
-                                                            'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                            'namespace': 'ns_sampling',
-                                                            'default': self.samples_gene_df}})
+            dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
+                                                            self.DATAFRAME_EDITION_LOCKED: True,
+                                                            self.STRUCTURING: True,
+                                                            self.UNIT: None,
+                                                            self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                            self.NAMESPACE: 'ns_sampling',
+                                                            self.DEFAULT: self.samples_gene_df}})
 
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp
         disc_in = self.get_data_in()
         if self.GENERATED_SAMPLES in disc_in:
-            disc_in[self.GENERATED_SAMPLES]['value'] = self.samples_gene_df
+            disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
 
     def generate_sample_for_doe(self, algo_name, algo_options, dspace_df):
-        '''
+        """
         Outputs:
             samples_gene_df (dataframe) : prepared samples for evaluation
-        '''
+        """
         # Dynamic input of default design space
         design_space = self.create_design_space(
             self.selected_inputs, dspace_df)
@@ -644,14 +621,14 @@ class SampleGeneratorWrapper(SoSWrapp):
         return samples_gene_df
 
     def run_doe(self):
-        '''
+        """
         Method that generates the desc_out self.SAMPLES_DF from desc_in self.ALGO, self.ALGO_OPTIONS and self.DESIGN_SPACE
 
         Inputs:
             self.GENERATED_SAMPLES (dataframe) : generated samples from sampling method
         Outputs:
             self.SAMPLES_DF (dataframe) : prepared samples for evaluation
-        '''
+        """
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
@@ -665,9 +642,9 @@ class SampleGeneratorWrapper(SoSWrapp):
         return samples_df
 
     def setup_cp_method(self):
-        '''
+        """
         Method that setup the cp method
-        '''
+        """
         dynamic_inputs = {}
         dynamic_outputs = {}
         # Setup dynamic inputs for CARTESIAN_PRODUCT method: i.e.
@@ -680,50 +657,50 @@ class SampleGeneratorWrapper(SoSWrapp):
         return dynamic_inputs, dynamic_outputs
 
     def setup_dynamic_inputs_for_cp_generator_method(self, dynamic_inputs):
-        '''
+        """
         Method that setup dynamic inputs in case of CARTESIAN_PRODUCT selection: i.e. EVAL_INPUTS_CP
 
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
 
-        '''
-        # TODO [to discuss]: shouldn't the i/o methods belong to the generator for modularity ?
+        """
+        # TODO :  the i/o methods should belong to the generator for modularity
         default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
                                                  'full_name': [''],
                                                  'list_of_values': [[]]})
-        dynamic_inputs.update({self.EVAL_INPUTS_CP: {'type': 'dataframe',
-                                                     'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                                              'full_name': ('string', None, True),
-                                                                              'list_of_values': ('list', None, True)},
-                                                     'dataframe_edition_locked': False,
-                                                     'structuring': True,
-                                                     'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                     'namespace': 'ns_sampling',
-                                                     'default': default_in_eval_input_cp}})
+        dynamic_inputs.update({self.EVAL_INPUTS_CP: {self.TYPE: 'dataframe',
+                                                     self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                                 'full_name': ('string', None, True),
+                                                                                 'list_of_values': ('list', None, True)},
+                                                     self.DATAFRAME_EDITION_LOCKED: False,
+                                                     self.STRUCTURING: True,
+                                                     self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                     self.NAMESPACE: 'ns_sampling',
+                                                     self.DEFAULT: default_in_eval_input_cp}})
 
     def setup_gs(self, dynamic_inputs):
-        '''.
+        """
         Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
         with specificities for the GridSearch sampling method.
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
-        '''
-        #TODO: refactor, comment...
+        """
         disc_in = self.get_data_in()
         self.eval_inputs_cp_has_changed = False
         if self.DESIGN_SPACE in disc_in:
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+            # link doe-like inputs to cp attributes in the framework of GridSearch
             eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
             self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
 
     def setup_eval_inputs_cp_and_generated_samples(self, dynamic_inputs, eval_inputs_cp):
-        '''.
+        """
         Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
             eval_inputs_cp (dataframe): the variables and possible values for the sample
-        '''
+        """
         # 1. Manage update status of EVAL_INPUTS_CP
         # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
         if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
@@ -769,11 +746,11 @@ class SampleGeneratorWrapper(SoSWrapp):
 
 
     def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, dynamic_inputs):
-        '''.
+        """
         Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
-        '''
+        """
         # TODO : why is it more complex as in doe_algo ?
         self.eval_inputs_cp_has_changed = False
         disc_in = self.get_data_in()
@@ -782,11 +759,11 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
 
     def setup_generated_samples_for_cp(self, dynamic_inputs):
-        '''
+        """
         Method that setup GENERATED_SAMPLES for cartesian product at configuration time
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
-        '''
+        """
         if self.eval_inputs_cp_validity:
             if self.eval_inputs_cp_has_changed:
                 self.samples_gene_df = self.generate_sample_for_cp()
@@ -795,25 +772,25 @@ class SampleGeneratorWrapper(SoSWrapp):
             # if self.eval_inputs_cp_has_changed:
             self.samples_gene_df = pd.DataFrame()
 
-        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                        'dataframe_edition_locked': True,
-                                                        'structuring': True,
-                                                        'unit': None,
-                                                        'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                        'namespace': 'ns_sampling',
-                                                        'default': self.samples_gene_df}})
+        dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
+                                                        self.DATAFRAME_EDITION_LOCKED: True,
+                                                        self.STRUCTURING: True,
+                                                        self.UNIT: None,
+                                                        self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                        self.NAMESPACE: 'ns_sampling',
+                                                        self.DEFAULT: self.samples_gene_df}})
 
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp
         disc_in = self.get_data_in()
         if self.GENERATED_SAMPLES in disc_in and self.samples_gene_df is not None:
-            disc_in[self.GENERATED_SAMPLES]['value'] = self.samples_gene_df
+            disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
 
     def generate_sample_for_cp(self):
-        '''
+        """
         Outputs:
             samples_gene_df (dataframe) : prepared samples for evaluation
-        '''
+        """
         dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
             'full_name').T.to_dict('records')[0]
         samples_gene_df = self.sample_generator_cp.generate_samples(
@@ -821,16 +798,16 @@ class SampleGeneratorWrapper(SoSWrapp):
         return samples_gene_df
 
     def reformat_eval_inputs_cp(self, eval_inputs_cp):
-        '''
+        """
         Method that reformat eval_input_cp depending on user's selection
 
         Arguments:
-            eval_inputs_cp (dataframe): 
+            eval_inputs_cp (dataframe):
 
         Returns:
             eval_inputs_cp_filtered (dataframe) :
 
-        '''
+        """
         logic_1 = eval_inputs_cp['selected_input'] == True
         logic_2 = eval_inputs_cp['list_of_values'].isin([[]])
         logic_3 = eval_inputs_cp['full_name'] is None
@@ -842,16 +819,16 @@ class SampleGeneratorWrapper(SoSWrapp):
         return eval_inputs_cp_filtered
 
     def check_eval_inputs_cp(self, eval_inputs_cp_filtered):
-        '''
+        """
         Method that reformat eval_input_cp depending on user's selection
 
         Arguments:
-            eval_inputs_cp (dataframe): 
+            eval_inputs_cp (dataframe):
 
         Returns:
             validity (boolean) :
 
-        '''
+        """
         is_valid = True
         selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
         #n_min = 2
@@ -863,7 +840,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         return is_valid
 
     def run_cp(self):
-        '''
+        """
         Method that generates the desc_out self.SAMPLES_DF from desc_in self.GENERATED_SAMPLES
         Here no modification of the samples: but we can imagine that we may remove raws.
         Maybe we do not need a run method here.
@@ -872,7 +849,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.GENERATED_SAMPLES (dataframe) : generated samples from sampling method
         Outputs:
             self.SAMPLES_DF (dataframe) : prepared samples for evaluation
-        '''
+        """
 
         if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
             generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
