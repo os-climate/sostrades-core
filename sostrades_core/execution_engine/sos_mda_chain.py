@@ -149,7 +149,13 @@ class SoSMDAChain(MDAChain):
             LOGGER.info(f'{self.name} MDA history')
             LOGGER.info('\tIt.\tRes. norm')
 
-        MDAChain._run(self)
+        try:
+            MDAChain._run(self)
+        except Exception as error:
+            # Update data manager status (status 'FAILED' is not propagate correctly due to exception
+            # so we have to force data manager status update in this case
+            self.status = self.STATUS_FAILED
+            raise error
 
         # save residual history
         # TODO: to write in data_out after execution

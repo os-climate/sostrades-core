@@ -119,6 +119,23 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
 
+    def execute(
+            self,
+            input_data,  # type:Optional[Dict[str, Any]]
+    ):  # type: (...) -> Dict[str, Any]
+        '''
+        Overload method in order to catch exception through a try/except
+        '''
+
+        try:
+            self.local_data = super().execute(input_data)
+        except Exception as error:
+            # Update data manager status (status 'FAILED' is not propagate correctly due to exception
+            # so we have to force data manager status update in this case
+            self.status = self.STATUS_FAILED
+            raise error
+        return self.local_data
+
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
                   exec_before_linearize=True):
         """overloads GEMS linearize function
