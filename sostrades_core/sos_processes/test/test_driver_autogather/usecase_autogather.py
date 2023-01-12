@@ -17,6 +17,8 @@ limitations under the License.
 from sostrades_core.study_manager.study_manager import StudyManager
 import pandas as pd
 
+from tools.post_processing.post_processing_factory import PostProcessingFactory
+
 
 class Study(StudyManager):
 
@@ -72,3 +74,13 @@ if '__main__' == __name__:
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     uc_cls.execution_engine.display_treeview_nodes()
     uc_cls.run()
+    ppf = PostProcessingFactory()
+    for disc in uc_cls.execution_engine.root_process.proxy_disciplines:
+        if disc.sos_name.endswith('gather'):
+            filters = ppf.get_post_processing_filters_by_discipline(
+                disc)
+            graph_list = ppf.get_post_processing_by_discipline(
+                disc, filters, as_json=False)
+
+            for graph in graph_list:
+                graph.to_plotly().show()
