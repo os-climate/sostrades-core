@@ -367,7 +367,7 @@ class ScatterTool(SosTool):
             if gather_name not in self.__gather_disciplines:
                 gather_builder = self.ee.factory.add_gather_builder(gather_name)
                 self.ee.ns_manager.add_display_ns_to_builder(
-                    gather_builder, self.driver.sos_name)
+                    gather_builder, self.driver.get_disc_display_name())
                 self.set_father_discipline()
                 gather_disc = gather_builder.build()
                 self.ee.factory.add_discipline(gather_disc)
