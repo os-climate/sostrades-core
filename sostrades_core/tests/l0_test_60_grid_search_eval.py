@@ -24,8 +24,20 @@ import numpy as np
 from pandas.testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from logging import Handler, getLogger, DEBUG
 
 
+class UnitTestHandler(Handler):
+    """
+    Logging handler for UnitTest
+    """
+
+    def __init__(self):
+        Handler.__init__(self)
+        self.msg_list = []
+
+    def emit(self, record):
+        self.msg_list.append(record.msg)
 
 class TestGridSearchEval(unittest.TestCase):
     """
@@ -42,10 +54,17 @@ class TestGridSearchEval(unittest.TestCase):
         self.repo = 'sostrades_core.sos_processes.test'
         self.base_path = 'sostrades_core.sos_wrapping.test_discs'
         self.exec_eng = ExecutionEngine(self.namespace)
+
         self.factory = self.exec_eng.factory
         self.evaluator = 'Eval'
         self.sample_generator = 'SampleGenerator'
         self.proc_name = 'test_grid_search'
+        self.my_handler = UnitTestHandler()
+        eeLOGGER = getLogger('sostrades_core.execution_engine')
+        eeLOGGER.setLevel(DEBUG)
+        eeLOGGER.addHandler(self.my_handler)
+        self.exec_eng.logger.setLevel(DEBUG)
+        self.exec_eng.logger.addHandler(self.my_handler)
 
     def test_01_grid_search_eval(self):
         #FIXME: no asserts.. check values?
@@ -464,7 +483,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         print("done")
 
-    def _test_05_grid_search_multipliers_inputs_for_2_columns(self):
+    def test_05_grid_search_multipliers_inputs_for_2_columns(self):
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
 
@@ -472,6 +491,9 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
+        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
+                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
         print('Study first configure!')
@@ -495,16 +517,16 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.evaluator}.Disc1.x', ['selected_input']] = True
+                        'Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.evaluator}.Disc1.dd_df@values2__MULTIPLIER__', ['selected_input']] = True
+                        'Disc1.dd_df@values2__MULTIPLIER__', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        f'{self.evaluator}.Disc1.dd_df@values1__MULTIPLIER__', ['selected_input']] = True
+                        'Disc1.dd_df@values1__MULTIPLIER__', ['selected_input']] = True
 
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.eval_outputs')
         eval_outputs.loc[eval_outputs['full_name'] ==
-                         f'{self.evaluator}.Disc1.val_sum_dict', ['selected_output']] = True
+                         'Disc1.val_sum_dict', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -514,14 +536,14 @@ class TestGridSearchEval(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         ds = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.design_space')
+            f'{self.study_name}.{self.sample_generator}.design_space')
 
         print(f'Second configure with design_space creation: \n {ds}')
 
         ds['nb_points'] = 3
         dict_values = {
             # GRID SEARCH INPUTS
-            f'{self.study_name}.{self.evaluator}.design_space': ds,
+            f'{self.study_name}.{self.sample_generator}.design_space': ds,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 

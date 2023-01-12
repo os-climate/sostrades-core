@@ -26,7 +26,8 @@ class Study(StudyManager):
 
     def setup_usecase(self):
 
-        self.grid_search = 'GridSearch'
+        self.evaluator = 'Eval'
+        self.sample_generator = 'SampleGenerator'
 
         # dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x', 'GridSearch.Disc1.a'],
         #                        'lower_bnd': [20., 4],
@@ -35,36 +36,40 @@ class Study(StudyManager):
         #                        })
         #
         # eval_inputs = pd.DataFrame({'selected_input': [True, False, True],
-        #                             'full_name': [f'{self.grid_search}.Disc1.a', f'{self.grid_search}.Disc1.b', f'{self.grid_search}.Disc1.x']})
+        #                             'full_name': [f'{self.evaluator}.Disc1.a', f'{self.evaluator}.Disc1.b', f'{self.evaluator}.Disc1.x']})
 
-        dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x'],
+        dspace = pd.DataFrame({'variable': ['Disc1.x'],
                                'lower_bnd': [20.],
                                'upper_bnd': [25.],
                                'nb_points': [3],
                                })
 
         eval_inputs = pd.DataFrame({'selected_input': [True],
-                                    'full_name': [f'{self.grid_search}.Disc1.x']})
+                                    'full_name': ['Disc1.x']})
 
         eval_outputs = pd.DataFrame({'selected_output': [False, True, False],
-                                     'full_name': [f'{self.grid_search}.Disc1.indicator', f'{self.grid_search}.Disc1.y', f'{self.grid_search}.Disc1.y_dict']})
+                                     'full_name': ['Disc1.indicator', 'Disc1.y', 'Disc1.y_dict']})
 
         dict_values = {
+            # CASE CONFIG INPUTS
+            f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
+            f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
+
             # GRID SEARCH INPUTS
-            # f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-            # f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
-            # f'{self.study_name}.{self.grid_search}.design_space': dspace,
+            f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.sample_generator}.design_space': dspace,
 
             # DISC1 INPUTS
-            f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
-            f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
-            f'{self.study_name}.{self.grid_search}.Disc1.d': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.h': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.j': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.g': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.f': 2,
-            f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
+            f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.evaluator}.Disc1.a': 20,
+            f'{self.study_name}.{self.evaluator}.Disc1.d': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.b': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.h': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.j': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.g': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.f': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.x': 3.,
         }
 
         return dict_values
