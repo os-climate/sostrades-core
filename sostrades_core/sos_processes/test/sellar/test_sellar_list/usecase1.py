@@ -20,7 +20,7 @@ from numpy import array
 class Study(StudyManager):
 
     def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine)
+        super().__init__(__file__, execution_engine=execution_engine, run_usecase=False)
 
     def setup_usecase(self):
         """
