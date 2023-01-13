@@ -669,14 +669,13 @@ class ExecutionEngine:
             self.status = self.root_process.status
             self.logger.info('PROCESS EXECUTION %s ENDS.',
                              self.root_process.get_disc_full_name())
+            # -- store local data in datamanager
+            self.update_dm_with_local_data(
+                ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
         except:
             self.status = self.root_process.status
             self.logger.info('PROCESS EXECUTION %s ENDS ON FAILURE.',
                              self.root_process.get_disc_full_name())
-
-        # -- store local data in datamanager
-        self.update_dm_with_local_data(
-            ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
 
         # -- update all proxy statuses
         ex_proc.set_status_from_mdo_discipline()
