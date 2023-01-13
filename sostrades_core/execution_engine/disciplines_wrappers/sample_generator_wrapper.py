@@ -506,6 +506,9 @@ class SampleGeneratorWrapper(SoSWrapp):
         # Dynamic input of default design space
         if 'eval_inputs' in disc_in:
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+            if self.sampling_method == self.GRID_SEARCH:
+                eval_inputs = self.filter_eval_inputs_types_to_float(eval_inputs)
+                disc_in['eval_inputs'][self.VALUE] = eval_inputs
 
             if eval_inputs is not None:
 
@@ -561,6 +564,19 @@ class SampleGeneratorWrapper(SoSWrapp):
                             final_dataframe = final_dataframe.append(
                                 elem_dict, ignore_index=True)
                     disc_in['design_space'][self.VALUE] = final_dataframe
+
+    def filter_eval_inputs_types_to_float(self, eval_inputs):
+        allowed_types = ['float']
+        driverevaluator_ns = self.get_var_full_name('eval_inputs', self.get_data_in()).split('.eval_inputs')[0]
+        to_filter = []
+        for var in eval_inputs['full_name']:
+            var_f_name = '.'.join([driverevaluator_ns, var])
+            if var_f_name in self.dm.data_id_map and self.dm.get_data(var_f_name, self.TYPE) not in allowed_types:
+                to_filter.append(False)
+            else:
+                to_filter.append(True)
+        return eval_inputs[to_filter]
+
 
     def reformat_eval_inputs(self, eval_inputs):
         """

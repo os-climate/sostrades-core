@@ -226,6 +226,14 @@ class SoSWrapp(object):
         pass
 
     @at_proxy
+    def get_var_full_name(self):
+        """
+        Method get_var_full_name delegated to associated ProxyDiscipline object during configuration.
+        """
+        # TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
+        pass
+
+    @at_proxy
     def add_new_shared_ns(self, shared_ns):
         """
         Method add_new_shared_ns delegated to associated ProxyDiscipline object during configuration.
