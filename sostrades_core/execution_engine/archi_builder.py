@@ -483,7 +483,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 # isinstance(self.builder_dict[namespace], list):
                 for builder in activ_builder_dict[namespace]:
                     disc = self.build_value_block(builder)
-
+                    if builder.sos_name.endswith('@archi_node'):
+                        local_ns = self.ee.ns_manager.get_local_namespace(disc)
+                        local_ns.set_display_value(local_ns.value.replace('@archi_node', ''))
                     if namespace not in self.archi_disciplines:
                         self.ee.factory.add_discipline(disc)
                         self.archi_disciplines[namespace] = [disc]
@@ -529,7 +531,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     if not builder.sos_name.endswith('@archi_node'):
                         old_builder_name = builder.sos_name
                         builder.set_disc_name(f'{builder.sos_name}@archi_node')
-                        self.ee.ns_manager.add_display_ns_to_builder(builder, old_builder_name)
+                        # self.ee.ns_manager.add_display_ns_to_builder(builder, old_builder_name)
                 action, args = self.get_action_builder(namespace, archi_df)
 
                 if self.is_builder_activated(namespace, builder_name):
