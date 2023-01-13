@@ -128,6 +128,7 @@ class TreeView:
                 if ns_value not in treenodes.keys():
                     treenode = self.add_treenode(
                         None, ns_value.split(NS_SEP))
+                    treenode.full_namespace = ns_value
             except:
                 pass
 
