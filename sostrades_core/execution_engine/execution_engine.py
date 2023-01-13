@@ -663,8 +663,12 @@ class ExecutionEngine:
         # -- execution with input data from DM
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
-        ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
-            input_data=input_data)
+        try:
+            ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
+                input_data=input_data)
+        except:
+            ex_proc.set_status_from_mdo_discipline()
+            raise
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())
@@ -677,3 +681,4 @@ class ExecutionEngine:
         ex_proc.set_status_from_mdo_discipline()
 
         return ex_proc
+
