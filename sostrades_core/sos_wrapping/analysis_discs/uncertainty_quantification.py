@@ -385,10 +385,14 @@ class UncertaintyQuantification(SoSWrapp):
         self.check_inputs_consistency()
         inputs_dict = self.get_sosdisc_inputs()
         samples_df = inputs_dict['samples_inputs_df']
+        reference_scenario_samples_list=[scen for scen in samples_df['scenario'].values if 'reference' in scen]
+        samples_df=samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
         data_df = inputs_dict['samples_outputs_df']
-        reference_scenario_index = len(data_df) - 1
-        samples_df = samples_df.drop(index=reference_scenario_index)
-        data_df = data_df.drop(index=reference_scenario_index)
+        reference_scenario_outputs_list=[scen for scen in data_df['scenario'].values if 'reference' in scen]
+        data_df=data_df.loc[~data_df['scenario'].isin(reference_scenario_outputs_list)]
+        # reference_scenario_index = len(data_df) - 1
+        # samples_df = samples_df.drop(index=reference_scenario_index)
+        # data_df = data_df.drop(index=reference_scenario_index)
         confidence_interval = inputs_dict['confidence_interval'] / 100
         sample_size = inputs_dict['sample_size']
         input_parameters_names = list(samples_df.columns)[1:]
