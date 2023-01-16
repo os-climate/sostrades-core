@@ -106,6 +106,9 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
             self._check_nan_in_data(self.local_data)
 
+        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
+            self.check_linearize_data_changes=True
+
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
                 self.local_data).items() if key in self.input_grammar.data_names}
