@@ -849,6 +849,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                                   'namespace': self.NS_DOE}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
+                        dynamic_outputs.update({'samples_outputs_df': {'type': 'dict',
+                                                                       'visibility': 'Shared',
+                                                                       'namespace': self.NS_EVAL}})
                 self.add_inputs(dynamic_inputs)
                 self.add_outputs(dynamic_outputs)
             elif builder_mode == self.REGULAR_BUILD:

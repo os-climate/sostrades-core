@@ -73,13 +73,13 @@ class UncertaintyQuantification(SoSWrapp):
             'type': 'dataframe',
             'unit': None,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         'samples_outputs_df': {
             'type': 'dataframe',
             'unit': None,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         'design_space': {
             'type': 'dataframe',
@@ -92,15 +92,13 @@ class UncertaintyQuantification(SoSWrapp):
             },
             'structuring': True,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         'confidence_interval': {
             'type': 'float',
             'unit': '%',
             'default': 90,
             'range': [0.0, 100.0],
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
             'structuring': False,
             'numerical': True,
             'user_level': 2,
@@ -109,8 +107,6 @@ class UncertaintyQuantification(SoSWrapp):
             'type': 'float',
             'unit': None,
             'default': 1000,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
             'structuring': False,
             'numerical': True,
             'user_level': 2,
@@ -126,7 +122,7 @@ class UncertaintyQuantification(SoSWrapp):
             'dataframe_edition_locked': False,
             'structuring': True,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         EVAL_OUTPUTS: {
             'type': 'dataframe',
@@ -139,7 +135,7 @@ class UncertaintyQuantification(SoSWrapp):
             'dataframe_edition_locked': False,
             'structuring': True,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
     }
 
@@ -147,14 +143,10 @@ class UncertaintyQuantification(SoSWrapp):
         'input_parameters_samples_df': {
             'type': 'dataframe',
             'unit': None,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
         },
         'output_interpolated_values_df': {
             'type': 'dataframe',
             'unit': None,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
         },
     }
 
@@ -311,8 +303,6 @@ class UncertaintyQuantification(SoSWrapp):
                                     'most_probable_value': ('float', None, True),
                                 },
                                 'unit': '-',
-                                'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                'namespace': 'ns_uncertainty_quantification',
                                 'default': input_distribution_default,
                                 'structuring': False,
                             }
@@ -326,8 +316,6 @@ class UncertaintyQuantification(SoSWrapp):
                                     'unit': ('string', None, True),
                                 },
                                 'unit': None,
-                                'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                'namespace': 'ns_uncertainty_quantification',
                                 'default': data_details_default,
                                 'structuring': False,
                             }
@@ -341,29 +329,20 @@ class UncertaintyQuantification(SoSWrapp):
                                 data_in['data_details_df'][
                                     'value'
                                 ] = self.get_sosdisc_inputs('data_details_df')
-                                if (
-                                        (
-                                                self.get_sosdisc_inputs('design_space')[
-                                                    'full_name'
+                                design_space_value = self.get_sosdisc_inputs('design_space')
+                                input_distribution_parameters_df_value = self.get_sosdisc_inputs(
+                                    'input_distribution_parameters_df')
+                                if ((design_space_value['variable'].to_list() != in_param)
+                                        or (input_distribution_parameters_df_value['lower_parameter'].to_list()
+                                            != design_space_value['lower_bnd'].to_list())
+                                        or (
+                                                self.get_sosdisc_inputs(
+                                                    'input_distribution_parameters_df'
+                                                )['upper_parameter'].to_list()
+                                                != self.get_sosdisc_inputs('design_space')[
+                                                    'upper_bnd'
                                                 ].to_list()
-                                                != in_param
                                         )
-                                        or (
-                                        self.get_sosdisc_inputs(
-                                            'input_distribution_parameters_df'
-                                        )['lower_parameter'].to_list()
-                                        != self.get_sosdisc_inputs('design_space')[
-                                            'lower_bnd'
-                                        ].to_list()
-                                )
-                                        or (
-                                        self.get_sosdisc_inputs(
-                                            'input_distribution_parameters_df'
-                                        )['upper_parameter'].to_list()
-                                        != self.get_sosdisc_inputs('design_space')[
-                                            'upper_bnd'
-                                        ].to_list()
-                                )
                                 ):
                                     data_in['input_distribution_parameters_df'][
                                         'value'

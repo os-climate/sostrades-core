@@ -495,9 +495,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
         # save doeeval outputs
         self.store_sos_outputs_values(
             {'samples_inputs_df': samples_dataframe})
-
+        self.store_sos_outputs_values(
+            {'samples_outputs_df': dict_output})
         for dynamic_output in self.attributes['eval_out_list']:
-
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.attributes["driver_name"] + ".", 1)[1]}_dict':
                     global_dict_output[dynamic_output]})
