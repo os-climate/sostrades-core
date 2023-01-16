@@ -261,9 +261,14 @@ class TestDataManagerStorage(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             self.ee.configure()
 
-        error_message = f'Trying to add two distinct disciplines with the same local namespace:' \
-                        f' {self.ns_test}.{same_name}'
+        disc1_name = self.mod1_path.rsplit('.',1)[0]
+        disc2_name = self.mod2_path.rsplit('.', 1)[0]
 
+        error_message = f'Trying to add two distinct disciplines with the same local namespace:' \
+                        f' {self.ns_test}.{same_name} , classes are : {disc2_name} and {disc1_name}'
+        # 'Trying to add two distinct disciplines with the same local namespace: '
+        # 'Test.SameName , classes are : sostrades_core.sos_wrapping.test_discs.disc2 '
+        # 'and sostrades_core.sos_wrapping.test_discs.disc1'
         self.assertEqual(str(cm.exception), error_message)
 
     def test_07_crash_with_distinct_disciplines_in_same_local_namespace_for_execution_from_usecase(self):
@@ -274,7 +279,9 @@ class TestDataManagerStorage(unittest.TestCase):
             self.ee.configure()
             pass
         same_name = 'SameName'
+        disc1_name = self.mod1_path.rsplit('.', 1)[0]
+        disc2_name = self.mod2_path.rsplit('.', 1)[0]
         error_message = f'Trying to add two distinct disciplines with the same local namespace:' \
-                        f' {self.ns_test}.{same_name}'
+                        f' {self.ns_test}.{same_name} , classes are : {disc2_name} and {disc1_name}'
 
         self.assertEqual(str(cm.exception), error_message)
