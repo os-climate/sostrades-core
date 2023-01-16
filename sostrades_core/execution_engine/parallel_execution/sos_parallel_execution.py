@@ -212,7 +212,7 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
 
 def get_data_from_worker(worker):
 
-    sub_disc = worker.get_sub_sos_disciplines()
+    sub_disc = worker.get_sub_disciplines()
     all_discs = sub_disc + [worker]
     dm_data = worker.ee.dm.get_io_data_of_disciplines(all_discs)
     status_data = worker.ee.dm.build_disc_status_dict(all_discs)
