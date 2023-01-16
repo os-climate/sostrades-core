@@ -485,7 +485,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     disc = self.build_value_block(builder)
                     if builder.sos_name.endswith('@archi_node'):
                         local_ns = self.ee.ns_manager.get_local_namespace(disc)
-                        local_ns.set_display_value(local_ns.value.replace('@archi_node', ''))
+                        local_ns.set_display_value(local_ns.value.replace(f'.{disc.sos_name}', ''))
                     if namespace not in self.archi_disciplines:
                         self.ee.factory.add_discipline(disc)
                         self.archi_disciplines[namespace] = [disc]
