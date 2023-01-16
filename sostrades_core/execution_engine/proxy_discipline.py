@@ -923,8 +923,6 @@ class ProxyDiscipline(object):
         for var_name in var_name_list:
             if io_type == self.IO_TYPE_IN:
                 del self.inst_desc_in[var_name]
-                if isinstance(var_name, tuple):
-                    var_name = var_name[0]
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_in()))
 
@@ -934,8 +932,6 @@ class ProxyDiscipline(object):
 
             elif io_type == self.IO_TYPE_OUT:
                 del self.inst_desc_out[var_name]
-                if isinstance(var_name, tuple):
-                    var_name = var_name[0]
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
 
