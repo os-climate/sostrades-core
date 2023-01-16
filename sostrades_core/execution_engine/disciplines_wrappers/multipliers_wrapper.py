@@ -104,7 +104,7 @@ class MultipliersWrapper(SoSWrapp):
         if self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             self.eval_disc = None
-            self.eval_ns = self.get_var_full_name(self.EVAL_INPUTS, disc_in).rsplit('.'+self.EVAL_INPUTS, 1)[0]
+            self.eval_ns = self.get_var_full_name(self.EVAL_INPUTS, disc_in).rsplit('.'+self.EVAL_INPUTS, 1)[0] # pylint: disable-msg=E1121
             disc_list = self.dm.get_disciplines_with_name(self.eval_ns)
             if disc_list:
                 self.eval_disc = disc_list[0]
