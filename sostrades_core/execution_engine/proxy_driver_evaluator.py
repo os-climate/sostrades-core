@@ -1330,8 +1330,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 var = tuple([self.ee.dm.get_data(
                     var_f_name, 'type'), None, True])
                 dataframe_descriptor[key] = var
-            else: # otherwise assume it is a float (e.g. multipliers)
+            elif self.MULTIPLIER_PARTICULE in var_f_name:
+                # for multipliers assume it is a float
                 dataframe_descriptor[key] = ('float', None, True)
+            else:
+                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
         dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                          'dataframe_descriptor': dataframe_descriptor,
