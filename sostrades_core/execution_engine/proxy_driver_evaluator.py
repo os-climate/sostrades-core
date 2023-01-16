@@ -133,6 +133,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     # shared namespace of the mono-instance evaluator for eventual couplings
     NS_EVAL = 'ns_eval'
 
+    MULTIPLIER_PARTICULE = '__MULTIPLIER__'
+
+
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
@@ -1211,7 +1214,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             already_set_values = eval_input_new_dm['selected_input'].tolist()
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                    index]
+                    index] # this will filter variables that are not inputs of the subprocess
+                if self.MULTIPLIER_PARTICULE in name:
+                    default_dataframe = default_dataframe.append(pd.DataFrame({ 'selected_input': [already_set_values[index]],
+                                                            'full_name': [name]}))
             self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
                              'value', default_dataframe, check_value=False)
 
@@ -1319,9 +1325,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
         dataframe_descriptor = {}
         for i, key in enumerate(self.selected_inputs):
-            var = tuple([self.ee.dm.get_data(
-                self.eval_in_list[i], 'type'), None, True])
-            dataframe_descriptor[key] = var
+            var_f_name = self.eval_in_list[i]
+            if var_f_name in self.ee.dm.data_id_map:
+                var = tuple([self.ee.dm.get_data(
+                    var_f_name, 'type'), None, True])
+                dataframe_descriptor[key] = var
+            elif self.MULTIPLIER_PARTICULE in var_f_name:
+                # for multipliers assume it is a float
+                dataframe_descriptor[key] = ('float', None, True)
+            else:
+                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
         dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
                                          'dataframe_descriptor': dataframe_descriptor,
@@ -1363,7 +1376,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
 
         for given_io in given_list:
-            if given_io not in default_list:
+            if given_io not in default_list and not self.MULTIPLIER_PARTICULE in given_io:
                 if is_eval_input:
                     error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
                                 f'input of the subprocess with the correct full name (without study name at the ' \

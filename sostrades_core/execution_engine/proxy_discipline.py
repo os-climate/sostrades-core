@@ -2098,7 +2098,15 @@ class ProxyDiscipline(object):
         '''
         Return False if discipline needs to be configured, True if not
         '''
-        return self.get_configure_status() and not self.check_structuring_variables_changes() and self.check_configured_dependency_disciplines()
+        is_proxy_configured = self.get_configure_status() and not self.check_structuring_variables_changes() and self.check_configured_dependency_disciplines()
+
+        # condition of wrapper configuration allows to redefine is_configured method for simple discs at wrapper level
+        if hasattr(self.mdo_discipline_wrapp, 'wrapper') and hasattr(self.mdo_discipline_wrapp.wrapper, 'is_configured'):
+            is_wrapper_configured = self.mdo_discipline_wrapp.wrapper.is_configured()
+        else:
+            is_wrapper_configured = True
+
+        return is_proxy_configured and is_wrapper_configured
 
     def check_configured_dependency_disciplines(self):
         '''

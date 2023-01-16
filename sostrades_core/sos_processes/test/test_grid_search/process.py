@@ -47,4 +47,10 @@ class ProcessBuilder(BaseProcessBuilder):
         sg_builder = self.ee.factory.get_builder_from_module(
             'SampleGenerator', mod_sg)
 
-        return eval_builder + [sg_builder]
+        # multipliers builder
+        mod_mp = 'sostrades_core.execution_engine.disciplines_wrappers.multipliers_wrapper.MultipliersWrapper'
+        mp_builder = self.ee.factory.get_builder_from_module(
+            'Multipliers', mod_mp)
+
+
+        return eval_builder + [sg_builder, mp_builder]
