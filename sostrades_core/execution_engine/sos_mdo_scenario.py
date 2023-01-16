@@ -282,7 +282,9 @@ class SoSMDOScenario(MDOScenario):
         design_space = deepcopy(self.input_design_space)
         l_variables = design_space['variable']
         for var in l_variables:
-            full_name_var = [full_name for full_name in self.get_input_data_names() if var == full_name.split('.')[-1]][0]
+            var = var.split('.')[-1]
+            full_name_var = [full_name for full_name in self.get_input_data_names() if
+                             (var == full_name.split('.')[-1] or var == full_name)][0]
             if full_name_var in self.activated_variables:
                 value_x_opt = list(self.formulation.design_space._current_x.get(
                     full_name_var))
