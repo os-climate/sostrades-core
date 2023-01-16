@@ -82,7 +82,9 @@ class MultipliersWrapper(SoSWrapp):
 
     def __init__(self, sos_name):
         super().__init__(sos_name)
-        self.previous_eval_inputs = None
+        self.eval_ns = None
+        self.eval_disc = None
+        self.vars_with_multiplier = {}
 
     def setup_sos_disciplines(self):
         '''
@@ -92,22 +94,53 @@ class MultipliersWrapper(SoSWrapp):
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        self.add_multipliers(dynamic_inputs, dynamic_outputs, disc_in)
-        self.apply_multipliers(dynamic_inputs, dynamic_outputs, disc_in)
+        self.add_multipliers(dynamic_inputs, disc_in)
+        # self.apply_multipliers(dynamic_inputs, dynamic_outputs, disc_in)
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def add_multipliers(self, dynamic_inputs, dynamic_outputs, disc_in):
+    def add_multipliers(self, dynamic_inputs, disc_in):
         if self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            eval_disc = None
-            eval_ns = self.get_var_full_name(self.EVAL_INPUTS, disc_in).rsplit('.'+self.EVAL_INPUTS, 1)[0]
-            disc_list = self.dm.get_disciplines_with_name(eval_ns)
+            self.eval_disc = None
+            self.eval_ns = self.get_var_full_name(self.EVAL_INPUTS, disc_in).rsplit('.'+self.EVAL_INPUTS, 1)[0]
+            disc_list = self.dm.get_disciplines_with_name(self.eval_ns)
             if disc_list:
-                eval_disc = disc_list[0]
-            if eval_inputs is not None and eval_disc is not None:
-                raise NotImplementedError()
+                self.eval_disc = disc_list[0]
+            if eval_inputs is not None and not eval_inputs.empty and self.eval_disc is not None:
+                is_multiplier = eval_inputs['full_name'].str.contains(self.MULTIPLIER_PARTICULE)
+
+                eval_inputs_base = eval_inputs[~is_multiplier]
+                eval_inputs_mult = eval_inputs[is_multiplier]
+
+                # find all possible multiplier values
+                analyzed_disc = self.eval_disc
+                possible_in_values_full, possible_out_values_full = [], []
+                possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
+                                                                                              possible_in_values_full,
+                                                                                              possible_out_values_full)
+                # Take only unique values in the list
+                possible_in_values = list(set(possible_in_values_full))
+                # these sorts are just for aesthetics
+                possible_in_values.sort()
+
+                selected_mult = []
+                for var in possible_in_values:
+                    row = eval_inputs_mult[eval_inputs_mult['full_name'] == var]
+                    if not row.empty:
+                        selected_mult.append(row['selected_input'].iloc[0] or False)
+                    else:
+                        selected_mult.append(False)
+
+                multipliers_df = pd.DataFrame({'selected_input': selected_mult,
+                                               'full_name': possible_in_values})
+
+                eval_inputs = pd.concat([eval_inputs_base, multipliers_df], ignore_index=True)
+
+                self.dm.set_data(f'{self.eval_ns}.{self.EVAL_INPUTS}',
+                                 'value', eval_inputs, check_value=False)
+
 
         # dynamic_inputs.update({self.EVAL_INPUTS_CP: {self.TYPE: 'dataframe',
         #                                              self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
@@ -204,9 +237,11 @@ class MultipliersWrapper(SoSWrapp):
                                            ]['io_type'] == 'in'
             is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc_in[data_in_key]['editable']
-            is_None = disc_in[data_in_key]['value'] is None
-            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
-                if is_input_multiplier_type and not is_None:
+            value = disc_in[data_in_key]['value']
+            is_none = value is None
+            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable and is_input_multiplier_type:
+                self.vars_with_multiplier[full_id] = copy.deepcopy(value)
+                if not is_none:
                     poss_in_values_list = self.set_multipliers_values(
                         disc, full_id, data_in_key)
                     for val in poss_in_values_list:
@@ -233,3 +268,83 @@ class MultipliersWrapper(SoSWrapp):
                 self.find_possible_values(
                     sub_disc, possible_in_values, possible_out_values)
         return possible_in_values, possible_out_values
+
+    def set_multipliers_values(self, disc, full_id, var_name):
+        poss_in_values_list = []
+        disc_in = disc.get_data_in()
+        # if local var
+        if 'namespace' not in disc_in[var_name]:
+            origin_var_ns = disc_in[var_name]['ns_reference'].value
+        else:
+            origin_var_ns = disc_in[var_name]['namespace']
+
+        disc_id = ('.').join(full_id.split('.')[:-1])
+        ns_disc_id = ('__').join([origin_var_ns, disc_id])
+        if ns_disc_id in disc.ee.ns_manager.all_ns_dict:
+            full_id_ns = ('.').join(
+                [disc.ee.ns_manager.all_ns_dict[ns_disc_id].value, var_name]
+            )
+        else:
+            full_id_ns = full_id
+
+        if disc_in[var_name][self.TYPE] == 'float':
+            multiplier_fullname = f'{full_id_ns}{self.MULTIPLIER_PARTICULE}'.split(
+                self.eval_ns + ".", 1
+            )[1]
+            poss_in_values_list.append(multiplier_fullname)
+
+        else:
+            df_var = disc_in[var_name]['value']
+            # if df_var is dict : transform dict to df
+            if disc_in[var_name][self.TYPE] == 'dict':
+                dict_var = disc_in[var_name]['value']
+                df_var = pd.DataFrame(dict_var, index=list(dict_var.keys()))
+            # check & create float columns list from df
+            columns = df_var.columns
+            float_cols_list = [
+                col_name
+                for col_name in columns
+                if (
+                    df_var[col_name].dtype == 'float'
+                    and not all(df_var[col_name].isna())
+                )
+            ]
+            # if df with float columns
+            if len(float_cols_list) > 0:
+                for col_name in float_cols_list:
+                    col_name_clean = self.clean_var_name(col_name)
+                    multiplier_fullname = f'{full_id_ns}@{col_name_clean}{self.MULTIPLIER_PARTICULE}'.split(
+                        self.eval_ns + ".", 1
+                    )[
+                        1
+                    ]
+                    poss_in_values_list.append(multiplier_fullname)
+                # if df with more than one float column, create multiplier for all
+                # columns also
+                if len(float_cols_list) > 1:
+                    multiplier_fullname = (
+                        f'{full_id_ns}@allcolumns{self.MULTIPLIER_PARTICULE}'.split(
+                            self.eval_ns + ".", 1
+                        )[1]
+                    )
+                    poss_in_values_list.append(multiplier_fullname)
+        return poss_in_values_list
+
+    def clean_var_name(self, var_name):
+        return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
+
+    def run(self):
+        pass
+
+    def is_configured(self):
+        return not self.check_for_multiplier_changes()
+
+    def check_for_multiplier_changes(self):
+        if self.eval_disc is not None:
+            subprocess_inputs = self.eval_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=False)
+            new_vars_with_multiplier = {key: value for key, value in subprocess_inputs.items() if key in self.vars_with_multiplier}
+            # purge attribute without updating it as configuration process is in charge of update
+            self.vars_with_multiplier = {key: value for key, value in self.vars_with_multiplier.items() if key in new_vars_with_multiplier}
+            return not dict_are_equal(self.vars_with_multiplier, new_vars_with_multiplier)
+        else:
+            return False
