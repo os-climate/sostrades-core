@@ -142,7 +142,7 @@ class TestMDALoop(unittest.TestCase):
         if exec_ok:
             raise Exception('Execution worked, and it should not have')
 
-    def _test_03_debug_mode_mda_linearize_data_change(self):
+    def test_03_debug_mode_mda_linearize_data_change(self):
         """
         Checks exception is raised by activating linearize_data_change debug mode in a bugged discipline.
         """
@@ -175,7 +175,7 @@ class TestMDALoop(unittest.TestCase):
             exec_eng.execute()
             exec_ok = True
         except ValueError as ve:
-            assert "Mismatch in .EE.SellarCoupling.y_1.value: 27.8 and 28.3 don't match" in ve.args[0]
+            assert "Mismatch in .EE.SellarCoupling.y_1.value: 2.8 and 3.3 don't match" in ve.args[0]
         except:
             raise Exception('Execution failed, and not for the good reason')
         if exec_ok:

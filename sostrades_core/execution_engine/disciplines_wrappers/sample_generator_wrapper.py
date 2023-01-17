@@ -567,7 +567,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
     def filter_eval_inputs_types_to_float(self, eval_inputs):
         allowed_types = ['float']
-        driverevaluator_ns = self.get_var_full_name('eval_inputs', self.get_data_in()).split('.eval_inputs')[0]
+        driverevaluator_ns = self.get_var_full_name('eval_inputs', self.get_data_in()).split('.eval_inputs')[0] # pylint: disable-msg=E1121
         to_filter = []
         for var in eval_inputs['full_name']:
             var_f_name = '.'.join([driverevaluator_ns, var])
