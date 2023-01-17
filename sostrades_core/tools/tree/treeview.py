@@ -123,12 +123,14 @@ class TreeView:
         # the treenodes
         for namespace in ns_manager.ee.post_processing_manager.namespace_post_processing:
             try:
-                ns_value = ns_manager.get_ns_in_shared_ns_dict(namespace).get_value(
+                ns_list = ns_manager.get_all_namespace_with_name(namespace).get_value(
                 )
-                if ns_value not in treenodes.keys():
-                    treenode = self.add_treenode(
-                        None, ns_value.split(NS_SEP))
-                    treenode.full_namespace = ns_value
+                for ns in ns_list:
+                    ns_value = ns.get_value()
+                    if ns_value not in treenodes.keys():
+                        treenode = self.add_treenode(
+                            None, ns_value.split(NS_SEP))
+                        treenode.full_namespace = ns_value
             except:
                 pass
 
