@@ -70,14 +70,25 @@ class MultipliersWrapper(SoSWrapp):
 
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
-
     DESC_IN = {EVAL_INPUTS:  {SoSWrapp.TYPE: 'dataframe',
                               SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
                                                               'full_name': ('string', None, False)},
                               SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
                               SoSWrapp.STRUCTURING: True,
                               SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-                              SoSWrapp.NAMESPACE: 'ns_sampling'}
+                              SoSWrapp.NAMESPACE: 'ns_sampling'},
+
+               EVAL_INPUTS_CP: {SoSWrapp.TYPE: 'dataframe',
+                                SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                'full_name': ('string', None, True),
+                                                                'list_of_values': ('list', None, True)},
+                                SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+                                SoSWrapp.STRUCTURING: True,
+                                SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                                SoSWrapp.NAMESPACE: 'ns_sampling',
+                                SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_input',
+                                                                        'full_name',
+                                                                        'list_of_values'])}
                }
 
     def __init__(self, sos_name):
@@ -91,16 +102,41 @@ class MultipliersWrapper(SoSWrapp):
         Overload of setup_sos_disciplines to specify the specific dynamic inputs of multipliers disc
         '''
         disc_in = self.get_data_in()
+        # TODO: dm calls or dynamic inputs ?
+
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        self.add_multipliers(dynamic_inputs, disc_in)
-        # self.apply_multipliers(dynamic_inputs, dynamic_outputs, disc_in)
+        self.add_multipliers(disc_in)
+        # self.apply_multipliers(disc_in)
 
-        self.add_inputs(dynamic_inputs)
-        self.add_outputs(dynamic_outputs)
+        # self.add_inputs(dynamic_inputs)
+        # self.add_outputs(dynamic_outputs)
 
-    def add_multipliers(self, dynamic_inputs, disc_in):
+    def apply_multipliers(self, disc_in):
+        update_dm = False
+        if self.EVAL_INPUTS_CP in disc_in:
+            eval_inputs_cp = self.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
+            if eval_inputs_cp is not None and not eval_inputs_cp.empty and self.eval_disc is not None:
+                for idx, row in eval_inputs_cp.iterrows():
+                    var_name = row['full_name']
+                    if self.MULTIPLIER_PARTICULE in var_name:
+                        if '@' in var_name:
+                            new_var_name = var_name.rsplit('@', 1)[0]
+                        else:
+                            new_var_name = var_name.rsplit(self.MULTIPLIER_PARTICULE, 1)[0]
+                        ref_value = self.dm.get_value(f'{self.eval_ns}.{new_var_name}')
+                        new_list_of_values = [self.apply_multiplier(var_name, multiplier_value, ref_value)
+                                              for multiplier_value in row['list_of_values']]
+                        eval_inputs_cp.iloc[idx]['full_name'] = new_var_name
+                        eval_inputs_cp.iloc[idx]['list_of_values'] = new_list_of_values
+                        update_dm = True
+
+            if update_dm:
+                self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS_CP, disc_in),
+                                 'value', eval_inputs_cp, check_value=False)
+
+    def add_multipliers(self, disc_in):
         if self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             self.eval_disc = None
@@ -138,7 +174,7 @@ class MultipliersWrapper(SoSWrapp):
 
                 eval_inputs = pd.concat([eval_inputs_base, multipliers_df], ignore_index=True)
 
-                self.dm.set_data(f'{self.eval_ns}.{self.EVAL_INPUTS}',
+                self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
                                  'value', eval_inputs, check_value=False)
 
 
@@ -348,3 +384,37 @@ class MultipliersWrapper(SoSWrapp):
             return not dict_are_equal(self.vars_with_multiplier, new_vars_with_multiplier)
         else:
             return False
+
+    def apply_multiplier(self, multiplier_name, multiplier_value, var_to_update):
+        # if dict or dataframe to be multiplied
+        if '@' in multiplier_name:
+            var_updated = copy.deepcopy(var_to_update)
+            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[0].split(
+                '@'
+            )[1]
+            if col_name_clean == 'allcolumns':
+                if isinstance(var_to_update, dict):
+                    float_cols_ids_list = [
+                        dict_keys
+                        for dict_keys in var_to_update
+                        if isinstance(var_to_update[dict_keys], float)
+                    ]
+                elif isinstance(var_to_update, pd.DataFrame):
+                    float_cols_ids_list = [
+                        df_keys
+                        for df_keys in var_to_update
+                        if var_to_update[df_keys].dtype == 'float'
+                    ]
+                for key in float_cols_ids_list:
+                    var_to_update[key] = multiplier_value * var_to_update[key]
+            else:
+                keys_clean = [self.clean_var_name(
+                    var) for var in var_to_update.keys()]
+                col_index = keys_clean.index(col_name_clean)
+                col_name = var_to_update.keys()[col_index]
+                var_updated[col_name] = multiplier_value * \
+                    var_to_update[col_name]
+        # if float to be multiplied
+        else:
+            var_updated = multiplier_value * var_to_update
+        return var_updated
