@@ -858,9 +858,12 @@ class UncertaintyQuantification(SoSWrapp):
         #     var_name = None
         var_name = eval_output_name
         if var_name is not None:
-            unit = self.data_details.loc[self.data_details["variable"] == var_name][
-                "unit"
-            ].values[0]
+            try:
+                unit = self.data_details.loc[self.data_details["variable"] == var_name][
+                    "unit"
+                ].values[0]
+            except:
+                unit=None
         hist_y = go.Figure()
         hist_y.add_trace(go.Histogram(x=list(data), nbinsx=100, histnorm='probability'))
 
