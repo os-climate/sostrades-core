@@ -431,9 +431,6 @@ class MultipliersWrapper(SoSWrapp):
     def clean_var_name(self, var_name):
         return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
 
-    def run(self):
-        pass
-
     def is_configured(self):
         return not self.check_for_multiplier_changes()
 
