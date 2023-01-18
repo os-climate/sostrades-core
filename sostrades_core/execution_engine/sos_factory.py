@@ -295,6 +295,27 @@ class SosFactory:
 
     def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, flatten_subprocess=False,
                       display_options=None, ):
+        '''
+
+        Args:
+            sos_name: Name of the driver
+            cls_builder: sub process builder list to evaluate
+            map_name (optional): Map associated to scatter_tool (in multiinstance mode)
+            with_sample_generator (optional): Add a sample generator and associate it to the driver evaluator
+            flatten_subprocess (optional): Create all subprocess disciplines at high level coupling node
+                to allow coupling between all disciplines (useful in multiinstance mode when scenarios
+                are not independant btw each other)
+            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
+                'autogather' : will create an automatic gather discipline which will gather
+                            all cls_builder outputs at driver node
+                'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
+                'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
+                'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
+                                                      Scenarios will be under discipline for the display treeview
+
+        Returns: A driver evaluator with all the parameters
+
+        '''
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
 
