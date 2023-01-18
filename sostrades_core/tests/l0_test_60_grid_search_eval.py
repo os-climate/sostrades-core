@@ -59,6 +59,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.evaluator = 'Eval'
         self.sample_generator = 'SampleGenerator'
         self.proc_name = 'test_grid_search'
+        self.proc_name_mult = 'test_grid_search_mult'
         self.my_handler = UnitTestHandler()
         eeLOGGER = getLogger('sostrades_core.execution_engine')
         eeLOGGER.setLevel(DEBUG)
@@ -485,7 +486,7 @@ class TestGridSearchEval(unittest.TestCase):
 
     def test_05_grid_search_multipliers_inputs_for_2_columns(self):
         sa_builder = self.exec_eng.factory.get_builder_from_process(
-            self.repo, self.proc_name)
+            self.repo, self.proc_name_mult)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             sa_builder)
@@ -500,10 +501,10 @@ class TestGridSearchEval(unittest.TestCase):
 
         dict_values = {
             # DISC1 INPUTS
-            f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',
-            f'{self.study_name}.{self.evaluator}.Disc1.a': 20,
-            f'{self.study_name}.{self.evaluator}.Disc1.b': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.name': 'A1',
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.a': 20,
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.b': 2,
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
         }
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -517,16 +518,16 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        'Disc1.x', ['selected_input']] = True
+                        'subprocess.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        'Disc1.dd_df@values2__MULTIPLIER__', ['selected_input']] = True
+                        'subprocess.Disc1.dd_df@values2__MULTIPLIER__', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
-                        'Disc1.dd_df@values1__MULTIPLIER__', ['selected_input']] = True
+                        'subprocess.Disc1.dd_df@values1__MULTIPLIER__', ['selected_input']] = True
 
         eval_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.eval_outputs')
         eval_outputs.loc[eval_outputs['full_name'] ==
-                         'Disc1.val_sum_dict', ['selected_output']] = True
+                         'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -553,24 +554,26 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.evaluator}')[0]
 
         dd_df = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.Disc1.dd_df')
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df')
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
         samples_inputs_df = grid_search_disc_output['samples_inputs_df']
-        samples_outputs_df = grid_search_disc_output['samples_outputs_df']
-        val_sum_dict_dict = grid_search_disc_output['GridSearch.Disc1.val_sum_dict_dict']
+        # samples_outputs_df = grid_search_disc_output['samples_outputs_df']
+        val_sum_dict_dict = grid_search_disc_output['subprocess.Disc1.val_sum_dict_dict']
         ds = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.design_space')
+            f'{self.study_name}.{self.sample_generator}.design_space')
 
         print(f'Study executed from the design_space: \n {ds}')
         print(f'Study executed with the samples: \n {samples_inputs_df}')
-        print(f'Outputs used for graphs: \n {samples_outputs_df}')
+        # print(f'Outputs used for graphs: \n {samples_outputs_df}')
         print(f'Study generated the output: y_dict \n {val_sum_dict_dict}')
 
         print(f'Check scenario {samples_inputs_df.loc[10][0]}')
-        val2_multi = samples_inputs_df.loc[10][2]
-        val1_multi = samples_inputs_df.loc[10][3]
-        result_val1 = samples_outputs_df.loc[10][1]
-        result_val2 = samples_outputs_df.loc[10][2]
+        val2_multi = samples_inputs_df.loc[10][3]
+        val1_multi = samples_inputs_df.loc[10][2]
+        result_val1 = val_sum_dict_dict['scenario_11']['values1']
+        result_val2 = val_sum_dict_dict['scenario_11']['values2']
+        # result_val1 = samples_outputs_df.loc[10][1]
+        # result_val2 = samples_outputs_df.loc[10][2]
 
         dd_df['values1'] = dd_df['values1'] * (val1_multi / 100)
         dd_df['values2'] = dd_df['values2'] * (val2_multi / 100)

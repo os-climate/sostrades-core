@@ -21,7 +21,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_grid_search',
+        'label': 'sostrades_core.sos_processes.test.test_grid_search_mult',
         'description': '',
         'category': '',
         'version': '',
@@ -43,13 +43,13 @@ class ProcessBuilder(BaseProcessBuilder):
         sg_builder = self.ee.factory.get_builder_from_module(
             'SampleGenerator', mod_sg)
 
-        # # multipliers builder
-        # mod_mp = 'sostrades_core.execution_engine.disciplines_wrappers.multipliers_wrapper.MultipliersWrapper'
-        # mp_builder = self.ee.factory.get_builder_from_module(
-        #     'Multipliers', mod_mp)
+        # multipliers builder
+        mod_mp = 'sostrades_core.execution_engine.disciplines_wrappers.multipliers_wrapper.MultipliersWrapper'
+        mp_builder = self.ee.factory.get_builder_from_module(
+            'Multipliers', mod_mp)
 
         # evaluator builder
         eval_builder = self.ee.factory.create_driver(
-            'Eval', [disc1_builder], flatten_subprocess=False)
+            'Eval', [mp_builder, disc1_builder], flatten_subprocess=False)
 
         return eval_builder + [sg_builder]
