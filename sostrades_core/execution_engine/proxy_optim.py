@@ -307,25 +307,17 @@ class ProxyOptim(ProxyDriverEvaluator):
                             self._data_in[key]['value']=values_dict
         self.set_edition_inputs_if_eval_mode()
 
-    def build(self):
+    def prepare_build(self):
         """
-        build of subdisciplines
+        To be overload by subclasses with special builds.
         """
-        # build and set sos_disciplines (if any)
-        if len(self.cls_builder) != 0:
-            old_current_discipline = self.ee.factory.current_discipline
-            self.ee.factory.current_discipline = self
-            # get the list of builders
-            builder_list = self.cls_builder
-            if not isinstance(self.cls_builder, list):
-                builder_list = [self.cls_builder]
-            # build the disciplines if not already built
-            for builder in builder_list:
-                disc = builder.build()
-                if disc not in self.proxy_disciplines:
-                    self.ee.factory.add_discipline(disc)
 
-            self.ee.factory.current_discipline = old_current_discipline
+        if not isinstance(self.cls_builder, list):
+            builder_list = [self.cls_builder]
+        else:
+            builder_list = self.cls_builder
+
+        return builder_list
 
     def configure(self):
         """
@@ -504,11 +496,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         optimization scenario
         """
         from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-        list_coupl = self.ee.root_process.sos_disciplines
-        for i in list_coupl:
-            if isinstance(i, ProxyCoupling):
-                if id(self) == id(i.proxy_disciplines[0]):
-                    scenario_name = i.sos_name
+        list_coupl = self.ee.root_process.proxy_disciplines
+        scenario_name = self.father_executor.sos_name
         for j in full_id_l:
             if scenario_name + '.' in j:
                 full_id = j
