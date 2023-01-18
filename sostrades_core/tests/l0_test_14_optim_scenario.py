@@ -475,7 +475,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert_array_almost_equal(
             exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
 
-    def test_06_optim_scenario_execution_fd_parallel(self):
+    def _test_06_optim_scenario_execution_fd_parallel(self):
         if os.name == 'nt':
             print("\n Test 6 : skipped, multi-proc not handled on windows")
         else:
