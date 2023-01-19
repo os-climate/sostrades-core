@@ -506,9 +506,9 @@ class SampleGeneratorWrapper(SoSWrapp):
         # Dynamic input of default design space
         if 'eval_inputs' in disc_in:
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
-            if self.sampling_method == self.GRID_SEARCH:
-                eval_inputs = self.filter_eval_inputs_types_to_float(eval_inputs)
-                disc_in['eval_inputs'][self.VALUE] = eval_inputs
+            # if self.sampling_method == self.GRID_SEARCH:
+            #     eval_inputs = self.filter_eval_inputs_types_to_float(eval_inputs)
+            #     disc_in['eval_inputs'][self.VALUE] = eval_inputs
 
             if eval_inputs is not None:
 

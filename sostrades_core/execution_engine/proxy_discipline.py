@@ -2394,3 +2394,6 @@ class ProxyDiscipline(object):
 
     def get_inst_desc_in(self):
         return self.inst_desc_in
+
+    def get_father_executor(self):
+        return self.father_executor

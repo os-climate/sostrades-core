@@ -213,6 +213,7 @@ class FunctionManagerDisc(SoSWrapp):
         dynamic_outputs[self.OBJECTIVE_LAGR] = {'type': 'array', 'visibility': 'Shared',
                                                     'namespace': 'ns_optim'}
         self.iter, self.last_len_database = 0, 0
+        self.old_optim_output_df = pd.DataFrame()
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
         self.inst_desc_in = dynamic_inputs
@@ -326,16 +327,16 @@ class FunctionManagerDisc(SoSWrapp):
                                     for key, value in dict_out.items()})
         full_end_df.insert(loc=0, column='iteration',
                            value=[self.iter - 1])
+
         if self.iter <= 2:
             dict_out[self.OPTIM_OUTPUT_DF] = full_end_df
         elif self.iter > 2:
-            old_optim_output_df = self.get_sosdisc_outputs(
-                self.OPTIM_OUTPUT_DF)
             # if skip:
             #     dict_out[self.OPTIM_OUTPUT_DF] = old_optim_output_df
             # else:
             dict_out[self.OPTIM_OUTPUT_DF] = pd.concat([
-                old_optim_output_df, full_end_df])
+                self.old_optim_output_df, full_end_df])
+        self.old_optim_output_df = dict_out[self.OPTIM_OUTPUT_DF]
         self.store_sos_outputs_values(dict_out)
 
     def compute_sos_jacobian(self):

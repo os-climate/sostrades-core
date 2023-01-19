@@ -30,25 +30,18 @@ class Study(StudyManager):
         self.sample_generator = 'SampleGenerator'
 
         # dspace = pd.DataFrame({'variable': ['GridSearch.Disc1.x', 'GridSearch.Disc1.a'],
-        #                        'lower_bnd': [20., 4],
-        #                        'upper_bnd': [25., 6],
-        #                        'nb_points': [6, 3],
-        #                        })
-        #
-        # eval_inputs = pd.DataFrame({'selected_input': [True, False, True],
-        #                             'full_name': [f'{self.evaluator}.Disc1.a', f'{self.evaluator}.Disc1.b', f'{self.evaluator}.Disc1.x']})
 
-        dspace = pd.DataFrame({'variable': ['Disc1.x'],
+        dspace = pd.DataFrame({'variable': ['subprocess.Disc1.x'],
                                'lower_bnd': [20.],
                                'upper_bnd': [25.],
                                'nb_points': [3],
                                })
 
         eval_inputs = pd.DataFrame({'selected_input': [True],
-                                    'full_name': ['Disc1.x']})
+                                    'full_name': ['subprocess.Disc1.x']})
 
         eval_outputs = pd.DataFrame({'selected_output': [False, True],
-                                     'full_name': ['Disc1.indicator', 'Disc1.y']})
+                                     'full_name': ['subprocess.Disc1.indicator', 'subprocess.Disc1.y']})
 
         dict_values = {
             # CASE CONFIG INPUTS
@@ -61,15 +54,10 @@ class Study(StudyManager):
             f'{self.study_name}.{self.sample_generator}.design_space': dspace,
 
             # DISC1 INPUTS
-            f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',
-            f'{self.study_name}.{self.evaluator}.Disc1.a': 20,
-            f'{self.study_name}.{self.evaluator}.Disc1.d': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.b': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.h': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.j': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.g': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.f': 2,
-            f'{self.study_name}.{self.evaluator}.Disc1.x': 3.,
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.name': 'A1',
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.a': 20,
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.b': 2,
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
         }
 
         return dict_values

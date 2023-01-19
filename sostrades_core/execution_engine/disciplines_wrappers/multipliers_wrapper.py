@@ -71,44 +71,119 @@ class MultipliersWrapper(SoSWrapp):
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    DESC_IN = {EVAL_INPUTS:  {SoSWrapp.TYPE: 'dataframe',
-                              SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-                                                              'full_name': ('string', None, False)},
-                              SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
-                              SoSWrapp.STRUCTURING: True,
-                              SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-                              SoSWrapp.NAMESPACE: 'ns_sampling'}
-               }
-
     def __init__(self, sos_name):
         super().__init__(sos_name)
         self.eval_ns = None
         self.eval_disc = None
-        self.vars_with_multiplier = {}
+        self.vars_with_multiplier = {} # variables in the subprocess that accept a multiplier
+        self.multiplier_variables = {} # dict containing io names for runtime
 
     def setup_sos_disciplines(self):
         '''
         Overload of setup_sos_disciplines to specify the specific dynamic inputs of multipliers disc
         '''
         disc_in = self.get_data_in()
+        # TODO: dm calls or dynamic inputs ?
+
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        self.add_multipliers(dynamic_inputs, disc_in)
-        # self.apply_multipliers(dynamic_inputs, dynamic_outputs, disc_in)
+        self.setup_multipliers(dynamic_inputs)
+        self.add_multipliers(disc_in)
+        self.add_dynamic_io_for_selected_multipliers(disc_in, dynamic_inputs, dynamic_outputs)
+
+        # self.apply_multipliers(disc_in)
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def add_multipliers(self, dynamic_inputs, disc_in):
+    def add_dynamic_io_for_selected_multipliers(self, disc_in, dynamic_inputs, dynamic_outputs):
+        self.multiplier_variables = {}
         if self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            self.eval_disc = None
-            self.eval_ns = self.get_var_full_name(self.EVAL_INPUTS, disc_in).rsplit('.'+self.EVAL_INPUTS, 1)[0] # pylint: disable-msg=E1121
-            disc_list = self.dm.get_disciplines_with_name(self.eval_ns)
-            if disc_list:
-                self.eval_disc = disc_list[0]
-            if eval_inputs is not None and not eval_inputs.empty and self.eval_disc is not None:
+            if eval_inputs is not None and not eval_inputs.empty:
+                for idx, row in eval_inputs.iterrows():
+                    var_name = row['full_name']
+                    selected = row['selected_input']
+                    if selected and self.MULTIPLIER_PARTICULE in var_name:
+                        if '@' in var_name:
+                            orig_var_name = var_name.rsplit('@', 1)[0]
+                        else:
+                            orig_var_name = var_name.rsplit(self.MULTIPLIER_PARTICULE, 1)[0]
+                        orig_var_f_name = f'{self.eval_ns}.{orig_var_name}'
+                        # add the multiplier to the input
+                        dynamic_inputs.update({ var_name: {self.TYPE: 'float',
+                                                           self.VISIBILITY:  self.SHARED_VISIBILITY,
+                                                           self.NAMESPACE: self.DISC_SHARED_NS,
+                                                           self.UNIT: '%',
+                                                           self.DEFAULT: 100}})
+                        self.multiplier_variables.update({var_name:orig_var_name})
+                        # add the original variable to the output
+                        self.dm.set_data(orig_var_f_name, self.VISIBILITY, self.SHARED_VISIBILITY)
+                        data_dict = copy.copy(self.dm.get_data(orig_var_f_name))
+                        dynamic_inputs.update({orig_var_name: {self.TYPE: data_dict[self.TYPE],
+                                                                self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                                self.NAMESPACE: self.DISC_SHARED_NS}})
+
+                        dynamic_outputs.update({orig_var_name: {self.TYPE: data_dict[self.TYPE],
+                                                                self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                                self.NAMESPACE: self.DISC_SHARED_NS}})
+
+    def apply_multipliers(self, disc_in):
+        update_dm = False
+        if self.EVAL_INPUTS_CP in disc_in:
+            eval_inputs_cp = self.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
+            if eval_inputs_cp is not None and not eval_inputs_cp.empty and self.eval_disc is not None:
+                for idx, row in eval_inputs_cp.iterrows():
+                    var_name = row['full_name']
+                    if self.MULTIPLIER_PARTICULE in var_name:
+                        if '@' in var_name:
+                            new_var_name = var_name.rsplit('@', 1)[0]
+                        else:
+                            new_var_name = var_name.rsplit(self.MULTIPLIER_PARTICULE, 1)[0]
+                        ref_value = self.dm.get_value(f'{self.eval_ns}.{new_var_name}')
+                        new_list_of_values = [self.apply_multiplier(var_name, multiplier_value, ref_value)
+                                              for multiplier_value in row['list_of_values']]
+                        eval_inputs_cp.iloc[idx]['full_name'] = new_var_name
+                        eval_inputs_cp.iloc[idx]['list_of_values'] = new_list_of_values
+                        update_dm = True
+
+            if update_dm:
+                self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS_CP, disc_in),
+                                 'value', eval_inputs_cp, check_value=False)
+
+    def find_eval_disc(self, disc):
+        fe = disc.get_father_executor()
+        if isinstance(fe, ProxyDriverEvaluator):
+            return fe
+        else:
+            return self.find_eval_disc(fe)
+
+    def setup_multipliers(self, dynamic_inputs):
+        self.eval_disc = self.find_eval_disc(self)
+        self.eval_ns = self.eval_disc.get_disc_full_name()
+        eval_disc_in = self.eval_disc.get_data_in()
+        # self.add_disc_to_config_dependency_disciplines(self.eval_disc) # creates a cycle...
+        # for disc in self.get_father_executor().proxy_disciplines:
+        #     if not hasattr(disc.mdo_discipline_wrapp, 'wrapper') \
+        #        or not isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+        #         self.add_disc_to_config_dependency_disciplines(disc)
+
+        dynamic_inputs.update({self.EVAL_INPUTS:  {self.TYPE: 'dataframe',
+                                                   self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                                  'full_name': ('string', None, False)},
+                                                   self.DATAFRAME_EDITION_LOCKED: False,
+                                                   self.STRUCTURING: True,
+                                                   self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                   self.NAMESPACE: self.DISC_SHARED_NS}
+                          })
+        # self.add_inputs(dynamic_inputs)
+
+    def add_multipliers(self, disc_in):
+
+        if self.EVAL_INPUTS in disc_in:
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            if eval_inputs is not None and not eval_inputs.empty:
                 is_multiplier = eval_inputs['full_name'].str.contains(self.MULTIPLIER_PARTICULE)
 
                 eval_inputs_base = eval_inputs[~is_multiplier]
@@ -138,83 +213,8 @@ class MultipliersWrapper(SoSWrapp):
 
                 eval_inputs = pd.concat([eval_inputs_base, multipliers_df], ignore_index=True)
 
-                self.dm.set_data(f'{self.eval_ns}.{self.EVAL_INPUTS}',
+                self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
                                  'value', eval_inputs, check_value=False)
-
-
-        # dynamic_inputs.update({self.EVAL_INPUTS_CP: {self.TYPE: 'dataframe',
-        #                                              self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-        #                                                                          'full_name': ('string', None, True),
-        #                                                                          'list_of_values': ('list', None, True)},
-        #                                              self.DATAFRAME_EDITION_LOCKED: False,
-        #                                              self.STRUCTURING: True,
-        #                                              self.VISIBILITY: self.SHARED_VISIBILITY,
-        #                                              self.NAMESPACE: 'ns_sampling',
-        #                                              self.DEFAULT: default_in_eval_input_cp}})
-    #
-    #
-    # def set_eval_possible_values(self):
-    #     '''
-    #         Once all disciplines have been run through,
-    #         set the possible values for eval_inputs and eval_outputs in the DM
-    #     '''
-    #     analyzed_disc = self.proxy_disciplines[0]
-    #     possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-    #         analyzed_disc)
-    #     possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
-    #                                                                                   possible_in_values_full,
-    #                                                                                   possible_out_values_full)
-    #
-    #     # Take only unique values in the list
-    #     possible_in_values = list(set(possible_in_values_full))
-    #     possible_out_values = list(set(possible_out_values_full))
-    #
-    #     # these sorts are just for aesthetics
-    #     possible_in_values.sort()
-    #     possible_out_values.sort()
-    #
-    #     default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-    #                                          'full_name': possible_in_values})
-    #     default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-    #                                           'full_name': possible_out_values})
-    #
-    #     eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
-    #     eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
-    #     my_ns_eval_path = self._get_disc_shared_ns_value()
-    #
-    #     if eval_input_new_dm is None:
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-    #                          'value', default_in_dataframe, check_value=False)
-    #     # check if the eval_inputs need to be updated after a subprocess
-    #     # configure
-    #     elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-    #         self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-    #                            is_eval_input=True)
-    #         default_dataframe = copy.deepcopy(default_in_dataframe)
-    #         already_set_names = eval_input_new_dm['full_name'].tolist()
-    #         already_set_values = eval_input_new_dm['selected_input'].tolist()
-    #         for index, name in enumerate(already_set_names):
-    #             default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-    #                 index]
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-    #                          'value', default_dataframe, check_value=False)
-    #
-    #     if eval_output_new_dm is None:
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-    #                          'value', default_out_dataframe, check_value=False)
-    #     # check if the eval_inputs need to be updated after a subprocess
-    #     # configure
-    #     elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-    #         self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
-    #                            is_eval_input=False)
-    #         default_dataframe = copy.deepcopy(default_out_dataframe)
-    #         already_set_names = eval_output_new_dm['full_name'].tolist()
-    #         already_set_values = eval_output_new_dm['selected_output'].tolist()
-    #         for index, name in enumerate(already_set_names):
-    #             default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
-    #                 index]
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-    #                          'value', default_dataframe, check_value=False)
 
     def fill_possible_values(self, disc):
         '''
@@ -225,27 +225,31 @@ class MultipliersWrapper(SoSWrapp):
         '''
         poss_in_values_full = []
         poss_out_values_full = []
-        disc_in = disc.get_data_in()
-        for data_in_key in disc_in.keys():
-            is_structuring = disc_in[data_in_key].get(
-                self.STRUCTURING, False)
-            in_coupling_numerical = data_in_key in list(
-                ProxyCoupling.DESC_IN.keys())
-            full_id = disc.get_var_full_name(
-                data_in_key, disc_in)
-            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
-            is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-            is_editable = disc_in[data_in_key]['editable']
-            value = disc_in[data_in_key]['value']
-            is_none = value is None
-            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable and is_input_multiplier_type:
-                self.vars_with_multiplier[full_id] = copy.deepcopy(value)
-                if not is_none:
-                    poss_in_values_list = self.set_multipliers_values(
-                        disc, full_id, data_in_key)
-                    for val in poss_in_values_list:
-                        poss_in_values_full.append(val)
+        if hasattr(disc.mdo_discipline_wrapp, 'wrapper') and \
+           isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+            pass
+        else:
+            disc_in = disc.get_data_in()
+            for data_in_key in disc_in.keys():
+                is_structuring = disc_in[data_in_key].get(
+                    self.STRUCTURING, False)
+                in_coupling_numerical = data_in_key in list(
+                    ProxyCoupling.DESC_IN.keys())
+                full_id = disc.get_var_full_name(
+                    data_in_key, disc_in)
+                is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                                               ]['io_type'] == 'in'
+                is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+                is_editable = disc_in[data_in_key]['editable']
+                value = disc_in[data_in_key]['value']
+                is_none = value is None
+                if is_in_type and not in_coupling_numerical and not is_structuring and is_editable and is_input_multiplier_type:
+                    self.vars_with_multiplier[full_id] = copy.deepcopy(value)
+                    if not is_none:
+                        poss_in_values_list = self.set_multipliers_values(
+                            disc, full_id, data_in_key)
+                        for val in poss_in_values_list:
+                            poss_in_values_full.append(val)
         return poss_in_values_full, poss_out_values_full
 
     # def find_possible_values(self, disc, possible_in_values, possible_out_values):
@@ -333,18 +337,62 @@ class MultipliersWrapper(SoSWrapp):
     def clean_var_name(self, var_name):
         return re.sub(r"[^a-zA-Z0-9]", "_", var_name)
 
-    def run(self):
-        pass
-
     def is_configured(self):
         return not self.check_for_multiplier_changes()
 
     def check_for_multiplier_changes(self):
         if self.eval_disc is not None:
-            subprocess_inputs = self.eval_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=False)
-            new_vars_with_multiplier = {key: value for key, value in subprocess_inputs.items() if key in self.vars_with_multiplier}
-            # purge attribute without updating it as configuration process is in charge of update
-            self.vars_with_multiplier = {key: value for key, value in self.vars_with_multiplier.items() if key in new_vars_with_multiplier}
+            new_vars_with_multiplier = {}
+            for key in self.vars_with_multiplier:
+                if key in self.dm.data_id_map:
+                    new_vars_with_multiplier[key] = self.dm.get_value(key)
+                else:
+                    del self.vars_with_multiplier[key]
+            # purge entries without updating values of existent ones as configuration process is in charge of update
             return not dict_are_equal(self.vars_with_multiplier, new_vars_with_multiplier)
         else:
             return False
+
+    def apply_multiplier(self, multiplier_name, multiplier_value, var_to_update):
+        # if dict or dataframe to be multiplied
+        if '@' in multiplier_name:
+            var_updated = copy.deepcopy(var_to_update)
+            col_name_clean = multiplier_name.split(self.MULTIPLIER_PARTICULE)[0].split(
+                '@'
+            )[1]
+            if col_name_clean == 'allcolumns':
+                if isinstance(var_to_update, dict):
+                    float_cols_ids_list = [
+                        dict_keys
+                        for dict_keys in var_to_update
+                        if isinstance(var_to_update[dict_keys], float)
+                    ]
+                elif isinstance(var_to_update, pd.DataFrame):
+                    float_cols_ids_list = [
+                        df_keys
+                        for df_keys in var_to_update
+                        if var_to_update[df_keys].dtype == 'float'
+                    ]
+                for key in float_cols_ids_list:
+                    var_updated[key] = multiplier_value * var_to_update[key]
+            else:
+                keys_clean = [self.clean_var_name(
+                    var) for var in var_to_update.keys()]
+                col_index = keys_clean.index(col_name_clean)
+                col_name = var_to_update.keys()[col_index]
+                var_updated[col_name] = multiplier_value * \
+                    var_to_update[col_name]
+        # if float to be multiplied
+        else:
+            var_updated = multiplier_value * var_to_update
+        return var_updated
+
+    def run(self):
+        outputs = dict.fromkeys(set(self.multiplier_variables.values()))
+        for orig_var in outputs:
+            outputs[orig_var] = self.get_sosdisc_inputs(orig_var)
+        for multiplier_var, orig_var in self.multiplier_variables.items():
+            outputs[orig_var] = self.apply_multiplier(multiplier_name= multiplier_var,
+                                                      multiplier_value= self.get_sosdisc_inputs(multiplier_var),
+                                                      var_to_update= outputs[orig_var])
+        self.store_sos_outputs_values(outputs)

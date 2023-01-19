@@ -240,11 +240,24 @@ class SoSWrapp(object):
         pass
 
     @at_proxy
+    def get_father_executor(self):
+        """
+        Method get_father_executor delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def add_disc_to_config_dependency_disciplines(self):
+        """
+        Method add_disc_to_config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
     def get_var_full_name(self):
         """
         Method get_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """
-        # TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
         pass
 
     @at_proxy
