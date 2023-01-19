@@ -30,9 +30,9 @@ class Study(StudyManager):
         Usecase for lhs DoE and Eval on x variable of Sellar Problem
         """
 
-        coupling_name = 'SellarCoupling'
+        disc1_name = 'Disc1'
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': [f'{coupling_name}.x', f'{coupling_name}.y_1'],
+        dspace_dict = {'variable': [f'subprocess.{disc1_name}.a', 'x'],
 
                        'lower_bnd': [0., 0.],
                        'upper_bnd': [10., 10.],
@@ -40,38 +40,33 @@ class Study(StudyManager):
                        }
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x_z = {'selected_input': [False, True, True, False, False],
-                               'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x',
-                                             f'{coupling_name}.y_1',
-                                             f'{coupling_name}.y_2',
-                                             f'{coupling_name}.z']}
+        input_selection_x_z = {'selected_input': [True, False, True, False],
+                               'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
+                                             f'x',
+                                             f'subprocess.Disc2.power']}
         input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
-        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2',
-                                                    f'{coupling_name}.obj',
-                                                    f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
+        output_selection_obj_y1_y2 = {'selected_output': [True, True, False],
+                                      'full_name': [f'subprocess.{disc1_name}.indicator', 'z', 'y']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
         disc_dict = {}
         # DoE inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
-        n_samples = 65
+        n_samples = 5
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
-        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "fullfact"
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
         disc_dict[f'{ns}.Eval.design_space'] = dspace
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
 
-        # Sellar inputs
-        local_dv = 10.
-        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = [1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = [1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = [1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = [1., 1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.x'] = 10.
+        disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.a'] = 5.
+        disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.b'] = 2.
+        disc_dict[f'{ns}.Eval.subprocess.Disc2.constant'] = 3.1416
+        disc_dict[f'{ns}.Eval.subprocess.Disc2.power'] = 2
 
         return [disc_dict]
 

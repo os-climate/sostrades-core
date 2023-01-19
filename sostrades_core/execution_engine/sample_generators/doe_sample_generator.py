@@ -384,6 +384,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                       any variable of dim m is an array of dim m in a single column of the matrix
         """
         selected_inputs = list(design_space.keys())
+
         samples_df = pd.DataFrame(data=samples,
                                   columns=selected_inputs)
+        for input_name in selected_inputs:
+            type_input = design_space.get_type(input_name)[0]
+            if type_input in ['int', 'float']:
+                samples_df[input_name] = samples_df[input_name].astype(type_input)
         return samples_df

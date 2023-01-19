@@ -467,16 +467,24 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
         # construction of a dataframe of generated samples
         # columns are selected inputs
-        columns = ['scenario']
-        columns.extend(self.attributes['selected_inputs'])
+
         samples_all_row = []
+        out_samples_all_row = []
         for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]
+            out_samples_row = [scenario]
             for generated_input in scenario_sample.values():
                 samples_row.append(generated_input)
+            for generated_output in dict_output[scenario].values():
+                out_samples_row.append(generated_output)
             samples_all_row.append(samples_row)
-        samples_dataframe = pd.DataFrame(samples_all_row, columns=columns)
-
+            out_samples_all_row.append(out_samples_row)
+        input_columns = ['scenario']
+        input_columns.extend(self.attributes['selected_inputs'])
+        samples_input_df = pd.DataFrame(samples_all_row, columns=input_columns)
+        output_columns = ['scenario']
+        output_columns.extend(self.attributes['selected_outputs'])
+        samples_output_df = pd.DataFrame(out_samples_all_row, columns=output_columns)
         # construction of a dictionary of dynamic outputs
         # The key is the output name and the value a dictionary of results
         # with scenarii as keys
@@ -494,9 +502,10 @@ class DriverEvaluatorWrapper(SoSWrapp):
             subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
         self.store_sos_outputs_values(
-            {'samples_inputs_df': samples_dataframe})
+            {'samples_inputs_df': samples_input_df})
+
         self.store_sos_outputs_values(
-            {'samples_outputs_df': dict_output})
+            {'samples_outputs_df': samples_output_df})
         for dynamic_output in self.attributes['eval_out_list']:
             self.store_sos_outputs_values({
                 f'{dynamic_output.split(self.attributes["driver_name"] + ".", 1)[1]}_dict':

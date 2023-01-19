@@ -35,10 +35,8 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
 
         # Select the nested subprocess
-        repo = 'sostrades_core.sos_processes.test.sellar'
-        sub_proc = 'test_sellar_coupling'
-        coupling_builder = self.ee.factory.get_builder_from_process(
-            repo=repo, mod_id=sub_proc)
+        cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
+                                                            mod_id='test_disc1_disc2_coupling')
 
         uq_name = 'UncertaintyQuantification'
 
@@ -46,7 +44,7 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
 
         eval_driver = self.ee.factory.create_driver(
-            'Eval', coupling_builder, with_sample_generator=True)
+            'Eval', cls_list, with_sample_generator=True)
 
         uq_builder = self.ee.factory.add_uq_builder(uq_name)
 

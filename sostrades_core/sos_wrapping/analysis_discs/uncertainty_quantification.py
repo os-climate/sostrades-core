@@ -111,6 +111,11 @@ class UncertaintyQuantification(SoSWrapp):
             'numerical': True,
             'user_level': 2,
         },
+        'prepare_samples_function': {
+            'type': 'string',
+            'default': 'None',
+            'user_level': 2,
+        },
         EVAL_INPUTS: {
             'type': 'dataframe',
             'dataframe_descriptor': {
@@ -180,6 +185,7 @@ class UncertaintyQuantification(SoSWrapp):
 
                     parameter_list = in_param + out_param
                     parameter_list = [val.split('.')[-1] for val in parameter_list]
+
 
                     # ontology_connector = (
                     #     self.ee.connector_container.get_persistent_connector(
@@ -360,34 +366,79 @@ class UncertaintyQuantification(SoSWrapp):
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
+    def check_data_integrity(self):
+        '''
+        Check that eval_inputs and outputs are float
+        '''
+
+        self.check_eval_in_out_types('eval_inputs', self.IO_TYPE_IN)
+        self.check_eval_in_out_types('eval_outputs', self.IO_TYPE_OUT)
+
+    def check_eval_in_out_types(self, eval_io_name, io_type):
+        '''
+
+        Args:
+            eval_io: evalinputs or eval_outputs
+            io_type: 'in' or 'out'
+
+        Returns: CHeck data_integrity for parameter inside eval in or out
+
+        '''
+
+        eval_io = self.get_sosdisc_inputs(eval_io_name)
+        eval_io_full_name = self.get_input_var_full_name(eval_io_name)
+        parameter_list = eval_io[eval_io[f'selected_{io_type}put'] == True
+                                 ]['full_name'].tolist()
+        check_integrity_msg_list = []
+        for param in parameter_list:
+            param_full_ns_list = self.dm.get_all_namespaces_from_var_name(param)
+            for param_full_ns in param_full_ns_list:
+                param_type = self.dm.get_data(param_full_ns, self.TYPE)
+                if param_type not in ['float', 'int']:
+                    check_integrity_msg = f'Parameter {param_full_ns} found in eval_{io_type} should be float or int for uncertainty quantification'
+                    check_integrity_msg_list.append(check_integrity_msg)
+
+        check_integrity_msg = '\n'.join(check_integrity_msg_list)
+        self.dm.set_data(
+            eval_io_full_name, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
+
     def prepare_samples(self):
         '''
         Prepare the inputs samples for distribution and the output samples for the gridgenerator
         '''
         inputs_dict = self.get_sosdisc_inputs()
-        samples_df = inputs_dict['samples_inputs_df']
-        reference_scenario_samples_list = [scen for scen in samples_df['scenario'].values if 'reference' in scen]
-        samples_df = samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
-        data_df = inputs_dict['samples_outputs_df']
-        reference_scenario_outputs_list = [scen for scen in data_df['scenario'].values if 'reference' in scen]
-        data_df = data_df.loc[~data_df['scenario'].isin(reference_scenario_outputs_list)]
-        # reference_scenario_index = len(data_df) - 1
-        # samples_df = samples_df.drop(index=reference_scenario_index)
-        # data_df = data_df.drop(index=reference_scenario_index)
+        samples_inputs_df = inputs_dict['samples_inputs_df']
+
+        samples_inputs_df = self.delete_reference_scenarios(samples_inputs_df)
+        self.input_parameters_names = list(samples_inputs_df.columns)[1:]
+
+        samples_outputs_df = inputs_dict['samples_outputs_df']
+        samples_outputs_df = self.delete_reference_scenarios(samples_outputs_df)
+        self.output_names = list(samples_outputs_df.columns)[1:]
+
         self.confidence_interval = inputs_dict['confidence_interval'] / 100
         self.sample_size = inputs_dict['sample_size']
-        self.input_parameters_names = list(samples_df.columns)[1:]
-        self.output_names = list(data_df.columns)[1:]
+
         self.input_distribution_parameters_df = deepcopy(
             inputs_dict['input_distribution_parameters_df']
         )
+
+        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario', how='left')
+
         self.input_distribution_parameters_df['values'] = [
-            sorted(list(samples_df[input_name].unique()))
+            sorted(list(self.all_samples_df[input_name].unique()))
             for input_name in self.input_parameters_names
         ]
+        self.all_samples_df = self.all_samples_df.sort_values(by=self.input_parameters_names)
 
-        self.all_data_df = samples_df.merge(data_df, on='scenario', how='left')
-        self.all_data_df = self.all_data_df.sort_values(by=self.input_parameters_names)
+    def delete_reference_scenarios(self, samples_df):
+        '''
+        Delete the reference scenario in a df for UQ
+        '''
+        reference_scenario_samples_list = [scen for scen in samples_df['scenario'].values if 'reference' in scen]
+        samples_df_wo_ref = samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
+
+        return samples_df_wo_ref
 
     def run(self):
         self.check_inputs_consistency()
@@ -526,7 +577,7 @@ class UncertaintyQuantification(SoSWrapp):
 
         self.output_interpolated_values_df = pd.DataFrame()
         for output_name in self.output_names:
-            y = list(self.all_data_df[output_name])
+            y = list(self.all_samples_df[output_name])
             # adapt output format to be used by RegularGridInterpolator
             output_values = np.reshape(y, input_dim_tuple)
             f = RegularGridInterpolator(
