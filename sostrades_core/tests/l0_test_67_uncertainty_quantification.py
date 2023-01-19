@@ -60,12 +60,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_ac': f'{self.name}', 'ns_public': f'{self.name}',
-                   'ns_energy': f'{self.name}',
-                   'ns_coc_ac': f'{self.name}',
-                   'ns_dmc_ac': f'{self.name}',
-                   'ns_data_ac': f'{self.name}',
-                   'ns_coc': f'{self.name}',
+        ns_dict = {'ns_eval': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -131,77 +126,64 @@ class TestUncertaintyQuantification(unittest.TestCase):
         # for graph in graph_list:
         #     graph.to_plotly().show()
 
-    # def test_02_uncertainty_quantification_from_grid_search(self):
-    #     """In this test we prove the ability to couple a grid search and an uq
-    #     """
-    #     proc_name = 'test_coupling_doe_uq'
-    #
-    #     builder = self.factory.get_builder_from_process(
-    #         self.repo, proc_name)
-    #
-    #     self.ee.factory.set_builders_to_coupling_builder(builder)
-    #
-    #     self.ee.load_study_from_input_dict({})
-    #
-    #     print(self.ee.display_treeview_nodes())
-    #
-    #     self.grid_search = 'GridSearch'
-    #     self.study_name = 'Test'
-    #
-    #     eval_inputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_inputs')
-    #     eval_inputs.loc[eval_inputs['full_name'] ==
-    #                     f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-    #     eval_inputs.loc[eval_inputs['full_name'] ==
-    #                     f'{self.grid_search}.Disc1.j', ['selected_input']] = True
-    #
-    #     eval_outputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs')
-    #     eval_outputs.loc[eval_outputs['full_name'] ==
-    #                      f'{self.grid_search}.Disc1.y', ['selected_output']] = True
-    #
-    #     dspace = pd.DataFrame({
-    #         'shortest_name': ['x', 'j'],
-    #         'lower_bnd': [5., 20.],
-    #         'upper_bnd': [7., 25.],
-    #         'nb_points': [2, 2],
-    #         'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
-    #     })
-    #
-    #     dict_values = {
-    #         # GRID SEARCH INPUTS
-    #         f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
-    #         f'{self.study_name}.{self.grid_search}.design_space': dspace,
-    #
-    #         # DISC1 INPUTS
-    #         f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
-    #         f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
-    #     }
-    #
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #
-    #     self.ee.execute()
-    #
-    #     grid_search_disc = self.ee.dm.get_disciplines_with_name(
-    #         f'{self.study_name}.{self.grid_search}')[0]
-    #
-    #     grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
-    #     doe_disc_samples = grid_search_disc_output['samples_inputs_df']
-    #     y_dict = grid_search_disc_output['GridSearch.Disc1.y_dict']
-    #
-    #     uq_disc = self.ee.dm.get_disciplines_with_name(
-    #         f'{self.name}.{self.uncertainty_quantification}')[0]
-    #     uq_disc_output = uq_disc.get_sosdisc_outputs()
-    #     samples_uq = uq_disc_output['input_parameters_samples_df']
-    #     out_df = uq_disc_output['output_interpolated_values_df']
+    def test_02_uncertainty_quantification_from_cartesian_product(self):
+        """In this test we prove the ability to couple a grid search and an uq
+        """
+        proc_name = 'test_coupling_doe_uq'
+
+        builder = self.factory.get_builder_from_process(
+            self.repo, proc_name)
+
+        self.ee.factory.set_builders_to_coupling_builder(builder)
+
+        self.ee.load_study_from_input_dict({})
+
+        disc1_name = 'Disc1'
+        ns = f'{self.ee.study_name}'
+        dspace_dict = {'variable': [f'subprocess.{disc1_name}.a', 'x'],
+
+                       'lower_bnd': [0., 0.],
+                       'upper_bnd': [10., 10.],
+
+                       }
+        dspace = pd.DataFrame(dspace_dict)
+
+        output_selection_obj_y1_y2 = {'selected_output': [True, True, False],
+                                      'full_name': [f'subprocess.{disc1_name}.indicator', 'z', 'y']}
+        output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
+
+        disc_dict = {}
+        # DoE inputs
+        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
+
+        a_list = np.linspace(0, 10, 2)
+        x_list = np.linspace(0, 10, 2)
+        eval_inputs = pd.DataFrame({'selected_input': [True, False, True, False],
+                                    'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
+                                                  f'x', f'subprocess.Disc2.power']})
+
+        eval_inputs_cp = pd.DataFrame({'selected_input': [True, False, True, False],
+                                       'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
+                                                     f'x', f'subprocess.Disc2.power'],
+                                       'list_of_values': [a_list, [], x_list, []]
+                                       })
+        disc_dict[f'{self.ee.study_name}.Eval.eval_inputs_cp'] = eval_inputs_cp
+        disc_dict[f'{self.ee.study_name}.Eval.eval_inputs'] = eval_inputs
+        disc_dict[f'{ns}.Eval.design_space'] = dspace
+        # disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
+        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
+
+        disc_dict[f'{ns}.Eval.x'] = 10.
+        disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.a'] = 5.
+        disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.b'] = 2.
+        disc_dict[f'{ns}.Eval.subprocess.Disc2.constant'] = 3.1416
+        disc_dict[f'{ns}.Eval.subprocess.Disc2.power'] = 2
+
+        self.ee.load_study_from_input_dict(disc_dict)
+
+        self.ee.execute()
+
     #
     # def test_03_simple_cache_on_grid_search_uq_process(self):
     #     """In this test we prove the ability of the cache to work properly on a grid search

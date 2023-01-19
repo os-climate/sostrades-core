@@ -1008,10 +1008,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict.update(values_dict)
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        msg_log_error_input_debug_mode = 'The input debug_mode_sellar in eval_inputs is not among possible values. Check if it is an input of the subprocess with the correct full name (without study name at the beginning) and within allowed types (int, array, float). Dynamic inputs might  not be created. '
-        msg_log_error_output_z = 'The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. '
-        msg_log_error_acceleration = 'The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. '
-        self.assertTrue(msg_log_error_input_debug_mode in my_handler.msg_list)
+        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+
         self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)
 

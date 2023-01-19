@@ -61,7 +61,7 @@ class UncertaintyQuantification(SoSWrapp):
         'version': '',
     }
 
-    EVAL_INPUTS = 'eval_inputs_cp'
+    EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
     DEFAULT = 'default'
     UPPER_BOUND = "upper_bnd"
@@ -386,21 +386,22 @@ class UncertaintyQuantification(SoSWrapp):
         '''
 
         eval_io = self.get_sosdisc_inputs(eval_io_name)
-        eval_io_full_name = self.get_input_var_full_name(eval_io_name)
-        parameter_list = eval_io[eval_io[f'selected_{io_type}put'] == True
-                                 ]['full_name'].tolist()
-        check_integrity_msg_list = []
-        for param in parameter_list:
-            param_full_ns_list = self.dm.get_all_namespaces_from_var_name(param)
-            for param_full_ns in param_full_ns_list:
-                param_type = self.dm.get_data(param_full_ns, self.TYPE)
-                if param_type not in ['float', 'int']:
-                    check_integrity_msg = f'Parameter {param_full_ns} found in eval_{io_type} should be float or int for uncertainty quantification'
-                    check_integrity_msg_list.append(check_integrity_msg)
+        if eval_io is not None:
+            eval_io_full_name = self.get_input_var_full_name(eval_io_name)
+            parameter_list = eval_io[eval_io[f'selected_{io_type}put'] == True
+                                     ]['full_name'].tolist()
+            check_integrity_msg_list = []
+            for param in parameter_list:
+                param_full_ns_list = self.dm.get_all_namespaces_from_var_name(param)
+                for param_full_ns in param_full_ns_list:
+                    param_type = self.dm.get_data(param_full_ns, self.TYPE)
+                    if param_type not in ['float', 'int']:
+                        check_integrity_msg = f'Parameter {param_full_ns} found in eval_{io_type} should be float or int for uncertainty quantification'
+                        check_integrity_msg_list.append(check_integrity_msg)
 
-        check_integrity_msg = '\n'.join(check_integrity_msg_list)
-        self.dm.set_data(
-            eval_io_full_name, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
+            check_integrity_msg = '\n'.join(check_integrity_msg_list)
+            self.dm.set_data(
+                eval_io_full_name, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
 
     def prepare_samples(self):
         '''

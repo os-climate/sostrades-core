@@ -538,8 +538,6 @@ class SampleGeneratorWrapper(SoSWrapp):
                 dynamic_inputs.update({'design_space': {self.TYPE: 'dataframe',
                                                         self.DEFAULT: default_design_space,
                                                         self.STRUCTURING: True,
-                                                        self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                        self.NAMESPACE: 'ns_sampling',
                                                         }})
 
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,
