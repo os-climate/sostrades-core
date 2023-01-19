@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import pandas as pd
-from numpy import array
+import numpy as np
 
 from sostrades_core.study_manager.study_manager import StudyManager
-from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 
 class Study(StudyManager):
@@ -40,11 +40,11 @@ class Study(StudyManager):
                        }
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x_z = {'selected_input': [True, False, True, False],
-                               'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
-                                             f'x',
-                                             f'subprocess.Disc2.power']}
-        input_selection_x_z = pd.DataFrame(input_selection_x_z)
+        # input_selection_x_z = {'selected_input': [True, False, True, False],
+        #                        'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
+        #                                      f'x',
+        #                                      f'subprocess.Disc2.power']}
+        # input_selection_x_z = pd.DataFrame(input_selection_x_z)
 
         output_selection_obj_y1_y2 = {'selected_output': [True, True, False],
                                       'full_name': [f'subprocess.{disc1_name}.indicator', 'z', 'y']}
@@ -53,13 +53,23 @@ class Study(StudyManager):
         disc_dict = {}
         # DoE inputs
         disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
-        n_samples = 5
-        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
-        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
-        disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
-            'n_samples': n_samples}
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
+
+        a_list = np.linspace(0, 10, 2)
+        x_list = np.linspace(0, 10, 2)
+        eval_inputs = pd.DataFrame({'selected_input': [True, False, True, False],
+                                    'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
+                                                  f'x', f'subprocess.Disc2.power']})
+
+        eval_inputs_cp = pd.DataFrame({'selected_input': [True, False, True, False],
+                                       'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
+                                                     f'x', f'subprocess.Disc2.power'],
+                                       'list_of_values': [a_list, [], x_list, []]
+                                       })
+        disc_dict[f'{self.study_name}.Eval.eval_inputs_cp'] = eval_inputs_cp
+        disc_dict[f'{self.study_name}.Eval.eval_inputs'] = eval_inputs
         disc_dict[f'{ns}.Eval.design_space'] = dspace
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
+        # disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
 
         disc_dict[f'{ns}.Eval.x'] = 10.
@@ -76,3 +86,13 @@ if '__main__' == __name__:
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes()
     uc_cls.run()
+    ppf = PostProcessingFactory()
+    for disc in uc_cls.execution_engine.root_process.proxy_disciplines:
+        if disc.sos_name.endswith('UncertaintyQuantification'):
+            filters = ppf.get_post_processing_filters_by_discipline(
+                disc)
+            graph_list = ppf.get_post_processing_by_discipline(
+                disc, filters, as_json=False)
+
+            for graph in graph_list:
+                graph.to_plotly().show()

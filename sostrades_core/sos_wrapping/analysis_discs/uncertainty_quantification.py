@@ -61,7 +61,7 @@ class UncertaintyQuantification(SoSWrapp):
         'version': '',
     }
 
-    EVAL_INPUTS = 'eval_inputs'
+    EVAL_INPUTS = 'eval_inputs_cp'
     EVAL_OUTPUTS = 'eval_outputs'
     DEFAULT = 'default'
     UPPER_BOUND = "upper_bnd"
@@ -164,8 +164,8 @@ class UncertaintyQuantification(SoSWrapp):
             if (self.EVAL_INPUTS in data_in) & (
                     self.EVAL_INPUTS in data_in
             ):
-                eval_outputs = self.get_sosdisc_inputs('eval_outputs')
-                eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
                 if (eval_inputs is not None) & (eval_outputs is not None):
 
@@ -371,8 +371,8 @@ class UncertaintyQuantification(SoSWrapp):
         Check that eval_inputs and outputs are float
         '''
 
-        self.check_eval_in_out_types('eval_inputs', self.IO_TYPE_IN)
-        self.check_eval_in_out_types('eval_outputs', self.IO_TYPE_OUT)
+        self.check_eval_in_out_types(self.EVAL_INPUTS, self.IO_TYPE_IN)
+        self.check_eval_in_out_types(self.EVAL_OUTPUTS, self.IO_TYPE_OUT)
 
     def check_eval_in_out_types(self, eval_io_name, io_type):
         '''
@@ -647,7 +647,7 @@ class UncertaintyQuantification(SoSWrapp):
     def check_inputs_consistency(self):
         """check consistency between inputs from eval_inputs and samples_inputs_df"""
         inputs_dict = self.get_sosdisc_inputs()
-        eval_inputs = inputs_dict['eval_inputs']
+        eval_inputs = inputs_dict[self.EVAL_INPUTS]
         selected_inputs = eval_inputs[eval_inputs['selected_input'] == True][
             'full_name'
         ]
@@ -906,7 +906,7 @@ class UncertaintyQuantification(SoSWrapp):
         #     var_name = var_name_list[0]
         # else:
         #     var_name = None
-        var_name = eval_output_name
+        var_name = data_name
         if var_name is not None:
             unit = self.data_details.loc[self.data_details["variable"] == var_name][
                 "unit"
