@@ -91,6 +91,16 @@ class MDODisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines()
 
+    def check_data_integrity(self):  # type: (...) -> None
+        """
+        check_data_integrity delegated to the wrapper using the proxy for i/o configuration.
+
+        Arguments:
+            proxy (ProxyDiscipline): corresponding proxy discipline
+        """
+        if self.wrapper is not None:
+            self.wrapper.check_data_integrity()
+
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
         """
         SoSMDODiscipline instanciation.

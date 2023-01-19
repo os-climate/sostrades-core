@@ -61,7 +61,7 @@ class UncertaintyQuantification(SoSWrapp):
         'version': '',
     }
 
-    EVAL_INPUTS = 'eval_inputs'
+    EVAL_INPUTS = 'eval_inputs_cp'
     EVAL_OUTPUTS = 'eval_outputs'
     DEFAULT = 'default'
     UPPER_BOUND = "upper_bnd"
@@ -73,13 +73,13 @@ class UncertaintyQuantification(SoSWrapp):
             'type': 'dataframe',
             'unit': None,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         'samples_outputs_df': {
             'type': 'dataframe',
             'unit': None,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         'design_space': {
             'type': 'dataframe',
@@ -92,15 +92,13 @@ class UncertaintyQuantification(SoSWrapp):
             },
             'structuring': True,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         'confidence_interval': {
             'type': 'float',
             'unit': '%',
             'default': 90,
             'range': [0.0, 100.0],
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
             'structuring': False,
             'numerical': True,
             'user_level': 2,
@@ -109,10 +107,13 @@ class UncertaintyQuantification(SoSWrapp):
             'type': 'float',
             'unit': None,
             'default': 1000,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
             'structuring': False,
             'numerical': True,
+            'user_level': 2,
+        },
+        'prepare_samples_function': {
+            'type': 'string',
+            'default': 'None',
             'user_level': 2,
         },
         EVAL_INPUTS: {
@@ -126,7 +127,7 @@ class UncertaintyQuantification(SoSWrapp):
             'dataframe_edition_locked': False,
             'structuring': True,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
         EVAL_OUTPUTS: {
             'type': 'dataframe',
@@ -139,7 +140,7 @@ class UncertaintyQuantification(SoSWrapp):
             'dataframe_edition_locked': False,
             'structuring': True,
             'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_grid_search',
+            'namespace': 'ns_eval',
         },
     }
 
@@ -147,14 +148,10 @@ class UncertaintyQuantification(SoSWrapp):
         'input_parameters_samples_df': {
             'type': 'dataframe',
             'unit': None,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
         },
         'output_interpolated_values_df': {
             'type': 'dataframe',
             'unit': None,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_uncertainty_quantification',
         },
     }
 
@@ -167,8 +164,8 @@ class UncertaintyQuantification(SoSWrapp):
             if (self.EVAL_INPUTS in data_in) & (
                     self.EVAL_INPUTS in data_in
             ):
-                eval_outputs = self.get_sosdisc_inputs('eval_outputs')
-                eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
                 if (eval_inputs is not None) & (eval_outputs is not None):
 
@@ -188,6 +185,7 @@ class UncertaintyQuantification(SoSWrapp):
 
                     parameter_list = in_param + out_param
                     parameter_list = [val.split('.')[-1] for val in parameter_list]
+
 
                     # ontology_connector = (
                     #     self.ee.connector_container.get_persistent_connector(
@@ -311,8 +309,6 @@ class UncertaintyQuantification(SoSWrapp):
                                     'most_probable_value': ('float', None, True),
                                 },
                                 'unit': '-',
-                                'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                'namespace': 'ns_uncertainty_quantification',
                                 'default': input_distribution_default,
                                 'structuring': False,
                             }
@@ -326,8 +322,6 @@ class UncertaintyQuantification(SoSWrapp):
                                     'unit': ('string', None, True),
                                 },
                                 'unit': None,
-                                'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                'namespace': 'ns_uncertainty_quantification',
                                 'default': data_details_default,
                                 'structuring': False,
                             }
@@ -341,29 +335,20 @@ class UncertaintyQuantification(SoSWrapp):
                                 data_in['data_details_df'][
                                     'value'
                                 ] = self.get_sosdisc_inputs('data_details_df')
-                                if (
-                                        (
-                                                self.get_sosdisc_inputs('design_space')[
-                                                    'full_name'
+                                design_space_value = self.get_sosdisc_inputs('design_space')
+                                input_distribution_parameters_df_value = self.get_sosdisc_inputs(
+                                    'input_distribution_parameters_df')
+                                if ((design_space_value['variable'].to_list() != in_param)
+                                        or (input_distribution_parameters_df_value['lower_parameter'].to_list()
+                                            != design_space_value['lower_bnd'].to_list())
+                                        or (
+                                                self.get_sosdisc_inputs(
+                                                    'input_distribution_parameters_df'
+                                                )['upper_parameter'].to_list()
+                                                != self.get_sosdisc_inputs('design_space')[
+                                                    'upper_bnd'
                                                 ].to_list()
-                                                != in_param
                                         )
-                                        or (
-                                        self.get_sosdisc_inputs(
-                                            'input_distribution_parameters_df'
-                                        )['lower_parameter'].to_list()
-                                        != self.get_sosdisc_inputs('design_space')[
-                                            'lower_bnd'
-                                        ].to_list()
-                                )
-                                        or (
-                                        self.get_sosdisc_inputs(
-                                            'input_distribution_parameters_df'
-                                        )['upper_parameter'].to_list()
-                                        != self.get_sosdisc_inputs('design_space')[
-                                            'upper_bnd'
-                                        ].to_list()
-                                )
                                 ):
                                     data_in['input_distribution_parameters_df'][
                                         'value'
@@ -381,102 +366,172 @@ class UncertaintyQuantification(SoSWrapp):
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
-    def run(self):
-        self.check_inputs_consistency()
+    def check_data_integrity(self):
+        '''
+        Check that eval_inputs and outputs are float
+        '''
+
+        self.check_eval_in_out_types(self.EVAL_INPUTS, self.IO_TYPE_IN)
+        self.check_eval_in_out_types(self.EVAL_OUTPUTS, self.IO_TYPE_OUT)
+
+    def check_eval_in_out_types(self, eval_io_name, io_type):
+        '''
+
+        Args:
+            eval_io: evalinputs or eval_outputs
+            io_type: 'in' or 'out'
+
+        Returns: CHeck data_integrity for parameter inside eval in or out
+
+        '''
+
+        eval_io = self.get_sosdisc_inputs(eval_io_name)
+        eval_io_full_name = self.get_input_var_full_name(eval_io_name)
+        parameter_list = eval_io[eval_io[f'selected_{io_type}put'] == True
+                                 ]['full_name'].tolist()
+        check_integrity_msg_list = []
+        for param in parameter_list:
+            param_full_ns_list = self.dm.get_all_namespaces_from_var_name(param)
+            for param_full_ns in param_full_ns_list:
+                param_type = self.dm.get_data(param_full_ns, self.TYPE)
+                if param_type not in ['float', 'int']:
+                    check_integrity_msg = f'Parameter {param_full_ns} found in eval_{io_type} should be float or int for uncertainty quantification'
+                    check_integrity_msg_list.append(check_integrity_msg)
+
+        check_integrity_msg = '\n'.join(check_integrity_msg_list)
+        self.dm.set_data(
+            eval_io_full_name, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
+
+    def prepare_samples(self):
+        '''
+        Prepare the inputs samples for distribution and the output samples for the gridgenerator
+        '''
         inputs_dict = self.get_sosdisc_inputs()
-        samples_df = inputs_dict['samples_inputs_df']
-        reference_scenario_samples_list=[scen for scen in samples_df['scenario'].values if 'reference' in scen]
-        samples_df=samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
-        data_df = inputs_dict['samples_outputs_df']
-        reference_scenario_outputs_list=[scen for scen in data_df['scenario'].values if 'reference' in scen]
-        data_df=data_df.loc[~data_df['scenario'].isin(reference_scenario_outputs_list)]
-        # reference_scenario_index = len(data_df) - 1
-        # samples_df = samples_df.drop(index=reference_scenario_index)
-        # data_df = data_df.drop(index=reference_scenario_index)
-        confidence_interval = inputs_dict['confidence_interval'] / 100
-        sample_size = inputs_dict['sample_size']
-        input_parameters_names = list(samples_df.columns)[1:]
-        output_names = list(data_df.columns)[1:]
-        input_distribution_parameters_df = deepcopy(
+        samples_inputs_df = inputs_dict['samples_inputs_df']
+
+        samples_inputs_df = self.delete_reference_scenarios(samples_inputs_df)
+        self.input_parameters_names = list(samples_inputs_df.columns)[1:]
+
+        samples_outputs_df = inputs_dict['samples_outputs_df']
+        samples_outputs_df = self.delete_reference_scenarios(samples_outputs_df)
+        self.output_names = list(samples_outputs_df.columns)[1:]
+
+        self.confidence_interval = inputs_dict['confidence_interval'] / 100
+        self.sample_size = inputs_dict['sample_size']
+
+        self.input_distribution_parameters_df = deepcopy(
             inputs_dict['input_distribution_parameters_df']
         )
-        input_distribution_parameters_df['values'] = [
-            sorted(list(samples_df[input_name].unique()))
-            for input_name in input_parameters_names
+
+        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario', how='left')
+
+        self.input_distribution_parameters_df['values'] = [
+            sorted(list(self.all_samples_df[input_name].unique()))
+            for input_name in self.input_parameters_names
         ]
+        self.all_samples_df = self.all_samples_df.sort_values(by=self.input_parameters_names)
+
+    def delete_reference_scenarios(self, samples_df):
+        '''
+        Delete the reference scenario in a df for UQ
+        '''
+        reference_scenario_samples_list = [scen for scen in samples_df['scenario'].values if 'reference' in scen]
+        samples_df_wo_ref = samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
+
+        return samples_df_wo_ref
+
+    def run(self):
+        self.check_inputs_consistency()
+
+        self.prepare_samples()
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
         np.random.seed(42)
         ot.RandomGenerator.SetSeed(42)
 
-        # INPUT PARAMETERS DISTRIBUTION IN
+        distrib_list = self.compute_distribution_list()
+
+        self.compute_montecarlo_distribution(distrib_list)
+
+        self.compute_output_interpolation()
+        dict_values = {
+            'input_parameters_samples_df': self.input_parameters_samples_df,
+            'output_interpolated_values_df': self.output_interpolated_values_df,
+        }
+
+        self.store_sos_outputs_values(dict_values)
+
+    def compute_distribution_list(self):
+        '''
+        INPUT PARAMETERS DISTRIBUTION IN
         # [NORMAL, PERT, LOGNORMAL,TRIANGULAR]
-        input_parameters_samples_df = pd.DataFrame()
+        '''
+        self.input_parameters_samples_df = pd.DataFrame()
         distrib_list = []
-        for input_name in input_parameters_names:
+        for input_name in self.input_parameters_names:
             if (
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                     ]['distribution'].values[0]
                     == 'Normal'
             ):
                 distrib = self.Normal_distrib(
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['upper_parameter'].values[0],
-                    confidence_interval=confidence_interval,
+                    confidence_interval=self.confidence_interval,
                 )
             elif (
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                     ]['distribution'].values[0]
                     == 'PERT'
             ):
                 distrib = self.PERT_distrib(
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['upper_parameter'].values[0],
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['most_probable_value'].values[0],
                 )
             elif (
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                     ]['distribution'].values[0]
                     == 'LogNormal'
             ):
                 distrib = self.LogNormal_distrib(
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['upper_parameter'].values[0],
-                    confidence_interval=confidence_interval,
+                    confidence_interval=self.confidence_interval,
                 )
             elif (
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                     ]['distribution'].values[0]
                     == 'Triangular'
             ):
                 distrib = self.Triangular_distrib(
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['upper_parameter'].values[0],
-                    input_distribution_parameters_df.loc[
-                        input_distribution_parameters_df['parameter'] == input_name
+                    self.input_distribution_parameters_df.loc[
+                        self.input_distribution_parameters_df['parameter'] == input_name
                         ]['most_probable_value'].values[0],
                 )
             else:
@@ -484,15 +539,17 @@ class UncertaintyQuantification(SoSWrapp):
                     'Exception occurred: possible values in distribution are [Normal, PERT, Triangular, LogNormal].'
                 )
             distrib_list.append(distrib)
-            input_parameters_samples_df[f'{input_name}'] = pd.DataFrame(
-                np.array(distrib.getSample(sample_size))
+            self.input_parameters_samples_df[f'{input_name}'] = pd.DataFrame(
+                np.array(distrib.getSample(self.sample_size))
             )
+        return distrib_list
 
+    def compute_montecarlo_distribution(self, distrib_list):
         # MONTECARLO COMPOSED DISTRIBUTION
-        R = ot.CorrelationMatrix(len(input_parameters_names))
+        R = ot.CorrelationMatrix(len(self.input_parameters_names))
         copula = ot.NormalCopula(R)
         distribution = ot.ComposedDistribution(distrib_list, copula)
-        composed_distrib_sample = distribution.getSample(sample_size)
+        self.composed_distrib_sample = distribution.getSample(self.sample_size)
 
         # plot
         # for i in range(len(input_parameters)):
@@ -501,13 +558,14 @@ class UncertaintyQuantification(SoSWrapp):
         #         f'{input_parameters[i]} {input_param_dict[input_parameters[i]]["distribution"]} distribution')
         #     view = View(graph, plot_kw={'color': 'blue'})
 
+    def compute_output_interpolation(self):
         # INTERPOLATION
         input_parameters_single_values_tuple = tuple(
             [
-                input_distribution_parameters_df.loc[
-                    input_distribution_parameters_df['parameter'] == input_name
+                self.input_distribution_parameters_df.loc[
+                    self.input_distribution_parameters_df['parameter'] == input_name
                     ]['values'].values[0]
-                for input_name in input_parameters_names
+                for input_name in self.input_parameters_names
             ]
         )
         input_dim_tuple = tuple(
@@ -516,25 +574,17 @@ class UncertaintyQuantification(SoSWrapp):
 
         # merge and sort data according to scenarii in the right order for
         # interpolation
-        all_data_df = samples_df.merge(data_df, on='scenario', how='left')
-        all_data_df = all_data_df.sort_values(by=input_parameters_names)
-        output_interpolated_values_df = pd.DataFrame()
-        for output_name in output_names:
-            y = list(all_data_df[output_name])
+
+        self.output_interpolated_values_df = pd.DataFrame()
+        for output_name in self.output_names:
+            y = list(self.all_samples_df[output_name])
             # adapt output format to be used by RegularGridInterpolator
             output_values = np.reshape(y, input_dim_tuple)
             f = RegularGridInterpolator(
                 input_parameters_single_values_tuple, output_values, bounds_error=False
             )
-            output_interpolated_values = f(composed_distrib_sample)
-            output_interpolated_values_df[f'{output_name}'] = output_interpolated_values
-
-        dict_values = {
-            'input_parameters_samples_df': input_parameters_samples_df,
-            'output_interpolated_values_df': output_interpolated_values_df,
-        }
-
-        self.store_sos_outputs_values(dict_values)
+            output_interpolated_values = f(self.composed_distrib_sample)
+            self.output_interpolated_values_df[f'{output_name}'] = output_interpolated_values
 
     def Normal_distrib(self, lower_bnd, upper_bnd, confidence_interval=0.95):
         # Normal distribution
@@ -597,7 +647,7 @@ class UncertaintyQuantification(SoSWrapp):
     def check_inputs_consistency(self):
         """check consistency between inputs from eval_inputs and samples_inputs_df"""
         inputs_dict = self.get_sosdisc_inputs()
-        eval_inputs = inputs_dict['eval_inputs']
+        eval_inputs = inputs_dict[self.EVAL_INPUTS]
         selected_inputs = eval_inputs[eval_inputs['selected_input'] == True][
             'full_name'
         ]
@@ -856,7 +906,7 @@ class UncertaintyQuantification(SoSWrapp):
         #     var_name = var_name_list[0]
         # else:
         #     var_name = None
-        var_name = eval_output_name
+        var_name = data_name
         if var_name is not None:
             try:
                 unit = self.data_details.loc[self.data_details["variable"] == var_name][

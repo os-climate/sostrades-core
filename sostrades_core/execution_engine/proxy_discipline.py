@@ -1003,7 +1003,9 @@ class ProxyDiscipline(object):
         self.check_data_integrity()
 
     def check_data_integrity(self):
-        pass
+
+        if self.mdo_discipline_wrapp is not None:
+            self.mdo_discipline_wrapp.check_data_integrity()
 
     def __generic_check_data_integrity(self):
         '''
@@ -1821,6 +1823,12 @@ class ProxyDiscipline(object):
         var_f_name = self.ee.ns_manager.compose_ns(
             [ns_reference.value, complete_var_name])
         return var_f_name
+
+    def get_input_var_full_name(self, var_name):
+        '''
+        Get namespaced input variable
+        '''
+        return self.get_var_full_name(var_name, self.get_data_in())
 
     def get_var_display_name(self, var_name, disc_dict):
         '''

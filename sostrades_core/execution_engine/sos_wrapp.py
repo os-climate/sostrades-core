@@ -76,6 +76,7 @@ class SoSWrapp(object):
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
+    CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     DYNAMIC_VAR_NAMESPACE_LIST = []
     def __init__(self, sos_name):
         """
@@ -167,6 +168,12 @@ class SoSWrapp(object):
         """
         pass
 
+    def check_data_integrity(self):
+        """
+        Method check_data_integrity
+        """
+        pass
+
     @at_proxy
     def get_data_in(self):
         """
@@ -206,6 +213,13 @@ class SoSWrapp(object):
     def get_disc_display_name(self):
         """
         Method get_disc_display_name delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_input_var_full_name(self, var_name):
+        """
+        Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 

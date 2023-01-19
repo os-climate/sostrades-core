@@ -852,6 +852,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                                   'namespace': self.NS_DOE}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
+                        dynamic_outputs.update({'samples_outputs_df': {'type': 'dataframe',
+                                                                       'visibility': 'Shared',
+                                                                       'namespace': self.NS_EVAL}})
                 self.add_inputs(dynamic_inputs)
                 self.add_outputs(dynamic_outputs)
             elif builder_mode == self.REGULAR_BUILD:
@@ -1381,12 +1384,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
                                 f'input of the subprocess with the correct full name (without study name at the ' \
                                 f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
-                                f'be created. '
+                                f'be created. should be in {default_list} '
 
                 else:
                     error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
                                 f'output of the subprocess with the correct full name (without study name at the ' \
-                                f'beginning). Dynamic inputs might  not be created. '
+                                f'beginning). Dynamic inputs might  not be created. should be in {default_list}'
 
                 self.logger.warning(error_msg)
 
