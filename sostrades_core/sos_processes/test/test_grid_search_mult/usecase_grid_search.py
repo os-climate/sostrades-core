@@ -40,8 +40,8 @@ class Study(StudyManager):
         eval_inputs = pd.DataFrame({'selected_input': [True],
                                     'full_name': ['subprocess.Disc1.x']})
 
-        eval_outputs = pd.DataFrame({'selected_output': [False, True, False],
-                                     'full_name': ['subprocess.Disc1.indicator', 'subprocess.Disc1.y', 'subprocess.Disc1.y_dict']})
+        eval_outputs = pd.DataFrame({'selected_output': [False, True],
+                                     'full_name': ['subprocess.Disc1.indicator', 'subprocess.Disc1.y']})
 
         dict_values = {
             # CASE CONFIG INPUTS
