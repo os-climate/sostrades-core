@@ -254,7 +254,7 @@ class SoSWrapp(object):
         pass
 
     @at_proxy
-    def get_var_full_name(self):
+    def get_var_full_name(self, short_name, data_io):
         """
         Method get_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """
