@@ -1167,10 +1167,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Set the evaluation variable list (in and out) present in the DM
         which fits with the eval_in_base_list filled in the usecase or by the user
         '''
+
+        # final_in_list, final_out_list = self.remove_pseudo_variables(in_list, out_list) # only actual subprocess variables
         self.eval_in_list = [
             f'{self.get_disc_full_name()}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.get_disc_full_name()}.{element}' for element in out_list]
+
+    def remove_pseudo_variables(self, in_list, out_list):
+        # and add the real variables that will be used as reference variables or MorphMatrix combinations
+        # in this case managing only multiplier particles
+        new_in_list = []
+        for element in in_list:
+            if self.MULTIPLIER_PARTICULE in element:
+                if '@' in element:
+                    new_in_list.append(element.rsplit('@', 1)[0])
+                else:
+                    new_in_list.append(element.rsplit(self.MULTIPLIER_PARTICULE, 1)[0])
+            else:
+                new_in_list.append(element)
+        return new_in_list, out_list
 
     def set_eval_possible_values(self):
         '''
@@ -1217,7 +1233,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     index] # this will filter variables that are not inputs of the subprocess
                 if self.MULTIPLIER_PARTICULE in name:
                     default_dataframe = default_dataframe.append(pd.DataFrame({ 'selected_input': [already_set_values[index]],
-                                                            'full_name': [name]}))
+                                                            'full_name': [name]}), ignore_index=True)
             self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
                              'value', default_dataframe, check_value=False)
 
@@ -1261,12 +1277,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc_in[data_in_key]['editable']
             is_None = disc_in[data_in_key]['value'] is None
+            is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
             if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
                 # we remove the study name from the variable full  name for a
                 # sake of simplicity
-                if is_input_type:
+                if is_input_type and not is_a_multiplier:
                     poss_in_values_full.append(
                         full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
                     # poss_in_values_full.append(full_id)
