@@ -468,7 +468,7 @@ class MultipliersWrapper(SoSWrapp):
                         if var_to_update[df_keys].dtype == 'float'
                     ]
                 for key in float_cols_ids_list:
-                    var_to_update[key] = multiplier_value * var_to_update[key]
+                    var_updated[key] = multiplier_value * var_to_update[key]
             else:
                 keys_clean = [self.clean_var_name(
                     var) for var in var_to_update.keys()]
