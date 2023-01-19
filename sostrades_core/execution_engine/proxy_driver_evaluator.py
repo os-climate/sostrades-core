@@ -1174,19 +1174,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_list = [
             f'{self.get_disc_full_name()}.{element}' for element in out_list]
 
-    def remove_pseudo_variables(self, in_list, out_list):
-        # and add the real variables that will be used as reference variables or MorphMatrix combinations
-        # in this case managing only multiplier particles
-        new_in_list = []
-        for element in in_list:
-            if self.MULTIPLIER_PARTICULE in element:
-                if '@' in element:
-                    new_in_list.append(element.rsplit('@', 1)[0])
-                else:
-                    new_in_list.append(element.rsplit(self.MULTIPLIER_PARTICULE, 1)[0])
-            else:
-                new_in_list.append(element)
-        return new_in_list, out_list
+    # def remove_pseudo_variables(self, in_list, out_list):
+    #     # and add the real variables that will be used as reference variables or MorphMatrix combinations
+    #     # in this case managing only multiplier particles
+    #     new_in_list = []
+    #     for element in in_list:
+    #         if self.MULTIPLIER_PARTICULE in element:
+    #             if '@' in element:
+    #                 new_in_list.append(element.rsplit('@', 1)[0])
+    #             else:
+    #                 new_in_list.append(element.rsplit(self.MULTIPLIER_PARTICULE, 1)[0])
+    #         else:
+    #             new_in_list.append(element)
+    #     return new_in_list, out_list
 
     def set_eval_possible_values(self):
         '''

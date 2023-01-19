@@ -70,26 +70,6 @@ class MultipliersWrapper(SoSWrapp):
 
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
-    # DESC_IN = {EVAL_INPUTS:  {SoSWrapp.TYPE: 'dataframe',
-    #                           SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-    #                                                           'full_name': ('string', None, False)},
-    #                           SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
-    #                           SoSWrapp.STRUCTURING: True,
-    #                           SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-    #                           SoSWrapp.NAMESPACE: 'ns_sampling'},
-    #
-    #            EVAL_INPUTS_CP: {SoSWrapp.TYPE: 'dataframe',
-    #                             SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-    #                                                             'full_name': ('string', None, True),
-    #                                                             'list_of_values': ('list', None, True)},
-    #                             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
-    #                             SoSWrapp.STRUCTURING: True,
-    #                             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-    #                             SoSWrapp.NAMESPACE: 'ns_sampling',
-    #                             SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_input',
-    #                                                                     'full_name',
-    #                                                                     'list_of_values'])}
-    #            }
 
     def __init__(self, sos_name):
         super().__init__(sos_name)
@@ -235,80 +215,6 @@ class MultipliersWrapper(SoSWrapp):
 
                 self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
                                  'value', eval_inputs, check_value=False)
-
-        # dynamic_inputs.update({self.EVAL_INPUTS_CP: {self.TYPE: 'dataframe',
-        #                                              self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-        #                                                                          'full_name': ('string', None, True),
-        #                                                                          'list_of_values': ('list', None, True)},
-        #                                              self.DATAFRAME_EDITION_LOCKED: False,
-        #                                              self.STRUCTURING: True,
-        #                                              self.VISIBILITY: self.SHARED_VISIBILITY,
-        #                                              self.NAMESPACE: 'ns_sampling',
-        #                                              self.DEFAULT: default_in_eval_input_cp}})
-    #
-    #
-    # def set_eval_possible_values(self):
-    #     '''
-    #         Once all disciplines have been run through,
-    #         set the possible values for eval_inputs and eval_outputs in the DM
-    #     '''
-    #     analyzed_disc = self.proxy_disciplines[0]
-    #     possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-    #         analyzed_disc)
-    #     possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
-    #                                                                                   possible_in_values_full,
-    #                                                                                   possible_out_values_full)
-    #
-    #     # Take only unique values in the list
-    #     possible_in_values = list(set(possible_in_values_full))
-    #     possible_out_values = list(set(possible_out_values_full))
-    #
-    #     # these sorts are just for aesthetics
-    #     possible_in_values.sort()
-    #     possible_out_values.sort()
-    #
-    #     default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-    #                                          'full_name': possible_in_values})
-    #     default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-    #                                           'full_name': possible_out_values})
-    #
-    #     eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
-    #     eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
-    #     my_ns_eval_path = self._get_disc_shared_ns_value()
-    #
-    #     if eval_input_new_dm is None:
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-    #                          'value', default_in_dataframe, check_value=False)
-    #     # check if the eval_inputs need to be updated after a subprocess
-    #     # configure
-    #     elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-    #         self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-    #                            is_eval_input=True)
-    #         default_dataframe = copy.deepcopy(default_in_dataframe)
-    #         already_set_names = eval_input_new_dm['full_name'].tolist()
-    #         already_set_values = eval_input_new_dm['selected_input'].tolist()
-    #         for index, name in enumerate(already_set_names):
-    #             default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-    #                 index]
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-    #                          'value', default_dataframe, check_value=False)
-    #
-    #     if eval_output_new_dm is None:
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-    #                          'value', default_out_dataframe, check_value=False)
-    #     # check if the eval_inputs need to be updated after a subprocess
-    #     # configure
-    #     elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-    #         self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
-    #                            is_eval_input=False)
-    #         default_dataframe = copy.deepcopy(default_out_dataframe)
-    #         already_set_names = eval_output_new_dm['full_name'].tolist()
-    #         already_set_values = eval_output_new_dm['selected_output'].tolist()
-    #         for index, name in enumerate(already_set_names):
-    #             default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
-    #                 index]
-    #         self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-    #                          'value', default_dataframe, check_value=False)
 
     def fill_possible_values(self, disc):
         '''
