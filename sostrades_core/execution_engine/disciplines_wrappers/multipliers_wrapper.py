@@ -149,8 +149,8 @@ class MultipliersWrapper(SoSWrapp):
                         update_dm = True
 
             if update_dm:
-                self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS_CP, disc_in),
-                                 'value', eval_inputs_cp, check_value=False)
+                full_name = self.get_var_full_name(self.EVAL_INPUTS_CP, disc_in)
+                self.dm.set_data(full_name, 'value', eval_inputs_cp, check_value=False)
 
     def find_eval_disc(self, disc):
         fe = disc.get_father_executor()
@@ -212,8 +212,8 @@ class MultipliersWrapper(SoSWrapp):
                                                'full_name': possible_in_values})
 
                 eval_inputs = pd.concat([eval_inputs_base, multipliers_df], ignore_index=True)
-
-                self.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
+                full_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+                self.dm.set_data(full_name,
                                  'value', eval_inputs, check_value=False)
 
     def fill_possible_values(self, disc):
