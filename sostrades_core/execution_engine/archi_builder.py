@@ -114,8 +114,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         self.architecture_df = self.build_architecture_df(
             deepcopy(architecture_df))
 
+        archi_name = self.sos_name.split('.')[-1]
         self.builder_dict, self.activation_dict = self.builder_dict_from_architecture(
-            self.architecture_df, self.sos_name
+            self.architecture_df, archi_name
         )
 
         self.get_children_list_by_vb(self.builder_dict)
