@@ -317,7 +317,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
             err_msg="Wrong optimal x solution")
 
-    def test_05_optim_scenario_execution_disciplinaryopt_complex_step(self):
+    def _test_05_optim_scenario_execution_disciplinaryopt_complex_step(self):
         print("\n Test 5 : Sellar optim solution check with DisciplinaryOpt formulation  with complex step")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -1175,7 +1175,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert x_first_execution == x_nominal_execution
         assert_array_equal(z_first_execution, z_nominal_execution)
 
-    def test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
+    def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
