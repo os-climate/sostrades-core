@@ -138,10 +138,10 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
 
 def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
     # convert list into dataframe using columns from dm.data_dict
-    _shape = metadata['shape']
-    _size = metadata['size']
-    _col = metadata['columns'].copy()
-    _dtypes = metadata['dtypes'].copy()
+    _shape = metadata['__shape__']
+    _size = metadata['__size__']
+    _col = metadata['__columns__'].copy()
+    _dtypes = metadata['__dtypes__'].copy()
     _arr = arr_to_convert[:_size]
     # to flatten by lines erase the option 'F' or put the 'C' option
     _arr = _arr.reshape(_shape, order='F')
@@ -151,7 +151,7 @@ def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXC
     # if indices are stored we use them to reconstruct the dataframe
     if 'indices' in metadata:
         df = DataFrame(data=_arr, columns=_col,
-                       index=metadata['indices'])
+                       index=metadata['__indices__'])
     else:
         df = DataFrame(data=_arr, columns=_col)
 
@@ -236,7 +236,8 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                     subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
 
                 if subtype is not None:
-                    if metadata_list is None and subtype['list'] not in ['int', 'string', 'float'] and check_subtype(key, subtype, 'list') not in BASE_TYPE_EXCLUDED:
+                    if metadata_list is None and subtype['list'] not in ['int', 'string', 'float'] and check_subtype(
+                            key, subtype, 'list') not in BASE_TYPE_EXCLUDED:
                         raise ValueError(
                             f' Variable {key} cannot be converted since no metadata is available')
 
@@ -527,16 +528,16 @@ def convert_df_into_array(var_df, values_list, metadata, keys, excluded_columns=
     # To delete indices in convert delete the line below
     # data = hstack((atleast_2d(indices).T, values))
 
-    val_data['key'] = keys
-    val_data['type'] = DataFrame
-    val_data['columns'] = columns
-    val_data['shape'] = data.shape
-    val_data['size'] = data.size
-    val_data['dtypes'] = [new_var_df[col].dtype for col in columns]
+    val_data['__key__'] = keys
+    val_data['__type__'] = DataFrame
+    val_data['__columns__'] = columns
+    val_data['__shape__'] = data.shape
+    val_data['__size__'] = data.size
+    val_data['__dtypes__'] = [new_var_df[col].dtype for col in columns]
     # to flatten by lines erase the option 'F' or put the 'C' option
 
     if not (new_var_df.index == arange(0, data.shape[0])).all():
-        val_data['indices'] = new_var_df.index
+        val_data['__indices__'] = new_var_df.index
 
     values_list = append(values_list, data.flatten(order='F'))
     metadata.append(val_data)
@@ -631,7 +632,7 @@ def convert_new_type_into_array(
                         # Define a list of dtypes to exclude and perform convert again if there are new cols to exclude
                         dtypes_to_exclude = [object, bool, str]
                         new_excluded_columns = deepcopy(excluded_columns)
-                        for col, metadata_dtype in zip(metadata[0]['columns'], metadata[0]['dtypes']):
+                        for col, metadata_dtype in zip(metadata[0]['__columns__'], metadata[0]['__dtypes__']):
                             if metadata_dtype in dtypes_to_exclude:
                                 new_excluded_columns += [col]
                         if new_excluded_columns != excluded_columns:
@@ -641,7 +642,7 @@ def convert_new_type_into_array(
                                 dm_reduced_to_type_and_metadata.set_data(
                                     key, {DF_EXCLUDED_COLUMNS: new_excluded_columns})
                             else:
-                                dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]=new_excluded_columns
+                                dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS] = new_excluded_columns
 
 
                     # elif var_type == 'string':
@@ -695,7 +696,7 @@ def convert_new_type_into_array(
                         dm_reduced_to_type_and_metadata.set_data(key, TYPE_METADATA, metadata, check_value=False)
                     else:
                         dm_reduced_to_type_and_metadata[key][TYPE_METADATA] = metadata
-                    
+
         else:
             var_dict_converted[key] = var
             # Update metadata
