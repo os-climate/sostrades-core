@@ -133,7 +133,7 @@ class GatherDiscipline(SoSWrapp):
                             output_dict[out_key][input_key[1]] = input_dict[input_key]
                 if output_df_list != []:
                     # concat the list of dataframes to get the full dataframe
-                    output_dict[out_key] = pd.concat(output_df_list)
+                    output_dict[out_key] = pd.concat(output_df_list, ignore_index=True)
         self.store_sos_outputs_values(output_dict)
 
     def add_key_column_to_df(self, df, key_column_name, key_column_value):
