@@ -18,7 +18,6 @@ from numpy import can_cast
 from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 from copy import deepcopy
 
-
 STANDARD_LIST_TYPES = ['list', 'array']
 TEMPORARY_LIST_TYPES = ['float_list', 'string_list', 'int_list']
 POSSIBLE_VALUES_TYPES = ['int', 'float', 'string', 'bool']
@@ -68,7 +67,7 @@ class CheckDataIntegrity():
         if variable_type not in self.VAR_TYPE_MAP.keys():
             check_integrity_msg = f'Type {variable_type} not in allowed type {list(self.VAR_TYPE_MAP.keys())}'
         else:
-                # check that the variable has a unit
+            # check that the variable has a unit
             if variable_unit is None and variable_type not in self.NO_UNIT_TYPES and self.new_check:
                 check_integrity_msg = "Unit is not defined"
 
@@ -202,10 +201,10 @@ class CheckDataIntegrity():
         dataframe_edition_locked = var_data_dict[self.DATAFRAME_EDITION_LOCKED]
 
         # Dataframe editable in GUI but no dataframe descriptor
-        if dataframe_descriptor is None and not dataframe_edition_locked:
+        if dataframe_descriptor is None:
             check_integrity_msg = 'No dataframe descriptor set'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-        elif not dataframe_edition_locked:
+        else:
 
             for key in dataframe_descriptor:
                 df_descriptor_well_defined = True
@@ -218,7 +217,7 @@ class CheckDataIntegrity():
                 # Check column type authorised
                 elif dataframe_descriptor[key][0] not in self.VAR_TYPE_MAP.keys():
                     check_integrity_msg_df_descriptor = f'Dataframe descriptor has a column type ' \
-                        f'{dataframe_descriptor[key][0]} not in allowed type {list(self.VAR_TYPE_MAP.keys())}'
+                                                        f'{dataframe_descriptor[key][0]} not in allowed type {list(self.VAR_TYPE_MAP.keys())}'
                     df_descriptor_well_defined = False
                     self.__add_msg_to_check_integrity_msg_list(
                         check_integrity_msg_df_descriptor)
@@ -247,13 +246,14 @@ class CheckDataIntegrity():
         '''
         column_type = column_descriptor[0]
         column_range = column_descriptor[1]
-        values_in_column = column.values
+        values_in_column = column.values.tolist()
 
         if not all(isinstance(item, self.VAR_TYPE_MAP[column_type]) for item in values_in_column):
             check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         elif column_range is not None and len(column_range) == 2:
-            if not all(item < column_range[1] for item in values_in_column) and all(column_range[0] < item for item in values_in_column):
+            if not all(item < column_range[1] for item in values_in_column) and all(
+                    column_range[0] < item for item in values_in_column):
                 check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
@@ -311,7 +311,8 @@ class CheckDataIntegrity():
             for column in variable_formula.columns:
                 # if string that should be a formula but error on the typo of formula cannot be raise as error
                 # because maybe the string is not a formula but only a string
-                if type(variable_formula[column][0]) == type('str') and variable_formula[column][0].startswith('formula:'):
+                if type(variable_formula[column][0]) == type('str') and variable_formula[column][0].startswith(
+                        'formula:'):
                     formula = variable_formula[column].values[0].split(':')[
                         1]
                     self.__check_formula(formula)
@@ -392,7 +393,7 @@ class CheckDataIntegrity():
                                 formula_error_msg)
                         else:
                             if isinstance(parameter_value[
-                                    el_key].values[0], str):
+                                              el_key].values[0], str):
                                 self.formula_dict[parameter] = self.dm.get_value(
                                     el_name_space)[el_key].values[0].split(':')[1]
                             else:
@@ -406,7 +407,7 @@ class CheckDataIntegrity():
                                 formula_error_msg)
                         else:
                             if isinstance(parameter_value[
-                                    el_key], str):
+                                              el_key], str):
                                 self.formula_dict[parameter] = parameter_value[
                                     el_key].split(':')[1]
                             else:
