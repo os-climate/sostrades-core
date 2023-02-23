@@ -1,0 +1,57 @@
+x	z	algo
+[5.]	[0. 5.]	fullfact
+x	z	algo
+[0.]	[-10.   0.]	ff2n
+[10.]	[-10.   0.]	ff2n
+[0.]	[10.  0.]	ff2n
+[10.]	[10.  0.]	ff2n
+[0.]	[-10.  10.]	ff2n
+[10.]	[-10.  10.]	ff2n
+[0.]	[10. 10.]	ff2n
+[10.]	[10. 10.]	ff2n
+x	z	algo
+[0.]	[-10.  10.]	pbdesign
+[10.]	[-10.   0.]	pbdesign
+[0.]	[10.  0.]	pbdesign
+[10.]	[10. 10.]	pbdesign
+x	z	algo
+[0.]	[-10.   5.]	bbdesign
+[10.]	[-10.   5.]	bbdesign
+[0.]	[10.  5.]	bbdesign
+[10.]	[10.  5.]	bbdesign
+[0.]	[0. 0.]	bbdesign
+[10.]	[0. 0.]	bbdesign
+[0.]	[ 0. 10.]	bbdesign
+[10.]	[ 0. 10.]	bbdesign
+[5.]	[-10.   0.]	bbdesign
+[5.]	[10.  0.]	bbdesign
+[5.]	[-10.  10.]	bbdesign
+[5.]	[10. 10.]	bbdesign
+[5.]	[0. 5.]	bbdesign
+[5.]	[0. 5.]	bbdesign
+[5.]	[0. 5.]	bbdesign
+x	z	algo
+[0.]	[-10.   0.]	ccdesign
+[10.]	[-10.   0.]	ccdesign
+[0.]	[10.  0.]	ccdesign
+[10.]	[10.  0.]	ccdesign
+[0.]	[-10.  10.]	ccdesign
+[10.]	[-10.  10.]	ccdesign
+[0.]	[10. 10.]	ccdesign
+[10.]	[10. 10.]	ccdesign
+[5.]	[0. 5.]	ccdesign
+[5.]	[0. 5.]	ccdesign
+[0.]	[0. 5.]	ccdesign
+[10.]	[0. 5.]	ccdesign
+[5.]	[-10.   5.]	ccdesign
+[5.]	[10.  5.]	ccdesign
+[5.]	[0. 0.]	ccdesign
+[5.]	[ 0. 10.]	ccdesign
+[5.]	[0. 5.]	ccdesign
+[5.]	[0. 5.]	ccdesign
+x	z	algo
+[7.07763347]	[9.51246975 4.79353495]	lhs
+[8.4089045]	[3.67677806e+00 2.28749635e-04]	lhs
+[2.60466515]	[-5.41297644  8.05477519]	lhs
+[0.83404401]	[-0.61775709  7.370439  ]	lhs
+[4.37252042]	[-7.11870203  2.18467719]	lhs

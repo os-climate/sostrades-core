@@ -1,5 +1,0 @@
-variable,value
-process_repository,sos_trades_core.sos_processes.test
-process_name,test_proc_build_disc0
-usecase_name,usecase_int
-usecase_data,"{'<study_ph>.Disc0.r': 4, '<study_ph>.Disc0.mod': 2}"
