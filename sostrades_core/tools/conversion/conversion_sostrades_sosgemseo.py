@@ -78,8 +78,8 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
     else:
         while len(val_datalist) != 0:
             metadata = val_datalist.pop(0)
-            _type = metadata['type']
-            _keys = metadata['key']
+            _type = metadata['__type__']
+            _keys = metadata['__key__']
 
             nested_keys = _keys[:-1]
             to_update = get_nested_val(new_data, nested_keys)
@@ -94,7 +94,7 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
             elif _type == DataFrame:
                 _df = convert_array_into_df(arr_to_convert, metadata)
                 to_update[_key] = _df
-                _size = metadata['size']
+                _size = metadata['__size__']
                 arr_to_convert = delete(arr_to_convert, arange(_size))
 
             # int, float, or complex
@@ -105,8 +105,8 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
 
             # numpy array or list
             elif _type in [list, ndarray]:
-                _shape = metadata['shape']
-                _size = metadata['size']
+                _shape = metadata['__shape__']
+                _size = metadata['__size__']
                 _arr = arr_to_convert[:_size]
                 _arr = _arr.reshape(_shape)
                 if _type == list:
@@ -149,7 +149,7 @@ def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXC
 
     # Use the 2Darrays init which is 4 times faster than the dict initialization
     # if indices are stored we use them to reconstruct the dataframe
-    if 'indices' in metadata:
+    if '__indices__' in metadata:
         df = DataFrame(data=_arr, columns=_col,
                        index=metadata['__indices__'])
     else:
@@ -308,13 +308,13 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
             else:
                 prev_metadata_key = None
         val_data = {}
-        val_data['key'] = nested_keys
-        val_data['type'] = _type
+        val_data['__key__'] = nested_keys
+        val_data['__type__'] = _type
         if _type == dict:
             # if value is a nested dict
             metadata.append(val_data)
             values_list, metadata = convert_dict_into_array_old_version(
-                val, values_list, metadata, val_data['key'], prev_metadata)
+                val, values_list, metadata, val_data['__key__'], prev_metadata)
         elif _type == DataFrame:
             # if value is a dataframe
             values_list, metadata = convert_df_into_array(
@@ -326,7 +326,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
         elif _type == np_complex128:
             # for gradient analysis
             values_list = append(values_list, [val])
-            val_data['type'] = np_float64
+            val_data['__type__'] = np_float64
             metadata.append(val_data)
         elif _type in [list, ndarray]:
             # if val contains strings :
@@ -353,12 +353,12 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
 
             if isinstance(val, list):
                 size = len(val)
-                val_data['shape'] = (size,)
-                val_data['size'] = size
+                val_data['__shape__'] = (size,)
+                val_data['__size__'] = size
                 values_list = append(values_list, val)
             else:
-                val_data['shape'] = val.shape
-                val_data['size'] = val.size
+                val_data['__shape__'] = val.shape
+                val_data['__size__'] = val.size
                 values_list = append(values_list, val.flatten())
             metadata.append(val_data)
         elif _type == str:
