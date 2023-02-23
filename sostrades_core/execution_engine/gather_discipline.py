@@ -181,7 +181,7 @@ class GatherDiscipline(SoSWrapp):
         for output_key, output_value in output_dict.items():
             chart_name = output_key.replace('_gather', '')
             chart_unit = self.get_data_out()[output_key][self.UNIT]
-            if isinstance(output_value, 'dict'):
+            if isinstance(output_value, dict):
                 first_value = list(output_value.values())[0]
                 if isinstance(first_value, pd.DataFrame):
                     if 'years' in list(output_value.values())[0].columns:
@@ -219,8 +219,9 @@ class GatherDiscipline(SoSWrapp):
                             serie)
                     instanciated_charts.append(new_chart)
             elif isinstance(output_value, pd.DataFrame):
-                new_chart_list = self.create_chart_gather_dataframes(output_value)
-                instanciated_charts.extend(new_chart_list)
+                pass
+                # new_chart_list = self.create_chart_gather_dataframes(output_value, chart_unit, chart_name)
+                # instanciated_charts.extend(new_chart_list)
         return instanciated_charts
 
     def create_chart_gather_dataframes(self, output_value, chart_unit, chart_name):
@@ -228,7 +229,7 @@ class GatherDiscipline(SoSWrapp):
 
         gather_list = list(set(output_value[self.key_gather_name].values))
         for column in output_value.columns:
-            if column not in ['years', self.key_gather_name] or not column.endswith('_unit'):
+            if column not in ['years', self.key_gather_name] and not column.endswith('_unit'):
                 new_chart = TwoAxesInstanciatedChart('years', f'{column} [{chart_unit}]',
                                                      chart_name=chart_name)
                 for gathered_key in gather_list:
@@ -241,3 +242,4 @@ class GatherDiscipline(SoSWrapp):
                     new_chart.series.append(
                         product_serie)
                 new_chart_list.append(new_chart)
+        return new_chart_list
