@@ -150,7 +150,7 @@ class ProxyDiscipline(object):
     IS_FORMULA = 'is_formula'
     IS_EVAL = 'is_eval'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
-    VARIABLE_KEY = 'variable_key' # key for ontology
+    VARIABLE_KEY = 'variable_key'  # key for ontology
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -435,10 +435,10 @@ class ProxyDiscipline(object):
                 if self.get_sosdisc_inputs(self.CACHE_TYPE) == 'None' and self.dm.cache_map is not None:
                     self.delete_cache_in_cache_map()
 
-#             if self._reset_debug_mode:
-#                 # update default values when changing debug modes between executions
-#                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
-#                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
+            #             if self._reset_debug_mode:
+            #                 # update default values when changing debug modes between executions
+            #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
+            #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
             # set the status to pending on GEMSEO side (so that it does not
             # stay on DONE from last execution)
             self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
@@ -512,6 +512,7 @@ class ProxyDiscipline(object):
                 ns_list.append(item[self.NAMESPACE])
             except:
                 pass
+
     def get_input_data_names(self, as_namespaced_tuple=False):
         '''
         Returns:
@@ -674,6 +675,7 @@ class ProxyDiscipline(object):
 
         return [(key, id(v[self.NS_REFERENCE])) for
                 key, v in short_name_data_dict.items()]
+
     def _update_io_ns_map(self, var_ns_tuples, io_type):
         """
         Updates the variable _io_ns_map_in/_io_ns_map_out in the form {'var_short_name': id(ns_ref)}.
@@ -740,9 +742,9 @@ class ProxyDiscipline(object):
             error_msg = 'data_dict_in_short_names for uodate_data_io not implemented'
             self.logger.error(error_msg)
             raise Exception(error_msg)
-#             data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
-# data_dict.values()))                             # values are values
-# i.e. var dicts
+        #             data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
+        # data_dict.values()))                             # values are values
+        # i.e. var dicts
         else:
             data_io.update(data_dict)
 
@@ -1017,7 +1019,6 @@ class ProxyDiscipline(object):
             var_data_dict = self.dm.get_data(var_fullname)
 
             if var_data_dict['model_origin'] == self.disc_id:
-
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
                     var_data_dict, self.ee.data_check_integrity)
@@ -1042,8 +1043,9 @@ class ProxyDiscipline(object):
         '''
         # Debug mode logging and recursive setting (priority to the parent)
         debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
-        if debug_mode != self._structuring_variables[self.DEBUG_MODE]\
-                and not (debug_mode == "" and self._structuring_variables[self.DEBUG_MODE] is None):  # not necessary on first config
+        if debug_mode != self._structuring_variables[self.DEBUG_MODE] \
+                and not (debug_mode == "" and self._structuring_variables[
+            self.DEBUG_MODE] is None):  # not necessary on first config
             self._reset_debug_mode = True
             # logging
             if debug_mode != "":
@@ -1342,7 +1344,7 @@ class ProxyDiscipline(object):
         Returns:
             The inputs values list or dict
         """
-        #TODO: refactor
+        # TODO: refactor
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
@@ -1376,7 +1378,7 @@ class ProxyDiscipline(object):
         Returns:
             The outputs values list or dict
         """
-        #TODO: refactor
+        # TODO: refactor
         if keys is None:
             # if no keys, get all discipline keys and force
             # output format as dict
@@ -1413,7 +1415,7 @@ class ProxyDiscipline(object):
         Raises:
             Exception if query key is not in the data manager
         """
-        #TODO: refactor
+        # TODO: refactor
         if isinstance(keys, str):
             keys = [keys]
 
@@ -1739,22 +1741,22 @@ class ProxyDiscipline(object):
             new_names.append(new_name)
         return new_names
 
-#=========================================================================
-#     def update_meta_data_out(self, new_data_dict):
-#         """
-#         update meta data of _data_out and DESC_OUT
-#
-#         Arguments:
-#             new_data_dict (Dict[dict]): contains the metadata to be updated
-#                                         in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
-#         """
-#         disc_out = self.get_data_out()
-#         for key in new_data_dict.keys():
-#             for meta_data in new_data_dict[key].keys():
-#                 disc_out[key][meta_data] = new_data_dict[key][meta_data]
-#                 if meta_data in self.DESC_OUT[key].keys():
-#                     self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
-#=========================================================================
+    # =========================================================================
+    #     def update_meta_data_out(self, new_data_dict):
+    #         """
+    #         update meta data of _data_out and DESC_OUT
+    #
+    #         Arguments:
+    #             new_data_dict (Dict[dict]): contains the metadata to be updated
+    #                                         in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
+    #         """
+    #         disc_out = self.get_data_out()
+    #         for key in new_data_dict.keys():
+    #             for meta_data in new_data_dict[key].keys():
+    #                 disc_out[key][meta_data] = new_data_dict[key][meta_data]
+    #                 if meta_data in self.DESC_OUT[key].keys():
+    #                     self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
+    # =========================================================================
 
     def clean_dm_from_disc(self):
         """
@@ -1770,7 +1772,7 @@ class ProxyDiscipline(object):
         disc_dict_info = {}
         disc_dict_info['reference'] = self
         disc_dict_info['classname'] = self.__class__.__name__
-#         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
+        #         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
         disc_dict_info['model_name_full_path'] = self.get_module()
         disc_dict_info['disc_label'] = self.get_disc_label()
         disc_dict_info['treeview_order'] = 'no'
@@ -1850,7 +1852,8 @@ class ProxyDiscipline(object):
         Returns:
             dict[Any]: the dictionary with same values and full name keys
         """
-        return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()}
+        return {self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in
+                in_dict.items()}
 
     def update_from_dm(self):
         """
@@ -2109,7 +2112,8 @@ class ProxyDiscipline(object):
         is_proxy_configured = self.get_configure_status() and not self.check_structuring_variables_changes() and self.check_configured_dependency_disciplines()
 
         # condition of wrapper configuration allows to redefine is_configured method for simple discs at wrapper level
-        if hasattr(self.mdo_discipline_wrapp, 'wrapper') and hasattr(self.mdo_discipline_wrapp.wrapper, 'is_configured'):
+        if hasattr(self.mdo_discipline_wrapp, 'wrapper') and hasattr(self.mdo_discipline_wrapp.wrapper,
+                                                                     'is_configured'):
             is_wrapper_configured = self.mdo_discipline_wrapp.wrapper.is_configured()
         else:
             is_wrapper_configured = True
@@ -2339,9 +2343,10 @@ class ProxyDiscipline(object):
             output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
         """
 
-        return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()},\
-               {key: self.ee.ns_manager.ns_tuple_to_full_name(
-                   (key, value)) for key, value in self._io_ns_map_out.items()}
+        return {key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in
+                self._io_ns_map_in.items()}, \
+            {key: self.ee.ns_manager.ns_tuple_to_full_name(
+                (key, value)) for key, value in self._io_ns_map_out.items()}
 
     def get_module(self):
         '''
@@ -2356,10 +2361,15 @@ class ProxyDiscipline(object):
             disc_module = self.__module__
         # return the replace sostrades_core just for documentation (linked
         # ontology is the one from integration)
-#         return disc_module.replace(
-#             'sostrades_core', 'sos_trades_core')
+        #         return disc_module.replace(
+        #             'sostrades_core', 'sos_trades_core')
         return disc_module
+
     # useful for debugging
+
+    def get_shared_ns_dict(self):
+
+        return self.ee.ns_manager.get_associated_ns(self)
 
     def get_disc_label(self):
         '''
@@ -2386,7 +2396,7 @@ class ProxyDiscipline(object):
 
     def get_proxy_subtree_rec(self, proxy_subtree, indent=0, callback=None):
         callback_string = ' [' + str(callback(self)) + \
-            ']' if callback is not None else ''
+                          ']' if callback is not None else ''
         proxy_subtree.append('    ' * indent + '|_ ' + self.ee.ns_manager.get_local_namespace_value(self)
                              + '  (' + self.__class__.__name__ + ')' + callback_string)
         for disc in self.proxy_disciplines:

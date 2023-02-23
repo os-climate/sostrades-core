@@ -20,6 +20,7 @@ import logging
 from sostrades_core.tools.base_functions.compute_len import compute_len
 from numpy import zeros, array, ndarray, complex128
 from functools import wraps
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -78,6 +79,7 @@ class SoSWrapp(object):
     IO_TYPE_OUT = 'out'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     DYNAMIC_VAR_NAMESPACE_LIST = []
+
     def __init__(self, sos_name):
         """
         Constructor.
@@ -98,8 +100,8 @@ class SoSWrapp(object):
         self.inst_desc_out = {}
 
         # dynamic attributes that easen access to proxy and dm during configuration and get cleaned at runtime
-        self.__proxy = None     # stores the proxy during configuration, decorator below to expose methods and properties
-        self.dm = AccessOnlyProxy()   # object to proxy the dm during configuration allowing use avoiding wrong referencing
+        self.__proxy = None  # stores the proxy during configuration, decorator below to expose methods and properties
+        self.dm = AccessOnlyProxy()  # object to proxy the dm during configuration allowing use avoiding wrong referencing
 
     # decorator to expose methods and properties delegated to ProxyDiscipline object during configuration
     # TODO: change by a decorator outside the class + an AccessOnlyProxy object  ? Or by a __getattr__ overload ?
@@ -264,6 +266,13 @@ class SoSWrapp(object):
     def add_new_shared_ns(self, shared_ns):
         """
         Method add_new_shared_ns delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_shared_ns_dict(self):
+        """
+        Method get_shared_ns_dict delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
@@ -502,7 +511,7 @@ class SoSWrapp(object):
 
         if index_y_column is not None and index_x_column is not None:
             self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                                                  index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+            index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                      'end': (index_y_column + 1) * lines_nb_y},
                                         f'{x_key_full},{x_column}': {'start': index_x_column * lines_nb_x,
@@ -510,7 +519,7 @@ class SoSWrapp(object):
 
         elif index_y_column is None and index_x_column is not None:
             self.jac_dict[y_key_full][x_key_full][:, index_x_column *
-                                                  lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
+                                                     lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
 
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': 0,
                                                                      'end': -1},
@@ -518,7 +527,7 @@ class SoSWrapp(object):
                                                                      'end': (index_x_column + 1) * lines_nb_x}})
         elif index_y_column is not None and index_x_column is None:
             self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-                                                  :] = value
+            :] = value
             self.jac_boundaries.update({f'{y_key_full},{y_column}': {'start': index_y_column * lines_nb_y,
                                                                      'end': (index_y_column + 1) * lines_nb_y},
                                         f'{x_key_full},{x_column}': {'start': 0,
@@ -538,14 +547,14 @@ class SoSWrapp(object):
 
     def get_boundary_jac_for_columns(self, key, column, io_type):
         if io_type == self.IO_TYPE_IN:
-            #var_full_name = self.attributes['input_full_name_map'][key]
+            # var_full_name = self.attributes['input_full_name_map'][key]
             if key not in self.DESC_IN:
                 key_type = self.inst_desc_in[key]['type']
             else:
                 key_type = self.DESC_IN[key]['type']
             value = self.get_sosdisc_inputs(key)
         if io_type == self.IO_TYPE_OUT:
-            #var_full_name = self.attributes['output_full_name_map'][key]
+            # var_full_name = self.attributes['output_full_name_map'][key]
             if key not in self.DESC_OUT:
                 key_type = self.inst_desc_out[key]['type']
             else:
@@ -571,7 +580,8 @@ class AccessOnlyProxy:
     """
     Class that proxies an object providing access but avoiding its erroneous referencing. Unrelated to ProxyDiscipline.
     """
-    #TODO: move to a tool?
+
+    # TODO: move to a tool?
     def __init__(self):
         self.__obj = None
 
@@ -584,4 +594,3 @@ class AccessOnlyProxy:
     def clear_ref(self):
         del self.__obj
         self.__obj = None
-
