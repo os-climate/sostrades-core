@@ -24,6 +24,20 @@ POSSIBLE_VALUES_TYPES = ['int', 'float', 'string', 'bool']
 RANGE_TYPES = ['int', 'float']
 
 
+def add_integrity_msg(integrity_msg_dict, key, error_msg):
+    '''
+
+    Generic add integrity msf if a message already exists or not
+
+    '''
+    if key in integrity_msg_dict:
+        integrity_msg_dict[key] += '\n' + error_msg
+    else:
+        integrity_msg_dict[key] = + error_msg
+
+    return integrity_msg_dict
+
+
 class CheckDataIntegrity():
     '''CheckDataIntegrity class is here to check the data integrity of a variable regarding its type or variable descriptor associated
     '''
