@@ -19,7 +19,6 @@ from sostrades_core.tools.filter.filter import filter_variables_to_convert
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-
 from multiprocessing import cpu_count
 
 from pandas import DataFrame
@@ -103,15 +102,15 @@ class SoSMDAChain(MDAChain):
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  authorize_self_coupled_disciplines=False,  # type: bool
-                 ** sub_mda_options
+                 **sub_mda_options
                  ):
         ''' Constructor
         '''
         self.is_sos_coupling = True
-#=========================================================================
-# #         self.ee = ee
-# #         self.dm = ee.dm
-#=========================================================================
+        # =========================================================================
+        # #         self.ee = ee
+        # #         self.dm = ee.dm
+        # =========================================================================
         self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
         self.reduced_dm = reduced_dm
 
@@ -131,7 +130,7 @@ class SoSMDAChain(MDAChain):
                           log_convergence=log_convergence,
                           linear_solver=linear_solver,
                           linear_solver_options=linear_solver_options,
-                          ** sub_mda_options
+                          **sub_mda_options
                           )
 
     def _run(self):
@@ -169,10 +168,10 @@ class SoSMDAChain(MDAChain):
 
         # nothing saved in the DM anymore during execution
 
-#         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
+    #         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
 
-#         # store local data in datamanager
-#         self.proxy_discipline.update_dm_with_local_data(self.local_data)
+    #         # store local data in datamanager
+    #         self.proxy_discipline.update_dm_with_local_data(self.local_data)
 
     def pre_run_mda(self):
         '''
@@ -180,7 +179,8 @@ class SoSMDAChain(MDAChain):
         No need of prerun otherwise 
         '''
         strong_couplings = [
-            key for key in self.strong_couplings if key in self.local_data]  # TODO: replace local_data[key] per key should work
+            key for key in self.strong_couplings if
+            key in self.local_data]  # TODO: replace local_data[key] per key should work
         if len(strong_couplings) < len(self.strong_couplings):
             LOGGER.info(
                 f'Execute a pre-run for the coupling ' + self.name)
@@ -242,6 +242,7 @@ class SoSMDAChain(MDAChain):
                     discipline = coupled_disciplines[0]
                     if discipline.is_sos_coupling:
                         # recursive call if subdisc is a SoSCoupling
+                        discipline.local_data.update(self.local_data)
                         discipline.pre_run_mda()
                         self.local_data.update(discipline.local_data)
                     else:
@@ -262,7 +263,8 @@ class SoSMDAChain(MDAChain):
             inputs_values = {}
             inputs_values.update(disc._filter_inputs(self.local_data))
             keys_none = [key for key in disc.get_input_data_names()
-                         if inputs_values.get(key) is None and not any([key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
+                         if inputs_values.get(key) is None and not any(
+                    [key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
             if keys_none == []:
                 ready_disciplines.append(disc)
             else:
@@ -303,7 +305,8 @@ class SoSMDAChain(MDAChain):
                                               force_all=force_all,
                                               force_no_exec=force_no_exec)
 
-    def _old_discipline_linearize(self, input_data=None, force_all=False, force_no_exec=False, exec_before_linearize=True):
+    def _old_discipline_linearize(self, input_data=None, force_all=False, force_no_exec=False,
+                                  exec_before_linearize=True):
         """ Temporary call to sostrades linearize that was previously in SoSDiscipline
         TODO: see with IRT how we can handle it
         """
@@ -454,9 +457,9 @@ class SoSMDAChain(MDAChain):
 
                     # if activated, all coupled disciplines involved in the MDA
                     # are grouped into a MDOChain (self coupled discipline)
-#                     if self.get_inputs_by_name("group_mda_disciplines"):
-#                         sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
-#                                                         grammar_type=self.grammar_type)]
+                    #                     if self.get_inputs_by_name("group_mda_disciplines"):
+                    #                         sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
+                    #                                                         grammar_type=self.grammar_type)]
                     # create a sub-MDA
                     sub_mda_options["use_lu_fact"] = self.use_lu_fact
                     sub_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
@@ -474,7 +477,7 @@ class SoSMDAChain(MDAChain):
                             sub_coupling_structures_iterator),
                         **sub_mda_options
                     )
-#                     self.set_epsilon0_and_cache(sub_mda)
+                    #                     self.set_epsilon0_and_cache(sub_mda)
 
                     chained_disciplines.append(sub_mda)
                     self.sub_mda_list.append(sub_mda)
@@ -482,11 +485,11 @@ class SoSMDAChain(MDAChain):
                     # single discipline
                     chained_disciplines.append(first_disc)
 
-# TODO: reactivate parallel
+        # TODO: reactivate parallel
 
-#         if self.get_inputs_by_name("n_subcouplings_parallel") > 1:
-#             chained_disciplines = self._parallelize_chained_disciplines(
-#                 chained_disciplines, self.grammar_type)
+        #         if self.get_inputs_by_name("n_subcouplings_parallel") > 1:
+        #             chained_disciplines = self._parallelize_chained_disciplines(
+        #                 chained_disciplines, self.grammar_type)
 
         # create the MDO chain that sequentially evaluates the sub-MDAs and the
         # single disciplines
@@ -494,45 +497,45 @@ class SoSMDAChain(MDAChain):
             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
         )
 
-#=========================================================================
-#     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
-#         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain
-#         with all the scenarios inside
-#         '''
-#         scenarios = []
-#         ind = []
-#         # - get scenario list, if any
-#         for i, disc in enumerate(disciplines):
-#             # check if attribute exists (mainly to avoid gems built-in objects
-#             # like mdas)
-#             if hasattr(disc, 'is_parallel'):
-#                 if disc.is_parallel:
-#                     scenarios.append(disc)
-#                     ind.append(i)
-#         if len(scenarios) > 0:
-#             # - build the parallel chain
-#             n_subcouplings_parallel = self.get_inputs_by_name(
-#                 "n_subcouplings_parallel")
-#             LOGGER.info(
-#                 "Detection of %s parallelized disciplines" % str(len(scenarios)))
-#             par_chain = SoSParallelChain(scenarios, use_threading=False,
-#                                          name="SoSParallelChain",
-#                                          grammar_type=grammar_type,
-#                                          n_processes=n_subcouplings_parallel)
-#             # - remove the scenarios from the disciplines list
-#             disciplines[:] = [d for d in disciplines if d not in scenarios]
-#             # - insert the parallel chain in place of the first scenario
-#             if ind[0] > len(disciplines):
-#                 # all scenarios where at the end of the discipline list
-#                 # we put the parallel chain at the end of the list
-#                 disciplines.append(par_chain)
-#             else:
-#                 # we insert the parallel chain in place of the first scenario
-#                 # found
-#                 disciplines.insert(ind[0], par_chain)
-#
-#         return disciplines
-#=========================================================================
+    # =========================================================================
+    #     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
+    #         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain
+    #         with all the scenarios inside
+    #         '''
+    #         scenarios = []
+    #         ind = []
+    #         # - get scenario list, if any
+    #         for i, disc in enumerate(disciplines):
+    #             # check if attribute exists (mainly to avoid gems built-in objects
+    #             # like mdas)
+    #             if hasattr(disc, 'is_parallel'):
+    #                 if disc.is_parallel:
+    #                     scenarios.append(disc)
+    #                     ind.append(i)
+    #         if len(scenarios) > 0:
+    #             # - build the parallel chain
+    #             n_subcouplings_parallel = self.get_inputs_by_name(
+    #                 "n_subcouplings_parallel")
+    #             LOGGER.info(
+    #                 "Detection of %s parallelized disciplines" % str(len(scenarios)))
+    #             par_chain = SoSParallelChain(scenarios, use_threading=False,
+    #                                          name="SoSParallelChain",
+    #                                          grammar_type=grammar_type,
+    #                                          n_processes=n_subcouplings_parallel)
+    #             # - remove the scenarios from the disciplines list
+    #             disciplines[:] = [d for d in disciplines if d not in scenarios]
+    #             # - insert the parallel chain in place of the first scenario
+    #             if ind[0] > len(disciplines):
+    #                 # all scenarios where at the end of the discipline list
+    #                 # we put the parallel chain at the end of the list
+    #                 disciplines.append(par_chain)
+    #             else:
+    #                 # we insert the parallel chain in place of the first scenario
+    #                 # found
+    #                 disciplines.insert(ind[0], par_chain)
+    #
+    #         return disciplines
+    # =========================================================================
 
     #  METHODS TO DEBUG MDA CHAIN (NEEDED FOR LINEARIZE)
     # ----------------------------------------------------
