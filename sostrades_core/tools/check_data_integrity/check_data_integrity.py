@@ -33,7 +33,7 @@ def add_integrity_msg(integrity_msg_dict, key, error_msg):
     if key in integrity_msg_dict:
         integrity_msg_dict[key] += '\n' + error_msg
     else:
-        integrity_msg_dict[key] = + error_msg
+        integrity_msg_dict[key] = error_msg
 
     return integrity_msg_dict
 
@@ -266,8 +266,8 @@ class CheckDataIntegrity():
             check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         elif column_range is not None and len(column_range) == 2:
-            if not all(item < column_range[1] for item in values_in_column) and all(
-                    column_range[0] < item for item in values_in_column):
+            if not all(item <= column_range[1] for item in values_in_column) and all(
+                    column_range[0] <= item for item in values_in_column):
                 check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
