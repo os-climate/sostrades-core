@@ -184,6 +184,47 @@ class TestMDAPrerun(unittest.TestCase):
         self.assertAlmostEqual(x_in[0], x_target[0], delta=tolerance)
         self.assertAlmostEqual(x_out[0], x_target[0], delta=tolerance)
 
+    def test_04_prerun_coupling_of_coupling(self):
+        '''
+        Test the prerun when a coupling is given as output of a process and is build into the root process which is a coupling
+        In this case we need to give the local_data of the high leevel coupling to the subcoupling
+        Test to check that everything works
+
+        '''
+        exec_eng = ExecutionEngine(self.name)
+
+        repo_test = 'sostrades_core.sos_processes.test'
+        builder = exec_eng.factory.get_builder_from_process(repo=repo_test,
+                                                            mod_id='test_sellar_coupling')
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+        exec_eng.configure()
+        exec_eng.display_treeview_nodes()
+        coupling_name = "SellarCoupling"
+
+        # additional test to verify that values_in are used
+        disc_dict = {}
+        # Sellar inputs
+        disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        # disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        # disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{self.name}.{coupling_name}.max_mda_iter'] = 100
+        disc_dict[f'{self.name}.{coupling_name}.tolerance'] = 1e-12
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        with self.assertRaises(Exception) as cm:
+            exec_eng.execute()
+        error_message = "The MDA cannot be pre-runned, some input values are missing to run the MDA " + \
+                        "\nEE.SellarCoupling.Sellar_2 : ['EE.SellarCoupling.y_1']" + \
+                        "\nEE.SellarCoupling.Sellar_1 : ['EE.SellarCoupling.y_2']"
+        self.assertTrue(str(cm.exception).startswith(error_message))
+
+        disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+
 
 if '__main__' == __name__:
     cls = TestMDAPrerun()

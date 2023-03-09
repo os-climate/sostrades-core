@@ -1001,8 +1001,14 @@ class ProxyDiscipline(object):
          generic data integrity_check where we call different generic function to check integrity 
          + specific data integrity by discipline
         '''
-        self.__generic_check_data_integrity()
-        self.check_data_integrity()
+        data_integrity = self.__generic_check_data_integrity()
+        # Test specific data integrity only if generic data integrity is OK
+        # This will prevent to launch specific data integrity if all values are None
+        # And to reimplement some data integrity already present in the generic method
+        # example : the dataframe has not the right column compared to the df_descriptor (generic data integrity will raise an error)
+        # the specific data integrity check values of this column but should verify before if the column exists
+        if data_integrity:
+            self.check_data_integrity()
 
     def check_data_integrity(self):
 
@@ -1013,7 +1019,7 @@ class ProxyDiscipline(object):
         '''
         Generic check data integrity of the variables that you own ( the model origin of the variable is you)
         '''
-
+        data_integrity = True
         data_in_full_name = self.get_data_io_with_full_name(self.IO_TYPE_IN)
         for var_fullname in data_in_full_name:
             var_data_dict = self.dm.get_data(var_fullname)
@@ -1022,8 +1028,11 @@ class ProxyDiscipline(object):
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
                     var_data_dict, self.ee.data_check_integrity)
+                if check_integrity_msg != '':
+                    data_integrity = False
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
+        return data_integrity
 
     def set_numerical_parameters(self):
         '''

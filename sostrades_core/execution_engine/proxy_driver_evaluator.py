@@ -135,7 +135,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
@@ -265,7 +264,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_cache_inputs()
 
         if self.REFERENCE_MODE in self.get_data_in():
-            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
+            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(
+                self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
 
     def update_data_io_with_subprocess_io(self):
         """
@@ -316,7 +316,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # Addition of Reference Scenario
             scenario_df = scenario_df.append(
                 {self.SELECTED_SCENARIO: True,
-                    self.SCENARIO_NAME: self.REFERENCE_SCENARIO_NAME},
+                 self.SCENARIO_NAME: self.REFERENCE_SCENARIO_NAME},
                 ignore_index=True)
 
         # NB assuming that the scenario_df entries are unique otherwise there
@@ -483,7 +483,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         for disc in self.scenarios:
             if disc.sos_name == self.REFERENCE_SCENARIO_NAME \
                     or my_root in disc.sos_name:  # for flatten_subprocess
-                    # TODO: better implement this 2nd condition ?
+                # TODO: better implement this 2nd condition ?
                 break
             else:
                 index_ref += 1
@@ -533,7 +533,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 ref_changes_dict[key] = ref_dict[key]
 
         # TODO: replace the above code by a more general function ...
-        #======================================================================
+        # ======================================================================
         # ref_changes_dict = {}
         # if self.old_ref_dict == {}:
         #     ref_changes_dict = ref_dict
@@ -542,11 +542,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         #     compare_dict(ref_dict, self.old_ref_dict, '',
         #                  ref_changes_dict, df_equals=True)
         #     # We cannot use compare_dict as if: maybe we choude add a diff_compare_dict as an adaptation of compare_dict
-        #======================================================================
+        # ======================================================================
 
         return ref_changes_dict, ref_dict
 
-    def propagate_reference_non_trade_variables(self, ref_changes_dict, ref_dict, ref_discipline, scenario_names_to_propagate):
+    def propagate_reference_non_trade_variables(self, ref_changes_dict, ref_dict, ref_discipline,
+                                                scenario_names_to_propagate):
 
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
@@ -618,7 +619,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.ee.dm.set_data(key, 'editable', False)
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE:
             for key in scenarios_non_trade_vars_dict.keys():
-                if other_evaluators_names_and_mode != []:   # This means there are evaluators under current one
+                if other_evaluators_names_and_mode != []:  # This means there are evaluators under current one
                     for element in other_evaluators_names_and_mode:
                         if element[0] in key:  # Ignore variables from inner ProxyDriverEvaluators
                             pass
@@ -648,11 +649,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             for sc in scenario_names:
                 if self.REFERENCE_SCENARIO_NAME in key and self.sos_name in key:
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
-                        key.split(self.sos_name,
-                                  1)[-1].split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
+                              key.split(self.sos_name,
+                                        1)[-1].split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
                 elif self.REFERENCE_SCENARIO_NAME in key and not self.sos_name in key:
                     new_key = key.split(self.REFERENCE_SCENARIO_NAME, 1)[
-                        0] + sc + key.split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
+                                  0] + sc + key.split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
                 else:
                     new_key = key
                 if self.dm.check_data_in_dm(new_key):
@@ -932,7 +933,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
 
         # specific to mono-instance
-        if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE and self.eval_in_list is not None:
+        if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(
+                self.BUILDER_MODE) == self.MONO_INSTANCE and self.eval_in_list is not None:
             eval_attributes = {'eval_in_list': self.eval_in_list,
                                'eval_out_list': self.eval_out_list,
                                'reference_scenario': self.get_x0(),
@@ -1010,10 +1012,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
 
         dynamic_inputs.update({self.INSTANCE_REFERENCE:
-                               {SoSWrapp.TYPE: 'bool',
-                                SoSWrapp.DEFAULT: False,
-                                SoSWrapp.POSSIBLE_VALUES: [True, False],
-                                SoSWrapp.STRUCTURING: True}})
+                                   {SoSWrapp.TYPE: 'bool',
+                                    SoSWrapp.DEFAULT: False,
+                                    SoSWrapp.POSSIBLE_VALUES: [True, False],
+                                    SoSWrapp.STRUCTURING: True}})
 
         disc_in = self.get_data_in()
         if self.INSTANCE_REFERENCE in disc_in:
@@ -1021,12 +1023,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.INSTANCE_REFERENCE)
             if instance_reference:
                 dynamic_inputs.update({self.REFERENCE_MODE:
-                                       {SoSWrapp.TYPE: 'string',
-                                        # SoSWrapp.DEFAULT: self.LINKED_MODE,
-                                        SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
-                                        SoSWrapp.STRUCTURING: True}})
+                                           {SoSWrapp.TYPE: 'string',
+                                            # SoSWrapp.DEFAULT: self.LINKED_MODE,
+                                            SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
+                                            SoSWrapp.STRUCTURING: True}})
 
         dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                        'dataframe_descriptor': {
+                                                            self.SELECTED_SCENARIO: ('string', None, False),
+                                                            self.SCENARIO_NAME: ('string', None, False)},
                                                         'dataframe_edition_locked': True,
                                                         'structuring': True,
                                                         'unit': None,
@@ -1233,10 +1238,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             already_set_values = eval_input_new_dm['selected_input'].tolist()
             for index, name in enumerate(already_set_names):
                 default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                    index] # this will filter variables that are not inputs of the subprocess
+                    index]  # this will filter variables that are not inputs of the subprocess
                 if self.MULTIPLIER_PARTICULE in name:
-                    default_dataframe = default_dataframe.append(pd.DataFrame({ 'selected_input': [already_set_values[index]],
-                                                            'full_name': [name]}), ignore_index=True)
+                    default_dataframe = default_dataframe.append(
+                        pd.DataFrame({'selected_input': [already_set_values[index]],
+                                      'full_name': [name]}), ignore_index=True)
             self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
                              'value', default_dataframe, check_value=False)
 
@@ -1276,7 +1282,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             full_id = disc.get_var_full_name(
                 data_in_key, disc_in)
             is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                           ]['io_type'] == 'in'
+                         ]['io_type'] == 'in'
             # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
             is_editable = disc_in[data_in_key]['editable']
             is_None = disc_in[data_in_key]['value'] is None
@@ -1444,7 +1450,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             # LOAD REFERENCE of MULTI-INSTANCE MODE WITH USECASE DATA
             if self.INSTANCE_REFERENCE in disc_in:
-                #method = 'set_values'
+                # method = 'set_values'
                 self.update_reference_from_anonymised_dict(
                     anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
@@ -1452,7 +1458,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
                 if builder_mode == self.MONO_INSTANCE:
                     # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
-                    #method = 'load_study'
+                    # method = 'load_study'
                     self.update_reference_from_anonymised_dict(
                         anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
             else:
@@ -1461,7 +1467,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # (Not needed as already covered)
                 pass
 
-    def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal):
+    def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
+                                              with_modal):
         """
         """
         # 1. Put anonymized dict in context (unanonymize) of the reference
@@ -1473,7 +1480,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # 2. load data in dm (# Push the data to the reference
         # instance)
 
-        #======================================================================
+        # ======================================================================
         # if method == 'load_study':  # We sometimes in multi instance get an infinite loop and never do the last in the sequence
         #     self.ee.load_study_from_input_dict(
         #         input_dict_from_usecase)
@@ -1481,7 +1488,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         #     self.ee.dm.set_values_from_dict(
         #         input_dict_from_usecase)
         # self.ee.dm.set_values_from_dict(filtered_import_dict)
-        #======================================================================
+        # ======================================================================
 
         # Here is a NEW method : with filtering. With this method something is
         # added in is_configured function
@@ -1576,7 +1583,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             else:
                 self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
 
-    def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase, ref_discipline_full_name):
+    def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase,
+                                                         ref_discipline_full_name):
         """
             Put_anonymized_input_dict in sub_process context
             Function needed in manage_import_inputs_from_sub_process()
@@ -1596,4 +1604,3 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             uc_d = {converted_key: value}
             input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
-
