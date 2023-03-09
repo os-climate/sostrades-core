@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
@@ -35,6 +37,7 @@ from gemseo.utils.compare_data_manager_tooling import compare_dict
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
 
+
 # Pylint code disable section
 # pylint: disable=line-too-long, logging-format-interpolation
 
@@ -47,7 +50,8 @@ class BaseStudyManager():
         redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
     """
 
-    def __init__(self, repository_name, process_name, study_name, dump_directory=None, run_usecase=True, yield_method=None, logger=None, execution_engine=None):
+    def __init__(self, repository_name, process_name, study_name, dump_directory=None, run_usecase=True,
+                 yield_method=None, logger=None, execution_engine=None):
         """ Constructor
 
         :params: repository_name, package name that contain the target process to load
@@ -414,7 +418,6 @@ class BaseStudyManager():
                 'The following error occurs in "after_execute_before_dump" methods')
 
         if dump_study and self.dump_directory is not None:
-
             self.dump_study(self.dump_directory)
             logger.debug(
                 f'Reference dump to {self.dump_directory}')
@@ -476,10 +479,10 @@ class BaseStudyManager():
 
         logger.info(
             f'------ Check post-processing integrity ------')
-#         ppf = PostProcessingFactory()
-#         ppf.get_all_post_processings(
-# execution_engine=self.execution_engine, filters_only=False,
-# for_test=True)
+        ppf = PostProcessingFactory()
+        ppf.get_all_post_processings(
+            execution_engine=self.execution_engine, filters_only=False,
+            for_test=True)
 
         logger.info(
             f'------ Check data manager integrity after post-processing calls ------')
@@ -594,7 +597,6 @@ class BaseStudyManager():
         serializer = DataSerializer()
 
         if study_folder_path is not None:
-
             result = serializer.load_cache_dict(
                 study_folder_path, self.__rw_strategy)
 
@@ -611,7 +613,6 @@ class BaseStudyManager():
         serializer = DataSerializer()
 
         if study_folder_path is not None:
-
             result = serializer.load_disc_status_dict(
                 study_folder_path, self.__rw_strategy)
 
