@@ -68,14 +68,13 @@ class JSONDataConnector(AbstractDataConnector):
         :type data_connection_info: dict
         """
 
-
-
         super().__init__(data_connection_info=data_connection_info)
 
     def _extract_connection_info(self):
         """
 
         """
+        # NotImplementedError
         raise Exception("method not implemented")
 
 
@@ -88,7 +87,6 @@ class JSONDataConnector(AbstractDataConnector):
 
         """
 
-
         # Read JSON
         with open(connection_data, "r") as f:
             json_data = f.read()
@@ -97,19 +95,13 @@ class JSONDataConnector(AbstractDataConnector):
         
         return data_dict_json[database_name]
 
-    def write_data(self, connection_data):
+    def write_data(self, ):
         """
-        Method to load a data from Dremio
-
-        :param: connection_data_dict, contains the necessary information to connect to Dremio API : URL, port, usename, password
-        :type: dict
-
-        :param: dremio_path, identification of the data in dremio
-        :type: string
+        Method to load a data 
         """
 
         raise Exception("method not implemented")
 
-    def set_connector_request(self, connector_info, request):
+    def set_connector_request(self):
 
         raise Exception("method not implemented")
