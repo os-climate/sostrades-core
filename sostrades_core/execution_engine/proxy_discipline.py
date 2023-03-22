@@ -47,7 +47,6 @@ from gemseo.core.chain import MDOChain
 from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 
-
 class ProxyDisciplineException(Exception):
     pass
 
@@ -269,6 +268,8 @@ class ProxyDiscipline(object):
         self.__father_builder = None
         self.father_executor = None
         self.cls = cls_builder
+        self.compteur1 = 0
+        self.compteur2 = 0
 
     def set_father_executor(self, father_executor):
         """
@@ -981,6 +982,7 @@ class ProxyDiscipline(object):
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
         # it
+        def_bool = True 
         if self.check_configured_dependency_disciplines():
             self.set_numerical_parameters()
 
@@ -995,6 +997,49 @@ class ProxyDiscipline(object):
             self._update_status_dm(self.STATUS_CONFIGURE)
 
             self.set_configure_status(True)
+
+            # Check if the database is activated in the namespace manager
+            if self.ee.ns_manager.database_activated: 
+                self.load_data_from_database()
+
+
+    def load_data_from_database(self): 
+        """
+        This method loads data from a database using the JSONDataConnector and sets the loaded data in the proxy discipline.
+        The database name is extracted from the input data, and the method checks if the database name is already initialized or not. 
+        If it's the first time we encounter the database name, the method loads the data using the JSONDataConnector, if it has already been loaded we don't do it again.
+        """
+        from sostrades_core.execution_engine.data_connector.json_data_connector import JSONDataConnector
+
+        # Initialize database name
+        database_name_init = None
+        # Loop through the items in the input data
+        for k,v in self.get_data_in().items():
+            # Check if the inputs has a namespace
+            if 'namespace' in v:
+                # Get the namespace object from the shared namespace dictionary
+                namespace = self.get_shared_ns_dict().get(v['namespace'])
+                database_name = namespace.database_name
+                if database_name is not None:
+                    # Check if this is the first time we encounter this database name                            
+                    if database_name_init is not None: 
+                        data_connector = JSONDataConnector() 
+                        data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
+                    elif database_name != database_name_init:
+                        data_connector = JSONDataConnector() 
+                        data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
+                    database_name_init = database_name 
+                    # Get the full name of the variable
+                    full_name = self.get_var_full_name(k, self.get_data_in())
+                    # Set the data in the DataManager object
+                    try:
+                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value = False)
+                    except:
+                        if not data_loaded :
+                            raise Exception(f'Database Empty : {database_name} is not in JSON')
+                        elif k not in data_loaded: 
+                            raise Exception(f'variable {k} not in loaded JSON')
+
 
     def __check_all_data_integrity(self):
         '''
