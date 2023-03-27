@@ -19,7 +19,7 @@ Exp_min function minimize an array with a min_value with a smooth decreasing exp
 The gradient of this function can also be used
 '''
 
-from numpy import int32, int64, float32, float64, complex128, ndarray
+from numpy import int32, int64, float32, float64, complex128, ndarray, number
 from pandas.core.frame import DataFrame
 
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
@@ -36,7 +36,11 @@ def compute_len(obj, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
     elif isinstance(obj, ndarray):
         return obj.size
     elif isinstance(obj, DataFrame):
-        return len(obj) * len(set(obj.columns) - set(excluded_columns))
+        num_cols = len(set(obj.select_dtypes(include=[number]).columns) - set(excluded_columns))
+        df_without_strings = obj.select_dtypes(exclude=['object'])
+        #df_without_nans = df_without_strings.dropna()
+        num_rows = len(df_without_strings)
+        return num_rows * num_cols
     elif isinstance(obj, (tuple, list)):
         computed_len = 0
         for val in obj:
