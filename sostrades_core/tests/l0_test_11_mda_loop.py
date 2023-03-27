@@ -1331,7 +1331,41 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(len(proxy_out_names), len(disc_out_names))
         self.assertListEqual(proxy_out_names, disc_out_names)
 
+
+    def test_20_check_numerical_parameters_propagation(self):
+        """
+        
+        """
+        exec_eng = ExecutionEngine(self.name)
+
+        # add disciplines Sellaroupling
+        coupling_name = "SellarCoupling"
+        mda_builder = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_sellar_coupling')
+        exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
+        exec_eng.configure()
+
+        # Sellar inputs
+        disc_dict = {}
+        disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        disc_dict[f'{self.name}.{coupling_name}.linearization_mode'] = 'finite_differences'
+        disc_dict[f'{self.name}.{coupling_name}.sub_mda_class'] = 'MDANewtonRaphson'
+        disc_dict[f'{self.name}.sub_mda_class'] = 'MDANewtonRaphson'
+        disc_dict[f'{self.name}.linearization_mode'] = 'finite_differences'
+        disc_dict[f'{self.name}.SellarCoupling.linearization_mode'] = 'complex_step'
+        disc_dict[f'{self.name}.SellarCoupling.Sellar_1.linearization_mode'] = 'complex_step'
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.execute()
+
+
+
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_19_check_if_proxy_coupling_grammar_is_equal_to_GEMSEO_one_for_sobieski_case()
+    cls.test_20_check_numerical_parameters_propagation()
