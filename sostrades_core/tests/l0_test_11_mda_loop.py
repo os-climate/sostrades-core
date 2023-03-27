@@ -1332,9 +1332,9 @@ class TestMDALoop(unittest.TestCase):
         self.assertListEqual(proxy_out_names, disc_out_names)
 
 
-    def test_20_check_numerical_parameters_propagation(self):
+    def test_20_check_linearization_mode_propagation(self):
         """
-        
+        Test to assert that linearization mode is correctly propagated from the coupling to the subdiscipline
         """
         exec_eng = ExecutionEngine(self.name)
 
@@ -1356,16 +1356,16 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.sub_mda_class'] = 'MDANewtonRaphson'
         disc_dict[f'{self.name}.sub_mda_class'] = 'MDANewtonRaphson'
         disc_dict[f'{self.name}.linearization_mode'] = 'finite_differences'
-        disc_dict[f'{self.name}.SellarCoupling.linearization_mode'] = 'complex_step'
-        disc_dict[f'{self.name}.SellarCoupling.Sellar_1.linearization_mode'] = 'complex_step'
+        disc_dict[f'{self.name}.{coupling_name}.linearization_mode'] = 'finite_differences'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.execute()
-
-
+        # assert that linearization mode was correctly propagated
+        assert exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_2.linearization_mode')== 'finite_differences'
+        assert disc_dict[f'{self.name}.{coupling_name}.Sellar_1.linearization_mode'] == 'finite_differences'
 
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_20_check_numerical_parameters_propagation()
+    cls.test_20_check_linearization_mode_propagation()
