@@ -567,7 +567,7 @@ class NamespaceManager:
             ns_dict['local_ns'].update_value(
                 old_local_ns_value.replace(self.ee.study_name, study_name))
 
-    def set_ns_database_directory(self, database_location):
+    def set_ns_database_location(self, database_location):
         self.database_location = database_location
 
 class NamespaceManagerException(Exception):
