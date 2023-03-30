@@ -11,7 +11,7 @@ PyYAML==5.1.2
 dremio_client==0.15.1
 pyarrow==6.0.1
 pydoe2==1.3.0
-nlopt==2.6.2
+nlopt==2.7.0
 scipy==1.7.1
 chaospy==4.3.7
 sympy==1.4
