@@ -169,9 +169,9 @@ def configure_twice_all_usecases_and_compare_dm(processes_repo):
 
     """
 
-    if platform.system() == 'Windows':
-        raise OSError(
-            'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
+    # if platform.system() == 'Windows':
+    #     raise OSError(
+    #         'This method launch usecase with multiprocessing.It is not intended to be runned under Windows OS regarding the ressources consumptio')
 
     usecase_dict = get_all_usecases(processes_repo)
     message_queue = Queue()
