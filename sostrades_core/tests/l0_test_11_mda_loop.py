@@ -1356,7 +1356,6 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.sub_mda_class'] = 'MDANewtonRaphson'
         disc_dict[f'{self.name}.sub_mda_class'] = 'MDANewtonRaphson'
         disc_dict[f'{self.name}.linearization_mode'] = 'finite_differences'
-        disc_dict[f'{self.name}.{coupling_name}.linearization_mode'] = 'finite_differences'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 

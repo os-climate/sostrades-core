@@ -508,8 +508,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                            how='left', indicator=True)
         assert df_all[['selected_input', 'full_name']].equals(
             self.input_selection_x_z)
+        dspace_x_z_res = dspace_x_z.reset_index(drop=True)
         self.assertTrue(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)['variable'].equals(
-            dspace_x_z.reset_index(drop=True)['variable']))
+            dspace_x_z_res['variable'])) # pylint: disable=unsubscriptable-object
         self.assertEqual(exec_eng.dm.get_value(
             'doe.SampleGenerator.algo_options')['n_samples'], n_samples)
         for option in default_algo_options_fullfact.keys():
