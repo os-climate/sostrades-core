@@ -136,7 +136,8 @@ class GSPureNewtonorGSMDA(MDASequential):
         # execute MDAs in sequence
         if self.reset_history_each_run:
             self.residual_history = []
-
+        # initialize dm_values
+        dm_values = {}
         try:
             mda_i = self.mda_sequence[1]
             mda_i.reset_statuses_for_run()

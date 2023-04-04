@@ -581,6 +581,8 @@ class FunctionManagerDisc(SoSWrapp):
 
         dict_grad_ineq = {}
         dict_grad_eq = {}
+        grad_val_ineq = {}
+        grad_val_eq = {}
         # g'(h(x)) * h'(x)
         if len(value_gh_l) != 0:
             grad_val_ineq = get_dsmooth_dvariable(value_gh_l)
