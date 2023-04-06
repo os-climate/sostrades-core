@@ -41,7 +41,7 @@ class MDODisciplineWrapp(object):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def __init__(self, name, wrapper=None, wrapping_mode='SoSTrades'):
+    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades'):
         '''
         Constructor.
 

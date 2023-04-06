@@ -442,7 +442,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return formulation, obj_full_name, design_space, maximize_objective
 
-    def set_design_space(self):
+    def set_design_space(self) -> DesignSpace:
         """
         reads design space (set_design_space)
         """

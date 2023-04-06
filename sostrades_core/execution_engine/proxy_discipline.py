@@ -349,7 +349,7 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
@@ -461,7 +461,7 @@ class ProxyDiscipline(object):
                 self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                     observer)
 
-    def set_cache(self, disc, cache_type, cache_hdf_file):
+    def set_cache(self, disc: MDODiscipline, cache_type: str, cache_hdf_file: str):
         '''
         Instanciate and set cache for disc if cache_type is not 'None'
 
