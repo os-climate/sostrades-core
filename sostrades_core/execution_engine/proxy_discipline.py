@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
+import logging
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
+from typing import Union
 import os
 from os.path import dirname, join
 
@@ -259,19 +261,19 @@ class ProxyDiscipline(object):
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-        self.mdo_discipline_wrapp = None
+        self.mdo_discipline_wrapp: Union[MDODisciplineWrapp, None] = None
         self.create_mdo_discipline_wrap(
             name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
         self._reload(sos_name, ee, associated_namespaces)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+        self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.__father_builder = None
-        self.father_executor = None
+        self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
         self.compteur1 = 0
         self.compteur2 = 0
 
-    def set_father_executor(self, father_executor):
+    def set_father_executor(self, father_executor: "ProxyDiscipline"):
         """
         set father executor
 
@@ -286,7 +288,7 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces=None):
+    def _reload(self, sos_name: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
