@@ -415,8 +415,7 @@ class SosFactory:
 
         return builder
 
-
-    def create_builder_coupling(self, sos_name):
+    def create_builder_coupling(self, sos_name) -> SoSBuilder:
         """
         create a builder  defined by a coupling type SoSCoupling
         """
@@ -425,7 +424,7 @@ class SosFactory:
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
-    def create_optim_builder(self, sos_name, cls_builder):
+    def create_optim_builder(self, sos_name, cls_builder) -> SoSBuilder:
         """creates the builder of the optim scenario"""
         mod_path = f'{self.EE_PATH}.proxy_optim.ProxyOptim'
         cls = self.get_disc_class_from_module(mod_path)

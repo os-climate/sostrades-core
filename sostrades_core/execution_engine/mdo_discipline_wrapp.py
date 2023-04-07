@@ -52,7 +52,7 @@ class MDODisciplineWrapp(object):
         '''
         self.name = name
         self.wrapping_mode = wrapping_mode
-        self.mdo_discipline = None
+        self.mdo_discipline: SoSMDODiscipline = None
         if wrapper is not None:
             self.wrapper = wrapper(name)
         else:

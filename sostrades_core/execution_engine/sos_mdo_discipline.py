@@ -55,7 +55,9 @@ class SoSMDODiscipline(MDODiscipline):
     DEBUG_MODE = 'debug_mode'
     NUM_DESC_IN = {'linearization_mode','cache_type','cache_file_path','debug_mode'}
 
-    def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm):
+    def __init__(self,
+                 full_name :str, grammar_type: str, cache_type: str,
+                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict):
         '''
         Constructor
 

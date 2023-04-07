@@ -31,7 +31,7 @@ class PostProcessingManager:
     FILTER_FUNCTION_NAME = 'post_processing_filters'
     POST_PROCESSING_FUNCTION_NAME = 'post_processings'
 
-    def __init__(self, execution_engine):
+    def __init__(self, execution_engine: "ExecutionEngine"):
         """ Constructor
 
             :params: execution_engine, instance of execution engine that host the current PostProcessingManager instance

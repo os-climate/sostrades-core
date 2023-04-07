@@ -82,7 +82,7 @@ class ExecutionEngine:
         self.__factory = SosFactory(
             self, self.study_name)
 
-        self.root_process: Union[ProxyDiscipline, None] = None
+        self.root_process: Union[ProxyDiscipline, ProxyCoupling,None] = None
         self.root_builder_ist = None
         self.data_check_integrity: bool = False
         self.__connector_container = PersistentConnectorContainer()
@@ -151,10 +151,10 @@ class ExecutionEngine:
         self.dm.reset()
         self.load_study_from_input_dict({})
 
-    def set_root_process(self, process_instance: ProxyDiscipline):
+    def set_root_process(self, process_instance: Union[ProxyCoupling, ProxyDiscipline]):
         # self.dm.reset()s
 
-        if isinstance(process_instance, ProxyDiscipline):
+        if isinstance(process_instance, (ProxyDiscipline, ProxyCoupling)):
             self.root_process = process_instance
         else:
             raise ExecutionEngineException(
@@ -182,7 +182,7 @@ class ExecutionEngine:
         Use data connector if needed, in the following case
         1) data is in input, and come from the output of another model --> no data connector used
         2) data is in output --> no data connector use here
-        3) data is in input, and does not come from another model --> data connector is used
+        is in input, and does not come from another model --> data connector is used
         """
 
         dm_data_dict = self.dm.data_dict
@@ -669,6 +669,7 @@ class ExecutionEngine:
         except:
             ex_proc.set_status_from_mdo_discipline()
             raise
+
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())
