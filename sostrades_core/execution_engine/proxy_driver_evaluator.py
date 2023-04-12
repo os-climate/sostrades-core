@@ -126,8 +126,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     USECASE_DATA = 'usecase_data'
 
-    # namespace for the [var]_dict outputs of the mono-instance evaluator.
-    # since [var] are anonymized
+    # TODO: if we want this input to be called eval outputs additional homogeneisation work is needed ('output_name' column)
+    VARS_TO_GATHER = 'vars_to_gather'
+
+    # namespace for the {var}_dict outputs of the evaluator since {var} are anonymized
+    # FIXME: this namespace is to be renamed especially since it is now used by the multi-instance too
     NS_DOE = 'ns_doe'
     # full names, set to root node to have [var]_dict appear in same node as [var]
     # shared namespace of the mono-instance evaluator for eventual couplings
@@ -747,7 +750,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             disc_in = self.get_data_in()
             if builder_mode == self.MULTI_INSTANCE:
-                self.build_inst_desc_io_with_scenario_df()
+                self.build_multi_instance_inst_desc_io()
                 if self.GENERATED_SAMPLES in disc_in:
                     generated_samples = self.get_sosdisc_inputs(
                         self.GENERATED_SAMPLES)
@@ -844,8 +847,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         self.set_eval_in_out_lists(
                             self.selected_inputs, self.selected_outputs)
 
-                        # setting dynamic outputs. One output of type dict per selected
-                        # output
+                        # setting dynamic outputs. One output of type dict per selected output
                         for out_var in self.eval_out_list:
                             dynamic_outputs.update(
                                 {f'{out_var.split(f"{self.get_disc_full_name()}.", 1)[1]}_dict': {'type': 'dict',
@@ -867,8 +869,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     f'Wrong builder mode input in {self.sos_name}')
         # after managing the different builds inputs, we do the setup_sos_disciplines of the wrapper in case it is
         # overload, e.g. in the case of a custom driver_wrapper_cls (with DriverEvaluatorWrapper this does nothing)
-        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper
-        # case
+        # super().setup_sos_disciplines() # TODO: manage custom driver wrapper case ?
 
     def prepare_build(self):
         """
@@ -989,106 +990,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def get_disciplines_to_configure(self):
         return self._get_disciplines_to_configure(self.scenarios)
 
-    def prepare_multi_instance_build(self):
-        """
-        Call the tool to build the subprocesses in multi-instance builder mode.
-        """
-        self.build_tool()
-        # Tool is building disciplines for the driver on behalf of the driver name
-        # no further disciplines needed to be builded by the evaluator
-        return []
-
-    def build_inst_desc_io_with_scenario_df(self):
-        '''
-        Complete inst_desc_in with scenario_df
-        '''
-        dynamic_inputs = {self.SCENARIO_DF: {
-            self.TYPE: 'dataframe',
-            self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
-            self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
-                                        self.SCENARIO_NAME: ('string', None, True)},
-            self.DATAFRAME_EDITION_LOCKED: False,
-            self.EDITABLE: True,
-            self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
-
-        dynamic_inputs.update({self.INSTANCE_REFERENCE:
-                                   {SoSWrapp.TYPE: 'bool',
-                                    SoSWrapp.DEFAULT: False,
-                                    SoSWrapp.POSSIBLE_VALUES: [True, False],
-                                    SoSWrapp.STRUCTURING: True}})
-
-        disc_in = self.get_data_in()
-        if self.INSTANCE_REFERENCE in disc_in:
-            instance_reference = self.get_sosdisc_inputs(
-                self.INSTANCE_REFERENCE)
-            if instance_reference:
-                dynamic_inputs.update({self.REFERENCE_MODE:
-                                           {SoSWrapp.TYPE: 'string',
-                                            # SoSWrapp.DEFAULT: self.LINKED_MODE,
-                                            SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
-                                            SoSWrapp.STRUCTURING: True}})
-
-        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                        'dataframe_descriptor': {
-                                                            self.SELECTED_SCENARIO: ('string', None, False),
-                                                            self.SCENARIO_NAME: ('string', None, False)},
-                                                        'dataframe_edition_locked': True,
-                                                        'structuring': True,
-                                                        'unit': None,
-                                                        # 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                        # 'namespace': 'ns_sampling',
-                                                        'default': pd.DataFrame(),
-                                                        # self.OPTIONAL:
-                                                        # True,
-                                                        self.USER_LEVEL: 3
-                                                        }})
-        self.add_inputs(dynamic_inputs)
-        # so that eventual mono-instance outputs get clear
-        if self.builder_tool is not None:
-            dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
-            self.add_outputs(dynamic_output_from_tool)
-
-    def configure_tool(self):
-        '''
-        Instantiate the tool if it does not and prepare it with data that he needs (the tool know what he needs)
-        '''
-        if self.builder_tool is None:
-            builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
-                'scatter_tool', map_name=self.map_name,
-                display_options=self.display_options)
-            self.builder_tool = builder_tool_cls.instantiate()
-            self.builder_tool.associate_tool_to_driver(
-                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-        self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
-        if self.scatter_list_valid:
-            self.builder_tool.prepare_tool()
-        else:
-            self.logger.error(self.scatter_list_integrity_msg)
-
-    def build_tool(self):
-        if self.builder_tool is not None and self.scatter_list_valid:
-            self.builder_tool.build()
-
-    def check_scatter_list_validity(self):
-        # checking for duplicates
-        msg = ''
-        if self.SCENARIO_DF in self.get_data_in():
-            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                                         == True][self.SCENARIO_NAME].values.tolist()
-            set_sc_names = set(scenario_names)
-            if len(scenario_names) != len(set_sc_names):
-                repeated_elements = [
-                    sc for sc in set_sc_names if scenario_names.count(sc) > 1]
-                msg = 'Cannot activate several scenarios with the same name (' + \
-                      repeated_elements[0]
-                for sc in repeated_elements[1:]:
-                    msg += ', ' + sc
-                msg += ').'
-                return False, msg
-        # in any other case the list is valid
-        return True, msg
-
     def check_data_integrity(self):
         # checking for duplicates
         disc_in = self.get_data_in()
@@ -1161,15 +1062,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.ee.ns_manager.add_display_ns_to_builder(
             disc_builder, driver_display_value)
 
-    def prepare_mono_instance_build(self):
-        '''
-        Get the builder of the single subprocesses in mono-instance builder mode.
-        '''
-        if self.eval_process_builder is None:
-            self._set_eval_process_builder()
-
-        return [self.eval_process_builder] if self.eval_process_builder is not None else []
-
     def set_eval_in_out_lists(self, in_list, out_list, inside_evaluator=False):
         '''
         Set the evaluation variable list (in and out) present in the DM
@@ -1177,8 +1069,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
 
         # final_in_list, final_out_list = self.remove_pseudo_variables(in_list, out_list) # only actual subprocess variables
-        self.eval_in_list = [
-            f'{self.get_disc_full_name()}.{element}' for element in in_list]
+        if in_list is not None:
+            self.eval_in_list = [
+                f'{self.get_disc_full_name()}.{element}' for element in in_list]
         self.eval_out_list = [
             f'{self.get_disc_full_name()}.{element}' for element in out_list]
 
@@ -1338,62 +1231,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         return possible_in_values, possible_out_values
 
-    def get_x0(self):
-        '''
-        Get initial values for input values decided in the evaluation
-        '''
-
-        return dict(zip(self.eval_in_list,
-                        map(self.dm.get_value, self.eval_in_list)))
-
-    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
-        default_custom_dataframe = pd.DataFrame(
-            [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-        dataframe_descriptor = {}
-        for i, key in enumerate(self.selected_inputs):
-            var_f_name = self.eval_in_list[i]
-            if var_f_name in self.ee.dm.data_id_map:
-                var = tuple([self.ee.dm.get_data(
-                    var_f_name, 'type'), None, True])
-                dataframe_descriptor[key] = var
-            elif self.MULTIPLIER_PARTICULE in var_f_name:
-                # for multipliers assume it is a float
-                dataframe_descriptor[key] = ('float', None, True)
-            else:
-                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
-
-        dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                         'dataframe_descriptor': dataframe_descriptor,
-                                         'dataframe_edition_locked': False,
-                                         'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                         'namespace': self.NS_EVAL
-                                         }}
-
-        # This reflects 'samples_df' dynamic input has been configured and that
-        # eval_inputs have changed
-        if 'samples_df' in disc_in and selected_inputs_has_changed:
-
-            if disc_in['samples_df']['value'] is not None:
-                from_samples = list(disc_in['samples_df']['value'].keys())
-                from_eval_inputs = list(default_custom_dataframe.keys())
-                final_dataframe = pd.DataFrame(
-                    None, columns=self.selected_inputs)
-
-                len_df = 1
-                for element in from_eval_inputs:
-                    if element in from_samples:
-                        len_df = len(disc_in['samples_df']['value'])
-
-                for element in from_eval_inputs:
-                    if element in from_samples:
-                        final_dataframe[element] = disc_in['samples_df']['value'][element]
-
-                    else:
-                        final_dataframe[element] = [NaN for _ in range(len_df)]
-
-                disc_in['samples_df']['value'] = final_dataframe
-            disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
-        return dynamic_inputs
 
     def check_eval_io(self, given_list, default_list, is_eval_input):
         """
@@ -1604,3 +1441,220 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             uc_d = {converted_key: value}
             input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
+
+    # WIP on class pre-refactoring (identifying mono-instance and multi-instance methods)
+
+    #######################################
+    #######################################
+    ##### MULTI-INSTANCE MODE METHODS #####
+    #######################################
+    #######################################
+
+    def prepare_multi_instance_build(self):
+        """
+        Call the tool to build the subprocesses in multi-instance builder mode.
+        """
+        self.build_tool()
+        # Tool is building disciplines for the driver on behalf of the driver name
+        # no further disciplines needed to be builded by the evaluator
+        return []
+
+    def build_multi_instance_inst_desc_io(self):
+        '''
+        Complete inst_desc_in with scenario_df
+        '''
+        dynamic_inputs = {
+            self.SCENARIO_DF: {
+                self.TYPE: 'dataframe',
+                self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
+                self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
+                                            self.SCENARIO_NAME: ('string', None, True)},
+                self.DATAFRAME_EDITION_LOCKED: False,
+                self.EDITABLE: True,
+                self.STRUCTURING: True
+            }, # TODO: manage variable columns for (non-very-simple) multiscenario cases
+            self.VARS_TO_GATHER: {
+                self.TYPE: 'dataframe',
+                self.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']), # TODO: remove maybe when auto suggestion of subprocess outputs is ready
+                self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
+                                            'full_name': ('string', None, False),
+                                            'output_name': ('string', None, True)
+                                            },
+                self.DATAFRAME_EDITION_LOCKED: False,
+                self.STRUCTURING: True,
+                # TODO: run-time coupling is not possible but might want variable in NS_EVAL for config-time coupling ?
+                # self.VISIBILITY: self.SHARED_VISIBILITY,
+                # self.NAMESPACE: self.NS_EVAL
+            },
+            self.INSTANCE_REFERENCE: {
+                self.TYPE: 'bool',
+                self.DEFAULT: False,
+                self.POSSIBLE_VALUES: [True, False],
+                self.STRUCTURING: True
+            }
+        }
+
+        disc_in = self.get_data_in()
+        if self.INSTANCE_REFERENCE in disc_in:
+            instance_reference = self.get_sosdisc_inputs(
+                self.INSTANCE_REFERENCE)
+            if instance_reference:
+                dynamic_inputs.update({self.REFERENCE_MODE:
+                                           {SoSWrapp.TYPE: 'string',
+                                            # SoSWrapp.DEFAULT: self.LINKED_MODE,
+                                            SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
+                                            SoSWrapp.STRUCTURING: True}})
+
+        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
+                                                        'dataframe_descriptor': {
+                                                            self.SELECTED_SCENARIO: ('string', None, False),
+                                                            self.SCENARIO_NAME: ('string', None, False)},
+                                                        'dataframe_edition_locked': True,
+                                                        'structuring': True,
+                                                        'unit': None,
+                                                        # 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                        # 'namespace': 'ns_sampling',
+                                                        'default': pd.DataFrame(),
+                                                        # self.OPTIONAL:
+                                                        # True,
+                                                        self.USER_LEVEL: 3
+                                                        }})
+        self.add_inputs(dynamic_inputs)
+
+        dynamic_outputs = {}
+        if self.VARS_TO_GATHER in disc_in:
+            # FIXME: not yet managing automatic suggestion of subprocess outputs
+            eval_outputs = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
+            # we fetch the inputs and outputs selected by the user
+            eval_outputs = eval_outputs[eval_outputs['selected_output'] == True]
+            selected_outputs = eval_outputs['full_name']
+            outputs_names = eval_outputs['output_name']
+            self.selected_outputs = selected_outputs.tolist()
+            self.set_eval_in_out_lists(in_list=None,
+                                       out_list=self.selected_outputs)
+            for out_var, out_name in zip(selected_outputs, outputs_names):
+                _out_name = out_name or f'{out_var}_gather'
+                dynamic_outputs.update(
+                    {_out_name: {self.TYPE: 'dict',
+                                 self.VISIBILITY: 'Shared',
+                                 self.NAMESPACE: self.NS_DOE}})
+
+        # so that eventual mono-instance outputs get clear # TODO: understand whether applicable in multi-instance
+        if self.builder_tool is not None:
+            dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
+            dynamic_outputs.update(dynamic_output_from_tool)
+
+        self.add_outputs(dynamic_outputs)
+
+    def configure_tool(self):
+        '''
+        Instantiate the tool if it does not and prepare it with data that he needs (the tool know what he needs)
+        '''
+        if self.builder_tool is None:
+            builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
+                'scatter_tool', map_name=self.map_name,
+                display_options=self.display_options)
+            self.builder_tool = builder_tool_cls.instantiate()
+            self.builder_tool.associate_tool_to_driver(
+                self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
+        self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
+        if self.scatter_list_valid:
+            self.builder_tool.prepare_tool()
+        else:
+            self.logger.error(self.scatter_list_integrity_msg)
+
+    def build_tool(self):
+        if self.builder_tool is not None and self.scatter_list_valid:
+            self.builder_tool.build()
+
+    def check_scatter_list_validity(self):
+        # checking for duplicates
+        msg = ''
+        if self.SCENARIO_DF in self.get_data_in():
+            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
+                                         == True][self.SCENARIO_NAME].values.tolist()
+            set_sc_names = set(scenario_names)
+            if len(scenario_names) != len(set_sc_names):
+                repeated_elements = [
+                    sc for sc in set_sc_names if scenario_names.count(sc) > 1]
+                msg = 'Cannot activate several scenarios with the same name (' + \
+                      repeated_elements[0]
+                for sc in repeated_elements[1:]:
+                    msg += ', ' + sc
+                msg += ').'
+                return False, msg
+        # in any other case the list is valid
+        return True, msg
+
+
+    #######################################
+    #######################################
+    ##### MONO-INSTANCE MODE METHODS ######
+    #######################################
+    #######################################
+
+    def prepare_mono_instance_build(self):
+        '''
+        Get the builder of the single subprocesses in mono-instance builder mode.
+        '''
+        if self.eval_process_builder is None:
+            self._set_eval_process_builder()
+
+        return [self.eval_process_builder] if self.eval_process_builder is not None else []
+
+    def get_x0(self):
+        '''
+        Get initial values for input values decided in the evaluation
+        '''
+
+        return dict(zip(self.eval_in_list,
+                        map(self.dm.get_value, self.eval_in_list)))
+    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
+        default_custom_dataframe = pd.DataFrame(
+            [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
+        dataframe_descriptor = {}
+        for i, key in enumerate(self.selected_inputs):
+            var_f_name = self.eval_in_list[i]
+            if var_f_name in self.ee.dm.data_id_map:
+                var = tuple([self.ee.dm.get_data(
+                    var_f_name, 'type'), None, True])
+                dataframe_descriptor[key] = var
+            elif self.MULTIPLIER_PARTICULE in var_f_name:
+                # for multipliers assume it is a float
+                dataframe_descriptor[key] = ('float', None, True)
+            else:
+                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
+
+        dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                         'dataframe_descriptor': dataframe_descriptor,
+                                         'dataframe_edition_locked': False,
+                                         'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                         'namespace': self.NS_EVAL
+                                         }}
+
+        # This reflects 'samples_df' dynamic input has been configured and that
+        # eval_inputs have changed
+        if 'samples_df' in disc_in and selected_inputs_has_changed:
+
+            if disc_in['samples_df']['value'] is not None:
+                from_samples = list(disc_in['samples_df']['value'].keys())
+                from_eval_inputs = list(default_custom_dataframe.keys())
+                final_dataframe = pd.DataFrame(
+                    None, columns=self.selected_inputs)
+
+                len_df = 1
+                for element in from_eval_inputs:
+                    if element in from_samples:
+                        len_df = len(disc_in['samples_df']['value'])
+
+                for element in from_eval_inputs:
+                    if element in from_samples:
+                        final_dataframe[element] = disc_in['samples_df']['value'][element]
+
+                    else:
+                        final_dataframe[element] = [NaN for _ in range(len_df)]
+
+                disc_in['samples_df']['value'] = final_dataframe
+            disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
+        return dynamic_inputs

@@ -94,7 +94,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                 rmtree(dir_to_del)
         sleep(0.5)
 
-    def _test_01_multi_instance_configuration_from_df_with_eval_outputs_as_hard_input(self):
+    def test_01_multi_instance_configuration_from_df_with_eval_outputs_as_hard_input(self):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -133,9 +133,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
 
         # configure eval_output for gather capabilities
-        dict_values[f'{self.study_name}.eval_outputs'] = pd.DataFrame({'selected_output': [True, False, True],
-                                                                       'full_name': ['y', 'o', 'Disc1.indicator'],# anonymized wrt scenario
-                                                                       'output_name': [None, None, None]}) # by default {output}_gather
+        dict_values[f'{self.study_name}.multi_scenarios.vars_to_gather'] = \
+            pd.DataFrame({'selected_output': [True, False, True],
+                          'full_name': ['y', 'o', 'Disc1.indicator'],# anonymized wrt scenario
+                          'output_name': [None, None, None]}) # by default {output}_gather
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check output existence
