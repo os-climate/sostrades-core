@@ -134,7 +134,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # configure eval_output for gather capabilities
         dict_values[f'{self.study_name}.eval_outputs'] = pd.DataFrame({'selected_output': [True, False, True],
-                                                                       'full_name': ['y', 'o', 'Disc1.indicator']}) # anonymized wrt scenario
+                                                                       'full_name': ['y', 'o', 'Disc1.indicator'],# anonymized wrt scenario
+                                                                       'output_name': [None, None, None]}) # by default {output}_gather
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check output existence
@@ -146,17 +147,17 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                              'scenario_2'])
 
         ms_disc_out = ms_disc.get_data_out()
-        self.assertIn('Gather.Disc1.indicator_gather', ms_disc_out)
-        self.assertIn('Gather.y_gather', ms_disc_out)
-        self.assertNotIn('Gather.o_gather', ms_disc_out)
+        self.assertIn('Disc1.indicator_gather', ms_disc_out)
+        self.assertIn('y_gather', ms_disc_out)
+        self.assertNotIn('o_gather', ms_disc_out)
 
         self.exec_eng.execute()
 
         # check output correctness
         y_gather = self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.Gather.y_gather')
+            'MyCase.multi_scenarios.y_gather')
         indicator_gather = self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.Gather.Disc1.indicator_gather')
+            'MyCase.multi_scenarios.Disc1.indicator_gather')
 
         y_gather_ref = dict(zip(scenario_list, [self.y1, self.y2]))
         indicator_gather_ref = dict(zip(scenario_list, [self.indicator1, self.indicator2]))
