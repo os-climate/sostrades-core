@@ -82,7 +82,7 @@ class ExecutionEngine:
         self.__factory = SosFactory(
             self, self.study_name)
 
-        self.root_process: Union[ProxyDiscipline, ProxyCoupling,None] = None
+        self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.data_check_integrity: bool = False
         self.__connector_container = PersistentConnectorContainer()
@@ -151,10 +151,9 @@ class ExecutionEngine:
         self.dm.reset()
         self.load_study_from_input_dict({})
 
-    def set_root_process(self, process_instance: Union[ProxyCoupling, ProxyDiscipline]):
+    def set_root_process(self, process_instance: ProxyCoupling):
         # self.dm.reset()s
-
-        if isinstance(process_instance, (ProxyDiscipline, ProxyCoupling)):
+        if isinstance(process_instance, ProxyCoupling):
             self.root_process = process_instance
         else:
             raise ExecutionEngineException(
