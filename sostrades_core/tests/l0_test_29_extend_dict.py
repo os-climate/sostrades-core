@@ -26,7 +26,8 @@ from pandas.testing import assert_frame_equal
 
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
+    convert_array_into_new_type
 
 
 class TestExtendDict(unittest.TestCase):
@@ -58,20 +59,20 @@ class TestExtendDict(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         disc5 = exec_eng.root_process.proxy_disciplines[0]
-        disc5_inputs = {input:exec_eng.dm.get_value(input) for input in disc5.get_input_data_names()}
+        disc5_inputs = {input: exec_eng.dm.get_value(input) for input in disc5.get_input_data_names()}
 
         target = {
             'EE.z': [3.0, 0.0],
-            'EE.dict_out': [ 0.5, 0.5]}
+            'EE.dict_out': [0.5, 0.5]}
 
         converted_inputs = convert_new_type_into_array(disc5_inputs, exec_eng.dm)
-        
+
         # check new_types conversion into array
         for key, value in target.items():
             self.assertListEqual(value, list(converted_inputs[key]))
-            
+
         reconverted_inputs = convert_array_into_new_type(converted_inputs, exec_eng.dm)
-        
+
         # check array conversion into new_types
         self.assertDictEqual(reconverted_inputs['EE.dict_out'], exec_eng.dm.get_value('EE.dict_out'))
 
@@ -99,19 +100,20 @@ class TestExtendDict(unittest.TestCase):
 
         # -- exec
         exec_eng.execute()
- 
+
         # compare output h (sos_trades format) to reference
         rp = exec_eng.root_process.proxy_disciplines[0]
         z_out, dict_out = rp.get_sosdisc_outputs(["z", "dict_out"])
         z_out_target = array([0.75, 1.5])
         df_data = {'col1': [1, 2], 'col2': [3, 0.75]}
         df = DataFrame(data=df_data)
-        dict_out_target = {'key1': {'key11': 0.75, 'key12': 0.5, 'key13': 8., 'key14': {'key141': df, 'key142': array([5])}},
-                           'key2': 10.}
- 
+        dict_out_target = {
+            'key1': {'key11': 0.75, 'key12': 0.5, 'key13': 8., 'key14': {'key141': df, 'key142': array([5])}},
+            'key2': 10.}
+
         assert_array_equal(
             z_out, z_out_target, "wrong output z")
- 
+
         self.assertSetEqual(set(dict_out.keys()),
                             set(dict_out_target.keys()), "Incorrect dict_out keys")
         self.assertSetEqual(set(dict_out['key1'].keys()),
@@ -158,29 +160,29 @@ class TestExtendDict(unittest.TestCase):
                        f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}
                        }
         exec_eng.load_study_from_input_dict(values_dict)
-        
+
         values_dict_array = {f'{self.name}.dict_out': array([3., 4.]),
-                       f'{self.name}.z': array([4., 5.]),
-                       f'{self.name}.h': array([8., 9.]),
-                       f'{self.name}.Disc4.mydict': array([3., 4.])}
-        
+                             f'{self.name}.z': array([4., 5.]),
+                             f'{self.name}.h': array([8., 9.]),
+                             f'{self.name}.Disc4.mydict': array([3., 4.])}
+
         converted_inputs = convert_new_type_into_array(values_dict, exec_eng.dm)
-        
+
         # check new_types conversion into array
         self.assertTrue(dict_are_equal(values_dict_array, converted_inputs))
-            
+
         reconverted_inputs = convert_array_into_new_type(converted_inputs, exec_eng.dm)
-        
+
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(values_dict, reconverted_inputs))
 
         exec_eng.execute()
-  
+
         target = {f'{self.name}.dict_out': {'key1': 0.7071119843035847, 'key2': 0.7071119843035847},
                   f'{self.name}.z': array([0.707111984, 1.41422397]),
                   f'{self.name}.h': array([0.7071067811865475, 0.7071067811865475]),
                   f'{self.name}.Disc4.mydict': {'md_1': array([3., 4.])}}
-  
+
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
@@ -206,21 +208,22 @@ class TestExtendDict(unittest.TestCase):
         df = DataFrame(data=df_data)
         values_dict = {f'{self.name}.dict_out': {
             'key1': {'key11': 0.5, 'key12': 0.5, 'key13': 8., 'key14': {'key141': df, 'key142': array([5])}},
-            'key2': 10.}, f'{self.name}.z': [3., 0.]}
+            'key2': 10.}, f'{self.name}.z': array([3., 0.])}
         exec_eng.load_study_from_input_dict(values_dict)
 
         exec_eng.execute()
- 
+
         # compare GEMS output with reference local data (GEMS format)
-        target_array = {'EE.dict_out': array([ 0.5, 0.5, 8. , 1. , 2. , 3. , 0.5, 5. , 10. ]), 'EE.z': [3.0, 0.0], 'EE.h': array([0.75, 0.75])}
+        target_array = {'EE.dict_out': array([0.5, 0.5, 8., 1., 2., 3., 0.5, 5., 10.]), 'EE.z': [3.0, 0.0],
+                        'EE.h': array([0.75, 0.75])}
         data_dm = {key: exec_eng.dm.get_value(key) for key in target_array.keys()}
         converted_data_dm = convert_new_type_into_array(data_dm, exec_eng.dm)
-         
+
         # check new_types conversion into array
         self.assertTrue(dict_are_equal(converted_data_dm, target_array))
-             
+
         reconverted_data_dm = convert_array_into_new_type(converted_data_dm, exec_eng.dm)
-         
+
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 
@@ -289,22 +292,22 @@ class TestExtendDict(unittest.TestCase):
         dict_multi = {f'key{i}': {'1': i + 1} for i in range(500)}
 
         values_dict = {f'{self.name}.dict_of_dict_out': dict_multi,
-                       f'{self.name}.z': [3., 0.]}
+                       f'{self.name}.z': array([3., 0.])}
         exec_eng.load_study_from_input_dict(values_dict)
-        
+
         exec_eng.execute()
- 
+
         # compare GEMS output with reference local data (GEMS format)
-        target_array = {'EE.dict_of_dict_out': array([i + 1 for i in range(500)]), 'EE.h': array([0.75 , 1.125])}
-         
+        target_array = {'EE.dict_of_dict_out': array([i + 1 for i in range(500)]), 'EE.h': array([0.75, 1.125])}
+
         data_dm = {key: exec_eng.dm.get_value(key) for key in target_array.keys()}
         converted_data_dm = convert_new_type_into_array(data_dm, exec_eng.dm)
-           
+
         # check new_types conversion into array
         self.assertTrue(dict_are_equal(converted_data_dm, target_array))
-               
+
         reconverted_data_dm = convert_array_into_new_type(converted_data_dm, exec_eng.dm)
-           
+
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 

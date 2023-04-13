@@ -16,11 +16,12 @@ limitations under the License.
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from numpy import array
+
+
 # Discipline with dataframe
 
 
 class Disc6(SoSWrapp):
-
     # ontology information
     _ontology_data = {
         'label': 'sostrades_core.sos_wrapping.test_discs.disc6',
@@ -36,12 +37,17 @@ class Disc6(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'df': {'type': 'dataframe', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
-        'dict_df': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'df': {'type': 'dataframe', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected',
+               'dataframe_descriptor': {'years': ('float', [0., 3000.], True),
+                                        'year': ('float', [0., 3000.], True),
+                                        'c1': ('float', [-1e4, 1e4], True),
+                                        'c2': ('float', None, True)}},
+        'dict_df': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'},
+                    'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     DESC_OUT = {
-        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'h': {'type': 'array', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
     }
 
     def run(self):

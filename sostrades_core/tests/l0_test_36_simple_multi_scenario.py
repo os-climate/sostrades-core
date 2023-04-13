@@ -127,9 +127,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.execute()
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),  ['scenario_1',
-                                                                                      'scenario_W',
-                                                                                      'scenario_2'])
+            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(), ['scenario_1',
+                                                                                     'scenario_W',
+                                                                                     'scenario_2'])
         ms_disc = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -260,8 +260,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
                                                        scenario + '.Disc3.power', 'editable'), False)
 
-        self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),
-                         ['scenario_1', 'scenario_W', 'scenario_2'])
+        self.assertEqual(
+            self.exec_eng.dm.get_value('MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),
+            ['scenario_1', 'scenario_W', 'scenario_2'])
         ms_disc = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -401,7 +402,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertEqual(ms_sub_disc_names, ['scenario_1'])
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
 
@@ -413,7 +415,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                              'scenario_2'])
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', False, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', False, self.b2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
 
@@ -424,7 +427,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertEqual(ms_sub_disc_names, ['scenario_1'])
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
         dict_values[self.study_name +
                     '.multi_scenarios.scenario_df'] = scenario_df
@@ -468,11 +472,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(
-            self.repo,  proc_name)
+            self.repo, proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1, self.z1], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
+            [['scenario_1', True, self.b1, self.z1], ['scenario_2', True, self.b2, self.z2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
 
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
@@ -534,11 +539,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(
-            self.repo,  proc_name)
+            self.repo, proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
@@ -569,7 +575,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1, self.z2], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
+            [['scenario_1', True, self.b1, self.z2], ['scenario_2', True, self.b2, self.z2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.execute()
@@ -595,7 +602,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
@@ -615,7 +623,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertIn(error_message, self.my_handler.msg_list)
 
         runtime_error_message = 'Variable MyCase.multi_scenarios.scenario_df : ' \
-            'Cannot activate several scenarios with the same name (scenario_1).'
+                                'Cannot activate several scenarios with the same name (scenario_1).'
         # data integrity Exception
         with self.assertRaises(ValueError) as cm:
             self.exec_eng.execute()
@@ -629,7 +637,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         scenario_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_2', True, self.b2]],
+            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
         dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
                        f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
@@ -660,13 +669,14 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertIn(error_message, self.my_handler.msg_list)
 
         runtime_error_message = 'Variable MyCase.multi_scenarios.scenario_df : ' \
-            'Cannot activate several scenarios with the same name (scenario_1).'
+                                'Cannot activate several scenarios with the same name (scenario_1).'
         # data integrity Exception
         with self.assertRaises(ValueError) as cm:
             self.exec_eng.execute()
         self.assertIn(runtime_error_message, str(cm.exception))
 
     # EEV3 TESTS #TODO: cleanup when nested scatter exists
+
 
 if '__main__' == __name__:
     cls = TestSimpleMultiScenario()

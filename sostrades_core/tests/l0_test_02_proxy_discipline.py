@@ -60,7 +60,7 @@ class TestProxyDiscipline(unittest.TestCase):
             'Disc1', self.mod1_path)
         self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
         self.ee.configure()
-        
+
         disc1 = self.ee.root_process.proxy_disciplines[0]
         data_names_in = disc1.get_input_data_names()
         data_names_out = disc1.get_output_data_names()
@@ -77,13 +77,13 @@ class TestProxyDiscipline(unittest.TestCase):
             'Disc1', self.mod1_path)
         self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
         self.ee.configure()
-        
+
         dict_values = {'Test.Disc1.x': 1,
                        'Test.Disc1.a': 2,
                        'Test.Disc1.b': 5,
                        'Test.Disc1.name': 'A1'}
         self.ee.load_study_from_input_dict(dict_values)
-        
+
         self.ee.display_treeview_nodes()
         self.assertEqual(len(self.ee.root_process.proxy_disciplines), 1)
         self.assertTrue(self.ee.root_process.is_configured())
@@ -158,33 +158,33 @@ class TestProxyDiscipline(unittest.TestCase):
         '''
         ns_dict = {'ns_ac': self.ns_test}
         self.ee.ns_manager.add_ns_def(ns_dict)
- 
+
         disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', self.mod1_ns_path)
         self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
         self.ee.configure()
- 
+
         a = 1.0
         b = 3.0
         x = 99.0
         values_dict = {self.ns_test + '.x': x,
                        self.ns_test + '.Disc1.a': a,
                        self.ns_test + '.Disc1.b': b}
- 
+
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         # check namespaced input/output
         disc1 = self.ee.root_process.proxy_disciplines[0]
         self.assertEqual(disc1.get_var_full_name('x', disc1.get_data_in()), 'Test.x')
         self.assertEqual(disc1.get_var_full_name('y', disc1.get_data_out()), 'Test.y')
-        
+
         # check values in dm
         self.assertEqual(self.ee.dm.get_value('Test.Disc1.a'), a)
         self.assertEqual(self.ee.dm.get_value('Test.Disc1.b'), b)
         self.assertEqual(self.ee.dm.get_value('Test.x'), x)
- 
+
         self.ee.execute()
-  
+
         self.assertEqual(self.ee.dm.get_value(
             self.ns_test + '.x'), values_dict[self.ns_test + '.x'])
 
@@ -193,22 +193,22 @@ class TestProxyDiscipline(unittest.TestCase):
         check discipline namespace update
         '''
         ee = ExecutionEngine('Test')
- 
+
         ns_dict = {'ns_ac': self.ns_test}
         ee.ns_manager.add_ns_def(ns_dict)
- 
+
         disc1_builder = ee.factory.get_builder_from_module(
             'Disc1', self.mod1_ns_path)
         ee.factory.set_builders_to_coupling_builder(disc1_builder)
         ee.configure()
- 
+
         values_dict = {}
         values_dict[self.ns_test + '.Disc1.a'] = 10.
         values_dict[self.ns_test + '.Disc1.b'] = 20.
         values_dict[self.ns_test + '.x'] = 10.
- 
+
         ee.load_study_from_input_dict(values_dict)
- 
+
         # get inputs and compare to reference
         disc1 = ee.root_process.proxy_disciplines[0]
         inp_dict = disc1.get_sosdisc_inputs(
@@ -216,13 +216,13 @@ class TestProxyDiscipline(unittest.TestCase):
         ref_inp = {'a': 10.0, 'b': 20.0}
         self.assertDictEqual(ref_inp, inp_dict, 'error in input dict')
         ee.execute()
-  
+
         # get outputs and compare to reference
         out_dict = disc1.get_sosdisc_outputs(
             ['indicator', 'y'], in_dict=True)
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
- 
+
     def test_08_get_sos_io_no_inputs(self):
         '''
         check discipline namespace update
@@ -230,20 +230,20 @@ class TestProxyDiscipline(unittest.TestCase):
         ee = ExecutionEngine('Test')
         ns_dict = {'ns_ac': self.ns_test}
         ee.ns_manager.add_ns_def(ns_dict)
- 
+
         disc1_builder = ee.factory.get_builder_from_module(
             'Disc1', self.mod1_ns_path)
         ee.factory.set_builders_to_coupling_builder(disc1_builder)
- 
+
         ee.configure()
- 
+
         values_dict = {}
         values_dict[self.ns_test + '.Disc1.a'] = 10.
         values_dict[self.ns_test + '.Disc1.b'] = 20.
         values_dict[self.ns_test + '.x'] = 10.
- 
+
         ee.load_study_from_input_dict(values_dict)
- 
+
         # get inputs and compare to reference
         disc1 = ee.root_process.proxy_disciplines[0]
         inp_dict = disc1.get_sosdisc_inputs()
@@ -251,17 +251,17 @@ class TestProxyDiscipline(unittest.TestCase):
             'x': 10.0,
             'a': 10.0,
             'b': 20.0}
- 
+
         for key in ref_inp:
             self.assertEqual(ref_inp[key], inp_dict[key],
                              'error in input dict')
         ee.execute()
-  
+
         # get outputs and compare to reference
         out_dict = disc1.get_sosdisc_outputs()
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
-  
+
     def test_09_check_factory_with_1_added_disc(self):
         '''
         check if the root of the factory is the discipline if only 1 disc is added
@@ -269,29 +269,29 @@ class TestProxyDiscipline(unittest.TestCase):
         '''
         ns_dict = {'ns_ac': self.ns_test}
         self.ee.ns_manager.add_ns_def(ns_dict)
- 
+
         disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', self.mod1_ns_path)
         self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
- 
+
         self.ee.configure()
         priv_in_values = {self.ns_test + '.x': 99.,
-                          self.ns_test + '.Disc1.a': 1.,
-                          self.ns_test + '.Disc1.b': 3.}
- 
+                          self.ns_test + '.Disc1.a': 1,
+                          self.ns_test + '.Disc1.b': 3}
+
         self.ee.load_study_from_input_dict(priv_in_values)
- 
+
         self.ee.execute()
-  
+
         self.assertIsInstance(self.ee.root_process, ProxyDiscipline,
                               'The root of the factory must be a ProxyDiscipline because only one disc has been added')
- 
+
         # Now we try with two disciplines
         ee2 = ExecutionEngine('Test2')
- 
+
         ns_dict = {'ns_ac': 'Test2'}
         ee2.ns_manager.add_ns_def(ns_dict)
- 
+
         disc1_builder = ee2.factory.get_builder_from_module(
             'Disc1', self.mod1_path)
         disc2_builder = ee2.factory.get_builder_from_module(
@@ -299,21 +299,21 @@ class TestProxyDiscipline(unittest.TestCase):
         ee2.factory.set_builders_to_coupling_builder(
             [disc1_builder, disc2_builder])
         ee2.configure()
- 
+
         priv_in_values = {'Test2.Disc1.x': 9.,
-                          'Test2.Disc1.a': 1.,
-                          'Test2.Disc1.b': 2.,
+                          'Test2.Disc1.a': 1,
+                          'Test2.Disc1.b': 2,
                           'Test2.y': 10.,
                           'Test2.Disc2.constant': 4.,
                           'Test2.Disc2.power': 2,
                           'Test2.Disc1.name': 'A1'}
         ee2.load_study_from_input_dict(priv_in_values)
- 
+
         ee2.execute()
-  
+
         self.assertIsInstance(ee2.root_process, ProxyCoupling,
                               'The root of the factory must be a SoSDiscipline because only one disc has been added')
- 
+
     def test_10_check_overwrite_of_default_values(self):
         '''
         check defaults for public
@@ -321,41 +321,40 @@ class TestProxyDiscipline(unittest.TestCase):
         ee = ExecutionEngine('Test')
         ns_dict = {'ns_protected': self.ns_test}
         ee.ns_manager.add_ns_def(ns_dict)
- 
+
         disc8_builder = ee.factory.get_builder_from_module(
             'Disc8', self.mod8_path)
         ee.factory.set_builders_to_coupling_builder(disc8_builder)
- 
+
         ee.configure()
- 
+
         values_dict = {}
         values_dict[self.ns_test + '.Disc8.a'] = 10.
         # default value for 'b' is 2
         values_dict[self.ns_test + '.Disc8.b'] = 20.
         values_dict[self.ns_test + '.x'] = 10.
- 
+
         ee.load_study_from_input_dict(values_dict)
- 
+
         # get inputs and compare to reference
         disc8 = ee.root_process.proxy_disciplines[0]
- 
+
         inp_dict = disc8.get_sosdisc_inputs(
             in_dict=True)
         ref_inp = {
             'x': 10.0,
             'a': 10.0,
             'b': 20.0}
- 
+
         for key in ref_inp:
             self.assertEqual(ref_inp[key], inp_dict[key],
                              'error in input dict')
         ee.execute()
- 
+
         # get outputs and compare to reference
         out_dict = disc8.get_sosdisc_outputs()
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
-
 
     def test_11_post_processing(self):
         '''
@@ -388,10 +387,10 @@ class TestProxyDiscipline(unittest.TestCase):
         graph_list = disc1.get_post_processing_list(filter)
         # graph_list[0].to_plotly().show()
 
-        #test post-processing worked
-        self.assertEqual(len(graph_list[0].series[0].abscissa),1)
-        self.assertEqual(graph_list[0].series[0].abscissa[0],self.ee.dm.get_value('Test.x'))
-        self.assertEqual(graph_list[0].series[0].ordinate[0],self.ee.dm.get_value('Test.y'))
+        # test post-processing worked
+        self.assertEqual(len(graph_list[0].series[0].abscissa), 1)
+        self.assertEqual(graph_list[0].series[0].abscissa[0], self.ee.dm.get_value('Test.x'))
+        self.assertEqual(graph_list[0].series[0].ordinate[0], self.ee.dm.get_value('Test.y'))
 
     def test_12_execution_success_of_discipline_alone(self):
         '''
@@ -420,9 +419,11 @@ class TestProxyDiscipline(unittest.TestCase):
 
         self.ee.prepare_execution()
         local_data = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(values_dict)
-        ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0, 'Test.Disc1.linearization_mode': 'auto',
-                          'Test.Disc1.cache_type': 'None', 'Test.Disc1.cache_file_path': '', 'Test.Disc1.debug_mode': '',
+        ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0,
+                          'Test.Disc1.linearization_mode': 'auto',
+                          'Test.Disc1.cache_type': 'None', 'Test.Disc1.cache_file_path': '',
+                          'Test.Disc1.debug_mode': '',
                           'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
         print(local_data)
-        self.assertTrue(dict_are_equal(local_data,ref_local_data))
+        self.assertTrue(dict_are_equal(local_data, ref_local_data))
         pass

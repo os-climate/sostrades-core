@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
+    TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 import pandas as pd
 
 
 class Disc1(SoSWrapp):
-
     # ontology information
     _ontology_data = {
         'label': 'sostrades_core.sos_wrapping.test_discs.disc1_grid',
@@ -47,7 +47,11 @@ class Disc1(SoSWrapp):
         'name': {'type': 'string', 'possible_values': ['A1', 'A2', 'A3']},
         'x_dict': {'type': 'dict', 'default': {}},
         'di_dict': {'type': 'dict', 'default': {}, 'namespace': 'ns_test'},
-        'dd_df': {'type': 'dataframe', 'default': pd.DataFrame(), 'namespace': 'ns_test'}
+        'dd_df': {'type': 'dataframe', 'default': pd.DataFrame(), 'namespace': 'ns_test',
+                  'dataframe_descriptor': {'string_val': ('string', None, True),
+                                           'values1': ('float', None, True),
+                                           'values2': ('float', None, True)},
+                  'dataframe_edition_locked': False}
     }
     DESC_OUT = {
         'indicator': {'type': 'int'},
@@ -56,6 +60,9 @@ class Disc1(SoSWrapp):
         'val_sum_dict2': {'type': 'dict'},
         'y_dict2': {'type': 'dict'}
     }
+
+    def setup_sos_disciplines(self):  # type: (...) -> None
+        pass
 
     def run(self):
         x = self.get_sosdisc_inputs('x')
@@ -81,6 +88,7 @@ class Disc1(SoSWrapp):
                 val_sum_dict2[key] = di_dict[key]
 
         dict_values = {'indicator': a * b, 'y': a *
-                       x + b, 'y_dict2': y_dict, 'val_sum_dict': val_sum_dict, 'val_sum_dict2': val_sum_dict2}
+                                                x + b, 'y_dict2': y_dict, 'val_sum_dict': val_sum_dict,
+                       'val_sum_dict2': val_sum_dict2}
 
         self.store_sos_outputs_values(dict_values)

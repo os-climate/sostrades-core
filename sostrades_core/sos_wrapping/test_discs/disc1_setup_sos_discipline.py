@@ -20,8 +20,8 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from collections.abc import Iterable
 
-class Disc1(SoSWrapp):
 
+class Disc1(SoSWrapp):
     # ontology information
     _ontology_data = {
         'label': 'sostrades_core.sos_wrapping.test_discs.disc1_setup_sos_discipline',
@@ -37,7 +37,8 @@ class Disc1(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
+        'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
+                    'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
         'x': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'int'},
         'b': {'type': 'float'}
@@ -62,9 +63,12 @@ class Disc1(SoSWrapp):
             default_df = pd.DataFrame(
                 {'AC_name': AC_list, 'value': np.ones(len(AC_list))})
             dynamic_inputs.update(
-                {'dyn_input_2': {'type': 'dataframe', 'default': default_df, 'structuring': True}})
+                {'dyn_input_2': {'type': 'dataframe', 'default': default_df, 'structuring': True,
+                                 'dataframe_descriptor': {'AC_name': ('string', None, True),
+                                                          'value': ('float', None, True)}}})
 
-            if 'dyn_input_2' in self.get_data_in() and self.get_sosdisc_inputs('dyn_input_2')['AC_name'].to_list() != AC_list:
+            if 'dyn_input_2' in self.get_data_in() and self.get_sosdisc_inputs('dyn_input_2')[
+                'AC_name'].to_list() != AC_list:
                 self.update_default_value(
                     'dyn_input_2', self.IO_TYPE_IN, default_df)
 
@@ -91,6 +95,7 @@ class Disc1ProxyCheck(Disc1):
     """
     Modification of Disc1 with implementational checks for proper proxy and dm un-assignation during run.
     """
+
     def run(self):
         if self._SoSWrapp__proxy is not None:
             raise Exception('proxy remains assigned during run')
@@ -104,6 +109,7 @@ class Disc1ConfigActionAtRunTime(Disc1):
     """
     Modification of Disc1 requesting a proxy-delegated configuration action at run-time (will crash).
     """
+
     def run(self):
         self.add_inputs({})
 
@@ -112,6 +118,7 @@ class Disc1RecursiveObjectDictCheck(Disc1):
     """
     Modification
     """
+
     def run(self):
         ObjectDictCheck(self, [])
 
@@ -136,6 +143,6 @@ def ElementCheck(element):
     if element.__class__.__name__ == 'DataManager':
         raise Exception('reference leak to data manager in SoSWrapp')
     elif element.__class__.__name__ == 'ProxyDiscipline':
-        raise Exception('reference leak to ProxyDiscipline '+element.sos_name+' in SoSWrapp')
+        raise Exception('reference leak to ProxyDiscipline ' + element.sos_name + ' in SoSWrapp')
     else:
         pass

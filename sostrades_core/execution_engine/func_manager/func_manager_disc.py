@@ -27,7 +27,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.tools.cst_manager.func_manager_common import smooth_maximum, smooth_maximum_vect, get_dsmooth_dvariable
+from sostrades_core.tools.cst_manager.func_manager_common import smooth_maximum, smooth_maximum_vect, \
+    get_dsmooth_dvariable
 from sostrades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
 from numpy import float64, ndarray, asarray
 import pandas as pd
@@ -79,6 +80,8 @@ class FunctionManagerDisc(SoSWrapp):
     CHILDREN = 'children'
     OPTIM_OUTPUT_DF = 'optim_output_df'
     EXPORT_CSV = 'export_csv'
+
+    NS_OPTIM = 'ns_optim'
     DESC_IN = {FUNC_DF: {'type': 'dataframe',
                          'dataframe_descriptor': {VARIABLE: ('string', None, True),  # input function
                                                   FTYPE: ('string', None, True),
@@ -87,9 +90,7 @@ class FunctionManagerDisc(SoSWrapp):
 
                                                   # index of the dataframe
                                                   INDEX: ('int', None, True),
-                                                  #                                                   COMPONENT: ('string',  None, True),
-                                                  # NAMESPACE_VARIABLE:
-                                                  # ('string',  None, True),
+                                                  NAMESPACE_VARIABLE: ('string', None, True),
                                                   },  # col name of the dataframe
                          'dataframe_edition_locked': False,
                          'structuring': True
@@ -111,12 +112,12 @@ class FunctionManagerDisc(SoSWrapp):
         self.func_manager = FunctionManager()
 
     def setup_sos_disciplines(self):
-        dynamic_inputs, dynamic_outputs= {}, {}
+        dynamic_inputs, dynamic_outputs = {}, {}
 
         # initialization of func_manager
         self.func_manager.reinit()
 
-        inputs_dict= self.get_sosdisc_inputs()
+        inputs_dict = self.get_sosdisc_inputs()
 
         if 'eps2' in inputs_dict.keys():
             self.func_manager.configure_smooth_log(inputs_dict['smooth_log'], inputs_dict['eps2'])
@@ -175,13 +176,20 @@ class FunctionManagerDisc(SoSWrapp):
                     if namespaces != []:
                         variable_full_name = namespaces[0]
                         var_type = self.dm.get_data(variable_full_name)['type']
+                        dynamic_inputs[f] = {
+                            self.TYPE: var_type, self.STRUCTURING: True, self.VISIBILITY: self.SHARED_VISIBILITY,
+                            self.NAMESPACE: namespace}
                     else:
-                        var_type = 'dataframe'
-                    dynamic_inputs[f] = {
-                        'type': var_type, 'structuring':True, 'visibility': 'Shared', 'namespace': namespace}
+                        dynamic_inputs[f] = {
+                            self.TYPE: 'dataframe', self.DATAFRAME_DESCRIPTOR: {},
+                            self.DYNAMIC_DATAFRAME_COLUMNS: True, self.STRUCTURING: True,
+                            self.VISIBILITY: self.SHARED_VISIBILITY,
+                            self.NAMESPACE: namespace}
+
                     # -- output update : constr aggregation and scalarized objective
                     out_name = self.__build_mod_names(f)
-                    dynamic_outputs[out_name] = {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_optim'}
+                    dynamic_outputs[out_name] = {self.TYPE: 'array', self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                 self.NAMESPACE: self.NS_OPTIM}
                     # -- add function to the FuncManager
                     ftype = metadata[FunctionManager.FTYPE]
                     w = metadata.get(FunctionManager.WEIGHT, None)
@@ -198,20 +206,20 @@ class FunctionManagerDisc(SoSWrapp):
                         f, value=None, ftype=ftype, weight=w, aggr_type=aggr_type)
 
         # -- output update : aggregation of ineq constraints
-        dynamic_outputs[self.INEQ_CONSTRAINT] = {'type': 'array', 'visibility': 'Shared',
-                                                     'namespace': 'ns_optim'}
+        dynamic_outputs[self.INEQ_CONSTRAINT] = {'type': 'array', self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                 'namespace': self.NS_OPTIM}
 
         # -- output update : aggregation of eq constraints
-        dynamic_outputs[self.EQ_CONSTRAINT] = {'type': 'array', 'visibility': 'Shared',
-                                                   'namespace': 'ns_optim'}
+        dynamic_outputs[self.EQ_CONSTRAINT] = {'type': 'array', self.VISIBILITY: self.SHARED_VISIBILITY,
+                                               'namespace': self.NS_OPTIM}
 
         # -- output update : scalarization of objective
-        dynamic_outputs[self.OBJECTIVE] = {'type': 'array', 'visibility': 'Shared',
-                                               'namespace': 'ns_optim'}
+        dynamic_outputs[self.OBJECTIVE] = {'type': 'array', self.VISIBILITY: self.SHARED_VISIBILITY,
+                                           'namespace': self.NS_OPTIM}
 
         # -- output update : lagrangian penalization
-        dynamic_outputs[self.OBJECTIVE_LAGR] = {'type': 'array', 'visibility': 'Shared',
-                                                    'namespace': 'ns_optim'}
+        dynamic_outputs[self.OBJECTIVE_LAGR] = {'type': 'array', self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                'namespace': self.NS_OPTIM}
         self.iter, self.last_len_database = 0, 0
         self.old_optim_output_df = pd.DataFrame()
         self.add_inputs(dynamic_inputs)
@@ -254,7 +262,6 @@ class FunctionManagerDisc(SoSWrapp):
                 self.csvfile, lineterminator='\n', delimiter=',')
             self.writer2 = csv.writer(
                 self.csvfile2, lineterminator='\n', delimiter=',')
-
 
         # skip = False
         # try:
@@ -319,7 +326,7 @@ class FunctionManagerDisc(SoSWrapp):
         # Store current x
         current_x = {}
         for input in self.get_sosdisc_inputs().keys():
-            if input in self.get_sosdisc_inputs('function_df')['variable'].to_list():
+            if input in self.get_sosdisc_inputs('function_df')[self.VARIABLE].to_list():
                 current_x[input] = self.get_sosdisc_inputs(input)
 
         # To store all results of the optim in a dataframe
@@ -496,16 +503,13 @@ class FunctionManagerDisc(SoSWrapp):
                                 k_cst = np.sqrt(np.sign(value) * value)
                                 # k'(x)
                                 dk_dcst = np.sign(value) * np.ones(len(value)) / (
-                                                  2 * k_cst)
+                                        2 * k_cst)
                                 # h(k(x))
                                 h_k = f_manager.cst_func_ineq(
                                     k_cst)
                                 # h'(k(x))
                                 dh_dcst = self.get_dfunc_ineq_dvariable(
                                     k_cst)
-
-
-
 
                             # g(h(k(x)))
                             value_ghk_l.append(
@@ -562,7 +566,6 @@ class FunctionManagerDisc(SoSWrapp):
                         dh_dcst = self.get_dfunc_ineq_dvariable(
                             k_cst)
 
-
                     # g(h(k(x)))
                     value_ghk_l.append(
                         smooth_maximum(h_k))
@@ -612,7 +615,6 @@ class FunctionManagerDisc(SoSWrapp):
                         'ineq_constraint', variable_name,
                         np.atleast_2d(weight * grad_ineq_val))
 
-
                     i = i + 1
 
                 elif isinstance(value_df, pd.DataFrame):
@@ -622,7 +624,7 @@ class FunctionManagerDisc(SoSWrapp):
                             if self.func_manager.aggr_mod_ineq == 'smooth_max':
                                 grad_lagr_val = np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i]
                                 grad_ineq_val = np.array(grad_value_l[variable_name][col_name]) * grad_val_ineq[i]
-                            else :
+                            else:
                                 grad_lagr_val = np.array(grad_value_l[variable_name][col_name])
                                 grad_ineq_val = np.array(grad_value_l[variable_name][col_name])
 
@@ -649,10 +651,10 @@ class FunctionManagerDisc(SoSWrapp):
 
                     self.set_partial_derivative(
                         'objective_lagrangian', variable_name,
-                        np.atleast_2d( weight * 100.0 * grad_lagr_val ))
+                        np.atleast_2d(weight * 100.0 * grad_lagr_val))
                     self.set_partial_derivative(
                         'eq_constraint', variable_name,
-                        np.atleast_2d( weight * grad_eq_val))
+                        np.atleast_2d(weight * grad_eq_val))
                     j = j + 1
 
                 elif isinstance(value_df, pd.DataFrame):
@@ -689,16 +691,16 @@ class FunctionManagerDisc(SoSWrapp):
         eps2 = self.get_sosdisc_inputs('eps2')
         for iii, val in enumerate(valcol):
             if smooth_log and val > eps2:
-                #res00 + 2 * np.log(val)
+                # res00 + 2 * np.log(val)
                 res = 2.0 / val
             elif val > eps:
-                #res = res0 + val ** 2 - eps ** 2
+                # res = res0 + val ** 2 - eps ** 2
                 res = 2.0 * val
             elif val < -250:
-                #res = 0.0
+                # res = 0.0
                 res = 0.0
             else:
-                #res = eps * (np.exp(val) - 1.)
+                # res = eps * (np.exp(val) - 1.)
                 res = eps * np.exp(val)
             cst_result[iii] = res
         grad_value.extend(cst_result)
@@ -726,7 +728,7 @@ class FunctionManagerDisc(SoSWrapp):
                 # res = eps * (np.exp(-val) - 1.)
                 dres = -eps * np.exp(-val)
             elif val < -eps:
-                #res= res0 + (-val) - eps
+                # res= res0 + (-val) - eps
                 dres = -1.
             else:
                 # res = eps * (np.exp(val) - 1.)
@@ -806,7 +808,7 @@ class FunctionManagerDisc(SoSWrapp):
                     charts = chart_filter.selected_values
         if 'objective (colored)' in charts:
             if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
-            self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+                    self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
                 optim_output_df = deepcopy(
                     self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
                 new_chart = self.get_chart_obj_constraints_iterations(func_df, optim_output_df, [self.OBJECTIVE],
@@ -870,7 +872,7 @@ class FunctionManagerDisc(SoSWrapp):
                             self.WEIGHT: 1.0, self.AGGR_TYPE: 'sum'}
         for i, row in func_df.iterrows():
             mod_parameter_dict = {}
-            mod_parameter_dict['variable'] = row['variable'] + '_mod'
+            mod_parameter_dict[self.VARIABLE] = row[self.VARIABLE] + '_mod'
             if self.PARENT in row.index:
                 if row[self.PARENT] in [np.nan]:
                     mod_parameter_dict[self.PARENT] = None
@@ -884,32 +886,32 @@ class FunctionManagerDisc(SoSWrapp):
                 else:
                     mod_parameter_dict[column] = mod_columns_dict[column]
             if 'objective' in row['ftype']:
-                obj_list.append(mod_parameter_dict['variable'])
+                obj_list.append(mod_parameter_dict[self.VARIABLE])
             elif 'ineq_constraint' in row['ftype']:
-                ineq_list.append(mod_parameter_dict['variable'])
+                ineq_list.append(mod_parameter_dict[self.VARIABLE])
             elif 'eq_constraint' in row['ftype']:
-                eq_list.append(mod_parameter_dict['variable'])
-            parameters_dict[mod_parameter_dict['variable']
+                eq_list.append(mod_parameter_dict[self.VARIABLE])
+            parameters_dict[mod_parameter_dict[self.VARIABLE]
             ] = mod_parameter_dict
 
         # Aggregated objectives and constraints
-        dict_aggr_obj = {'variable': self.OBJECTIVE,
+        dict_aggr_obj = {self.VARIABLE: self.OBJECTIVE,
                          self.PARENT: self.OBJECTIVE_LAGR,
                          self.WEIGHT: 1.0, self.AGGR_TYPE: 'sum'}
-        parameters_dict[dict_aggr_obj['variable']] = dict_aggr_obj
-        dict_aggr_ineq = {'variable': self.INEQ_CONSTRAINT,
+        parameters_dict[dict_aggr_obj[self.VARIABLE]] = dict_aggr_obj
+        dict_aggr_ineq = {self.VARIABLE: self.INEQ_CONSTRAINT,
                           self.PARENT: self.OBJECTIVE_LAGR,
                           self.WEIGHT: 1.0, self.AGGR_TYPE: 'smax'}
-        parameters_dict[dict_aggr_ineq['variable']] = dict_aggr_ineq
-        dict_aggr_eq = {'variable': self.EQ_CONSTRAINT,
+        parameters_dict[dict_aggr_ineq[self.VARIABLE]] = dict_aggr_ineq
+        dict_aggr_eq = {self.VARIABLE: self.EQ_CONSTRAINT,
                         self.PARENT: self.OBJECTIVE_LAGR,
                         self.WEIGHT: 1.0, self.AGGR_TYPE: 'smax'}
-        parameters_dict[dict_aggr_eq['variable']] = dict_aggr_eq
+        parameters_dict[dict_aggr_eq[self.VARIABLE]] = dict_aggr_eq
 
         # Lagrangian objective
-        dict_lagrangian = {'variable': self.OBJECTIVE_LAGR, self.PARENT: None,
+        dict_lagrangian = {self.VARIABLE: self.OBJECTIVE_LAGR, self.PARENT: None,
                            self.WEIGHT: 1.0, self.AGGR_TYPE: 'sum'}
-        parameters_dict[dict_lagrangian['variable']] = dict_lagrangian
+        parameters_dict[dict_lagrangian[self.VARIABLE]] = dict_lagrangian
         parameters_df = pd.DataFrame(parameters_dict).transpose()
 
         return parameters_df, obj_list, ineq_list, eq_list
@@ -927,14 +929,14 @@ class FunctionManagerDisc(SoSWrapp):
         """
         chart_name = f'{name} wrt iterations'
         fig = go.Figure()
-        for parameter in main_parameters['variable']:
+        for parameter in main_parameters[self.VARIABLE]:
             y = [value[0] for value in optim_output[parameter].values]
             if 'complex' in str(type(y[0])):
                 y = [np.real(value[0])
                      for value in optim_output[parameter].values]
             fig.add_trace(go.Scatter(x=list(optim_output['iteration'].values),
                                      y=list(y), name=parameter, visible=True))
-        for parameter in sub_parameters['variable']:
+        for parameter in sub_parameters[self.VARIABLE]:
             y = [value[0] * 100 for value in optim_output[parameter].values]
             if 'complex' in str(type(y[0])):
                 y = [np.real(value[0])
@@ -1018,7 +1020,7 @@ class FunctionManagerDisc(SoSWrapp):
         """
         chart_name = f'{name} wrt iterations'
         fig = go.Figure()
-        for parameter in main_parameters['variable']:
+        for parameter in main_parameters[self.VARIABLE]:
             if 'objective' in parameter:
                 customdata = ['aggr', 'obj']
             if 'ineq_constraint' in parameter:
@@ -1033,7 +1035,7 @@ class FunctionManagerDisc(SoSWrapp):
                                      y=list(y), name=parameter, customdata=customdata, visible=True))
 
         if len(objectives) > 0:
-            for parameter in objectives['variable']:
+            for parameter in objectives[self.VARIABLE]:
                 customdata = ['mod', 'obj']
                 y = [value[0] for value in optim_output[parameter].values]
                 if 'complex' in str(type(y[0])):
@@ -1046,7 +1048,7 @@ class FunctionManagerDisc(SoSWrapp):
                                          name=parameter, customdata=customdata, visible=False))
 
         if len(ineq_constraints) > 0:
-            for i, parameter in enumerate(ineq_constraints['variable']):
+            for i, parameter in enumerate(ineq_constraints[self.VARIABLE]):
                 customdata = ['mod', 'ineq']
                 y = [value[0] for value in optim_output[parameter].values]
                 if 'complex' in str(type(y[0])):
@@ -1059,7 +1061,7 @@ class FunctionManagerDisc(SoSWrapp):
                                          name=parameter, customdata=customdata, visible=False))
 
         if len(eq_constraints) > 0:
-            for i, parameter in enumerate(eq_constraints['variable']):
+            for i, parameter in enumerate(eq_constraints[self.VARIABLE]):
                 customdata = ['mod', 'eq']
                 y = [value[0] for value in optim_output[parameter].values]
                 if 'complex' in str(type(y[0])):
@@ -1160,12 +1162,12 @@ class FunctionManagerDisc(SoSWrapp):
         parameters_df['value'] = [
             [0.0 for _ in range(optim_output.shape[0])] for _ in range(parameters_df.shape[0])]
 
-        for parameter in parameters_df['variable']:
+        for parameter in parameters_df[self.VARIABLE]:
             y = [value[0] for value in optim_output[parameter].values]
             if 'complex' in str(type(y[0])):
                 y = [np.real(value[0])
                      for value in optim_output[parameter].values]
-            parameters_df.loc[parameters_df['variable']
+            parameters_df.loc[parameters_df[self.VARIABLE]
                               == parameter, 'value'] = {parameter: y}
         # Remove entries with values = 0.0
         parameters_df['isnull'] = parameters_df['value'].apply(
@@ -1192,7 +1194,7 @@ class FunctionManagerDisc(SoSWrapp):
         for lvl, parent_level in level_list.items():
             for parent in parent_level:
                 # if parent isn't in df
-                if parent not in parameters_df['variable']:
+                if parent not in parameters_df[self.VARIABLE]:
                     parent_list = []
                     parameters_df['match'] = parameters_df[self.PARENT].apply(
                         lambda x: 'Match' if parent in str(x) else 'Mismatch')
@@ -1207,11 +1209,11 @@ class FunctionManagerDisc(SoSWrapp):
                     if len(list(set(parent_list))) > 0:
                         parent_parent = parent_list[0]
                     children_list = parameters_df.loc[parameters_df['match']
-                                                      == 'Match', 'variable']
+                                                      == 'Match', self.VARIABLE]
                     parameters_df.drop(columns=['match'], inplace=True)
                     value = [sum(v) for v in zip(
                         *parameters_df.loc[children_list, 'value'])]
-                    dict_parent = {'variable': parent,
+                    dict_parent = {self.VARIABLE: parent,
                                    self.PARENT: parent_parent,
                                    self.WEIGHT: 1.0, self.AGGR_TYPE: 'sum',
                                    'value': [value]}
@@ -1227,14 +1229,14 @@ class FunctionManagerDisc(SoSWrapp):
             hovertemplate = '<br>X: %{x}' + '<br>Y: %{y:.2e}' + \
                             '<br>weight: %{customdata[0]}' + \
                             '<br>aggr_type: %{customdata[1]}'
-            is_mod = True if '_mod' in row[1]['variable'] else False
+            is_mod = True if '_mod' in row[1][self.VARIABLE] else False
             vis = True if row[1][self.PARENT] is None else False
             customdata = [[str(row[1][self.WEIGHT]) for _ in range(len(y))],
                           [row[1][self.AGGR_TYPE] for _ in range(len(y))],
                           [row[1][self.PARENT] for _ in range(len(y))],
                           [is_mod for _ in range(len(y))]]
             fig.add_trace(go.Scatter(x=list(optim_output['iteration'].values),
-                                     y=list(y), name=row[1]['variable'], customdata=list(np.asarray(customdata).T),
+                                     y=list(y), name=row[1][self.VARIABLE], customdata=list(np.asarray(customdata).T),
                                      hovertemplate=hovertemplate,
                                      visible=vis))
 
@@ -1330,7 +1332,7 @@ class FunctionManagerDisc(SoSWrapp):
                      for value in optim_output[obj].values]
             fig.add_trace(go.Scatter(x=list(x), y=list(
                 y), name=obj, line=dict(color='black')))
-        func_dict = {row['variable'] + '_mod': row['ftype']
+        func_dict = {row[self.VARIABLE] + '_mod': row['ftype']
                      for i, row in func_df.iterrows()}
 
         for col in optim_output.columns:
@@ -1371,7 +1373,7 @@ class FunctionManagerDisc(SoSWrapp):
             tot_constraints_max_col = [
                 0 for index, row in tot_constraints.iterrows()]
             tot_constraints_max = [0 for index,
-                                         row in tot_constraints.iterrows()]
+            row in tot_constraints.iterrows()]
         fm_ineq = [value
                    for value in optim_output[self.INEQ_CONSTRAINT].values]
         fm_eq = [value

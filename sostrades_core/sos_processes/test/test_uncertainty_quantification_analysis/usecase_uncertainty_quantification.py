@@ -85,4 +85,4 @@ if '__main__' == __name__:
     for namespace, post_proc_list in all_post_processings.items():
         for chart in post_proc_list:
             for fig in chart.post_processings:
-                fig.to_plotly()#.show()
+                fig.to_plotly()  # .show()

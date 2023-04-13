@@ -1007,6 +1007,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
             self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
                                         self.SCENARIO_NAME: ('string', None, True)},
+            # meaning that the number and names of df columns can change (with reference scenario options ...)
+            'dynamic_dataframe_columns': True,
             self.DATAFRAME_EDITION_LOCKED: False,
             self.EDITABLE: True,
             self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
@@ -1032,6 +1034,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                         'dataframe_descriptor': {
                                                             self.SELECTED_SCENARIO: ('string', None, False),
                                                             self.SCENARIO_NAME: ('string', None, False)},
+                                                        'dynamic_dataframe_columns': True,
                                                         'dataframe_edition_locked': True,
                                                         'structuring': True,
                                                         'unit': None,
