@@ -440,7 +440,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
-            if any(type(design_variable).__name__ not in ['array', 'list'] for design_variable in
+            if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
                    dspace['value'].tolist()):
                 raise ValueError(
                     'A design variable must obligatory be an array')

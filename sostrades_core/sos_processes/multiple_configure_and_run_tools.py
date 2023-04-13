@@ -135,7 +135,7 @@ def processed_multiple_configure(usecase, message_queue):
     except Exception as e:
         test_passed = False
         configured = False
-        output_error += f'Error while runing twice { usecase }:\n {e}'
+        output_error += f'Error while Configuring twice {usecase}:\n {e}'
         output_error += '\n---------------------------------------------------------\n'
     if configured:
         try:
@@ -144,13 +144,13 @@ def processed_multiple_configure(usecase, message_queue):
             if dict_error != {}:
                 test_passed = False
                 for error in dict_error:
-                    output_error += f'Error while runing twice { usecase }:\n'
+                    output_error += f'Error while Configuring twice {usecase}:\n'
                     output_error += f'Mismatch in {error}: {dict_error.get(error)}'
                     output_error += '\n---------------------------------------------------------\n'
         except Exception as e:
             traceback.print_exc()
             test_passed = False
-            output_error += f'Error while comparing data_dicts of { usecase }:\n {e}'
+            output_error += f'Error while comparing data_dicts of {usecase}:\n {e}'
             output_error += '\n---------------------------------------------------------\n'
 
     message_queue.put([test_passed, output_error])
@@ -202,7 +202,7 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
     except Exception as e:
         test_passed = False
         runned = False
-        output_error += f'Error while runing twice { usecase }:\n {e}'
+        output_error += f'Error while Running twice {usecase}:\n {e}'
         output_error += '\n---------------------------------------------------------\n'
     if runned:
         try:
@@ -220,9 +220,9 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
                         unwanted_keys += [key]
                     if type(value) == dict:
                         if 'type_metadata' in value.keys():
-                            keys_to_none[key]='type_metadata'
+                            keys_to_none[key] = 'type_metadata'
                 for key, value in keys_to_none.items():
-                    dm_data_dict_1[key][value]=None
+                    dm_data_dict_1[key][value] = None
                 [dm_data_dict_1.pop(key) for key in unwanted_keys]
                 [dm_data_dict_2.pop(key) for key in unwanted_keys]
                 compare_dict(dm_data_dict_1,
@@ -230,13 +230,13 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
             if dict_error != {}:
                 test_passed = False
                 for error in dict_error:
-                    output_error += f'Error while runing twice { usecase }:\n'
+                    output_error += f'Error while Running twice {usecase}:\n'
                     output_error += f'Mismatch in {error}: {dict_error.get(error)}'
                     output_error += '\n---------------------------------------------------------\n'
         except Exception as e:
             traceback.print_exc()
             test_passed = False
-            output_error += f'Error while comparing data_dicts of { usecase }:\n {e}'
+            output_error += f'Error while comparing data_dicts of {usecase}:\n {e}'
             output_error += '\n---------------------------------------------------------\n'
 
     message_queue.put([test_passed, output_error])
@@ -279,7 +279,7 @@ def get_all_usecases(processes_repo):
     '''
 
     process_factory = SoSProcessFactory(additional_repository_list=[
-                                        processes_repo], search_python_path=False)
+        processes_repo], search_python_path=False)
     process_list = process_factory.get_processes_dict()
     usecase_list = []
     for repository in process_list:

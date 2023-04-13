@@ -57,21 +57,14 @@ class Study(StudyManager):
             disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
         # Sellar reference inputs
-        #======================================================================
-        # local_dv = 10.
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
-        #======================================================================
-
+        # ======================================================================
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = [2.]
-        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = [1.]
-        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = [1.]
-        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = [1., 1.]
+        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
+        # ======================================================================
 
         return [disc_dict]
 

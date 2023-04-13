@@ -801,26 +801,28 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             elif builder_mode == self.MONO_INSTANCE:
                 # TODO: clean code below with class variables etc.
-                dynamic_inputs = {'eval_inputs': {'type': 'dataframe',
-                                                  'dataframe_descriptor': {'selected_input': ('bool', None, True),
-                                                                           'full_name': ('string', None, False)},
-                                                  'dataframe_edition_locked': False,
-                                                  'structuring': True,
-                                                  'visibility': self.SHARED_VISIBILITY,
-                                                  'namespace': self.NS_EVAL},
-                                  'eval_outputs': {'type': 'dataframe',
-                                                   'dataframe_descriptor': {'selected_output': ('bool', None, True),
-                                                                            'full_name': ('string', None, False)},
-                                                   'dataframe_edition_locked': False,
-                                                   'structuring': True, 'visibility': self.SHARED_VISIBILITY,
-                                                   'namespace': self.NS_EVAL},
-                                  'n_processes': {'type': 'int', 'numerical': True, 'default': 1},
-                                  'wait_time_between_fork': {'type': 'float', 'numerical': True, 'default': 0.0}
+                dynamic_inputs = {'eval_inputs': {self.TYPE: 'dataframe',
+                                                  self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                              'full_name': ('string', None, False)},
+                                                  self.DATAFRAME_EDITION_LOCKED: False,
+                                                  self.STRUCTURING: True,
+                                                  self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                  self.NAMESPACE: self.NS_EVAL},
+                                  'eval_outputs': {self.TYPE: 'dataframe',
+                                                   self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
+                                                                               'full_name': ('string', None, False)},
+                                                   self.DATAFRAME_EDITION_LOCKED: False,
+                                                   self.STRUCTURING: True,
+                                                   self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                   self.NAMESPACE: self.NS_EVAL},
+                                  'n_processes': {self.TYPE: 'int', self.NUMERICAL: True, self.DEFAULT: 1},
+                                  'wait_time_between_fork': {self.TYPE: 'float', self.NUMERICAL: True,
+                                                             self.DEFAULT: 0.0}
                                   }
 
                 dynamic_outputs = {
-                    'samples_inputs_df': {'type': 'dataframe', 'unit': None, 'visibility': self.SHARED_VISIBILITY,
-                                          'namespace': self.NS_EVAL}
+                    'samples_inputs_df': {self.TYPE: 'dataframe', 'unit': None, self.VISIBILITY: self.SHARED_VISIBILITY,
+                                          self.NAMESPACE: self.NS_EVAL}
                 }
 
                 selected_inputs_has_changed = False
@@ -850,14 +852,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         # setting dynamic outputs. One output of type dict per selected output
                         for out_var in self.eval_out_list:
                             dynamic_outputs.update(
-                                {f'{out_var.split(f"{self.get_disc_full_name()}.", 1)[1]}_dict': {'type': 'dict',
-                                                                                                  'visibility': 'Shared',
-                                                                                                  'namespace': self.NS_DOE}})
+                                {f'{out_var.split(f"{self.get_disc_full_name()}.", 1)[1]}_dict': {self.TYPE: 'dict',
+                                                                                                  self.VISIBILITY: 'Shared',
+                                                                                                  self.NAMESPACE: self.NS_DOE}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
-                        dynamic_outputs.update({'samples_outputs_df': {'type': 'dataframe',
-                                                                       'visibility': 'Shared',
-                                                                       'namespace': self.NS_EVAL}})
+                        dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
+                                                                       self.VISIBILITY: 'Shared',
+                                                                       self.NAMESPACE: self.NS_EVAL}})
                 self.add_inputs(dynamic_inputs)
                 self.add_outputs(dynamic_outputs)
             elif builder_mode == self.REGULAR_BUILD:
@@ -940,7 +942,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                'eval_out_list': self.eval_out_list,
                                'reference_scenario': self.get_x0(),
                                'activated_elems_dspace_df': [[True, True]
-                                                             if self.ee.dm.get_data(var, 'type') == 'array' else [True]
+                                                             if self.ee.dm.get_data(var, self.TYPE) == 'array' else [
+                                   True]
                                                              for var in self.eval_in_list],
                                # TODO: Array dimensions greater than 2?
                                'driver_name': self.get_disc_full_name(),
@@ -1009,7 +1012,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
                                         self.SCENARIO_NAME: ('string', None, True)},
             # meaning that the number and names of df columns can change (with reference scenario options ...)
-            'dynamic_dataframe_columns': True,
+            self.DYNAMIC_DATAFRAME_COLUMNS: True,
             self.DATAFRAME_EDITION_LOCKED: False,
             self.EDITABLE: True,
             self.STRUCTURING: True}}  # TODO: manage variable columns for (non-very-simple) multiscenario cases
@@ -1031,17 +1034,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                             SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
                                             SoSWrapp.STRUCTURING: True}})
 
-        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                        'dataframe_descriptor': {
+        dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
+                                                        self.DATAFRAME_DESCRIPTOR: {
                                                             self.SELECTED_SCENARIO: ('string', None, False),
                                                             self.SCENARIO_NAME: ('string', None, False)},
-                                                        'dynamic_dataframe_columns': True,
-                                                        'dataframe_edition_locked': True,
-                                                        'structuring': True,
-                                                        'unit': None,
-                                                        # 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                        # 'namespace': 'ns_sampling',
-                                                        'default': pd.DataFrame(),
+                                                        self.DYNAMIC_DATAFRAME_COLUMNS: True,
+                                                        self.DATAFRAME_EDITION_LOCKED: True,
+                                                        self.STRUCTURING: True,
+                                                        self.UNIT: None,
+                                                        # self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                                                        # self.NAMESPACE: 'ns_sampling',
+                                                        self.DEFAULT: pd.DataFrame(),
                                                         # self.OPTIONAL:
                                                         # True,
                                                         self.USER_LEVEL: 3
@@ -1571,6 +1574,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
                 self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
                                             self.SCENARIO_NAME: ('string', None, True)},
+                self.DYNAMIC_DATAFRAME_COLUMNS: True,
                 self.DATAFRAME_EDITION_LOCKED: False,
                 self.EDITABLE: True,
                 self.STRUCTURING: True
@@ -1603,21 +1607,22 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.INSTANCE_REFERENCE)
             if instance_reference:
                 dynamic_inputs.update({self.REFERENCE_MODE:
-                                           {SoSWrapp.TYPE: 'string',
+                                           {self.TYPE: 'string',
                                             # SoSWrapp.DEFAULT: self.LINKED_MODE,
-                                            SoSWrapp.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
-                                            SoSWrapp.STRUCTURING: True}})
+                                            self.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
+                                            self.STRUCTURING: True}})
 
-        dynamic_inputs.update({self.GENERATED_SAMPLES: {'type': 'dataframe',
-                                                        'dataframe_descriptor': {
+        dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
+                                                        self.DATAFRAME_DESCRIPTOR: {
                                                             self.SELECTED_SCENARIO: ('string', None, False),
                                                             self.SCENARIO_NAME: ('string', None, False)},
-                                                        'dataframe_edition_locked': True,
-                                                        'structuring': True,
-                                                        'unit': None,
-                                                        # 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                                        # 'namespace': 'ns_sampling',
-                                                        'default': pd.DataFrame(),
+                                                        self.DYNAMIC_DATAFRAME_COLUMNS: True,
+                                                        self.DATAFRAME_EDITION_LOCKED: True,
+                                                        self.STRUCTURING: True,
+                                                        self.UNIT: None,
+                                                        # self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                                                        # self.NAMESPACE: 'ns_sampling',
+                                                        self.DEFAULT: pd.DataFrame(),
                                                         # self.OPTIONAL:
                                                         # True,
                                                         self.USER_LEVEL: 3
@@ -1721,7 +1726,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             var_f_name = self.eval_in_list[i]
             if var_f_name in self.ee.dm.data_id_map:
                 var = tuple([self.ee.dm.get_data(
-                    var_f_name, 'type'), None, True])
+                    var_f_name, self.TYPE), None, True])
                 dataframe_descriptor[key] = var
             elif self.MULTIPLIER_PARTICULE in var_f_name:
                 # for multipliers assume it is a float
@@ -1729,11 +1734,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             else:
                 raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
-        dynamic_inputs = {'samples_df': {'type': 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                         'dataframe_descriptor': dataframe_descriptor,
-                                         'dataframe_edition_locked': False,
-                                         'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                         'namespace': self.NS_EVAL
+        dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                         self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
+                                         self.DATAFRAME_EDITION_LOCKED: False,
+                                         self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                                         self.NAMESPACE: self.NS_EVAL
                                          }}
 
         # This reflects 'samples_df' dynamic input has been configured and that
@@ -1758,6 +1763,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     else:
                         final_dataframe[element] = [NaN for _ in range(len_df)]
 
-                disc_in['samples_df']['value'] = final_dataframe
-            disc_in['samples_df']['dataframe_descriptor'] = dataframe_descriptor
+                disc_in['samples_df'][self.VALUE] = final_dataframe
+            disc_in['samples_df'][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
         return dynamic_inputs
