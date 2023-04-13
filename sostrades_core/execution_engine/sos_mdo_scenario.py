@@ -90,6 +90,28 @@ class SoSMDOScenario(MDOScenario):
         for data in outputs:
             self.local_data.update(data)
         self.update_design_space_out()
+        if not self.eval_mode:
+            self.update_post_processing_df()
+
+    def update_post_processing_df(self):
+        """Gathers the data for plotting the MDO graphs"""
+        dataset = self.export_to_dataset()
+        dataframe = dataset.export_to_dataframe()
+
+        #dataframe = dataframe.rename(columns=rename_func)
+
+        constraints_names = [constraint.name for constraint in
+                             self.formulation.opt_problem.constraints]
+        objective_name = self.formulation.opt_problem.objective.name
+        out = {
+            "objective": dataframe["functions"][objective_name].values,
+            "variables": {var: dataframe["design_parameters"][var].values for var in self.design_space.variables_names},
+            "constraints": {var: dataframe["functions"][var].values for var in constraints_names}
+        }
+
+        self.local_data.update({
+            [key for key in self.get_output_data_names() if 'post_processing_mdo_data' in key][
+                0]: out})
 
     def execute_at_xopt(self):
         '''

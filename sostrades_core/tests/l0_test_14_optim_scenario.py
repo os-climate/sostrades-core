@@ -1137,6 +1137,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         # execute without post run
         res = exec_eng.execute()
 
+        assert isinstance(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"), dict)
+
         # get sosoptimscenario discipline
         disc = exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
         disc.formulation.opt_problem.nonproc_constraints = []
@@ -1174,6 +1176,8 @@ class TestSoSOptimScenario(unittest.TestCase):
             f'{self.ns}.{self.sc_name}.{self.c_name}.z')
         assert x_first_execution == x_nominal_execution
         assert_array_equal(z_first_execution, z_nominal_execution)
+
+
 
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")

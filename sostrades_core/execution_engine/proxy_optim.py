@@ -42,6 +42,8 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         It contains the information and methonds necessary for i/o configuration (static or dynamic).
 
+
+
         Leaves of the process tree are direct instances of ProxyDiscipline. Other nodes are instances that inherit from
         ProxyDiscipline (e.g. ProxyCoupling).
 
@@ -237,8 +239,8 @@ class ProxyOptim(ProxyDriverEvaluator):
                                 'structuring': True},
                }
 
-    DESC_OUT = {'design_space_out': {'type': 'dataframe'}
-                }
+    DESC_OUT = {'design_space_out': {'type': 'dataframe'},
+                'post_processing_mdo_data': {'type': 'dict'}}
 
     def __init__(self, sos_name, ee, cls_builder, with_data_io=True, associated_namespaces=None):
         """
