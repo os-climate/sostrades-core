@@ -35,7 +35,8 @@ from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator
+from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
+    CartesianProductSampleGenerator
 import pandas as pd
 import numpy as np
 from collections import ChainMap
@@ -43,6 +44,7 @@ from gemseo.api import get_available_doe_algorithms
 
 # get module logger not sos logger
 import logging
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -63,7 +65,7 @@ class MultipliersWrapper(SoSWrapp):
         'icon': 'fas fa-grid-4 fa-fw',
         'version': ''
     }
-    #TODO: add and refer class variables
+    # TODO: add and refer class variables
     EVAL_INPUTS = 'eval_inputs'
     EVAL_INPUTS_CP = 'eval_inputs_cp'
     DISC_SHARED_NS = 'ns_sampling'
@@ -75,8 +77,8 @@ class MultipliersWrapper(SoSWrapp):
         super().__init__(sos_name)
         self.eval_ns = None
         self.eval_disc = None
-        self.vars_with_multiplier = {} # variables in the subprocess that accept a multiplier
-        self.multiplier_variables = {} # dict containing io names for runtime
+        self.vars_with_multiplier = {}  # variables in the subprocess that accept a multiplier
+        self.multiplier_variables = {}  # dict containing io names for runtime
 
     def setup_sos_disciplines(self):
         '''
@@ -112,22 +114,26 @@ class MultipliersWrapper(SoSWrapp):
                             orig_var_name = var_name.rsplit(self.MULTIPLIER_PARTICULE, 1)[0]
                         orig_var_f_name = f'{self.eval_ns}.{orig_var_name}'
                         # add the multiplier to the input
-                        dynamic_inputs.update({ var_name: {self.TYPE: 'float',
-                                                           self.VISIBILITY:  self.SHARED_VISIBILITY,
-                                                           self.NAMESPACE: self.DISC_SHARED_NS,
-                                                           self.UNIT: '%',
-                                                           self.DEFAULT: 100}})
-                        self.multiplier_variables.update({var_name:orig_var_name})
+                        dynamic_inputs.update({var_name: {self.TYPE: 'float',
+                                                          self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                          self.NAMESPACE: self.DISC_SHARED_NS,
+                                                          self.UNIT: '%',
+                                                          self.DEFAULT: 100}})
+                        self.multiplier_variables.update({var_name: orig_var_name})
                         # add the original variable to the output
                         self.dm.set_data(orig_var_f_name, self.VISIBILITY, self.SHARED_VISIBILITY)
                         data_dict = copy.copy(self.dm.get_data(orig_var_f_name))
                         dynamic_inputs.update({orig_var_name: {self.TYPE: data_dict[self.TYPE],
-                                                                self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                                self.NAMESPACE: self.DISC_SHARED_NS}})
+                                                               self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                               self.NAMESPACE: self.DISC_SHARED_NS,
+                                                               self.DATAFRAME_DESCRIPTOR: data_dict[
+                                                                   self.DATAFRAME_DESCRIPTOR]}})
 
                         dynamic_outputs.update({orig_var_name: {self.TYPE: data_dict[self.TYPE],
                                                                 self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                                self.NAMESPACE: self.DISC_SHARED_NS}})
+                                                                self.NAMESPACE: self.DISC_SHARED_NS,
+                                                                self.DATAFRAME_DESCRIPTOR: data_dict[
+                                                                    self.DATAFRAME_DESCRIPTOR]}})
 
     def apply_multipliers(self, disc_in):
         update_dm = False
@@ -169,14 +175,14 @@ class MultipliersWrapper(SoSWrapp):
         #        or not isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
         #         self.add_disc_to_config_dependency_disciplines(disc)
 
-        dynamic_inputs.update({self.EVAL_INPUTS:  {self.TYPE: 'dataframe',
-                                                   self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-                                                                                  'full_name': ('string', None, False)},
-                                                   self.DATAFRAME_EDITION_LOCKED: False,
-                                                   self.STRUCTURING: True,
-                                                   self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                   self.NAMESPACE: self.DISC_SHARED_NS}
-                          })
+        dynamic_inputs.update({self.EVAL_INPUTS: {self.TYPE: 'dataframe',
+                                                  self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                              'full_name': ('string', None, False)},
+                                                  self.DATAFRAME_EDITION_LOCKED: False,
+                                                  self.STRUCTURING: True,
+                                                  self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                  self.NAMESPACE: self.DISC_SHARED_NS}
+                               })
         # self.add_inputs(dynamic_inputs)
 
     def add_multipliers(self, disc_in):
@@ -226,7 +232,7 @@ class MultipliersWrapper(SoSWrapp):
         poss_in_values_full = []
         poss_out_values_full = []
         if hasattr(disc.mdo_discipline_wrapp, 'wrapper') and \
-           isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+                isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
             pass
         else:
             disc_in = disc.get_data_in()
@@ -238,7 +244,7 @@ class MultipliersWrapper(SoSWrapp):
                 full_id = disc.get_var_full_name(
                     data_in_key, disc_in)
                 is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                                               ]['io_type'] == 'in'
+                             ]['io_type'] == 'in'
                 is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
                 is_editable = disc_in[data_in_key]['editable']
                 value = disc_in[data_in_key]['value']
@@ -309,8 +315,8 @@ class MultipliersWrapper(SoSWrapp):
                 col_name
                 for col_name in columns
                 if (
-                    df_var[col_name].dtype == 'float'
-                    and not all(df_var[col_name].isna())
+                        df_var[col_name].dtype == 'float'
+                        and not all(df_var[col_name].isna())
                 )
             ]
             # if df with float columns
@@ -381,7 +387,7 @@ class MultipliersWrapper(SoSWrapp):
                 col_index = keys_clean.index(col_name_clean)
                 col_name = var_to_update.keys()[col_index]
                 var_updated[col_name] = multiplier_value * \
-                    var_to_update[col_name]
+                                        var_to_update[col_name]
         # if float to be multiplied
         else:
             var_updated = multiplier_value * var_to_update
@@ -392,7 +398,7 @@ class MultipliersWrapper(SoSWrapp):
         for orig_var in outputs:
             outputs[orig_var] = self.get_sosdisc_inputs(orig_var)
         for multiplier_var, orig_var in self.multiplier_variables.items():
-            outputs[orig_var] = self.apply_multiplier(multiplier_name= multiplier_var,
-                                                      multiplier_value= self.get_sosdisc_inputs(multiplier_var),
-                                                      var_to_update= outputs[orig_var])
+            outputs[orig_var] = self.apply_multiplier(multiplier_name=multiplier_var,
+                                                      multiplier_value=self.get_sosdisc_inputs(multiplier_var),
+                                                      var_to_update=outputs[orig_var])
         self.store_sos_outputs_values(outputs)

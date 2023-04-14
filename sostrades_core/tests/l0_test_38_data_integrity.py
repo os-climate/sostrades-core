@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -68,8 +69,10 @@ class TestDataIntegrity(unittest.TestCase):
                        f'{self.exec_eng.study_name}.Disc1.df_in': 'dataframe',
                        f'{self.exec_eng.study_name}.weather': 'string'}
 
-        missing_input_list = [f'{self.exec_eng.study_name}.Disc1.dict_string_in', f'{self.exec_eng.study_name}.Disc1.list_dict_string_in',
-                              f'{self.exec_eng.study_name}.Disc1.dict_of_df_in', f'{self.exec_eng.study_name}.Disc1.dict_of_dict_in']
+        missing_input_list = [f'{self.exec_eng.study_name}.Disc1.dict_string_in',
+                              f'{self.exec_eng.study_name}.Disc1.list_dict_string_in',
+                              f'{self.exec_eng.study_name}.Disc1.dict_of_df_in',
+                              f'{self.exec_eng.study_name}.Disc1.dict_of_dict_in']
         self.exec_eng.load_study_from_input_dict(wrong_input_dict)
 
         for data_id, var_data_dict in self.exec_eng.dm.data_dict.items():
@@ -92,7 +95,7 @@ class TestDataIntegrity(unittest.TestCase):
 
         self.dict_of_dict_in_data = {'key_A': {'subKey1': 0.1234, 'subKey2': 111.111, 'subKey3': 2036},
                                      'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036}}
-        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                       [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['key1', 'key2', 'key3', 'key4'])
         self.dict_of_df_in_data = {'key_C': a_df,
@@ -168,7 +171,8 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg_weather = self.exec_eng.dm.get_data(
             full_name_weather, ProxyDiscipline.CHECK_INTEGRITY_MSG)
         self.assertEqual(
-            integrity_msg_weather, f"Value {wrong_input_dict[full_name_weather]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']")
+            integrity_msg_weather,
+            f"Value {wrong_input_dict[full_name_weather]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']")
 
         full_name_weather_list = f'{self.exec_eng.study_name}.weather_list'
         integrity_msg_weather_list = self.exec_eng.dm.get_data(
@@ -198,14 +202,16 @@ class TestDataIntegrity(unittest.TestCase):
         self.exec_eng.set_debug_mode('data_check_integrity')
         self.dict_of_dict_in_data = {'key_A': {'subKey1': 0.1234, 'subKey2': 111.111, 'subKey3': 2036},
                                      'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036}}
-        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                       [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['key1', 'key2', 'key3', 'key4'])
         self.dict_of_df_in_data = {'key_C': a_df,
                                    'key_D': a_df * 3.1416}
 
-        wrong_input_dict = {f'{self.exec_eng.study_name}.Disc1.dict_in': {'key0': 1.0, 'key_str': 'wrong type', 'key1': 3, 'key5': {'wrong_dict': 1}},
-                            }
+        wrong_input_dict = {
+            f'{self.exec_eng.study_name}.Disc1.dict_in': {'key0': 1.0, 'key_str': 'wrong type', 'key1': 3,
+                                                          'key5': {'wrong_dict': 1}},
+            }
         # f'{self.exec_eng.study_name}.Disc1.df_in': pd.DataFrame({'key0': [0.]
         # * 3, 'c2': 0.,'str_df':1.,'c2':4.},
         self.exec_eng.load_study_from_input_dict(wrong_input_dict)
@@ -219,8 +225,9 @@ class TestDataIntegrity(unittest.TestCase):
         self.assertEqual(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
-        correct_input_dict = {f'{self.exec_eng.study_name}.Disc1.dict_in': {'key0': 1.0, 'key_str': 2.0, 'key1': 3, 'key5': 4},
-                              }
+        correct_input_dict = {
+            f'{self.exec_eng.study_name}.Disc1.dict_in': {'key0': 1.0, 'key_str': 2.0, 'key1': 3, 'key5': 4},
+            }
         # f'{self.exec_eng.study_name}.Disc1.df_in': pd.DataFrame({'key0': [0.]
         # * 3, 'c2': 0.,'str_df':1.,'c2':4.},
         self.exec_eng.load_study_from_input_dict(correct_input_dict)
@@ -260,13 +267,13 @@ class TestDataIntegrity(unittest.TestCase):
         full_name = f'{self.exec_eng.study_name}.Disc1.list_dict_string_in'
         integrity_msg = self.exec_eng.dm.get_data(
             full_name, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg = "Value 3.0 should be a dict according to subtype descriptor {'dict': 'string'}"
+        correct_integrity_msg = "Value 3.0 should be a string according to subtype descriptor {'dict': 'string'}"
         correct_integrity_msg += '\n'
         correct_integrity_msg += f"Value 1 in {wrong_input_dict[full_name][-1]} should be a string according to subtype descriptor {{'dict': 'string'}}"
         self.assertEqual(
             integrity_msg, correct_integrity_msg)
 
-        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                       [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['key1', 'key2', 'key3', 'key4'])
         self.dict_of_df_in_data = {'key_C': a_df,
@@ -285,7 +292,7 @@ class TestDataIntegrity(unittest.TestCase):
         self.assertEqual(
             integrity_msg, correct_integrity_msg)
 
-        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                       [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['key1', 'key2', 'key3', 'key4'])
         self.dict_of_df_in_data = {'key_C': a_df,
@@ -316,7 +323,7 @@ class TestDataIntegrity(unittest.TestCase):
 
         self.exec_eng.configure()
         self.exec_eng.set_debug_mode('data_check_integrity')
-        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                       [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['variable', 'c2', 'c3', 'key4'])
 
@@ -331,14 +338,14 @@ class TestDataIntegrity(unittest.TestCase):
         self.assertEqual(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
-        a_df = pd.DataFrame(np.array([[5e5, -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = pd.DataFrame(np.array([[5e5, -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                       [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                             columns=['variable', 'c2', 'c3', 'str_df'])
 
         a_df = pd.DataFrame({'variable': [5e5, 2.9, 0.7e-5, -19.],
                              'c2': 4,
                              'c3': 8,
-                             'str_df': [5.**5, -209.1, 3.1416, 6.6]})
+                             'str_df': [5. ** 5, -209.1, 3.1416, 6.6]})
         wrong_input_dict = {f'{self.exec_eng.study_name}.Disc1.df_in': a_df}
         self.exec_eng.load_study_from_input_dict(wrong_input_dict)
         integrity_msg_dict_in = self.exec_eng.dm.get_data(

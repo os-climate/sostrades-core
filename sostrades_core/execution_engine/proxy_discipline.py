@@ -47,6 +47,7 @@ from gemseo.core.chain import MDOChain
 from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 
+
 class ProxyDisciplineException(Exception):
     pass
 
@@ -157,6 +158,7 @@ class ProxyDiscipline(object):
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}
     DATAFRAME_DESCRIPTOR = SoSWrapp.DATAFRAME_DESCRIPTOR
+    DYNAMIC_DATAFRAME_COLUMNS = SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS
     DATAFRAME_EDITION_LOCKED = SoSWrapp.DATAFRAME_EDITION_LOCKED
     #
     DF_EXCLUDED_COLUMNS = 'dataframe_excluded_columns'
@@ -982,7 +984,7 @@ class ProxyDiscipline(object):
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
         # it
-        def_bool = True 
+        def_bool = True
         if self.check_configured_dependency_disciplines():
             self.set_numerical_parameters()
 
@@ -999,11 +1001,10 @@ class ProxyDiscipline(object):
             self.set_configure_status(True)
 
             # Check if the database is activated in the namespace manager
-            if self.ee.ns_manager.database_activated: 
+            if self.ee.ns_manager.database_activated:
                 self.load_data_from_database()
 
-
-    def load_data_from_database(self): 
+    def load_data_from_database(self):
         """
         This method loads data from a database using the JSONDataConnector and sets the loaded data in the proxy discipline.
         The database name is extracted from the input data, and the method checks if the database name is already initialized or not. 
@@ -1014,7 +1015,7 @@ class ProxyDiscipline(object):
         # Initialize database name
         database_name_init = None
         # Loop through the items in the input data
-        for k,v in self.get_data_in().items():
+        for k, v in self.get_data_in().items():
             # Check if the inputs has a namespace
             if 'namespace' in v:
                 # Get the namespace object from the shared namespace dictionary
@@ -1022,24 +1023,23 @@ class ProxyDiscipline(object):
                 database_name = namespace.database_name
                 if database_name is not None:
                     # Check if this is the first time we encounter this database name                            
-                    if database_name_init is not None: 
-                        data_connector = JSONDataConnector() 
+                    if database_name_init is not None:
+                        data_connector = JSONDataConnector()
                         data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
                     elif database_name != database_name_init:
-                        data_connector = JSONDataConnector() 
+                        data_connector = JSONDataConnector()
                         data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
-                    database_name_init = database_name 
+                    database_name_init = database_name
                     # Get the full name of the variable
                     full_name = self.get_var_full_name(k, self.get_data_in())
                     # Set the data in the DataManager object
                     try:
-                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value = False)
+                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value=False)
                     except:
-                        if not data_loaded :
+                        if not data_loaded:
                             raise Exception(f'Database Empty : {database_name} is not in JSON')
-                        elif k not in data_loaded: 
+                        elif k not in data_loaded:
                             raise Exception(f'variable {k} not in loaded JSON')
-
 
     def __check_all_data_integrity(self):
         '''

@@ -30,12 +30,13 @@ from sostrades_core.execution_engine.data_connector.data_connector_factory impor
     PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
 from copy import copy
+
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
 DEFAULT_scattermap_manager_NAME = 'default_smap_namanger'
 
 
-class ExecutionEngineException (Exception):
+class ExecutionEngineException(Exception):
     pass
 
 
@@ -172,9 +173,9 @@ class ExecutionEngine:
         '''
         loop on proxy disciplines and execute prepare execution
         '''
-        #- instantiate models in user wrapps
+        # - instantiate models in user wrapps
         self.__factory.init_execution()
-        #- execution
+        # - execution
         self.root_process.prepare_execution()
 
     def fill_data_in_with_connector(self):
@@ -237,11 +238,15 @@ class ExecutionEngine:
                 serialized_new_cache = cache.get_all_data()
                 anonymized_cache = {}
                 for index, index_dict in serialized_new_cache.items():
-                    anonymized_cache[index] = {data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in values_dict.items()}
-                                               for data_types, values_dict in index_dict.items() if values_dict is not None and data_types in ['inputs', 'outputs']}
+                    anonymized_cache[index] = {
+                        data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
+                                     values_dict.items()}
+                        for data_types, values_dict in index_dict.items() if
+                        values_dict is not None and data_types in ['inputs', 'outputs']}
                     if index_dict['jacobian'] is not None:
                         anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
-                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in index_dict['jacobian'].items()}
+                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
+                                                               index_dict['jacobian'].items()}
 
                 anonymized_cache_map[key] = anonymized_cache
 
@@ -258,11 +263,14 @@ class ExecutionEngine:
             for key, serialized_cache in cache_map.items():
                 unanonymized_cache = {}
                 for index, index_dict in serialized_cache.items():
-                    unanonymized_cache[index] = {data_types: {self.__unanonimize_key(key): value for key, value in values_dict.items()}
-                                                 for data_types, values_dict in index_dict.items() if data_types in ['inputs', 'outputs']}
+                    unanonymized_cache[index] = {
+                        data_types: {self.__unanonimize_key(key): value for key, value in values_dict.items()}
+                        for data_types, values_dict in index_dict.items() if data_types in ['inputs', 'outputs']}
                     if 'jacobian' in index_dict:
-                        unanonymized_cache[index]['jacobian'] = {self.__unanonimize_key(key_out): {self.__unanonimize_key(
-                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in index_dict['jacobian'].items()}
+                        unanonymized_cache[index]['jacobian'] = {
+                            self.__unanonimize_key(key_out): {self.__unanonimize_key(
+                                key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
+                            index_dict['jacobian'].items()}
                 unanonymized_cache_map[key] = unanonymized_cache
 
         return unanonymized_cache_map
@@ -412,7 +420,6 @@ class ExecutionEngine:
         dict_to_convert = self.dm.build_disc_status_dict()
 
         for discipline_key in dict_to_convert.keys():
-
             converted_key = self.anonymize_key(discipline_key)
             converted_dict[converted_key] = dict_to_convert[discipline_key]
 
@@ -522,14 +529,15 @@ class ExecutionEngine:
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
                 is_init_coupling_var = (
-                    value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING])
+                        value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[
+                    ProxyDiscipline.COUPLING])
                 if is_output_var or is_init_coupling_var:
                     value['value'] = convert_data_cache[key]['value']
 
         if self.__yield_method is not None:
             self.__yield_method()
 
-#         self.__configure_execution()
+        #         self.__configure_execution()
 
         # -- Init execute, to fully initialize models in discipline
         if len(dict_to_load):
@@ -549,13 +557,15 @@ class ExecutionEngine:
         Add the name of the variable in the message
         '''
 
-        integrity_msg_list = [f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
-                              for var_id, var_data_dict in self.dm.data_dict.items() if var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG] != '']
+        integrity_msg_list = [
+            f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
+            for var_id, var_data_dict in self.dm.data_dict.items() if
+            var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG] != '']
 
-#         for var_data_dict in self.dm.data_dict.values():
-#             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
-#                 integrity_msg_list.append(
-#                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
+        #         for var_data_dict in self.dm.data_dict.values():
+        #             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
+        #                 integrity_msg_list.append(
+        #                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
 
         if integrity_msg_list != []:
             full_integrity_msg = '\n'.join(integrity_msg_list)
@@ -648,7 +658,7 @@ class ExecutionEngine:
         '''
         self.logger.info('PROCESS EXECUTION %s STARTS...',
                          self.root_process.get_disc_full_name())
-#         self.root_process.clear_cache()
+        #         self.root_process.clear_cache()
         self.fill_data_in_with_connector()
         self.update_from_dm()
 
@@ -681,4 +691,3 @@ class ExecutionEngine:
         ex_proc.set_status_from_mdo_discipline()
 
         return ex_proc
-

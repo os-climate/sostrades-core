@@ -40,13 +40,15 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x', f'{coupling_name}.y_1',
+                             'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x',
+                                           f'{coupling_name}.y_1',
                                            f'{coupling_name}.y_2',
                                            f'{coupling_name}.z']}
         input_selection_x = pd.DataFrame(input_selection_x)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2', f'{coupling_name}.obj',
+                                      'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2',
+                                                    f'{coupling_name}.obj',
                                                     f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
@@ -57,30 +59,30 @@ class Study(StudyManager):
 
         # Find anonymised dict
         based_on_uc_name = False
-        if based_on_uc_name:   # Full dictionary based on usecase name and process
+        if based_on_uc_name:  # Full dictionary based on usecase name and process
             # This can not work as the added coupling_name 'subprocess'  is
             # missing
             anonymize_input_dict_from_usecase = self.static_load_raw_usecase_data(
                 repo, mod_id, my_usecase)
         else:  # Manually provided restricted dictionary
             anonymize_input_dict_from_usecase = {}
-            #==================================================================
+            # ==================================================================
             # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = array([ 1.])
             # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = array([1.])
             # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = array([1.])
             # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = array([1., 1.])
             # anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.Sellar_Problem.local_dv'] = 10.
-            #==================================================================
+            # ==================================================================
 
             anonymize_input_dict_from_usecase = {}
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = [
-                1.]
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = array([
+                1.])
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = [
                 1.]
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = [
                 1.]
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = [
-                1., 1.]
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = array([
+                1., 1.])
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
         disc_dict = {}

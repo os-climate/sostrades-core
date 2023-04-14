@@ -128,7 +128,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
     def setUp_cp(self):
 
         self.sampling_generation_mode_cp = 'at_configuration_time'
-        #self.sampling_generation_mode_cp = 'at_run_time'
+        # self.sampling_generation_mode_cp = 'at_run_time'
 
         self.study_name_cp = 'cp'
         self.sampling_method_cp = 'cartesian_product'
@@ -510,7 +510,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # To check what it is indispensable for each algo.
             if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
                 disc_dict[f'{self.ns}.SampleGenerator.algo_options']['levels'] = [
-                    0.1]    # Must be number between 0 and 1
+                    0.1]  # Must be number between 0 and 1
                 disc_dict[f'{self.ns}.SampleGenerator.algo_options']['centers'] = (
                     0, 0, 0)
             else:
@@ -586,7 +586,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
-        #disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
+        # disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -772,4 +772,3 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.execute()
-

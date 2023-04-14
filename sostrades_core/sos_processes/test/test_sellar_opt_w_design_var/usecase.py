@@ -32,38 +32,38 @@ class Study(StudyManager):
         self.coupling_name = "SellarCoupling"
 
     def setup_usecase(self):
-
         INEQ_CONSTRAINT = FunctionManager.INEQ_CONSTRAINT
         OBJECTIVE = FunctionManager.OBJECTIVE
 
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['x_in', 'z_in'],
-                       'value': [[1., 2., 3., 4.], [5., 2.]],
-                       'lower_bnd': [[0., 0., 0., 0.], [-10., 0.]],
-                       'upper_bnd': [[10., 10., 10., 10.], [10., 10.]],
+                       'value': [array([1., 2., 3., 4.]), array([5., 2.])],
+                       'lower_bnd': [array([0., 0., 0., 0.]), array([-10., 0.])],
+                       'upper_bnd': [array([10., 10., 10., 10.]), array([10., 10.])],
                        'enable_variable': [True, True],
                        'activated_elem': [[True], [True, True]]}
         dspace = pd.DataFrame(dspace_dict)
 
         design_var_descriptor = {'x_in': {'out_name': 'x',
-                                      'out_type': 'dataframe',
-                                      'key': 'value',
-                                      'index': arange(0, 4, 1),
-                                      'index_name': 'index',
-                                      'namespace_in': 'ns_OptimSellar',
-                                      'namespace_out': 'ns_OptimSellar'
-                                      },
-                             'z_in': {'out_name': 'z',
-                                      'out_type': 'array',
-                                      'index': [0, 1],
-                                      'index_name': 'index',
-                                      'namespace_in': 'ns_OptimSellar',
-                                      'namespace_out': 'ns_OptimSellar'
-                                      }
-                             }
+                                          'out_type': 'dataframe',
+                                          'key': 'value',
+                                          'index': arange(0, 4, 1),
+                                          'index_name': 'index',
+                                          'namespace_in': 'ns_OptimSellar',
+                                          'namespace_out': 'ns_OptimSellar'
+                                          },
+                                 'z_in': {'out_name': 'z',
+                                          'out_type': 'array',
+                                          'index': [0, 1],
+                                          'index_name': 'index',
+                                          'namespace_in': 'ns_OptimSellar',
+                                          'namespace_out': 'ns_OptimSellar'
+                                          }
+                                 }
 
         disc_dict = {}
-        disc_dict[f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.design_var_descriptor'] = design_var_descriptor
+        disc_dict[
+            f'{ns}.{self.optim_name}.{self.coupling_name}.DesignVar.design_var_descriptor'] = design_var_descriptor
 
         # Optim inputs
         disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 100
@@ -73,14 +73,14 @@ class Study(StudyManager):
         disc_dict[f'{ns}.{self.optim_name}.objective_name'] = 'objective_lagrangian'
         disc_dict[f'{ns}.{self.optim_name}.ineq_constraints'] = []
         disc_dict[f'{ns}.{self.optim_name}.algo_options'] = {
-            #"maxls": 6,
-            #"maxcor": 3,
+            # "maxls": 6,
+            # "maxcor": 3,
             "ftol_rel": 1e-15,
 
         }
 
         # Sellar and design var inputs
-        disc_dict[f'{ns}.{self.optim_name}.x_in'] = [1., 1., 1., 1.]
+        disc_dict[f'{ns}.{self.optim_name}.x_in'] = array([1., 1., 1., 1.])
         disc_dict[f'{ns}.{self.optim_name}.y_1'] = 5.
         disc_dict[f'{ns}.{self.optim_name}.y_2'] = 1.
         disc_dict[f'{ns}.{self.optim_name}.z_in'] = array([5., 2.])
@@ -102,6 +102,7 @@ class Study(StudyManager):
         disc_dict.update(values_dict)
 
         return [disc_dict]
+
 
 if '__main__' == __name__:
     uc_cls = Study()

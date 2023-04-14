@@ -63,6 +63,7 @@ class CheckDataIntegrity():
         self.POSSIBLE_VALUES = self.sos_disc_class.POSSIBLE_VALUES
         self.DATAFRAME_DESCRIPTOR = self.sos_disc_class.DATAFRAME_DESCRIPTOR
         self.DATAFRAME_EDITION_LOCKED = self.sos_disc_class.DATAFRAME_EDITION_LOCKED
+        self.DYNAMIC_DATAFRAME_COLUMNS = 'dynamic_dataframe_columns'
         self.IS_FORMULA = self.sos_disc_class.IS_FORMULA
         self.IS_EVAL = self.sos_disc_class.IS_EVAL
         self.FORMULA = self.sos_disc_class.FORMULA
@@ -213,15 +214,19 @@ class CheckDataIntegrity():
 
         dataframe_descriptor = var_data_dict[self.DATAFRAME_DESCRIPTOR]
         dataframe_edition_locked = var_data_dict[self.DATAFRAME_EDITION_LOCKED]
+        # Mean that dataframe columns can be dynamic depending on the case and cannot be checked
+        if self.DYNAMIC_DATAFRAME_COLUMNS in var_data_dict:
+            dynamic_dataframe_column = var_data_dict[self.DYNAMIC_DATAFRAME_COLUMNS]
+        else:
+            dynamic_dataframe_column = False
 
         # Dataframe editable in GUI but no dataframe descriptor
         if dataframe_descriptor is None:
             check_integrity_msg = 'No dataframe descriptor set'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         else:
-
+            df_descriptor_well_defined = True
             for key in dataframe_descriptor:
-                df_descriptor_well_defined = True
                 # Check column data well described
                 if len(dataframe_descriptor[key]) != 3:
                     check_integrity_msg_df_descriptor = 'Partial dataframe descriptor set up'
@@ -229,7 +234,9 @@ class CheckDataIntegrity():
                         check_integrity_msg_df_descriptor)
                     df_descriptor_well_defined = False
                 # Check column type authorised
-                elif dataframe_descriptor[key][0] not in self.VAR_TYPE_MAP.keys():
+                # The empty string means the type cannot be defined : example values in design space depends on the chosen variable
+                elif dataframe_descriptor[key][0] not in self.VAR_TYPE_MAP.keys() and dataframe_descriptor[key][
+                    0] not in ['multiple']:
                     check_integrity_msg_df_descriptor = f'Dataframe descriptor has a column type ' \
                                                         f'{dataframe_descriptor[key][0]} not in allowed type {list(self.VAR_TYPE_MAP.keys())}'
                     df_descriptor_well_defined = False
@@ -238,7 +245,10 @@ class CheckDataIntegrity():
 
             if df_descriptor_well_defined:
                 for key in self.variable_value.columns:
-                    if key not in dataframe_descriptor:
+                    if dynamic_dataframe_column and key not in dataframe_descriptor:
+                        # The key is not in the dataframe descriptor but the datafrmae has dynamic columns that cannot be described in the df_descriptor depending on the use
+                        pass
+                    elif key not in dataframe_descriptor and not dynamic_dataframe_column:
                         check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
                         self.__add_msg_to_check_integrity_msg_list(
                             check_integrity_msg_df_descriptor)
@@ -261,15 +271,21 @@ class CheckDataIntegrity():
         column_type = column_descriptor[0]
         column_range = column_descriptor[1]
         values_in_column = column.values.tolist()
-
-        if not all(isinstance(item, self.VAR_TYPE_MAP[column_type]) for item in values_in_column):
-            check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
-            self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-        elif column_range is not None and len(column_range) == 2:
-            if not all(item <= column_range[1] for item in values_in_column) and all(
-                    column_range[0] <= item for item in values_in_column):
-                check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
+        if column_type in self.VAR_TYPE_MAP.keys():
+            if not all(isinstance(item, self.VAR_TYPE_MAP[column_type]) for item in values_in_column):
+                check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+        if column_range is not None and len(column_range) == 2:
+            if str(column.values.dtype) == 'object':
+                if not all(item in column_range for item in values_in_column):
+                    check_integrity_msg = f'Dataframe values in column {key} are not in the possible list {column_range} requested in the dataframe descriptor'
+                    self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+            else:
+
+                if not all(item <= column_range[1] for item in values_in_column) and all(
+                        column_range[0] <= item for item in values_in_column):
+                    check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
+                    self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
     def __check_subtype_descriptor(self, var_data_dict):
         '''
@@ -278,6 +294,9 @@ class CheckDataIntegrity():
 
         if self.SUBTYPE in var_data_dict:
             variable_subtype = var_data_dict[self.SUBTYPE]
+            if list(variable_subtype.keys())[0] != self.variable_type:
+                check_integrity_msg = f'Subtype descriptor should have a unique key the keyword {self.variable_type} because the variable type is {self.variable_type}'
+                self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             self.__check_subtype(variable_subtype, self.variable_type,
                                  self.variable_value)
 
@@ -289,17 +308,18 @@ class CheckDataIntegrity():
         if not isinstance(subtype, dict):
             check_integrity_msg = 'Subtype descriptor must be a dictionnary'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-        elif list(subtype.keys())[0] != type_to_check or len(subtype.keys()) != 1:
-            check_integrity_msg = f'Subtype descriptor should have as unique key the keyword {type_to_check} because the variable type is {type_to_check}'
+        elif len(subtype.keys()) != 1:
+            check_integrity_msg = f'Subtype descriptor should have a unique key'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         elif isinstance(subtype[type_to_check], dict):
+            new_type_to_check = list(subtype[type_to_check].keys())[0]
             if isinstance(variable_value, dict):
                 for sub_value in variable_value.values():
                     self.__check_subtype(
-                        subtype[type_to_check], 'dict', sub_value)
+                        subtype[type_to_check], new_type_to_check, sub_value)
             elif isinstance(variable_value, list):
                 for value in variable_value:
-                    self.__check_subtype(subtype[type_to_check], 'dict', value)
+                    self.__check_subtype(subtype[type_to_check], new_type_to_check, value)
         else:
             if isinstance(variable_value, dict):
                 for sub_value in variable_value.values():
@@ -314,8 +334,8 @@ class CheckDataIntegrity():
                         self.__add_msg_to_check_integrity_msg_list(
                             check_integrity_msg_subtype)
             else:
-                if not isinstance(variable_value, self.VAR_TYPE_MAP[type_to_check]):
-                    check_integrity_msg_subtype = f'Value {variable_value} should be a {type_to_check} according to subtype descriptor {subtype}'
+                if not isinstance(variable_value, self.VAR_TYPE_MAP[subtype[type_to_check]]):
+                    check_integrity_msg_subtype = f'Value {variable_value} should be a {subtype[type_to_check]} according to subtype descriptor {subtype}'
                     self.__add_msg_to_check_integrity_msg_list(
                         check_integrity_msg_subtype)
 

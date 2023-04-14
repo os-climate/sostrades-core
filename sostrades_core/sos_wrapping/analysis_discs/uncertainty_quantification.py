@@ -50,7 +50,7 @@ class UncertaintyQuantification(SoSWrapp):
     # ontology information
     _ontology_data = {
         'label': 'Uncertainty Quantification Model',
-        'type': 'Research',
+        SoSWrapp.TYPE: 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
         'validated_by': 'SoSTrades Project',
@@ -63,95 +63,95 @@ class UncertaintyQuantification(SoSWrapp):
 
     EVAL_INPUTS = 'eval_inputs'
     EVAL_OUTPUTS = 'eval_outputs'
-    DEFAULT = 'default'
+    DEFAULT = SoSWrapp.DEFAULT
     UPPER_BOUND = "upper_bnd"
     LOWER_BOUND = "lower_bnd"
     NB_POINTS = 'nb_points'
+    VARIABLE = 'variable'
 
+    eval_df_data_description = {
+        SoSWrapp.TYPE: 'dataframe',
+        SoSWrapp.DATAFRAME_DESCRIPTOR: {},
+        SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
+        SoSWrapp.UNIT: None,
+        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+        SoSWrapp.NAMESPACE: 'ns_eval',
+    }
     DESC_IN = {
-        'samples_inputs_df': {
-            'type': 'dataframe',
-            'unit': None,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_eval',
-        },
-        'samples_outputs_df': {
-            'type': 'dataframe',
-            'unit': None,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_eval',
-        },
+        'samples_inputs_df': eval_df_data_description,
+        'samples_outputs_df': eval_df_data_description.copy(),
         'design_space': {
-            'type': 'dataframe',
-            'dataframe_descriptor': {
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.DATAFRAME_DESCRIPTOR: {
                 'shortest_name': ('string', None, False),
-                LOWER_BOUND: ('float', None, True),
-                UPPER_BOUND: ('float', None, True),
+                LOWER_BOUND: ('multiple', None, True),
+                UPPER_BOUND: ('multiple', None, True),
+                VARIABLE: ('multiple', None, True),
                 NB_POINTS: ('int', None, True),
                 'full_name': ('string', None, False),
             },
-            'structuring': True,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_eval',
+            SoSWrapp.STRUCTURING: True,
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: 'ns_eval',
         },
         'confidence_interval': {
-            'type': 'float',
-            'unit': '%',
-            'default': 90,
-            'range': [0.0, 100.0],
-            'structuring': False,
-            'numerical': True,
-            'user_level': 2,
+            SoSWrapp.TYPE: 'float',
+            SoSWrapp.UNIT: '%',
+            SoSWrapp.DEFAULT: 90,
+            SoSWrapp.RANGE: [0.0, 100.0],
+            SoSWrapp.STRUCTURING: False,
+            SoSWrapp.NUMERICAL: True,
+            SoSWrapp.USER_LEVEL: 2,
         },
         'sample_size': {
-            'type': 'float',
-            'unit': None,
-            'default': 1000,
-            'structuring': False,
-            'numerical': True,
-            'user_level': 2,
+            SoSWrapp.TYPE: 'float',
+            SoSWrapp.UNIT: None,
+            SoSWrapp.DEFAULT: 1000,
+            SoSWrapp.STRUCTURING: False,
+            SoSWrapp.NUMERICAL: True,
+            SoSWrapp.USER_LEVEL: 2,
         },
         'prepare_samples_function': {
-            'type': 'string',
-            'default': 'None',
-            'user_level': 2,
+            SoSWrapp.TYPE: 'string',
+            SoSWrapp.DEFAULT: 'None',
+            SoSWrapp.USER_LEVEL: 2,
         },
         EVAL_INPUTS: {
-            'type': 'dataframe',
-            'dataframe_descriptor': {
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.DATAFRAME_DESCRIPTOR: {
                 'selected_input': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
                 # 'ontology_name': ('string', None, False),je
             },
-            'dataframe_edition_locked': False,
-            'structuring': True,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_eval',
+            SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+            SoSWrapp.STRUCTURING: True,
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: 'ns_eval',
         },
         EVAL_OUTPUTS: {
-            'type': 'dataframe',
-            'dataframe_descriptor': {
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.DATAFRAME_DESCRIPTOR: {
                 'selected_output': ('bool', None, True),
                 'full_name': ('string', None, False),
                 'shortest_name': ('string', None, False),
                 # 'ontology_name': ('string', None, False),
             },
-            'dataframe_edition_locked': False,
-            'structuring': True,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
-            'namespace': 'ns_eval',
+            SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+            SoSWrapp.STRUCTURING: True,
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: 'ns_eval',
         },
     }
 
     DESC_OUT = {
         'input_parameters_samples_df': {
-            'type': 'dataframe',
-            'unit': None,
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.UNIT: None,
         },
         'output_interpolated_values_df': {
-            'type': 'dataframe',
-            'unit': None,
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.UNIT: None,
         },
     }
 
@@ -202,7 +202,7 @@ class UncertaintyQuantification(SoSWrapp):
                     # else:
                     # Cannot make a call to ontology so set default data
                     conversion_full_ontology = {
-                        parameter: [parameter, None] for parameter in parameter_list
+                        parameter: [parameter, ''] for parameter in parameter_list
                     }
 
                     # possible_distrib = ['Normal', 'PERT', 'LogNormal', 'Triangular']
@@ -266,13 +266,13 @@ class UncertaintyQuantification(SoSWrapp):
                                         'The following exception occurs when trying to reach Ontology server',
                                         ex,
                                     )
-                                    [name, unit] = [input_param, None]
+                                    [name, unit] = [input_param, '']
                                 data_details_default = data_details_default.append(
                                     {
-                                        'type': 'input',
+                                        SoSWrapp.TYPE: 'input',
                                         'variable': input_param,
                                         'name': name,
-                                        'unit': unit,
+                                        SoSWrapp.UNIT: unit,
                                     },
                                     ignore_index=True,
                                 )
@@ -290,39 +290,39 @@ class UncertaintyQuantification(SoSWrapp):
 
                                 data_details_default = data_details_default.append(
                                     {
-                                        'type': 'output',
+                                        SoSWrapp.TYPE: 'output',
                                         'variable': output_param,
                                         'name': name,
-                                        'unit': unit,
+                                        SoSWrapp.UNIT: unit,
                                     },
                                     ignore_index=True,
                                 )
 
                             dynamic_inputs['input_distribution_parameters_df'] = {
-                                'type': 'dataframe',
-                                'dataframe_descriptor': {
+                                SoSWrapp.TYPE: 'dataframe',
+                                SoSWrapp.DATAFRAME_DESCRIPTOR: {
                                     'parameter': ('string', None, False),
                                     'distribution': ('string', None, True),
                                     'lower_parameter': ('float', None, True),
                                     'upper_parameter': ('float', None, True),
                                     'most_probable_value': ('float', None, True),
                                 },
-                                'unit': '-',
-                                'default': input_distribution_default,
-                                'structuring': False,
+                                SoSWrapp.UNIT: '-',
+                                SoSWrapp.DEFAULT: input_distribution_default,
+                                SoSWrapp.STRUCTURING: False,
                             }
 
                             dynamic_inputs['data_details_df'] = {
-                                'type': 'dataframe',
-                                'dataframe_descriptor': {
-                                    'type': ('string', None, False),
+                                SoSWrapp.TYPE: 'dataframe',
+                                SoSWrapp.DATAFRAME_DESCRIPTOR: {
+                                    SoSWrapp.TYPE: ('string', None, False),
                                     'variable': ('string', None, False),
                                     'name': ('string', None, True),
-                                    'unit': ('string', None, True),
+                                    SoSWrapp.UNIT: ('string', None, True),
                                 },
-                                'unit': None,
-                                'default': data_details_default,
-                                'structuring': False,
+                                SoSWrapp.UNIT: None,
+                                SoSWrapp.DEFAULT: data_details_default,
+                                SoSWrapp.STRUCTURING: False,
                             }
 
                             if 'input_distribution_parameters_df' in data_in:
@@ -671,7 +671,7 @@ class UncertaintyQuantification(SoSWrapp):
         out_names = []
         if 'data_details_df' in self.get_sosdisc_inputs():
             data_df = self.get_sosdisc_inputs(['data_details_df'])
-            in_names = data_df.loc[data_df['type'] == 'input', 'name'].to_list()
+            in_names = data_df.loc[data_df[SoSWrapp.TYPE] == 'input', 'name'].to_list()
         if 'output_interpolated_values_df' in self.get_sosdisc_outputs():
             out_df = (
                 self.get_sosdisc_outputs(['output_interpolated_values_df'])

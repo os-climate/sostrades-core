@@ -157,8 +157,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
 
-        a_list = np.linspace(0, 10, 2)
-        x_list = np.linspace(0, 10, 2)
+        a_list = np.linspace(0, 10, 2).tolist()
+        x_list = np.linspace(0, 10, 2).tolist()
         eval_inputs = pd.DataFrame({'selected_input': [True, False, True, False],
                                     'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
                                                   f'x', f'subprocess.Disc2.power']})

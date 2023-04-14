@@ -62,13 +62,13 @@ class TestMultiScenario(unittest.TestCase):
         self.b3 = 1
         self.z3 = 1.8
 
-        self.power1 = 0.1
+        self.power1 = 1
         self.constant1 = 4
-        self.power2 = 0.2
+        self.power2 = 3
 
     def setUp_cp(self):
         self.sampling_generation_mode_cp = 'at_configuration_time'
-        #self.sampling_generation_mode_cp = 'at_run_time'
+        # self.sampling_generation_mode_cp = 'at_run_time'
 
         self.study_name_cp = 'cp'
         self.sampling_method_cp = 'cartesian_product'
@@ -115,7 +115,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def setUp_cp_sellar(self):
         self.sampling_generation_mode_cp = 'at_configuration_time'
-        #self.sampling_generation_mode_cp = 'at_run_time'
+        # self.sampling_generation_mode_cp = 'at_run_time'
 
         self.study_name_cp = 'cp'
         self.sampling_method_cp = 'cartesian_product'
@@ -164,10 +164,10 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),  ['scenario_1',
-                                                                                      'scenario_2',
-                                                                                      'scenario_3',
-                                                                                      'scenario_4'])
+            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(), ['scenario_1',
+                                                                                     'scenario_2',
+                                                                                     'scenario_3',
+                                                                                     'scenario_4'])
 
         # manually configure the scenarios non-varying values (~reference)
         scenario_list = ['scenario_1', 'scenario_2', 'scenario_4']
@@ -464,7 +464,7 @@ class TestMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios')[0]
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         self.assertEqual(ms_sub_disc_names, [
-                         'scenario_1', 'scenario_2', 'scenario_4', 'ReferenceScenario'])
+            'scenario_1', 'scenario_2', 'scenario_4', 'ReferenceScenario'])
 
         # Now, check that, since we are in LINKED_MODE, that the non-trade variables from non-reference scenarios have
         # 'editable' in False.
@@ -535,15 +535,15 @@ class TestMultiScenario(unittest.TestCase):
                           'scenario_2', 'scenario_3', 'scenario_4']
         scenario_vars = ['Disc1.b', 'z']
         self.assertEqual(
-            scenario_df['scenario_name'].values.tolist(),  scenario_names)
-        self.assertEqual(scenario_df['Disc1.b'].values.tolist(),  [self.b1,
-                                                                   self.b1,
-                                                                   self.b2,
-                                                                   self.b2])
-        self.assertEqual(scenario_df['z'].values.tolist(),  [self.z1,
-                                                             self.z2,
-                                                             self.z1,
-                                                             self.z2])
+            scenario_df['scenario_name'].values.tolist(), scenario_names)
+        self.assertEqual(scenario_df['Disc1.b'].values.tolist(), [self.b1,
+                                                                  self.b1,
+                                                                  self.b2,
+                                                                  self.b2])
+        self.assertEqual(scenario_df['z'].values.tolist(), [self.z1,
+                                                            self.z2,
+                                                            self.z1,
+                                                            self.z2])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
         ms_disc = self.exec_eng.dm.get_disciplines_with_name(
@@ -575,26 +575,26 @@ class TestMultiScenario(unittest.TestCase):
                           'scenario_7', 'scenario_8', 'scenario_9']
         scenario_vars = ['Disc1.b', 'z']
         self.assertEqual(
-            scenario_df['scenario_name'].values.tolist(),  scenario_names)
-        self.assertEqual(scenario_df['Disc1.b'].values.tolist(),  [self.b1,
-                                                                   self.b1,
-                                                                   self.b1,
-                                                                   self.b2,
-                                                                   self.b2,
-                                                                   self.b2,
-                                                                   self.b3,
-                                                                   self.b3,
-                                                                   self.b3
-                                                                   ])
-        self.assertEqual(scenario_df['z'].values.tolist(),  [self.z1,
-                                                             self.z2,
-                                                             self.z3,
-                                                             self.z1,
-                                                             self.z2,
-                                                             self.z3,
-                                                             self.z1,
-                                                             self.z2,
-                                                             self.z3])
+            scenario_df['scenario_name'].values.tolist(), scenario_names)
+        self.assertEqual(scenario_df['Disc1.b'].values.tolist(), [self.b1,
+                                                                  self.b1,
+                                                                  self.b1,
+                                                                  self.b2,
+                                                                  self.b2,
+                                                                  self.b2,
+                                                                  self.b3,
+                                                                  self.b3,
+                                                                  self.b3
+                                                                  ])
+        self.assertEqual(scenario_df['z'].values.tolist(), [self.z1,
+                                                            self.z2,
+                                                            self.z3,
+                                                            self.z1,
+                                                            self.z2,
+                                                            self.z3,
+                                                            self.z1,
+                                                            self.z2,
+                                                            self.z3])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -613,34 +613,34 @@ class TestMultiScenario(unittest.TestCase):
                           'scenario_4', 'scenario_5', 'scenario_6',
                           'scenario_7', 'scenario_8']
         scenario_vars = ['Disc1.b', 'z', 'Disc3.power']
-        self.assertEqual(scenario_df['Disc1.b'].values.tolist(),  [self.b1,
-                                                                   self.b1,
-                                                                   self.b1,
-                                                                   self.b1,
-                                                                   self.b2,
-                                                                   self.b2,
-                                                                   self.b2,
-                                                                   self.b2
-                                                                   ])
-        self.assertEqual(scenario_df['z'].values.tolist(),  [self.z1,
-                                                             self.z1,
-                                                             self.z2,
-                                                             self.z2,
-                                                             self.z1,
-                                                             self.z1,
-                                                             self.z2,
-                                                             self.z2,
-                                                             ])
+        self.assertEqual(scenario_df['Disc1.b'].values.tolist(), [self.b1,
+                                                                  self.b1,
+                                                                  self.b1,
+                                                                  self.b1,
+                                                                  self.b2,
+                                                                  self.b2,
+                                                                  self.b2,
+                                                                  self.b2
+                                                                  ])
+        self.assertEqual(scenario_df['z'].values.tolist(), [self.z1,
+                                                            self.z1,
+                                                            self.z2,
+                                                            self.z2,
+                                                            self.z1,
+                                                            self.z1,
+                                                            self.z2,
+                                                            self.z2,
+                                                            ])
 
-        self.assertEqual(scenario_df['Disc3.power'].values.tolist(),  [self.power1,
-                                                                       self.power2,
-                                                                       self.power1,
-                                                                       self.power2,
-                                                                       self.power1,
-                                                                       self.power2,
-                                                                       self.power1,
-                                                                       self.power2,
-                                                                       ])
+        self.assertEqual(scenario_df['Disc3.power'].values.tolist(), [self.power1,
+                                                                      self.power2,
+                                                                      self.power1,
+                                                                      self.power2,
+                                                                      self.power1,
+                                                                      self.power2,
+                                                                      self.power1,
+                                                                      self.power2,
+                                                                      ])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
         ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -691,10 +691,10 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),  ['scenario_1',
-                                                                                      'scenario_2',
-                                                                                      'scenario_3',
-                                                                                      'scenario_4'])
+            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(), ['scenario_1',
+                                                                                     'scenario_2',
+                                                                                     'scenario_3',
+                                                                                     'scenario_4'])
 
         # manually configure the scenarios non-varying values (~reference)
         scenario_list = ['scenario_1', 'scenario_2', 'scenario_4']
@@ -772,6 +772,7 @@ class TestMultiScenario(unittest.TestCase):
         # Clean the dump folder at the end of the test
         self.dirs_to_del.append(
             join(self.root_dir, self.namespace))
+
 
 if '__main__' == __name__:
     cls = TestMultiScenario()
