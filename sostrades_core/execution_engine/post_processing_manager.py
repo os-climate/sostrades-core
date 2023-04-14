@@ -13,6 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+from typing import Union
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
+from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
+
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Post processing manager allowing to coeespond namespace with post processing to execute
@@ -57,7 +65,7 @@ class PostProcessingManager:
 
         return self.__namespace_postprocessing_dict
 
-    def add_post_processing_module_to_namespace(self, namespace_identifier, module_name):
+    def add_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str):
         """ Method that add a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
@@ -97,7 +105,10 @@ class PostProcessingManager:
             raise ValueError(
                 f'Unable to load post processing function in the module : {module_name}.{PostProcessingManager.POST_PROCESSING_FUNCTION_NAME}')
 
-    def add_post_processing_functions_to_namespace(self, namespace_identifier, filter_func, post_processing_func):
+    def add_post_processing_functions_to_namespace(self,
+                                                   namespace_identifier: str,
+                                                   filter_func: callable,
+                                                   post_processing_func: callable):
         """ Method that add a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
@@ -123,7 +134,7 @@ class PostProcessingManager:
         self.__namespace_postprocessing_dict[namespace_identifier].append(
             post_processing_object)
 
-    def remove_namespace(self, namespace_identifier):
+    def remove_namespace(self, namespace_identifier: str):
         """ Method remove a namespace entry from the inner dictionary
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -134,7 +145,7 @@ class PostProcessingManager:
         if namespace_identifier in self.__namespace_postprocessing_dict:
             del self.__namespace_postprocessing_dict[namespace_identifier]
 
-    def get_post_processing(self, namespace_identifier):
+    def get_post_processing(self, namespace_identifier: str) -> list["PostProcessing"]:
         """ Method that retrieve post processing object using a given namespace
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -158,7 +169,7 @@ class PostProcessing:
     - a post processing generator function
     """
 
-    def __init__(self, filter_func, post_processing_func, logger):
+    def __init__(self, filter_func: callable, post_processing_func: callable, logger: logging.Logger):
         """ Constructor
 
             :params: filter_func, methods that generate filter for the associated post processing
@@ -173,7 +184,7 @@ class PostProcessing:
         self.__post_processing_func = post_processing_func
         self.__logger = logger
 
-    def resolve_filters(self, execution_engine, namespace):
+    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str) -> list[ChartFilter]:
         """ Method that execute filters stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -199,7 +210,8 @@ class PostProcessing:
 
         return filters
 
-    def resolve_post_processings(self, execution_engine, namespace, filters):
+    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str, filters: list[ChartFilter])\
+            -> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
         """ Method that execute stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
