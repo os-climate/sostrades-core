@@ -85,7 +85,7 @@ class ExecutionEngine:
 
         self.root_process = None
         self.root_builder_ist = None
-        self.data_check_integrity = True
+        self.data_check_integrity = False
         self.__connector_container = PersistentConnectorContainer()
 
     @property
