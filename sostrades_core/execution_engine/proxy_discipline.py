@@ -1015,6 +1015,7 @@ class ProxyDiscipline(object):
         from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
 
         data_connector = MongoDBDataConnector() 
+        self.logger.info(f'loading MongoDB database for discipline {self.sos_name}')
         data_loaded = data_connector.load_data(database_id = self.database_id)
         self.loaded_database = True
         # Loop through the items in the input data

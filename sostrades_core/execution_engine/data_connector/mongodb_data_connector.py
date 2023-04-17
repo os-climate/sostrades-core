@@ -19,7 +19,7 @@ import json
 import pandas as pd 
 import os
 from pymongo import MongoClient
-
+import logging
 
 def convert_from_editable_json(json_str):
     def convert(obj):
@@ -94,7 +94,7 @@ def get_document_from_cosmosdb_pymongo(connection_string: str, database_name: st
 
     # Close the client connection
     client.close()
-
+    logging.info(f'MongoDB is used, query {query} is loaded on database {database_name} for collection {collection_name}')
     # Return the retrieved document, or None if no document is found
     return document
 
