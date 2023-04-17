@@ -248,7 +248,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
         subpr_to_eval = self.subprocesses_to_eval or range(self.n_subprocs)
         gather_names = self.attributes['gather_names']
         gather_out_keys = self.attributes['gather_out_keys']
+        # TODO: NB if an output does not exist in a scenario, it will not be in the dict. Change so that it is {sc: None}?
         global_dict_output = {key: {} for key in gather_out_keys}
+        # global_dict_output = {key: {sc: None for sc in self.attributes['scenario_names']} for key in gather_out_keys}
 
         for i_subprocess in subpr_to_eval:
             self.subprocess_evaluation({}, i_subprocess)

@@ -309,6 +309,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
                 self.configure_tool()
                 self.configure_subprocesses_with_driver_input()
+                self.set_vars_to_gather()
 
     def prepare_variables_to_propagate(self):
 
@@ -1274,7 +1275,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
                              'value', default_dataframe, check_value=False)
 
-    def fill_possible_values(self, disc):
+    def fill_possible_values(self, disc, io_type_in=True, io_type_out=True):
         '''
             Fill possible values lists for eval inputs and outputs
             an input variable must be a float coming from a data_in of a discipline in all the process
@@ -1283,55 +1284,57 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         poss_in_values_full = []
         poss_out_values_full = []
-        disc_in = disc.get_data_in()
-        for data_in_key in disc_in.keys():
-            is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
-            is_structuring = disc_in[data_in_key].get(
-                self.STRUCTURING, False)
-            in_coupling_numerical = data_in_key in list(
-                ProxyCoupling.DESC_IN.keys())
-            full_id = disc.get_var_full_name(
-                data_in_key, disc_in)
-            is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                         ]['io_type'] == 'in'
-            # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-            is_editable = disc_in[data_in_key]['editable']
-            is_None = disc_in[data_in_key]['value'] is None
-            is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
-            if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
+        if io_type_in:
+            disc_in = disc.get_data_in()
+            for data_in_key in disc_in.keys():
+                is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
+                is_structuring = disc_in[data_in_key].get(
+                    self.STRUCTURING, False)
+                in_coupling_numerical = data_in_key in list(
+                    ProxyCoupling.DESC_IN.keys())
+                full_id = disc.get_var_full_name(
+                    data_in_key, disc_in)
+                is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                             ]['io_type'] == 'in'
+                # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+                is_editable = disc_in[data_in_key]['editable']
+                is_None = disc_in[data_in_key]['value'] is None
+                is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
+                if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
+                    # Caution ! This won't work for variables with points in name
+                    # as for ac_model
+                    # we remove the study name from the variable full  name for a
+                    # sake of simplicity
+                    if is_input_type and not is_a_multiplier:
+                        poss_in_values_full.append(
+                            full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
+                        # poss_in_values_full.append(full_id)
+
+                    # if is_input_multiplier_type and not is_None:
+                    #     poss_in_values_list = self.set_multipliers_values(
+                    #         disc, full_id, data_in_key)
+                    #     for val in poss_in_values_list:
+                    #         poss_in_values_full.append(val)
+
+        if io_type_out:
+            disc_out = disc.get_data_out()
+            for data_out_key in disc_out.keys():
                 # Caution ! This won't work for variables with points in name
                 # as for ac_model
-                # we remove the study name from the variable full  name for a
-                # sake of simplicity
-                if is_input_type and not is_a_multiplier:
-                    poss_in_values_full.append(
+                in_coupling_numerical = data_out_key in list(
+                    ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
+                full_id = disc.get_var_full_name(
+                    data_out_key, disc_out)
+                if not in_coupling_numerical:
+                    # we anonymize wrt. driver evaluator node namespace
+                    poss_out_values_full.append(
                         full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-                    # poss_in_values_full.append(full_id)
-
-                # if is_input_multiplier_type and not is_None:
-                #     poss_in_values_list = self.set_multipliers_values(
-                #         disc, full_id, data_in_key)
-                #     for val in poss_in_values_list:
-                #         poss_in_values_full.append(val)
-
-        disc_out = disc.get_data_out()
-        for data_out_key in disc_out.keys():
-            # Caution ! This won't work for variables with points in name
-            # as for ac_model
-            in_coupling_numerical = data_out_key in list(
-                ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
-            full_id = disc.get_var_full_name(
-                data_out_key, disc_out)
-            if not in_coupling_numerical:
-                # we remove the study name from the variable full  name for a
-                # sake of simplicity
-                poss_out_values_full.append(
-                    full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-                # poss_out_values_full.append(full_id)
+                    # poss_out_values_full.append(full_id)
         return poss_in_values_full, poss_out_values_full
 
     def find_possible_values(
-            self, disc, possible_in_values, possible_out_values):
+            self, disc, possible_in_values, possible_out_values,
+            io_type_in=True, io_type_out=True):
         '''
             Run through all disciplines and sublevels
             to find possible values for eval_inputs and eval_outputs
@@ -1341,11 +1344,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if len(disc.proxy_disciplines) != 0:
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(
-                    sub_disc)
+                    sub_disc, io_type_in=io_type_in, io_type_out=io_type_out)
                 possible_in_values.extend(sub_in_values)
                 possible_out_values.extend(sub_out_values)
                 self.find_possible_values(
-                    sub_disc, possible_in_values, possible_out_values)
+                    sub_disc, possible_in_values, possible_out_values,
+                    io_type_in=io_type_in, io_type_out=io_type_out)
 
         return possible_in_values, possible_out_values
 
@@ -1736,6 +1740,51 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.gather_names.update(gather_names_for_var)
 
+    def set_vars_to_gather(self):
+        # FIXME: some refactoring is needed to clean the code duplicates wrt. set_eval_possible_values /!\
+        possible_out_values = set()
+        for scenario_disc in self.scenarios:
+            analyzed_disc = scenario_disc
+            possible_in_values_full, possible_out_values_full = self.fill_possible_values(
+                analyzed_disc, io_type_in=False)
+            possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
+                                                                                          possible_in_values_full,
+                                                                                          possible_out_values_full,
+                                                                                          io_type_in=False)
+            # strip the scenario name # FIXME: refacto
+            possible_out_values_full = [_var.split('.', 1)[1] for _var in possible_out_values_full]
+            possible_out_values.update(possible_out_values_full)
+        possible_out_values = list(possible_out_values)
+        # these sorts are just for aesthetics
+        possible_out_values.sort()
+        default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
+                                              'full_name': possible_out_values,
+                                              'output_name': [None for _ in possible_out_values]})
+
+        # eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
+        eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
+        # my_ns_eval_path = self._get_disc_shared_ns_value()
+        my_ns_eval_path = self.get_disc_full_name() # TODO: put the variable in private ns atm
+
+        if eval_output_new_dm is None:
+            self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
+                             'value', default_out_dataframe, check_value=False)
+        # check if the eval_inputs need to be updated after a subprocess
+        # configure
+        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                               is_eval_input=False)
+            default_dataframe = copy.deepcopy(default_out_dataframe)
+            already_set_names = eval_output_new_dm['full_name'].tolist()
+            already_set_values = eval_output_new_dm['selected_output'].tolist()
+            already_set_out_names = eval_output_new_dm['output_name'].tolist()
+            for index, name in enumerate(already_set_names):
+                default_dataframe.loc[default_dataframe['full_name'] == name,
+                                      ['selected_output', 'output_name']] = \
+                    (already_set_values[index], already_set_out_names[index])
+            self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
+                             'value', default_dataframe, check_value=False)
+
     #######################################
     #######################################
     ##### MONO-INSTANCE MODE METHODS ######
@@ -1807,3 +1856,4 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 disc_in['samples_df'][self.VALUE] = final_dataframe
             disc_in['samples_df'][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
         return dynamic_inputs
+
