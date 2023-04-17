@@ -15,11 +15,11 @@ limitations under the License.
 '''
 
 from sostrades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
-import json 
 import pandas as pd 
 import os
 from pymongo import MongoClient
 import logging
+import urllib.parse
 
 def convert_from_editable_json(json_str):
     def convert(obj):
@@ -139,9 +139,10 @@ class MongoDBDataConnector(AbstractDataConnector):
         """
 
         connection_string = os.environ.get('COSMOSDB_CONNECTION')
+        connection_string_unquote = urllib.parse.unquote(connection_string)
         database_name = os.environ.get('COSMOSDB_NAME')
         collection_name = os.environ.get('COSMOSDB_COLLECTION')
-        database = get_document_from_cosmosdb_pymongo(connection_string= connection_string, database_name = database_name, collection_name = collection_name, query = {'id': database_id})
+        database = get_document_from_cosmosdb_pymongo(connection_string= connection_string_unquote, database_name = database_name, collection_name = collection_name, query = {'id': database_id})
         database_postproc = convert_from_editable_json(postprocess_json(database))
         return database_postproc 
     
