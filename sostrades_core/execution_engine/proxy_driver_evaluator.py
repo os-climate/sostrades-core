@@ -103,6 +103,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
     BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
+    GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
 
     INSTANCE_REFERENCE = 'instance_reference'
     LINKED_MODE = 'linked_mode'
@@ -199,6 +200,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.original_editable_dict_ref = {}
         self.original_editable_dict_non_ref = {}
         self.there_are_new_scenarios = False
+
+        self.gather_names = None
 
     def _add_optional_shared_ns(self):
         """
@@ -935,22 +938,31 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
             if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
 
-        # specific to mono-instance
-        if self.BUILDER_MODE in self.get_data_in() and self.get_sosdisc_inputs(
-                self.BUILDER_MODE) == self.MONO_INSTANCE and self.eval_in_list is not None:
-            eval_attributes = {'eval_in_list': self.eval_in_list,
-                               'eval_out_list': self.eval_out_list,
-                               'reference_scenario': self.get_x0(),
-                               'activated_elems_dspace_df': [[True, True]
-                                                             if self.ee.dm.get_data(var, self.TYPE) == 'array' else [
-                                   True]
-                                                             for var in self.eval_in_list],
-                               # TODO: Array dimensions greater than 2?
-                               'driver_name': self.get_disc_full_name(),
-                               'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
-                               'selected_inputs': self.selected_inputs,
-                               'selected_outputs': self.selected_outputs,
-                               }
+        if self.BUILDER_MODE in self.get_data_in():
+            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
+            eval_attributes = {}
+            if builder_mode  == self.MONO_INSTANCE and self.eval_in_list is not None:
+                # specific to mono-instance
+                eval_attributes = {'eval_in_list': self.eval_in_list,
+                                   'eval_out_list': self.eval_out_list,
+                                   'reference_scenario': self.get_x0(),
+                                   'activated_elems_dspace_df': [[True, True]
+                                                                 if self.ee.dm.get_data(var, self.TYPE) == 'array' else [
+                                       True]
+                                                                 for var in self.eval_in_list],
+                                   # TODO: Array dimensions greater than 2?
+                                   'driver_name': self.get_disc_full_name(),
+                                   'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
+                                   'selected_inputs': self.selected_inputs,
+                                   'selected_outputs': self.selected_outputs,
+                                   }
+            elif builder_mode == self.MULTI_INSTANCE:
+                # for the gatherlike capabilities
+                eval_attributes = {'gather_names': self.gather_names,
+                                   'gather_out_keys': self.gather_out_keys,
+                                   # 'driver_name': self.get_disc_full_name(),
+                                   # 'gather_ns': self.NS_EVAL
+                                   }
             wrapper.attributes.update(eval_attributes)
 
     def is_configured(self):
@@ -1632,20 +1644,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         dynamic_outputs = {}
         if self.VARS_TO_GATHER in disc_in:
             # FIXME: not yet managing automatic suggestion of subprocess outputs
-            eval_outputs = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
+            # TODO: [discuss] renamed input from "eval_outputs" because of conflictual definitions. fix better ?
+            vars_to_gather = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
             # we fetch the inputs and outputs selected by the user
-            eval_outputs = eval_outputs[eval_outputs['selected_output'] == True]
-            selected_outputs = eval_outputs['full_name']
-            outputs_names = eval_outputs['output_name']
-            self.selected_outputs = selected_outputs.tolist()
-            self.set_eval_in_out_lists(in_list=None,
-                                       out_list=self.selected_outputs)
+            vars_to_gather = vars_to_gather[vars_to_gather['selected_output'] == True]
+            selected_outputs = vars_to_gather['full_name'].values.tolist()
+            outputs_names = vars_to_gather['output_name'].values.tolist()
+            self._clear_gather_names()
             for out_var, out_name in zip(selected_outputs, outputs_names):
-                _out_name = out_name or f'{out_var}_gather'
+                _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
                 dynamic_outputs.update(
                     {_out_name: {self.TYPE: 'dict',
                                  self.VISIBILITY: 'Shared',
-                                 self.NAMESPACE: self.NS_DOE}})
+                                 self.NAMESPACE: self.NS_EVAL}})
+                self._set_gather_names(out_var, _out_name)
 
         # so that eventual mono-instance outputs get clear # TODO: understand whether applicable in multi-instance
         if self.builder_tool is not None:
@@ -1694,6 +1706,35 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 return False, msg
         # in any other case the list is valid
         return True, msg
+
+    def _clear_gather_names(self):
+        self.gather_names = {}
+        self.gather_out_keys = []
+
+    def _set_gather_names(self, var_name, output_out_name):
+        """
+        build a dictionary var_full_name : (output_name, scenario_name) to facilitate gather capabilities
+        :param var_full_name:
+        :param output_out_name:
+        :return:
+        """
+        # output_full_name = self.ee.ns_manager.compose_ns([self.ee.ns_manager.get_shared_namespace_value(self, self.NS_EVAL),
+        #                                                   output_out_name])
+        self.gather_out_keys.append(output_out_name)
+
+        gather_names_for_var = {}
+        disc_in = self.get_data_in()
+        if self.SCENARIO_DF in disc_in:
+            driver_evaluator_ns = self.get_disc_full_name()
+            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][self.SCENARIO_NAME].values.tolist()
+
+            for sc in scenario_names:
+                var_full_name = self.ee.ns_manager.compose_ns(
+                    [driver_evaluator_ns, sc, var_name])
+                gather_names_for_var[var_full_name] = (output_out_name, sc)
+
+        self.gather_names.update(gather_names_for_var)
 
     #######################################
     #######################################

@@ -73,6 +73,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
     def gather_data_map(self):
         return self.__gather_data_map
 
+
     def get_gather_variable(self):
         '''
         Variables to gather are the variable in the DESC_OUT of the instantiator which are shared 
@@ -86,7 +87,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
                     # Local
                     if self.VISIBILITY in out_dict and out_dict[self.VISIBILITY] == self.SHARED_VISIBILITY:
                         var_to_gather_dict[out_var] = out_dict
-
         return var_to_gather_dict
 
     def build_inst_desc_in_with_map(self):
