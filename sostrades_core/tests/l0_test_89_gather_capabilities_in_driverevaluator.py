@@ -94,7 +94,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                 rmtree(dir_to_del)
         sleep(0.5)
 
-    def test_01_multi_instance_configuration_from_df_with_eval_outputs_as_hard_input(self):
+    def test_01_multi_instance_with_vars_to_gather_as_hard_input(self):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -166,6 +166,87 @@ class TestSimpleMultiScenario(unittest.TestCase):
         for sc_name in scenario_list:
             self.assertEqual(y_gather_ref[sc_name], y_gather[sc_name])
             self.assertEqual(indicator_gather_ref[sc_name], indicator_gather[sc_name])
+
+    def test_01_multi_instance_with_vars_to_gather_as_hard_input_custom_and_default_out_names(self):
+        # # simple 2-disc process NOT USING nested scatters
+        proc_name = 'test_multi_instance_basic'
+        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        # build the scenarios
+        dict_values = {}
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        # dict_values[f'{self.study_name}.Eval.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        # configure the scenarios by hand
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # configure b, z from a dataframe
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2'],
+                                    'Disc1.b': [self.b1, 1e6, self.b2],
+                                    'z': [self.z1, 1e6, self.z2]})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+
+        # configure eval_output for gather capabilities
+        dict_values[f'{self.study_name}.multi_scenarios.vars_to_gather'] = \
+            pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['y', 'o', 'Disc1.indicator'],# anonymized wrt scenario
+                          'output_name': [None, 'my_o_out_name', 'my_indi_out_name']}) # by default {output}_dict
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # check output existence
+        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios')[0]
+        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+
+        self.assertEqual(ms_sub_disc_names, ['scenario_1',
+                                             'scenario_2'])
+
+        ms_disc_out = ms_disc.get_data_out()
+        self.assertIn('my_indi_out_name', ms_disc_out)
+        self.assertIn('y_dict', ms_disc_out)
+        self.assertIn('my_o_out_name', ms_disc_out)
+
+        self.exec_eng.execute()
+
+        # check output correctness
+        y_gather = self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.y_dict')
+        o_gather = self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.my_o_out_name')
+        indicator_gather = self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.my_indi_out_name')
+
+        y_gather_ref = dict(zip(scenario_list, [self.y1, self.y2]))
+        o_gather_ref = dict(zip(scenario_list, [self.o1, self.o2]))
+        indicator_gather_ref = dict(zip(scenario_list, [self.indicator1, self.indicator2]))
+
+        for sc_name in scenario_list:
+            self.assertEqual(y_gather_ref[sc_name], y_gather[sc_name])
+            self.assertEqual(o_gather_ref[sc_name], o_gather[sc_name])
+            self.assertEqual(indicator_gather_ref[sc_name], indicator_gather[sc_name])
+
+
+
+
 
     # def test_02_multi_instance_configuration_from_df_with_reference_scenario(self):
     #     # # simple 2-disc process NOT USING nested scatters
@@ -683,8 +764,3 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.assertIn(runtime_error_message, str(cm.exception))
     #
     # # EEV3 TESTS #TODO: cleanup when nested scatter exists
-
-if '__main__' == __name__:
-    cls = TestSimpleMultiScenario()
-    cls.setUp()
-    cls.test_06_trade_on_name_list()
