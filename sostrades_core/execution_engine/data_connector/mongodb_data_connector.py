@@ -103,8 +103,6 @@ class MongoDBDataConnector(AbstractDataConnector):
     Specific data connector for MongoDB
     """
 
-    
-
     NAME = 'MongoDB'
 
     CONNECTOR_TYPE = 'connector_type'
