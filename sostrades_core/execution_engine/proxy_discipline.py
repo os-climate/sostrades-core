@@ -249,7 +249,7 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, database_id = None):
         '''
         Constructor
 
@@ -270,8 +270,8 @@ class ProxyDiscipline(object):
         self.__father_builder = None
         self.father_executor = None
         self.cls = cls_builder
-        self.compteur1 = 0
-        self.compteur2 = 0
+        self.database_id = database_id
+        self.loaded_database = False 
 
     def set_father_executor(self, father_executor):
         """
@@ -1001,19 +1001,22 @@ class ProxyDiscipline(object):
             self.set_configure_status(True)
 
             # Check if the database is activated in the namespace manager
-            if self.ee.ns_manager.database_activated:
-                self.load_data_from_database()
+            if self.ee.ns_manager.database_activated and self.database_id is not None and not self.loaded_database: 
+                self.load_data_from_mongo_dbdatabase()
 
-    def load_data_from_database(self):
+
+
+    def load_data_from_mongo_dbdatabase(self): 
         """
         This method loads data from a database using the JSONDataConnector and sets the loaded data in the proxy discipline.
         The database name is extracted from the input data, and the method checks if the database name is already initialized or not. 
         If it's the first time we encounter the database name, the method loads the data using the JSONDataConnector, if it has already been loaded we don't do it again.
         """
-        from sostrades_core.execution_engine.data_connector.json_data_connector import JSONDataConnector
+        from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
 
-        # Initialize database name
-        database_name_init = None
+        data_connector = MongoDBDataConnector() 
+        data_loaded = data_connector.load_data(database_id = self.database_id)
+        self.loaded_database = True
         # Loop through the items in the input data
         for k, v in self.get_data_in().items():
             # Check if the inputs has a namespace
@@ -1022,24 +1025,16 @@ class ProxyDiscipline(object):
                 namespace = self.get_shared_ns_dict().get(v['namespace'])
                 database_name = namespace.database_name
                 if database_name is not None:
-                    # Check if this is the first time we encounter this database name                            
-                    if database_name_init is not None:
-                        data_connector = JSONDataConnector()
-                        data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
-                    elif database_name != database_name_init:
-                        data_connector = JSONDataConnector()
-                        data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
-                    database_name_init = database_name
                     # Get the full name of the variable
                     full_name = self.get_var_full_name(k, self.get_data_in())
                     # Set the data in the DataManager object
                     try:
-                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value=False)
+                        self.dm.set_data(full_name, self.VALUE, data_loaded[database_name][k], check_value = False)
                     except:
-                        if not data_loaded:
-                            raise Exception(f'Database Empty : {database_name} is not in JSON')
-                        elif k not in data_loaded:
-                            raise Exception(f'variable {k} not in loaded JSON')
+                        if not data_loaded :
+                            raise Exception(f'Database Empty')
+                        elif k not in data_loaded: 
+                            raise Exception(f'variable {k} not in database')
 
     def __check_all_data_integrity(self):
         '''
