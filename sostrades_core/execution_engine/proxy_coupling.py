@@ -230,7 +230,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._set_dm_disc_info()
 
         self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
-
+        self.database_id = None
+        
     def _reload(self, sos_name, ee, associated_namespaces=None):
         '''
         Reload ProxyCoupling with corresponding ProxyDiscipline attributes and set is_sos_coupling.
