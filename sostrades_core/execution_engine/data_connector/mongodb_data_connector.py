@@ -120,7 +120,10 @@ class MongoDBDataConnector(AbstractDataConnector):
 
     def _extract_connection_info(self):
         """
+        Convert structure with data connection info given as parameter into member variable
 
+        :param data_connection_info: contains necessary data for connection
+        :type data_connection_info: dict
         """
         # NotImplementedError
         raise Exception("method not implemented")
@@ -139,7 +142,6 @@ class MongoDBDataConnector(AbstractDataConnector):
         """
 
         connection_string = os.environ.get('COSMOSDB_CONNECTION')
-        print(connection_string)
         connection_string_unquote = urllib.parse.unquote(connection_string)
         database_name = os.environ.get('COSMOSDB_NAME')
         collection_name = os.environ.get('COSMOSDB_COLLECTION')
