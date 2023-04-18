@@ -264,13 +264,12 @@ class ProxyDiscipline(object):
         self.mdo_discipline_wrapp = None
         self.create_mdo_discipline_wrap(
             name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
-        self._reload(sos_name, ee, associated_namespaces)
+        self._reload(sos_name, ee, associated_namespaces, database_id)
         self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
         self.model = None
         self.__father_builder = None
         self.father_executor = None
         self.cls = cls_builder
-        self.database_id = database_id
         self.loaded_database = False 
 
     def set_father_executor(self, father_executor):
@@ -288,7 +287,7 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces=None):
+    def _reload(self, sos_name, ee, associated_namespaces=None, database_id = None):
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -335,7 +334,7 @@ class ProxyDiscipline(object):
         self._data_out = None
         self._io_ns_map_in = None
         self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
-
+        self.database_id = database_id
         self._structuring_variables = None
         self.reset_data()
         # -- Maturity attribute
@@ -1005,7 +1004,6 @@ class ProxyDiscipline(object):
                 self.load_data_from_mongo_dbdatabase()
 
 
-
     def load_data_from_mongo_dbdatabase(self): 
         """
         This method loads data from a database using the JSONDataConnector and sets the loaded data in the proxy discipline.
@@ -1024,10 +1022,10 @@ class ProxyDiscipline(object):
             if 'namespace' in v:
                 # Get the namespace object from the shared namespace dictionary
                 namespace = self.get_shared_ns_dict().get(v['namespace'])
+                # Get the full name of the variable
+                full_name = self.get_var_full_name(k, self.get_data_in())
                 database_name = namespace.database_name
                 if database_name is not None:
-                    # Get the full name of the variable
-                    full_name = self.get_var_full_name(k, self.get_data_in())
                     # Set the data in the DataManager object
                     try:
                         self.dm.set_data(full_name, self.VALUE, data_loaded[database_name][k], check_value = False)
@@ -1036,6 +1034,14 @@ class ProxyDiscipline(object):
                             raise Exception(f'Database Empty')
                         elif k not in data_loaded: 
                             raise Exception(f'variable {k} not in database')
+                else: 
+                    # Database is None
+                    try: 
+                        self.logger.warning('Trying to load database with an empty database name')
+                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value = False)
+                    except: 
+                        raise KeyError(f'trying to load variable {k} from database but database is empty or variable not in database')
+
 
     def __check_all_data_integrity(self):
         '''
