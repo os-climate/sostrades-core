@@ -1111,34 +1111,38 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             possible_out_values_full = [_var.split('.', 1)[1] for _var in possible_out_values_full]
             possible_out_values.update(possible_out_values_full)
 
-        possible_out_values = list(possible_out_values)
-        # sort for aesthetics
-        possible_out_values.sort()
-        default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-                                              'full_name': possible_out_values,
-                                              'output_name': [None for _ in possible_out_values]})
+        if possible_out_values:
+            # TODO: added this if because otherwise problematic push to dm of empty default_out_dataframe namely during
+            #  reconfiguration on GUI. Additional tests to assure this suffices for all cases (e.g. when changing
+            #  selected vars_to_gather and scenario_df simultaneously) would be welcome for the final implementation.
+            possible_out_values = list(possible_out_values)
+            # sort for aesthetics
+            possible_out_values.sort()
+            default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
+                                                  'full_name': possible_out_values,
+                                                  'output_name': [None for _ in possible_out_values]})
 
-        eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
-        # my_ns_eval_path = self._get_disc_shared_ns_value()
-        my_ns_eval_path = self.get_disc_full_name() # NB: assuming here that vars_to_gather is in local namespace
+            eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
+            # my_ns_eval_path = self._get_disc_shared_ns_value()
+            my_ns_eval_path = self.get_disc_full_name() # NB: assuming here that vars_to_gather is in local namespace
 
-        if eval_output_new_dm is None:
-            self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
-                             'value', default_out_dataframe, check_value=False)
-        # check if the eval_inputs need to be updated after a subprocess  configure
-        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
-                               is_eval_input=False)
-            default_dataframe = copy.deepcopy(default_out_dataframe)
-            already_set_names = eval_output_new_dm['full_name'].tolist()
-            already_set_values = eval_output_new_dm['selected_output'].tolist()
-            already_set_out_names = eval_output_new_dm['output_name'].tolist()
-            for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name,
-                                      ['selected_output', 'output_name']] = \
-                    (already_set_values[index], already_set_out_names[index])
-            self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
-                             'value', default_dataframe, check_value=False)
+            if eval_output_new_dm is None:
+                self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
+                                 'value', default_out_dataframe, check_value=False)
+            # check if the eval_inputs need to be updated after a subprocess  configure
+            elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+                self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                                   is_eval_input=False)
+                default_dataframe = copy.deepcopy(default_out_dataframe)
+                already_set_names = eval_output_new_dm['full_name'].tolist()
+                already_set_values = eval_output_new_dm['selected_output'].tolist()
+                already_set_out_names = eval_output_new_dm['output_name'].tolist()
+                for index, name in enumerate(already_set_names):
+                    default_dataframe.loc[default_dataframe['full_name'] == name,
+                                          ['selected_output', 'output_name']] = \
+                        (already_set_values[index], already_set_out_names[index])
+                self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
+                                 'value', default_dataframe, check_value=False)
 
     def configure_subprocesses_with_driver_input(self):
         """
