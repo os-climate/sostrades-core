@@ -1106,7 +1106,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                           possible_out_values_full,
                                                                                           io_type_in=False)
             # strip the scenario name
-            # TODO: better impl. would be to do it inside fill/find, requires adapting mono-instance (subprocess node)
+            # TODO: better impl. would be to do it inside fill/find, requires adapting mono-instance, i.e. handling the
+            #  case of the ".subprocess" node and implementing 'output_name' column in eval_outputs df
             possible_out_values_full = [_var.split('.', 1)[1] for _var in possible_out_values_full]
             possible_out_values.update(possible_out_values_full)
 
