@@ -583,8 +583,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             and not a default variable
             an output variable must be any data from a data_out discipline
         '''
-        poss_in_values_full = []
-        poss_out_values_full = []
+        poss_in_values_full = set()
+        poss_out_values_full = set()
         if io_type_in:
             disc_in = disc.get_data_in()
             for data_in_key in disc_in.keys():
@@ -607,7 +607,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     # we remove the study name from the variable full  name for a
                     # sake of simplicity
                     if is_input_type and not is_a_multiplier:
-                        poss_in_values_full.append(
+                        poss_in_values_full.add(
                             full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
                         # poss_in_values_full.append(full_id)
 
@@ -628,7 +628,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     data_out_key, disc_out)
                 if not in_coupling_numerical:
                     # we anonymize wrt. driver evaluator node namespace
-                    poss_out_values_full.append(
+                    poss_out_values_full.add(
                         full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
                     # poss_out_values_full.append(full_id)
         return poss_in_values_full, poss_out_values_full
@@ -645,8 +645,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             for sub_disc in disc.proxy_disciplines:
                 sub_in_values, sub_out_values = self.fill_possible_values(
                     sub_disc, io_type_in=io_type_in, io_type_out=io_type_out)
-                possible_in_values.extend(sub_in_values)
-                possible_out_values.extend(sub_out_values)
+                possible_in_values.update(sub_in_values)
+                possible_out_values.update(sub_out_values)
                 self.find_possible_values(
                     sub_disc, possible_in_values, possible_out_values,
                     io_type_in=io_type_in, io_type_out=io_type_out)
@@ -1094,8 +1094,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         variables names that is possible to select when gathering subprocess output variables. The default vs. user
         input cases are handled and the value of 'vars_to_gather' is directly updated in the dm.
         """
-        # FIXME: some refactoring is needed to clean the code duplicates wrt. set_eval_possible_values /!\
+        # TODO: with some refacto of mono-instance the method could be merged with set_eval_possible_values
         possible_out_values = set()
+        # scroll through all the scenarios but keep only the unique variables
         for scenario_disc in self.scenarios:
             analyzed_disc = scenario_disc
             possible_in_values_full, possible_out_values_full = self.fill_possible_values(
@@ -1104,26 +1105,26 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                           possible_in_values_full,
                                                                                           possible_out_values_full,
                                                                                           io_type_in=False)
-            # strip the scenario name # FIXME: refacto
+            # strip the scenario name
+            # TODO: better impl. would be to do it inside fill/find, requires adapting mono-instance (subprocess node)
             possible_out_values_full = [_var.split('.', 1)[1] for _var in possible_out_values_full]
             possible_out_values.update(possible_out_values_full)
+
         possible_out_values = list(possible_out_values)
-        # these sorts are just for aesthetics
+        # sort for aesthetics
         possible_out_values.sort()
         default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
                                               'full_name': possible_out_values,
                                               'output_name': [None for _ in possible_out_values]})
 
-        # eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
         # my_ns_eval_path = self._get_disc_shared_ns_value()
-        my_ns_eval_path = self.get_disc_full_name() # TODO: assuming here that vars_to_gather is in local namespace
+        my_ns_eval_path = self.get_disc_full_name() # NB: assuming here that vars_to_gather is in local namespace
 
         if eval_output_new_dm is None:
             self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
                              'value', default_out_dataframe, check_value=False)
-        # check if the eval_inputs need to be updated after a subprocess
-        # configure
+        # check if the eval_inputs need to be updated after a subprocess  configure
         elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
             self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
                                is_eval_input=False)
@@ -1689,9 +1690,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                       possible_in_values_full,
                                                                                       possible_out_values_full)
 
-        # Take only unique values in the list
-        possible_in_values = list(set(possible_in_values_full))
-        possible_out_values = list(set(possible_out_values_full))
+        # Convert sets into lists
+        possible_in_values = list(possible_in_values_full)
+        possible_out_values = list(possible_out_values_full)
 
         # these sorts are just for aesthetics
         possible_in_values.sort()
