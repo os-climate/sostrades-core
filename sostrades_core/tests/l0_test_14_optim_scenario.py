@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for optimization scenario
@@ -1251,6 +1253,121 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert_array_almost_equal(
             exp_x, opt_disc.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
 
+    def test_18_optim_scenario_mdo_graphs(self):
+        print("\n Test 18 : Sellar optim check mdo graphs")
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        repo_discopt = 'sostrades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # -- set up design space
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [[1.], [5., 2., 3.]],
+                       'lower_bnd': [[0.], [-10., 0., 0.]],
+                       'upper_bnd': [[10.], [10., 10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True, False]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 10
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "L-BFGS-B"
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = []
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
+                                                                    "ineq_tolerance": 1e-6,
+                                                                    "normalize_design_space": True}
+        disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = False
+        exec_eng.dm.set_values_from_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.dm.set_values_from_dict(values_dict)
+
+        exec_eng.configure()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ optim',
+                       f'\t|_ {self.sc_name}',
+                       f'\t\t|_ {self.c_name}',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        exec_eng.prepare_execution()
+        # execute without post run
+        res = exec_eng.execute()
+
+        assert isinstance(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"), dict)
+
+        # get sosoptimscenario discipline
+        disc = exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc.formulation.opt_problem.nonproc_constraints = []
+        disc.formulation.opt_problem.nonproc_objective = None
+
+        # execute postrun to trigger exception
+        disc._post_run()
+        dm = exec_eng.dm
+        x_first_execution = dm.get_value(
+            f'{self.ns}.{self.sc_name}.{self.c_name}.x')
+        z_first_execution = dm.get_value(
+            f'{self.ns}.{self.sc_name}.{self.c_name}.z')
+
+        # use nominal execution
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.dm.set_values_from_dict(values_dict)
+        disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = True
+        exec_eng.dm.set_values_from_dict(disc_dict)
+        exec_eng.configure()
+        exec_eng.prepare_execution()
+        res = exec_eng.execute()
+
+        ppf = PostProcessingFactory()
+        disc = exec_eng.dm.get_disciplines_with_name(
+            f'{self.study_name}.SellarOptimScenario')
+        filters = ppf.get_post_processing_filters_by_discipline(
+            disc[0])
+        graph_list = ppf.get_post_processing_by_discipline(
+            disc[0], filters, as_json=False)
+
+        self.assertIn("Fitness function", filters[0].filter_values)
+        self.assertIn("Design variables", filters[0].filter_values)
+
+
+        # for graph in graph_list:
+        #     graph.to_plotly().show()
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
