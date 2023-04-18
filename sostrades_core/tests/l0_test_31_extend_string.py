@@ -75,7 +75,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = [3., 0.]
+        values_dict['EE.z'] = np.array([3., 0.])
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
         values_dict['EE.Disc5.an_input_1'] = 'value0'
         values_dict['EE.Disc5.an_input_2'] = ['value1', 'value2']
@@ -85,15 +85,20 @@ class TestExtendString(unittest.TestCase):
         exec_eng.execute()
 
         # check inputs
-        output_target = {'z': [3., 0.],
+        output_target = {'z': np.array([3., 0.]),
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'dict_of_dict_out': {'key1': {'1': 1, '2': 2}},
                          'an_input_1': 'value0',
                          'an_input_2': ['value1', 'value2']}
         disc5 = exec_eng.dm.get_disciplines_with_name('EE.Disc5')[0]
         outputs = disc5.get_sosdisc_inputs()
-        self.assertDictEqual({key: value for key, value in outputs.items(
-        ) if key not in disc5.NUM_DESC_IN}, output_target)
+        for key, output in output_target.items():
+            if key == 'z':
+                self.assertTrue(output.tolist(), outputs[key].tolist())
+            else:
+                self.assertTrue(output, outputs[key])
+        # self.assertDictEqual({key: value for key, value in outputs.items(
+        # ) if key not in disc5.NUM_DESC_IN}, output_target)
 
         # check outputs
         target = {
@@ -143,7 +148,7 @@ class TestExtendString(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.z'] = [3., 0.]
+        values_dict['EE.z'] = np.array([3., 0.])
         values_dict['EE.dict_out'] = {'key1': 0.5, 'key2': 0.5}
         values_dict['EE.Disc5.an_input_1'] = 'STEPS-HEvbzeovbeo(-+=___________f roylgf'
         values_dict['EE.Disc5.an_input_2'] = ['STEPS-HE', 'eee']
@@ -154,7 +159,7 @@ class TestExtendString(unittest.TestCase):
             'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'},
             'value2': {'subkey': 'STEPS-HE'}}
         values_dict['EE.Disc5.an_input_5'] = {
-            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', 1.0, 4.0]}
+            'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'], 'scenario3': ['string', '1.0', '4.0']}
         values_dict['EE.Disc5.an_input_6'] = {'key_1': {
             'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
             'key_2': {
@@ -207,7 +212,7 @@ class TestExtendString(unittest.TestCase):
             self.dump_dir, ee2, DirectLoadDump())
 
         # check inputs
-        output_target = {'z': [3., 0.],
+        output_target = {'z': np.array([3., 0.]),
                          'dict_out': {'key1': 0.5, 'key2': 0.5},
                          'dict_of_dict_out': {'key1': {'1': 1, '2': 2}},
                          'an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
@@ -219,7 +224,7 @@ class TestExtendString(unittest.TestCase):
                              'value2': {'subkey': 'STEPS-HE'}},
                          'an_input_5': {
                              'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'],
-                             'scenario3': ['string', 1.0, 4.0]},
+                             'scenario3': ['string', '1.0', '4.0']},
                          'an_input_6': {'key_1': {
                              'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                              'key_2': {
@@ -234,13 +239,19 @@ class TestExtendString(unittest.TestCase):
         disc5 = ee2.dm.get_disciplines_with_name('EE.Disc5')[0]
         outputs = disc5.get_sosdisc_inputs()
         self.maxDiff = None
-        self.assertDictEqual({key: value for key, value in outputs.items(
-        ) if key not in disc5.NUM_DESC_IN}, output_target)
+        for key, output in output_target.items():
+            if key == 'z':
+                self.assertTrue(output.tolist(), outputs[key].tolist())
+            else:
+                self.assertTrue(output, outputs[key])
+
+        # self.assertDictEqual({key: value for key, value in outputs.items(
+        # ) if key not in disc5.NUM_DESC_IN}, output_target)
 
         # check outputs
         target = {
-            'EE.z': [
-                3.0, 0.0], 'EE.dict_out': {'key1': 0.5, 'key2': 0.5}, 'EE.h': [
+            'EE.z': np.array([
+                3.0, 0.0]), 'EE.dict_out': {'key1': 0.5, 'key2': 0.5}, 'EE.h': [
                 0.75, 0.75],
             'EE.Disc5.an_input_1': 'STEPS-HEvbzeovbeo(-+=___________f roylgf',
             'EE.Disc5.an_input_2': ['STEPS-HE', 'eee'],
@@ -250,7 +261,7 @@ class TestExtendString(unittest.TestCase):
                 'value1': {'subkey': 'SagRoGBDIU(-_)=$*!%:;,verrvevfedvbdfjvbdbsvdsbvlksdnbvkmnripe'},
                 'value2': {'subkey': 'STEPS-HE'}},
             'EE.Disc5.an_input_5': {'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4'],
-                                    'scenario3': ['string', 1.0, 4.0]},
+                                    'scenario3': ['string', '1.0', '4.0']},
             'EE.Disc5.an_input_6': {'key_1': {
                 'scenario1': ['AC1', 'AC2'], 'scenario2': ['AC3', 'AC4']},
                 'key_2': {

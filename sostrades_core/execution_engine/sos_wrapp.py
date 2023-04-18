@@ -73,6 +73,8 @@ class SoSWrapp(object):
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}
     DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
+    DYNAMIC_DATAFRAME_COLUMNS = 'dynamic_dataframe_columns'
+
     DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     IO_TYPE_IN = 'in'

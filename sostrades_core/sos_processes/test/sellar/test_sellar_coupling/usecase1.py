@@ -31,10 +31,10 @@ class Study(StudyManager):
 
         disc_dict = {}
         # Sellar inputs
-        disc_dict[f'{ns}.{coupling_name}.x'] = [11.]
+        disc_dict[f'{ns}.{coupling_name}.x'] = array([11.])
         disc_dict[f'{ns}.{coupling_name}.y_1'] = [11.]
         disc_dict[f'{ns}.{coupling_name}.y_2'] = [11.]
-        disc_dict[f'{ns}.{coupling_name}.z'] = [11., 11.]
+        disc_dict[f'{ns}.{coupling_name}.z'] = array([11., 11.])
         disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
 
         return [disc_dict]

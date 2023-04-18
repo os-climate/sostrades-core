@@ -20,16 +20,15 @@ import pandas as pd
 from plotly import graph_objects as go
 import plotly.colors as plt_color
 
-from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import InstantiatedPlotlyNativeChart
+from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import \
+    InstantiatedPlotlyNativeChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-
 
 color_list = plt_color.qualitative.Plotly
 color_list.extend(plt_color.qualitative.Alphabet)
 
 
 class DesignVarDiscipline(SoSWrapp):
-
     # ontology information
     _ontology_data = {
         'label': 'Design Variable Model',
@@ -47,10 +46,22 @@ class DesignVarDiscipline(SoSWrapp):
     LOG_DVAR = 'log_designvar'
     EXPORT_XVECT = 'export_xvect'
     OUT_TYPES = ['float', 'array', 'dataframe']
-
+    VARIABLES = "variable"
+    VALUES = "value"
+    UPPER_BOUND = "upper_bnd"
+    LOWER_BOUND = "lower_bnd"
+    TYPE = "type"
+    ENABLE_VARIABLE_BOOL = "enable_variable"
+    LIST_ACTIVATED_ELEM = "activated_elem"
     DESC_IN = {
         'design_var_descriptor': {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
-        'design_space': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
+        'design_space': {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+                                                                       VALUES: ('multiple', None, True),
+                                                                       LOWER_BOUND: ('multiple', None, True),
+                                                                       UPPER_BOUND: ('multiple', None, True),
+                                                                       ENABLE_VARIABLE_BOOL: ('bool', None, True),
+                                                                       LIST_ACTIVATED_ELEM: ('list', None, True), },
+                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
         WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
         LOG_DVAR: {'type': 'bool', 'default': False, 'user_level': 3},
     }
@@ -159,7 +170,7 @@ class DesignVarDiscipline(SoSWrapp):
             elif out_type == 'float':
                 self.set_partial_derivative(out_name, key, np.array([1.]))
             else:
-                raise(ValueError('Output type not yet supported'))
+                raise (ValueError('Output type not yet supported'))
 
     def _check_descriptor(self, design_var_descriptor):
         """
@@ -181,7 +192,7 @@ class DesignVarDiscipline(SoSWrapp):
             for n_key in needed_keys:
                 if n_key not in design_var_descriptor[key].keys():
                     test = False
-                    raise(ValueError(
+                    raise (ValueError(
                         f'Discipline {self.name} design_var_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
                 else:
                     out_type = design_var_descriptor[key]['out_type']
@@ -189,14 +200,16 @@ class DesignVarDiscipline(SoSWrapp):
                         continue
                     elif out_type == 'array':
                         array_needs = ['index', 'index_name']
-                        array_mess = [f'Please set an index describing the length of the output array of {key} (index is also used for post proc representations).',
-                                      f'Please set an index name describing for the output array of {key} (index_name is also used for post proc representations).',
-                                      ]
+                        array_mess = [
+                            f'Please set an index describing the length of the output array of {key} (index is also used for post proc representations).',
+                            f'Please set an index name describing for the output array of {key} (index_name is also used for post proc representations).',
+                        ]
                         for k in array_needs:
                             if k not in design_var_descriptor[key].keys():
                                 test = False
                                 raise (
-                                    ValueError(f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
+                                    ValueError(
+                                        f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
                     elif out_type == 'dataframe':
                         dataframe_needs = ['index', 'index_name', 'key']
                         dataframe_mess = [
@@ -208,7 +221,8 @@ class DesignVarDiscipline(SoSWrapp):
                             if k not in design_var_descriptor[key].keys():
                                 test = False
                                 raise (
-                                    ValueError(f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
+                                    ValueError(
+                                        f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
                     else:
                         test = False
                         raise (ValueError(
@@ -274,7 +288,8 @@ class DesignVarDiscipline(SoSWrapp):
             design_space[design_space['variable'] == parameter]['value'].values[0])
         for i, activation in enumerate(design_space.loc[design_space['variable']
                                                         == parameter, 'activated_elem'].to_list()[0]):
-            if not activation and len(design_space.loc[design_space['variable'] == parameter, 'value'].to_list()[0]) > i:
+            if not activation and len(
+                    design_space.loc[design_space['variable'] == parameter, 'value'].to_list()[0]) > i:
                 ctrl_pts.insert(i, design_space.loc[design_space['variable']
                                                     == parameter, 'value'].to_list()[0][i])
         eval_pts = None
@@ -314,7 +329,7 @@ class DesignVarDiscipline(SoSWrapp):
                                      mode='markers',
                                      marker=marker_dict))
             fig.add_trace(go.Scatter(x=list(index), y=list(eval_pts), name='B-Spline',
-                                     line=dict(color=color_list[0]),))
+                                     line=dict(color=color_list[0]), ))
             if init_xvect:
                 marker_dict['opacity'] = 0.5
                 fig.add_trace(go.Scatter(x=list(x_ctrl_pts),

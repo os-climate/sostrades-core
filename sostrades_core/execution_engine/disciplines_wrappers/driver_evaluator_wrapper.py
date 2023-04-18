@@ -60,7 +60,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
             |_ BUILDER_MODE (structuring)
             |_ USECASE_DATA (structuring)                
             |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
-   2) Description of DESC parameters:
+    2) Description of DESC parameters:
         |_ DESC_IN
             |_ BUILDER_MODE
             |_ USECASE_DATA
@@ -89,6 +89,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
     BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE]
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     USECASE_DATA = 'usecase_data'
+    GATHER_DEFAULT_SUFFIX = '_dict'
+
 
     default_process_builder_parameter_type = ProcessBuilderParameterType(
         None, None, 'Empty')
@@ -231,24 +233,47 @@ class DriverEvaluatorWrapper(SoSWrapp):
         else:
             raise NotImplementedError()
 
-    # MULTI INSTANCE PROCESS
+    ####################################
+    ####################################
+    ###### MULTI INSTANCE PROCESS ######
+    ####################################
+    ####################################
+
     def multi_instance_run(self):
         """
         Run in the multi instance case.
         """
-        # very simple ms only # TODO: accomodate var_delta_dict and subprocess
-        # selection for mixed cases type DOE+MS ?
+        # very simple ms only
         self._init_input_data()
-        for i_subprocess in range(self.n_subprocs):
-            self.subprocess_evaluation({}, i_subprocess)
-            # save data of last execution i.e. reference values # TODO: there
-            # must be a better way to do this (<-> ref. scenario)
-            subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][i_subprocess].local_data[key]
-                                      for key in self.attributes['sub_mdo_disciplines'][i_subprocess].output_grammar.get_data_names()}
-            self.store_sos_outputs_values(
-                subprocess_ref_outputs, full_name_keys=True)
+        subpr_to_eval = self.subprocesses_to_eval or range(self.n_subprocs)
+        gather_names = self.attributes['gather_names']
+        gather_out_keys = self.attributes['gather_out_keys']
+        # TODO: if an output does not exist in a scenario, it will not be in the dict. Add entry {sc_name: None} ?
+        gather_output_dict = {key: {} for key in gather_out_keys}
+        # gather_output_dict = {key: {sc: None for sc in self.attributes['scenario_names']} for key in gather_out_keys}
 
-    # MONO INSTANCE PROCESS
+        for i_subprocess in subpr_to_eval:
+            self.subprocess_evaluation({}, i_subprocess)
+            # save data of execution i.e. scenario values
+            subprocess_outputs = {key: self.attributes['sub_mdo_disciplines'][i_subprocess].local_data[key]
+                                  for key in self.attributes['sub_mdo_disciplines'][i_subprocess].output_grammar.get_data_names()}
+            self.store_sos_outputs_values(
+                subprocess_outputs, full_name_keys=True)
+
+            # the keys of gather_names correspond to the full names of the vars to gather
+            gathered_in_subprocess = self._select_output_data(subprocess_outputs, gather_names)
+            for _gathered_var_name, _gathered_var_value in gathered_in_subprocess.items():
+                # the values of gather_names are tuples out_key, scenario_name which allow mapping to global_dict_output
+                out_key, scenario_name = gather_names[_gathered_var_name]
+                gather_output_dict[out_key][scenario_name] = _gathered_var_value
+        self.store_sos_outputs_values(gather_output_dict)
+
+    ###################################
+    ###################################
+    ###### MONO INSTANCE PROCESS ######
+    ###################################
+    ###################################
+
     def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
         """
         This function executes a parallel execution of the function sample_evaluation
@@ -345,8 +370,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
             eval_in = self.attributes['eval_in_list']
         else:
             eval_in = completed_eval_in_list
-        # TODO: get a values_dict to arrive here for a + flexible impl. less
-        # prone var. name errors and so ?
+        # TODO: get a values_dict to arrive here for a + robust impl. less prone var. name errors and so ?
         values_dict = dict(zip(eval_in, x))
 
         local_data = self.attributes['sub_mdo_disciplines'][0].execute(
@@ -366,9 +390,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
         else:
             # out_values = list(out_local_data.values())
             out_values = []
-            # get back out_local_data is not enough because some variables
-            # could be filtered for unsupported type for gemseo  TODO: is this
-            # case relevant??
+            # EEV3 comment: get back out_local_data is not enough because some variables
+            # could be filtered for unsupported type for gemseo TODO: is this case relevant in EEV4?
             for y_id in self.attributes['eval_out_list']:
                 y_val = out_local_data[y_id]
                 out_values.append(y_val)
@@ -410,8 +433,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
             Overloaded SoSEval method
             The execution of the doe
         '''
-        # upadte default inputs of children with dm values
-        # TODO: no longer necessary to update default values, right?
+        # upadte default inputs of children with dm values -> should not be necessary in EEV4
         # self.update_default_inputs(self.attributes['sub_mdo_disciplines'])
 
         dict_sample = {}
@@ -494,8 +516,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
             for full_name_out in scenario_output.keys():
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
-        # save data of last execution i.e. reference values #FIXME: do this
-        # better in refacto doe
+        # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][0].local_data[key]
                                   for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
         self.store_sos_outputs_values(
@@ -508,5 +529,5 @@ class DriverEvaluatorWrapper(SoSWrapp):
             {'samples_outputs_df': samples_output_df})
         for dynamic_output in self.attributes['eval_out_list']:
             self.store_sos_outputs_values({
-                f'{dynamic_output.split(self.attributes["driver_name"] + ".", 1)[1]}_dict':
+                f'{dynamic_output.split(self.attributes["driver_name"] + ".", 1)[1]}{self.GATHER_DEFAULT_SUFFIX}':
                     global_dict_output[dynamic_output]})

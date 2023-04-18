@@ -234,7 +234,7 @@ class SosFactory:
         self.coupling_disc = self.coupling_builder.build()
         self.set_root_process()
 
-    # get builders
+    # get buildersf
 
     def get_builder_from_process(self, repo, mod_id, **args):
         """
@@ -363,7 +363,7 @@ class SosFactory:
         return builder
 
     def create_architecture_builder(
-        self, builder_name, architecture_df, custom_vb_folder_list=None
+            self, builder_name, architecture_df, custom_vb_folder_list=None
     ):
         """
         create a builder  defined by a type ArchiBuilder
@@ -392,7 +392,6 @@ class SosFactory:
 
         return scatter_tool
 
-
     def create_scatter_data_builder(self, sos_name, map_name):
         """
         create a builder defined by a scatter data type SoSScatterData
@@ -415,7 +414,7 @@ class SosFactory:
 
         return builder
 
-    def create_builder_coupling(self, sos_name) -> SoSBuilder:
+    def create_builder_coupling(self, sos_name: str) -> SoSBuilder:
         """
         create a builder  defined by a coupling type SoSCoupling
         """
@@ -476,7 +475,7 @@ class SosFactory:
                     value
                     for value, cls in inspect.getmembers(sub_module)
                     if inspect.isclass(getattr(sub_module, value))
-                    and cls.__module__ == sub_module.__name__
+                       and cls.__module__ == sub_module.__name__
                 ]
                 # CHeck if the following class is in the list
                 if class_name in class_list:

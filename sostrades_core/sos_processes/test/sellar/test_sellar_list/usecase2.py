@@ -30,17 +30,17 @@ class Study(StudyManager):
 
         disc_dict = {}
         # Sellar inputs
-        #======================================================================
+        # ======================================================================
         # disc_dict[f'{ns}.x'] = array([1.])
         # disc_dict[f'{ns}.y_1'] = array([1.])
         # disc_dict[f'{ns}.y_2'] = array([1.])
         # disc_dict[f'{ns}.z'] = array([1., 1.])
-        #======================================================================
+        # ======================================================================
 
-        disc_dict[f'{ns}.x'] = [21.]
+        disc_dict[f'{ns}.x'] = array([21.])
         disc_dict[f'{ns}.y_1'] = [21.]
         disc_dict[f'{ns}.y_2'] = [21.]
-        disc_dict[f'{ns}.z'] = [21., 21.]
+        disc_dict[f'{ns}.z'] = array([21., 21.])
 
         disc_dict[f'{ns}.Sellar_Problem.local_dv'] = 10.
 

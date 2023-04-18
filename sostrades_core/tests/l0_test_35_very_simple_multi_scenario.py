@@ -382,23 +382,24 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             for var in self.exec_eng.dm.data_id_map.keys():
                 dm_value = self.exec_eng.dm.get_value(var)
                 if var == f'{self.study_name}.multi_scenarios.scenario_list' or \
-                        var == f'{self.study_name}.multi_scenarios.generated_samples':
+                        var == f'{self.study_name}.multi_scenarios.generated_samples' or \
+                        var == f'{self.study_name}.multi_scenarios.vars_to_gather':
                     # this variable is an exception because it is forced by the value of another variable during setup
-                    # TODO: remove this if when scatter as a tool is ready /!\
                     continue
 
-                if var == f'{self.study_name}.multi_scenarios.scenario_df':
-                    self.assertListEqual(
-                        dict_values[var].values.tolist(), dm_value.values.tolist())
-                    continue
-
-                if var not in dict_values:
-                    # default inputs and all outputs
-                    self.assertEqual(self.exec_eng.dm.get_data(
-                        var, 'default'), dm_value)
-                else:
-                    # user defined inputs
-                    self.assertEqual(dict_values[var], dm_value)
+                if var not in dict_values: # default inputs and all outputs
+                    if isinstance(dm_value, pd.DataFrame):
+                        self.assertListEqual(self.exec_eng.dm.get_data(
+                            var, 'default').values.tolist(), dm_value.values.tolist())
+                    else:
+                        self.assertEqual(self.exec_eng.dm.get_data(
+                            var, 'default'), dm_value)
+                else: # user defined inputs
+                    if isinstance(dm_value, pd.DataFrame):
+                        self.assertListEqual(
+                            dict_values[var].values.tolist(), dm_value.values.tolist())
+                    else:
+                        self.assertEqual(dict_values[var], dm_value)
 
     def test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono(self):
         # scatter build map

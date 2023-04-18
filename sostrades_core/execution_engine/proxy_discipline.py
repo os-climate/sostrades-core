@@ -49,6 +49,7 @@ from gemseo.core.chain import MDOChain
 from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 
+
 class ProxyDisciplineException(Exception):
     pass
 
@@ -159,6 +160,7 @@ class ProxyDiscipline(object):
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}
     DATAFRAME_DESCRIPTOR = SoSWrapp.DATAFRAME_DESCRIPTOR
+    DYNAMIC_DATAFRAME_COLUMNS = SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS
     DATAFRAME_EDITION_LOCKED = SoSWrapp.DATAFRAME_EDITION_LOCKED
     #
     DF_EXCLUDED_COLUMNS = 'dataframe_excluded_columns'
@@ -249,7 +251,7 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, database_id = None):
         '''
         Constructor
 
@@ -264,14 +266,15 @@ class ProxyDiscipline(object):
         self.mdo_discipline_wrapp: MDODisciplineWrapp = self.create_mdo_discipline_wrap(name=sos_name,
                                                                                         wrapper=cls_builder,
                                                                                         wrapping_mode='SoSTrades')
-        self._reload(sos_name, ee, associated_namespaces)
+        self._reload(sos_name, ee, associated_namespaces, database_id)
         self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+
+
         self.model = None
         self.__father_builder = None
         self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
-        self.compteur1 = 0
-        self.compteur2 = 0
+        self.loaded_database = False 
 
     def set_father_executor(self, father_executor: "ProxyDiscipline"):
         """
@@ -288,7 +291,8 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
+    def _reload(self, sos_name: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, database_id = None):
+
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -335,7 +339,7 @@ class ProxyDiscipline(object):
         self._data_out = None
         self._io_ns_map_in = None
         self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
-
+        self.database_id = database_id
         self._structuring_variables = None
         self.reset_data()
         # -- Maturity attribute
@@ -983,7 +987,7 @@ class ProxyDiscipline(object):
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
         # it
-        def_bool = True 
+        def_bool = True
         if self.check_configured_dependency_disciplines():
             self.set_numerical_parameters()
 
@@ -1000,46 +1004,47 @@ class ProxyDiscipline(object):
             self.set_configure_status(True)
 
             # Check if the database is activated in the namespace manager
-            if self.ee.ns_manager.database_activated: 
-                self.load_data_from_database()
+            if self.ee.ns_manager.database_activated and self.database_id is not None and not self.loaded_database: 
+                self.load_data_from_mongo_dbdatabase()
 
 
-    def load_data_from_database(self): 
+    def load_data_from_mongo_dbdatabase(self): 
         """
         This method loads data from a database using the JSONDataConnector and sets the loaded data in the proxy discipline.
         The database name is extracted from the input data, and the method checks if the database name is already initialized or not. 
         If it's the first time we encounter the database name, the method loads the data using the JSONDataConnector, if it has already been loaded we don't do it again.
         """
-        from sostrades_core.execution_engine.data_connector.json_data_connector import JSONDataConnector
+        from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
 
-        # Initialize database name
-        database_name_init = None
+        data_connector = MongoDBDataConnector() 
+        self.logger.info(f'loading MongoDB database for discipline {self.sos_name}')
+        data_loaded = data_connector.load_data(database_id = self.database_id)
+        self.loaded_database = True
         # Loop through the items in the input data
-        for k,v in self.get_data_in().items():
+        for k, v in self.get_data_in().items():
             # Check if the inputs has a namespace
             if 'namespace' in v:
                 # Get the namespace object from the shared namespace dictionary
                 namespace = self.get_shared_ns_dict().get(v['namespace'])
+                # Get the full name of the variable
+                full_name = self.get_var_full_name(k, self.get_data_in())
                 database_name = namespace.database_name
                 if database_name is not None:
-                    # Check if this is the first time we encounter this database name                            
-                    if database_name_init is not None: 
-                        data_connector = JSONDataConnector() 
-                        data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
-                    elif database_name != database_name_init:
-                        data_connector = JSONDataConnector() 
-                        data_loaded = data_connector.load_data(self.ee.ns_manager.database_location, database_name)
-                    database_name_init = database_name 
-                    # Get the full name of the variable
-                    full_name = self.get_var_full_name(k, self.get_data_in())
                     # Set the data in the DataManager object
                     try:
-                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value = False)
+                        self.dm.set_data(full_name, self.VALUE, data_loaded[database_name][k], check_value = False)
                     except:
                         if not data_loaded :
-                            raise Exception(f'Database Empty : {database_name} is not in JSON')
+                            raise Exception(f'Database Empty')
                         elif k not in data_loaded: 
-                            raise Exception(f'variable {k} not in loaded JSON')
+                            raise Exception(f'variable {k} not in database')
+                else: 
+                    # Database is None
+                    try: 
+                        self.logger.warning('Trying to load database with an empty database name')
+                        self.dm.set_data(full_name, self.VALUE, data_loaded[k], check_value = False)
+                    except: 
+                        raise KeyError(f'trying to load variable {k} from database but database is empty or variable not in database')
 
 
     def __check_all_data_integrity(self):

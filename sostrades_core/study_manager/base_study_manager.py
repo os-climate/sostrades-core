@@ -245,8 +245,12 @@ class BaseStudyManager():
             if from_path is not None:
                 # get connectors from file data
                 serializer = DataSerializer(root_dir=from_path)
-                loaded_dict = serializer.get_dict_from_study(
-                    from_path, self.__rw_strategy)
+                ## TODO : Hard fix need to understand why we need a dm.pkl to load connector ? FOr the first load of a never dumped usecase it crashes
+                try:
+                    loaded_dict = serializer.get_dict_from_study(
+                        from_path, self.__rw_strategy)
+                except:
+                    loaded_dict = {}
                 for key, param_data in loaded_dict.items():
                     if ProxyDiscipline.CONNECTOR_DATA in param_data.keys():
                         connectors_dict[key] = param_data[ProxyDiscipline.CONNECTOR_DATA]

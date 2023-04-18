@@ -127,11 +127,11 @@ class ProxyOptim(ProxyDriverEvaluator):
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
     VARIABLE_TYPE = "variable_type"
-    ALGO="algo"
-    MAX_ITER="max_iter"
-    ALGO_OPTIONS="algo_options"
+    ALGO = "algo"
+    MAX_ITER = "max_iter"
+    ALGO_OPTIONS = "algo_options"
     FINITE_DIFFERENCES = "finite_differences"
-    COMPLEX_STEP="complex_step"
+    COMPLEX_STEP = "complex_step"
     APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
     AVAILABLE_MODES = (
         JacobianAssembly.AUTO_MODE,
@@ -208,7 +208,14 @@ class ProxyOptim(ProxyDriverEvaluator):
                  }
 
     DESC_IN = {'algo': {'type': 'string', 'structuring': True},
-               'design_space': {'type': 'dataframe', 'structuring': True},
+               'design_space': {'type': 'dataframe', 'structuring': True,
+                                'dataframe_descriptor': {VARIABLES: ('string', None, False),
+                                                         VALUES: ('multiple', None, True),
+                                                         LOWER_BOUND: ('multiple', None, True),
+                                                         UPPER_BOUND: ('multiple', None, True),
+                                                         ENABLE_VARIABLE_BOOL: ('bool', None, True),
+                                                         LIST_ACTIVATED_ELEM: ('list', None, True), }},
+
                'formulation': {'type': 'string', 'structuring': True},
                'maximize_objective': {'type': 'bool', 'structuring': True, 'default': False},
                'objective_name': {'type': 'string', 'structuring': True},
@@ -309,7 +316,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     #     value[self.NS_REFERENCE])
                     for key in self._data_in.keys():
                         if self.ALGO_OPTIONS == key[0]:
-                            self._data_in[key]['value']=values_dict
+                            self._data_in[key]['value'] = values_dict
         self.set_edition_inputs_if_eval_mode()
 
     def prepare_build(self):
@@ -367,19 +374,27 @@ class ProxyOptim(ProxyDriverEvaluator):
                 data_in = self.get_data_in()
                 self.eval_mode = True
                 self.eval_jac = self.get_sosdisc_inputs('eval_jac')
-                self._data_in[(self.ALGO,id(data_in[self.ALGO][self.NS_REFERENCE]))][self.EDITABLE] = False
-                self._data_in[(self.ALGO_OPTIONS,id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][self.EDITABLE] = False
-                self._data_in[(self.FORMULATION,id(data_in[self.FORMULATION][self.NS_REFERENCE]))][self.EDITABLE] = False
-                self._data_in[(self.MAXIMIZE_OBJECTIVE,id(data_in[self.MAXIMIZE_OBJECTIVE][self.NS_REFERENCE]))][self.EDITABLE] = False
-                self._data_in[(self.PARALLEL_OPTIONS,id(data_in[self.PARALLEL_OPTIONS][self.NS_REFERENCE]))][self.EDITABLE] = False
-                self._data_in[(self.MAX_ITER,id(data_in[self.MAX_ITER][self.NS_REFERENCE]))][self.EDITABLE] = False
+                self._data_in[(self.ALGO, id(data_in[self.ALGO][self.NS_REFERENCE]))][self.EDITABLE] = False
+                self._data_in[(self.ALGO_OPTIONS, id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][
+                    self.EDITABLE] = False
+                self._data_in[(self.FORMULATION, id(data_in[self.FORMULATION][self.NS_REFERENCE]))][
+                    self.EDITABLE] = False
+                self._data_in[(self.MAXIMIZE_OBJECTIVE, id(data_in[self.MAXIMIZE_OBJECTIVE][self.NS_REFERENCE]))][
+                    self.EDITABLE] = False
+                self._data_in[(self.PARALLEL_OPTIONS, id(data_in[self.PARALLEL_OPTIONS][self.NS_REFERENCE]))][
+                    self.EDITABLE] = False
+                self._data_in[(self.MAX_ITER, id(data_in[self.MAX_ITER][self.NS_REFERENCE]))][self.EDITABLE] = False
 
-                self._data_in[(self.ALGO,id(data_in[self.ALGO][self.NS_REFERENCE]))][self.OPTIONAL] = True
-                self._data_in[(self.ALGO_OPTIONS,id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][self.OPTIONAL] = True
-                self._data_in[(self.FORMULATION,id(data_in[self.FORMULATION][self.NS_REFERENCE]))][self.OPTIONAL] = True
-                self._data_in[(self.MAXIMIZE_OBJECTIVE,id(data_in[self.MAXIMIZE_OBJECTIVE][self.NS_REFERENCE]))][self.OPTIONAL] = True
-                self._data_in[(self.PARALLEL_OPTIONS,id(data_in[self.PARALLEL_OPTIONS][self.NS_REFERENCE]))][self.OPTIONAL] = True
-                self._data_in[(self.MAX_ITER,id(data_in[self.MAX_ITER][self.NS_REFERENCE]))][self.OPTIONAL] = True
+                self._data_in[(self.ALGO, id(data_in[self.ALGO][self.NS_REFERENCE]))][self.OPTIONAL] = True
+                self._data_in[(self.ALGO_OPTIONS, id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][
+                    self.OPTIONAL] = True
+                self._data_in[(self.FORMULATION, id(data_in[self.FORMULATION][self.NS_REFERENCE]))][
+                    self.OPTIONAL] = True
+                self._data_in[(self.MAXIMIZE_OBJECTIVE, id(data_in[self.MAXIMIZE_OBJECTIVE][self.NS_REFERENCE]))][
+                    self.OPTIONAL] = True
+                self._data_in[(self.PARALLEL_OPTIONS, id(data_in[self.PARALLEL_OPTIONS][self.NS_REFERENCE]))][
+                    self.OPTIONAL] = True
+                self._data_in[(self.MAX_ITER, id(data_in[self.MAX_ITER][self.NS_REFERENCE]))][self.OPTIONAL] = True
             else:
                 self.eval_jac = False
 
@@ -430,7 +445,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
-            if any(type(design_variable).__name__ not in ['array', 'list'] for design_variable in
+            if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
                    dspace['value'].tolist()):
                 raise ValueError(
                     'A design variable must obligatory be an array')
@@ -872,22 +887,23 @@ class ProxyOptim(ProxyDriverEvaluator):
         u_bounds = list(df[self.UPPER_BOUND])
         enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
         list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
-        
+
         # looking for the optionnal variable type in the design space
         if self.VARIABLE_TYPE in df:
             var_types = df[self.VARIABLE_TYPE]
         else:
             # set to None for all variables if not exists
             var_types = [None] * len(names)
-        
+
         design_space = DesignSpace()
-        
-        for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds, list_activated_elem, enabled_variable, var_types):
+
+        for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds,
+                                                                   list_activated_elem, enabled_variable, var_types):
 
             # check if variable is enabled to add it or not in the design var
             if enable_var:
                 self.dict_desactivated_elem[dv] = {}
-                
+
                 if type(val) != list and type(val) != ndarray:
                     size = 1
                     var_type = ['float']
@@ -910,11 +926,11 @@ class ProxyOptim(ProxyDriverEvaluator):
                     l_b = array(lb)
                     u_b = array(ub)
                     value = array(val)
-                
+
                 # 'automatic' var_type values are overwritten if filled by the user
                 if vtype is not None:
                     var_type = vtype
-                
+
                 design_space.add_variable(
                     dv, size, var_type, l_b, u_b, value)
         return design_space
