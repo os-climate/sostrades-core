@@ -515,7 +515,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                  if self.ee.dm.get_data(var, self.TYPE) == 'array' else [
                                        True]
                                                                  for var in self.eval_in_list],
-                                   # TODO: Array dimensions greater than 2?
+                                   # NB: this works with an array of dimensions >2 even though it looks incoherent
                                    'driver_name': self.get_disc_full_name(),
                                    'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
                                    'selected_inputs': self.selected_inputs,
@@ -525,8 +525,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # for the gatherlike capabilities
                 eval_attributes = {'gather_names': self.gather_names,
                                    'gather_out_keys': self.gather_out_keys,
-                                   # 'driver_name': self.get_disc_full_name(),
-                                   # 'gather_ns': self.NS_EVAL
                                    }
             wrapper.attributes.update(eval_attributes)
 
@@ -771,12 +769,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # will be set in the dm if it is a appropriate key (based on the
         # dynamic configuration)
 
-        # Remark 3: TODO What could be done is: if we reach the 100 iterations limit because are_all_data_set is still not True
-        # then provide a warning with the list of variables keys that makes
-        # are_all_data_set still be False
+        # Remark 3: What could be done is: if we reach the 100 iterations limit because are_all_data_set is still not True
+        # then provide a warning with the list of variables keys that makes are_all_data_set still be False
 
-        # Remark 4:  TODO (Better improvement)  next Provide another mechanism at eev4 level in which you always can push data in dm provide check and
-        # warning when you reach the end of the configuration.
+        # Remark 4: (Better improvement)  next Provide another mechanism at eev4 level in which you always can push data
+        # in dm provide check and warning when you reach the end of the configuration.
 
         if are_all_data_set:
             # TODO Bug if 100 config reached ( a bad key in anonymised dict) .
@@ -1120,7 +1117,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
         # my_ns_eval_path = self._get_disc_shared_ns_value()
-        my_ns_eval_path = self.get_disc_full_name() # TODO: put the variable in private ns atm
+        my_ns_eval_path = self.get_disc_full_name() # TODO: assuming here that vars_to_gather is in local namespace
 
         if eval_output_new_dm is None:
             self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
