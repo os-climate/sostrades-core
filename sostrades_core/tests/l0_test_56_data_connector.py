@@ -273,3 +273,65 @@ class TestDataConnector(unittest.TestCase):
         exec_eng.load_study_from_input_dict(dict_values)
     
         exec_eng.execute()
+
+    def test_07_mongodb_connector(self):
+        """
+        Test Disc2 using MongoDB connector with a non existing query
+        """
+        exec_eng  = ExecutionEngine(self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        builder_disc2 = exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+        builder_disc2.set_builder_info('database_id', 'Disc2Tes5t') 
+        power_in = 2 
+        constant_in = 8
+        ns_dict = {'ns_ac': f'{self.name}.Disc2'}
+        exec_eng.ns_manager.add_ns_def(ns_dict)
+        exec_eng.ns_manager.database_activated = True
+        exec_eng.factory.set_builders_to_coupling_builder(builder_disc2)
+        with self.assertRaises(KeyError):
+            exec_eng.configure()
+        values_dict = {}
+        values_dict[f'{self.name}.Disc2.power'] = power_in
+        values_dict[f'{self.name}.Disc2.constant'] = constant_in
+        values_dict[f'{self.name}.Disc2.y'] = 3
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.execute()
+
+    def test_08_mongodb_connector(self):
+        """
+        Test Disc2 using MongoDB connector 
+        """
+        exec_eng  = ExecutionEngine(self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        builder_disc2 = exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+        builder_disc2.set_builder_info('database_id', 'Disc2Test') 
+        power_in = 2 
+        constant_in = 8
+        y_in = 3
+        ns_dict = {'ns_ac': f'{self.name}.Disc2'}
+        exec_eng.ns_manager.add_ns_def(ns_dict)
+        exec_eng.ns_manager.database_activated = True
+        exec_eng.factory.set_builders_to_coupling_builder(builder_disc2)
+        exec_eng.configure()
+        values_dict = {}
+        values_dict[f'{self.name}.Disc2.power'] = power_in
+        values_dict[f'{self.name}.Disc2.constant'] = constant_in
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.configure()
+        exec_eng.execute()
+        dm = exec_eng.dm 
+        y_val = dm.get_value(f'{self.name}.Disc2.y')
+        # assert y value from dm is equal to what is set in MongoDB and not in test
+        self.assertEqual(y_val, 2)
+
+
+
+if '__main__' == __name__:
+    
+    testcls = TestDataConnector()
+    testcls.setUp()
+    testcls.test_08_mongodb_connector()
+
+
