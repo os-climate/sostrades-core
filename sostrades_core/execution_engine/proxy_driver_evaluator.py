@@ -506,13 +506,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.BUILDER_MODE in self.get_data_in():
             builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
             eval_attributes = {}
-            if builder_mode  == self.MONO_INSTANCE and self.eval_in_list is not None:
+            if builder_mode == self.MONO_INSTANCE and self.eval_in_list is not None:
                 # specific to mono-instance
                 eval_attributes = {'eval_in_list': self.eval_in_list,
                                    'eval_out_list': self.eval_out_list,
                                    'reference_scenario': self.get_x0(),
                                    'activated_elems_dspace_df': [[True, True]
-                                                                 if self.ee.dm.get_data(var, self.TYPE) == 'array' else [
+                                                                 if self.ee.dm.get_data(var,
+                                                                                        self.TYPE) == 'array' else [
                                        True]
                                                                  for var in self.eval_in_list],
                                    # NB: this works with an array of dimensions >2 even though it looks incoherent
@@ -953,6 +954,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self._clear_gather_names()
             for out_var, out_name in zip(selected_outputs, outputs_names):
                 _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
+                # Val : Possibility to add subtype for dict with output type maybe ?
                 dynamic_outputs.update(
                     {_out_name: {self.TYPE: 'dict',
                                  self.VISIBILITY: 'Shared',
@@ -1079,7 +1081,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.SCENARIO_DF in disc_in:
             driver_evaluator_ns = self.get_disc_full_name()
             scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][self.SCENARIO_NAME].values.tolist()
+            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][
+                self.SCENARIO_NAME].values.tolist()
 
             for sc in scenario_names:
                 var_full_name = self.ee.ns_manager.compose_ns(
@@ -1097,6 +1100,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: with some refacto of mono-instance the method could be merged with set_eval_possible_values
         possible_out_values = set()
         # scroll through all the scenarios but keep only the unique variables
+        # Needed because sometimes the scenario variable (diffrent btw scenarios) ccan be a structuring variable
+        # example : multiscenario on a scatter list
         for scenario_disc in self.scenarios:
             analyzed_disc = scenario_disc
             possible_in_values_full, possible_out_values_full = self.fill_possible_values(
@@ -1124,14 +1129,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
             # my_ns_eval_path = self._get_disc_shared_ns_value()
-            my_ns_eval_path = self.get_disc_full_name() # NB: assuming here that vars_to_gather is in local namespace
-
+            my_ns_eval_path = self.get_disc_full_name()  # NB: assuming here that vars_to_gather is in local namespace
+            # Val : Normally if you set the default value it is enough ?
+            # if the value is None value=default if value is not None the default does not replace the value TO CHECK
             if eval_output_new_dm is None:
                 self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
                                  'value', default_out_dataframe, check_value=False)
             # check if the eval_inputs need to be updated after a subprocess  configure
             elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                self.check_eval_io(eval_output_new_dm['full_name'].tolist(),
+                                   default_out_dataframe['full_name'].tolist(),
                                    is_eval_input=False)
                 default_dataframe = copy.deepcopy(default_out_dataframe)
                 already_set_names = eval_output_new_dm['full_name'].tolist()
@@ -1139,7 +1146,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 already_set_out_names = eval_output_new_dm['output_name'].tolist()
                 for index, name in enumerate(already_set_names):
                     default_dataframe.loc[default_dataframe['full_name'] == name,
-                                          ['selected_output', 'output_name']] = \
+                    ['selected_output', 'output_name']] = \
                         (already_set_values[index], already_set_out_names[index])
                 self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
                                  'value', default_dataframe, check_value=False)
@@ -1526,7 +1533,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     #         else:
     #             # For ProxyCoupling... --> Propagation of its subdisciplines variables (recursively)
     #             self.propagate_non_trade_variables_of_proxy_coupling(subsubdisc, trade_vars)
-
 
     #######################################
     #######################################
