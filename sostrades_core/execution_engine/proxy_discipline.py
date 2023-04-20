@@ -263,12 +263,10 @@ class ProxyDiscipline(object):
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-        self.mdo_discipline_wrapp: MDODisciplineWrapp = self.create_mdo_discipline_wrap(name=sos_name,
-                                                                                        wrapper=cls_builder,
-                                                                                        wrapping_mode='SoSTrades')
+        self.mdo_discipline_wrapp = None
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
         self._reload(sos_name, ee, associated_namespaces, database_id)
         self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
-
 
         self.model = None
         self.__father_builder = None
@@ -355,12 +353,12 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str) -> MDODisciplineWrapp:
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        return MDODisciplineWrapp(name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
