@@ -109,10 +109,15 @@ class SoSMDOScenario(MDOScenario):
                              self.formulation.opt_problem.constraints]
         objective_name = self.formulation.opt_problem.objective.name
 
+        def correct_var_name(varname: str) -> str:
+            """removes study name from variable name"""
+            corrected_var_name = ".".join(varname.split(".")[1:])
+            return corrected_var_name
+
         out = {
             "objective": np.array(dataframe["functions"][objective_name].values),
-            "variables": {var: np.array(dataframe["design_parameters"][var].values) for var in self.design_space.variables_names},
-            "constraints": {var: np.array(dataframe["functions"][var].values) for var in constraints_names}
+            "variables": {correct_var_name(var): np.array(dataframe["design_parameters"][var].values) for var in self.design_space.variables_names},
+            "constraints": {correct_var_name(var): np.array(dataframe["functions"][var].values) for var in constraints_names}
         }
 
         self.local_data.update({
