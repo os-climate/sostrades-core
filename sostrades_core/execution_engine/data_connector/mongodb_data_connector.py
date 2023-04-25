@@ -147,9 +147,8 @@ class MongoDBDataConnector(AbstractDataConnector):
         database_name = os.environ.get('COSMOSDB_NAME')
         collection_name = os.environ.get('COSMOSDB_COLLECTION')
         database = get_document_from_cosmosdb_pymongo(connection_string= connection_string_unquote, database_name = database_name, collection_name = collection_name, query = {'id': database_id})
-        if database is None:
-            logging.info('requested database is empty')
-            database_postproc = {}
+        if not database:
+            raise Exception(f'requested database is empty, using query id : {database_id}, check query')
         else:
             database_postproc = convert_from_editable_json(postprocess_json(database))
         return database_postproc 
