@@ -279,7 +279,7 @@ class ProxyDiscipline(object):
         self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
 
-    def set_father_executor(self, father_executor: "ProxyDiscipline"):
+    def set_father_executor(self, father_executor):#: "ProxyDiscipline"):
         """
         set father executor
 
@@ -294,7 +294,7 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
+    def _reload(self, sos_name, ee, associated_namespaces = None, local_namespace_database = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
