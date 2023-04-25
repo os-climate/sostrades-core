@@ -13,16 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import numpy as np
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-
-from gemseo.core.mdo_scenario import MDOScenario
+from typing import Union
 from copy import deepcopy
 import logging
 import pandas as pd
+from numpy import ndarray
+
+from gemseo.core.mdo_scenario import MDOScenario
 
 LOGGER = logging.getLogger(__name__)
+
 
 class SoSMDOScenario(MDOScenario):
     """
@@ -90,6 +95,35 @@ class SoSMDOScenario(MDOScenario):
         for data in outputs:
             self.local_data.update(data)
         self.update_design_space_out()
+        if not self.eval_mode:
+            self.update_post_processing_df()
+
+    def update_post_processing_df(self):
+        """Gathers the data for plotting the MDO graphs"""
+        dataset = self.export_to_dataset()
+        dataframe = dataset.export_to_dataframe()
+
+        #dataframe = dataframe.rename(columns=rename_func)
+
+        constraints_names = [constraint.name for constraint in
+                             self.formulation.opt_problem.constraints]
+        objective_name = self.formulation.opt_problem.objective.name
+
+        def correct_var_name(varname: str) -> str:
+            """removes study name from variable name"""
+            corrected_var_name = ".".join(varname.split(".")[1:])
+            return corrected_var_name
+
+        out = {
+            "objective": np.array(dataframe["functions"][objective_name].values),
+            "variables": {correct_var_name(var): np.array(dataframe["design_parameters"][var].values) for var in self.design_space.variables_names},
+            "constraints": {correct_var_name(var): np.array(dataframe["functions"][var].values) for var in constraints_names}
+        }
+
+        self.local_data.update({
+            [key for key in self.get_output_data_names() if 'post_processing_mdo_data' in key][
+                0]: out})
+
 
     def execute_at_xopt(self):
         '''
@@ -212,7 +246,7 @@ class SoSMDOScenario(MDOScenario):
     def evaluate_functions(self,
                            problem,
                            x_vect=None,  # type: ndarray
-                           ):  # type: (...) -> Tuple[Dict[str,Union[float,ndarray]],Dict[str,ndarray]]
+                           ):  # type: (...) -> tuple[dict[str,Union[float,ndarray]],dict[str,ndarray]]
         """Compute the objective and the constraints.
 
         amples.

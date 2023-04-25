@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
+import logging
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
+from typing import Union
 import os
 from os.path import dirname, join
 
@@ -268,18 +270,16 @@ class ProxyDiscipline(object):
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(
-            name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
         self._reload(sos_name, ee, associated_namespaces, local_namespace_database)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+        self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+
         self.model = None
         self.__father_builder = None
-        self.father_executor = None
+        self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
-        
 
-
-    def set_father_executor(self, father_executor):
+    def set_father_executor(self, father_executor: "ProxyDiscipline"):
         """
         set father executor
 
@@ -294,7 +294,8 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces=None, local_namespace_database = False):
+    def _reload(self, sos_name: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
+
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -359,13 +360,12 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(
-            name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -471,7 +471,7 @@ class ProxyDiscipline(object):
                 self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                     observer)
 
-    def set_cache(self, disc, cache_type, cache_hdf_file):
+    def set_cache(self, disc: MDODiscipline, cache_type: str, cache_hdf_file: str):
         '''
         Instanciate and set cache for disc if cache_type is not 'None'
 
