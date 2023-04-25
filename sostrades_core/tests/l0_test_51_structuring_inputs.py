@@ -81,7 +81,7 @@ class TestStructuringInputs(unittest.TestCase):
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
         self.assertListEqual(list(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'debug_mode', 'dyn_input_2'])
+            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'debug_mode','database_subname', 'database_id', 'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
@@ -92,7 +92,7 @@ class TestStructuringInputs(unittest.TestCase):
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
         self.assertListEqual(list(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'debug_mode', 'dyn_input_2'])
+            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'debug_mode', 'database_subname', 'database_id','dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
@@ -530,4 +530,4 @@ if '__main__' == __name__:
 
     cls = TestStructuringInputs()
     cls.setUp()
-    cls.test_05_SoSCoupling_numerical_inputs()
+    cls.test_01_configure_discipline_with_setup_sos_discipline()
