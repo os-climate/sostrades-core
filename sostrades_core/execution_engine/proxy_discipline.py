@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
+import logging
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
+from typing import Union
 import os
 from os.path import dirname, join
 
@@ -208,6 +210,8 @@ class ProxyDiscipline(object):
     POS_IN_MODE = ['value', 'list', 'dict']
 
     DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
+    DATABASE_SUBNAME = 'database_subname'
+    DATABASE_ID = 'database_id'
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
 
@@ -232,8 +236,12 @@ class ProxyDiscipline(object):
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                     NUMERICAL: True, STRUCTURING: True}
+                     NUMERICAL: True, STRUCTURING: True}, 
+        DATABASE_SUBNAME: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, STRUCTURING: True}, 
+        DATABASE_ID: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, STRUCTURING: True}
     }
+
+
 
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
@@ -249,7 +257,7 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, database_id = None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, local_namespace_database = False):
         '''
         Constructor
 
@@ -262,18 +270,16 @@ class ProxyDiscipline(object):
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(
-            name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
-        self._reload(sos_name, ee, associated_namespaces)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
+        self._reload(sos_name, ee, associated_namespaces, local_namespace_database)
+        self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+
         self.model = None
         self.__father_builder = None
-        self.father_executor = None
+        self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
-        self.database_id = database_id
-        self.loaded_database = False 
 
-    def set_father_executor(self, father_executor):
+    def set_father_executor(self, father_executor: "ProxyDiscipline"):
         """
         set father executor
 
@@ -288,7 +294,8 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces=None):
+    def _reload(self, sos_name: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
+
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
 
@@ -335,7 +342,9 @@ class ProxyDiscipline(object):
         self._data_out = None
         self._io_ns_map_in = None
         self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
-
+        self.database_id = None
+        self.loaded_database = {} 
+        self.local_namespace_database = local_namespace_database
         self._structuring_variables = None
         self.reset_data()
         # -- Maturity attribute
@@ -351,13 +360,12 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(
-            name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -463,7 +471,7 @@ class ProxyDiscipline(object):
                 self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                     observer)
 
-    def set_cache(self, disc, cache_type, cache_hdf_file):
+    def set_cache(self, disc: MDODiscipline, cache_type: str, cache_hdf_file: str):
         '''
         Instanciate and set cache for disc if cache_type is not 'None'
 
@@ -1001,10 +1009,48 @@ class ProxyDiscipline(object):
             self.set_configure_status(True)
 
             # Check if the database is activated in the namespace manager
-            if self.ee.ns_manager.database_activated and self.database_id is not None and not self.loaded_database: 
+            self.database_id = self.get_sosdisc_inputs(self.DATABASE_ID)
+            if self.ee.ns_manager.database_activated and self.database_id:
+                if not self.loaded_database:
+                    # if loaded_database is empty, load mongodb   
+                    self.load_mongodb()         
                 self.load_data_from_mongo_dbdatabase()
 
+    def get_all_variables_from_database(self): 
+        """
+        This method retrieves all variables that will be extracted from a database. These variables must meet one of the two conditions:
+        - They must be declared in a namespace with the attribute "get_from_database" set to True, and with disciplines dependencies equal 1.
+        - They must be declared in the local namespace with the attribute "local_namespace_database" set to True.
+        The method returns a dict of variables whose values are present in the database with short and long name.
+        """
+        dict_variables = {}
+        data_in_dict = self.get_data_in()
+        for k,v in data_in_dict.items():
+            if v[self.VISIBILITY] == self.SHARED_VISIBILITY:
+                namespace =  self.get_shared_ns_dict().get(v[self.NAMESPACE])
+                # get only variables in a namespace related to a database and not coupled
+                if namespace.get_from_database and len(v[self.DISCIPLINES_DEPENDENCIES]) < 2:
+                    full_name = self.get_var_full_name(k, data_in_dict)
+                    dict_variables[k] = full_name
+            
+            # get non numeric local variables if local namespace is related to a database 
+            elif self.local_namespace_database and v[self.VISIBILITY] == self.LOCAL_VISIBILITY and not v[self.NUMERICAL]:
+                    full_name = self.get_var_full_name(k, data_in_dict)
+                    dict_variables[k] = full_name
+        
+        return dict_variables
 
+
+
+    def load_mongodb(self):
+        """
+        Load MongoDB using MongoDBDataConnector
+        """
+        from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
+
+        data_connector = MongoDBDataConnector() 
+        self.logger.info(f'loading MongoDB database for discipline {self.sos_name}')
+        self.loaded_database = data_connector.load_data(database_id = self.database_id)
 
     def load_data_from_mongo_dbdatabase(self): 
         """
@@ -1012,30 +1058,22 @@ class ProxyDiscipline(object):
         The database name is extracted from the input data, and the method checks if the database name is already initialized or not. 
         If it's the first time we encounter the database name, the method loads the data using the JSONDataConnector, if it has already been loaded we don't do it again.
         """
-        from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
 
-        data_connector = MongoDBDataConnector() 
-        self.logger.info(f'loading MongoDB database for discipline {self.sos_name}')
-        data_loaded = data_connector.load_data(database_id = self.database_id)
-        self.loaded_database = True
         # Loop through the items in the input data
-        for k, v in self.get_data_in().items():
-            # Check if the inputs has a namespace
-            if 'namespace' in v:
-                # Get the namespace object from the shared namespace dictionary
-                namespace = self.get_shared_ns_dict().get(v['namespace'])
-                database_name = namespace.database_name
-                if database_name is not None:
-                    # Get the full name of the variable
-                    full_name = self.get_var_full_name(k, self.get_data_in())
-                    # Set the data in the DataManager object
-                    try:
-                        self.dm.set_data(full_name, self.VALUE, data_loaded[database_name][k], check_value = False)
-                    except:
-                        if not data_loaded :
-                            raise Exception(f'Database Empty')
-                        elif k not in data_loaded: 
-                            raise Exception(f'variable {k} not in database')
+        database_name = self.get_sosdisc_inputs(self.DATABASE_SUBNAME)
+        dict_keys_var = self.get_all_variables_from_database()
+        if database_name != '':
+            for k,full_name in dict_keys_var.items():
+                # Set the data in the DataManager object
+                try:
+                    self.dm.set_data(full_name, self.VALUE, self.loaded_database[database_name][k], check_value = False)
+                except:
+                    if not self.loaded_database:
+                        raise Exception(f'Database is empty')
+                    elif k not in self.loaded_database[database_name]: 
+                        raise KeyError(f'variable {k} not in database')
+
+
 
     def __check_all_data_integrity(self):
         '''

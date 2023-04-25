@@ -273,3 +273,103 @@ class TestDataConnector(unittest.TestCase):
         exec_eng.load_study_from_input_dict(dict_values)
     
         exec_eng.execute()
+
+    def test_07_mongodb_connector(self):
+        """
+        Test Disc2 using MongoDB connector with a non existing query
+        """
+        exec_eng  = ExecutionEngine(self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        builder_disc2 = exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+        ns_dict = {'ns_ac': f'{self.name}.Disc2'}
+        exec_eng.ns_manager.add_ns_def(ns_dict, get_from_database=True)
+        exec_eng.factory.set_builders_to_coupling_builder(builder_disc2)
+        exec_eng.configure()
+        values_dict = {}
+        values_dict[f'{self.name}.Disc2.database_id'] = 'Disc2Tes5t'
+        with self.assertRaises(Exception):
+            exec_eng.load_study_from_input_dict(values_dict)
+
+    def test_08_mongodb_connector(self):
+        """
+        Test Disc2 using MongoDB connector 
+        """
+        exec_eng  = ExecutionEngine(self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        builder_disc2 = exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+        power_in = 2 
+        constant_in = 8
+        y_in = 3
+        ns_dict = {'ns_ac': f'{self.name}.Disc2'}
+        exec_eng.ns_manager.add_ns_def(ns_dict, get_from_database=True)
+        exec_eng.ns_manager.database_activated = True
+        exec_eng.factory.set_builders_to_coupling_builder(builder_disc2)
+        exec_eng.configure()
+        # set data
+        values_dict = {}
+        values_dict[f'{self.name}.Disc2.power'] = power_in
+        values_dict[f'{self.name}.Disc2.constant'] = constant_in
+        values_dict[f'{self.name}.Disc2.y'] = y_in
+        exec_eng.load_study_from_input_dict(values_dict)
+        # set database information
+        values_dict = {}
+        values_dict[f'{self.name}.Disc2.database_id'] = 'Disc2Test'
+        values_dict[f'{self.name}.Disc2.database_subname'] = 'DiscTest'
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.configure()
+
+        dm = exec_eng.dm 
+        y = dm.get_value(f'{self.name}.Disc2.y')
+        # y_db is value in database
+        y_db = 2
+        # assert value in dm is the value coming from the database
+        assert y == y_db
+
+
+
+    def test_09_mongodb_connector_local_variables(self):
+        """
+        Test Disc2 using MongoDB connector on local variables (power and constant are declared as local variables)
+        """
+        exec_eng  = ExecutionEngine(self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        builder_disc2 = exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+        builder_disc2.set_builder_info('local_namespace_database', True)
+        power_in = 2 
+        constant_in = 8
+        y_in = 3
+        ns_dict = {'ns_ac': f'{self.name}.Disc2'}
+        exec_eng.ns_manager.add_ns_def(ns_dict, get_from_database=True)
+        exec_eng.ns_manager.database_activated = True
+        exec_eng.factory.set_builders_to_coupling_builder(builder_disc2)
+        exec_eng.configure()
+        # set data
+        values_dict = {}
+        #values_dict[f'{self.name}.Disc2.power'] = power_in
+        values_dict[f'{self.name}.Disc2.constant'] = constant_in
+        values_dict[f'{self.name}.Disc2.y'] = y_in
+        exec_eng.load_study_from_input_dict(values_dict)
+        # set database information
+        values_dict = {}
+        values_dict[f'{self.name}.Disc2.database_id'] = 'Disc2Test'
+        values_dict[f'{self.name}.Disc2.database_subname'] = 'DiscTest'
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.configure()
+
+        dm = exec_eng.dm 
+        power = dm.get_value(f'{self.name}.Disc2.power')
+        power_db = 3
+        assert power == power_db
+
+
+
+if '__main__' == __name__:
+    
+    testcls = TestDataConnector()
+    testcls.setUp()
+    testcls.test_04_output_data_connector()
+
+

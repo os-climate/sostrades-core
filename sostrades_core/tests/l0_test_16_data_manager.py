@@ -145,6 +145,10 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.Disc1.cache_type': init_dict('string'),
                     ns_2 + '.Disc1.cache_file_path': init_dict('string'),
                     ns_2 + '.Disc1.debug_mode': init_dict('string'),
+                    ns_2 + '.Disc1.database_subname': init_dict('string'),
+                    ns_2 + '.database_subname': init_dict('string'),
+                    ns_2 + '.database_id': init_dict('string'),
+                    ns_2 + '.Disc1.database_id': init_dict('string'),
                     ns_2 + '.linearization_mode': init_dict('string'),
                     ns_2 + '.linear_solver_MDA': init_dict('string'),
                     ns_2 + '.linear_solver_MDA_preconditioner': init_dict('string'),
@@ -271,3 +275,10 @@ a_d=pickle.load(open('dm.pkl','rb'))
 a_d.update(<DICT>)
 pickle.dump(a_d, open('dm.pkl', 'wb'))
 '''
+
+if '__main__' == __name__:
+    
+    testcls = TestDataManagerGenerator()
+    testcls.setUp()
+    testcls.test_01_load_DM()
+

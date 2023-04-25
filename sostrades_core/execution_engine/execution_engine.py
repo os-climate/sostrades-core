@@ -16,7 +16,7 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-
+from typing import Union
 # Execution engine SoSTrades code
 from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.data_manager import DataManager
@@ -83,13 +83,13 @@ class ExecutionEngine:
         self.__factory = SosFactory(
             self, self.study_name)
 
-        self.root_process = None
+        self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
-        self.data_check_integrity = False
+        self.data_check_integrity: bool = False
         self.__connector_container = PersistentConnectorContainer()
 
     @property
-    def factory(self):
+    def factory(self) -> SosFactory:
         """ Read-only accessor to the factory object
 
             :return: current used factory 
@@ -98,7 +98,7 @@ class ExecutionEngine:
         return self.__factory
 
     @property
-    def post_processing_manager(self):
+    def post_processing_manager(self) -> PostProcessingManager:
         """ Read-only accessor to the post_processing_manager object
 
             :return: current used post_processing_manager 
@@ -107,7 +107,7 @@ class ExecutionEngine:
         return self.__post_processing_manager
 
     @property
-    def connector_container(self):
+    def connector_container(self) -> PersistentConnectorContainer:
         """
         Read-only accessor on the connector_container object
         :return: PersistentConnectorContainer
@@ -152,10 +152,9 @@ class ExecutionEngine:
         self.dm.reset()
         self.load_study_from_input_dict({})
 
-    def set_root_process(self, process_instance):
+    def set_root_process(self, process_instance: ProxyCoupling):
         # self.dm.reset()s
-
-        if isinstance(process_instance, ProxyDiscipline):
+        if isinstance(process_instance, ProxyCoupling):
             self.root_process = process_instance
         else:
             raise ExecutionEngineException(
@@ -183,7 +182,7 @@ class ExecutionEngine:
         Use data connector if needed, in the following case
         1) data is in input, and come from the output of another model --> no data connector used
         2) data is in output --> no data connector use here
-        3) data is in input, and does not come from another model --> data connector is used
+        is in input, and does not come from another model --> data connector is used
         """
 
         dm_data_dict = self.dm.data_dict
@@ -679,6 +678,7 @@ class ExecutionEngine:
         except:
             ex_proc.set_status_from_mdo_discipline()
             raise
+
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.',
                          self.root_process.get_disc_full_name())

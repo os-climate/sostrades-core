@@ -19,7 +19,7 @@ from sostrades_core.tools.post_processing.post_processing_factory import PostPro
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
 """
-
+from typing import Union
 from time import time
 from importlib import import_module
 from os.path import join, isdir, exists
@@ -69,10 +69,10 @@ class BaseStudyManager():
         self.process_name = process_name
         self.dump_directory = dump_directory
         self.__logger = logger
-        self.__execution_engine = None
+        self.__execution_engine: Union[ExecutionEngine, None] = None
         self.__rw_strategy = DirectLoadDump()
         self.__yield_method = yield_method
-        self.__execution_engine = execution_engine
+        self.__execution_engine: Union[ExecutionEngine, None] = execution_engine
         self.loaded_cache = None
         self.dumped_cache = False
         self.dump_cache_map = None
@@ -84,7 +84,7 @@ class BaseStudyManager():
         self.__run_usecase = run_usecase
 
     @property
-    def ee(self):
+    def ee(self) -> ExecutionEngine:
         """ Return the current execution engine instance
 
         :return: sostrades_core.execution_engine.execution_engine.ExecutionEngine
@@ -92,7 +92,7 @@ class BaseStudyManager():
         return self.execution_engine
 
     @property
-    def execution_engine(self):
+    def execution_engine(self) -> ExecutionEngine:
         """ Return the current execution engine instance
 
         :return: sostrades_core.execution_engine.execution_engine.ExecutionEngine

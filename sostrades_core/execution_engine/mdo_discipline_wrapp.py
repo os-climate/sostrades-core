@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from typing import Union
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
@@ -41,7 +42,7 @@ class MDODisciplineWrapp(object):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def __init__(self, name, wrapper=None, wrapping_mode='SoSTrades'):
+    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades'):
         '''
         Constructor.
 
@@ -52,7 +53,7 @@ class MDODisciplineWrapp(object):
         '''
         self.name = name
         self.wrapping_mode = wrapping_mode
-        self.mdo_discipline = None
+        self.mdo_discipline: Union[SoSMDODiscipline, SoSMDOScenario, SoSMDAChain] = None
         if wrapper is not None:
             self.wrapper = wrapper(name)
         else:
