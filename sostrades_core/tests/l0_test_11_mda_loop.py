@@ -1412,6 +1412,10 @@ class TestMDALoop(unittest.TestCase):
 
         self.assertIn("Residuals History", filters[0].filter_values)
 
+        # for graph in graph_list:
+        #     graph.to_plotly().show()
+
+
 if '__main__' == __name__:
     cls = TestMDALoop()
     cls.setUp()

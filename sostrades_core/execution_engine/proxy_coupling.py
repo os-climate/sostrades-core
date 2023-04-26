@@ -888,6 +888,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         post_processing_mda_data = self.get_sosdisc_outputs(self.RESIDUALS_HISTORY)
 
+        # TODO: utility function consider moving to tool?
         def to_series(varname: str, x: list, y: ndarray) -> list[InstanciatedSeries]:
             dim = y.shape[1]
             series = []
@@ -900,25 +901,27 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             return series
 
         if select_all or 'Residuals History' in chart_list:
-            residuals_through_iterations = np.asarray(list(map(lambda x: [x[0]], post_processing_mda_data[self.get_sosdisc_inputs('sub_mda_class')])))
-            iterations = list(range(len(residuals_through_iterations)))
-            min_y, max_y = inf, - inf
-            min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()
-            if max_value > max_y:
-                max_y = max_value
-            if min_value < min_y:
-                min_y = min_value
-            chart_name = 'Residuals History'
+            sub_mda_class = self.get_sosdisc_inputs('sub_mda_class')
+            if post_processing_mda_data is not None and sub_mda_class in post_processing_mda_data.columns:
+                residuals_through_iterations = np.asarray(list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
+                iterations = list(range(len(residuals_through_iterations)))
+                min_y, max_y = inf, - inf
+                min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()
+                if max_value > max_y:
+                    max_y = max_value
+                if min_value < min_y:
+                    min_y = min_value
+                chart_name = 'Residuals History'
 
-            new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals',
-                                                 [min(iterations), max(iterations)], [
-                                                     min_y - (max_y - min_y) * 0.1
-                                                     , max_y + (max_y - min_y) * 0.1],
-                                                 chart_name)
+                new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals',
+                                                     [min(iterations), max(iterations)], [
+                                                         min_y - (max_y - min_y) * 0.1
+                                                         , max_y + (max_y - min_y) * 0.1],
+                                                     chart_name)
 
-            for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
-                new_chart.series.append(series)
+                for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
+                    new_chart.series.append(series)
 
-            instanciated_charts.append(new_chart)
+                instanciated_charts.append(new_chart)
 
         return instanciated_charts
