@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from typing import List
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from gemseo.core.scenario import Scenario
 '''
@@ -541,7 +542,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
 
-        def to_series(varname: str, x: list, y: ndarray) -> list[InstanciatedSeries]:
+        def to_series(varname: str, x: List, y: ndarray) -> List[InstanciatedSeries]:
             dim = y.shape[1]
             series = []
             for d in range(dim):
