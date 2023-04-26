@@ -960,6 +960,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                  self.VISIBILITY: 'Shared',
                                  self.NAMESPACE: self.NS_EVAL}})
                 self._set_gather_names(out_var, _out_name)
+                # TODO: Disc1.indicator_dict is shown as indicator_dict on GUI and it is not desired behaviour
 
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:
