@@ -189,10 +189,11 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
-    def set_children_cache_inputs(self):
-        '''
-        Set cache_type and cache_file_path input values to children, if cache inputs have changed
-        '''
+    def set_children_numerical_inputs(self):
+        """
+        Set numerical inputs values (cache_type, cache_file_path, debug_mode, linearization_mode) for those who have
+        changed
+        """
         if self.PROPAGATE_CACHE in self.get_data_in():
             propagate_cache_to_children = self.get_sosdisc_inputs(
                 self.PROPAGATE_CACHE)
@@ -219,3 +220,8 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
                 self.set_debug_mode_rec(
                     self.get_sosdisc_inputs(ProxyDiscipline.DEBUG_MODE))
                 self._reset_debug_mode = False
+
+            if self._reset_linearization_mode:
+                self.set_linearization_mode_rec(
+                    linearization_mode=self.get_sosdisc_inputs(ProxyDiscipline.LINEARIZATION_MODE))
+                self._reset_linearization_mode = False

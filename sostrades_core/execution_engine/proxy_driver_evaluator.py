@@ -274,7 +274,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
-            self.set_children_cache_inputs()
+            self.set_children_numerical_inputs()
 
         if self.REFERENCE_MODE in self.get_data_in():
             self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(

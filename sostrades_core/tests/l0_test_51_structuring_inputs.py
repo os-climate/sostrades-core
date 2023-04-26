@@ -80,8 +80,15 @@ class TestStructuringInputs(unittest.TestCase):
         self.exec_eng.dm.set_values_from_dict(full_values_dict)
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
-        self.assertListEqual(list(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'debug_mode','database_subname', 'database_id', 'dyn_input_2'])
+        disc_1 = self.exec_eng.dm.get_disciplines_with_name('MyCase.Disc1')[0]
+        structuring_variables_disc1 = list(disc_1._structuring_variables.keys())
+        self.assertListEqual(structuring_variables_disc1, ['AC_list',
+                                                           disc_1.LINEARIZATION_MODE,
+                                                           disc_1.CACHE_TYPE,
+                                                           disc_1.CACHE_FILE_PATH,
+                                                           disc_1.DEBUG_MODE,
+                                                           disc_1.DATABASE_SUBNAME,
+                                                           disc_1.DATABASE_ID, 'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
@@ -91,8 +98,15 @@ class TestStructuringInputs(unittest.TestCase):
         self.exec_eng.dm.set_values_from_dict(full_values_dict)
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
-        self.assertListEqual(list(self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.Disc1')[0]._structuring_variables.keys()), ['AC_list', 'cache_type', 'cache_file_path', 'debug_mode', 'database_subname', 'database_id','dyn_input_2'])
+        disc_1 = self.exec_eng.dm.get_disciplines_with_name('MyCase.Disc1')[0]
+        structuring_variables_disc1 = list(disc_1._structuring_variables.keys())
+        self.assertListEqual(structuring_variables_disc1, ['AC_list',
+                                                           disc_1.LINEARIZATION_MODE,
+                                                           disc_1.CACHE_TYPE,
+                                                           disc_1.CACHE_FILE_PATH,
+                                                           disc_1.DEBUG_MODE,
+                                                           disc_1.DATABASE_SUBNAME,
+                                                           disc_1.DATABASE_ID, 'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
