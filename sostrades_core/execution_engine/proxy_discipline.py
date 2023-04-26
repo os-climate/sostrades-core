@@ -228,7 +228,7 @@ class ProxyDiscipline(object):
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  #POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
@@ -462,6 +462,7 @@ class ProxyDiscipline(object):
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
         self._reset_debug_mode = False
+        self._reset_linearization_mode = False
 
     def add_status_observers_to_gemseo_disc(self):
         '''
@@ -1134,8 +1135,11 @@ class ProxyDiscipline(object):
         Update the reset_linearization_mode boolean if linearization mode has changed
         """
         linearization_mode = self.get_sosdisc_inputs(self.LINEARIZATION_MODE)
-        if linearization_mode != self._structuring_variables[self.LINEARIZATION_MODE]:
+        stucturing_variable_linearization_mode = self._structuring_variables[self.LINEARIZATION_MODE]
+        if linearization_mode != stucturing_variable_linearization_mode and \
+                not (linearization_mode == "auto" and self._structuring_variables[self.LINEARIZATION_MODE] is None):
             self._reset_linearization_mode = True
+        self.logger.info(f"Discipline {self.sos_name} set to linearization mode {linearization_mode}")
 
     def update_reset_debug_mode(self):
         '''
@@ -1180,7 +1184,7 @@ class ProxyDiscipline(object):
 
     def set_linearization_mode_rec(self, linearization_mode: str):
         """
-        set linearization mode recursively to children with priority to parent
+        set linearization mode recursively to children with priority to parent + log
         """
         for disc in self.proxy_disciplines:
             disc_in = disc.get_data_in()
