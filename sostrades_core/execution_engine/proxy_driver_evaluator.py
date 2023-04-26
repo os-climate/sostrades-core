@@ -900,7 +900,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
                 self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
                                             'full_name': ('string', None, False),
-                                            'output_name': ('string', None, True)
+                                            'output_name': ('multiple', None, True)
                                             },
                 self.DATAFRAME_EDITION_LOCKED: False,
                 self.STRUCTURING: True,
