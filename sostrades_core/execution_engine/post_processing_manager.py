@@ -145,7 +145,7 @@ class PostProcessingManager:
         if namespace_identifier in self.__namespace_postprocessing_dict:
             del self.__namespace_postprocessing_dict[namespace_identifier]
 
-    def get_post_processing(self, namespace_identifier: str) -> list["PostProcessing"]:
+    def get_post_processing(self, namespace_identifier: str): #-> list["PostProcessing"]:
         """ Method that retrieve post processing object using a given namespace
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -184,7 +184,7 @@ class PostProcessing:
         self.__post_processing_func = post_processing_func
         self.__logger = logger
 
-    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str) -> list[ChartFilter]:
+    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str): #-> list[ChartFilter]:
         """ Method that execute filters stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -210,8 +210,8 @@ class PostProcessing:
 
         return filters
 
-    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str, filters: list[ChartFilter])\
-            -> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
+    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str, filters): #list[ChartFilter])
+        #-> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
         """ Method that execute stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing

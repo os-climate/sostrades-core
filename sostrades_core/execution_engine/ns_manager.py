@@ -110,21 +110,21 @@ class NamespaceManager:
         return self.__disc_ns_dict
 
     #-- Data name space methods
-    def add_ns_def(self, ns_info, database_name = None):
+    def add_ns_def(self, ns_info, get_from_database = False):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
         for key, value in ns_info.items():
-            ns_id = self.add_ns(key, value, database_name=database_name)
+            ns_id = self.add_ns(key, value, get_from_database=get_from_database)
             ns_ids.append(ns_id)
-        if database_name: 
+        if get_from_database: 
             self.database_activated = True
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_name = None):
+    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, get_from_database = False):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -136,11 +136,11 @@ class NamespaceManager:
 
         if ns_id in self.all_ns_dict:
             ns = self.all_ns_dict[ns_id]
-            ns.database_name = database_name
+            ns.get_from_database = get_from_database
 
         # else we create a new object and store it in all_ns_dict
         else:
-            ns = Namespace(name, ns_value, display_value,database_name)
+            ns = Namespace(name, ns_value, display_value, get_from_database)
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns

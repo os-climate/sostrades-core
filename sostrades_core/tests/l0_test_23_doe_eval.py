@@ -1461,4 +1461,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls._test_8_doe_eval_parallel_execution()
+    cls.test_12_Eval_User_Defined_samples_non_alpha()

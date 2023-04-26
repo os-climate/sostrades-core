@@ -26,9 +26,11 @@ def specific_check_years(dm):
         var_f_name = dm.get_var_full_name(var_id)
         io_type = data_dict[var_id]['io_type']
         optional = data_dict[var_id]['optional']
-    # check if variable is a dataframe and if years is a column of this
-    # dataframe
+        # check if variable is a dataframe and if years is a column of this
+        # dataframe
         if io_type == 'in' and not optional:
+            if value is None:
+                raise Exception(f'Value is None for variable : {var_f_name}')
             if vtype == 'dataframe' and 'years' in value:
                 # get year start and year end
                 year_start_name = dm.get_all_namespaces_from_var_name(
