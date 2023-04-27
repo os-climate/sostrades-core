@@ -244,3 +244,105 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         self.assertEqual(
             proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
             FINITE_DIFFERENCES)
+
+    def test_04_reconfigure_after_run(self):
+        print("\n Test 4 : Propagation of linearization mode to children disciplines - revert to auto after run")
+        # 1: Set to Finite difference
+        exec_eng = ExecutionEngine(self.study_name)
+
+        exec_eng.logger.setLevel(10)
+        exec_eng.logger.addHandler(self.my_handler)
+
+        # add disciplines SellarCoupling
+        coupling_name = "SellarCoupling"
+        mda_builder = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_sellar_coupling13')
+        exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
+        exec_eng.configure()
+
+        # Sellar inputs
+        disc_dict = {}
+        disc_dict[f'{self.study_name}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{self.study_name}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{self.study_name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.study_name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.study_name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+
+        FINITE_DIFFERENCES = MDODiscipline.FINITE_DIFFERENCES
+        LINEARIZATION_MODE = SoSMDODiscipline.LINEARIZATION_MODE
+
+        disc_dict[f'{self.study_name}.{LINEARIZATION_MODE}'] = FINITE_DIFFERENCES
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        # the dm has the proper values
+        self.assertEqual(
+            exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
+            FINITE_DIFFERENCES)
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_1.{LINEARIZATION_MODE}'),
+                         FINITE_DIFFERENCES)
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
+                         FINITE_DIFFERENCES)
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+                         FINITE_DIFFERENCES)
+
+        # the activation has been properly logged
+        self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
+        self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
+        self.assertIn(f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
+                      self.my_handler.msg_list)
+        self.assertIn(f'Discipline {self.study_name} set to linearization mode {FINITE_DIFFERENCES}',
+                      self.my_handler.msg_list)
+
+        exec_eng.execute()
+        self.assertEqual(
+            exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode, FINITE_DIFFERENCES)
+        self.assertEqual(
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            FINITE_DIFFERENCES)
+        self.assertEqual(
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            FINITE_DIFFERENCES)
+        self.assertEqual(
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            FINITE_DIFFERENCES)
+
+        # 2 : revert to Auto
+        # 1: Set to Finite difference
+
+
+        disc_dict[f'{self.study_name}.{LINEARIZATION_MODE}'] = "auto"
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        # the dm has the proper values
+        self.assertEqual(
+            exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
+            "auto")
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_1.{LINEARIZATION_MODE}'),
+                         "auto")
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
+                         "auto")
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+                         "auto")
+
+        # the activation has been properly logged
+        self.assertIn(f'Discipline Sellar_1 set to linearization mode {"auto"}', self.my_handler.msg_list)
+        self.assertIn(f'Discipline Sellar_3 set to linearization mode {"auto"}', self.my_handler.msg_list)
+        self.assertIn(f'Discipline {coupling_name} set to linearization mode {"auto"}',
+                      self.my_handler.msg_list)
+        self.assertIn(f'Discipline {self.study_name} set to linearization mode {"auto"}',
+                      self.my_handler.msg_list)
+
+        exec_eng.execute()
+        self.assertEqual(
+            exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode, "auto")
+        self.assertEqual(
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            "auto")
+        self.assertEqual(
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            "auto")
+        self.assertEqual(
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            "auto")
