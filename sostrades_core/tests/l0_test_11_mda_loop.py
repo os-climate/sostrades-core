@@ -1370,7 +1370,7 @@ class TestMDALoop(unittest.TestCase):
 
     def test_21_sellar_coupling_mda_graphs(self):
         """
-        This test simply ensures that we retrieve the correct filters (Residuals Histor) in order to plot the graphs
+        This test ensures that we retrieve the correct filters (Residuals History) in order to plot the graphs
         """
         print("\n Test 21 : Sellar coupling check mda graphs")
         exec_eng = ExecutionEngine(self.name)
