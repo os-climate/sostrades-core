@@ -1369,7 +1369,10 @@ class TestMDALoop(unittest.TestCase):
         #assert disc_dict[f'{self.name}.{coupling_name}.Sellar_1.linearization_mode'] == 'finite_differences'
 
     def test_21_sellar_coupling_mda_graphs(self):
-
+        """
+        This test simply ensures that we retrieve the correct filters (Residuals Histor) in order to plot the graphs
+        """
+        print("\n Test 21 : Sellar coupling check mda graphs")
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines Sellaroupling
