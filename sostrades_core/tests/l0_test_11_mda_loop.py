@@ -1399,9 +1399,6 @@ class TestMDALoop(unittest.TestCase):
         sub_coupling = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[
             0]
 
-        # list(map( lambda x:x[0], exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.residuals_history["MDAJacobi"]))
-        # exec_eng.root_process.poxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.residuals_historyr
-
         # Testing the post-processing module through filters
         from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
         ppf = PostProcessingFactory()
