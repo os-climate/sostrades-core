@@ -274,7 +274,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
-            self.set_children_cache_inputs()
+            self.set_children_numerical_inputs()
 
         if self.REFERENCE_MODE in self.get_data_in():
             self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(
@@ -900,7 +900,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
                 self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
                                             'full_name': ('string', None, False),
-                                            'output_name': ('string', None, True)
+                                            'output_name': ('multiple', None, True)
                                             },
                 self.DATAFRAME_EDITION_LOCKED: False,
                 self.STRUCTURING: True,
@@ -960,6 +960,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                  self.VISIBILITY: 'Shared',
                                  self.NAMESPACE: self.NS_EVAL}})
                 self._set_gather_names(out_var, _out_name)
+                # TODO: Disc1.indicator_dict is shown as indicator_dict on GUI and it is not desired behaviour
 
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:

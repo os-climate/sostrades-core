@@ -53,7 +53,8 @@ class SoSMDODiscipline(MDODiscipline):
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
     DEBUG_MODE = 'debug_mode'
-    NUM_DESC_IN = {'linearization_mode','cache_type','cache_file_path','debug_mode'}
+    LINEARIZATION_MODE = 'linearization_mode'
+    NUM_DESC_IN = {LINEARIZATION_MODE,'cache_type','cache_file_path','debug_mode'}
 
     def __init__(self,
                  full_name :str, grammar_type: str, cache_type: str,

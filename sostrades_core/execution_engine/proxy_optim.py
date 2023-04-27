@@ -351,7 +351,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
         else:
-            self.set_children_cache_inputs()
+            self.set_children_numerical_inputs()
             self.set_configure_status(True)
 
         for disc in disc_to_configure:

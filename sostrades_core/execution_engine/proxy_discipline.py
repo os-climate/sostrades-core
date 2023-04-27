@@ -21,7 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
-from typing import Union
+from typing import Union, List
 import os
 from os.path import dirname, join
 
@@ -210,6 +210,7 @@ class ProxyDiscipline(object):
     POS_IN_MODE = ['value', 'list', 'dict']
 
     DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
+    LINEARIZATION_MODE = SoSMDODiscipline.LINEARIZATION_MODE
     DATABASE_SUBNAME = 'database_subname'
     DATABASE_ID = 'database_id'
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
@@ -227,8 +228,8 @@ class ProxyDiscipline(object):
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        'linearization_mode': {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
-                               NUMERICAL: True},
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  #POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+                             NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
                      # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
@@ -304,7 +305,7 @@ class ProxyDiscipline(object):
             ee (ExecutionEngine): execution engine of the current process
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         """
-        self.proxy_disciplines = []
+        self.proxy_disciplines: List[ProxyDiscipline] = []
         self._status = None
         self.status_observers = []
         self.__config_dependency_disciplines = []
@@ -333,6 +334,7 @@ class ProxyDiscipline(object):
         self._reset_cache = False
         self._set_children_cache = False
         self._reset_debug_mode = False
+        self._reset_linearization_mode: bool = False
 
         # -- disciplinary data attributes
         self.inst_desc_in = None  # desc_in of instance used to add dynamic inputs
@@ -460,6 +462,7 @@ class ProxyDiscipline(object):
         self.status = self.mdo_discipline_wrapp.mdo_discipline.status
         self._reset_cache = False
         self._reset_debug_mode = False
+        self._reset_linearization_mode = False
 
     def add_status_observers_to_gemseo_disc(self):
         '''
@@ -1119,11 +1122,24 @@ class ProxyDiscipline(object):
         '''
         if self._data_in != {}:
             self.linearization_mode = self.get_sosdisc_inputs(
-                'linearization_mode')
+                self.LINEARIZATION_MODE)
 
             self.update_reset_cache()
 
             self.update_reset_debug_mode()
+
+            self.update_reset_linearization_mode()
+
+    def update_reset_linearization_mode(self) -> None:
+        """
+        Update the reset_linearization_mode boolean if linearization mode has changed
+        """
+        linearization_mode = self.get_sosdisc_inputs(self.LINEARIZATION_MODE)
+        stucturing_variable_linearization_mode = self._structuring_variables[self.LINEARIZATION_MODE]
+        if linearization_mode != stucturing_variable_linearization_mode and \
+                not (linearization_mode == "auto" and self._structuring_variables[self.LINEARIZATION_MODE] is None):
+            self._reset_linearization_mode = True
+        self.logger.info(f"Discipline {self.sos_name} set to linearization mode {linearization_mode}")
 
     def update_reset_debug_mode(self):
         '''
@@ -1155,7 +1171,7 @@ class ProxyDiscipline(object):
             self._reset_cache = True
             self._set_children_cache = True
 
-    def set_debug_mode_rec(self, debug_mode):
+    def set_debug_mode_rec(self, debug_mode: str):
         """
         set debug mode recursively to children with priority to parent
         """
@@ -1164,7 +1180,18 @@ class ProxyDiscipline(object):
             if ProxyDiscipline.DEBUG_MODE in disc_in:
                 self.dm.set_data(self.get_var_full_name(
                     self.DEBUG_MODE, disc_in), self.VALUE, debug_mode, check_value=False)
-                disc.set_debug_mode_rec(debug_mode)
+                disc.set_debug_mode_rec(debug_mode=debug_mode)
+
+    def set_linearization_mode_rec(self, linearization_mode: str):
+        """
+        set linearization mode recursively to children with priority to parent + log
+        """
+        for disc in self.proxy_disciplines:
+            disc_in = disc.get_data_in()
+            if self.LINEARIZATION_MODE in disc_in:
+                self.dm.set_data(self.get_var_full_name(
+                    self.LINEARIZATION_MODE, disc_in), self.VALUE, linearization_mode, check_value=False)
+                disc.set_linearization_mode_rec(linearization_mode=linearization_mode)
 
     def setup_sos_disciplines(self):
         """

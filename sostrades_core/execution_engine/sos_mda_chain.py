@@ -71,8 +71,8 @@ class SoSMDAChain(MDAChain):
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN = {
-        'linearization_mode': {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
-                               NUMERICAL: True},
+        SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+                                              NUMERICAL: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      # POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
                      # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
@@ -166,7 +166,7 @@ class SoSMDAChain(MDAChain):
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)
 
-        # nothing saved in the DM anymore during execution
+    # nothing saved in the DM anymore during execution
 
     #         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
 

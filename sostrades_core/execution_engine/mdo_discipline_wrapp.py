@@ -123,8 +123,7 @@ class MDODisciplineWrapp(object):
             self._init_grammar_with_keys(proxy)
             self._set_wrapper_attributes(proxy, self.wrapper)
             self._update_all_default_values(proxy)
-            self.mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(
-                'linearization_mode')
+            self.mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(SoSMDODiscipline.LINEARIZATION_MODE)
             # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
@@ -201,7 +200,7 @@ class MDODisciplineWrapp(object):
             mdo_discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
             mdo_discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
             mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(
-                'linearization_mode')
+                SoSMDODiscipline.LINEARIZATION_MODE)
 
             # set other additional options (SoSTrades)
             mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(

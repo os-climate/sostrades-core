@@ -16,7 +16,7 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-
+import numpy as np
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
 from pandas import DataFrame
@@ -36,6 +36,11 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
+from gemseo.core.scenario import Scenario
+from numpy import array, ndarray, delete, inf
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
+    TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 if platform.system() != 'Windows':
     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
@@ -54,6 +59,7 @@ def get_available_linear_solvers():
     del lsf
 
     return algos
+
 
 class ProxyCoupling(ProxyDisciplineBuilder):
     """
@@ -195,7 +201,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     DESC_OUT = {
         RESIDUALS_HISTORY: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'dataframe',
-                            ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}
+                            ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True},
     }
 
     eps0 = 1.0e-6
@@ -230,7 +236,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._set_dm_disc_info()
 
         self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
-        
+
     def _reload(self, sos_name, ee, associated_namespaces=None):
         '''
         Reload ProxyCoupling with corresponding ProxyDiscipline attributes and set is_sos_coupling.
@@ -270,7 +276,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _set_sub_mda_dm_cache_map(self, mda):
         '''
-        Update cache_map disc in DM with mda cache and its sub_mdas recursively        
+        Update cache_map disc in DM with mda cache and its sub_mdas recursively
         '''
         # store mda cache in DM
         self._store_cache_with_hashed_uid(mda)
@@ -316,7 +322,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                                                                                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
                         disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
                     disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
@@ -335,7 +341,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     raise Exception(
                         f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
                 disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                                                                                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
                         disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
                     disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
@@ -358,7 +364,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def configure_io(self):
         '''
         Configure the ProxyCoupling by :
-        - setting the discipline in the discipline_dict 
+        - setting the discipline in the discipline_dict
         - configure all children disciplines
         '''
         ProxyDiscipline.configure(self)
@@ -370,7 +376,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for disc in disc_to_configure:
                 disc.configure()
         else:
-            self.set_children_cache_inputs()
+            self.set_children_numerical_inputs()
             # - all chidren are configured thus proxyCoupling can be configured
             self.set_configure_status(True)
             # - build the coupling structure
@@ -387,7 +393,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         to be able to retrieve inputs and outputs with same short name
         in sub proxies
         """
-        #- build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
+        # - build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
         subprocess_data_in, subprocess_data_out = self.__compute_mdachain_gemseo_based_data_io()
         self._restart_data_io_to_disc_io()
         self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
@@ -396,8 +402,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def __compute_mdachain_gemseo_based_data_io(self):
         ''' mimics the definition of MDAChain i/o grammar
         '''
-        #- identify i/o grammars like in GEMSEO
-        # get discipline structure of the MDAChain 
+        # - identify i/o grammars like in GEMSEO
+        # get discipline structure of the MDAChain
         # e.g, in Sellar : [[Sellar1, Sellar2], SellarProblem]
         disciplines = self._get_mda_structure_as_in_gemseo()
         # build associated i/o grammar
@@ -408,9 +414,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 # if MDA, i.e. group of disciplines (e.g. [Sellar1, Sellar2])
                 # we gather all the i/o of the sub-disciplines (MDA-like i/o grammar)
                 list_of_data_in = [d.get_data_io_with_full_name(d.IO_TYPE_IN, as_namespaced_tuple=True) for d in group]
-                list_of_data_out = [d.get_data_io_with_full_name(d.IO_TYPE_OUT, as_namespaced_tuple=True) for d in group]
-    
-                mda_inputs, mda_outputs = self.__get_MDA_io(list_of_data_in, list_of_data_out) 
+                list_of_data_out = [d.get_data_io_with_full_name(d.IO_TYPE_OUT, as_namespaced_tuple=True) for d in
+                                    group]
+
+                mda_inputs, mda_outputs = self.__get_MDA_io(list_of_data_in, list_of_data_out)
                 chain_inputs.append(mda_inputs)
                 chain_outputs.append(mda_outputs)
             else:
@@ -420,10 +427,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 disc_outputs = group.get_data_io_with_full_name(group.IO_TYPE_OUT, as_namespaced_tuple=True)
                 chain_inputs.append(disc_inputs)
                 chain_outputs.append(disc_outputs)
-         
+
         # compute MDOChain-like i/o grammar
         return self.__get_MDOChain_io(chain_inputs, chain_outputs)
-        
+
     def _build_coupling_structure(self):
         """
         Build MDOCouplingStructure
@@ -443,7 +450,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self._update_status_dm(self.STATUS_CONFIGURE)
 
     def _update_coupling_flags_in_dm(self):
-        ''' 
+        '''
         Update coupling and editable flags in the datamanager for the GUI
         '''
 
@@ -501,7 +508,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             update_flags_of_disc(k, to_disc_name, 'in')
 
     def export_couplings(self, in_csv=False, f_name=None):
-        ''' 
+        '''
         Export couplings as a csv with
         disc1 | disc2 | var_name
         '''
@@ -536,7 +543,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Return False if at least one sub discipline needs to be configured, True if not
         '''
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
-            self.get_disciplines_to_configure() == [])
+                self.get_disciplines_to_configure() == [])
 
     def prepare_execution(self):
         '''
@@ -687,11 +694,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             preconditioner = copy(self.get_sosdisc_inputs(
                 'linear_solver_MDA_preconditioner'))
             linear_solver_options_MDA['preconditioner_type'] = (
-                preconditioner != 'None') * preconditioner or None
+                                                                       preconditioner != 'None') * preconditioner or None
         else:
             # Scipy case / gmres
             linear_solver_options_MDA['use_ilu_precond'] = (
-                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
+                    copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu')
 
         num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop(
             'tol')
@@ -713,10 +720,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             preconditioner = self.get_sosdisc_inputs(
                 'linear_solver_MDO_preconditioner')
             linear_solver_options_MDO['preconditioner_type'] = (
-                preconditioner != 'None') * preconditioner or None
+                                                                       preconditioner != 'None') * preconditioner or None
         else:
             linear_solver_options_MDO['use_ilu_precond'] = (
-                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
+                    self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu')
 
         self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
         self.linear_solver_options_MDO = linear_solver_options_MDO
@@ -764,8 +771,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
 
         ordered_list = self.proxy_disciplines
-#         self.logger.warning(
-#             "TODO: fix the order disc list in proxy coupling (set as the top level list of disciplines for debug purpose)")
+        #         self.logger.warning(
+        #             "TODO: fix the order disc list in proxy coupling (set as the top level list of disciplines for debug purpose)")
 
         return ordered_list
 
@@ -790,7 +797,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         return ordered_list
 
-    
     def _get_mda_structure_as_in_gemseo(self):
         """ Based on GEMSEO create_mdo_chain function, in MDAChain.py
             returns a list of disciplines (weak couplings) or list (strong couplings / MDAs) :
@@ -798,62 +804,124 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             - if no MDA loop, the current discipline is added in the main list
         """
         chained_disciplines = []
-        
+
         for parallel_tasks in self.coupling_structure.sequence:
             for coupled_disciplines in parallel_tasks:
                 first_disc = coupled_disciplines[0]
                 if len(coupled_disciplines) > 1 or (
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
-    #                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
+                        #                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
                         and self.get_sosdisc_inputs(self.AUTHORIZE_SELF_COUPLED_DISCIPLINES)
-                    ):
-                    #- MDA detection 
+                ):
+                    # - MDA detection
                     # in this case, mda i/o is the union of all i/o (different from MDOChain)
                     sub_mda_disciplines = []
                     # order the MDA disciplines the same way as the
-                    # original disciplines 
+                    # original disciplines
                     # -> works only if the disciplines are built following the same order than proxy ones
                     for disc in self.coupling_structure.disciplines:
                         if disc in coupled_disciplines:
                             sub_mda_disciplines.append(disc)
-                            
+
                     chained_disciplines.append(sub_mda_disciplines)
                 else:
                     # single discipline
                     chained_disciplines.append(first_disc)
-                    
+
         return chained_disciplines
-    
+
     def __get_MDA_io(self, data_in_list, data_out_list):
         """ Returns a tuple of the i/o dict {(local_name, ns ID) : value} (data_io formatting) of provided list of data_io,
-        according to GEMSEO rules for MDAs grammar creation : 
+        according to GEMSEO rules for MDAs grammar creation :
         MDA input grammar is built as the union of inputs of all sub-disciplines, same for outputs.
-        
+
         Args:
         data_in_list : list of data_in (one per discipline)
         data_out_list : list of data_out (one per discipline)
         """
-        data_in = ChainMap(*data_in_list) # merge list of dict in 1 dict
+        data_in = ChainMap(*data_in_list)  # merge list of dict in 1 dict
         data_out = ChainMap(*data_out_list)
         return data_in, data_out
-    
-    
+
     def __get_MDOChain_io(self, data_in_list, data_out_list):
         """ Returns a tuple of dictionaries (data_in, data_out) of the provided disciplines,
-        according to GEMSEO convention for MDOChain grammar creation : 
-        
+        according to GEMSEO convention for MDOChain grammar creation :
+
         Args:
         data_in_list : list of data_in (one per discipline)
         data_out_list : list of data_out (one per discipline)
         """
         mdo_inputs = {}
         mdo_outputs = {}
-        
+
         for d_in, d_out in zip(data_in_list, data_out_list):
             # add discipline input tuple (name, id) if tuple not already in outputs
-            mdo_inputs.update({t:v for (t,v) in d_in.items() if t not in mdo_outputs})
+            mdo_inputs.update({t: v for (t, v) in d_in.items() if t not in mdo_outputs})
             # add discipline output name in outputs
             mdo_outputs.update(d_out)
-            
+
         return mdo_inputs, mdo_outputs
+
+    def get_chart_filter_list(self):
+        chart_filters = []
+
+        chart_list = ['Residuals History']
+
+        chart_filters.append(ChartFilter(
+            'Charts', chart_list, chart_list, 'charts'))
+
+        return chart_filters
+
+    def get_post_processing_list(self, chart_filters=None):
+
+        instanciated_charts = []
+        # Overload default value with chart filter
+        # Overload default value with chart filter
+        select_all = False
+        if chart_filters is not None:
+            for chart_filter in chart_filters:
+                if chart_filter.filter_key == 'charts':
+                    chart_list = chart_filter.selected_values
+        else:
+            select_all = True
+
+        post_processing_mda_data = self.get_sosdisc_outputs(self.RESIDUALS_HISTORY)
+
+        # TODO: utility function consider moving to tool?
+        def to_series(varname: str, x: list, y: ndarray) -> list[InstanciatedSeries]:
+            dim = y.shape[1]
+            series = []
+            for d in range(dim):
+                series_name = varname if dim == 1 else f"{varname}\{d}"
+                new_series = InstanciatedSeries(
+                    x, list(y[:, d]),
+                    series_name, 'lines', True)
+                series.append(new_series)
+            return series
+
+        if select_all or 'Residuals History' in chart_list:
+            sub_mda_class = self.get_sosdisc_inputs('sub_mda_class')
+            if post_processing_mda_data is not None and sub_mda_class in post_processing_mda_data.columns:
+                residuals_through_iterations = np.asarray(list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
+                iterations = list(range(len(residuals_through_iterations)))
+                min_y, max_y = inf, - inf
+                min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()
+                if max_value > max_y:
+                    max_y = max_value
+                if min_value < min_y:
+                    min_y = min_value
+                chart_name = 'Residuals History'
+
+                new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals',
+                                                     [min(iterations), max(iterations)], [
+                                                         min_y - (max_y - min_y) * 0.1
+                                                         , max_y + (max_y - min_y) * 0.1],
+                                                     chart_name)
+
+                for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
+                    new_chart.series.append(series)
+
+                instanciated_charts.append(new_chart)
+
+        return instanciated_charts
