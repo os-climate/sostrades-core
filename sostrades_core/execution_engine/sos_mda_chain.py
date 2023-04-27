@@ -166,7 +166,7 @@ class SoSMDAChain(MDAChain):
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)
 
-        # nothing saved in the DM anymore during execution
+    # nothing saved in the DM anymore during execution
 
     #         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
 

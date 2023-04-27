@@ -616,6 +616,10 @@ class TestMDALoop(unittest.TestCase):
         # but a SoSCoupling directly
         sub_coupling = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[
             0]
+
+        # list(map( lambda x:x[0], exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.residuals_history["MDAJacobi"]))
+        # exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.residuals_history
+
         assert sub_coupling.__class__.__name__ == "SoSMDAChain"
 
     def test_08_mda_numerical_options_NR(self):
@@ -1363,6 +1367,54 @@ class TestMDALoop(unittest.TestCase):
         # assert that linearization mode was correctly propagated
         #assert exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_2.linearization_mode')== 'finite_differences'
         #assert disc_dict[f'{self.name}.{coupling_name}.Sellar_1.linearization_mode'] == 'finite_differences'
+
+    def test_21_sellar_coupling_mda_graphs(self):
+        """
+        This test ensures that we retrieve the correct filters (Residuals History) in order to plot the graphs
+        """
+        print("\n Test 21 : Sellar coupling check mda graphs")
+        exec_eng = ExecutionEngine(self.name)
+
+        # add disciplines Sellaroupling
+        coupling_name = "SellarCoupling"
+        mda_builder = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_sellar_coupling')
+        exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
+        exec_eng.configure()
+
+        # Sellar inputs
+        disc_dict = {}
+        disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        exec_eng.execute()
+
+        # we check that in the root coupling, the subcoupling is NOT a (selfcoupled) MDA with an SoSCoupling inside
+        # but a SoSCoupling directly
+        sub_coupling = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.disciplines[
+            0]
+
+        # Testing the post-processing module through filters
+        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+        ppf = PostProcessingFactory()
+
+        disc = exec_eng.dm.get_disciplines_with_name(
+            f'{self.name}.SellarCoupling')
+        filters = ppf.get_post_processing_filters_by_discipline(
+            disc[0])
+        graph_list = ppf.get_post_processing_by_discipline(
+            disc[0], filters, as_json=False)
+
+        self.assertIn("Residuals History", filters[0].filter_values)
+
+        # for graph in graph_list:
+        #     graph.to_plotly().show()
+
 
 if '__main__' == __name__:
     cls = TestMDALoop()
