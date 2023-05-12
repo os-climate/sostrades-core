@@ -23,7 +23,6 @@ from pandas import DataFrame
 import platform
 import logging
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
@@ -36,8 +35,7 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
-from gemseo.core.scenario import Scenario
-from numpy import array, ndarray, delete, inf
+from numpy import ndarray, inf
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -48,7 +46,6 @@ if platform.system() != 'Windows':
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
 N_CPUS = cpu_count()
-LOGGER = logging.getLogger(__name__)
 
 
 def get_available_linear_solvers():
@@ -221,7 +218,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
         self.mdo_discipline_wrapp = None
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.Coupling')
+        self.logger = self.ee.logger.getChild("ProxyCoupling")
 
         self.residuals_dict = {}
 
@@ -235,7 +232,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         self._set_dm_disc_info()
 
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, logger=self.logger.getChild("MDODisciplineWrapp"))
 
     def _reload(self, sos_name, ee, associated_namespaces=None):
         '''
@@ -246,8 +243,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(
-            self, sos_name, ee, associated_namespaces=associated_namespaces)
+        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
+        self.logger = self.ee.logger.getChild("ProxyCoupling")
 
     # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
     # reduce footprint in GEMSEO
@@ -438,7 +435,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
                                                             self.coupling_structure.strong_couplings(),
-                                                            write_logs=True, logger=LOGGER)
+                                                            write_logs=True, logger=self.logger)
 
     def configure(self):
         """

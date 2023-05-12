@@ -21,7 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
 
-class SoSBuilder(object):
+class SoSBuilder:
     '''
     Class that stores a class and associated attributes to be built afterwards
     '''
@@ -38,6 +38,7 @@ class SoSBuilder(object):
         self.__disc_name = disc_name
         self.disc = None
         self.__ee = ee
+        self.logger = ee.logger.getChild("SoSBuilder")
         self.__args = {'sos_name': self.__disc_name,
                        'ee': self.__ee, 'cls_builder': cls}
         self.cls = cls

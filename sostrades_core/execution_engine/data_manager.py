@@ -21,10 +21,7 @@ import logging
 from copy import copy
 from uuid import uuid4
 from hashlib import sha256
-from copy import deepcopy
-from numpy import can_cast
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
@@ -87,9 +84,8 @@ class DataManager:
         self.reset()
         self.data_check_integrity = False
         if logger is None:
-            self.logger = get_sos_logger('SoS.EE.DataManager')
-        else:
-            self.logger = logger
+            logger = logging.getLogger(__name__)
+        self.logger = logger
 
     @staticmethod
     def get_an_uuid():

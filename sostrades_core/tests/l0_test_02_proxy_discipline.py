@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -48,7 +50,7 @@ class TestProxyDiscipline(unittest.TestCase):
         '''
         default initialisation test
         '''
-        sosdisc_instance = Disc1(self.name)
+        sosdisc_instance = Disc1(self.name, logger=logging.getLogger(__name__))
         self.assertIsInstance(sosdisc_instance, SoSWrapp,
                               "'{}' is not a SoSWrapp".format(sosdisc_instance))
 

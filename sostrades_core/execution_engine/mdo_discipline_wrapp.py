@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
 from typing import Union
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
@@ -42,7 +43,7 @@ class MDODisciplineWrapp(object):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades'):
+    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades', logger:logging.Logger=None):
         '''
         Constructor.
 
@@ -51,11 +52,14 @@ class MDODisciplineWrapp(object):
             wrapper (Class): class constructor of the user-defined wrapper (or None)
             wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         '''
+        if logger is None:
+            logger = logging.getLogger(__name__)
+        self.logger = logger
         self.name = name
         self.wrapping_mode = wrapping_mode
         self.mdo_discipline: Union[SoSMDODiscipline, SoSMDOScenario, SoSMDAChain] = None
         if wrapper is not None:
-            self.wrapper = wrapper(name)
+            self.wrapper = wrapper(name, logger)
         else:
             self.wrapper = None
 
@@ -119,7 +123,9 @@ class MDODisciplineWrapp(object):
                                                    cache_type=cache_type,
                                                    cache_file_path=cache_file_path,
                                                    sos_wrapp=self.wrapper,
-                                                   reduced_dm=reduced_dm)
+                                                   reduced_dm=reduced_dm,
+                                                   logger=self.logger.getChild("SoSMDODiscipline")
+                                                   )
             self._init_grammar_with_keys(proxy)
             self._set_wrapper_attributes(proxy, self.wrapper)
             self._update_all_default_values(proxy)
@@ -185,7 +191,9 @@ class MDODisciplineWrapp(object):
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
                 **proxy._get_numerical_inputs(),
-                authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES))
+                authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES),
+                logger=self.logger.getChild("SoSMDAChain")
+            )
 
             self.mdo_discipline = mdo_discipline
 
@@ -228,7 +236,7 @@ class MDODisciplineWrapp(object):
             # creation
             mdo_discipline = SoSMDOScenario(
                 sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space,
-                grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm)
+                grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm, logger=self.logger.getChild("SoSMDOScenario"))
             # Set parameters for SoSMDOScenario
             mdo_discipline.eval_mode = proxy.eval_mode
             mdo_discipline.maximize_objective = proxy.maximize_objective

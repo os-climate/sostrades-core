@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -24,7 +26,6 @@ from time import sleep
 import unittest
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.api import get_sos_logger
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
@@ -84,11 +85,11 @@ class TestExecutionEngine(unittest.TestCase):
 
     def test_02_execution_engine_soscoupling(self):
         process = 'test_disc1_disc2_coupling'
-        master_logger = get_sos_logger('SoS')
+        master_logger = logging.getLogger(__name__)
         master_logger.setLevel(INFO)
         master_logger.info(
             f'Master Logger {master_logger} is ready to gather all the loggers of subprocesses')
-        exec_eng = ExecutionEngine(self.name)
+        exec_eng = ExecutionEngine(self.name, logger=master_logger)
         ns_dict = {'ns_ac': 'EETests'}
         exec_eng.ns_manager.add_ns_def(ns_dict)
         exec_eng.select_root_process(self.repo, process)

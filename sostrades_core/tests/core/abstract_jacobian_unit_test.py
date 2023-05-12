@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -25,7 +27,6 @@ import glob
 from importlib import import_module
 from os.path import join, basename, dirname
 import os
-from sostrades_core.api import get_sos_logger
 from multiprocessing import Process
 from gemseo.core.discipline import MDODiscipline
 
@@ -43,7 +44,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
     def generate_analytic_gradient_pickle(self, test_names=[]):
         """ Main method to launch associated jacobian test and force dump of jacobian pickle
         """
-        local_logger = get_sos_logger('SoS.EE')
+        local_logger = logging.getLogger(__name__)
         jacobian_test_entries = self.analytic_grad_entry()
 
         for entry in jacobian_test_entries:
@@ -82,7 +83,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         if n_processes > MDODiscipline.N_CPUS:
             n_processes = MDODiscipline.N_CPUS
 
-        local_logger = get_sos_logger('SoS.EE')
+        local_logger = logging.getLogger(__name__)
 
         file_path = join(location, directory,
                          filename)
@@ -109,7 +110,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         """
 
         root_dir = dirname(root_module.__file__)
-        local_logger = get_sos_logger('SoS.EE')
+        local_logger = logging.getLogger(__name__)
         local_logger.info(
             f'Looking for L1 tests into {root_dir}')
 

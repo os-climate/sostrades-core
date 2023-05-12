@@ -17,10 +17,10 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 from copy import copy, deepcopy
+import logging
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.namespace import Namespace
-from sostrades_core.api import get_sos_logger
 
 IO_TYPE_IN = ProxyDiscipline.IO_TYPE_IN
 IO_TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
@@ -63,7 +63,7 @@ class NamespaceManager:
         self.__disc_ns_dict = {}
 
         self.display_ns_dict = {}
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.NamespaceManager')
+        self.logger = self.ee.logger.getChild("NamespaceManager")
 
         # List of dict with extra_ns and ater_name infos for local namespace
         # update

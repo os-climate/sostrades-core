@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+
 from gemseo.core.parallel_execution import DiscParallelExecution,\
     DiscParallelLinearization
 import multiprocessing as mp
-from sostrades_core.api import get_sos_logger
 
 VALUE = 'value'
 VAR_NAME = 'var_name'
@@ -33,7 +34,7 @@ class SoSDiscParallelExecution(DiscParallelExecution):
                  wait_time_between_fork=0):
         DiscParallelExecution.__init__(self, worker_list, n_processes=n_processes, use_threading=use_threading,
                                        wait_time_between_fork=wait_time_between_fork)
-        self.logger = get_sos_logger('SoS.EE.ParallelExecution')
+        self.logger = logging.getLogger(__name__)
 
     def _update_local_objects(self, ordered_outputs):
         """Update the local objects from parallel results.
@@ -113,7 +114,7 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
                  wait_time_between_fork=0):
         DiscParallelLinearization.__init__(self, worker_list, n_processes=n_processes, use_threading=use_threading,
                                            wait_time_between_fork=wait_time_between_fork)
-        self.logger = get_sos_logger('SoS.EE.ParallelLinearization')
+        self.logger = logging.getLogger(__name__)
         self.force_no_exec = False
         self.exec_before_linearize = True
 

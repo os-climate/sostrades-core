@@ -26,8 +26,6 @@ from numpy import ndarray
 
 from gemseo.core.mdo_scenario import MDOScenario
 
-LOGGER = logging.getLogger(__name__)
-
 
 class SoSMDOScenario(MDOScenario):
     """
@@ -54,10 +52,13 @@ class SoSMDOScenario(MDOScenario):
                  formulation, objective_name,
                  design_space,
                  grammar_type=None,
-                 reduced_dm=None):
+                 reduced_dm=None, logger=None):
         """
         Constructor
         """
+        if logger is None:
+            logger = logging.getLogger(__name__)
+        self.logger = logger
         self.formulation = formulation
         self.objective_name = objective_name
         self.name = name
@@ -129,7 +130,7 @@ class SoSMDOScenario(MDOScenario):
         '''
         trigger post run if execute at optimum is activated
         '''
-        LOGGER.info("Post run at xopt")
+        self.logger.info("Post run at xopt")
         self._post_run()
 
     def _run_algorithm(self):
@@ -146,11 +147,11 @@ class SoSMDOScenario(MDOScenario):
         if options is None:
             options = {}
         if "max_iter" in options:
-            LOGGER.warning("Double definition of algorithm option " +
+            self.logger.warning("Double definition of algorithm option " +
                                 "max_iter, keeping value: " + str(max_iter))
             options.pop("max_iter")
         lib = self._algo_factory.create(algo_name)
-        LOGGER.info(options)
+        self.logger.info(options)
 
         self.preprocess_functions()
 
@@ -222,22 +223,22 @@ class SoSMDOScenario(MDOScenario):
         try:
             # get xopt from x_opt
             x_opt_result = problem.solution.x_opt
-            LOGGER.info(f"Executing at xopt point {x_opt}")
-            LOGGER.info(f"x_opt from problem solution is {x_opt_result}")
+            self.logger.info(f"Executing at xopt point {x_opt}")
+            self.logger.info(f"x_opt from problem solution is {x_opt_result}")
         except:
-            LOGGER.info(f"Exception {problem.solution}")
+            self.logger.info(f"Exception {problem.solution}")
             pass
         # Revaluate all functions at optimum
         # To re execute all disciplines and get the right data
 
-        # LOGGER.info(
+        # self.logger.info(
         #    f"problem database {problem.database._Database__dict}")
         try:
 
             self.evaluate_functions(problem, x_opt)
 
         except:
-            LOGGER.warning(
+            self.logger.warning(
                 "Warning: executing the functions in the except after nominal execution of post run failed")
 
             for func in self.functions_before_run:
@@ -260,16 +261,16 @@ class SoSMDOScenario(MDOScenario):
         """
         functions = problem.nonproc_constraints + \
             [problem.nonproc_objective]
-        LOGGER.info(f'list of functions to evaluate {functions}')
+        self.logger.info(f'list of functions to evaluate {functions}')
 
         for func in functions:
             try:
                 func(x_vect)
             except ValueError:
-                LOGGER.error("Failed to evaluate function %s", func.name)
+                self.logger.error("Failed to evaluate function %s", func.name)
                 raise
             except TypeError:
-                LOGGER.error("Failed to evaluate function %s", func)
+                self.logger.error("Failed to evaluate function %s", func)
                 raise
         current_idx=0
         for k,v in problem.design_space.items():

@@ -21,7 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
-from typing import Union, List
+from typing import Union, List, Optional
 import os
 from os.path import dirname, join
 
@@ -35,7 +35,6 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
@@ -58,7 +57,7 @@ class ProxyDisciplineException(Exception):
 NS_SEP = '.'
 
 
-class ProxyDiscipline(object):
+class ProxyDiscipline:
     """
     **ProxyDiscipline** is a class proxy for a  discipline on the SoSTrades side.
 
@@ -258,7 +257,8 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, local_namespace_database = False):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, local_namespace_database=False,
+                 logger:Optional[logging.Logger] = None):
         '''
         Constructor
 
@@ -270,10 +270,12 @@ class ProxyDiscipline(object):
         '''
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
+        if logger is None:
+            logger = ee.logger.getChild("ProxyDiscipline")
+        self.logger = logger
         self.mdo_discipline_wrapp = None
         self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
         self._reload(sos_name, ee, associated_namespaces, local_namespace_database)
-        self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
 
         self.model = None
         self.__father_builder = None
@@ -315,6 +317,7 @@ class ProxyDiscipline(object):
         self.disc_id = None
         self.sos_name = sos_name
         self.ee = ee
+        self.logger = ee.logger.getChild("ProxyDiscipline")
         self.dm = self.ee.dm
         if associated_namespaces is None:
             self.associated_namespaces = []
@@ -367,7 +370,7 @@ class ProxyDiscipline(object):
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode, logger=self.logger.getChild("MDODisciplineWrapp"))
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -1139,7 +1142,7 @@ class ProxyDiscipline(object):
         if linearization_mode != stucturing_variable_linearization_mode and \
                 not (linearization_mode == "auto" and self._structuring_variables[self.LINEARIZATION_MODE] is None):
             self._reset_linearization_mode = True
-        self.logger.info(f"Discipline {self.sos_name} set to linearization mode {linearization_mode}")
+        self.logger.debug(f"Discipline {self.sos_name} set to linearization mode {linearization_mode}")
 
     def update_reset_debug_mode(self):
         '''

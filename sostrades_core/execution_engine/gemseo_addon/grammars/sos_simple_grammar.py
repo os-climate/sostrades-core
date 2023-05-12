@@ -22,7 +22,7 @@ from typing import Any, Mapping
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammar import SimpleGrammar
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("gemseo.addons.grammars.sos_simple_grammar")
 
 
 class SoSSimpleGrammar(SimpleGrammar):

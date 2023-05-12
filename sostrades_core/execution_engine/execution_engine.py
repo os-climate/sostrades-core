@@ -16,9 +16,9 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union
+from typing import Union, Optional
 # Execution engine SoSTrades code
-from sostrades_core.api import get_sos_logger
+import logging
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
@@ -29,7 +29,6 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-from copy import copy
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -53,27 +52,25 @@ class ExecutionEngine:
                  root_dir=None,
                  study_filename=None,
                  yield_method=None,
-                 logger=None):
+                 logger:Optional[logging.Logger]=None):
 
         self.study_name = study_name
         self.study_filename = study_filename or study_name
         self.__yield_method = yield_method
 
         if logger is None:
-            self.logger = get_sos_logger('SoS.EE')
-        else:
-            self.logger = logger
+            logger = logging.getLogger(__name__)
+        self.logger = logger
 
         self.__post_processing_manager = PostProcessingManager(self)
 
-        self.ns_manager = NamespaceManager(
-            name=DEFAULT_NS_MANAGER_NAME, ee=self)
+        self.ns_manager = NamespaceManager(name=DEFAULT_NS_MANAGER_NAME, ee=self)
         self.dm = DataManager(name=self.study_name,
                               root_dir=root_dir,
                               rw_object=rw_object,
                               study_filename=self.study_filename,
                               ns_manager=self.ns_manager,
-                              logger=get_sos_logger(f'{self.logger.name}.DataManager'))
+                              logger=self.logger.getChild("DataManager"))
         self.scattermap_manager = ScatterMapsManager(
             name=DEFAULT_scattermap_manager_NAME, ee=self)
 
@@ -86,7 +83,7 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.data_check_integrity: bool = False
-        self.__connector_container = PersistentConnectorContainer()
+        self.__connector_container = PersistentConnectorContainer(logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
     def factory(self) -> SosFactory:

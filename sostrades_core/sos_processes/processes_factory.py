@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 #-- process configuration class
 from importlib import import_module
@@ -20,8 +21,6 @@ from pathlib import Path
 from os.path import dirname, relpath, join
 from os import environ, sep, pathsep
 import yaml
-
-from sostrades_core.api import get_sos_logger
 
 BUILDERS_MODULE_NAME = 'process'
 PROCESSES_MODULE_NAME = 'sos_processes'
@@ -33,7 +32,7 @@ class SoSProcessFactory:
     '''Class to manager processes
     '''
 
-    def __init__(self, additional_repository_list=None, search_python_path=True, logger=None):
+    def __init__(self, additional_repository_list=None, search_python_path=True, logger:logging.Logger=None):
         """ SoSProcessFactory constructor
 
         :params: additional_repository_list, list with additonal repository to load
@@ -47,9 +46,8 @@ class SoSProcessFactory:
 
         # Setup the logging object
         if logger is None:
-            self.logger = get_sos_logger('SoS.EE.ProcessFactory')
-        else:
-            self.logger = logger
+            logger = logging.getLogger(__name__)
+        self.logger = logger
 
         # raw repository list is the one that contain module path to
         # 'PROCESSES_MODULE_NAME'

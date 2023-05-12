@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+from typing import Optional
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -23,7 +25,6 @@ import pandas as pd
 from numpy import NaN
 import numpy as np
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
@@ -34,7 +35,6 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
-from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -145,7 +145,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  associated_namespaces=None,
                  map_name=None,
                  flatten_subprocess=False,
-                 display_options=None):
+                 display_options=None,
+                 logger:Optional[logging.Logger]=None):
         """
         Constructor
 
@@ -156,9 +157,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+            logger: Logger to use
         """
+        if logger is None:
+            logger = ee.logger.getChild("DriverEvaluator")
         super().__init__(sos_name, ee, driver_wrapper_cls,
-                         associated_namespaces=associated_namespaces)
+                         associated_namespaces=associated_namespaces, logger=logger)
         if cls_builder is not None:
             self.cls_builder = cls_builder
             self.sub_builder_namespaces = get_ns_list_in_builder_list(
@@ -183,7 +187,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.selected_inputs = []
         self.eval_out_type = []
         self.eval_out_list_size = []
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
         self.scatter_list_valid = True

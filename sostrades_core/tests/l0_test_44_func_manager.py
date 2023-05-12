@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -136,7 +138,7 @@ class TestFuncManager(unittest.TestCase):
 
     def test_05_instantiate_func_manager_disc(self):
         try:
-            FunctionManagerDisc(self.name)
+            FunctionManagerDisc(self.name, logging.getLogger(__name__))
             fail = False
         except:
             fail = True

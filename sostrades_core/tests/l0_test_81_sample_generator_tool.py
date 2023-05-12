@@ -214,7 +214,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         selected_inputs = self.selected_inputs
 
-        doe_wrapper = SampleGeneratorWrapper(self.study_name)
+        doe_wrapper = SampleGeneratorWrapper(self.study_name, logging.getLogger(__name__))
         design_space = doe_wrapper.create_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -279,7 +279,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             selected_inputs = self.selected_inputs
 
-            doe_wrapper = SampleGeneratorWrapper(self.study_name)
+            doe_wrapper = SampleGeneratorWrapper(self.study_name, logging.getLogger(__name__))
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -353,7 +353,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             selected_inputs = self.selected_inputs
 
-            doe_wrapper = SampleGeneratorWrapper(self.study_name)
+            doe_wrapper = SampleGeneratorWrapper(self.study_name, logging.getLogger(__name__))
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
