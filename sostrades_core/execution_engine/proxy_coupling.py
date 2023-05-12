@@ -39,6 +39,7 @@ from numpy import ndarray, inf
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from typing import List
 
 if platform.system() != 'Windows':
     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
@@ -886,7 +887,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         post_processing_mda_data = self.get_sosdisc_outputs(self.RESIDUALS_HISTORY)
 
         # TODO: utility function consider moving to tool?
-        def to_series(varname: str, x: list, y: ndarray) -> list[InstanciatedSeries]:
+        def to_series(varname: str, x: list, y: ndarray) -> List[InstanciatedSeries]:
             dim = y.shape[1]
             series = []
             for d in range(dim):
