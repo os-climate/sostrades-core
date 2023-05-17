@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 #-- process configuration class
+from typing import Optional
+import logging
 from importlib import import_module
 from pathlib import Path
 from os.path import dirname, relpath, join
@@ -32,7 +33,7 @@ class SoSProcessFactory:
     '''Class to manager processes
     '''
 
-    def __init__(self, additional_repository_list=None, search_python_path=True, logger:logging.Logger=None):
+    def __init__(self, additional_repository_list=None, search_python_path=True, logger:Optional[logging.Logger]=None):
         """ SoSProcessFactory constructor
 
         :params: additional_repository_list, list with additonal repository to load

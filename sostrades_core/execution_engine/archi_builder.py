@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
+
 from copy import deepcopy, copy
 from importlib import import_module
 
@@ -79,8 +80,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Constructor
         """
-
-        ProxyDisciplineBuilder.__init__(self, sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ArchiBuilder"))
+        super().__init__(sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ArchiBuilder"))
 
         self.children_dict = {}
         self.archi_disciplines = {}

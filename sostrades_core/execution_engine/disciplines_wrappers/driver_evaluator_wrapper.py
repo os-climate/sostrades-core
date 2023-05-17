@@ -37,12 +37,12 @@ from sostrades_core.tools.proc_builder.process_builder_parameter_type import Pro
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 import pandas as pd
+from collections import ChainMap
 from gemseo.core.parallel_execution import ParallelExecution
-
-import logging
 
 
 class DriverEvaluatorWrapper(SoSWrapp):

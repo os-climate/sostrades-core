@@ -13,12 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
+import logging
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1

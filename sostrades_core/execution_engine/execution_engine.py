@@ -57,7 +57,6 @@ class ExecutionEngine:
         self.study_name = study_name
         self.study_filename = study_filename or study_name
         self.__yield_method = yield_method
-
         if logger is None:
             logger = logging.getLogger(__name__)
         self.logger = logger
@@ -118,7 +117,7 @@ class ExecutionEngine:
         # dead code in comment
         # usage regarding 'select_root_builder_ist'
         # usage only in testing not at runtime
-        self.logger.warn(
+        self.logger.warning(
             'DEPRECATION WARNING (07/2021).\n"select_root_process" methods is flagged to be checked regarding "select_root_builder_ist" method and usage in code (only in testing behaviour)')
         #         builder_list = self.factory.get_builder_from_process(repo=repo,
         #                                                              mod_id=mod_id)
@@ -169,6 +168,7 @@ class ExecutionEngine:
         '''
         loop on proxy disciplines and execute prepare execution
         '''
+        self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
         self.__factory.init_execution()
         # - execution
@@ -200,7 +200,7 @@ class ExecutionEngine:
                 dm_data_dict[variable_id][ProxyDiscipline.VALUE] = data
 
     def __configure_io(self):
-        self.logger.info('configuring ...')
+        self.logger.info('Configuring IO')
 
         self.factory.build()
         self.root_process.configure_io()
@@ -212,6 +212,7 @@ class ExecutionEngine:
         self.dm.treeview = None
 
     def update_from_dm(self):
+        self.logger.info("Updating from DM.")
         self.root_process.update_from_dm()
 
     def build_cache_map(self):
@@ -464,7 +465,7 @@ class ExecutionEngine:
         Optional parameter used only for evaluator process to avoid the configuration of all disciplines
         :type: SoSEval object
         '''
-        self.logger.debug('loads data from dictionary')
+        self.logger.debug('Loading study from dictionary')
 
         if anonymize_function is None:
             data_cache = dict_to_load
@@ -486,12 +487,12 @@ class ExecutionEngine:
         checked_keys = []
 
         while not loop_stop:
+            self.logger.info("Configuring loop iteration %i.", iteration)
             if self.__yield_method is not None:
                 self.__yield_method()
 
             self.dm.no_change = True
             for key, value in self.dm.data_dict.items():
-
                 if key in convert_data_cache:
                     # Only inject key which are set as input
                     # Discipline configuration only take care of input
@@ -512,8 +513,7 @@ class ExecutionEngine:
             if self.root_process.is_configured():
                 loop_stop = True
             elif iteration >= 100:
-                self.logger.warn(
-                    'CONFIGURE WARNING: root process is not configured after 100 iterations')
+                self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
                 loop_stop = True
 
         # Convergence is ended
@@ -594,8 +594,7 @@ class ExecutionEngine:
         mode_str = mode
         if mode_str is None:
             mode_str = "all"
-        msg = "Debug mode activated for discipline %s with mode <%s>" % (
-            disc.get_disc_full_name(), mode_str)
+        msg = "Debug mode activated for discipline %s with mode <%s>" % (disc.get_disc_full_name(), mode_str)
         self.logger.info(msg)
         # set check options
         if mode is None:
@@ -622,8 +621,7 @@ class ExecutionEngine:
         else:
             avail_debug = ["nan", "input_change",
                            "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
-            raise ValueError("Debug mode %s is not among %s" %
-                             (mode, str(avail_debug)))
+            raise ValueError("Debug mode %s is not among %s" % (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.proxy_disciplines:
             self.set_debug_mode(mode, disc)
@@ -652,8 +650,7 @@ class ExecutionEngine:
     def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
-        self.logger.info('PROCESS EXECUTION %s STARTS...',
-                         self.root_process.get_disc_full_name())
+        self.logger.info('PROCESS EXECUTION %s STARTS...', self.root_process.get_disc_full_name())
         #         self.root_process.clear_cache()
         self.fill_data_in_with_connector()
         self.update_from_dm()
@@ -669,6 +666,7 @@ class ExecutionEngine:
         # -- execution with input data from DM
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
+        self.logger.info("Executing.")
         try:
             ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
                 input_data=input_data)
@@ -677,9 +675,9 @@ class ExecutionEngine:
             raise
 
         self.status = self.root_process.status
-        self.logger.info('PROCESS EXECUTION %s ENDS.',
-                         self.root_process.get_disc_full_name())
+        self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
+        self.logger.info("Storing local data in datamanager.")
         # -- store local data in datamanager
         self.update_dm_with_local_data(
             ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)

@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -27,6 +25,7 @@ import glob
 from importlib import import_module
 from os.path import join, basename, dirname
 import os
+import logging
 from multiprocessing import Process
 from gemseo.core.discipline import MDODiscipline
 

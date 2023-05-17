@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from typing import Optional
+
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 '''
@@ -99,7 +101,7 @@ class SoSMDAChain(MDAChain):
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  authorize_self_coupled_disciplines=False,  # type: bool
-                 logger:logging.Logger=None,
+                 logger:Optional[logging.Logger]=None,
                  **sub_mda_options
                  ):
         ''' Constructor
@@ -115,8 +117,7 @@ class SoSMDAChain(MDAChain):
         self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
         self.reduced_dm = reduced_dm
 
-        MDAChain.__init__(self,
-                          disciplines,
+        super().__init__(disciplines,
                           sub_mda_class=sub_mda_class,
                           max_mda_iter=max_mda_iter,
                           name=name,

@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -26,6 +24,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from numpy import arange
 import pandas as pd
 import matplotlib.pyplot as plt
+import logging
 
 
 class TestFuncManager(unittest.TestCase):

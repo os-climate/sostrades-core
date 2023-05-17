@@ -18,7 +18,7 @@ import numpy as np
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union
+from typing import Union, Optional
 from copy import deepcopy
 import logging
 import pandas as pd
@@ -52,7 +52,8 @@ class SoSMDOScenario(MDOScenario):
                  formulation, objective_name,
                  design_space,
                  grammar_type=None,
-                 reduced_dm=None, logger=None):
+                 reduced_dm=None,
+                 logger:Optional[logging.Logger]=None):
         """
         Constructor
         """
@@ -62,7 +63,7 @@ class SoSMDOScenario(MDOScenario):
         self.formulation = formulation
         self.objective_name = objective_name
         self.name = name
-        MDOScenario.__init__(self, disciplines,
+        super().__init__(disciplines,
             self.formulation,
             self.objective_name,
             design_space,

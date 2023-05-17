@@ -30,12 +30,17 @@ from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
+from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
+    CartesianProductSampleGenerator
 import pandas as pd
-
-import logging
+import numpy as np
+from collections import ChainMap
+from gemseo.api import get_available_doe_algorithms
 
 
 class MultipliersWrapper(SoSWrapp):
@@ -63,7 +68,7 @@ class MultipliersWrapper(SoSWrapp):
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    def __init__(self, sos_name, logger:logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name, logger)
         self.eval_ns = None
         self.eval_disc = None

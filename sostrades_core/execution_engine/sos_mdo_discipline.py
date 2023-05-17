@@ -74,10 +74,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger=logger
-        MDODiscipline.__init__(self, name=full_name,
-                               grammar_type=grammar_type,
-                               cache_type=cache_type,
-                               cache_file_path=cache_file_path)
+        super().__init__(name=full_name, grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path)
         self.is_sos_coupling = False
 
     def _run(self):

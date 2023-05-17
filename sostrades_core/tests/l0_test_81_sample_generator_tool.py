@@ -214,7 +214,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         selected_inputs = self.selected_inputs
 
-        doe_wrapper = SampleGeneratorWrapper(self.study_name, logging.getLogger(__name__))
+        doe_wrapper = SampleGeneratorWrapper(self.study_name, logger=logging.getLogger(__name__))
         design_space = doe_wrapper.create_design_space(
             selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -279,7 +279,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             selected_inputs = self.selected_inputs
 
-            doe_wrapper = SampleGeneratorWrapper(self.study_name, logging.getLogger(__name__))
+            doe_wrapper = SampleGeneratorWrapper(self.study_name, logger=logging.getLogger(__name__))
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -353,7 +353,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             selected_inputs = self.selected_inputs
 
-            doe_wrapper = SampleGeneratorWrapper(self.study_name, logging.getLogger(__name__))
+            doe_wrapper = SampleGeneratorWrapper(self.study_name, logger=logging.getLogger(__name__))
             design_space = doe_wrapper.create_design_space(
                 selected_inputs, dspace_df)  # gemseo DesignSpace
 
@@ -487,7 +487,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         }
         variable_list = dict_of_list_values.keys()
 
-        sample_generator = CartesianProductSampleGenerator()
+        sample_generator = CartesianProductSampleGenerator(logger=logging.getLogger(__name__))
         samples_df = sample_generator.generate_samples(dict_of_list_values)
 
         # print(samples_df)

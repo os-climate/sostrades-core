@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from typing import Optional
+
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
 
@@ -59,12 +61,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     # Do we want it in SoSTrades. Does it works also or not ?
     UNSUPPORTED_GEMSEO_ALGORITHMS = ['CustomDOE', 'DiagonalDOE']
 
-    def __init__(self):
+    def __init__(self, logger:Optional[logging.Logger]=None):
         '''
         Constructor
         '''
+        if logger is None:
+            logger = logging.getLogger(__name__)
         #- inits super class
-        super().__init__(self.GENERATOR_NAME)
+        super().__init__(self.GENERATOR_NAME, logger=logger)
         #- create attributes
         self.doe_factory = None
         self.__available_algo_names = None

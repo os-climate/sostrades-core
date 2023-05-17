@@ -63,7 +63,7 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
                                                          sos_wrapp=self.wrapper,
                                                          reduced_dm=reduced_dm,
                                                          disciplines=sub_mdo_disciplines,
-                                                         logger=self.logger.getChild("SoSMDODisciplineDriver")
+                                                         logger=self.logger.getChild("SoSMDODisciplineDriver"),
                                                          )
             self._init_grammar_with_keys(proxy)
 # self._update_all_default_values(input_data) #TODO: numerical inputs etc?

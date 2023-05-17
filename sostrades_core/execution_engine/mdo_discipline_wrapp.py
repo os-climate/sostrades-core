@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Union
+from typing import Union, Optional
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from gemseo.mda.mda_chain import MDAChain
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
@@ -43,7 +43,7 @@ class MDODisciplineWrapp(object):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades', logger:logging.Logger=None):
+    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades', logger:Optional[logging.Logger]=None):
         '''
         Constructor.
 

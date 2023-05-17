@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from typing import Optional
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -21,6 +22,8 @@ import logging
 from copy import copy
 from uuid import uuid4
 from hashlib import sha256
+from copy import deepcopy
+from numpy import can_cast
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
@@ -63,7 +66,7 @@ class DataManager:
                  rw_object=None,
                  study_filename=None,
                  ns_manager=None,
-                 logger=None):
+                 logger: Optional[logging.Logger]=None):
         '''
         Constructor
         '''

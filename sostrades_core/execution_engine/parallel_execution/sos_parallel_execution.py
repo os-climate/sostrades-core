@@ -34,6 +34,7 @@ class SoSDiscParallelExecution(DiscParallelExecution):
                  wait_time_between_fork=0):
         DiscParallelExecution.__init__(self, worker_list, n_processes=n_processes, use_threading=use_threading,
                                        wait_time_between_fork=wait_time_between_fork)
+        # Called from gemseo import so logging chain is broken
         self.logger = logging.getLogger(__name__)
 
     def _update_local_objects(self, ordered_outputs):
@@ -114,6 +115,7 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
                  wait_time_between_fork=0):
         DiscParallelLinearization.__init__(self, worker_list, n_processes=n_processes, use_threading=use_threading,
                                            wait_time_between_fork=wait_time_between_fork)
+        # Called from gemseo import so logging chain is broken
         self.logger = logging.getLogger(__name__)
         self.force_no_exec = False
         self.exec_before_linearize = True

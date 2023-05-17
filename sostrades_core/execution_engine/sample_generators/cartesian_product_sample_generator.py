@@ -13,11 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from builtins import NotImplementedError
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
 
 import pandas as pd
+import numpy as np
 
 import itertools
 
@@ -47,11 +49,11 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    def __init__(self):
+    def __init__(self, logger: logging.Logger):
         '''
         Constructor
         '''
-        super().__init__(self.GENERATOR_NAME)
+        super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
         '''

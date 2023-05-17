@@ -115,8 +115,7 @@ class ConnectorFactory:
 
 
 class PersistentConnectorContainer:
-
-    def __init__(self, logger:logging.Logger):
+    def __init__(self, logger: logging.Logger):
         """
         Class constructor
         """

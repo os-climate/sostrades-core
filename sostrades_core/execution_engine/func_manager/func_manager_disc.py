@@ -103,7 +103,7 @@ class FunctionManagerDisc(SoSWrapp):
                }
     DESC_OUT = {OPTIM_OUTPUT_DF: {'type': 'dataframe'}}
 
-    def __init__(self, sos_name, logger:logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger):
         '''
         constructor
         '''

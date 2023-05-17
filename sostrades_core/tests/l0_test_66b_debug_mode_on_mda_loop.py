@@ -31,7 +31,7 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_coupling
 
-from logging import Handler, getLogger, DEBUG
+from logging import Handler, DEBUG
 
 class UnitTestHandler(Handler):
     """

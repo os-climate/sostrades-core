@@ -22,6 +22,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from copy import deepcopy
 from multiprocessing import cpu_count
 
+import pandas as pd
 from numpy import array, ndarray, delete, inf
 
 from gemseo.algos.design_space import DesignSpace

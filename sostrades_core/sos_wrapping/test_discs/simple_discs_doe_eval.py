@@ -76,7 +76,7 @@ class SimpleDisc1(SoSWrapp):
 
         # Get the algo default options
         if algo_name in get_available_doe_algorithms():
-            algo_options, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(algo_name)
+            algo_options, algo_options_descr_dict = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator")).get_options_and_default_values(algo_name)
         else:
             raise Exception(
                 f"A DoE algorithm which is not available in GEMSEO has been selected.")

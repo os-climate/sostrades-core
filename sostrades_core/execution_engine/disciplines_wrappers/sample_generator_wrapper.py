@@ -16,6 +16,7 @@ limitations under the License.
 import copy
 import re
 
+import logging
 import platform
 from tqdm import tqdm
 import time
@@ -39,8 +40,6 @@ import pandas as pd
 import numpy as np
 from collections import ChainMap
 from gemseo.api import get_available_doe_algorithms
-
-import logging
 
 
 class SampleGeneratorWrapper(SoSWrapp):
@@ -158,7 +157,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                              }
                 }
 
-    def __init__(self, sos_name, logger:logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name, logger)
         self.sampling_method = None
         self.sample_generator_doe = None
@@ -281,10 +280,10 @@ class SampleGeneratorWrapper(SoSWrapp):
         # TODO: refactor OO?
         if self.sampling_method == self.DOE_ALGO:
             if self.sample_generator_doe is None:
-                self.sample_generator_doe = DoeSampleGenerator()
+                self.sample_generator_doe = DoeSampleGenerator(self.logger.getChild("DoeSampleGenerator"))
         elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
             if self.sample_generator_cp is None:
-                self.sample_generator_cp = CartesianProductSampleGenerator()
+                self.sample_generator_cp = CartesianProductSampleGenerator(logger=self.logger.getChild("CartesianProductSampleGenerator"))
 
     def get_algo_default_options(self, algo_name):
         """

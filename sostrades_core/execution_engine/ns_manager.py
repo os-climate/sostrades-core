@@ -63,7 +63,7 @@ class NamespaceManager:
         self.__disc_ns_dict = {}
 
         self.display_ns_dict = {}
-        self.logger = self.ee.logger.getChild("NamespaceManager")
+        self.logger = ee.logger.getChild("NamespaceManager")
 
         # List of dict with extra_ns and ater_name infos for local namespace
         # update

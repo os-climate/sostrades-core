@@ -244,8 +244,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
-        self.logger = self.ee.logger.getChild("ProxyCoupling")
+        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ProxyCoupling"))
 
     # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
     # reduce footprint in GEMSEO

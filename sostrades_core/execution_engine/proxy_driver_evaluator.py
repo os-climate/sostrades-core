@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from typing import Optional
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+import logging
+from typing import Optional
 import copy
 import pandas as pd
 from numpy import NaN
@@ -35,6 +35,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
+from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -243,14 +244,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # TODO: move to coupling ?
             return super().get_desc_in_out(io_type)
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger:logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
         a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(
-            name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, wrapper, wrapping_mode, logger.getChild("MDODisciplineDriverWrapp"))
 
     def configure(self):
         """
@@ -363,7 +363,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
                                 scenario_df[self.SELECTED_SCENARIO] = True
                             else:
-                                self.logger.warn(
+                                self.logger.warning(
                                     f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
                                 scenario_df[self.SELECTED_SCENARIO] = False
                             scenario_name = scenario_df[self.SCENARIO_NAME]
