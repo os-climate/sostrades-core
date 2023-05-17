@@ -16,6 +16,10 @@ limitations under the License.
 
 from copy import deepcopy
 
+from sostrades_core.sos_wrapping.analysis_discs.MultidimDistribWrapp import MultiDimensionalPERTDistribution, \
+    MultiDimensionalLogNormalDistribution, MultiDimensionalTriangularDistribution, MultiDimensionalDistribution, \
+    MultiDimensionalNormalDistribution
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -425,11 +429,24 @@ class UncertaintyQuantification(SoSWrapp):
 
         self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario', how='left')
 
-        self.input_distribution_parameters_df['values'] = [
-            sorted(list(self.all_samples_df[input_name].unique()))
-            for input_name in self.input_parameters_names
-        ]
-        self.all_samples_df = self.all_samples_df.sort_values(by=self.input_parameters_names)
+        self.set_set_input_distribution_parameters_df_values()
+
+        #self.all_samples_df = self.all_samples_df.sort_values(by=self.input_parameters_names)
+
+    def set_set_input_distribution_parameters_df_values(self):
+        """Set the values taken by each input in all_samples_df"""
+        list_of_unique_values = []
+        for input_name, exemple_value in zip(self.input_parameters_names, self.input_distribution_parameters_df['lower_parameter'].values):
+            sorted_unique_values = None
+            if isinstance(exemple_value, (int, float)):
+                sorted_unique_values = sorted(list(self.all_samples_df[input_name].unique()))
+            elif isinstance(exemple_value, np.ndarray):
+                sorted_unique_values = np.unique(np.stack(self.all_samples_df[input_name].values), axis=0)
+            else:
+                raise TypeError(f"The datatype {type(exemple_value)} is not handled for value {input_name}")
+            list_of_unique_values.append(sorted_unique_values)
+        self.input_distribution_parameters_df["values"] = list_of_unique_values
+
 
     def delete_reference_scenarios(self, samples_df):
         '''
@@ -476,7 +493,7 @@ class UncertaintyQuantification(SoSWrapp):
                     ]['distribution'].values[0]
                     == 'Normal'
             ):
-                distrib = self.Normal_distrib(
+                distrib = MultiDimensionalNormalDistribution(
                     self.input_distribution_parameters_df.loc[
                         self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
@@ -491,14 +508,13 @@ class UncertaintyQuantification(SoSWrapp):
                     ]['distribution'].values[0]
                     == 'PERT'
             ):
-                distrib = self.PERT_distrib(
-                    self.input_distribution_parameters_df.loc[
+                distrib = MultiDimensionalPERTDistribution(lower_bound=self.input_distribution_parameters_df.loc[
                         self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
-                    self.input_distribution_parameters_df.loc[
+                    upper_bound=self.input_distribution_parameters_df.loc[
                         self.input_distribution_parameters_df['parameter'] == input_name
                         ]['upper_parameter'].values[0],
-                    self.input_distribution_parameters_df.loc[
+                    most_probable_value=self.input_distribution_parameters_df.loc[
                         self.input_distribution_parameters_df['parameter'] == input_name
                         ]['most_probable_value'].values[0],
                 )
@@ -508,7 +524,7 @@ class UncertaintyQuantification(SoSWrapp):
                     ]['distribution'].values[0]
                     == 'LogNormal'
             ):
-                distrib = self.LogNormal_distrib(
+                distrib = MultiDimensionalLogNormalDistribution(
                     self.input_distribution_parameters_df.loc[
                         self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
@@ -523,7 +539,7 @@ class UncertaintyQuantification(SoSWrapp):
                     ]['distribution'].values[0]
                     == 'Triangular'
             ):
-                distrib = self.Triangular_distrib(
+                distrib = MultiDimensionalTriangularDistribution(
                     self.input_distribution_parameters_df.loc[
                         self.input_distribution_parameters_df['parameter'] == input_name
                         ]['lower_parameter'].values[0],
@@ -585,64 +601,6 @@ class UncertaintyQuantification(SoSWrapp):
             )
             output_interpolated_values = f(self.composed_distrib_sample)
             self.output_interpolated_values_df[f'{output_name}'] = output_interpolated_values
-
-    def Normal_distrib(self, lower_bnd, upper_bnd, confidence_interval=0.95):
-        # Normal distribution
-        # 90% confidence interval : ratio = 3.29
-        # 95% confidence interval : ratio = 3.92
-        # 99% confidence interval : ratio = 5.15
-        norm_val = float(format(1 - confidence_interval, '.2f')) / 2
-        ratio = norm.ppf(1 - norm_val) - norm.ppf(norm_val)
-
-        mu = (lower_bnd + upper_bnd) / 2
-        sigma = (upper_bnd - lower_bnd) / ratio
-        distrib = ot.Normal(mu, sigma)
-
-        # plot
-        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
-        # view = View(graph, plot_kw={'color': 'blue'})
-
-        return distrib
-
-    def PERT_distrib(self, lower_bnd, upper_bnd, most_probable_val):
-        # PERT distribution (from chaopsy library cause ot doesnt have it)
-        chaospy_dist = cp.PERT(lower_bnd, most_probable_val, upper_bnd)
-        distrib = ot.Distribution(ot.ChaospyDistribution(chaospy_dist))
-
-        # plot
-        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
-        # view = View(graph, plot_kw={'color': 'blue'})
-
-        return distrib
-
-    def Triangular_distrib(self, lower_bnd, upper_bnd, most_probable_val):
-        distrib = ot.Triangular(int(lower_bnd), int(most_probable_val), int(upper_bnd))
-
-        # plot
-        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
-        # view = View(graph, plot_kw={'color': 'blue'})
-
-        return distrib
-
-    def LogNormal_distrib(self, lower_bnd, upper_bnd, confidence_interval=0.95):
-        # Normal distribution
-        # 90% confidence interval : ratio = 3.29
-        # 95% confidence interval : ratio = 3.92
-        # 99% confidence interval : ratio = 5.15
-        norm_val = float(format(1 - confidence_interval, '.2f')) / 2
-        ratio = norm.ppf(1 - norm_val) - norm.ppf(norm_val)
-
-        mu = (lower_bnd + upper_bnd) / 2
-        sigma = (upper_bnd - lower_bnd) / ratio
-
-        distrib = ot.LogNormal()
-        distrib.setParameter(ot.LogNormalMuSigma()([mu, sigma, 0]))
-
-        # plot
-        # graph = distrib.drawMarginal1DPDF(0, lower_bnd, upper_bnd, 256)
-        # view = View(graph, plot_kw={'color': 'blue'})
-
-        return distrib
 
     def check_inputs_consistency(self):
         """check consistency between inputs from eval_inputs and samples_inputs_df"""
