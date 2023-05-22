@@ -179,8 +179,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_process_builder = None
         self.eval_in_list = None
         self.eval_out_list = None
-        self.selected_outputs = []
         self.selected_inputs = []
+        self.selected_outputs = []
+        self.eval_out_names = []
         self.eval_out_type = []
         self.eval_out_list_size = []
         self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
@@ -382,7 +383,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                   self.NAMESPACE: self.NS_EVAL},
                                   'eval_outputs': {self.TYPE: 'dataframe',
                                                    self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
-                                                                               'full_name': ('string', None, False)},
+                                                                               'full_name': ('string', None, False),
+                                                                               'output_name': ('multiple', None, False)},
                                                    self.DATAFRAME_EDITION_LOCKED: False,
                                                    self.STRUCTURING: True,
                                                    self.VISIBILITY: self.SHARED_VISIBILITY,
@@ -409,6 +411,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                     == True]['full_name']
                     selected_inputs = eval_inputs[eval_inputs['selected_input']
                                                   == True]['full_name']
+                    # FIXME: correct the testcases for data integrity
+                    if 'output_name' in eval_outputs.columns:
+                        eval_out_names = eval_outputs[eval_outputs['selected_output']
+                                                        == True]['output_name'].tolist()
+                    else:
+                        eval_out_names = [None for _ in selected_outputs]
                     if set(selected_inputs.tolist()) != set(self.selected_inputs):
                         selected_inputs_has_changed = True
                         self.selected_inputs = selected_inputs.tolist()
@@ -421,11 +429,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             self.selected_inputs, self.selected_outputs)
 
                         # setting dynamic outputs. One output of type dict per selected output
-                        for out_var in self.eval_out_list:
+                        self.eval_out_names = []
+                        for out_var, out_name in zip(self.selected_outputs, eval_out_names):
+                            _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
+                            self.eval_out_names.append(_out_name)
                             dynamic_outputs.update(
-                                {f'{out_var.split(f"{self.get_disc_full_name()}.", 1)[1]}_dict': {self.TYPE: 'dict',
-                                                                                                  self.VISIBILITY: 'Shared',
-                                                                                                  self.NAMESPACE: self.NS_DOE}})
+                                {_out_name: {self.TYPE: 'dict',
+                                             self.VISIBILITY: 'Shared',
+                                             self.NAMESPACE: self.NS_DOE}}) # FIXME: in theory should be moved to NS_EVAL
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
                         dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
@@ -510,6 +521,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # specific to mono-instance
                 eval_attributes = {'eval_in_list': self.eval_in_list,
                                    'eval_out_list': self.eval_out_list,
+                                   'eval_out_names': self.eval_out_names,
                                    'reference_scenario': self.get_x0(),
                                    'activated_elems_dspace_df': [[True, True]
                                                                  if self.ee.dm.get_data(var,
@@ -946,9 +958,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         dynamic_outputs = {}
         if self.VARS_TO_GATHER in disc_in:
-            vars_to_gather = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
+            _vars_to_gather = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
             # we fetch the inputs and outputs selected by the user
-            vars_to_gather = vars_to_gather[vars_to_gather['selected_output'] == True]
+            vars_to_gather = _vars_to_gather[_vars_to_gather['selected_output'] == True]
             selected_outputs = vars_to_gather['full_name'].values.tolist()
             outputs_names = vars_to_gather['output_name'].values.tolist()
             self._clear_gather_names()
@@ -1114,7 +1126,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # strip the scenario name
             # TODO: better impl. would be to do it inside fill/find, requires adapting mono-instance, i.e. handling the
             #  case of the ".subprocess" node and implementing 'output_name' column in eval_outputs df
-            possible_out_values_full = [_var.split('.', 1)[1] for _var in possible_out_values_full]
+            possible_out_values_full = [_var.split('.', 1)[-1] for _var in possible_out_values_full]
             possible_out_values.update(possible_out_values_full)
 
         if possible_out_values:
@@ -1713,7 +1725,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
                                              'full_name': possible_in_values})
         default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-                                              'full_name': possible_out_values})
+                                              'full_name': possible_out_values,
+                                              'output_name': [None for _ in possible_out_values]})
 
         eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
         eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
@@ -1751,8 +1764,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             default_dataframe = copy.deepcopy(default_out_dataframe)
             already_set_names = eval_output_new_dm['full_name'].tolist()
             already_set_values = eval_output_new_dm['selected_output'].tolist()
+            if 'output_name' in eval_output_new_dm.columns: # TODO: maybe better to repair tests for data integrity
+                already_set_out_names = eval_output_new_dm['output_name'].tolist()
+            else:
+                already_set_out_names = [None for _ in already_set_names]
             for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_output'] = already_set_values[
-                    index]
+                default_dataframe.loc[default_dataframe['full_name'] == name,
+                ['selected_output', 'output_name']] = \
+                    (already_set_values[index], already_set_out_names[index])
             self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
                              'value', default_dataframe, check_value=False)
