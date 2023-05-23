@@ -107,7 +107,7 @@ class FunctionManagerDisc(SoSWrapp):
         '''
         constructor
         '''
-        super().__init__(sos_name, logger)
+        super().__init__(sos_name=sos_name, logger=logger)
         self.function_dict = None
         self.func_manager = FunctionManager()
 

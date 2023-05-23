@@ -39,8 +39,11 @@ class SoSBuilder:
         self.disc = None
         self.__ee = ee
         self.logger = ee.logger.getChild("SoSBuilder")
-        self.__args = {'sos_name': self.__disc_name,
-                       'ee': self.__ee, 'cls_builder': cls}
+        self.__args = {
+            'sos_name': self.__disc_name,
+            'ee': self.__ee,
+            'cls_builder': cls,
+        }
         self.cls = cls
         # A builder can build several disciplines (ex: scatter)
         self.discipline_dict = {}

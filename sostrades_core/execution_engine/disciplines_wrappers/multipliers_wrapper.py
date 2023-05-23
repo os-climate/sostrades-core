@@ -69,7 +69,7 @@ class MultipliersWrapper(SoSWrapp):
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
     def __init__(self, sos_name, logger: logging.Logger):
-        super().__init__(sos_name, logger)
+        super().__init__(sos_name=sos_name, logger=logger)
         self.eval_ns = None
         self.eval_disc = None
         self.vars_with_multiplier = {}  # variables in the subprocess that accept a multiplier

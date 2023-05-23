@@ -147,7 +147,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  map_name=None,
                  flatten_subprocess=False,
                  display_options=None,
-                 logger:Optional[logging.Logger]=None):
+                 logger:Optional[logging.Logger]=None,
+                 ):
         """
         Constructor
 
@@ -158,12 +159,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
-            logger: Logger to use
+            logger (logging.Logger): Logger to use
         """
         if logger is None:
-            logger = ee.logger.getChild("DriverEvaluator")
-        super().__init__(sos_name, ee, driver_wrapper_cls,
-                         associated_namespaces=associated_namespaces, logger=logger)
+            logger = ee.logger.getChild("ProxyDriverEvaluator")
+        super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces, logger=logger)
         if cls_builder is not None:
             self.cls_builder = cls_builder
             self.sub_builder_namespaces = get_ns_list_in_builder_list(

@@ -117,8 +117,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
         Arguments:
             sos_name (string): name of the discipline
+            logger (logging.Logger): logger to use
         """
-        super().__init__(sos_name, logger)
+        super().__init__(sos_name=sos_name, logger=logger)
         self.custom_samples = None  # input samples dataframe
         # samples to evaluate as list[list[Any]] or ndarray
         self.samples = None

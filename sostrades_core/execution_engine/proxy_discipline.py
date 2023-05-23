@@ -275,7 +275,7 @@ class ProxyDiscipline:
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
         self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=logger)
-        self._reload(sos_name, ee, associated_namespaces, local_namespace_database, logger=logger)
+        self._reload(sos_name, ee, logger=logger, associated_namespaces=associated_namespaces, local_namespace_database=local_namespace_database)
 
         self.model = None
         self.__father_builder = None
@@ -297,7 +297,7 @@ class ProxyDiscipline:
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces = None, local_namespace_database = None, logger:Optional[logging.Logger] = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
+    def _reload(self, sos_name, ee, logger:logging.Logger, associated_namespaces = None, local_namespace_database = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -306,9 +306,8 @@ class ProxyDiscipline:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+            logger (logging.Logger): logger to use
         """
-        if logger is None:
-            logger = ee.logger.getChild("ProxyDiscipline")
         self.logger = logger
         self.proxy_disciplines: List[ProxyDiscipline] = []
         self._status = None

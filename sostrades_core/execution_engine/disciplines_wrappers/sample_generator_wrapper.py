@@ -158,7 +158,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 }
 
     def __init__(self, sos_name, logger: logging.Logger):
-        super().__init__(sos_name, logger)
+        super().__init__(sos_name=sos_name, logger=logger)
         self.sampling_method = None
         self.sample_generator_doe = None
         self.sample_generator_cp = None
@@ -280,7 +280,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         # TODO: refactor OO?
         if self.sampling_method == self.DOE_ALGO:
             if self.sample_generator_doe is None:
-                self.sample_generator_doe = DoeSampleGenerator(self.logger.getChild("DoeSampleGenerator"))
+                self.sample_generator_doe = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator"))
         elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
             if self.sample_generator_cp is None:
                 self.sample_generator_cp = CartesianProductSampleGenerator(logger=self.logger.getChild("CartesianProductSampleGenerator"))

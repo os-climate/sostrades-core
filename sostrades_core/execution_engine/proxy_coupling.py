@@ -35,7 +35,8 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
-from numpy import ndarray, inf
+from gemseo.core.scenario import Scenario
+from numpy import array, ndarray, delete, inf
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -244,7 +245,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ProxyCoupling"))
+        ProxyDiscipline._reload(self, sos_name, ee, logger=ee.logger.getChild("ProxyCoupling"), associated_namespaces=associated_namespaces)
 
     # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
     # reduce footprint in GEMSEO

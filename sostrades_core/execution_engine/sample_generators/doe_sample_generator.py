@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from typing import Optional
+import logging
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
@@ -25,9 +26,6 @@ from gemseo.api import compute_doe
 
 import pandas as pd
 from gemseo.utils.source_parsing import get_options_doc
-
-import logging
-LOGGER = logging.getLogger(__name__)
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -178,7 +176,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         '''
 
         if self.N_SAMPLES not in algo_options:
-            LOGGER.warning("N_samples is not defined; pay attention you use fullfact algo "
+            self.logger.warning("N_samples is not defined; pay attention you use fullfact algo "
                            "and that levels are well defined")
 
         pass
@@ -267,7 +265,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             if algo_options[algo_option] != 'default':  # to be depreciated
                 gemseo_options[algo_option] = algo_options[algo_option]
 
-        LOGGER.info(gemseo_options)
+        self.logger.info(gemseo_options)
         # TODO : logging from module ?
 
         # The following 3 lines come from compute_doe in doe_lib.py of gemseo

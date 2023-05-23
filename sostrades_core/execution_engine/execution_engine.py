@@ -58,7 +58,9 @@ class ExecutionEngine:
         self.study_filename = study_filename or study_name
         self.__yield_method = yield_method
         if logger is None:
-            logger = logging.getLogger(__name__)
+            # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
+            # as a default logger if not initialized
+            logger = logging.getLogger(__name__.rsplit('.', 1)[0])
         self.logger = logger
 
         self.__post_processing_manager = PostProcessingManager(self)
@@ -200,7 +202,7 @@ class ExecutionEngine:
                 dm_data_dict[variable_id][ProxyDiscipline.VALUE] = data
 
     def __configure_io(self):
-        self.logger.info('Configuring IO')
+        self.logger.info('Configuring IO...')
 
         self.factory.build()
         self.root_process.configure_io()

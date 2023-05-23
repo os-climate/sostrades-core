@@ -17,7 +17,6 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 from copy import copy, deepcopy
-import logging
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.namespace import Namespace

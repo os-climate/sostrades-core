@@ -18,7 +18,7 @@ import numpy as np
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union, Optional
+from typing import Union
 from copy import deepcopy
 import logging
 import pandas as pd
@@ -53,12 +53,10 @@ class SoSMDOScenario(MDOScenario):
                  design_space,
                  grammar_type=None,
                  reduced_dm=None,
-                 logger:Optional[logging.Logger]=None):
+                 logger:logging.Logger=None):
         """
         Constructor
         """
-        if logger is None:
-            logger = logging.getLogger(__name__)
         self.logger = logger
         self.formulation = formulation
         self.objective_name = objective_name
