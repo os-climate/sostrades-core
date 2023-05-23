@@ -122,20 +122,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     # scenarios by default or not. Set to None to always build.
 
     SUBCOUPLING_NAME = 'subprocess'
+    EVAL_INPUTS = 'eval_inputs'
+    EVAL_OUTPUTS = 'eval_outputs'
     EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
 
     USECASE_DATA = 'usecase_data'
 
-    # TODO: if we want this input to be called eval outputs additional homogenisation work is needed (with 'output_name'
-    #  column) and cleaning needs to be verified
-    VARS_TO_GATHER = 'vars_to_gather'
-
-    # namespace for the {var}_dict outputs of the evaluator since {var} are anonymized
-    # TODO: homogenize the way mono-instance and multi-instance store variables
-    NS_DOE = 'ns_doe'
-    # full names, set to root node to have [var]_dict appear in same node as [var]
     # shared namespace of the mono-instance evaluator for eventual couplings
     NS_EVAL = 'ns_eval'
 
@@ -211,12 +205,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def _add_optional_shared_ns(self):
         """
-        Add the shared namespaces NS_DOE and NS_EVAL should they not exist.
+        Add the shared namespace NS_EVAL should it not exist.
         """
-        # if NS_DOE does not exist in ns_manager, we create this new namespace
-        # to store output dictionaries associated to eval_outputs in mono-instance case
-        if self.NS_DOE not in self.ee.ns_manager.shared_ns_dict.keys():
-            self.ee.ns_manager.add_ns(self.NS_DOE, self.ee.study_name)
         # do the same for the shared namespace for coupling with the DriverEvaluator
         # also used to store gathered variables in multi-instance
         if self.NS_EVAL not in self.ee.ns_manager.shared_ns_dict.keys():
@@ -307,7 +297,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         disc_in = self.get_data_in()
         if self.BUILDER_MODE in disc_in:
             if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE \
-                    and 'eval_inputs' in disc_in and len(self.proxy_disciplines) > 0:
+                    and self.EVAL_INPUTS in disc_in and len(self.proxy_disciplines) > 0:
                 # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
                 # Manage usecase import
                 ref_discipline_full_name = f'{self.ee.study_name}.Eval'
@@ -318,7 +308,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
                 self.configure_tool()
                 self.configure_subprocesses_with_driver_input()
-                self.set_vars_to_gather()
+                self.set_eval_possible_values(io_type_in=False, strip_first_ns=True)
 
     def setup_sos_disciplines(self):
         """
@@ -377,14 +367,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                              'value', scenario_df, check_value=False)
 
             elif builder_mode == self.MONO_INSTANCE:
-                dynamic_inputs = {'eval_inputs': {self.TYPE: 'dataframe',
+                dynamic_inputs = {self.EVAL_INPUTS: {self.TYPE: 'dataframe',
                                                   self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
                                                                               'full_name': ('string', None, False)},
                                                   self.DATAFRAME_EDITION_LOCKED: False,
                                                   self.STRUCTURING: True,
                                                   self.VISIBILITY: self.SHARED_VISIBILITY,
                                                   self.NAMESPACE: self.NS_EVAL},
-                                  'eval_outputs': {self.TYPE: 'dataframe',
+                                  self.EVAL_OUTPUTS: {self.TYPE: 'dataframe',
                                                    self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
                                                                                'full_name': ('string', None, False),
                                                                                'output_name': ('multiple', None, False)},
@@ -403,11 +393,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 }
 
                 selected_inputs_has_changed = False
-                if 'eval_inputs' in disc_in:
+                if self.EVAL_INPUTS in disc_in:
                     # if len(disc_in) != 0:
 
-                    eval_outputs = self.get_sosdisc_inputs('eval_outputs')
-                    eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                    eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                    eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
                     # we fetch the inputs and outputs selected by the user
                     selected_outputs = eval_outputs[eval_outputs['selected_output']
@@ -910,7 +900,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.EDITABLE: True,
                 self.STRUCTURING: True
             },  # TODO: manage variable columns for (non-very-simple) multiscenario cases
-            self.VARS_TO_GATHER: {
+            self.EVAL_OUTPUTS: {
                 self.TYPE: 'dataframe',
                 self.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
                 self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
@@ -960,8 +950,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.add_inputs(dynamic_inputs)
 
         dynamic_outputs = {}
-        if self.VARS_TO_GATHER in disc_in:
-            _vars_to_gather = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
+        if self.EVAL_OUTPUTS in disc_in:
+            _vars_to_gather = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             # we fetch the inputs and outputs selected by the user
             vars_to_gather = _vars_to_gather[_vars_to_gather['selected_output'] == True]
             selected_outputs = vars_to_gather['full_name'].values.tolist()
@@ -1104,68 +1094,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 var_full_name = self.ee.ns_manager.compose_ns(
                     [driver_evaluator_ns, sc, var_name])
                 gather_names_for_var[var_full_name] = (output_out_name, sc)
-
         self.gather_names.update(gather_names_for_var)
-
-    def set_vars_to_gather(self):
-        """
-        This method scrolls through all the multi-instance evaluator built subprocesses to propose the anonymized
-        variables names that is possible to select when gathering subprocess output variables. The default vs. user
-        input cases are handled and the value of 'vars_to_gather' is directly updated in the dm.
-        """
-        # TODO: with some refacto of mono-instance the method could be merged with set_eval_possible_values
-        possible_out_values = set()
-        # scroll through all the scenarios but keep only the unique variables
-        # Needed because sometimes the scenario variable (diffrent btw scenarios) ccan be a structuring variable
-        # example : multiscenario on a scatter list
-        for scenario_disc in self.scenarios:
-            analyzed_disc = scenario_disc
-            possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-                analyzed_disc, io_type_in=False)
-            possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
-                                                                                          possible_in_values_full,
-                                                                                          possible_out_values_full,
-                                                                                          io_type_in=False)
-            # strip the scenario name
-            # TODO: better impl. would be to do it inside fill/find, requires adapting mono-instance, i.e. handling the
-            #  case of the ".subprocess" node and implementing 'output_name' column in eval_outputs df
-            possible_out_values_full = [_var.split('.', 1)[-1] for _var in possible_out_values_full]
-            possible_out_values.update(possible_out_values_full)
-
-        if possible_out_values:
-            # TODO: added this if because otherwise problematic push to dm of empty default_out_dataframe namely during
-            #  reconfiguration on GUI. Additional tests to assure this suffices for all cases (e.g. when changing
-            #  selected vars_to_gather and scenario_df simultaneously) would be welcome for the final implementation.
-            possible_out_values = list(possible_out_values)
-            # sort for aesthetics
-            possible_out_values.sort()
-            default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-                                                  'full_name': possible_out_values,
-                                                  'output_name': [None for _ in possible_out_values]})
-
-            eval_output_new_dm = self.get_sosdisc_inputs(self.VARS_TO_GATHER)
-            # my_ns_eval_path = self._get_disc_shared_ns_value()
-            my_ns_eval_path = self.get_disc_full_name()  # NB: assuming here that vars_to_gather is in local namespace
-            # Val : Normally if you set the default value it is enough ?
-            # if the value is None value=default if value is not None the default does not replace the value TO CHECK
-            if eval_output_new_dm is None:
-                self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
-                                 'value', default_out_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess  configure
-            elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_output_new_dm['full_name'].tolist(),
-                                   default_out_dataframe['full_name'].tolist(),
-                                   is_eval_input=False)
-                default_dataframe = copy.deepcopy(default_out_dataframe)
-                already_set_names = eval_output_new_dm['full_name'].tolist()
-                already_set_values = eval_output_new_dm['selected_output'].tolist()
-                already_set_out_names = eval_output_new_dm['output_name'].tolist()
-                for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name,
-                    ['selected_output', 'output_name']] = \
-                        (already_set_values[index], already_set_out_names[index])
-                self.dm.set_data(f'{my_ns_eval_path}.{self.VARS_TO_GATHER}',
-                                 'value', default_dataframe, check_value=False)
 
     def configure_subprocesses_with_driver_input(self):
         """
@@ -1705,75 +1634,88 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     #             new_in_list.append(element)
     #     return new_in_list, out_list
 
-    def set_eval_possible_values(self):
+    def set_eval_possible_values(self, io_type_in=True, io_type_out=True, strip_first_ns=False):
         '''
             Once all disciplines have been run through,
             set the possible values for eval_inputs and eval_outputs in the DM
         '''
-        analyzed_disc = self.proxy_disciplines[0]
-        possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-            analyzed_disc)
-        possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
-                                                                                      possible_in_values_full,
-                                                                                      possible_out_values_full)
+        possible_in_values, possible_out_values = set(), set()
+        for scenario_disc in self.scenarios:
+            analyzed_disc = scenario_disc
+            possible_in_values_full, possible_out_values_full = self.fill_possible_values(
+                analyzed_disc, io_type_in=io_type_in, io_type_out=io_type_out)
+            possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
+                                                                                          possible_in_values_full,
+                                                                                          possible_out_values_full,
+                                                                                          io_type_in=io_type_in,
+                                                                                          io_type_out=io_type_out)
+            if strip_first_ns:
+                possible_in_values_full = [_var.split('.', 1)[-1] for _var in possible_in_values_full]
+                possible_out_values_full = [_var.split('.', 1)[-1] for _var in possible_out_values_full]
+            possible_in_values.update(possible_in_values_full)
+            possible_out_values.update(possible_out_values_full)
 
-        # Convert sets into lists
-        possible_in_values = list(possible_in_values_full)
-        possible_out_values = list(possible_out_values_full)
+        disc_in = self.get_data_in()
+        if possible_in_values and io_type_in:
 
-        # these sorts are just for aesthetics
-        possible_in_values.sort()
-        possible_out_values.sort()
+            # Convert sets into lists
+            possible_in_values = list(possible_in_values)
+            # these sorts are just for aesthetics
+            possible_in_values.sort()
+            default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
+                                                 'full_name': possible_in_values})
 
-        default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-                                             'full_name': possible_in_values})
-        default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-                                              'full_name': possible_out_values,
-                                              'output_name': [None for _ in possible_out_values]})
+            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
-        eval_input_new_dm = self.get_sosdisc_inputs('eval_inputs')
-        eval_output_new_dm = self.get_sosdisc_inputs('eval_outputs')
-        my_ns_eval_path = self._get_disc_shared_ns_value()
 
-        if eval_input_new_dm is None:
-            self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-                             'value', default_in_dataframe, check_value=False)
-        # check if the eval_inputs need to be updated after a subprocess
-        # configure
-        elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-            self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                               is_eval_input=True)
-            default_dataframe = copy.deepcopy(default_in_dataframe)
-            already_set_names = eval_input_new_dm['full_name'].tolist()
-            already_set_values = eval_input_new_dm['selected_input'].tolist()
-            for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                    index]  # this will filter variables that are not inputs of the subprocess
-                if self.MULTIPLIER_PARTICULE in name:
-                    default_dataframe = default_dataframe.append(
-                        pd.DataFrame({'selected_input': [already_set_values[index]],
-                                      'full_name': [name]}), ignore_index=True)
-            self.dm.set_data(f'{my_ns_eval_path}.eval_inputs',
-                             'value', default_dataframe, check_value=False)
+            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
 
-        if eval_output_new_dm is None:
-            self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-                             'value', default_out_dataframe, check_value=False)
-        # check if the eval_inputs need to be updated after a subprocess
-        # configure
-        elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-            self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
-                               is_eval_input=False)
-            default_dataframe = copy.deepcopy(default_out_dataframe)
-            already_set_names = eval_output_new_dm['full_name'].tolist()
-            already_set_values = eval_output_new_dm['selected_output'].tolist()
-            if 'output_name' in eval_output_new_dm.columns: # TODO: maybe better to repair tests for data integrity
-                already_set_out_names = eval_output_new_dm['output_name'].tolist()
-            else:
-                already_set_out_names = [None for _ in already_set_names]
-            for index, name in enumerate(already_set_names):
-                default_dataframe.loc[default_dataframe['full_name'] == name,
-                ['selected_output', 'output_name']] = \
-                    (already_set_values[index], already_set_out_names[index])
-            self.dm.set_data(f'{my_ns_eval_path}.eval_outputs',
-                             'value', default_dataframe, check_value=False)
+            if eval_input_new_dm is None:
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_in_dataframe, check_value=False)
+            # check if the eval_inputs need to be updated after a subprocess
+            # configure
+            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+                self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                                   is_eval_input=True)
+                default_dataframe = copy.deepcopy(default_in_dataframe)
+                already_set_names = eval_input_new_dm['full_name'].tolist()
+                already_set_values = eval_input_new_dm['selected_input'].tolist()
+                for index, name in enumerate(already_set_names):
+                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
+                        index]  # this will filter variables that are not inputs of the subprocess
+                    if self.MULTIPLIER_PARTICULE in name:
+                        default_dataframe = default_dataframe.append(
+                            pd.DataFrame({'selected_input': [already_set_values[index]],
+                                          'full_name': [name]}), ignore_index=True)
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_dataframe, check_value=False)
+        if possible_out_values and io_type_out:
+            possible_out_values = list(possible_out_values)
+            possible_out_values.sort()
+            default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
+                                                  'full_name': possible_out_values,
+                                                  'output_name': [None for _ in possible_out_values]})
+            eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+            eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
+            if eval_output_new_dm is None:
+                self.dm.set_data(eval_outputs_f_name,
+                                 'value', default_out_dataframe, check_value=False)
+            # check if the eval_inputs need to be updated after a subprocess
+            # configure
+            elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
+                self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                                   is_eval_input=False)
+                default_dataframe = copy.deepcopy(default_out_dataframe)
+                already_set_names = eval_output_new_dm['full_name'].tolist()
+                already_set_values = eval_output_new_dm['selected_output'].tolist()
+                if 'output_name' in eval_output_new_dm.columns: # TODO: maybe better to repair tests for data integrity
+                    already_set_out_names = eval_output_new_dm['output_name'].tolist()
+                else:
+                    already_set_out_names = [None for _ in already_set_names]
+                for index, name in enumerate(already_set_names):
+                    default_dataframe.loc[default_dataframe['full_name'] == name,
+                    ['selected_output', 'output_name']] = \
+                        (already_set_values[index], already_set_out_names[index])
+                self.dm.set_data(eval_outputs_f_name,
+                                 'value', default_dataframe, check_value=False)
