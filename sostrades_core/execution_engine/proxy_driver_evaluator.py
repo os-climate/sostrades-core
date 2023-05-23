@@ -162,7 +162,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             logger (logging.Logger): Logger to use
         """
         if logger is None:
-            logger = ee.logger.getChild("ProxyDriverEvaluator")
+            logger = ee.logger.getChild(self.__class__.__name__)
         super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces, logger=logger)
         if cls_builder is not None:
             self.cls_builder = cls_builder

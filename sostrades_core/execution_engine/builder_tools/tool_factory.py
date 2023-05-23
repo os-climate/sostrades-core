@@ -51,7 +51,7 @@ class ToolFactory:
 
         self.__builder_tools = []
 
-        self.__logger = self.__execution_engine.logger.getChild('ToolFactory')
+        self.__logger = self.__execution_engine.logger.getChild(self.__class__.__name__)
 
         self.__reset()
 

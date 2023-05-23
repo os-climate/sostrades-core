@@ -52,7 +52,7 @@ class PostProcessingManager:
         self.__namespace_postprocessing_dict = {}
 
         # Initialize logger
-        self.__logger = execution_engine.logger.getChild("PostProcessingManager")
+        self.__logger = execution_engine.logger.getChild(self.__class__.__name__)
 
     @property
     def namespace_post_processing(self):

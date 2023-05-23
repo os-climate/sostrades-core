@@ -38,7 +38,7 @@ class SoSBuilder:
         self.__disc_name = disc_name
         self.disc = None
         self.__ee = ee
-        self.logger = ee.logger.getChild("SoSBuilder")
+        self.logger = ee.logger.getChild(self.__class__.__name__)
         self.__args = {
             'sos_name': self.__disc_name,
             'ee': self.__ee,

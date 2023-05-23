@@ -82,7 +82,7 @@ class SosFactory:
 
         self.coupling_disc = None
         self.is_sos_coupling = True
-        self.__logger = self.__execution_engine.logger.getChild("SosFactory")
+        self.__logger = self.__execution_engine.logger.getChild(self.__class__.__name__)
 
         self.__reset()
 

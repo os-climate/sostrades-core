@@ -270,7 +270,7 @@ class ProxyDiscipline:
         '''
         # Must assign logger before calling create_mdo_discipline_wrap
         if logger is None:
-            logger = ee.logger.getChild("ProxyDiscipline")
+            logger = ee.logger.getChild(self.__class__.__name__)
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
