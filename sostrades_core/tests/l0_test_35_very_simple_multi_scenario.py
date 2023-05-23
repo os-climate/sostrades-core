@@ -490,8 +490,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         # check the mono-instance dynamic outputs are created
         output_data_names = self.exec_eng.root_process.get_output_data_names()
         self.assertIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
-        self.assertIn('MyCase.y_dict', output_data_names)
-        self.assertIn('MyCase.subprocess.Disc1.indicator_dict', output_data_names)
+        self.assertIn('MyCase.multi_scenarios.y_dict', output_data_names)
+        self.assertIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',

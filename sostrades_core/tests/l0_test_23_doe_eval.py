@@ -259,9 +259,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.obj_dict', root_outputs)
-        self.assertIn('root.y_1_dict', root_outputs)
-        self.assertIn('root.y_2_dict', root_outputs)
+        self.assertIn('root.Eval.obj_dict', root_outputs)
+        self.assertIn('root.Eval.y_1_dict', root_outputs)
+        self.assertIn('root.Eval.y_2_dict', root_outputs)
 
         # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
@@ -1525,9 +1525,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.obj_d', root_outputs)
-        self.assertIn('root.y_1_d', root_outputs)
-        self.assertIn('root.y_2_dict', root_outputs)
+        self.assertIn('root.Eval.obj_d', root_outputs)
+        self.assertIn('root.Eval.y_1_d', root_outputs)
+        self.assertIn('root.Eval.y_2_dict', root_outputs)
 
         # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]

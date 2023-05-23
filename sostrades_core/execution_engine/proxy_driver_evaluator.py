@@ -436,7 +436,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             dynamic_outputs.update(
                                 {_out_name: {self.TYPE: 'dict',
                                              self.VISIBILITY: 'Shared',
-                                             self.NAMESPACE: self.NS_DOE}}) # FIXME: in theory should be moved to NS_EVAL
+                                             self.NAMESPACE: self.NS_EVAL}}) # FIXME: in theory should be moved to NS_EVAL
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
                         dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
