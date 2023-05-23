@@ -29,7 +29,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.newton import MDARoot
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 
 
 class PureNewtonRaphson(MDARoot):

@@ -30,8 +30,8 @@ from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
@@ -41,11 +41,6 @@ import pandas as pd
 import numpy as np
 from collections import ChainMap
 from gemseo.api import get_available_doe_algorithms
-
-# get module logger not sos logger
-import logging
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MultipliersWrapper(SoSWrapp):
@@ -73,8 +68,8 @@ class MultipliersWrapper(SoSWrapp):
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    def __init__(self, sos_name):
-        super().__init__(sos_name)
+    def __init__(self, sos_name, logger: logging.Logger):
+        super().__init__(sos_name=sos_name, logger=logger)
         self.eval_ns = None
         self.eval_disc = None
         self.vars_with_multiplier = {}  # variables in the subprocess that accept a multiplier

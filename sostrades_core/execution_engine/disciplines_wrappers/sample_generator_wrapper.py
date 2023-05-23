@@ -16,6 +16,7 @@ limitations under the License.
 import copy
 import re
 
+import logging
 import platform
 from tqdm import tqdm
 import time
@@ -31,7 +32,6 @@ from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
@@ -40,11 +40,6 @@ import pandas as pd
 import numpy as np
 from collections import ChainMap
 from gemseo.api import get_available_doe_algorithms
-
-# get module logger not sos logger
-import logging
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SampleGeneratorWrapper(SoSWrapp):
@@ -162,8 +157,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                              }
                 }
 
-    def __init__(self, sos_name):
-        super().__init__(sos_name)
+    def __init__(self, sos_name, logger: logging.Logger):
+        super().__init__(sos_name=sos_name, logger=logger)
         self.sampling_method = None
         self.sample_generator_doe = None
         self.sample_generator_cp = None
@@ -285,10 +280,10 @@ class SampleGeneratorWrapper(SoSWrapp):
         # TODO: refactor OO?
         if self.sampling_method == self.DOE_ALGO:
             if self.sample_generator_doe is None:
-                self.sample_generator_doe = DoeSampleGenerator()
+                self.sample_generator_doe = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator"))
         elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
             if self.sample_generator_cp is None:
-                self.sample_generator_cp = CartesianProductSampleGenerator()
+                self.sample_generator_cp = CartesianProductSampleGenerator(logger=self.logger.getChild("CartesianProductSampleGenerator"))
 
     def get_algo_default_options(self, algo_name):
         """
@@ -870,7 +865,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         # n_min = 2
         n_min = 1
         if len(selected_inputs_cp) < n_min:
-            LOGGER.warning(
+            self.logger.warning(
                 f'Selected_inputs must have at least {n_min} variables to do a cartesian product')
             is_valid = False
         return is_valid

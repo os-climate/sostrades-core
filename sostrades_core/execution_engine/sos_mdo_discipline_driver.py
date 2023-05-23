@@ -32,10 +32,8 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 class SoSMDODriverException(Exception):
     pass
 
-# get module logger not sos logger
-LOGGER = logging.getLogger(__name__)
 
 class SoSMDODisciplineDriver(SoSMDODiscipline):
-    def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, disciplines):
-        super().__init__(full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm)
+    def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, disciplines, logger:logging.Logger):
+        super().__init__(full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, logger=logger)
         self.disciplines = disciplines

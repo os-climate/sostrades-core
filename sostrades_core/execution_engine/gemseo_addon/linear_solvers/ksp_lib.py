@@ -37,7 +37,7 @@ from scipy.sparse.base import issparse
 petsc4py.init(sys.argv)
 from petsc4py import PETSc  # pylint: disable-msg=E0401
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
 
 KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
                         9: 'KSP_CONVERGED_ATOL_NORMAL',

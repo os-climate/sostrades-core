@@ -31,7 +31,7 @@ import cma
 standard_library.install_aliases()
 
 
-LOGGER = logging.getLogger("GEMS")
+LOGGER = logging.getLogger("gemseo.addons.opt.lib_cmaes")
 
 
 class CMAESOpt(OptimizationLibrary):

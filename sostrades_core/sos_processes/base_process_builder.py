@@ -26,6 +26,7 @@ class BaseProcessBuilder:
         link to execution engine
         '''
         self.ee = ee
+        self.logger = ee.logger.getChild("BaseProcessBuilder")
 
     def get_builders(self):
         return []
