@@ -1036,9 +1036,12 @@ class ProxyDiscipline:
             if v[self.VISIBILITY] == self.SHARED_VISIBILITY:
                 namespace =  self.get_shared_ns_dict().get(v[self.NAMESPACE])
                 # get only variables in a namespace related to a database and not coupled
-                if namespace.get_from_database and len(v[self.DISCIPLINES_DEPENDENCIES]) < 2:
+                if namespace.get_from_database:
+                    # TODO: getting from dm as workaround the fact that disciplines dependencies is NOT in data_in
                     full_name = self.get_var_full_name(k, data_in_dict)
-                    dict_variables[k] = full_name
+                    disc_deps = self.ee.dm.get_data(full_name, self.DISCIPLINES_DEPENDENCIES)
+                    if len(disc_deps) < 2:
+                        dict_variables[k] = full_name
             
             # get non numeric local variables if local namespace is related to a database 
             elif self.local_namespace_database and v[self.VISIBILITY] == self.LOCAL_VISIBILITY and not v[self.NUMERICAL]:
