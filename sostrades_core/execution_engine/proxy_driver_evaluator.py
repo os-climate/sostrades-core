@@ -18,12 +18,13 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+import logging
+from typing import Optional
 import copy
 import pandas as pd
 from numpy import NaN
 import numpy as np
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
@@ -145,7 +146,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  associated_namespaces=None,
                  map_name=None,
                  flatten_subprocess=False,
-                 display_options=None):
+                 display_options=None,
+                 logger:Optional[logging.Logger]=None,
+                 ):
         """
         Constructor
 
@@ -156,9 +159,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+            logger (logging.Logger): Logger to use
         """
-        super().__init__(sos_name, ee, driver_wrapper_cls,
-                         associated_namespaces=associated_namespaces)
+        if logger is None:
+            logger = ee.logger.getChild("ProxyDriverEvaluator")
+        super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces, logger=logger)
         if cls_builder is not None:
             self.cls_builder = cls_builder
             self.sub_builder_namespaces = get_ns_list_in_builder_list(
@@ -184,7 +189,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_names = []
         self.eval_out_type = []
         self.eval_out_list_size = []
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.DriverEvaluator')
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
         self.scatter_list_valid = True
@@ -241,14 +245,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # TODO: move to coupling ?
             return super().get_desc_in_out(io_type)
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode):
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger:logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
         a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(
-            name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, wrapper, wrapping_mode, logger.getChild("MDODisciplineDriverWrapp"))
 
     def configure(self):
         """
@@ -361,7 +364,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
                                 scenario_df[self.SELECTED_SCENARIO] = True
                             else:
-                                self.logger.warn(
+                                self.logger.warning(
                                     f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
                                 scenario_df[self.SELECTED_SCENARIO] = False
                             scenario_name = scenario_df[self.SCENARIO_NAME]

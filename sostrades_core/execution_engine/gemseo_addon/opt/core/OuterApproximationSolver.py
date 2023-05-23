@@ -37,7 +37,7 @@ import pandas as pd
 # * add UB/LB values to main database history
 # * add post-processing
 
-LOGGER = logging.getLogger("OuterApproximation")
+LOGGER = logging.getLogger("gemseo.addons.opt.OuterApproximationSolver")
 
 class OuterApproximationSolver(object):
     '''

@@ -30,7 +30,6 @@ from gemseo.core.scenario import Scenario
 from gemseo.core.function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from sostrades_core.api import get_sos_logger
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
@@ -257,12 +256,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Constructor
         """
-        super().__init__(sos_name, ee, cls_builder, associated_namespaces=associated_namespaces)
+        super().__init__(sos_name, ee, cls_builder, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ProxyOptim"))
         if cls_builder is None:
             cls_builder = []
         self.cls_builder = cls_builder
         self.mdo_discipline_wrapp = None
-        self.logger = get_sos_logger(f'{self.ee.logger.name}.Optim')
 
         self.with_data_io = with_data_io
         self.formulation = None
@@ -291,7 +289,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.is_optim_scenario = True
         self.functions_before_run = []
 
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, logger=self.logger.getChild("MDODisciplineWrapp"))
 
     def setup_sos_disciplines(self):
         """

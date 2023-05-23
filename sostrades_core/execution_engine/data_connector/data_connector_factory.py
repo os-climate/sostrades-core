@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
 
 from sostrades_core.execution_engine.data_connector.dremio_data_connector import (
     DremioDataConnector,
@@ -24,7 +25,6 @@ from sostrades_core.execution_engine.data_connector.mock_connector import MockCo
 from sostrades_core.execution_engine.data_connector.ontology_data_connector import (
     OntologyDataConnector,
 )
-from sostrades_core.api import get_sos_logger
 
 
 class ConnectorFactory:
@@ -115,13 +115,12 @@ class ConnectorFactory:
 
 
 class PersistentConnectorContainer:
-
-    def __init__(self):
+    def __init__(self, logger: logging.Logger):
         """
         Class constructor
         """
         self.__registered_connectors = {}
-        self.__logger = get_sos_logger(f'SoS.{self.__class__.__name__}')
+        self.__logger = logger
 
     def register_persistent_connector(
         self, connector_type, connector_identifier, connector_connexion_info
