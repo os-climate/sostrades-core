@@ -256,7 +256,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Constructor
         """
-        super().__init__(sos_name, ee, cls_builder, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ProxyOptim"))
+        super().__init__(sos_name, ee, cls_builder, associated_namespaces=associated_namespaces, logger=ee.logger.getChild(self.__class__.__name__))
         if cls_builder is None:
             cls_builder = []
         self.cls_builder = cls_builder

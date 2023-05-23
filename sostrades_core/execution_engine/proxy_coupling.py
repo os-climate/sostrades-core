@@ -220,7 +220,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
         self.mdo_discipline_wrapp = None
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
-        self.logger = self.ee.logger.getChild("ProxyCoupling")
+        self.logger = self.ee.logger.getChild(self.__class__.__name__)
 
         self.residuals_dict = {}
 
@@ -245,7 +245,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(self, sos_name, ee, logger=ee.logger.getChild("ProxyCoupling"), associated_namespaces=associated_namespaces)
+        ProxyDiscipline._reload(self, sos_name, ee, logger=ee.logger.getChild(self.__class__.__name__), associated_namespaces=associated_namespaces)
 
     # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
     # reduce footprint in GEMSEO

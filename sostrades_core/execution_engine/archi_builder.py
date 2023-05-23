@@ -80,7 +80,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Constructor
         """
-        super().__init__(sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild("ArchiBuilder"))
+        super().__init__(sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild(self.__class__.__name__))
 
         self.children_dict = {}
         self.archi_disciplines = {}
