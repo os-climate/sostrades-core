@@ -377,7 +377,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                   self.EVAL_OUTPUTS: {self.TYPE: 'dataframe',
                                                    self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
                                                                                'full_name': ('string', None, False),
-                                                                               'output_name': ('multiple', None, False)},
+                                                                               'output_name': ('multiple', None, True)},
                                                    self.DATAFRAME_EDITION_LOCKED: False,
                                                    self.STRUCTURING: True,
                                                    self.VISIBILITY: self.SHARED_VISIBILITY,
