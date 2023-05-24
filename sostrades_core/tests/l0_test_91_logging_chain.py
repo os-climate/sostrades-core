@@ -58,8 +58,7 @@ class TestLoggers(unittest.TestCase):
         """
         Tests if a log made in self.logger of a SoSWrap is correctly linked to execution engine
         """
-        ns_dict = {'ns_market_deliveries': self.name}
-        self.ee.ns_manager.add_ns_def(ns_dict)
+        self.ee.ns_manager.add_ns_def({})
         mod_path = 'sostrades_core.tests.l0_test_91_logging_chain.TestLoggingDiscipline'
         builder = self.ee.factory.get_builder_from_module(self.model_name, mod_path)
         self.ee.factory.set_builders_to_coupling_builder(builder)
