@@ -383,7 +383,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 dm_value = self.exec_eng.dm.get_value(var)
                 if var == f'{self.study_name}.multi_scenarios.scenario_list' or \
                         var == f'{self.study_name}.multi_scenarios.generated_samples' or \
-                        var == f'{self.study_name}.multi_scenarios.vars_to_gather':
+                        var == f'{self.study_name}.multi_scenarios.eval_outputs':
                     # this variable is an exception because it is forced by the value of another variable during setup
                     continue
 
@@ -490,8 +490,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         # check the mono-instance dynamic outputs are created
         output_data_names = self.exec_eng.root_process.get_output_data_names()
         self.assertIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
-        self.assertIn('MyCase.y_dict', output_data_names)
-        self.assertIn('MyCase.subprocess.Disc1.indicator_dict', output_data_names)
+        self.assertIn('MyCase.multi_scenarios.y_dict', output_data_names)
+        self.assertIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',

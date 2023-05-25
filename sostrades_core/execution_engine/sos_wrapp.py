@@ -21,8 +21,6 @@ from sostrades_core.tools.base_functions.compute_len import compute_len
 from numpy import zeros, array, ndarray, complex128
 from functools import wraps
 
-LOGGER = logging.getLogger(__name__)
-
 
 # decorator for delegating a method to the ProxyDiscipline object during configuration
 
@@ -82,7 +80,7 @@ class SoSWrapp(object):
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     DYNAMIC_VAR_NAMESPACE_LIST = []
 
-    def __init__(self, sos_name):
+    def __init__(self, sos_name, logger: logging.Logger):
         """
         Constructor.
 
@@ -104,6 +102,7 @@ class SoSWrapp(object):
         # dynamic attributes that easen access to proxy and dm during configuration and get cleaned at runtime
         self.__proxy = None  # stores the proxy during configuration, decorator below to expose methods and properties
         self.dm = AccessOnlyProxy()  # object to proxy the dm during configuration allowing use avoiding wrong referencing
+        self.logger = logger
 
     # decorator to expose methods and properties delegated to ProxyDiscipline object during configuration
     # TODO: change by a decorator outside the class + an AccessOnlyProxy object  ? Or by a __getattr__ overload ?

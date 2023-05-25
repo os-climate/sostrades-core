@@ -33,8 +33,6 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 class SoSMDODisciplineException(Exception):
     pass
 
-# get module logger not sos logger
-LOGGER = logging.getLogger(__name__)
 
 class SoSMDODiscipline(MDODiscipline):
     """**SoSMDODiscipline** is the class that overloads MDODiscipline when using SoSTrades wrapping mode. It handles the
@@ -58,7 +56,7 @@ class SoSMDODiscipline(MDODiscipline):
 
     def __init__(self,
                  full_name :str, grammar_type: str, cache_type: str,
-                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict):
+                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict, logger:logging.Logger):
         '''
         Constructor
 
@@ -75,10 +73,8 @@ class SoSMDODiscipline(MDODiscipline):
         self.reduced_dm = reduced_dm
         self.input_full_name_map = None
         self.output_full_name_map = None
-        MDODiscipline.__init__(self, name=full_name,
-                               grammar_type=grammar_type,
-                               cache_type=cache_type,
-                               cache_file_path=cache_file_path)
+        self.logger=logger
+        super().__init__(name=full_name, grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path)
         self.is_sos_coupling = False
 
     def _run(self):
@@ -365,7 +361,7 @@ class SoSMDODiscipline(MDODiscipline):
             if self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA] is not None:
                 updated_values[key] = ConnectorFactory.use_data_connector(
                     self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
-                    LOGGER)
+                    self.logger)
 
         self.store_local_data(**updated_values)
 
@@ -383,7 +379,7 @@ class SoSMDODiscipline(MDODiscipline):
             return self.input_grammar.get_data_names()
         else:
             return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=LOGGER)
+                                                    logger=self.logger)
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """
@@ -519,8 +515,8 @@ class SoSMDODiscipline(MDODiscipline):
                 full_key = data_key
                 if len(parent_key) > 0:
                     full_key = f'{parent_key}/{data_key}'
-                LOGGER.debug(f'NaN values found in {full_key}')
-                LOGGER.debug(data_value)
+                self.logger.debug(f'NaN values found in {full_key}')
+                self.logger.debug(data_value)
                 has_nan = True
         return has_nan
 
@@ -565,9 +561,9 @@ class SoSMDODiscipline(MDODiscipline):
                 max_coupling_dict[key] = max(abs(value))
         min_coupling = min(min_coupling_dict, key=min_coupling_dict.get)
         max_coupling = max(max_coupling_dict, key=max_coupling_dict.get)
-        LOGGER.info(
+        self.logger.info(
             "in discipline <%s> : <%s> has the minimum coupling value <%s>" % (
                 self.name, min_coupling, min_coupling_dict[min_coupling]))
-        LOGGER.info(
+        self.logger.info(
             "in discipline <%s> : <%s> has the maximum coupling value <%s>" % (
                 self.name, max_coupling, max_coupling_dict[max_coupling]))

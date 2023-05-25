@@ -16,9 +16,9 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union
+from typing import Union, Optional
 # Execution engine SoSTrades code
-from sostrades_core.api import get_sos_logger
+import logging
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
@@ -29,7 +29,6 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-from copy import copy
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -53,27 +52,26 @@ class ExecutionEngine:
                  root_dir=None,
                  study_filename=None,
                  yield_method=None,
-                 logger=None):
+                 logger:Optional[logging.Logger]=None):
 
         self.study_name = study_name
         self.study_filename = study_filename or study_name
         self.__yield_method = yield_method
-
         if logger is None:
-            self.logger = get_sos_logger('SoS.EE')
-        else:
-            self.logger = logger
+            # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
+            # as a default logger if not initialized
+            logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
+        self.logger = logger
 
         self.__post_processing_manager = PostProcessingManager(self)
 
-        self.ns_manager = NamespaceManager(
-            name=DEFAULT_NS_MANAGER_NAME, ee=self)
+        self.ns_manager = NamespaceManager(name=DEFAULT_NS_MANAGER_NAME, ee=self)
         self.dm = DataManager(name=self.study_name,
                               root_dir=root_dir,
                               rw_object=rw_object,
                               study_filename=self.study_filename,
                               ns_manager=self.ns_manager,
-                              logger=get_sos_logger(f'{self.logger.name}.DataManager'))
+                              logger=self.logger.getChild("DataManager"))
         self.scattermap_manager = ScatterMapsManager(
             name=DEFAULT_scattermap_manager_NAME, ee=self)
 
@@ -86,7 +84,7 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.data_check_integrity: bool = False
-        self.__connector_container = PersistentConnectorContainer()
+        self.__connector_container = PersistentConnectorContainer(logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
     def factory(self) -> SosFactory:
@@ -121,7 +119,7 @@ class ExecutionEngine:
         # dead code in comment
         # usage regarding 'select_root_builder_ist'
         # usage only in testing not at runtime
-        self.logger.warn(
+        self.logger.warning(
             'DEPRECATION WARNING (07/2021).\n"select_root_process" methods is flagged to be checked regarding "select_root_builder_ist" method and usage in code (only in testing behaviour)')
         #         builder_list = self.factory.get_builder_from_process(repo=repo,
         #                                                              mod_id=mod_id)
@@ -172,6 +170,7 @@ class ExecutionEngine:
         '''
         loop on proxy disciplines and execute prepare execution
         '''
+        self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
         self.__factory.init_execution()
         # - execution
@@ -203,7 +202,7 @@ class ExecutionEngine:
                 dm_data_dict[variable_id][ProxyDiscipline.VALUE] = data
 
     def __configure_io(self):
-        self.logger.info('configuring ...')
+        self.logger.info('Configuring IO...')
 
         self.factory.build()
         self.root_process.configure_io()
@@ -215,6 +214,7 @@ class ExecutionEngine:
         self.dm.treeview = None
 
     def update_from_dm(self):
+        self.logger.info("Updating from DM.")
         self.root_process.update_from_dm()
 
     def build_cache_map(self):
@@ -467,7 +467,7 @@ class ExecutionEngine:
         Optional parameter used only for evaluator process to avoid the configuration of all disciplines
         :type: SoSEval object
         '''
-        self.logger.debug('loads data from dictionary')
+        self.logger.debug('Loading study from dictionary')
 
         if anonymize_function is None:
             data_cache = dict_to_load
@@ -489,12 +489,12 @@ class ExecutionEngine:
         checked_keys = []
 
         while not loop_stop:
+            self.logger.info("Configuring loop iteration %i.", iteration)
             if self.__yield_method is not None:
                 self.__yield_method()
 
             self.dm.no_change = True
             for key, value in self.dm.data_dict.items():
-
                 if key in convert_data_cache:
                     # Only inject key which are set as input
                     # Discipline configuration only take care of input
@@ -515,8 +515,7 @@ class ExecutionEngine:
             if self.root_process.is_configured():
                 loop_stop = True
             elif iteration >= 100:
-                self.logger.warn(
-                    'CONFIGURE WARNING: root process is not configured after 100 iterations')
+                self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
                 loop_stop = True
 
         # Convergence is ended
@@ -597,8 +596,7 @@ class ExecutionEngine:
         mode_str = mode
         if mode_str is None:
             mode_str = "all"
-        msg = "Debug mode activated for discipline %s with mode <%s>" % (
-            disc.get_disc_full_name(), mode_str)
+        msg = "Debug mode activated for discipline %s with mode <%s>" % (disc.get_disc_full_name(), mode_str)
         self.logger.info(msg)
         # set check options
         if mode is None:
@@ -625,8 +623,7 @@ class ExecutionEngine:
         else:
             avail_debug = ["nan", "input_change",
                            "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
-            raise ValueError("Debug mode %s is not among %s" %
-                             (mode, str(avail_debug)))
+            raise ValueError("Debug mode %s is not among %s" % (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.proxy_disciplines:
             self.set_debug_mode(mode, disc)
@@ -655,8 +652,7 @@ class ExecutionEngine:
     def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
-        self.logger.info('PROCESS EXECUTION %s STARTS...',
-                         self.root_process.get_disc_full_name())
+        self.logger.info('PROCESS EXECUTION %s STARTS...', self.root_process.get_disc_full_name())
         #         self.root_process.clear_cache()
         self.fill_data_in_with_connector()
         self.update_from_dm()
@@ -672,6 +668,7 @@ class ExecutionEngine:
         # -- execution with input data from DM
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
+        self.logger.info("Executing.")
         try:
             ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
                 input_data=input_data)
@@ -680,9 +677,9 @@ class ExecutionEngine:
             raise
 
         self.status = self.root_process.status
-        self.logger.info('PROCESS EXECUTION %s ENDS.',
-                         self.root_process.get_disc_full_name())
+        self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
+        self.logger.info("Storing local data in datamanager.")
         # -- store local data in datamanager
         self.update_dm_with_local_data(
             ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)

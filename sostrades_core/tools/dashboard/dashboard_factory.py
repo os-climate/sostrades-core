@@ -19,7 +19,6 @@ import os
 import json
 from importlib import import_module
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 DASHBOARD_MODULE = "dashboard"
@@ -109,7 +108,6 @@ def generate_dashboard(execution_engine, post_processings):
 
     except Exception as e:
         # Exception should not interrupt further process
-        local_logger = get_sos_logger('SoS.Dashboard')
-        local_logger.exception(
+        execution_engine.logger.exception(
             f'Exception during dashboard generation : {str(e)}')
         return {}

@@ -23,7 +23,6 @@ import numpy as np
 
 import itertools
 
-from sostrades_core.api import get_sos_logger
 import logging
 LOGGER = logging.getLogger(__name__)
 
@@ -50,11 +49,11 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    def __init__(self):
+    def __init__(self, logger: logging.Logger):
         '''
         Constructor
         '''
-        super().__init__(self.GENERATOR_NAME)
+        super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
         '''

@@ -37,16 +37,12 @@ from sostrades_core.tools.proc_builder.process_builder_parameter_type import Pro
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 import pandas as pd
 from collections import ChainMap
 from gemseo.core.parallel_execution import ParallelExecution
-
-# get module logger not sos logger
-import logging
-LOGGER = logging.getLogger(__name__)
 
 
 class DriverEvaluatorWrapper(SoSWrapp):
@@ -115,14 +111,15 @@ class DriverEvaluatorWrapper(SoSWrapp):
                                        'user_level': 1,
                                        'optional': False}})
 
-    def __init__(self, sos_name):
+    def __init__(self, sos_name, logger:logging.Logger):
         """
         Constructor.
 
         Arguments:
             sos_name (string): name of the discipline
+            logger (logging.Logger): logger to use
         """
-        super().__init__(sos_name)
+        super().__init__(sos_name=sos_name, logger=logger)
         self.custom_samples = None  # input samples dataframe
         # samples to evaluate as list[list[Any]] or ndarray
         self.samples = None
@@ -289,14 +286,14 @@ class DriverEvaluatorWrapper(SoSWrapp):
             'wait_time_between_fork')
         if platform.system() == 'Windows' or n_processes == 1:
             if n_processes != 1:
-                LOGGER.warning(
+                self.logger.warning(
                     "multiprocessing is not possible on Windows")
                 n_processes = 1
-            LOGGER.info("running sos eval in sequential")
+            self.logger.info("running sos eval in sequential")
 
             for i in tqdm(range(len(samples)), ncols=100, position=0):
                 time.sleep(0.1)
-                LOGGER.info(f'   Scenario_{str(i + 1)} is running.')
+                self.logger.info(f'   Scenario_{str(i + 1)} is running.')
                 x = samples[i]
                 scenario_name = "scenario_" + str(i + 1)
                 evaluation_output[scenario_name] = x, self.evaluation(
@@ -304,7 +301,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
             return evaluation_output
 
         if n_processes > 1:
-            LOGGER.info(
+            self.logger.info(
                 "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
 
             # Create the parallel execution object. The function we want to
@@ -331,7 +328,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
                 """
                 scenario_name = "scenario_" + str(index + 1)
                 evaluation_output[scenario_name] = (samples[index], outputs)
-                LOGGER.info(
+                self.logger.info(
                     f'{scenario_name} has been run. computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
                 time.sleep(0.05)
 
@@ -415,13 +412,13 @@ class DriverEvaluatorWrapper(SoSWrapp):
                 self.custom_samples.columns.to_list())) - set(self.custom_samples.columns.to_list())
             msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
             # To do: provide also the list of missing eval_in variables:
-            LOGGER.error(msg)
+            self.logger.error(msg)
             raise ValueError(msg)
         else:
             not_relevant_columns = set(
                 self.custom_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
             msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
-            LOGGER.warning(msg)
+            self.logger.warning(msg)
             # if len(not_relevant_columns) != 0:
             #     self.custom_samples.drop(
             #         not_relevant_columns, axis=1, inplace=True)
@@ -527,7 +524,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
         self.store_sos_outputs_values(
             {'samples_outputs_df': samples_output_df})
-        for dynamic_output in self.attributes['eval_out_list']:
+        for dynamic_output, out_name in zip(self.attributes['eval_out_list'], self.attributes['eval_out_names']):
             self.store_sos_outputs_values({
-                f'{dynamic_output.split(self.attributes["driver_name"] + ".", 1)[1]}{self.GATHER_DEFAULT_SUFFIX}':
-                    global_dict_output[dynamic_output]})
+                out_name: global_dict_output[dynamic_output]})

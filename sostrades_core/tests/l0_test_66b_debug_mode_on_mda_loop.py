@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -33,7 +31,7 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_coupling
 
-from logging import Handler, getLogger, DEBUG
+from logging import Handler, DEBUG
 
 class UnitTestHandler(Handler):
     """
@@ -57,9 +55,6 @@ class TestMDALoop(unittest.TestCase):
         self.name = 'EE'
         self.root_dir = gettempdir()
         self.my_handler = UnitTestHandler()
-        LOGGER = getLogger('sostrades_core.execution_engine.sos_mdo_discipline')
-        LOGGER.setLevel(DEBUG)
-        LOGGER.addHandler(self.my_handler)
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
@@ -188,6 +183,9 @@ class TestMDALoop(unittest.TestCase):
         """
 
         exec_eng = ExecutionEngine(self.name)
+        LOGGER = exec_eng.logger.getChild("ProxyDiscipline.MDODisciplineWrapp.SoSMDODiscipline")
+        LOGGER.setLevel(DEBUG)
+        LOGGER.addHandler(self.my_handler)
 
         # add disciplines SellarCoupling
         coupling_name = "SellarCoupling"

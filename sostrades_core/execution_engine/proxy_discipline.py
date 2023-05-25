@@ -21,7 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
-from typing import Union, List
+from typing import Union, List, Optional
 import os
 from os.path import dirname, join
 
@@ -35,7 +35,6 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
@@ -58,7 +57,7 @@ class ProxyDisciplineException(Exception):
 NS_SEP = '.'
 
 
-class ProxyDiscipline(object):
+class ProxyDiscipline:
     """
     **ProxyDiscipline** is a class proxy for a  discipline on the SoSTrades side.
 
@@ -258,7 +257,8 @@ class ProxyDiscipline(object):
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, local_namespace_database = False):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None, local_namespace_database=False,
+                 logger:Optional[logging.Logger] = None):
         '''
         Constructor
 
@@ -268,12 +268,14 @@ class ProxyDiscipline(object):
             cls_builder (Class): class constructor of the user-defined wrapper (or None)
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
+        # Must assign logger before calling create_mdo_discipline_wrap
+        if logger is None:
+            logger = ee.logger.getChild(self.__class__.__name__)
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades')
-        self._reload(sos_name, ee, associated_namespaces, local_namespace_database)
-        self.logger: logging.Logger = get_sos_logger(f'{self.ee.logger.name}.Discipline')
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=logger)
+        self._reload(sos_name, ee, logger=logger, associated_namespaces=associated_namespaces, local_namespace_database=local_namespace_database)
 
         self.model = None
         self.__father_builder = None
@@ -295,7 +297,7 @@ class ProxyDiscipline(object):
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces = None, local_namespace_database = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
+    def _reload(self, sos_name, ee, logger:logging.Logger, associated_namespaces = None, local_namespace_database = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None, local_namespace_database = False):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -304,7 +306,9 @@ class ProxyDiscipline(object):
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+            logger (logging.Logger): logger to use
         """
+        self.logger = logger
         self.proxy_disciplines: List[ProxyDiscipline] = []
         self._status = None
         self.status_observers = []
@@ -362,12 +366,12 @@ class ProxyDiscipline(object):
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str):
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger:logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode, logger=logger.getChild("MDODisciplineWrapp"))
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -1032,9 +1036,12 @@ class ProxyDiscipline(object):
             if v[self.VISIBILITY] == self.SHARED_VISIBILITY:
                 namespace =  self.get_shared_ns_dict().get(v[self.NAMESPACE])
                 # get only variables in a namespace related to a database and not coupled
-                if namespace.get_from_database and len(v[self.DISCIPLINES_DEPENDENCIES]) < 2:
+                if namespace.get_from_database:
+                    # TODO: getting from dm as workaround the fact that disciplines dependencies is NOT in data_in
                     full_name = self.get_var_full_name(k, data_in_dict)
-                    dict_variables[k] = full_name
+                    disc_deps = self.ee.dm.get_data(full_name, self.DISCIPLINES_DEPENDENCIES)
+                    if len(disc_deps) < 2:
+                        dict_variables[k] = full_name
             
             # get non numeric local variables if local namespace is related to a database 
             elif self.local_namespace_database and v[self.VISIBILITY] == self.LOCAL_VISIBILITY and not v[self.NUMERICAL]:
@@ -1139,7 +1146,7 @@ class ProxyDiscipline(object):
         if linearization_mode != stucturing_variable_linearization_mode and \
                 not (linearization_mode == "auto" and self._structuring_variables[self.LINEARIZATION_MODE] is None):
             self._reset_linearization_mode = True
-        self.logger.info(f"Discipline {self.sos_name} set to linearization mode {linearization_mode}")
+        self.logger.debug(f"Discipline {self.sos_name} set to linearization mode {linearization_mode}")
 
     def update_reset_debug_mode(self):
         '''

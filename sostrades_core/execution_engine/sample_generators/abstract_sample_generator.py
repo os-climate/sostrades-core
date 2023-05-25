@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
 from builtins import NotImplementedError
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -28,11 +29,12 @@ class AbstractSampleGenerator(object):
     Abstract class that generates sampling
     '''
 
-    def __init__(self, generator_name):
+    def __init__(self, generator_name, logger=logging.Logger):
         '''
         Constructor
         '''
         self.generator_name = generator_name
+        self.logger = logger
 
     def generate_samples(self, *args, **kwargs):
         '''

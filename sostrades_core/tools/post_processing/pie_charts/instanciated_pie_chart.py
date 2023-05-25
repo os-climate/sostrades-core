@@ -19,7 +19,6 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a pie chart display as post post processing
 """
 import plotly.graph_objects as go
-from sostrades_core.api import get_sos_logger
 from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 from sostrades_core.tools.post_processing.post_processing_tools import escape_str_with_comma
 

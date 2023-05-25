@@ -155,7 +155,7 @@ class SeriesTemplate:
         filtered_series, has_nan = convert_nan(values)
 
         if logger is not None and has_nan:
-            logger.warn(
+            logger.warning(
                 f'{property_name} of series "{self.series_name}" contains NaN/Infinite values')
 
         return filtered_series
