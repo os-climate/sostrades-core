@@ -12,7 +12,8 @@ class MultiDimensionalDistribution:
     The purpose of this class is to concatenate distributions, thus in the multidimensional case,
     the random variables are independant from one another.
      """
-    def __init__(self, lower_bound: Union[float, np.ndarray], upper_bound: Union[float, np.ndarray]):
+    def __init__(self, varname: str, lower_bound: Union[float, np.ndarray], upper_bound: Union[float, np.ndarray]):
+        self.varname = varname
         self.dim: int = 1
         if isinstance(lower_bound, np.ndarray):
             self.dim = len(lower_bound)
@@ -21,6 +22,7 @@ class MultiDimensionalDistribution:
         self.upper_bound = upper_bound
         self.distribs: list[ot.Distribution]  = []
         self._set_distributions()
+        self.distribs_name = self._set_distributions_name()
 
     def getSample(self, sample_size: int) -> list[Union[float, np.ndarray]]:
         """Generate samples"""
@@ -28,23 +30,42 @@ class MultiDimensionalDistribution:
             raise Exception("Distributions are not set")
         samples = None
         if self.dim == 1:
-            samples = self.distribs[0].getSample(size=sample_size)
+            samples = np.array(self.distribs[0].getSample(size=sample_size))
         else:
-            a = 1
+            samples = np.stack([distrib.getSample(size=sample_size) for distrib in self.distribs])
+            samples = np.reshape(samples, (sample_size, self.dim))
+            samples = [arr for arr in samples]
 
         return samples
 
     def _set_distributions(self):
         raise NotImplementedError("This method should be overwritten in each subclasse")
 
+    def _set_distributions_name(self) -> list[str]:
+        if self.dim == 1:
+            return [self.varname]
+        else:
+            return [f"{self.varname}[{i}]" for i in range(self.dim)]
+
+    @classmethod
+    def aggregate_to_unidim_distribs(cls, multidim_distribs: list["MultiDimensionalDistribution"]) -> list:
+        """
+        Aggregate multidimensional distributions to one single
+        """
+        out = []
+        for multidim_distrib in multidim_distribs:
+            out += multidim_distrib.distribs
+        return out
+
 
 class MultiDimensionalPERTDistribution(MultiDimensionalDistribution):
     def __init__(self,
+                 varname: str,
                  lower_bound: Union[float, np.ndarray],
                  upper_bound: Union[float, np.ndarray],
                  most_probable_value: Union[float, np.ndarray]):
         self.most_probable_value = most_probable_value
-        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound)
+        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound, varname=varname)
 
     def _get_distribution(self,
                           lower_bound: float,
@@ -68,11 +89,12 @@ class MultiDimensionalPERTDistribution(MultiDimensionalDistribution):
 
 class MultiDimensionalNormalDistribution(MultiDimensionalDistribution):
     def __init__(self,
+                 varname: str,
                  lower_bound: Union[float, np.ndarray],
                  upper_bound: Union[float, np.ndarray],
                  confidence_interval: float):
         self.confidence_interval = confidence_interval
-        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound)
+        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound, varname=varname)
 
 
     def _get_distribution(self,
@@ -98,10 +120,11 @@ class MultiDimensionalNormalDistribution(MultiDimensionalDistribution):
 
 class MultiDimensionalTriangularDistribution(MultiDimensionalPERTDistribution):
     def __init__(self,
+                 varname: str,
                  lower_bound: Union[float, np.ndarray],
                  upper_bound: Union[float, np.ndarray],
                  most_probable_value: Union[float, np.ndarray]):
-        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound, most_probable_value=most_probable_value)
+        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound, most_probable_value=most_probable_value, varname=varname)
 
 
     def _get_distribution(self,
@@ -115,10 +138,11 @@ class MultiDimensionalTriangularDistribution(MultiDimensionalPERTDistribution):
 
 class MultiDimensionalLogNormalDistribution(MultiDimensionalNormalDistribution):
     def __init__(self,
+                 varname: str,
                  lower_bound: Union[float, np.ndarray],
                  upper_bound: Union[float, np.ndarray],
                  confidence_interval: float):
-        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound, confidence_interval=confidence_interval)
+        super().__init__(lower_bound=lower_bound, upper_bound=upper_bound, confidence_interval=confidence_interval, varname=varname)
 
     def _get_distribution(self,
                           lower_bound: float,
