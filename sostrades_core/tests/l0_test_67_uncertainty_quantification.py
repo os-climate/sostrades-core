@@ -210,6 +210,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.samples_dataframe = pd.read_csv(
             join(self.data_dir, 'samples_df.csv'))
 
+        # builds a sample dataframe with regular arrays samples
         x_range = np.arange(50, 150, 15)
         y_range = np.arange(40, 80, 8)
         z_range = np.arange(60, 120, 15)
@@ -273,8 +274,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         filter = uncertainty_quanti_disc.get_chart_filter_list()
         graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        """
         for graph in graph_list:
             graph.to_plotly().show()
+        """
 
     def test_04_uncertainty_quantification_with_arrays_in_input_and_outputs(self):
         """This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays and
@@ -299,6 +302,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.samples_dataframe = pd.read_csv(
             join(self.data_dir, 'samples_df.csv'))
 
+        # builds a sample dataframe with regular inputs arrays
         x_range = np.arange(50, 150, 15)
         y_range = np.arange(40, 80, 8)
         z_range = np.arange(60, 120, 15)
@@ -321,6 +325,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         Var1 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
         Var2 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
 
+        # set outputs to be both floats and arrays
         out1 = list(pd.Series(Var1 + Var2) * 100000)
         out_array = list(np.array([(Var1*Var2)*100_000,
                                    (Var1**2 + Var2**2) * 100_000,
@@ -364,8 +369,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         filter = uncertainty_quanti_disc.get_chart_filter_list()
         graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        """
         for graph in graph_list:
             graph.to_plotly().show()
+        """
 
 
     #
