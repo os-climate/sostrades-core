@@ -1,0 +1,11 @@
+
+@startuml
+class         SOSCoupling
+SoSDisciplineBuilder <|- SOSCoupling
+MDAChain <|- SOSCoupling
+SoSDiscipline <|- SoSDisciplineBuilder
+
+MDODiscipline <|- SoSDiscipline
+
+SoSDisciplineBuilder <|- SoSDisciplineScatter
+@enduml
