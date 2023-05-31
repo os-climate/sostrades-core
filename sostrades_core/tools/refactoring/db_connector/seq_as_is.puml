@@ -1,0 +1,18 @@
+@startuml
+Participant User
+Participant ExecEngine
+Participant ConnectorFactory
+Participant Connector
+User -> ExecEngine: execute
+
+loop
+note over ExecEngine
+    For each variable in the DM
+end note
+ExecEngine -> ConnectorFactory: use_data_connector
+ConnectorFactory --> Connector: <<instantiate>>
+ConnectorFactory -> Connector: load_data
+end loop
+ExecEngine -> ExecEngine: update_from_dm
+ExecEngine -> ExecEngine: prepare_exec / exec
+@enduml
