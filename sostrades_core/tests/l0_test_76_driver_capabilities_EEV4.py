@@ -688,7 +688,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.Disc1.indicator_dict', root_outputs)
+        self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
@@ -830,7 +830,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.Disc1.indicator_dict', root_outputs)
+        self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]

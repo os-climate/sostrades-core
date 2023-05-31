@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import _io
+
 import pandas as pd
 import numpy as np
 
@@ -134,7 +136,8 @@ def ObjectDictCheck(obj, checked):
         if isinstance(obj, dict):
             for subobj in obj.values():
                 ObjectDictCheck(subobj, checked)
-        elif isinstance(obj, Iterable):
+        # _io.TextIOWrapper is iterable but throws exception, must be added because of loggers attached to wraps
+        elif isinstance(obj, Iterable) and not isinstance(obj, _io.TextIOWrapper):
             for subobj in obj:
                 ObjectDictCheck(subobj, checked)
 

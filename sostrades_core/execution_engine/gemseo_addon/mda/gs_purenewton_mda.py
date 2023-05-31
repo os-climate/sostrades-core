@@ -28,7 +28,7 @@ from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.mda.sequential_mda import MDASequential
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("gemseo.addons.mda.gs_purenewton_mda")
 
 
 class GSPureNewtonMDA(MDASequential):

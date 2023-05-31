@@ -46,9 +46,6 @@ def get_available_linear_solvers():
     return algos
 
 
-LOGGER = logging.getLogger(__name__)
-
-
 class SoSMDAChain(MDAChain):
     """ GEMSEO Overload
 
@@ -102,10 +99,14 @@ class SoSMDAChain(MDAChain):
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  authorize_self_coupled_disciplines=False,  # type: bool
+                 logger=None,  #type: logging.Logger
                  **sub_mda_options
                  ):
         ''' Constructor
         '''
+        if logger is None:
+            logger = logging.getLogger(__name__)
+        self.logger = logger
         self.is_sos_coupling = True
         # =========================================================================
         # #         self.ee = ee
@@ -114,8 +115,7 @@ class SoSMDAChain(MDAChain):
         self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
         self.reduced_dm = reduced_dm
 
-        MDAChain.__init__(self,
-                          disciplines,
+        super().__init__(disciplines,
                           sub_mda_class=sub_mda_class,
                           max_mda_iter=max_mda_iter,
                           name=name,
@@ -145,8 +145,8 @@ class SoSMDAChain(MDAChain):
         self.pre_run_mda()
 
         if len(self.sub_mda_list) > 0:
-            LOGGER.info(f'{self.name} MDA history')
-            LOGGER.info('\tIt.\tRes. norm')
+            self.logger.info(f'{self.name} MDA history')
+            self.logger.info('\tIt.\tRes. norm')
 
         try:
             MDAChain._run(self)
@@ -182,10 +182,10 @@ class SoSMDAChain(MDAChain):
             key for key in self.strong_couplings if
             key in self.local_data]  # TODO: replace local_data[key] per key should work
         if len(strong_couplings) < len(self.strong_couplings):
-            LOGGER.info(
+            self.logger.info(
                 f'Execute a pre-run for the coupling ' + self.name)
             self.recreate_order_for_first_execution()
-            LOGGER.info(
+            self.logger.info(
                 f'End of pre-run execution for the coupling ' + self.name)
 
     def recreate_order_for_first_execution(self):
@@ -298,7 +298,7 @@ class SoSMDAChain(MDAChain):
         '''
         # LOGGER.info(
         # f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
-        LOGGER.info(
+        self.logger.info(
             f'Computing the gradient for the MDA : {self.name}')
 
         return self._old_discipline_linearize(input_data=input_data,
@@ -594,8 +594,8 @@ class SoSMDAChain(MDAChain):
                 full_key = data_key
                 if len(parent_key) > 0:
                     full_key = f'{parent_key}/{data_key}'
-                LOGGER.debug(f'NaN values found in {full_key}')
-                LOGGER.debug(data_value)
+                self.logger.debug(f'NaN values found in {full_key}')
+                self.logger.debug(data_value)
                 has_nan = True
         return has_nan
 
@@ -613,7 +613,7 @@ class SoSMDAChain(MDAChain):
             return self.input_grammar.get_data_names()
         else:
             return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                               logger=LOGGER)
+                                               logger=self.logger)
 
     def get_output_data_names(self, filtered_outputs=False):
         """

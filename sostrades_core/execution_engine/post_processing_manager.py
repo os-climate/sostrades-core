@@ -27,7 +27,6 @@ Post processing manager allowing to coeespond namespace with post processing to 
 """
 
 from importlib import import_module
-from sostrades_core.api import get_sos_logger
 
 
 class PostProcessingManager:
@@ -53,8 +52,7 @@ class PostProcessingManager:
         self.__namespace_postprocessing_dict = {}
 
         # Initialize logger
-        self.__logger = get_sos_logger(
-            f'{self.__execution_engine.logger.name}.PostProcessingManager')
+        self.__logger = execution_engine.logger.getChild(self.__class__.__name__)
 
     @property
     def namespace_post_processing(self):

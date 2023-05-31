@@ -20,7 +20,6 @@ import inspect
 import os
 from importlib import import_module
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
 
 
@@ -52,8 +51,7 @@ class ToolFactory:
 
         self.__builder_tools = []
 
-        self.__logger = get_sos_logger(
-            f'{self.__execution_engine.logger.name}.ToolFactory')
+        self.__logger = self.__execution_engine.logger.getChild(self.__class__.__name__)
 
         self.__reset()
 

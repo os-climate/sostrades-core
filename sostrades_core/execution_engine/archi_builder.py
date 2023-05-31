@@ -17,6 +17,8 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import logging
+
 from copy import deepcopy, copy
 from importlib import import_module
 
@@ -78,9 +80,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Constructor
         """
-
-        ProxyDisciplineBuilder.__init__(
-            self, sos_name, ee, associated_namespaces=associated_namespaces)
+        super().__init__(sos_name, ee, associated_namespaces=associated_namespaces, logger=ee.logger.getChild(self.__class__.__name__))
 
         self.children_dict = {}
         self.archi_disciplines = {}

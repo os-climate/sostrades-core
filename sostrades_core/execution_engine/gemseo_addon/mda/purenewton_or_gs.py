@@ -30,7 +30,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import MDASequential
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("gemseo.addons.mda.purenewton_or_gs")
 
 
 class GSPureNewtonorGSMDA(MDASequential):

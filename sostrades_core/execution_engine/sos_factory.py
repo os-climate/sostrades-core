@@ -22,7 +22,6 @@ from importlib import import_module
 
 from pandas.core.common import flatten
 
-from sostrades_core.api import get_sos_logger
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
@@ -83,8 +82,7 @@ class SosFactory:
 
         self.coupling_disc = None
         self.is_sos_coupling = True
-        self.__logger = get_sos_logger(
-            f'{self.__execution_engine.logger.name}.Factory')
+        self.__logger = self.__execution_engine.logger.getChild(self.__class__.__name__)
 
         self.__reset()
 

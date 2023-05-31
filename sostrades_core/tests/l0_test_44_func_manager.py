@@ -24,6 +24,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from numpy import arange
 import pandas as pd
 import matplotlib.pyplot as plt
+import logging
 
 
 class TestFuncManager(unittest.TestCase):
@@ -136,7 +137,7 @@ class TestFuncManager(unittest.TestCase):
 
     def test_05_instantiate_func_manager_disc(self):
         try:
-            FunctionManagerDisc(self.name)
+            FunctionManagerDisc(self.name, logging.getLogger(__name__))
             fail = False
         except:
             fail = True

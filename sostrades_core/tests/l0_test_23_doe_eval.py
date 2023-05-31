@@ -114,6 +114,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.output_selection_obj_y1_y2 = pd.DataFrame(
             output_selection_obj_y1_y2)
 
+        output_selection_obj_y1_y2_with_out_name = {'selected_output': [False, False, True, True, True],
+                                                    'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
+                                                    'output_name': ['c_1', 'c_2', 'obj_d', 'y_1_d', None]}
+        self.output_selection_obj_y1_y2_with_out_name = pd.DataFrame(
+            output_selection_obj_y1_y2_with_out_name)
+
         self.repo = 'sostrades_core.sos_processes.test'
 
     def test_1_doe_eval_execution_fullfact(self):
@@ -253,9 +259,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('root.obj_dict', root_outputs)
-        self.assertIn('root.y_1_dict', root_outputs)
-        self.assertIn('root.y_2_dict', root_outputs)
+        self.assertIn('root.Eval.obj_dict', root_outputs)
+        self.assertIn('root.Eval.y_1_dict', root_outputs)
+        self.assertIn('root.Eval.y_2_dict', root_outputs)
 
         # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
@@ -1456,6 +1462,99 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(eval_disc_ind[key],
                                    private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i])
             i += 1
+
+    def test_16_Eval_User_Defined_samples_custom_output_name(self):
+        """
+        This test checks that the custom samples applied to an Eval driver delivers expected outputs and these
+        are stored with a custom out name specified in eval_outputs. It is a non regression test.
+        """
+        study_name = 'root'
+        ns = study_name
+
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_sellar_eval"
+        eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                        mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            eval_builder)
+
+        exec_eng.configure()
+        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        exec_eng.load_study_from_input_dict(builder_mode_input)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
+                     f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2_with_out_name}
+        # Eval inputs
+
+        x_values = [array([9.379763880395856]), array([8.88644794300546]),
+                    array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
+        z_values = [array([1.515949043849158, 5.6317362409322165]),
+                    array([-1.1962705421254114, 6.523436208612142]),
+                    array([-1.9947578026244557, 4.822570933860785]
+                          ), array([1.7490668861813, 3.617234050834533]),
+                    array([-9.316161097119341, 9.918161285133076])]
+
+        samples_dict = {'x': x_values, 'z': z_values}
+        samples_df = pd.DataFrame(samples_dict)
+        disc_dict[f'{ns}.Eval.samples_df'] = samples_df
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {f'{ns}.Eval.x': array([1.]), f'{ns}.Eval.y_1': array([1.]), f'{ns}.Eval.y_2': array([1.]),
+                       f'{ns}.Eval.z': array([1., 1.]),
+                       f'{ns}.Eval.subprocess.Sellar_Problem.local_dv': local_dv}
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [f'Nodes representation for Treeview {ns}',
+                       '|_ root',
+                       f'\t|_ Eval',
+                       '\t\t|_ subprocess',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1']
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
+
+        root_outputs = exec_eng.root_process.get_output_data_names()
+        self.assertIn('root.Eval.obj_d', root_outputs)
+        self.assertIn('root.Eval.y_1_d', root_outputs)
+        self.assertIn('root.Eval.y_2_dict', root_outputs)
+
+        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
+
+        doe_disc_samples = doe_disc.get_sosdisc_outputs(
+            'samples_inputs_df')
+        doe_disc_obj = doe_disc.get_sosdisc_outputs('obj_d')
+        doe_disc_y1 = doe_disc.get_sosdisc_outputs('y_1_d')
+        doe_disc_y2 = doe_disc.get_sosdisc_outputs('y_2_dict')
+        self.assertEqual(len(doe_disc_samples), 6)
+        self.assertEqual(len(doe_disc_obj), 6)
+        reference_dict_doe_disc_y1 = {'scenario_1': array([15.102817691025274]),
+                                      'scenario_2': array([15.000894464408367]),
+                                      'scenario_3': array([11.278122259980103]),
+                                      'scenario_4': array([5.1893098993071565]),
+                                      'scenario_5': array([101.52834810032466]), 'reference': array([2.29689011157193])}
+        reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
+                                      'scenario_2': array([9.200264485831308]),
+                                      'scenario_3': array([6.186104699873589]),
+                                      'scenario_4': array([7.644306621667905]),
+                                      'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])}
+        for key in doe_disc_y1.keys():
+            self.assertAlmostEqual(
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+        for key in doe_disc_y2.keys():
+            self.assertAlmostEqual(
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
 
 if '__main__' == __name__:
