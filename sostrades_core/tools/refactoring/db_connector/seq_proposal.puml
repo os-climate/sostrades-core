@@ -1,0 +1,18 @@
+@startuml
+Participant User
+Participant ExecEngine
+Participant DBConnectorManager
+Participant Connector
+User -> ExecEngine: configure()
+ExecEngine -> DBConnectorManager: add_db_connector()
+ExecEngine -> DBConnectorManager: is_db_already_registered()
+DBConnectorManager --> Connector: <<instantiate>>
+
+ExecEngine -> DBConnectorManager: get_all_ns()
+loop For each namespace, for each variable
+ExecEngine -> DBConnectorManager: load_data
+DBConnectorManager -> Connector: load_data
+end loop
+ExecEngine -> ExecEngine: update_from_dm
+ExecEngine -> ExecEngine: prepare_exec / exec
+@enduml
