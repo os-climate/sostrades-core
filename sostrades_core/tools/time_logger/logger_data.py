@@ -61,7 +61,7 @@ class LoggerData(object):
         if complex_mode:
             self.dtype = np.complex128
         else:
-            self.dtype = np.float
+            self.dtype = np.float64
 
     #-- Accessors
     def get_units(self, var_id):
