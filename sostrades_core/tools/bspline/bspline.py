@@ -23,7 +23,7 @@ class BSpline(object):
     Generic implementation of BSpline
     """
 
-    def __init__(self, degree=3, n_poles=8, dtype=np.float, knots=None, errmsg=''):
+    def __init__(self, degree=3, n_poles=8, dtype=np.float64, knots=None, errmsg=''):
         self.degree = degree
         self.n_poles = n_poles
         self.knots = None
