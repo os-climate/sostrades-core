@@ -149,6 +149,22 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.TYPE: 'dataframe',
             SoSWrapp.UNIT: None,
         },
+        'input_parameters_names': {
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.UNIT: None,
+        },
+        'dict_array_float_names': {
+            SoSWrapp.TYPE: 'dict',
+            SoSWrapp.UNIT: None,
+        },
+        'pure_float_input_names': {
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.UNIT: None,
+        },
+        'float_output_names': {
+            SoSWrapp.TYPE: 'list',
+            SoSWrapp.UNIT: None,
+        }
     }
 
     def setup_sos_disciplines(self):
@@ -537,9 +553,14 @@ class UncertaintyQuantification(SoSWrapp):
         self.compute_montecarlo_distribution(distrib_list)
 
         self.compute_output_interpolation()
+
         dict_values = {
             'input_parameters_samples_df': self.float_input_parameters_samples_df,
             'output_interpolated_values_df': self.output_interpolated_values_df,
+            'input_parameters_names': self.input_parameters_names,
+            'pure_float_input_names': self.pure_float_input_names,
+            'dict_array_float_names': self.dict_array_float_names,
+            'float_output_names': self.float_output_names,
         }
 
         self.store_sos_outputs_values(dict_values)
@@ -753,11 +774,15 @@ class UncertaintyQuantification(SoSWrapp):
                     deepcopy(self.get_sosdisc_inputs(['confidence_interval'])) / 100
             )
 
-        for input_name in self.input_parameters_names:
+        input_parameters_names = self.get_sosdisc_outputs('input_parameters_names')
+        pure_float_input_names = self.get_sosdisc_outputs('pure_float_input_names')
+        dict_array_float_names = self.get_sosdisc_outputs('dict_array_float_names')
+        float_output_names = self.get_sosdisc_outputs('float_output_names')
+        for input_name in input_parameters_names:
             input_distrib_name = input_name + ' Distribution'
 
             if input_distrib_name in graphs_list:
-                if input_name in self.pure_float_input_names:
+                if input_name in pure_float_input_names:
                     # input is of type float -> historgram
                     input_distrib = list(input_parameters_distrib_df[input_name])
                     new_chart = self.input_histogram_graph(
@@ -769,7 +794,7 @@ class UncertaintyQuantification(SoSWrapp):
                     instanciated_charts.append(new_chart)
                 else:
                     # input is of type array -> array uncertainty plot
-                    input_distrib = list(input_parameters_distrib_df[self.dict_array_float_names[input_name]].values)
+                    input_distrib = list(input_parameters_distrib_df[dict_array_float_names[input_name]].values)
                     new_chart = self.array_uncertainty_plot(list_of_arrays=input_distrib,
                                                             name=input_name)
                     instanciated_charts.append(new_chart)
@@ -777,7 +802,7 @@ class UncertaintyQuantification(SoSWrapp):
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
             output_distrib_name = output_name.split('.')[-1] + ' Distribution'
-            if output_name in self.float_output_names:
+            if output_name in float_output_names:
                 # output type is float -> histograme
                 if not all(np.isnan(output_distrib)):
                     if output_distrib_name in graphs_list:
@@ -1084,40 +1109,42 @@ class UncertaintyQuantification(SoSWrapp):
         mean_array = np.nanmean(list_of_arrays, axis=0)
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=arrays_x, y=list_of_arrays[0],
+        fig.add_trace(go.Scatter(x=arrays_x, y=list_of_arrays[0].tolist(),
                                  line=dict(color='rgba(169,169,169,0.1)'),
                                  name="samples"))
         for time_serie in list_of_arrays[1:]:
-            fig.add_trace(go.Scatter(x=arrays_x, y=time_serie,
+            fig.add_trace(go.Scatter(x=arrays_x, y=time_serie.tolist(),
                                      line=dict(color='rgba(169,169,169,0.1)'),
                                      showlegend=False))
 
-        fig.add_trace(go.Scatter(x=arrays_x, y=mean_array, name='Mean', line=dict(color='black', dash='dash')))
+        fig.add_trace(go.Scatter(x=arrays_x, y=mean_array.tolist(), name='Mean', line=dict(color='black', dash='dash')))
 
-        distribution = self.input_distribution_parameters_df.loc[
-            self.input_distribution_parameters_df["parameter"] == name]['distribution'].values[0] if not is_output\
+        input_distribution_parameters_df = self.get_sosdisc_inputs("input_distribution_parameters_df")
+        distribution = input_distribution_parameters_df.loc[
+            input_distribution_parameters_df["parameter"] == name]['distribution'].values[0] if not is_output\
             else ''
         if distribution == 'PERT':
-            lower_parameter, upper_parameter = self.input_distribution_parameters_df.loc[self.input_distribution_parameters_df["parameter"] == name][['lower_parameter', 'upper_parameter']].values[0]
-            fig.add_trace(go.Scatter(x=arrays_x, y=lower_parameter,
+            lower_parameter, upper_parameter = input_distribution_parameters_df.loc[input_distribution_parameters_df["parameter"] == name][['lower_parameter', 'upper_parameter']].values[0]
+            fig.add_trace(go.Scatter(x=arrays_x, y=list(lower_parameter),
                                      line=dict(color='green', dash='dash'),
                                      name='lower parameter'))
-            fig.add_trace(go.Scatter(x=arrays_x, y=upper_parameter,
+            fig.add_trace(go.Scatter(x=arrays_x, y=list(upper_parameter),
                                      line=dict(color='blue', dash='dash'),
                                      name='upper parameter'))
         elif is_output or distribution in ['Normal', 'LogNormal']:
-            ql = float(format(1 - self.confidence_interval, '.2f')) / 2
+            confidence_interval = float(self.get_sosdisc_inputs('confidence_interval')) / 100
+            ql = float(format(1 - confidence_interval, '.2f')) / 2
             qu = 1 - ql
             quantile_lower = np.nanquantile(list_of_arrays, q=ql, axis=0)
             quantile_upper = np.nanquantile(list_of_arrays, q=qu, axis=0)
-            fig.add_trace(go.Scatter(x=arrays_x, y=quantile_lower,
+            fig.add_trace(go.Scatter(x=arrays_x, y=quantile_lower.tolist(),
                                      line=dict(color='green', dash='dash'),
                                      name=f'quantile {int(100*ql)}%'))
-            fig.add_trace(go.Scatter(x=arrays_x, y=quantile_upper,
+            fig.add_trace(go.Scatter(x=arrays_x, y=quantile_upper.tolist(),
                                      line=dict(color='blue', dash='dash'),
                                      name=f'quantile {int(100*qu)}%'))
 
-        fig.update_layout(title='Multiple Time Series', xaxis_title='X', yaxis_title='Y')
+        fig.update_layout(title='Multiple Time Series')
 
         new_chart = InstantiatedPlotlyNativeChart(
             fig=fig, chart_name=f'{name} - {distribution} Distribution', default_legend=False
