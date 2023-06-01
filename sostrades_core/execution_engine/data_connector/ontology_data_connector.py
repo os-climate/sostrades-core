@@ -144,7 +144,7 @@ if __name__ == '__main__':
     ontology_connector = OntologyDataConnector()
 
     data_connection = {
-        'endpoint': 'https://sostradesdemo.eu.airbus.corp:31234/api/ontology'
+        'endpoint': 'http://127.0.0.1:5555/api/ontology'
         # 'endpoint': 'http://127.0.0.1:5555/api/ontology'
     }
 

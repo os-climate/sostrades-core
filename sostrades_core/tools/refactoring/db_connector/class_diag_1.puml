@@ -1,0 +1,17 @@
+@startuml
+class ExecutionEngine
+class Proxydiscipline
+class DBConnectorManager
+class AbstractDataConnector
+class TrinoDataConnector
+
+WIP
+
+ExecutionEngine *-- Proxydiscipline
+DisciplineProxy *-- MDODisciplineWrapp
+DisciplineProxy --* SoSDisciplineBuilder
+
+Configuration -> MDOCouplingStructure
+
+ExecutionEngine -> DisciplineProxy
+@enduml
