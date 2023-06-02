@@ -382,8 +382,8 @@ class TestGridSearchEval(unittest.TestCase):
         filters = grid_search_disc.get_chart_filter_list()
         graph_list = grid_search_disc.get_post_processing_list(filters)
         for graph in graph_list:
-            #     pass
-            graph.to_plotly().show()
+                pass
+            # graph.to_plotly().show()
 
     def test_04_grid_search_status(self):
         """ This tests aims at proving the ability of grid search
