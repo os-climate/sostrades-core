@@ -377,7 +377,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                   self.EVAL_OUTPUTS: {self.TYPE: 'dataframe',
                                                    self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
                                                                                'full_name': ('string', None, False),
-                                                                               'output_name': ('multiple', None, False)},
+                                                                               'output_name': ('multiple', None, True)},
                                                    self.DATAFRAME_EDITION_LOCKED: False,
                                                    self.STRUCTURING: True,
                                                    self.VISIBILITY: self.SHARED_VISIBILITY,
@@ -429,7 +429,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                             dynamic_outputs.update(
                                 {_out_name: {self.TYPE: 'dict',
                                              self.VISIBILITY: 'Shared',
-                                             self.NAMESPACE: self.NS_EVAL}}) # FIXME: in theory should be moved to NS_EVAL
+                                             self.NAMESPACE: self.NS_EVAL}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
                             disc_in, selected_inputs_has_changed))
                         dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
@@ -591,7 +591,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         poss_in_values_full = set()
         poss_out_values_full = set()
-        if io_type_in:
+        if io_type_in: # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
             disc_in = disc.get_data_in()
             for data_in_key in disc_in.keys():
                 is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
@@ -1636,10 +1636,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def set_eval_possible_values(self, io_type_in=True, io_type_out=True, strip_first_ns=False):
         '''
-            Once all disciplines have been run through,
-            set the possible values for eval_inputs and eval_outputs in the DM
+        Check recursively the disciplines in the subprocess in order to detect their inputs and outputs.
+        Once all disciplines have been run through, set the possible values for eval_inputs and eval_outputs in the DM
+        These are the variables names anonymized wrt driver-evaluator node (mono-instance) or scenario node
+        (multi-instance).
+
+        Arguments:
+            io_type_in (bool): whether to take inputs into account
+            io_type_out (bool): whether to take outputs into account
+            strip_first_ns (bool): whether to strip the scenario name (multi-instance case) from the variable name
         '''
+
         possible_in_values, possible_out_values = set(), set()
+        # scenarios contains all the built sub disciplines (proxy_disciplines does NOT in flatten mode)
         for scenario_disc in self.scenarios:
             analyzed_disc = scenario_disc
             possible_in_values_full, possible_out_values_full = self.fill_possible_values(
@@ -1649,6 +1658,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                                           possible_out_values_full,
                                                                                           io_type_in=io_type_in,
                                                                                           io_type_out=io_type_out)
+            # strip the scenario name to have just one entry for repeated variables in scenario instances
             if strip_first_ns:
                 possible_in_values_full = [_var.split('.', 1)[-1] for _var in possible_in_values_full]
                 possible_out_values_full = [_var.split('.', 1)[-1] for _var in possible_out_values_full]
@@ -1666,8 +1676,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                  'full_name': possible_in_values})
 
             eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-
-
             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
 
             if eval_input_new_dm is None:
@@ -1690,6 +1698,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                           'full_name': [name]}), ignore_index=True)
                 self.dm.set_data(eval_inputs_f_name,
                                  'value', default_dataframe, check_value=False)
+
         if possible_out_values and io_type_out:
             possible_out_values = list(possible_out_values)
             possible_out_values.sort()
@@ -1701,15 +1710,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if eval_output_new_dm is None:
                 self.dm.set_data(eval_outputs_f_name,
                                  'value', default_out_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess
-            # configure
+            # check if the eval_inputs need to be updated after a subprocess configure
             elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
                 self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
                                    is_eval_input=False)
                 default_dataframe = copy.deepcopy(default_out_dataframe)
                 already_set_names = eval_output_new_dm['full_name'].tolist()
                 already_set_values = eval_output_new_dm['selected_output'].tolist()
-                if 'output_name' in eval_output_new_dm.columns: # TODO: maybe better to repair tests for data integrity
+                if 'output_name' in eval_output_new_dm.columns:
+                    # TODO: maybe better to repair tests than to accept default, in particular for data integrity check
                     already_set_out_names = eval_output_new_dm['output_name'].tolist()
                 else:
                     already_set_out_names = [None for _ in already_set_names]

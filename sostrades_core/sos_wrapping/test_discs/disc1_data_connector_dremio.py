@@ -35,7 +35,7 @@ class Disc1_data_connector_dremio(SoSWrapp):
     }
     _maturity = 'Fake'
 
-    hostname = 'fr0-idlabi-bw37.eu.airbus.corp'
+    hostname = 'myurl.org'
     port = 31020
     username = 'sostrades'
     password = 'sosdrem1o'

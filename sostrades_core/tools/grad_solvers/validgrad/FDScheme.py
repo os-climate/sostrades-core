@@ -33,7 +33,7 @@ class FDScheme(object):
         self.__bounds = bounds
         self.__n = 0
         self.order = 0
-        self.dtype = np.float
+        self.dtype = np.float64
 
     def get_order(self):
         """
@@ -48,7 +48,7 @@ class FDScheme(object):
         if self.order == 1j:
             self.dtype = np.complex128
         else:
-            self.dtype = np.float
+            self.dtype = np.float64
 
     def get_bounds(self):
         return self.__bounds

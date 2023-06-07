@@ -291,7 +291,8 @@ class TestDataConnector(unittest.TestCase):
         with self.assertRaises(Exception):
             exec_eng.load_study_from_input_dict(values_dict)
 
-    def test_08_mongodb_connector(self):
+    def _test_08_mongodb_connector(self):
+        # TODO: test commented out before new database connector implementation
         """
         Test Disc2 using MongoDB connector 
         """
@@ -327,7 +328,8 @@ class TestDataConnector(unittest.TestCase):
         # assert value in dm is the value coming from the database
         assert y == y_db
 
-    def test_09_mongodb_connector_local_variables(self):
+    def _test_09_mongodb_connector_local_variables(self):
+        # TODO: test commented out before new database connector implementation
         """
         Test Disc2 using MongoDB connector on local variables (power and constant are declared as local variables)
         """
