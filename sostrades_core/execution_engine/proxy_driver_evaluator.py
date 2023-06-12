@@ -336,7 +336,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                         # from a load and there is no need to crush the truth
                         # values
                         if not generated_samples.equals(
-                                scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], 1)):
+                                scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], axis=1)):
                             # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
                             #  remains as a DriverEvaluator input, othrwise another sample change check logic is needed)
                             self.old_samples_df = copy.deepcopy(
