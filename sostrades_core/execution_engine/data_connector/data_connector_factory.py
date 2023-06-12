@@ -25,6 +25,7 @@ from sostrades_core.execution_engine.data_connector.mock_connector import MockCo
 from sostrades_core.execution_engine.data_connector.ontology_data_connector import (
     OntologyDataConnector,
 )
+from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
 
 
 class ConnectorFactory:
@@ -39,6 +40,7 @@ class ConnectorFactory:
         MockConnector.NAME: MockConnector,
         TrinoDataConnector.NAME: TrinoDataConnector,
         OntologyDataConnector.NAME: OntologyDataConnector,
+        MongoDBDataConnector.NAME: MongoDBDataConnector
     }
 
     @staticmethod
@@ -138,9 +140,11 @@ class PersistentConnectorContainer:
         if connector_identifier in self.__registered_connectors.keys():
             self.__logger.info(f'Existing connector "{connector_identifier}" is updated')
 
+        connector = ConnectorFactory.get_connector(connector_type, connector_connexion_info)
         self.__registered_connectors[
             connector_identifier
-        ] = ConnectorFactory.get_connector(connector_type, connector_connexion_info)
+        ] = connector 
+        return connector 
 
     def get_persistent_connector(self, connector_identifier):
         """
