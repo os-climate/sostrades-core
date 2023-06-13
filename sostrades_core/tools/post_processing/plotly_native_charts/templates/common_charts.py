@@ -13,7 +13,6 @@ import math
 
 
 class CommonCharts(InstantiatedPlotlyNativeChart):
-
     """Class to host standard post post processing charts templates"""
 
     def __init__(self):
@@ -23,25 +22,25 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         self.default_legend = self.default_chart.get_default_legend_layout()
 
     def generate_bar_chart(
-        self,
-        data_df: pd.DataFrame,
-        x_axis_column: str,
-        y_axis_column_list: list,
-        x_axis_title: str = '',
-        y_axis_title: str = '',
-        chart_name: str = '',
-        ticksuffix: str = '',
-        annotation_upper_left: dict = {},
-        annotation_upper_right: dict = {},
-        labels_dict: dict = {},
-        annotations: list = [],
-        updatemenus: list = [],
-        barmode: str = 'stack',
-        text_inside_bar: bool = False,
-        add_cumulated: bool = False,
-        column_val_cum_sum: str = None,
-        showlegend: bool = True,
-        offsetgroup=None,
+            self,
+            data_df: pd.DataFrame,
+            x_axis_column: str,
+            y_axis_column_list: list,
+            x_axis_title: str = '',
+            y_axis_title: str = '',
+            chart_name: str = '',
+            ticksuffix: str = '',
+            annotation_upper_left: dict = {},
+            annotation_upper_right: dict = {},
+            labels_dict: dict = {},
+            annotations: list = [],
+            updatemenus: list = [],
+            barmode: str = 'stack',
+            text_inside_bar: bool = False,
+            add_cumulated: bool = False,
+            column_val_cum_sum: str = None,
+            showlegend: bool = True,
+            offsetgroup=None,
     ) -> InstantiatedPlotlyNativeChart:
         """Generate a bar chart from data in a dataframe
 
@@ -76,7 +75,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     go.Bar(
                         x=data_df[x_axis_column].values.tolist(),
                         y=data_df[col].values.tolist(),
-                        name=f'{labels_dict.get(col,col)}'
+                        name=f'{labels_dict.get(col, col)}'
                         if len(labels_dict) != 0
                         else col,
                         text=col if text_inside_bar else '',
@@ -93,7 +92,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 go.Scatter(
                     x=data_df[x_axis_column].values.tolist(),
                     y=data_df[column_val_cum_sum].cumsum().values.tolist(),
-                    name=f'Cumulative {labels_dict.get(column_val_cum_sum,column_val_cum_sum)}'
+                    name=f'Cumulative {labels_dict.get(column_val_cum_sum, column_val_cum_sum)}'
                     if len(labels_dict) != 0
                     else f'Cumulative {column_val_cum_sum}',
                     xaxis='x',
@@ -160,19 +159,19 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_lines_chart(
-        self,
-        data_df: pd.DataFrame,
-        x_axis_column: str,
-        y_axis_column_list: list,
-        x_axis_title: str = '',
-        y_axis_title: str = '',
-        chart_name: str = '',
-        ticksuffix: str = '',
-        annotation_upper_left: dict = {},
-        annotation_upper_right: dict = {},
-        labels_dict: dict = {},
-        mode: str = 'lines',
-        textposition: str = "top center",
+            self,
+            data_df: pd.DataFrame,
+            x_axis_column: str,
+            y_axis_column_list: list,
+            x_axis_title: str = '',
+            y_axis_title: str = '',
+            chart_name: str = '',
+            ticksuffix: str = '',
+            annotation_upper_left: dict = {},
+            annotation_upper_right: dict = {},
+            labels_dict: dict = {},
+            mode: str = 'lines',
+            textposition: str = "top center",
     ) -> InstantiatedPlotlyNativeChart:
         """Generate a line chart from data in a dataframe
 
@@ -202,7 +201,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     go.Scatter(
                         x=data_df[x_axis_column].values.tolist(),
                         y=data_df[column].values.tolist(),
-                        name=f'{labels_dict.get(column,column)}'
+                        name=f'{labels_dict.get(column, column)}'
                         if len(labels_dict) != 0
                         else column,
                         xaxis='x',
@@ -267,7 +266,6 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         }
 
         if ('last_year' in info_df) & ('year_start_escalation_nrc' in info_df):
-
             last_year = int(info_df['last_year'].values[0])
             year_start_escalation_nrc = int(
                 info_df['year_start_escalation_nrc'].values[0]
@@ -373,10 +371,10 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return columns_info
 
     def generate_table_chart(
-        self,
-        data_df,
-        chart_name,
-        ticksuffix=None,
+            self,
+            data_df,
+            chart_name,
+            ticksuffix=None,
     ):
         '''
         data_df : dataframe with data to plot
@@ -444,16 +442,16 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_sunburst_chart(
-        self,
-        sunburst_labels,
-        sunburst_parents,
-        sunburst_values,
-        sunburst_text,
-        chart_name='',
-        branchvalues="total",
-        textinfo='label+text',
-        # hoverinfo='label+text+percent parent',
-        hoverinfo=None,
+            self,
+            sunburst_labels,
+            sunburst_parents,
+            sunburst_values,
+            sunburst_text,
+            chart_name='',
+            branchvalues="total",
+            textinfo='label+text',
+            # hoverinfo='label+text+percent parent',
+            hoverinfo=None,
     ):
 
         # Create figure
@@ -488,14 +486,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_pie(
-        self,
-        df: pd.DataFrame,
-        lab_column_name: str,
-        val_column_name: str,
-        title: str = '',
-        annotation_upper_left: dict = {},
-        ticksuffix: str = '',
-        threshold_to_show: float = 1,
+            self,
+            df: pd.DataFrame,
+            lab_column_name: str,
+            val_column_name: str,
+            title: str = '',
+            annotation_upper_left: dict = {},
+            ticksuffix: str = '',
+            threshold_to_show: float = 1,
     ):
 
         fig = go.Figure()
@@ -515,7 +513,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             if other_value > 0:
                 pie_labels.append(f'Other (< {threshold_to_show} % each)')
                 pie_values.append(other_value)
-            pie_text = [f'{round(val,2)} {ticksuffix}' for val in pie_values]
+            pie_text = [f'{round(val, 2)} {ticksuffix}' for val in pie_values]
 
             fig.add_trace(
                 go.Pie(
@@ -546,32 +544,32 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             return new_chart
 
     def generate_lines_chart_by_category(
-        self,
-        data_df,
-        column_with_categories,
-        x_axis_column,
-        y_axis_column_list,
-        x_axis_title='',
-        y_axis_title='',
-        chart_name='',
-        ticksuffix='',
-        annotation_upper_left={},
-        annotation_upper_right={},
-        mode='lines',
-        textposition="top center",
-        fill=None,
-        stackgroup=None,
-        hoveron=None,
-        legend=None,
-        name=None,
-        fillcolor=None,
-        line=None,
-        legendgroup=None,
-        add_cumulated=False,
-        marker=dict(
-            size=12,
-        ),
-        string_text=False,
+            self,
+            data_df,
+            column_with_categories,
+            x_axis_column,
+            y_axis_column_list,
+            x_axis_title='',
+            y_axis_title='',
+            chart_name='',
+            ticksuffix='',
+            annotation_upper_left={},
+            annotation_upper_right={},
+            mode='lines',
+            textposition="top center",
+            fill=None,
+            stackgroup=None,
+            hoveron=None,
+            legend=None,
+            name=None,
+            fillcolor=None,
+            line=None,
+            legendgroup=None,
+            add_cumulated=False,
+            marker=dict(
+                size=12,
+            ),
+            string_text=False,
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -641,23 +639,23 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_bar_chart_by_category(
-        self,
-        data_df,
-        column_with_categories,
-        x_axis_column,
-        y_axis_column_list,
-        x_axis_title='',
-        y_axis_title='',
-        chart_name='',
-        ticksuffix='',
-        annotation_upper_left={},
-        annotation_upper_right={},
-        compute_legend_title=False,
-        compute_colors_details=False,
-        barmode='stack',
-        annotations: list = [],
-        updatemenus: list = [],
-        offsetgroup=None,
+            self,
+            data_df,
+            column_with_categories,
+            x_axis_column,
+            y_axis_column_list,
+            x_axis_title='',
+            y_axis_title='',
+            chart_name='',
+            ticksuffix='',
+            annotation_upper_left={},
+            annotation_upper_right={},
+            compute_legend_title=False,
+            compute_colors_details=False,
+            barmode='stack',
+            annotations: list = [],
+            updatemenus: list = [],
+            offsetgroup=None,
     ):
         '''
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
@@ -678,7 +676,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     categories_dict[category] = f'{start} to {category}'
                     start = category + 1
                 else:
-                    categories_dict[category] = f'> {categories_list[index-1]}'
+                    categories_dict[category] = f'> {categories_list[index - 1]}'
 
         # if compute_colors_details is True:
         #     color_scale_ref = px.colors.qualitative.D3
@@ -738,28 +736,28 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_bar_line_chart_by_category(
-        self,
-        data_df_bar,
-        data_df_line,
-        column_with_categories,
-        x_axis_column,
-        y_bar_axis_column_list,
-        y_line_axis_column_list,
-        xaxis='x',
-        yaxis_bar='y',
-        yaxis_line='y2',
-        colors_dict={},
-        legends_dict={},
-        x_axis_title='',
-        y_axis_title_bar='',
-        y_axis_title_line='',
-        chart_name='',
-        ticksuffix='',
-        annotation_upper_left={},
-        annotation_upper_right={},
-        mode='lines',
-        barmode='stack',
-        line=None,
+            self,
+            data_df_bar,
+            data_df_line,
+            column_with_categories,
+            x_axis_column,
+            y_bar_axis_column_list,
+            y_line_axis_column_list,
+            xaxis='x',
+            yaxis_bar='y',
+            yaxis_line='y2',
+            colors_dict={},
+            legends_dict={},
+            x_axis_title='',
+            y_axis_title_bar='',
+            y_axis_title_line='',
+            chart_name='',
+            ticksuffix='',
+            annotation_upper_left={},
+            annotation_upper_right={},
+            mode='lines',
+            barmode='stack',
+            line=None,
     ):
 
         categories_list = data_df_bar[column_with_categories].unique()
@@ -794,7 +792,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         for category in categories_list:
             cf_df_by_cat = data_df_line[
                 data_df_line[column_with_categories] == category
-            ]
+                ]
             for column in y_line_axis_column_list:
                 if column in data_df_line:
                     fig.add_trace(
@@ -850,19 +848,19 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_bar_chart_slider(
-        self,
-        data_df,
-        column_with_categories,
-        x_axis_column,
-        y_axis_column,
-        x_axis_title='',
-        y_axis_title='',
-        chart_name='',
-        title_by_slider='Total Cumulated Deliveries',
-        ticksuffix='',
-        textposition='inside',
-        annotation_upper_left={},
-        annotation_upper_right={},
+            self,
+            data_df,
+            column_with_categories,
+            x_axis_column,
+            y_axis_column,
+            x_axis_title='',
+            y_axis_title='',
+            chart_name='',
+            title_by_slider='Total Cumulated Deliveries',
+            ticksuffix='',
+            textposition='inside',
+            annotation_upper_left={},
+            annotation_upper_right={},
     ):
 
         categories_list = data_df[column_with_categories].unique()
@@ -1036,34 +1034,34 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_lines_chart_with_dropdown(
-        self,
-        data_df: pd.DataFrame,
-        column_with_categories,
-        col_pretty_list: list,
-        x_axis_column: str,
-        y_axis_column_list: list,
-        x_axis_title: str = '',
-        y_axis_title: str = '',
-        layout: str = '',
-        mode: str = 'markers+lines',
-        ticksuffix: str = '',
-        chart_name: str = '',
-        name=None,
-        textposition="top center",
-        fill=None,
-        stackgroup=None,
-        hoveron=None,
-        legend=None,
-        fillcolor=None,
-        line=None,
-        legendgroup=None,
-        add_cumulated: bool = False,
-        marker=dict(
-            size=12,
-        ),
-        string_text: bool = False,
-        annotation_upper_left: dict = {},
-        annotation_upper_right: dict = {},
+            self,
+            data_df: pd.DataFrame,
+            column_with_categories,
+            col_pretty_list: list,
+            x_axis_column: str,
+            y_axis_column_list: list,
+            x_axis_title: str = '',
+            y_axis_title: str = '',
+            layout: str = '',
+            mode: str = 'markers+lines',
+            ticksuffix: str = '',
+            chart_name: str = '',
+            name=None,
+            textposition="top center",
+            fill=None,
+            stackgroup=None,
+            hoveron=None,
+            legend=None,
+            fillcolor=None,
+            line=None,
+            legendgroup=None,
+            add_cumulated: bool = False,
+            marker=dict(
+                size=12,
+            ),
+            string_text: bool = False,
+            annotation_upper_left: dict = {},
+            annotation_upper_right: dict = {},
     ):
         '''Generate a bar chart from data in a dataframe
 
@@ -1153,14 +1151,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                                 args=[
                                     {
                                         'visible': [
-                                            True if i == j else False
-                                            for j in range(
+                                                       True if i == j else False
+                                                       for j in range(
                                                 int(
                                                     len(fig.data) / len(categories_list)
                                                 )
                                             )
-                                        ]
-                                        * len(categories_list)
+                                                   ]
+                                                   * len(categories_list)
                                     },
                                     {
                                         'title': f'<b>{col_pretty_list[i]} for {layout} layout</b>'
@@ -1199,15 +1197,16 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_pie_chart_with_dropdown(
-        self,
-        df: pd.DataFrame,
-        lab_column_name: str,
-        val_column_name: str,
-        top_to_show: list,
-        chart_name: str = '',
-        ticksuffix: str = '',
-        title_prefix: str = '',
-        title_suffix: str = '',
+            self,
+            df: pd.DataFrame,
+            lab_column_name: str,
+            val_column_name: str,
+
+            top_to_show: list,
+            chart_name: str = '',
+            ticksuffix: str = '',
+            title_prefix: str = '',
+            title_suffix: str = '',
     ):
 
         fig = go.Figure()
@@ -1218,6 +1217,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             df.sort_values(by=val_column_name, axis=0, ascending=False, inplace=True)
             # other_value = 0
             for top in top_to_show:
+
                 lines_showed = int(top.split(' ')[-1])
                 if lines_showed > len(df):
                     lines_showed = len(df)
@@ -1225,10 +1225,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                     vis = True
                 else:
                     vis = False
+
                 df_to_show = df.head(lines_showed)
                 pie_labels = df_to_show[lab_column_name].values.tolist()
                 pie_values = df_to_show[val_column_name].values.tolist()
-                pie_text = [f'{round(val,2)} {ticksuffix}' for val in pie_values]
+                pie_text = [f'{round(val, 2)} {ticksuffix}' for val in pie_values]
                 fig.add_trace(
                     go.Pie(
                         labels=pie_labels,
@@ -1285,6 +1286,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 ),
             ]
         )
+
         new_chart = None
         if len(fig.data) > 0:
             # Create native plotly chart
@@ -1295,22 +1297,22 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             return new_chart
 
     def generate_marker_chart_by_category_with_isoline(
-        self,
-        data_df: pd.DataFrame,
-        column_with_categories,
-        var1_name: str,
-        var2_name: str,
-        var_to_compare_ref: str,
-        mpax_ref: float,
-        x_axis_title: str = '',
-        y_axis_title: str = '',
-        layout: str = '',
-        mode: str = 'markers+text',
-        ticksuffix: str = '',
-        chart_name: str = '',
-        marker=dict(
-            size=12,
-        ),
+            self,
+            data_df: pd.DataFrame,
+            column_with_categories,
+            var1_name: str,
+            var2_name: str,
+            var_to_compare_ref: str,
+            mpax_ref: float,
+            x_axis_title: str = '',
+            y_axis_title: str = '',
+            layout: str = '',
+            mode: str = 'markers+text',
+            ticksuffix: str = '',
+            chart_name: str = '',
+            marker=dict(
+                size=12,
+            ),
     ):
 
         categories_list = data_df[column_with_categories].unique()
@@ -1452,7 +1454,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_waterfall_chart(
-        self, measure_dict, values_dict, text_dict, name, currency
+            self, measure_dict, values_dict, text_dict, name, currency
     ):
         # Create figure
         fig = go.Figure()
@@ -1513,7 +1515,6 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         new_chart = None
         if len(fig.data):
-
             # Create native plotly chart
             chart_name = name
             new_chart = InstantiatedPlotlyNativeChart(

@@ -217,7 +217,7 @@ if __name__ == '__main__':
     trino_connector = TrinoDataConnector()
 
     data_connection = {
-                        'hostname': 'idlvsrv201.eu.airbus.corp',
+                        'hostname': 'myurl.org',
                         'port': 30300,
                         'username': 'sostrades',
                         'catalog': 'mongodb',
