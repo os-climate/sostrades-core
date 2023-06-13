@@ -581,14 +581,6 @@ class NamespaceManager:
         database_infos: dictionnary of database_infos to set to namespace
         """ 
         self.database_infos = database_infos
-        if 'shared_ns' in database_infos:
-            for ns_id, database_info in database_infos['shared_ns'].items():
-                # check if ns_id if all_ns_dict
-                if ns_id in self.all_ns_dict:
-                    self.database_activated = True
-                    # get ns
-                    ns = self.all_ns_dict[ns_id]
-                    ns.database_infos = database_info
 
 
 class NamespaceManagerException(Exception):
