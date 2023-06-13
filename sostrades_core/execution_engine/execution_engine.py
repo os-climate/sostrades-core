@@ -83,7 +83,7 @@ class ExecutionEngine:
 
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
-        self.data_check_integrity: bool = True
+        self.check_data_integrity: bool = True
         self.__connector_container = PersistentConnectorContainer(logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
@@ -618,7 +618,7 @@ class ExecutionEngine:
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
         elif mode == 'data_check_integrity':
-            self.data_check_integrity = True
+            self.check_data_integrity = True
 
         else:
             avail_debug = ["nan", "input_change",

@@ -1116,7 +1116,7 @@ class ProxyDiscipline:
             if var_data_dict['model_origin'] == self.disc_id:
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
-                    var_data_dict, self.ee.data_check_integrity)
+                    var_data_dict, self.ee.check_data_integrity)
                 if check_integrity_msg != '':
                     data_integrity = False
                 self.dm.set_data(
