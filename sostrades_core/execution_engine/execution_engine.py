@@ -29,6 +29,8 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
+import os 
+import json 
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -151,7 +153,7 @@ class ExecutionEngine:
         self.load_study_from_input_dict({})
 
     def set_root_process(self, process_instance: ProxyCoupling):
-        # self.dm.reset()s
+        # self.dm.reset()
         if isinstance(process_instance, ProxyCoupling):
             self.root_process = process_instance
         else:
@@ -173,8 +175,72 @@ class ExecutionEngine:
         self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
         self.__factory.init_execution()
+        self.fill_data_connector_prepare_exec()
         # - execution
         self.root_process.prepare_execution()
+
+    def fill_data_connector_prepare_exec(self):
+        """
+        Mehtod called in prepare_execution
+        Checks if a namespace is related to a database, create connector, load data and fill dm with the collected data
+        """
+        # if database is activated
+        if self.ns_manager.database_infos is not None : 
+            if self.ns_manager.database_conf_path is not None:
+                loaded_data = {}
+                with open(self.ns_manager.database_conf_path , 'r') as openfile:
+                    conf_data = json.load(openfile)
+
+                # create connectors and pull data for shared namespaces
+                if 'shared_ns' in self.ns_manager.database_infos:
+                    for ns_id, database_info in self.ns_manager.database_infos['shared_ns'].items():
+                        # check if ns_id if all_ns_dict
+                        if ns_id in self.ns_manager.all_ns_dict:
+                            # get ns
+                            ns = self.ns_manager.all_ns_dict[ns_id]
+                            ns.database_infos = database_info
+
+                            database_label = ns.database_infos['database_label']
+                            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
+                                                                                            conf_data[database_label]['connection_data'])
+                            # load data using connector
+                            database_data = connector.load_data(ns.database_infos['database_query'])
+                            # store data for later use
+                            ns_id = ns.get_ns_id()
+                            self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
+                            loaded_data[ns_id] = database_data 
+
+                # create connectors and pull data for local namespaces
+                if 'local_ns' in self.ns_manager.database_infos:
+                    for disc_id, db_info in self.ns_manager.database_infos['local_ns'].items():
+                        # discipline name is unique
+                        disc = self.dm.get_disciplines_with_name(disc_id)[0]
+                        # get local ns of discipline 
+                        ns = self.ns_manager.get_local_namespace(disc)
+                        ns.database_infos = db_info
+                        database_label = ns.database_infos['database_label']
+                        data_in = disc.get_data_in()
+                        self.logger.info(f"Loading data in database for local variables of discipline {disc_id}")
+                        # create local namespace connector 
+                        connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
+                                                                                        conf_data[database_label]['connection_data'])
+                        # load data 
+                        database_data = connector.load_data(ns.database_infos['database_query'])
+                        ns_id = ns.get_ns_id()
+                        self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
+                        loaded_data[ns_id] = database_data   
+
+                
+                for var_id, dict_val in self.dm.data_dict.items():
+                    var_name = dict_val[ProxyDiscipline.VAR_NAME]
+                    ns_var = dict_val[ProxyDiscipline.NS_REFERENCE]
+                    ns_id = ns_var.get_ns_id()
+                    if ns_id in loaded_data:
+                        if var_name in loaded_data[ns_id]: 
+                            dict_val[ProxyDiscipline.VALUE] = loaded_data[ns_id][var_name]
+
+            else: 
+                self.logger.warning("Database activated but no path is set, database can't be loaded")
 
     def fill_data_in_with_connector(self):
         """
