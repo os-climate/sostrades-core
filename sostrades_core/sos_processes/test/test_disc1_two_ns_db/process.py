@@ -38,6 +38,4 @@ class ProcessBuilder(BaseProcessBuilder):
         db_conf_path = join(dirname(dirname(dirname(dirname(__file__)))), 'tests', 'data', 'conf_data.json')
         self.ee.ns_manager.set_database_conf_path(db_conf_path)
         self.ee.ns_manager.set_db_infos_to_ns(database_infos)
-        local_db_infos = {f'{self.ee.study_name}.Disc1' : {'database_label': 'db1', 'database_query': {'id': 'Disc1'}}}
-        #self.ee.set_local_ns_disc_to_db()
         return builder_list
