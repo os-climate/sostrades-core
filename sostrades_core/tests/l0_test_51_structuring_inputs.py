@@ -86,9 +86,7 @@ class TestStructuringInputs(unittest.TestCase):
                                                            disc_1.LINEARIZATION_MODE,
                                                            disc_1.CACHE_TYPE,
                                                            disc_1.CACHE_FILE_PATH,
-                                                           disc_1.DEBUG_MODE,
-                                                           disc_1.DATABASE_SUBNAME,
-                                                           disc_1.DATABASE_ID, 'dyn_input_2'])
+                                                           disc_1.DEBUG_MODE, 'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
@@ -105,8 +103,7 @@ class TestStructuringInputs(unittest.TestCase):
                                                            disc_1.CACHE_TYPE,
                                                            disc_1.CACHE_FILE_PATH,
                                                            disc_1.DEBUG_MODE,
-                                                           disc_1.DATABASE_SUBNAME,
-                                                           disc_1.DATABASE_ID, 'dyn_input_2'])
+                                                           'dyn_input_2'])
 
         self.exec_eng.load_study_from_input_dict(full_values_dict)
         print(self.exec_eng.display_treeview_nodes())
