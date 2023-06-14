@@ -22,7 +22,7 @@ from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
 from os.path import dirname, isdir
 from os import listdir, makedirs, environ
-from logging import DEBUG
+import logging
 
 from copy import deepcopy
 from tempfile import gettempdir
@@ -127,6 +127,7 @@ def processed_multiple_configure(usecase, message_queue):
     :type: multiprocessing.Queue
 
     """
+    logging.disable(logging.INFO)
     test_passed = True
     configured = True
     output_error = ''
@@ -197,6 +198,7 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
     test_passed = True
     runned = True
     output_error = ''
+    logging.disable(logging.INFO)
     try:
         dm_data_dict_1, dm_data_dict_2 = multiple_run(usecase, force_run)
     except Exception as e:
@@ -209,7 +211,7 @@ def processed_run_twice_all_usecases(usecase, message_queue, force_run=False):
             dict_error = {}
             if 'optim' in usecase or 'mda' in usecase or 'opt' in usecase:
                 # dict shouldn't be equal between optim iterations
-                print(f'----- SKIPPED DICT COMPARISON FOR {usecase} -----')
+                logging.info(f'----- SKIPPED DICT COMPARISON FOR {usecase} -----')
             else:
                 # remove unwanted elements from dm comparison
                 #   - residuals_history because iterations are different
@@ -295,7 +297,7 @@ def get_all_usecases(processes_repo):
                             usecase = usecase_py.replace('.py', '')
                             usecase_list.append('.'.join([repository, process, usecase]))
             except Exception as error:
-                print(f'An error occurs when trying to load {process_module}\n{error}')
+                logging.error(f'An error occurs when trying to load {process_module}\n{error}')
     return usecase_list
 
 
@@ -307,7 +309,7 @@ def multiple_configure(usecase):
         :returns: Two dm as dictionary
     '''
 
-    print(f'----- CONFIGURE TWICE A USECASE {usecase} -----')
+    logging.info(f'----- CONFIGURE TWICE A USECASE {usecase} -----')
     # Instanciate Study
     imported_module = import_module(usecase)
     uc = getattr(imported_module, 'Study')()
@@ -322,7 +324,7 @@ def multiple_configure(usecase):
     proc_name = uc.process_name
     study_name = uc.study_name
 
-    print("---- FIRST CONFIGURE ----")
+    logging.info("---- FIRST CONFIGURE ----")
     # First run : Load Data in a new BaseStudyManager and run study
     study_1 = BaseStudyManager(repo_name, proc_name, study_name)
     study_1.load_data(from_path=dump_dir)
@@ -332,7 +334,7 @@ def multiple_configure(usecase):
     study_1.dump_data(dump_dir)
 
     # Second run : Load Data in a new BaseStudyManager and run study
-    print("---- SECOND CONFIGURE ----")
+    logging.info("---- SECOND CONFIGURE ----")
     study_2 = BaseStudyManager(repo_name, proc_name, study_name)
     study_2.load_data(from_path=dump_dir)
     study_2.execution_engine.configure()
@@ -370,7 +372,7 @@ def multiple_run(usecase, force_run=False):
     if not isdir(base_dir):
         makedirs(base_dir, exist_ok=True)
 
-    print(f'Reference location for use case {usecase} is {base_dir}')
+    logging.info(f'Reference location for use case {usecase} is {base_dir}')
 
     uc.set_dump_directory(base_dir)
     uc.load_data()
@@ -384,13 +386,13 @@ def multiple_run(usecase, force_run=False):
         proc_name = uc.process_name
         study_name = uc.study_name
 
-        print("---- FIRST RUN ----")
+        logging.info("---- FIRST RUN ----")
         # First run : Load Data in a new BaseStudyManager and run study
         try:
             study_1 = BaseStudyManager(repo_name, proc_name, study_name)
             study_1.load_data(from_path=dump_dir)
             study_1.set_dump_directory(base_dir)
-            study_1.run(logger_level=DEBUG, dump_study=True, for_test=True)
+            study_1.run(logger_level=logging.DEBUG, dump_study=True, for_test=True)
             # Deepcopy dm
             dm_dict_1 = deepcopy(
                 study_1.execution_engine.get_anonimated_data_dict())
@@ -399,11 +401,11 @@ def multiple_run(usecase, force_run=False):
             raise Exception(f'Error during first run: {e}')
 
         # Second run : Load Data in a new BaseStudyManager and run study
-        print("---- SECOND RUN ----")
+        logging.info("---- SECOND RUN ----")
         try:
             study_2 = BaseStudyManager(repo_name, proc_name, study_name)
             study_2.load_data(from_path=dump_dir)
-            study_2.run(logger_level=DEBUG)
+            study_2.run(logger_level=logging.DEBUG)
             # Deepcopy dm
             dm_dict_2 = deepcopy(
                 study_2.execution_engine.get_anonimated_data_dict())
@@ -414,5 +416,5 @@ def multiple_run(usecase, force_run=False):
         delete_keys_from_dict(dm_dict_1), delete_keys_from_dict(dm_dict_2)
         return dm_dict_1, dm_dict_2
     else:
-        print(f'{usecase} is configured not to run, skipping double run.')
+        logging.info(f'{usecase} is configured not to run, skipping double run.')
         return {}, {}
