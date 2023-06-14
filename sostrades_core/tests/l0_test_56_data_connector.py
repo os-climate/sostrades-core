@@ -85,6 +85,7 @@ class TestDataConnector(unittest.TestCase):
         Initialize single disc process
         '''
         self.file_to_del = join(dirname(__file__), 'data', 'dm.pkl')
+        self.tearDown()
         self.name = 'EETests'
         self.model_name = 'test_'
         self.ee = ExecutionEngine(self.name)
@@ -274,7 +275,7 @@ class TestDataConnector(unittest.TestCase):
 
         exec_eng.execute()
 
-    def test_07_mongodb(self): 
+    def test_07_mongodb(self):
         '''
         Test MongoDB data connector for local and shared namespaces
         '''
@@ -284,19 +285,19 @@ class TestDataConnector(unittest.TestCase):
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_disc1_two_ns_db'
         builder_proc = factory.get_builder_from_process(repo=self.repo,
-                                                       mod_id=self.proc_name)
+                                                        mod_id=self.proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(builder_proc)
 
         exec_eng.configure()
 
-        disc_dict = {f'{study_name}.x': 1. , 
-                     f'{study_name}.a': 1. , 
+        disc_dict = {f'{study_name}.x': 1.,
+                     f'{study_name}.a': 1.,
                      f'{study_name}.Disc1.b': 1.}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.configure()
         exec_eng.execute()
-        dm = exec_eng.dm 
+        dm = exec_eng.dm
         x_dm = dm.get_value(f'{study_name}.x')
         b_dm = dm.get_value(f'{study_name}.Disc1.b')
         a_dm = dm.get_value(f'{study_name}.a')
@@ -310,7 +311,7 @@ class TestDataConnector(unittest.TestCase):
 
         assert x_dm == x_db
         assert b_dm == b_db
-        assert a_dm != a_db 
+        assert a_dm != a_db
 
     def _test_10_data_commons_extraction(self):
         '''
@@ -382,5 +383,5 @@ class TestDataConnector(unittest.TestCase):
 
 if '__main__' == __name__:
     testcls = TestDataConnector()
-    #testcls.setUp()
+    # testcls.setUp()
     testcls.test_07_mongodb()
