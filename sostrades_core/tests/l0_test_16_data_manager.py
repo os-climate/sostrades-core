@@ -100,7 +100,8 @@ class TestDataManagerGenerator(unittest.TestCase):
         sleep(0.5)
 
     def ignore_fields(self, dict_to_pop):
-        for k in ['ns_reference', 'disciplines_dependencies', 'model_origin', 'namespace', 'dataframe_descriptor', 'dataframe_edition_locked']:
+        for k in ['ns_reference', 'disciplines_dependencies', 'model_origin', 'namespace', 'dataframe_descriptor',
+                  'dataframe_edition_locked']:
             for key in dict_to_pop:
                 dict_to_pop[key].pop(k, None)
         return dict_to_pop
@@ -145,10 +146,6 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.Disc1.cache_type': init_dict('string'),
                     ns_2 + '.Disc1.cache_file_path': init_dict('string'),
                     ns_2 + '.Disc1.debug_mode': init_dict('string'),
-                    ns_2 + '.Disc1.database_subname': init_dict('string'),
-                    ns_2 + '.database_subname': init_dict('string'),
-                    ns_2 + '.database_id': init_dict('string'),
-                    ns_2 + '.Disc1.database_id': init_dict('string'),
                     ns_2 + '.linearization_mode': init_dict('string'),
                     ns_2 + '.linear_solver_MDA': init_dict('string'),
                     ns_2 + '.linear_solver_MDA_preconditioner': init_dict('string'),
@@ -245,7 +242,7 @@ class TestDataManagerGenerator(unittest.TestCase):
         self.assertEqual(
             exec_engine.dm.get_data_dict_attr('value')[ns + '.z'], z)
         self.assertListEqual(exec_engine.dm.export_couplings()[
-                             'var_name'].values.tolist(), [ns + '.y'])
+                                 'var_name'].values.tolist(), [ns + '.y'])
         y_id = exec_engine.dm.get_data_id(ns + '.y')
         self.assertTrue(exec_engine.dm.get_var_name_from_uid(y_id), 'y')
         self.assertTrue(exec_engine.dm.get_var_full_name(y_id), ns + '.y')
@@ -260,12 +257,12 @@ class TestDataManagerGenerator(unittest.TestCase):
         status_dict_from_dm = exec_engine.dm.build_disc_status_dict()
         for disc in status_dict_from_dm.values():
             self.assertEqual(list(disc.values())[
-                             0], ProxyDiscipline.STATUS_DONE)
+                                 0], ProxyDiscipline.STATUS_DONE)
         # check status with execution engine method
         status_dict_from_ee = exec_engine.get_anonimated_disciplines_status_dict()
         for disc in status_dict_from_ee.values():
             self.assertEqual(list(disc.values())[
-                             0], ProxyDiscipline.STATUS_DONE)
+                                 0], ProxyDiscipline.STATUS_DONE)
 
 
 ''' HOW TO UPDATE dm.pkl file (reference dm.data_dict):
@@ -277,8 +274,6 @@ pickle.dump(a_d, open('dm.pkl', 'wb'))
 '''
 
 if '__main__' == __name__:
-    
     testcls = TestDataManagerGenerator()
     testcls.setUp()
     testcls.test_01_load_DM()
-

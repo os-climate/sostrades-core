@@ -424,15 +424,13 @@ class TestProxyDiscipline(unittest.TestCase):
                           'Test.Disc1.linearization_mode': 'auto',
                           'Test.Disc1.cache_type': 'None', 'Test.Disc1.cache_file_path': '',
                           'Test.Disc1.debug_mode': '',
-                          'Test.Disc1.indicator': 2.0, 'Test.y': 3.0, 'Test.Disc1.database_id': '', 'Test.Disc1.database_subname': ''}
+                          'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
         print(local_data)
         self.assertTrue(dict_are_equal(local_data, ref_local_data))
         pass
 
 
 if '__main__' == __name__:
-    
     testcls = TestProxyDiscipline()
     testcls.setUp()
     testcls.test_12_execution_success_of_discipline_alone()
-
