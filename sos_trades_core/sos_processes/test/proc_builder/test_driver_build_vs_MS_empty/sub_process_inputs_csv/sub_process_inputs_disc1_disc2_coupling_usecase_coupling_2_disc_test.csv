@@ -1,5 +1,0 @@
-variable,value
-process_repository,sos_trades_core.sos_processes.test
-process_name,test_disc1_disc2_coupling
-usecase_name,usecase_coupling_2_disc_test
-usecase_data,"{'<study_ph>.x': 10., '<study_ph>.Disc1.a': 5., '<study_ph>.Disc1.b': 25431., '<study_ph>.y': 4., '<study_ph>.Disc2.constant': 3.1416, '<study_ph>.Disc2.power': 2}"

@@ -8,6 +8,10 @@ SoSTradesCore is the Python package containing the core of the execution engine 
 ## Packages installation
 pip install -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 
+A dedicated version of GEMSEO is required, for now:
+https://gitlab.com/sostrades/gemseo
+
+
 ## Overview
 This package is divided into 6 parts:
 
@@ -24,4 +28,3 @@ A copy of it can be found in the LICENSE file.
 
 The sostrades-core product depends on other software which have various licenses.
 The list of dependencies with their licenses is given in the CREDITS.rst file.
-
