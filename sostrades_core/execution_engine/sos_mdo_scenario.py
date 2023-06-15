@@ -102,7 +102,10 @@ class SoSMDOScenario(MDOScenario):
         """Gathers the data for plotting the MDO graphs"""
         dataset = self.export_to_dataset()
         dataframe = dataset.export_to_dataframe()
-
+        # quick fix to avoind NaN in the resulting dataframe
+        # context : empty fields due to several calls to the same design space lead to NaN in dataframes
+        # TODO: post proc this dataframe (or directly retrieve values from database) so that NaN values are replaced by already computed values
+        dataframe = dataframe.fillna(-1)
         #dataframe = dataframe.rename(columns=rename_func)
 
         constraints_names = [constraint.name for constraint in

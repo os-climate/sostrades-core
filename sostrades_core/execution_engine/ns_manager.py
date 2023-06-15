@@ -70,6 +70,8 @@ class NamespaceManager:
         self.ns_object_map = {}
 
         self.database_activated = False 
+        self.database_conf_path = None 
+        self.database_infos = None 
 
     @staticmethod
     def compose_ns(args):
@@ -109,21 +111,21 @@ class NamespaceManager:
         return self.__disc_ns_dict
 
     #-- Data name space methods
-    def add_ns_def(self, ns_info, get_from_database = False):
+    def add_ns_def(self, ns_info, database_infos = None):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
         for key, value in ns_info.items():
-            ns_id = self.add_ns(key, value, get_from_database=get_from_database)
+            ns_id = self.add_ns(key, value, database_infos=database_infos)
             ns_ids.append(ns_id)
-        if get_from_database: 
+        if database_infos is not None: 
             self.database_activated = True
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, get_from_database = False):
+    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos = None):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -135,11 +137,12 @@ class NamespaceManager:
 
         if ns_id in self.all_ns_dict:
             ns = self.all_ns_dict[ns_id]
-            ns.get_from_database = get_from_database
+            if database_infos is not None:
+                ns.database_infos = database_infos
 
         # else we create a new object and store it in all_ns_dict
         else:
-            ns = Namespace(name, ns_value, display_value, get_from_database)
+            ns = Namespace(name, ns_value, display_value, database_infos)
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns
@@ -566,8 +569,19 @@ class NamespaceManager:
             ns_dict['local_ns'].update_value(
                 old_local_ns_value.replace(self.ee.study_name, study_name))
 
-    def set_ns_database_location(self, database_location):
-        self.database_location = database_location
+    def set_database_conf_path(self, database_conf_path):
+        """
+        Set database configuration file path
+        """
+        self.database_conf_path = database_conf_path
+
+    def set_db_infos_to_ns(self, database_infos):
+        """
+        Set database infos to namespace
+        database_infos: dictionnary of database_infos to set to namespace
+        """ 
+        self.database_infos = database_infos
+
 
 class NamespaceManagerException(Exception):
     pass

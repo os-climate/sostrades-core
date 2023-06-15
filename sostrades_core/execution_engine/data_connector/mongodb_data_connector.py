@@ -109,27 +109,27 @@ class MongoDBDataConnector(AbstractDataConnector):
     CONNECTOR_DATA = 'connector_data'
     CONNECTOR_REQUEST = 'connector_request'
 
-    def __init__(self):
+    def __init__(self, data_connection_info=None):
         """
         Constructor for JSON data connector
         :param data_connection_info: contains necessary data for connection
         :type data_connection_info: dict
         """
+        super().__init__(data_connection_info)
 
-        super().__init__()
-
-    def _extract_connection_info(self):
+    def _extract_connection_info(self, data_connection_info):
         """
         Convert structure with data connection info given as parameter into member variable
 
         :param data_connection_info: contains necessary data for connection
         :type data_connection_info: dict
         """
-        # NotImplementedError
-        raise Exception("method not implemented")
+        self.connection_string = data_connection_info['connection_string']
+        self.database_name = data_connection_info['database_name']
+        self.collection_name = data_connection_info['collection_name']
 
 
-    def load_data(self, database_id):
+    def load_data(self, query):
         """
         Method to load data from a specified database in Azure Cosmos DB.
         The method retrieves the connection string, database name, and collection name from environment variables,
@@ -137,18 +137,16 @@ class MongoDBDataConnector(AbstractDataConnector):
         The returned document is then preprocessed and converted from editable JSON using the preprocess_json and
         convert_from_editable_json functions.
         The final preprocessed document is returned.
-        :param database_id: The ID of the database to load.
+        :param query: query of the database to execute.
         :return: The preprocessed database document.
         """
-        if database_id is None:
-            raise Exception('database_id is None, query can not be executed')
-        connection_string = os.environ.get('COSMOSDB_CONNECTION')
-        connection_string_unquote = urllib.parse.unquote(connection_string)
-        database_name = os.environ.get('COSMOSDB_NAME')
-        collection_name = os.environ.get('COSMOSDB_COLLECTION')
-        database = get_document_from_cosmosdb_pymongo(connection_string= connection_string_unquote, database_name = database_name, collection_name = collection_name, query = {'id': database_id})
+        if query is None:
+            raise Exception('query is None, query can not be executed')
+        connection_string_unquote = urllib.parse.unquote(self.connection_string)
+
+        database = get_document_from_cosmosdb_pymongo(connection_string= connection_string_unquote, database_name = self.database_name, collection_name = self.collection_name, query = query)
         if not database:
-            raise Exception(f'requested database is empty, using query id : {database_id}, check query')
+            raise Exception(f'requested database is empty, using query {query}, check query')
         else:
             database_postproc = convert_from_editable_json(postprocess_json(database))
         return database_postproc 
@@ -160,6 +158,7 @@ class MongoDBDataConnector(AbstractDataConnector):
 
         raise Exception("method not implemented")
 
-    def set_connector_request(self):
+    def set_connector_request(self, connector_info, request):
 
-        raise Exception("method not implemented")
+        connector_info[MongoDBDataConnector.CONNECTOR_REQUEST] = request
+        return connector_info
