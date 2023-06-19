@@ -26,6 +26,7 @@ from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
+from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
 
 
 class SosFactoryException(Exception):
@@ -124,12 +125,16 @@ class SosFactory:
         :params: builders, list of builders to add
         :type: list
         """
+
         self.coupling_builder = self.create_builder_coupling(self.__sos_name)
         if isinstance(builders, list):
             self.coupling_builder.set_builder_info(
                 'cls_builder', list(flatten(builders))
             )
         else:
+            if builders.cls == SelectorDiscipline:
+                self.coupling_builder = builders
+
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
     def add_discipline(self, discipline):
@@ -417,6 +422,15 @@ class SosFactory:
         create a builder  defined by a coupling type SoSCoupling
         """
         mod_path = f'{self.EE_PATH}.proxy_coupling.ProxyCoupling'
+        cls = self.get_disc_class_from_module(mod_path)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        return builder
+
+    def create_builder_selector_disc(self, sos_name: str) -> SoSBuilder:
+        """
+        create a builder  defined by a selectordiscipline
+        """
+        mod_path = f'{self.GENERIC_MODS_PATH}.selector_discipline.SelectorDiscipline'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder

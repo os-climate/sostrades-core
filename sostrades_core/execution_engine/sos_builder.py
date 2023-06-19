@@ -15,6 +15,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -27,7 +28,7 @@ class SoSBuilder:
     '''
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
     SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
-                       'ProxyDriverEvaluator']
+                       'ProxyDriverEvaluator', 'SelectorDiscipline', ]
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''
@@ -86,7 +87,7 @@ class SoSBuilder:
         else:
             raise Exception(
                 'Should specify a list of strings or a string to associate namespaces')
-        #self.__args['associated_namespaces'] = self.__associated_namespaces
+        # self.__args['associated_namespaces'] = self.__associated_namespaces
 
     def set_disc_name(self, new_disc_name):
 
@@ -150,7 +151,7 @@ class SoSBuilder:
         we do this with a dict for performances the update gives the priority to the new one
         '''
         new_ns_dict = {ns.split(self.NS_NAME_SEPARATOR)[
-            0]: ns for ns in ns_list}
+                           0]: ns for ns in ns_list}
         self.__associated_namespaces_dict.update(new_ns_dict)
 
         self.__args['associated_namespaces'] = self.associated_namespaces
