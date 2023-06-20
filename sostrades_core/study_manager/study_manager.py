@@ -84,7 +84,7 @@ class StudyManager(BaseStudyManager):
 #             self.execution_engine.logger.info(msg)
 
         #
-        self.dspace[name] = {'value': list(value),
+        self.dspace[name] = {'value': value,
                              'lower_bnd': lower, 'upper_bnd': upper, 'enable_variable': enable_variable, 'activated_elem': activated_elem}
 
         self.dspace['dspace_size'] += len(value)

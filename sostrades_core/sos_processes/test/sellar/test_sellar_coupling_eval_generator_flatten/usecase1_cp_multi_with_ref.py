@@ -34,8 +34,8 @@ class Study(StudyManager):
 
         # ======================================================================
         dict_of_list_values = {
-            'SellarCoupling.x': [[3.], [4.]],
-            'SellarCoupling.z': [[-10., 0.]],
+            'SellarCoupling.x': [array([3.]), array([4.])],
+            'SellarCoupling.z': [array([-10., 0.])],
             'SellarCoupling.Sellar_Problem.local_dv': [10.],
             'SellarCoupling.y_1': [[1.]],
             'SellarCoupling.y_2': [[1.]]

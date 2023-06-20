@@ -316,9 +316,9 @@ class UncertaintyQuantification(SoSWrapp):
                                 SoSWrapp.DATAFRAME_DESCRIPTOR: {
                                     'parameter': ('string', None, False),
                                     'distribution': ('string', None, True),
-                                    'lower_parameter': ('float', None, True),
-                                    'upper_parameter': ('float', None, True),
-                                    'most_probable_value': ('float', None, True),
+                                    'lower_parameter': ('multiple', None, True),
+                                    'upper_parameter': ('multiple', None, True),
+                                    'most_probable_value': ('multiple', None, True),
                                 },
                                 SoSWrapp.UNIT: '-',
                                 SoSWrapp.DEFAULT: input_distribution_default,
