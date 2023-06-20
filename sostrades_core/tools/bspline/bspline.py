@@ -20,7 +20,7 @@ from scipy.interpolate import BSpline as bspline_sp
 
 class BSpline(object):
     """
-    Generic implementation of BSpline
+    Generic implementation of BSpline.
     """
 
     def __init__(self, degree=3, n_poles=8, dtype=np.float64, knots=None, errmsg=''):
