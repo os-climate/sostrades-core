@@ -87,7 +87,7 @@ class FunctionManagerDisc(SoSWrapp):
                                                   FTYPE: ('string', None, True),
                                                   WEIGHT: ('float', None, True),
                                                   AGGR_TYPE: ('string', None, True),
-
+                                                  PARENT: ('string', None, True),
                                                   # index of the dataframe
                                                   INDEX: ('int', None, True),
                                                   NAMESPACE_VARIABLE: ('string', None, True),
