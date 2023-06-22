@@ -89,11 +89,17 @@ class SelectorDiscipline(ProxyCoupling):
                 self.get_disciplines_to_configure() == []) and not self.new_variables
 
     def prepare_build(self):
+        '''
+        Prepare the builder to be build according to the discipline chosen by the user
+        '''
 
         if 'discipline' in self.get_data_in():
-            disc_path = self.get_sosdisc_inputs('discipline')
-            disc_name = self.get_sosdisc_inputs('discipline_name')
-            if disc_path is not None:
+            inputs_dict = self.get_sosdisc_inputs()
+            disc_name = inputs_dict['discipline_name']
+            discipline = inputs_dict['discipline']
+            repo = inputs_dict['repository']
+            disc_path = f'{repo}.{discipline}'
+            if discipline is not None:
                 integrity_msg = self.disc_in_possible_values()
                 if integrity_msg == '':
                     if self.cls_builder == []:
@@ -138,11 +144,10 @@ def find_disciplines_in_folder(folder_name):
         if os.path.isdir(folder_path):
             path = pathlib.Path(folder_path)
             for file_path in path.glob('**/*.py'):
-                module_name = file_path.stem
                 classes = find_classes_in_file(file_path, base_class)
                 if len(classes) == 1:
                     string_path = os.path.splitext(os.path.relpath(file_path, path))[0].replace(os.path.sep, '.')
-                    module_paths.append(f'{folder_name}.{string_path}.{classes[0]}')
+                    module_paths.append(f'{string_path}.{classes[0]}')
             break
     return module_paths
 
