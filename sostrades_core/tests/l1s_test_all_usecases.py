@@ -18,8 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 '''
 import unittest
 import pprint
-from sostrades_core.sos_processes.script_test_all_usecases import run_twice_all_usecases_and_compare_dm, \
-    configure_twice_all_usecases_and_compare_dm
+from sostrades_core.sos_processes.script_test_all_usecases import test_all_usecases
 
 
 class TestUseCases(unittest.TestCase):
@@ -35,14 +34,7 @@ class TestUseCases(unittest.TestCase):
         self.processes_repo = 'sostrades_core.sos_processes'
         self.maxDiff = None
 
-    def test_01_configure_usecases_twice(self):
-        test_passed, output_error = configure_twice_all_usecases_and_compare_dm(
-            self.processes_repo)
-        if not test_passed:
-            raise Exception(f'{output_error}')
-
-    def test_02_run_usecases_twice(self):
-        test_passed, output_error = run_twice_all_usecases_and_compare_dm(
-            self.processes_repo)
+    def test_all_usecases(self):
+        test_passed, output_error = test_all_usecases(processes_repo=self.processes_repo)
         if not test_passed:
             raise Exception(f'{output_error}')
