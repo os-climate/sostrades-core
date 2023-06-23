@@ -310,28 +310,31 @@ def test_compare_dm(dm_1: dict, dm_2: dict, usecase: str, msg: str) -> tuple[boo
     return compare_test_passed, error_msg_compare
 
 
-def load_multiple_configuration(usecase: str) -> tuple[Union[BaseStudyManager, None],
-                                                       Union[BaseStudyManager, None],
-                                                       Union[dict, None],
-                                                       Union[dict, None],
-                                                       bool, str]:
+def test_double_configuration(usecase: str) -> tuple[Union[BaseStudyManager, None],
+                                                     Union[BaseStudyManager, None],
+                                                     Union[dict, None],
+                                                     Union[dict, None],
+                                                     bool, str]:
     """
     Double configuration of a usecase
     Returns:
          compare_test_passed: bool, dms are identical,
          error_msg_compare: error message, (empty string if test is passed)
     """
-    configured = True
-    error_msg_configuration = ''
+    double_config_passed = True
+    error_msg_compare = ''
     try:
-        study_1, study_2, dm_data_dict_1, dm_data_dict_2 = multiple_configure(usecase=usecase)
+        study_1, study_2, dm_1, dm_2 = multiple_configure(usecase=usecase)
     except Exception as e:
-        configured = False
-        error_msg_configuration += f'Error while Configuring twice {usecase}:\n {e}'
-        error_msg_configuration += '\n---------------------------------------------------------\n'
-        study_1, study_2, dm_data_dict_1, dm_data_dict_2 = None, None, None, None
+        double_config_passed = False
+        error_msg_compare += f'Error while Configuring twice {usecase}:\n {e}'
+        error_msg_compare += '\n---------------------------------------------------------\n'
+        study_1, study_2, dm_1, dm_2 = None, None, None, None
+        return study_1, study_2, dm_1, dm_2, double_config_passed, error_msg_compare
 
-    return study_1, study_2, dm_data_dict_1, dm_data_dict_2, configured, error_msg_configuration
+    double_config_passed, error_msg_compare = test_compare_dm(dm_1=dm_1, dm_2=dm_2, usecase=usecase,
+                                                             msg='following double configuration of')
+    return study_1, study_2, dm_1, dm_2, double_config_passed, error_msg_compare
 
 
 def test_data_integrity(study: BaseStudyManager) -> tuple[bool, str]:
@@ -353,7 +356,7 @@ def test_data_integrity(study: BaseStudyManager) -> tuple[bool, str]:
     return data_integrity_passed, error_msg_data_integrity
 
 
-def test_run_study(study: BaseStudyManager, force_run: bool=False) -> tuple[bool, str]:
+def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[bool, str]:
     """
     Test double run of a study
 
@@ -449,35 +452,36 @@ def test_post_processing_study(study: BaseStudyManager) -> tuple[bool, str]:
 
 
 def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = None, force_run: bool = False) -> tuple[bool, str]:
-    """Todo"""
+    """
+    Tests a usecase
+    - test double configuration
+    - test data integrity
+    - if not MDO : test integrity of data after computing post-processings
+    - if not MDO and not MDA : test double run
+
+    """
     logging.disable(logging.INFO)
 
-    study_1, study_2, dm_1, dm_2, configured, error_msg_configuration = load_multiple_configuration(
+    study_1, study_2, dm_1, dm_2, double_configuration_passed, error_msg_double_config = test_double_configuration(
         usecase=usecase)
-    error_msg = error_msg_configuration
-    test_passed = configured
+    error_msg = error_msg_double_config
+    test_passed = double_configuration_passed
 
-    if configured:
-        compare_test_passed, error_msg_compare = test_compare_dm(dm_1=dm_1, dm_2=dm_2, usecase=usecase,
-                                                                 msg='following double configuration of')
-        error_msg += error_msg_compare
-        test_passed = compare_test_passed
+    if double_configuration_passed:
+        data_integrity_passed, error_msg_data_integrity = test_data_integrity(study=study_2)
+        error_msg += error_msg_data_integrity
+        test_passed = data_integrity_passed
 
-        if compare_test_passed:
-            data_integrity_passed, error_msg_data_integrity = test_data_integrity(study=study_2)
-            error_msg += error_msg_data_integrity
-            test_passed = data_integrity_passed
+        if data_integrity_passed and not study_2.is_mdo:
+            post_processing_passed, error_msg_post_processing = test_post_processing_study(
+                study=study_2)
+            test_passed = post_processing_passed
+            error_msg += error_msg_post_processing
 
-            if data_integrity_passed and not study_2.is_mdo:
-                post_processing_test_passed, error_msg_post_processing = test_post_processing_study(
-                    study=study_2)
-                test_passed = post_processing_test_passed
-                error_msg += error_msg_post_processing
-
-                if post_processing_test_passed and not study_2.is_mda:
-                    run_test_passed, error_msg_run = test_run_study(study=study_2, force_run=force_run)
-                    test_passed = run_test_passed
-                    error_msg += error_msg_run
+            if post_processing_passed and not study_2.is_mda:
+                run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run) # checker si la study 2 est bien configurée
+                test_passed = run_test_passed
+                error_msg += error_msg_run
 
     if message_queue is not None:
         message_queue.put([test_passed, error_msg])
