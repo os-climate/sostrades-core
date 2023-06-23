@@ -18,7 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 '''
 import unittest
 import pprint
-from sostrades_core.sos_processes.multiple_configure_and_run_tools import run_twice_all_usecases_and_compare_dm, \
+from sostrades_core.sos_processes.script_test_all_usecases import run_twice_all_usecases_and_compare_dm, \
     configure_twice_all_usecases_and_compare_dm
 
 
