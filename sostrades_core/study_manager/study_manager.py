@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
 from os.path import abspath, basename, dirname, relpath, splitext
 import sostrades_core
 from os import sep
@@ -126,3 +127,10 @@ class StudyManager(BaseStudyManager):
         Method to get dv_arrays
         """
         pass
+
+    def test(self):
+        test_passed, error_msg = processed_test_one_usecase(usecase=self.study_full_path)
+        if not test_passed:
+            raise Exception(f"Test not passed {error_msg}")
+        else:
+            print('Test is OK')
