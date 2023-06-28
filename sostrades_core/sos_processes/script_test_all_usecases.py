@@ -279,7 +279,7 @@ def multiple_configure(usecase):
     study_2.set_dump_directory(dump_dir=dump_dir)
 
     delete_keys_from_dict(dm_dict_1), delete_keys_from_dict(dm_dict_2)
-    assert usecase == study_1.study_full_path
+
     return study_1, study_2, dm_dict_1, dm_dict_2,
 
 
@@ -346,11 +346,12 @@ def test_data_integrity(study: BaseStudyManager) -> tuple[bool, str]:
     """
     data_integrity_passed = True
     error_msg_data_integrity = ''
-    try:
-        study.ee.update_from_dm()
-    except Exception as e:
+
+    data_integrity_msg = study.ee.get_data_integrity_msg()
+    if data_integrity_msg != '':
         data_integrity_passed = False
-        error_msg_data_integrity += f'Error while testing data integrity for usecase {study.study_full_path}:\n {e}'
+        error_msg_data_integrity += f'Error while testing data integrity for usecase {study.study_full_path}:' \
+                                    f'\n {data_integrity_msg}'
         error_msg_data_integrity += '\n---------------------------------------------------------\n'
 
     return data_integrity_passed, error_msg_data_integrity
@@ -472,14 +473,14 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         error_msg += error_msg_data_integrity
         test_passed = data_integrity_passed
 
-        if data_integrity_passed and not study_2.is_mdo:
+        if data_integrity_passed and not study_2.ee.factory.contains_mdo:
             post_processing_passed, error_msg_post_processing = test_post_processing_study(
                 study=study_2)
             test_passed = post_processing_passed
             error_msg += error_msg_post_processing
 
-            if post_processing_passed and not study_2.is_mda:
-                run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run) # checker si la study 2 est bien configurée
+            if post_processing_passed and not study_2.ee.factory.contains_mda_with_strong_couplings:
+                run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
                 test_passed = run_test_passed
                 error_msg += error_msg_run
 

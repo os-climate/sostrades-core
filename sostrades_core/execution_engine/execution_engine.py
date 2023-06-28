@@ -614,26 +614,25 @@ class ExecutionEngine:
 
         self.dm.treeview = None
 
-    def __check_data_integrity_msg(self):
-        '''
-        Check if one data integrity msg is not empty string to crash a value error 
-        as the old check_inputs in the dm juste before the execution
-        Add the name of the variable in the message
-        '''
-
+    def get_data_integrity_msg(self) -> str:
+        """gathers the messages concerning data integrity"""
         integrity_msg_list = [
             f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
             for var_id, var_data_dict in self.dm.data_dict.items() if
             var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG] != '']
 
-        #         for var_data_dict in self.dm.data_dict.values():
-        #             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
-        #                 integrity_msg_list.append(
-        #                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
+        full_integrity_msg = '\n'.join(integrity_msg_list)
+        return full_integrity_msg
 
-        if integrity_msg_list != []:
-            full_integrity_msg = '\n'.join(integrity_msg_list)
-            raise ValueError(full_integrity_msg)
+    def __check_data_integrity_msg(self, raise_exceptions: bool = True):
+        '''
+        Check if one data integrity msg is not empty string to crash a value error 
+        as the old check_inputs in the dm juste before the execution
+        Add the name of the variable in the message
+        '''
+        data_integrity_msg = self.get_data_integrity_msg()
+        if data_integrity_msg != '':
+            raise ValueError(data_integrity_msg)
 
     def load_connectors_from_dict(self, connectors_to_load):
         '''

@@ -144,22 +144,6 @@ class BaseStudyManager():
     def study_cache_file_path(self):
         return DataSerializer.study_cache_file_path(study_to_load=self.dump_directory)
 
-    @property
-    def is_mdo(self) -> bool:
-        """indicates if the study consists in an MDO or not"""
-        result = False
-        if len(self.ee.root_process.proxy_disciplines) > 0 and self.ee.root_process.proxy_disciplines[0].is_optim_scenario:
-            result = True
-        return result
-
-    @property
-    def is_mda(self) -> bool:
-        """indicates if the study consists in an MDA or not"""
-        result = False
-        if (len(self.ee.root_process.proxy_disciplines) > 0 and isinstance(self.ee.root_process.proxy_disciplines[0], ProxyCoupling)) or len(self.ee.root_process.proxy_disciplines) > 1:
-            result = True
-        return result
-
     def _init_exec_engine(self):
         """
         Create an instance of the execution engine
