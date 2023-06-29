@@ -199,10 +199,14 @@ class SosFactory:
 
     @property
     def contains_mda_with_strong_couplings(self) -> bool:
-        mda_disciplines_with_strong_couplins = list(
+        mda_disciplines_with_strong_couplings = len(list(
             filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
-                   self.proxy_disciplines))
-        return len(mda_disciplines_with_strong_couplins) > 0
+                   self.proxy_disciplines))) >0
+
+        ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
+
+        # TODO: second bool shouldnt be necessary  if the root_process is in self.proxy_disciplines
+        return mda_disciplines_with_strong_couplings or ee_with_strong_couplings
 
     @property
     def repository(self):
@@ -244,6 +248,7 @@ class SosFactory:
     def set_root_process(self):
         self.__root = self.coupling_disc
         self.__execution_engine.set_root_process(self.__root)
+
 
     def build(self):
         """Method that build the root process"""
