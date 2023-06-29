@@ -294,7 +294,7 @@ class DataSerializer:
         self.dm_val_file = self.get_dm_file(study_to_load=study_to_load,
                                             file_type=self.val_filename)
 
-    def put_dict_from_study(self, study_to_load, rw_strategy, data_dict):
+    def put_dict_from_study(self, study_to_load: str, rw_strategy, data_dict):
         '''
         :params: anonymize_function, a function that map a given key of the data
         dictionary using rule for the saving process

@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.proxy_optim import ProxyOptim
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -189,6 +191,18 @@ class SosFactory:
         """
 
         return self.__proxy_disciplines
+
+    @property
+    def contains_mdo(self) -> bool:
+        mdo_disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
+        return len(mdo_disciplines) > 0
+
+    @property
+    def contains_mda_with_strong_couplings(self) -> bool:
+        mda_disciplines_with_strong_couplins = list(
+            filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
+                   self.proxy_disciplines))
+        return len(mda_disciplines_with_strong_couplins) > 0
 
     @property
     def repository(self):
