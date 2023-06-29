@@ -13,13 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
 """
-from typing import Union
+from typing import Union, Optional
 from time import time
 from importlib import import_module
 from os.path import join, isdir, exists
@@ -50,7 +51,7 @@ class BaseStudyManager():
         redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
     """
 
-    def __init__(self, repository_name, process_name, study_name, dump_directory=None, run_usecase=True,
+    def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None, run_usecase=True,
                  yield_method=None, logger=None, execution_engine=None):
         """ Constructor
 
@@ -63,7 +64,7 @@ class BaseStudyManager():
         :params: study_name, study name
         :type: str
         """
-        self.__run_usecase = run_usecase
+        self._run_usecase = run_usecase
         self.study_name = study_name
         self.repository_name = repository_name
         self.process_name = process_name
@@ -77,11 +78,19 @@ class BaseStudyManager():
         self.dumped_cache = False
         self.dump_cache_map = None
 
+    @property
     def run_usecase(self):
-        return self.__run_usecase
+        return self._run_usecase
 
-    def set_run_usecase(self, run_usecase):
-        self.__run_usecase = run_usecase
+    @run_usecase.setter
+    def run_usecase(self, value: bool):
+        if not isinstance(value, bool):
+            raise TypeError("attribute 'run_usecase' value must be a boolean")
+        self._run_usecase = value
+
+    @property
+    def study_full_path(self) -> str:
+        return f'{self.repository_name}.{self.process_name}.{self.study_name}'
 
     @property
     def ee(self) -> ExecutionEngine:
@@ -258,7 +267,7 @@ class BaseStudyManager():
         if len(connectors_dict) > 0:
             self.execution_engine.load_connectors_from_dict(connectors_dict)
 
-    def dump_data(self, study_folder_path):
+    def dump_data(self, study_folder_path: Optional[str] = None):
         """ Method that dump data from the execution engine to a file
 
         :params: study_folder_path, location of pickle file to load
@@ -267,7 +276,10 @@ class BaseStudyManager():
 
         # Retrieve data to dump
         data = self.execution_engine.get_anonimated_data_dict()
-
+        study_folder_path = self.dump_directory if study_folder_path is None else study_folder_path
+        if study_folder_path is None or not isinstance(study_folder_path, str):
+            raise ValueError("'study_folder_path' is None, please specify a value (string) or set 'dump_directory'"
+                             " attribute")
         self._put_data_into_file(study_folder_path, data)
 
     def dump_cache(self, study_folder_path):
@@ -393,7 +405,7 @@ class BaseStudyManager():
 
         # Execute study
         start_time = time()
-        if self.__run_usecase:
+        if self._run_usecase:
             try:
                 self.execution_engine.execute(loaded_cache=self.loaded_cache)
                 message = f'Study {study_display_name} execution time : {time() - start_time} seconds'
@@ -515,7 +527,7 @@ class BaseStudyManager():
         if not test_passed:
             raise Exception(output_error)
 
-    def set_dump_directory(self, dump_dir):
+    def set_dump_directory(self, dump_dir: str):
         """ Method to set the dump directory of the StudyManager
 
         :params: dump_dir, dump directory
@@ -554,16 +566,12 @@ class BaseStudyManager():
 
         return result
 
-    def _put_data_into_file(self, study_folder_path, data):
+    def _put_data_into_file(self, study_folder_path: str, data: dict):
         """ Method that load save from a file using an serializer object strategy (set with the according setter)
         File will be entirely overwrittent
 
         :params: study_folder_path, location of pickle file to save
-        :type: str
-
         :params: data, data to save
-        :type: dict
-
         """
 
         if study_folder_path is not None:

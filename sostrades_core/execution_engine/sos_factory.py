@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.proxy_optim import ProxyOptim
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -191,6 +193,22 @@ class SosFactory:
         return self.__proxy_disciplines
 
     @property
+    def contains_mdo(self) -> bool:
+        mdo_disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
+        return len(mdo_disciplines) > 0
+
+    @property
+    def contains_mda_with_strong_couplings(self) -> bool:
+        mda_disciplines_with_strong_couplings = len(list(
+            filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
+                   self.proxy_disciplines))) >0
+
+        ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
+
+        # TODO: second bool shouldnt be necessary  if the root_process is in self.proxy_disciplines
+        return mda_disciplines_with_strong_couplings or ee_with_strong_couplings
+
+    @property
     def repository(self):
         """Return the repository used to create the process"""
         return self.__repository
@@ -230,6 +248,7 @@ class SosFactory:
     def set_root_process(self):
         self.__root = self.coupling_disc
         self.__execution_engine.set_root_process(self.__root)
+
 
     def build(self):
         """Method that build the root process"""
