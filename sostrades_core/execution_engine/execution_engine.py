@@ -85,7 +85,7 @@ class ExecutionEngine:
 
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
-        self.check_data_integrity: bool = False
+        self.check_data_integrity: bool = True
         self.__connector_container = PersistentConnectorContainer(logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
