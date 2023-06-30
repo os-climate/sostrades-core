@@ -29,7 +29,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 #IMPORT USECASES
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import Study as Study_disc1_all_types
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as Study_sellar_coupling
-#from sostrades_core.sos_processes.test.test_sellar_coupling_new_types.usecase import Study as Study_sellar_coupling_new_types
+from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase import Study as Study_sellar_coupling_new_types
 from numpy import ComplexWarning
 
 class TestAnalyticGradients(unittest.TestCase):
@@ -103,7 +103,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict)
         print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
-    def _test_03_linearize_on_sellar_coupling_new_types(self):
+    def test_03_linearize_on_sellar_coupling_new_types(self):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -117,7 +117,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        values_dict = None#Study_sellar_coupling_new_types.setup_usecase(self)[0]
+        values_dict = Study_sellar_coupling_new_types.setup_usecase(self)[0]
 
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
@@ -158,7 +158,7 @@ class TestAnalyticGradients(unittest.TestCase):
             values_dict, linearization_mode='adjoint', derr_approx='complex_step', step=1e-15, threshold=1e-8,))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
-    def _test_05_check_jacobian_on_sellar_coupling_new_types(self):
+    def test_05_check_jacobian_on_sellar_coupling_new_types(self):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -172,7 +172,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        values_dict = None#Study_sellar_coupling_new_types.setup_usecase(self)[0]
+        values_dict = Study_sellar_coupling_new_types.setup_usecase(self)[0]
         values_dict[f'{self.ns}.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
@@ -186,7 +186,7 @@ class TestAnalyticGradients(unittest.TestCase):
             values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8, linearization_mode='adjoint'))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
-    def _test_06_check_jacobian_specified_inputs_outputs(self):
+    def test_06_check_jacobian_specified_inputs_outputs(self):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -200,7 +200,7 @@ class TestAnalyticGradients(unittest.TestCase):
 
         exec_eng.configure()
 
-        values_dict = None#Study_sellar_coupling_new_types.setup_usecase(self)[0]
+        values_dict = Study_sellar_coupling_new_types.setup_usecase(self)[0]
 
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
