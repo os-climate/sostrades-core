@@ -54,7 +54,7 @@ def manage_process_queue(process_list, message_queue):
     :return: [str, str], [test status, error message list]
     """
     liveprocs = list(process_list)
-    global_output_error = ''
+    global_output_msg = ''
     global_test_passed = True
     while liveprocs:
         try:
@@ -67,7 +67,7 @@ def manage_process_queue(process_list, message_queue):
                     global_test_passed = False
 
                 if len(output_error) > 0:
-                    global_output_error += output_error
+                    global_output_msg += output_error
         except Empty:
             pass
 
@@ -76,7 +76,7 @@ def manage_process_queue(process_list, message_queue):
             continue
         liveprocs = [p for p in liveprocs if p.is_alive()]
 
-    return global_test_passed, global_output_error
+    return global_test_passed, global_output_msg
 
 
 def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
@@ -93,12 +93,10 @@ def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
     :return: (str, str) , test status and error message list
     """
 
-    global_output_error = ''
+    global_output_msg = ''
     global_test_passed = True
 
     while len(process_list) > 0:
-        candidate_process = []
-
         if len(process_list) > PROCESS_IN_PARALLEL:
             candidate_process = [process_list.pop()
                                  for index in range(PROCESS_IN_PARALLEL)]
@@ -109,15 +107,14 @@ def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
         for process in candidate_process:
             process.start()
 
-        result_test_passed, result_output_error = manage_process_queue(
+        result_test_passed, result_output_msg = manage_process_queue(
             candidate_process, message_queue)
 
         global_test_passed = global_test_passed and result_test_passed
 
-        if len(result_output_error) > 0:
-            global_output_error += result_output_error
+        global_output_msg += result_output_msg
 
-    return global_test_passed, global_output_error
+    return global_test_passed, global_output_msg
 
 
 def test_all_usecases(processes_repo: str, force_run=False):
@@ -479,20 +476,22 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         info_msg += error_msg_data_integrity
         test_passed = data_integrity_passed
 
-        if data_integrity_passed and not study_2.ee.factory.contains_mdo:
-            post_processing_passed, error_msg_post_processing = test_post_processing_study(
-                study=study_2, force_run=force_run)
-            test_passed = post_processing_passed
-            info_msg += error_msg_post_processing
+        if data_integrity_passed:
+            if not study_2.ee.factory.contains_mdo:
+                post_processing_passed, error_msg_post_processing = test_post_processing_study(
+                    study=study_2, force_run=force_run)
+                test_passed = post_processing_passed
+                info_msg += error_msg_post_processing
 
-            if post_processing_passed and not study_2.ee.factory.contains_mda_with_strong_couplings:
-                run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
-                test_passed = run_test_passed
-                info_msg += error_msg_run
+                if post_processing_passed:
+                    if not study_2.ee.factory.contains_mda_with_strong_couplings:
+                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
+                        test_passed = run_test_passed
+                        info_msg += error_msg_run
+                    else:
+                        info_msg += f"\n>>> {usecase}, double run not tested because usecase is MDA with strong couplings"
             else:
-                info_msg = f"\n>>> {usecase}, double run not tested because usecase is MDA with strong couplings"
-        else:
-            info_msg = f"\n>>> {usecase}, post processing and double run not tested because usecase is MDO"
+                info_msg += f"\n>>> {usecase}, post processing and double run not tested because usecase is MDO"
 
     if message_queue is not None:
         message_queue.put([test_passed, info_msg])
