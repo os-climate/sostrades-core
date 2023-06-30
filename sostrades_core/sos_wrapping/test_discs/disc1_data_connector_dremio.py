@@ -52,8 +52,6 @@ class Disc1_data_connector_dremio(SoSWrapp):
         'x': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
         'a': {'type': 'float'},
         'b': {'type': 'float'},
-        'y': {'type': 'dataframe', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac',
-              ProxyDiscipline.CONNECTOR_DATA: data_connection_dict}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},

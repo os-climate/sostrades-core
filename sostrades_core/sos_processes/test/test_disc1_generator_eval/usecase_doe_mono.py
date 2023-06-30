@@ -39,7 +39,7 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['Eval.x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
@@ -60,7 +60,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.eval_outputs'] = output_selection_ind
 
         # Disc1 inputs
-        disc_dict[f'{ns}.x'] = 10.
+        disc_dict[f'{ns}.Eval.x'] = 10.
         disc_dict[f'{ns}.Eval.Disc1.a'] = 0.5
         disc_dict[f'{ns}.Eval.Disc1.b'] = 25.
         disc_dict[f'{ns}.y'] = 4.
