@@ -253,8 +253,7 @@ class ProxyDiscipline:
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None,
-                 logger:Optional[logging.Logger] = None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         '''
         Constructor
 
@@ -265,13 +264,12 @@ class ProxyDiscipline:
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
         # Must assign logger before calling create_mdo_discipline_wrap
-        if logger is None:
-            logger = ee.logger.getChild(self.__class__.__name__)
+        self.logger = ee.logger.getChild(self.__class__.__name__)
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=logger)
-        self._reload(sos_name, ee, logger=logger, associated_namespaces=associated_namespaces)
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=self.logger)
+        self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.model = None
         self.__father_builder = None
@@ -293,7 +291,7 @@ class ProxyDiscipline:
         """
         pass
 
-    def _reload(self, sos_name, ee, logger:logging.Logger, associated_namespaces = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
+    def _reload(self, sos_name, ee, associated_namespaces = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -304,7 +302,7 @@ class ProxyDiscipline:
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
             logger (logging.Logger): logger to use
         """
-        self.logger = logger
+        self.logger = ee.logger.getChild(self.__class__.__name__)
         self.proxy_disciplines: List[ProxyDiscipline] = []
         self._status = None
         self.status_observers = []
@@ -364,7 +362,7 @@ class ProxyDiscipline:
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode, logger=logger.getChild("MDODisciplineWrapp"))
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"), wrapper=wrapper, wrapping_mode=wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.

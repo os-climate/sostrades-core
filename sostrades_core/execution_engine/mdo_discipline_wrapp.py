@@ -43,7 +43,7 @@ class MDODisciplineWrapp(object):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def __init__(self, name:str, wrapper=None, wrapping_mode: str = 'SoSTrades', logger:logging.Logger=None):
+    def __init__(self, name:str, logger:logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades'):
         '''
         Constructor.
 
@@ -52,14 +52,12 @@ class MDODisciplineWrapp(object):
             wrapper (Class): class constructor of the user-defined wrapper (or None)
             wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         '''
-        if logger is None:
-            logger = logging.getLogger(__name__)
         self.logger = logger
         self.name = name
         self.wrapping_mode = wrapping_mode
         self.mdo_discipline: Union[SoSMDODiscipline, SoSMDOScenario, SoSMDAChain] = None
         if wrapper is not None:
-            self.wrapper = wrapper(name, logger)
+            self.wrapper = wrapper(name, self.logger.getChild(wrapper.__name__))
         else:
             self.wrapper = None
 
@@ -235,8 +233,8 @@ class MDODisciplineWrapp(object):
             # Pass as arguments to __init__ parameters needed for MDOScenario
             # creation
             mdo_discipline = SoSMDOScenario(
-                sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space,
-                grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm, logger=self.logger.getChild("SoSMDOScenario"))
+                sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space, logger=self.logger.getChild("SoSMDOScenario"),
+                grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm)
             # Set parameters for SoSMDOScenario
             mdo_discipline.eval_mode = proxy.eval_mode
             mdo_discipline.maximize_objective = proxy.maximize_objective

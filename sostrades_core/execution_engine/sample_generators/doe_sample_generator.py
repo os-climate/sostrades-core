@@ -63,10 +63,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         '''
         Constructor
         '''
-        if logger is None:
-            logger = logging.getLogger(__name__)
+        logger_aux = logger
+        if logger_aux is None:
+            logger_aux = logging.getLogger(__name__)
         #- inits super class
-        super().__init__(self.GENERATOR_NAME, logger=logger)
+        super().__init__(self.GENERATOR_NAME, logger=logger_aux)
         #- create attributes
         self.doe_factory = None
         self.__available_algo_names = None

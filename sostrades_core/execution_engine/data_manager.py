@@ -60,11 +60,11 @@ class DataManager:
     STATUS = 'status'
 
     def __init__(self, name,
+                 logger:logging.Logger,
                  root_dir=None,
                  rw_object=None,
                  study_filename=None,
-                 ns_manager=None,
-                 logger: logging.Logger=None):
+                 ns_manager=None):
         '''
         Constructor
         '''
@@ -84,8 +84,6 @@ class DataManager:
         self.reduced_dm = None
         self.reset()
         self.data_check_integrity = False
-        if logger is None:
-            logger = logging.getLogger(__name__)
         self.logger = logger
 
     @staticmethod
