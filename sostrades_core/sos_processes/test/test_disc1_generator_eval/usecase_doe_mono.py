@@ -30,7 +30,7 @@ class Study(StudyManager):
         """
 
         ns = f'{self.study_name}'
-        dspace_dict = {'variable': ['Eval.Disc1.a'],
+        dspace_dict = {'variable': ['Disc1.a'],
 
                          'lower_bnd': [0.],
                          'upper_bnd': [1.],
@@ -39,11 +39,11 @@ class Study(StudyManager):
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['Eval.x', 'Eval.Disc1.a', 'Eval.Disc1.b']}
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {'selected_output': [False, True],
-                                'full_name': ['y', 'Eval.Disc1.indicator']}
+                                'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {}
@@ -72,4 +72,4 @@ class Study(StudyManager):
 if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
-    uc_cls.run()
+    uc_cls.test()
