@@ -48,12 +48,14 @@ class SoSMDOScenario(MDOScenario):
     }
 
     def __init__(self,
-                 disciplines, name,
-                 formulation, objective_name,
+                 disciplines,
+                 name,
+                 formulation,
+                 objective_name,
                  design_space,
+                 logger:logging.Logger,
                  grammar_type=None,
-                 reduced_dm=None,
-                 logger:logging.Logger=None):
+                 reduced_dm=None):
         """
         Constructor
         """

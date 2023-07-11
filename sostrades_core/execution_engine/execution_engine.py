@@ -62,8 +62,9 @@ class ExecutionEngine:
         if logger is None:
             # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
             # as a default logger if not initialized
-            logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
-        self.logger = logger
+            self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
+        else:
+            self.logger = logger
 
         self.__post_processing_manager = PostProcessingManager(self)
 

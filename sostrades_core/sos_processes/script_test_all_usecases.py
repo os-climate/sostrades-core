@@ -217,7 +217,7 @@ def multiple_run(usecase, force_run=False) -> tuple[Union[BaseStudyManager, None
                 study_1.execution_engine.get_anonimated_data_dict())
             study_1.dump_data(dump_dir)
         except Exception as e:
-            raise Exception(f'\nError during first run: {e}')
+            raise Exception(f'\nERROR during first run: {e}')
 
         # Second run : Load Data in a new BaseStudyManager and run study
         logging.info("---- SECOND RUN ----")
@@ -229,7 +229,7 @@ def multiple_run(usecase, force_run=False) -> tuple[Union[BaseStudyManager, None
             dm_2 = deepcopy(
                 study_2.execution_engine.get_anonimated_data_dict())
         except Exception as e:
-            raise Exception(f'\nError during second run: {e}')
+            raise Exception(f'\nERROR during second run: {e}')
 
         # Delete ns ref from the two DMs
         delete_keys_from_dict(dm_1), delete_keys_from_dict(dm_2)
@@ -295,13 +295,13 @@ def test_compare_dm(dm_1: dict, dm_2: dict, usecase: str, msg: str) -> tuple[boo
         if dict_error != {}:
             compare_test_passed = False
             for error in dict_error:
-                error_msg_compare += f'\nError while comparing data dict {msg} {usecase}:\n'
+                error_msg_compare += f'\nERROR while comparing data dict {msg} {usecase}:\n'
                 error_msg_compare += f'Mismatch in {error}: {dict_error.get(error)}'
                 error_msg_compare += '\n---------------------------------------------------------\n'
     except Exception as e:
         traceback.print_exc()
         compare_test_passed = False
-        error_msg_compare += f'\nError while comparing data_dicts of {usecase}:\n {e}'
+        error_msg_compare += f'\nERROR while comparing data_dicts of {usecase}:\n {e}'
         error_msg_compare += '\n---------------------------------------------------------\n'
 
     return compare_test_passed, error_msg_compare
@@ -324,7 +324,7 @@ def test_double_configuration(usecase: str) -> tuple[Union[BaseStudyManager, Non
         study_1, study_2, dm_1, dm_2 = multiple_configure(usecase=usecase)
     except Exception as e:
         double_config_passed = False
-        error_msg_compare += f'\nError while Configuring twice {usecase}:\n {e}'
+        error_msg_compare += f'\nERROR while Configuring twice {usecase}:\n {e}'
         error_msg_compare += '\n---------------------------------------------------------\n'
         study_1, study_2, dm_1, dm_2 = None, None, None, None
         return study_1, study_2, dm_1, dm_2, double_config_passed, error_msg_compare
@@ -347,7 +347,7 @@ def test_data_integrity(study: BaseStudyManager) -> tuple[bool, str]:
     data_integrity_msg = study.ee.get_data_integrity_msg()
     if data_integrity_msg != '':
         data_integrity_passed = False
-        error_msg_data_integrity += f'\nError while testing data integrity for usecase {study.study_full_path}:' \
+        error_msg_data_integrity += f'\nERROR while testing data integrity for usecase {study.study_full_path}:' \
                                     f'\n {data_integrity_msg}'
         error_msg_data_integrity += '\n---------------------------------------------------------\n'
 
@@ -358,7 +358,7 @@ def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[boo
     """
     Test double run of a study
 
-    - run study given in input
+    - study in input is already ran
     - dump it
     - load it in a study2
     - run study2
@@ -391,7 +391,7 @@ def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[boo
         dm_2 = deepcopy(
             study_2.execution_engine.get_anonimated_data_dict())
     except Exception as e:
-        raise Exception(f'\nError during second run: {e}')
+        raise Exception(f'\nERROR during second run of usecase {study.study_full_path}: {e}')
 
     def clean_keys(data_dict: dict):
         """Clean keys in dictionnary for comparison"""
@@ -424,9 +424,9 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
     if study.run_usecase or force_run:
         try:
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
-            study.run(logger_level=logging.DEBUG, dump_study=True, for_test=True)
+            study.run(logger_level=logging.DEBUG, dump_study=True, for_test=False)
         except Exception as e:
-            raise Exception(f'\nError during first run: {e}')
+            raise Exception(f'\nERROR during first run of usecase {study.study_full_path}: {e}')
         study.run(logger_level=logging.DEBUG, )
     else:
         logging.info(f'{study.study_full_path} is configured not to run, skipping run for post processing test.')
@@ -444,7 +444,7 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
                 disc, filters, as_json=False)
         dm_after_pp = deepcopy(study.execution_engine.get_anonimated_data_dict())
     except Exception as e:
-        error_msg_post_processing += f'\nError while computing post processing for usecase {study.study_full_path}:\n {e}'
+        error_msg_post_processing += f'\nERROR while computing post processing for usecase {study.study_full_path}:\n {e}'
         post_processing_test_passed = False
         return post_processing_test_passed, error_msg_post_processing
 
@@ -465,7 +465,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
 
     """
     logging.disable(logging.INFO)
-    info_msg = f"\n START TEST usecase {usecase}"
+    info_msg = ""
     study_1, study_2, dm_1, dm_2, double_configuration_passed, error_msg_double_config = test_double_configuration(
         usecase=usecase)
     info_msg += error_msg_double_config
@@ -489,9 +489,9 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
                         test_passed = run_test_passed
                         info_msg += error_msg_run
                     else:
-                        info_msg += f"\n>>> {usecase}, double run not tested because usecase is MDA with strong couplings"
+                        info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
             else:
-                info_msg += f"\n>>> {usecase}, post processing and double run not tested because usecase is MDO"
+                info_msg += f"\nINFO: {usecase}, post processing and double run not tested because usecase is MDO"
 
     if message_queue is not None:
         message_queue.put([test_passed, info_msg])
