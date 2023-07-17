@@ -125,7 +125,7 @@ class NamespaceManager:
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos = None, clean_namespaces = False):
+    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos = None):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -142,14 +142,6 @@ class NamespaceManager:
 
         # else we create a new object and store it in all_ns_dict
         else:
-            if clean_namespaces: 
-                ns_list = self.get_all_namespace_with_name(name)
-                if name in self.shared_ns_dict:
-                    del self.shared_ns_dict[name]
-                    
-                for ns_to_clean in ns_list:
-                    del self.all_ns_dict[ns_to_clean.get_ns_id()]
-                    self.ns_list.remove(ns_to_clean)
 
             ns = Namespace(name, ns_value, display_value, database_infos)
             #-- add in the list if created
@@ -516,9 +508,15 @@ class NamespaceManager:
         ns_ids = []
         if namespace_list is None:
             namespace_list = list(self.shared_ns_dict.values())
+        # if clean namespaces, delete given namespace list before creating new ones
+        ns_name_list = [ns.name for ns in namespace_list]
+        if clean_namespaces:
+            self.clean_all_ns_in_nslist(ns_name_list)
+
         for ns in deepcopy(namespace_list):
+                
             ns_id = self.__update_namespace_with_extra_ns(
-                ns, extra_ns, after_name, clean_namespaces=clean_namespaces)
+                ns, extra_ns, after_name)
             ns_ids.append(ns_id)
 
         return ns_ids
@@ -532,7 +530,7 @@ class NamespaceManager:
                 self.__update_namespace_with_extra_ns(
                     namespace, extra_ns, after_name)
 
-    def __update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None, clean_namespaces=False):
+    def __update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None):
         '''
         Update the value of old_ns_object with an extra namespace which will be placed just after the variable after_name
         if after is the name of the discipline then we do not add the extra namespace
@@ -546,7 +544,7 @@ class NamespaceManager:
         # Add a new namespace (o or not if it exists already) but NEVER update
         # the value of a namespace without modifying the ordering of the
         # ns_manager
-        ns_id = self.add_ns(old_ns_object.name, new_ns_value, clean_namespaces = clean_namespaces)
+        ns_id = self.add_ns(old_ns_object.name, new_ns_value)
         # old_ns_object.update_value(new_ns_value)
         return ns_id
 
@@ -592,6 +590,32 @@ class NamespaceManager:
         database_infos: dictionnary of database_infos to set to namespace
         """ 
         self.database_infos = database_infos
+
+    def clean_all_ns_in_nslist(self, ns_list):
+        """
+        Method to clean all namespaces in given input list
+        ns_list : List of namespaces to clean
+        """
+        for ns in ns_list:
+            self.clean_namespace(ns) 
+
+    def clean_namespace(self, ns_name):
+        """
+        Method to clean all namespaces with given name in different namespace manager objects
+        ns_name : namespace name to delete
+        """
+        if ns_name in self.shared_ns_dict:
+            del self.shared_ns_dict[ns_name]
+
+        ns_list = self.get_all_namespace_with_name(ns_name)
+       
+        for ns_to_clean in ns_list:
+            del self.all_ns_dict[ns_to_clean.get_ns_id()]
+            self.ns_list.remove(ns_to_clean)
+
+        
+
+
 
 
 class NamespaceManagerException(Exception):
