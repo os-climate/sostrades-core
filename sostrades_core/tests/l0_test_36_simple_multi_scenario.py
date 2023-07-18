@@ -677,6 +677,56 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     # EEV3 TESTS #TODO: cleanup when nested scatter exists
 
+    def test_11_clean_namespaces_ms(self):
+        """
+        Test to assert cleaning of namespaces 
+        """
+
+        proc_name = 'test_multi_instance_basic'
+        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        # build the scenarios
+        dict_values = {}
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_W',
+                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        # dict_values[f'{self.study_name}.Eval.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        # configure the scenarios
+        scenario_list = ['scenario_1', 'scenario_2']
+
+        for scenario in scenario_list:
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        scenario_list_multi = ['scenario_1', 'scenario_W', 'scenario_2']
+        # configure b from a dataframe
+        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                    'scenario_name': scenario_list_multi,
+                                    'Disc1.b': [self.b1, 1e6, self.b2],
+                                    'z': [self.z1, 1e6, self.z2]})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # assert we have one namespace by scenario 
+
+        len_activated_scenarios = scenario_df['selected_scenario'].tolist().count(True)
+        for ns_name in ['ns_disc3', 'ns_out_disc3', 'ns_ac', 'ns_data_ac']:
+            ns_list = self.exec_eng.ns_manager.get_all_namespace_with_name(ns_name) 
+            self.assertTrue( len(ns_list) == len_activated_scenarios )
+
 
 if '__main__' == __name__:
     cls = TestSimpleMultiScenario()
