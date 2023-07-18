@@ -301,3 +301,31 @@ class TestNamespaceManagement(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
 
         self.ee.execute()
+
+    def test_07_update_shared_namespaces_and_clean(self):
+
+        ns_dict = {'ns_disc1': f'{self.ns_test}'}
+
+        self.ee.ns_manager.add_ns_def(ns_dict)
+
+        extra_name = 'extra_name'
+        # update namespace list with extra_ns
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_name, after_name=self.ee.study_name)
+        # after update without cleaning, assert len is 2
+        self.assertTrue(len(self.ee.ns_manager.get_all_namespace_with_name('ns_disc1')) == 2)
+        extra_name_2 = 'extra_name_a'
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_name_2, after_name=self.ee.study_name, clean_namespaces=True) 
+        # after second update, with clean namespace, namespace cleaned is the one in shared_ns_dict, len should be 2 but 
+        # the remaining is the very first one 
+        ns_disc1_list = self.ee.ns_manager.get_all_namespace_with_name('ns_disc1')
+        self.assertTrue(len(ns_disc1_list) == 2)
+        self.assertTrue(f'{self.ns_test}' in [ns.value for ns in ns_disc1_list])
+
+        extra_name_3 = 'extra_name_b'
+        self.ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_name_3, after_name=self.ee.study_name, clean_namespaces=True, clean_all_ns_with_name=True) 
+        # if clean namespaces and clean all ns with name, we should have only one namespace
+        ns_disc1_list = self.ee.ns_manager.get_all_namespace_with_name('ns_disc1')
+        self.assertTrue(len(ns_disc1_list) == 1)
