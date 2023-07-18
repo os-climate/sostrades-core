@@ -214,10 +214,8 @@ class ScatterTool(SosTool):
 
             # clean namespaces 
             for ns_name, ns in self.ns_to_update.items():
-                
-                if ns in self.ee.ns_manager.ns_list:
-                    self.ee.ns_manager.ns_list.remove(ns)
-                    del self.ee.ns_manager.all_ns_dict[ns.get_ns_id()]
+                # delete all namespaces in self.ns_to_update as they are not used anymore once "scattered" namespaces are created
+                self.ee.ns_manager.clean_namespace(ns)
         
 
     def build_sub_coupling(self, name, new_name, ns_ids_list):
