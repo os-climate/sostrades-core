@@ -303,6 +303,10 @@ class TestNamespaceManagement(unittest.TestCase):
         self.ee.execute()
 
     def test_07_update_shared_namespaces_and_clean(self):
+        """
+        Test cleaning when updating value of namespace with extra ns
+        Test different options
+        """
 
         ns_dict = {'ns_disc1': f'{self.ns_test}'}
 
