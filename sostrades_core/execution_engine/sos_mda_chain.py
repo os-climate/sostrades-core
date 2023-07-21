@@ -83,6 +83,7 @@ class SoSMDAChain(MDAChain):
     def __init__(self,
                  #             ee,
                  disciplines,  # type: Sequence[MDODiscipline]
+                 logger,  #type: logging.Logger
                  reduced_dm=None,  # type: dict
                  sub_mda_class="MDAJacobi",  # type: str
                  max_mda_iter=20,  # type: int
@@ -99,13 +100,10 @@ class SoSMDAChain(MDAChain):
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  authorize_self_coupled_disciplines=False,  # type: bool
-                 logger=None,  #type: logging.Logger
                  **sub_mda_options
                  ):
         ''' Constructor
         '''
-        if logger is None:
-            logger = logging.getLogger(__name__)
         self.logger = logger
         self.is_sos_coupling = True
         # =========================================================================

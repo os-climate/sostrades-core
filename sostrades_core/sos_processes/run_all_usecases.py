@@ -139,7 +139,7 @@ def run_optim_usecases(processes_repo):
                                 '.'.join([repository, process, usecase]))
                             imported_usecase = getattr(
                                 imported_module, 'Study')()
-                            if not imported_usecase.run_usecase():
+                            if not imported_usecase.run_usecase:
                                 print('Optim usecases detected... Launch run.')
                                 imported_usecase.set_run_usecase(True)
                                 imported_usecase.set_dump_directory(

@@ -677,7 +677,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     # EEV3 TESTS #TODO: cleanup when nested scatter exists
 
-
 if '__main__' == __name__:
     cls = TestSimpleMultiScenario()
     cls.setUp()

@@ -62,8 +62,9 @@ class ExecutionEngine:
         if logger is None:
             # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
             # as a default logger if not initialized
-            logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
-        self.logger = logger
+            self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
+        else:
+            self.logger = logger
 
         self.__post_processing_manager = PostProcessingManager(self)
 
@@ -85,7 +86,7 @@ class ExecutionEngine:
 
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
-        self.data_check_integrity: bool = False
+        self.check_data_integrity: bool = True
         self.__connector_container = PersistentConnectorContainer(logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
@@ -614,26 +615,25 @@ class ExecutionEngine:
 
         self.dm.treeview = None
 
-    def __check_data_integrity_msg(self):
-        '''
-        Check if one data integrity msg is not empty string to crash a value error 
-        as the old check_inputs in the dm juste before the execution
-        Add the name of the variable in the message
-        '''
-
+    def get_data_integrity_msg(self) -> str:
+        """gathers the messages concerning data integrity"""
         integrity_msg_list = [
             f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
             for var_id, var_data_dict in self.dm.data_dict.items() if
             var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG] != '']
 
-        #         for var_data_dict in self.dm.data_dict.values():
-        #             if var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG] != '':
-        #                 integrity_msg_list.append(
-        #                     var_data_dict[SoSDiscipline.CHECK_INTEGRITY_MSG])
+        full_integrity_msg = '\n'.join(integrity_msg_list)
+        return full_integrity_msg
 
-        if integrity_msg_list != []:
-            full_integrity_msg = '\n'.join(integrity_msg_list)
-            raise ValueError(full_integrity_msg)
+    def __check_data_integrity_msg(self, raise_exceptions: bool = True):
+        '''
+        Check if one data integrity msg is not empty string to crash a value error 
+        as the old check_inputs in the dm juste before the execution
+        Add the name of the variable in the message
+        '''
+        data_integrity_msg = self.get_data_integrity_msg()
+        if data_integrity_msg != '':
+            raise ValueError(data_integrity_msg)
 
     def load_connectors_from_dict(self, connectors_to_load):
         '''
@@ -684,7 +684,7 @@ class ExecutionEngine:
                 for sub_mda in disc.sub_mda_list:
                     sub_mda.debug_mode_couplings = True
         elif mode == 'data_check_integrity':
-            self.data_check_integrity = True
+            self.check_data_integrity = True
 
         else:
             avail_debug = ["nan", "input_change",

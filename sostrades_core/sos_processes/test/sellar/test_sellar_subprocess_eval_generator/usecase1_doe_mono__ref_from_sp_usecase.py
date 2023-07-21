@@ -77,10 +77,10 @@ class Study(StudyManager):
             anonymize_input_dict_from_usecase = {}
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.x'] = array([
                 1.])
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = [
-                1.]
-            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = [
-                1.]
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_1'] = array([
+                1.])
+            anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.y_2'] = array([
+                1.])
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.z'] = array([
                 1., 1.])
             anonymize_input_dict_from_usecase[f'<study_ph>.{coupling_name}.Sellar_Problem.local_dv'] = 10.

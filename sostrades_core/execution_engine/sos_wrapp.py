@@ -171,6 +171,17 @@ class SoSWrapp(object):
         """
         pass
 
+    @at_proxy
+    def clean_variables(self, var_name_list, io_type):
+        """
+        Remove variables from data_in/data_out, inst_desc_in/inst_desc_out and datamanger
+
+        Arguments:
+            var_name_list (List[string]): variable names to clean
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+        """
+        pass
+
     def check_data_integrity(self):
         """
         Method check_data_integrity
@@ -221,6 +232,13 @@ class SoSWrapp(object):
 
     @at_proxy
     def get_input_var_full_name(self, var_name):
+        """
+        Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
+        """
+        pass
+
+    @at_proxy
+    def get_output_var_full_name(self, var_name):
         """
         Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """

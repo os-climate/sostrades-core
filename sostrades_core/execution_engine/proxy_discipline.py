@@ -253,8 +253,7 @@ class ProxyDiscipline:
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None,
-                 logger:Optional[logging.Logger] = None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         '''
         Constructor
 
@@ -265,13 +264,12 @@ class ProxyDiscipline:
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
         # Must assign logger before calling create_mdo_discipline_wrap
-        if logger is None:
-            logger = ee.logger.getChild(self.__class__.__name__)
+        self.logger = ee.logger.getChild(self.__class__.__name__)
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=logger)
-        self._reload(sos_name, ee, logger=logger, associated_namespaces=associated_namespaces)
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=self.logger)
+        self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.model = None
         self.__father_builder = None
@@ -293,7 +291,7 @@ class ProxyDiscipline:
         """
         pass
 
-    def _reload(self, sos_name, ee, logger:logging.Logger, associated_namespaces = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
+    def _reload(self, sos_name, ee, associated_namespaces = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -304,7 +302,7 @@ class ProxyDiscipline:
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
             logger (logging.Logger): logger to use
         """
-        self.logger = logger
+        self.logger = ee.logger.getChild(self.__class__.__name__)
         self.proxy_disciplines: List[ProxyDiscipline] = []
         self._status = None
         self.status_observers = []
@@ -364,7 +362,7 @@ class ProxyDiscipline:
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name, wrapper, wrapping_mode, logger=logger.getChild("MDODisciplineWrapp"))
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"), wrapper=wrapper, wrapping_mode=wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -524,21 +522,21 @@ class ProxyDiscipline:
             except:
                 pass
 
-    def get_input_data_names(self, as_namespaced_tuple=False):
+    def get_input_data_names(self, as_namespaced_tuple: bool = False) -> list[str]:
         '''
         Returns:
             (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
         '''
         return list(self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple).keys())
 
-    def get_output_data_names(self, as_namespaced_tuple=False):
+    def get_output_data_names(self, as_namespaced_tuple: bool = False) -> list[str]:
         '''
         Returns:
             (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
         '''
         return list(self.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple).keys())
 
-    def get_data_io_dict(self, io_type):
+    def get_data_io_dict(self, io_type: str) -> dict:
         '''
         Get the DESC_IN+NUM_DESC_IN+inst_desc_in or the DESC_OUT+inst_desc_out depending on the io_type
 
@@ -566,7 +564,7 @@ class ProxyDiscipline:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
 
         Returns:
-            (dict_keys) data_in or data_out keys
+            (list) data_in or data_out keys
         '''
         if io_type == self.IO_TYPE_IN:
             return self.get_data_in().keys()
@@ -790,6 +788,8 @@ class ProxyDiscipline:
         Returns:
             the dict filtered with variables that are not yet in data_io
         '''
+
+
         new_var_dict = {key: value for key, value in var_dict.items() if
                         not key in self.get_data_io_dict_keys(io_type) and not key in self.get_data_io_dict_tuple_keys(
                             io_type)}
@@ -925,7 +925,7 @@ class ProxyDiscipline:
         self.add_variables(data_dict, self.IO_TYPE_OUT,
                            clean_variables=clean_outputs)
 
-    def clean_variables(self, var_name_list, io_type):
+    def clean_variables(self, var_name_list: list[str], io_type: str):
         '''
         Remove variables from data_in/data_out, inst_desc_in/inst_desc_out and datamanger
 
@@ -944,7 +944,8 @@ class ProxyDiscipline:
 
 
             elif io_type == self.IO_TYPE_OUT:
-                del self.inst_desc_out[var_name]
+                if var_name in self.inst_desc_out:
+                    del self.inst_desc_out[var_name]
                 self.ee.dm.remove_keys(
                     self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
 
@@ -954,7 +955,7 @@ class ProxyDiscipline:
             if var_name in self._structuring_variables:
                 del self._structuring_variables[var_name]
 
-    def update_default_value(self, var_name, io_type, new_default_value):
+    def update_default_value(self, var_name: str, io_type: str, new_default_value):
         '''
         Update DEFAULT and VALUE of var_name in data_io
 
@@ -1041,7 +1042,7 @@ class ProxyDiscipline:
             if var_data_dict['model_origin'] == self.disc_id:
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
-                    var_data_dict, self.ee.data_check_integrity)
+                    var_data_dict, self.ee.check_data_integrity)
                 if check_integrity_msg != '':
                     data_integrity = False
                 self.dm.set_data(
@@ -1878,6 +1879,12 @@ class ProxyDiscipline:
         Get namespaced input variable
         '''
         return self.get_var_full_name(var_name, self.get_data_in())
+
+    def get_output_var_full_name(self, var_name):
+        '''
+        Get namespaced input variable
+        '''
+        return self.get_var_full_name(var_name, self.get_data_out())
 
     def get_var_display_name(self, var_name, disc_dict):
         '''

@@ -86,10 +86,10 @@ class Study(StudyManager):
         # disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
         #======================================================================
 
-        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = [1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = [1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = [1.]
-        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = [1., 1.]
+        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

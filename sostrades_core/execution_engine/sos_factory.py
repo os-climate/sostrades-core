@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.proxy_optim import ProxyOptim
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -26,6 +28,7 @@ from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
+from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
 
 
 class SosFactoryException(Exception):
@@ -124,12 +127,16 @@ class SosFactory:
         :params: builders, list of builders to add
         :type: list
         """
+
         self.coupling_builder = self.create_builder_coupling(self.__sos_name)
         if isinstance(builders, list):
             self.coupling_builder.set_builder_info(
                 'cls_builder', list(flatten(builders))
             )
         else:
+            if builders.cls == SelectorDiscipline:
+                self.coupling_builder = builders
+
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
     def add_discipline(self, discipline):
@@ -186,6 +193,22 @@ class SosFactory:
         return self.__proxy_disciplines
 
     @property
+    def contains_mdo(self) -> bool:
+        mdo_disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
+        return len(mdo_disciplines) > 0
+
+    @property
+    def contains_mda_with_strong_couplings(self) -> bool:
+        mda_disciplines_with_strong_couplings = len(list(
+            filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
+                   self.proxy_disciplines))) >0
+
+        ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
+
+        # TODO: second bool shouldnt be necessary  if the root_process is in self.proxy_disciplines
+        return mda_disciplines_with_strong_couplings or ee_with_strong_couplings
+
+    @property
     def repository(self):
         """Return the repository used to create the process"""
         return self.__repository
@@ -225,6 +248,7 @@ class SosFactory:
     def set_root_process(self):
         self.__root = self.coupling_disc
         self.__execution_engine.set_root_process(self.__root)
+
 
     def build(self):
         """Method that build the root process"""
@@ -417,6 +441,15 @@ class SosFactory:
         create a builder  defined by a coupling type SoSCoupling
         """
         mod_path = f'{self.EE_PATH}.proxy_coupling.ProxyCoupling'
+        cls = self.get_disc_class_from_module(mod_path)
+        builder = SoSBuilder(sos_name, self.__execution_engine, cls)
+        return builder
+
+    def create_builder_selector_disc(self, sos_name: str) -> SoSBuilder:
+        """
+        create a builder  defined by a selectordiscipline
+        """
+        mod_path = f'{self.GENERIC_MODS_PATH}.selector_discipline.SelectorDiscipline'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder

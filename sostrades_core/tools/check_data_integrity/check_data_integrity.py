@@ -276,16 +276,19 @@ class CheckDataIntegrity():
                 check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         if column_range is not None and len(column_range) == 2:
-            if str(column.values.dtype) == 'object':
+            if column_type == 'string':
                 if not all(item in column_range for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the possible list {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-            else:
+            elif column_type in ['float', 'int']:
 
                 if not all(item <= column_range[1] for item in values_in_column) and all(
                         column_range[0] <= item for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+            else:
+                check_integrity_msg = f'Range values for dataframe descriptor type different than [float,int or string] is not handled in data integrity checks for now'
+                self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
     def __check_subtype_descriptor(self, var_data_dict):
         '''

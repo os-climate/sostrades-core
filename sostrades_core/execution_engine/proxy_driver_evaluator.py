@@ -141,7 +141,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  map_name=None,
                  flatten_subprocess=False,
                  display_options=None,
-                 logger:Optional[logging.Logger]=None,
                  ):
         """
         Constructor
@@ -155,9 +154,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
             logger (logging.Logger): Logger to use
         """
-        if logger is None:
-            logger = ee.logger.getChild(self.__class__.__name__)
-        super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces, logger=logger)
+        super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces)
         if cls_builder is not None:
             self.cls_builder = cls_builder
             self.sub_builder_namespaces = get_ns_list_in_builder_list(
@@ -241,7 +238,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, wrapper, wrapping_mode, logger.getChild("MDODisciplineDriverWrapp"))
+        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, logger.getChild("MDODisciplineDriverWrapp"), wrapper, wrapping_mode)
 
     def configure(self):
         """
@@ -269,10 +266,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
             self.set_children_numerical_inputs()
-
-        if self.REFERENCE_MODE in self.get_data_in():
-            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(
-                self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
 
     def update_data_io_with_subprocess_io(self):
         """

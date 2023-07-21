@@ -29,7 +29,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 #IMPORT USECASES
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import Study as Study_disc1_all_types
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as Study_sellar_coupling
-from sostrades_core.sos_processes.test.test_sellar_coupling_new_types.usecase import Study as Study_sellar_coupling_new_types
+from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase import Study as Study_sellar_coupling_new_types
 from numpy import ComplexWarning
 
 class TestAnalyticGradients(unittest.TestCase):

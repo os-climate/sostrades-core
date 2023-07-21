@@ -142,10 +142,13 @@ class NamespaceManager:
 
         # else we create a new object and store it in all_ns_dict
         else:
+
             ns = Namespace(name, ns_value, display_value, database_infos)
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns
+        
+
         # This shared_ns_dict delete the namespace if already exist: new one
         # has priority
         if add_in_shared_ns_dict:
@@ -498,14 +501,21 @@ class NamespaceManager:
         ns_reference = self.ns_object_map[ns_tuple[1]]
         return self.compose_ns([ns_reference.value, var_name])
 
-    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None):
+    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None, clean_namespaces=False, clean_all_ns_with_name=False):
         '''
         Update the value of a list of namespaces with an extra namespace placed behind after_name
         '''
         ns_ids = []
         if namespace_list is None:
             namespace_list = list(self.shared_ns_dict.values())
+        # if clean namespaces, delete given namespace list before creating new ones
+        if clean_namespaces:
+            self.clean_all_ns_in_nslist(namespace_list, clean_all_ns_with_name)
+
+
+        
         for ns in deepcopy(namespace_list):
+
             ns_id = self.__update_namespace_with_extra_ns(
                 ns, extra_ns, after_name)
             ns_ids.append(ns_id)
@@ -581,6 +591,52 @@ class NamespaceManager:
         database_infos: dictionnary of database_infos to set to namespace
         """ 
         self.database_infos = database_infos
+
+    def clean_all_ns_in_nslist(self, ns_list, clean_all_ns_with_name=False):
+        """
+        Method to clean all namespaces in given input list
+        ns_list : List of namespaces to clean
+        clean_all_ns_with_name : Boolean if True clean all namespaces having name of namespace in ns_list
+        """
+        for ns in ns_list:
+            if clean_all_ns_with_name:
+                # if boolean, clean all namespaces with name of objects in ns_list (including objects in ns_list)
+                self.clean_all_namespaces_with_name(ns.name)
+            else: 
+                # clean only the namespace and not other namespaces with the same name
+                self.clean_namespace(ns) 
+            
+
+    def clean_namespace(self, ns):
+        """
+        Clean given namespace in shared_ns_dict (if in dictionnary), in ns_list and in all_ns_dict
+        ns (Namespace) : namespace to clean in different lists and dictionaries
+        """
+        if ns in self.shared_ns_dict.values():
+            del self.shared_ns_dict[ns.name]
+        
+        ns_id = ns.get_ns_id()
+        if ns_id in self.all_ns_dict:
+            del self.all_ns_dict[ns_id]
+
+        if ns in self.ns_list:
+            self.ns_list.remove(ns)
+
+
+    def clean_all_namespaces_with_name(self, ns_name):
+        """
+        Method to clean all namespaces with given name in different namespace manager objects
+        ns_name : namespace name to delete
+        """
+
+        ns_list = self.get_all_namespace_with_name(ns_name)
+       
+        for ns_to_clean in ns_list:
+            self.clean_namespace(ns_to_clean)
+
+        
+
+
 
 
 class NamespaceManagerException(Exception):

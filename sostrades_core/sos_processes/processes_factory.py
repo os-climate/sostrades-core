@@ -47,8 +47,9 @@ class SoSProcessFactory:
 
         # Setup the logging object
         if logger is None:
-            logger = logging.getLogger(__name__)
-        self.logger = logger
+            self.logger = logging.getLogger(__name__)
+        else:
+            self.logger = logger
 
         # raw repository list is the one that contain module path to
         # 'PROCESSES_MODULE_NAME'
