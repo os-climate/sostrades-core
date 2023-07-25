@@ -234,7 +234,7 @@ class DesignVarDiscipline(SoSWrapp):
                             # if no dataframe fill default is one column per key
                             dataframe_fill = self.DATAFRAME_FILL_POSSIBLE_VALUES[0]
                             # index and key must be in the dataframe_descriptor for both methods
-                        dataframe_needs = [self.INDEX, 'key']
+                        dataframe_needs = [self.INDEX, self.INDEX_NAME, 'key']
                         dataframe_mess = [
                             f'Please set an index to the output dataframe of {key} (index is also used for post proc representations).',
                             f'Please set an index name to the output dataframe of {key} (index_name is also used for post proc representations).',
@@ -247,16 +247,7 @@ class DesignVarDiscipline(SoSWrapp):
                                     ValueError(
                                         f'Discipline {self.sos_name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
 
-                        if dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[0]:
-                            # index_name must be in the dataframe_descriptor for one column per key method
-                            if self.INDEX_NAME not in dvar_descriptor_key.keys():
-                                test = False
-                                raise (
-                                    ValueError(
-                                        f'Discipline {self.sos_name} design_var_descriptor[{self.INDEX_NAME}] is missing. Please set an index name to the output dataframe of {key} (index_name is also used for post proc representations).'))
-
-
-                        elif dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
+                        if dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
                             # column_names must be in the dataframe_descriptor for 'one column for key,one for value' method
                             if self.COLUMNS_NAMES not in dvar_descriptor_key.keys():
                                 test = False

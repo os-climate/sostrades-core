@@ -106,13 +106,13 @@ class DesignVar(object):
                     dataframe_fill = self.design_var_descriptor[key][self.DATAFRAME_FILL]
                 else:
                     dataframe_fill = self.ONE_COLUMN_PER_KEY
-
+                index = self.design_var_descriptor[key][self.INDEX]
+                index_name = self.design_var_descriptor[key][self.INDEX_NAME]
                 if dataframe_fill == self.ONE_COLUMN_PER_KEY:
                     # for the method one column per key we create a dataframe if it does not exists
                     if self.design_var_descriptor[key][self.OUT_NAME] not in self.output_dict.keys():
                         # init output dataframes with index
-                        index = self.design_var_descriptor[key][self.INDEX]
-                        index_name = self.design_var_descriptor[key][self.INDEX_NAME]
+
                         self.output_dict[out_name] = DataFrame({index_name: index})
                     # we use the key 'key' in the design_var_descriptor for the name of the column and the column to the dataframe
                     col_name = self.design_var_descriptor[key]['key']
@@ -123,8 +123,10 @@ class DesignVar(object):
                     # # create a dataframe using column_names, in this method the dataframe will ALWAYS have 2 columns
                     # first column will store the key
                     # second column the value
+
                     df_to_merge = DataFrame(
-                        {column_names[0]: self.design_var_descriptor[key]['key'],
+                        {index_name: index,
+                         column_names[0]: self.design_var_descriptor[key]['key'],
                          column_names[1]: self.bspline_dict[key]['eval_t']})
                     # if the dataframe still not exists werite it
                     if self.design_var_descriptor[key][self.OUT_NAME] not in self.output_dict.keys():

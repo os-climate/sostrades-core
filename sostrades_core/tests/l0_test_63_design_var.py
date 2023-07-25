@@ -117,6 +117,7 @@ class TestDesignVar(AbstractJacobianUnittest):
                                                'out_type': 'dataframe',
                                                'key': 'value',
                                                'index': np.arange(0, 4, 1),
+                                               'index_name': 'years',
                                                'namespace_in': 'ns_public',
                                                'namespace_out': 'ns_public',
                                                DesignVarDiscipline.DATAFRAME_FILL:
@@ -144,11 +145,17 @@ class TestDesignVar(AbstractJacobianUnittest):
         # checks output type is well created for dataframes (most commonly used)
         df = disc.get_sosdisc_outputs('x')
         assert isinstance(df, pd.DataFrame)
-        column_names = self.design_var_descriptor['x_in'][DesignVarDiscipline.COLUMNS_NAMES]
+        index_name = self.design_var_descriptor['x_in'][DesignVarDiscipline.INDEX_NAME]
+        index = self.design_var_descriptor['x_in'][DesignVarDiscipline.INDEX]
+        column_names = [index_name]
+        column_names.extend(self.design_var_descriptor['x_in'][DesignVarDiscipline.COLUMNS_NAMES])
         assert all(
             df.columns == column_names)
-        assert (df[column_names[0]].values == self.design_var_descriptor['x_in']['key']).all()
-        assert (df[column_names[1]].values == self.values_dict[f'{self.ns}.x_in']).all()
+        assert (df[index_name].values == index).all()
+        assert (df[self.design_var_descriptor['x_in'][DesignVarDiscipline.COLUMNS_NAMES][0]].values ==
+                self.design_var_descriptor['x_in']['key']).all()
+        assert (df[self.design_var_descriptor['x_in'][DesignVarDiscipline.COLUMNS_NAMES][1]].values == self.values_dict[
+            f'{self.ns}.x_in']).all()
 
 
 if '__main__' == __name__:
