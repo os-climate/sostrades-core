@@ -41,6 +41,9 @@ class DesignVar(object):
     OUT_NAME = 'out_name'
 
     def __init__(self, inputs_dict):
+        '''
+        Constructor
+        '''
         self.design_var_descriptor = inputs_dict[self.DESIGN_VAR_DESCRIPTOR]
         self.output_dict = {}
         self.bspline_dict = {}
@@ -98,28 +101,35 @@ class DesignVar(object):
             elif out_type == 'array':
                 self.output_dict[out_name] = self.bspline_dict[key]['eval_t']
             elif out_type == 'dataframe':
+                # dataframe fill is optional ,by default we fill the dataframe with one column per key
                 if self.DATAFRAME_FILL in self.design_var_descriptor[key]:
                     dataframe_fill = self.design_var_descriptor[key][self.DATAFRAME_FILL]
                 else:
                     dataframe_fill = self.ONE_COLUMN_PER_KEY
+
                 if dataframe_fill == self.ONE_COLUMN_PER_KEY:
+                    # for the method one column per key we create a dataframe if it does not exists
                     if self.design_var_descriptor[key][self.OUT_NAME] not in self.output_dict.keys():
                         # init output dataframes with index
                         index = self.design_var_descriptor[key][self.INDEX]
                         index_name = self.design_var_descriptor[key][self.INDEX_NAME]
                         self.output_dict[out_name] = DataFrame({index_name: index})
-
-                        col_name = self.design_var_descriptor[key]['key']
-                        self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
+                    # we use the key 'key' in the design_var_descriptor for the name of the column and the column to the dataframe
+                    col_name = self.design_var_descriptor[key]['key']
+                    self.output_dict[out_name][col_name] = self.bspline_dict[key]['eval_t']
                 elif dataframe_fill == self.ONE_COLUMN_FOR_KEY:
 
                     column_names = self.design_var_descriptor[key][self.COLUMNS_NAMES]
-                    # init output dataframes with index
+                    # # create a dataframe using column_names, in this method the dataframe will ALWAYS have 2 columns
+                    # first column will store the key
+                    # second column the value
                     df_to_merge = DataFrame(
                         {column_names[0]: self.design_var_descriptor[key]['key'],
                          column_names[1]: self.bspline_dict[key]['eval_t']})
+                    # if the dataframe still not exists werite it
                     if self.design_var_descriptor[key][self.OUT_NAME] not in self.output_dict.keys():
                         self.output_dict[out_name] = df_to_merge
+                        # if it exists, concatenate it in order to have multiple lines in the dataframe for each key
                     else:
                         self.output_dict[out_name] = concat([self.output_dict[out_name], df_to_merge],
                                                             ignore_index=True)

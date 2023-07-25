@@ -26,7 +26,7 @@ from sostrades_core.execution_engine.design_var.design_var_disc import DesignVar
 
 class TestDesignVar(AbstractJacobianUnittest):
     """
-    DesignVar test class
+    DesignVar unitary test class
     """
     AbstractJacobianUnittest.DUMP_JACOBIAN = False
 
@@ -87,6 +87,11 @@ class TestDesignVar(AbstractJacobianUnittest):
         self.values_dict = values_dict
 
     def test_01_check_execute_default_dataframe_fill(self):
+        '''
+
+        Test the class with the default method one column per key
+
+        '''
         # load and run
         self.ee.load_study_from_input_dict(self.values_dict)
         self.ee.configure()
@@ -102,7 +107,11 @@ class TestDesignVar(AbstractJacobianUnittest):
         assert (df['value'].values == self.values_dict[f'{self.ns}.x_in']).all()
 
     def test_02_check_execute_default_dataframe_fill(self):
-        # load and run
+        '''
+
+        Test the class with the method 'one column for key, one for value'
+
+        '''
         self.design_var_descriptor = {'x_in': {'out_name': 'x',
                                                'type': 'array',
                                                'out_type': 'dataframe',

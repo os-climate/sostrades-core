@@ -221,15 +221,19 @@ class DesignVarDiscipline(SoSWrapp):
                                     ValueError(
                                         f'Discipline {self.sos_name} design_var_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
                     elif out_type == 'dataframe':
+
                         if self.DATAFRAME_FILL in dvar_descriptor_key:
                             dataframe_fill = dvar_descriptor_key[self.DATAFRAME_FILL]
+                            # check if the dataframe fill is among possible values
                             if dataframe_fill not in self.DATAFRAME_FILL_POSSIBLE_VALUES:
                                 raise (
                                     ValueError(
                                         f'Discipline {self.sos_name} design_var_descriptor[{self.DATAFRAME_FILL}] is not in {self.DATAFRAME_FILL_POSSIBLE_VALUES}'))
 
                         else:
+                            # if no dataframe fill default is one column per key
                             dataframe_fill = self.DATAFRAME_FILL_POSSIBLE_VALUES[0]
+                            # index and key must be in the dataframe_descriptor for both methods
                         dataframe_needs = [self.INDEX, 'key']
                         dataframe_mess = [
                             f'Please set an index to the output dataframe of {key} (index is also used for post proc representations).',
@@ -244,6 +248,7 @@ class DesignVarDiscipline(SoSWrapp):
                                         f'Discipline {self.sos_name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
 
                         if dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[0]:
+                            # index_name must be in the dataframe_descriptor for one column per key method
                             if self.INDEX_NAME not in dvar_descriptor_key.keys():
                                 test = False
                                 raise (
@@ -252,17 +257,13 @@ class DesignVarDiscipline(SoSWrapp):
 
 
                         elif dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
-                            if 'key' not in dvar_descriptor_key.keys():
-                                test = False
-                                raise (
-                                    ValueError(
-                                        f'Discipline {self.sos_name} design_var_descriptor[key] is missing with option {self.DATAFRAME_FILL_POSSIBLE_VALUES[1]}'))
-
+                            # column_names must be in the dataframe_descriptor for 'one column for key,one for value' method
                             if self.COLUMNS_NAMES not in dvar_descriptor_key.keys():
                                 test = False
                                 raise (
                                     ValueError(
                                         f'Discipline {self.sos_name} design_var_descriptor[{self.COLUMNS_NAMES}] is missing with option {self.DATAFRAME_FILL_POSSIBLE_VALUES[1]}'))
+                            # only two column names are required
                             if len(dvar_descriptor_key[self.COLUMNS_NAMES]) != 2:
                                 test = False
                                 raise (
