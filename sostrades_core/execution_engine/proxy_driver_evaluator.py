@@ -267,10 +267,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.update_data_io_with_subprocess_io()
             self.set_children_numerical_inputs()
 
-        if self.REFERENCE_MODE in self.get_data_in():
-            self.logger.error(self.get_var_full_name('reference_mode', self.get_data_in()) + ',' + str(
-                self.ee.dm.get_value(self.get_var_full_name('reference_mode', self.get_data_in()))))
-
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be

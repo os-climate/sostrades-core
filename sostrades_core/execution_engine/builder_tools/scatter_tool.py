@@ -212,6 +212,7 @@ class ScatterTool(SosTool):
                     self.build_child_scatter(
                         name, new_name, ns_ids_list)
 
+
     def build_sub_coupling(self, name, new_name, ns_ids_list):
         '''
         Build a coupling for each name 
@@ -268,6 +269,8 @@ class ScatterTool(SosTool):
             ns_id = self.ee.ns_manager.add_ns(
                 ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)
+
+        
 
         return ns_ids_list
 
